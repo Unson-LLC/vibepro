@@ -352,6 +352,9 @@ function projectPublicMergeValue(value, keyPath) {
     Object.entries(value)
       .filter(([key]) => (
         (!publicKeys || publicKeys.has(key))
+        && (!(['error', 'persistence_error_details'].includes(key)
+          && keyPath.at(-1) === 'execution_state_sync')
+          || isPublicExecutionDiagnostic(value[key]))
         && (!PRIVATE_MERGE_DIAGNOSTIC_KEYS.has(key)
         || (key === 'commands' && keyPath.at(-1) === 'reconciliation_action')
         || (['error', 'persistence_error_details'].includes(key) && keyPath.at(-1) === 'execution_state_sync')
@@ -366,6 +369,11 @@ function projectPublicMergeValue(value, keyPath) {
           : projectPublicMergeValue(item, [...keyPath, key])
       ])
   );
+}
+
+function isPublicExecutionDiagnostic(value) {
+  const code = typeof value?.code === 'string' ? value.code : '';
+  return /^(?:execution_state_|merge_)[a-z0-9_]+$/.test(code);
 }
 
 function resolvePublicKeys(keyPath) {

@@ -2016,7 +2016,7 @@ function scopedPrLifecycle(data, artifactKind, excluded) {
   excluded.push('pr_lifecycle.full_gate_dag', 'pr_lifecycle.raw_command_output');
   const gateDag = data?.gate_dag;
   const results = data?.results;
-  const publicMerge = artifactKind === 'pr_merge'
+  const publicMerge = artifactKind === 'canonical_pr_merge_audit_summary'
     ? projectCanonicalPublicMerge(data)
     : null;
   return compactObject({
@@ -2063,17 +2063,14 @@ function scopedPrLifecycle(data, artifactKind, excluded) {
     warnings: publicMerge?.warnings ?? data?.warnings,
     toolchain: data?.toolchain,
     gate_dag_summary: scopedGateDag(gateDag, excluded),
-    commands: data?.commands,
+    command_count: Array.isArray(data?.commands) ? data.commands.length : undefined,
     results: Array.isArray(results)
       ? results.map((result) => ({
-          command: result.command,
           started_at: result.started_at,
           finished_at: result.finished_at,
           exit_code: result.exit_code,
           stdout_bytes: byteLength(result.stdout),
-          stderr_bytes: byteLength(result.stderr),
-          stdout_excerpt: excerpt(result.stdout),
-          stderr_excerpt: excerpt(result.stderr)
+          stderr_bytes: byteLength(result.stderr)
         }))
       : results
   });

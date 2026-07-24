@@ -132,6 +132,9 @@ async function setupMergedPrRepo() {
   const mergeCommitSha = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
   await git(root, ['push', 'origin', 'main']);
   await git(root, ['switch', 'feature/honesty']);
+  const authorityUrl = 'https://github.example.test/unson/vibepro.git';
+  await git(root, ['config', `url.${remote}.insteadOf`, authorityUrl]);
+  await git(root, ['remote', 'set-url', 'origin', authorityUrl]);
 
   const prDir = path.join(root, '.vibepro', 'pr', 'story-status-honesty');
   await mkdir(prDir, { recursive: true });

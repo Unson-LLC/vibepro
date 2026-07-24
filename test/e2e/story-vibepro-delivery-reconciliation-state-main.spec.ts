@@ -24,6 +24,16 @@ async function writeJson(filePath: string, value: unknown) {
   await writeFile(filePath, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+async function initializeGitHubAuthorityFixture(root: string) {
+  await git(root, ['init', '-b', 'main']);
+  await git(root, ['config', 'user.email', 'vibepro@example.com']);
+  await git(root, ['config', 'user.name', 'VibePro Test']);
+  await git(root, ['remote', 'add', 'origin', 'https://github.example.test/unson/vibepro.git']);
+  await writeFile(path.join(root, 'README.md'), '# Authority fixture\n');
+  await git(root, ['add', 'README.md']);
+  await git(root, ['commit', '-m', 'test: initialize authority fixture']);
+}
+
 async function makeAlreadyMergedProvider(state: Record<string, unknown>) {
   const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-delivery-public-gh-'));
   const ghPath = path.join(binDir, 'gh');
@@ -107,6 +117,9 @@ Observed delivery must survive execution-state synchronization failure.
   const mergeCommitSha = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
   await git(root, ['push', 'origin', 'main']);
   await git(root, ['switch', 'feature/public-delivery']);
+  const authorityUrl = 'https://github.example.test/unson/vibepro.git';
+  await git(root, ['config', `url.${remote}.insteadOf`, authorityUrl]);
+  await git(root, ['remote', 'set-url', 'origin', authorityUrl]);
 
   const prDir = path.join(root, 'docs', 'features', storyId);
   await mkdir(prDir, { recursive: true });
@@ -319,6 +332,7 @@ test('delivery reconciliation workflow projects both axes into operator handoff 
 
 test('shipped VibePro binary executes the public merge JSON contract', async () => {
   const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-delivery-binary-'));
+  await initializeGitHubAuthorityFixture(fixtureRoot);
   let failure: Error & { code?: number; stdout?: string; stderr?: string } | null = null;
   try {
     await execFileAsync(process.execPath, [
@@ -342,7 +356,7 @@ test('shipped VibePro binary executes the public merge JSON contract', async () 
 
   assert.equal(failure?.code, 2);
   const output = JSON.parse(failure?.stdout ?? '{}');
-  assert.equal(output.mode, 'execute_merge');
+  assert.equal(output.mode, undefined);
   assert.equal(output.story.story_id, 'story-vibepro-delivery-reconciliation-state');
   assert.equal(output.delivery.status, 'unknown');
   assert.equal(output.status, 'blocked');
@@ -351,6 +365,7 @@ test('shipped VibePro binary executes the public merge JSON contract', async () 
 
 test('execute merge early return carries its lock-bound persisted CAS baseline', async () => {
   const fixtureRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-delivery-baseline-'));
+  await initializeGitHubAuthorityFixture(fixtureRoot);
   const result = await executeMerge(fixtureRoot, {
     storyId: 'story-vibepro-delivery-reconciliation-state',
     baseRef: 'main'
@@ -629,16 +644,12 @@ test('public execute dispatcher keeps rollback damage separate from the delivery
   ]);
   assert.equal(output.execution_state_sync.error.code, 'execution_state_write_failed');
   assert.equal(output.execution_state_sync.recovery_persistence, 'persisted_local');
+  assert.equal(output.execution_state_sync.persistence_error_details.code, 'merge_followup_transaction_restore_failed');
+  assert.doesNotMatch(stdout, /e2e follow-up persistence failed|e2e-pr-merge\.json|newer operator guidance preserved/);
   assert.equal(
-    output.execution_state_sync.persistence_error_details.cause_details.message,
-    'e2e follow-up persistence failed'
+    stderr,
+    'Execution-state synchronization and follow-up persistence failed after merge processing.\n'
   );
-  assert.deepEqual(output.execution_state_sync.persistence_error_details.restore_errors, [{
-    artifact_path: '/tmp/e2e-pr-merge.json',
-    message: 'newer operator guidance preserved'
-  }]);
-  assert.match(stderr, /execution-state persistence failed/);
-  assert.match(stderr, /follow-up persistence failed/);
 });
 
 test('public execute dispatcher preserves operator state on recovery CAS conflict', async () => {
@@ -676,6 +687,7 @@ test('public execute dispatcher preserves operator state on recovery CAS conflic
   assert.equal(result.exitCode, 1);
   const output = JSON.parse(stdout);
   assert.equal(output.execution_state_sync.recovery_persistence, 'failed');
-  assert.equal(output.execution_state_sync.recovery_persistence_error_details.code, 'merge_recovery_state_conflict');
+  assert.equal(output.execution_state_sync.recovery_persistence_error_details, undefined);
+  assert.doesNotMatch(stdout, /newer operator guidance preserved|merge_recovery_state_conflict/);
   assert.equal(output.delivery.merge_commit_sha, 'post-lock-result-must-not-be-cas-baseline');
 });

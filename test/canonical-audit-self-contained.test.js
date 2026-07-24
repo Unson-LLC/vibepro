@@ -840,26 +840,37 @@ test('canonical audit projects delivery and decision outcome binding through the
     gate_status: { overall_status: 'ready_for_review' }
   });
 
+  const merge = {
+    status: 'merged',
+    delivery: {
+      status: 'merged',
+      observed: true,
+      authorization: 'Bearer DELIVERY_SECRET',
+      diagnostics: { raw: 'DELIVERY_RAW' }
+    },
+    decision_outcome_binding: {
+      status: 'bound',
+      expected_entry_count: 1,
+      diagnostics: 'BINDING_SECRET'
+    },
+    pr: {
+      url: 'https://operator:secret@example.test/pr/1',
+      diagnostics: 'PR_SECRET'
+    },
+    commands: ['gh pr merge --token scoped-secret'],
+    results: [{
+      command: 'git push https://operator:secret@example.test/repo.git',
+      started_at: '2026-06-23T00:04:00.000Z',
+      finished_at: '2026-06-23T00:04:01.000Z',
+      exit_code: 1,
+      stdout: 'raw stdout scoped-secret',
+      stderr: '/private/tmp/scoped-secret: raw stderr'
+    }]
+  };
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-merge.json'), merge);
   const promoted = await promoteCanonicalAuditArtifacts(root, {
     storyId,
-    merge: {
-      status: 'merged',
-      delivery: {
-        status: 'merged',
-        observed: true,
-        authorization: 'Bearer DELIVERY_SECRET',
-        diagnostics: { raw: 'DELIVERY_RAW' }
-      },
-      decision_outcome_binding: {
-        status: 'bound',
-        expected_entry_count: 1,
-        diagnostics: 'BINDING_SECRET'
-      },
-      pr: {
-        url: 'https://operator:secret@example.test/pr/1',
-        diagnostics: 'PR_SECRET'
-      }
-    }
+    merge
   });
   const index = await readJson(path.join(
     root,
@@ -873,12 +884,29 @@ test('canonical audit projects delivery and decision outcome binding through the
     bundle: promoted.bundle.merge,
     index: index.pr_merge?.summary
   });
+  const canonicalPrMerge = await readJson(path.join(
+    root,
+    'docs',
+    'management',
+    'audit-artifacts',
+    storyId,
+    'pr',
+    'pr-merge.json'
+  ));
 
   assert.equal(promoted.bundle.merge.delivery.status, 'merged');
   assert.equal(promoted.bundle.merge.decision_outcome_binding.status, 'bound');
   assert.equal(promoted.bundle.merge.decision_outcome_binding.expected_entry_count, 1);
   assert.equal(promoted.bundle.merge.pr_url, 'https://example.test/pr/1');
   assert.doesNotMatch(serialized, /DELIVERY_SECRET|DELIVERY_RAW|BINDING_SECRET|PR_SECRET|operator:secret/);
+  assert.equal(canonicalPrMerge.command_count, 1);
+  assert.equal(canonicalPrMerge.results[0].exit_code, 1);
+  assert.equal(canonicalPrMerge.results[0].stdout_bytes > 0, true);
+  assert.equal(canonicalPrMerge.results[0].stderr_bytes > 0, true);
+  assert.equal(Object.hasOwn(canonicalPrMerge.results[0], 'command'), false);
+  assert.equal(Object.hasOwn(canonicalPrMerge.results[0], 'stdout_excerpt'), false);
+  assert.equal(Object.hasOwn(canonicalPrMerge.results[0], 'stderr_excerpt'), false);
+  assert.doesNotMatch(JSON.stringify(canonicalPrMerge), /operator|scoped-secret|private\/tmp|raw stdout|raw stderr/);
 });
 
 test('canonical evidence cost summary preserves available and unavailable token/time accounting', () => {
