@@ -281,6 +281,19 @@ async function executeMergeLocked(root, options = {}) {
     return attachExecutionStateSyncBaseline(merge, artifacts);
   }
 
+  const originUrl = await gitOptional(root, ['remote', 'get-url', 'origin']);
+  if (merge.preconditions.gate_ready !== true && !originUrl) {
+    merge.status = 'blocked';
+    merge.stop_reason = 'gate_not_ready';
+    merge.preconditions.base_freshness.status = 'not_run';
+    merge.preconditions.remote_head_match.status = 'not_run';
+    merge.preconditions.checks_ready.status = 'not_run';
+    merge.preconditions.review_policy.status = 'not_run';
+    merge.preconditions.open_pull_request.status = 'not_run';
+    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+    return attachExecutionStateSyncBaseline(merge, artifacts);
+  }
+
   // Refresh the read-only base observation before deciding whether a stale
   // local gate may be bypassed for external-delivery reconciliation. Checking
   // origin/<base> first can return gate_not_ready from a stale clone even when
