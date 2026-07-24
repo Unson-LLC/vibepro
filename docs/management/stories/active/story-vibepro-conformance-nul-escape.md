@@ -4,6 +4,7 @@ title: architecture-conformance.jsの生NULバイトを\0エスケープに置�
 status: active
 view: dev
 period: 2026-07
+parent_design: vibepro-target-architecture-conformance
 reason: |
   代替案の比較: (a) 生NULをスペースに置換する案は動作は同じだが、content-binding.jsで確立済みの「合成キー区切りにNULを使う」衝突回避意図を失う。(b) \0エスケープ置換はランタイム文字列が完全に同一のままファイルをASCIIテキストに戻すため、意図と挙動の両方を保存する。(b)を採用。
   互換性: matchedPatternsはassignFilesToModules内部のローカルSetで、add/hasが対称に同じ式を使うのみ。シリアライズ・永続化経路はなく、\0エスケープ置換で生成される文字列はバイト単位で従来と同一のため外部互換性への影響はゼロ。
