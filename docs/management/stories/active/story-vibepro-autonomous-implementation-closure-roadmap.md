@@ -2,7 +2,7 @@
 story_id: story-vibepro-autonomous-implementation-closure-roadmap
 parent_design: vibepro-autonomous-implementation-closure-roadmap
 title: 自律実装の実行プレーンを1コマンドPR-readyへ接続する
-status: active
+status: completed
 view: dev
 period: 2026-07
 category: architecture
@@ -38,18 +38,18 @@ updated_at: 2026-07-23
 ## Acceptance Criteria
 
 - [x] AIC-S-1: 4 Storyの責務、entry/exit gate、既存契約との所有境界が一意である。
-- [ ] AIC-S-2: 4 Storyを順番に完了し、後続Storyは先行Storyのexit gateを要求する。
-- [ ] AIC-S-3: 最終E2Eが実装commit、検証、`needs_changes`、修正commit、独立再Review、`pr_ready`または型付き停止を1 Run契約として証明する。
+- [x] AIC-S-2: 4 Storyを順番に完了し、後続Storyは先行Storyのexit gateを要求する。
+- [x] AIC-S-3: 最終E2Eが実装commit、検証、`needs_changes`、修正commit、独立再Review、`pr_ready`または型付き停止を1 Run契約として証明する。
 - [x] AIC-S-4: merge、critical waiver、未承認外部副作用は自動化されない。
 - [x] AIC-S-5: 既存の各制御契約を再実装せず、composition rootと不足providerだけを追加する。
 
 ## Completion Evidence
 
-- Autonomous Action DAG: merge済みの実行順序とtyped state contractを再利用。
+- Autonomous Action DAG: PR #372のmerge済み実行順序とtyped state contractを再利用。
 - Production Runtime Connectors: PR #377、merge `0c11f4fb9081407bb57ac59c3f6ca696faefa21f`。
 - Independent Review Orchestration: PR #382、merge `b235b36df6a225c49f4a98340c381eb2d8b8ad1c`。
-- One-command PR-ready Closure: current Storyのreal CLI dogfood、current-HEAD verification、独立review、Gate、CI import、明示的execute mergeへ追跡する。delivery closureまでは本roadmapを`active`に保つ。
-- Autonomous Action DAGのmerge済みPR #372を含む4 Storyのclosure evidenceが揃った時点で、実行プレーンclosure roadmapに未完了Storyは残らない。
+- One-command PR-ready Closure: PR #385。real CLI dogfood、current-HEAD verification、独立review、Gate、Node 20/22 CI import、明示的execute mergeへ追跡する。
+- PR #372、#377、#382、#385の4 Story closure evidenceが揃い、実行プレーンclosure roadmapに未完了Storyは残らない。
 
 ## Non Goals
 

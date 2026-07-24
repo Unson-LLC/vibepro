@@ -3,7 +3,7 @@ story_id: story-vibepro-one-command-pr-ready-closure
 parent_design: vibepro-autonomous-implementation-closure-roadmap
 vibepro_story_id: story-vibepro-autonomous-implementation-closure-roadmap
 title: 1コマンド自律実装を実Runtime E2Eで閉じる
-status: active
+status: completed
 view: dev
 period: 2026-07
 category: quality
@@ -59,7 +59,7 @@ updated_at: 2026-07-23
 
 ## Post-PR Delivery Closure Record
 
-これはOCR-S-8のpre-PR acceptanceではなく、delivery closureの運用記録である。VibeProでPRを作成し、初回CIをimportした後、同一branchのfocused closure commitでこのStoryと親roadmapを`completed`へ更新してAIC-S-1..5を4 Story/PR証跡へ追跡可能にする。そのcommitをcurrent HEADへ再bindし、Gate再検証、独立再Review、CI再importを完了してから、明示的な`vibepro execute merge`でmergeする。`pr-merge.json`、canonical audit、merge SHAをpost-merge confirmationとして記録する。
+これはOCR-S-8のpre-PR acceptanceではなく、delivery closureの運用記録である。VibeProでPR #385を作成し、pre-closure HEAD `926227f945878299770448a03966c17dfa70158d` のNode 20/22 CI成功を`verify import-ci`で取り込んだ。同一branchのこのfocused closure commitでStoryと親roadmapを`completed`へ更新し、AIC-S-1..5をPR #372、#377、#382、#385へ追跡可能にした。このcommitをcurrent HEADへ再bindし、Gate再検証、独立再Review、CI再importを完了してから、明示的な`vibepro execute merge`でmergeする。最終結果は`pr-merge.json`、canonical audit、merge SHAをpost-merge confirmationとする。
 
 ## Completion Evidence
 
@@ -68,3 +68,4 @@ updated_at: 2026-07-23
 - Public CLI production-owner E2E: current-HEAD strict bindingで4/4 pass。4件はいずれもproduction-shapedな実動作シナリオであり、実装commit、独立Reviewの`needs_changes`、修復commit、再検証、別review lifecycleのpass、final prepare、typed stop/resume matrix、公開CLI、先行Story境界を検証する。
 - Independent preflight review: current HEADへ再bindしてから判定する。確認対象はrun-sessionからCLIへの逆依存、先行connector/reviewの二重実装、human authority越境。
 - Pre-PR PR-readyの最終権威はcurrent-HEAD `pr-prepare.json`とし、CI import以降はPost-PR Delivery Closure Recordの同じStory監査へ記録する。
+- Delivery PR: https://github.com/Unson-LLC/vibepro/pull/385。pre-closure HEADのCIはNode 20/22とも成功し、`npm test`のfull-suite coverageとしてVibeProへimport済み。
