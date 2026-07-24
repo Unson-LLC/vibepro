@@ -285,6 +285,19 @@ test('delivery reconciliation workflow keeps recovery state and current evidence
   );
 });
 
+test('delivery reconciliation workflow denies stale or missing authority before provider operations', async () => {
+  const denied = await runFocused(
+    ['test/vibepro-cli.test.js'],
+    'auth_denied omitted, conflicting, or stale waiver authority fails before non-dry-run GitHub operations'
+  );
+
+  assert.match(
+    denied,
+    /auth_denied omitted, conflicting, or stale waiver authority fails before non-dry-run GitHub operations/,
+    'story-vibepro-delivery-reconciliation-state auth_denied gate_not_ready provider operation is not invoked'
+  );
+});
+
 test('delivery reconciliation workflow projects both axes into operator handoff surfaces', async () => {
   const projections = await runFocused([
     'test/delivery-reconciliation-state.test.js',
