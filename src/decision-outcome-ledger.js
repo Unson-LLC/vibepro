@@ -183,7 +183,7 @@ export function validateDecisionOutcomeLedger(ledger, { storyId = null } = {}) {
       source_identity: trace.source_identity ?? null,
       evidence_head_sha: trace.evidence_head_sha ?? null,
       behavior_delta: trace.behavior_delta,
-      delivery: trace.delivery
+      delivery: deliveryForFingerprint(trace.delivery)
     };
     const expectedParent = digestCanonical(stripVolatile(parentCore));
     if (trace.parent_revision_fingerprint !== expectedParent) {
@@ -596,7 +596,7 @@ function buildTrace({ storyId, source, subjectKey = null, collisionReason = null
     },
     evidence_head_sha: currentHeadSha,
     behavior_delta: behaviorDelta,
-    delivery: normalizedDelivery.value
+    delivery: deliveryForFingerprint(normalizedDelivery.value)
   };
   const parentRevision = digestCanonical(stripVolatile(parentCore));
   const legacyParentRevision = legacySourceRef === sourceRef
@@ -671,7 +671,7 @@ function reviseTrace({ trace, storyId, delivery, observations, evidenceHeadSha }
     source_identity: trace.source_identity ?? null,
     evidence_head_sha: evidenceHeadSha,
     behavior_delta: trace.behavior_delta,
-    delivery: normalizedDelivery.value
+    delivery: deliveryForFingerprint(normalizedDelivery.value)
   };
   const parentRevision = digestCanonical(stripVolatile(parentCore));
   const readAliases = observationReadAliasesForTrace(trace, storyId);
@@ -759,7 +759,7 @@ function observationReadAliasesForTrace(trace, storyId) {
     source_identity: trace.source_identity,
     evidence_head_sha: trace.evidence_head_sha ?? null,
     behavior_delta: trace.behavior_delta,
-    delivery: trace.delivery
+    delivery: deliveryForFingerprint(trace.delivery)
   };
   return [{
     trace_selector: hasStableSelector
@@ -1108,6 +1108,12 @@ function normalizeDelivery(delivery, storyId, expectedDelivery = null) {
 function parseDeliveryPrNumber(prUrl) {
   const match = String(prUrl ?? '').match(/\/pull\/(\d+)(?:\/|$)|\/pr\/(\d+)(?:\/|$)/);
   return match ? Number(match[1] ?? match[2]) : null;
+}
+
+function deliveryForFingerprint(delivery) {
+  if (!delivery || typeof delivery !== 'object') return delivery;
+  const { source_ref: _sourceRef, ...identity } = delivery;
+  return identity;
 }
 
 function resolveObservation({
