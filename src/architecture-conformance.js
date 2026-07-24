@@ -6,7 +6,27 @@ import { WORKSPACE_DIR } from './workspace.js';
 export const CONFORMANCE_SCHEMA_VERSION = '0.1.0';
 export const DEFAULT_TARGET_MODEL_PATH = path.join('docs', 'architecture', 'target-model.json');
 
-const DEPENDENCY_RELATIONS = new Set(['calls', 'imports_from', 'method']);
+// Graphify "calls" edges were found to be mostly extraction noise (identifier
+// references attributed to the wrong direction): an independent audit of the
+// largest violation pair (workspace-infra -> story, 46 edges) found only 3
+// real dependencies (see PR #387 / story-vibepro-infra-story-dependency-cut).
+// Dependency violations are therefore measured from a deterministic scan of
+// actual import/export/require statements, not from Graphify's call graph.
+export const EDGE_SOURCE = 'import_scan';
+export const EDGE_SOURCE_NOTE =
+  'graphifyの"calls"エッジは識別子参照の逆向き帰属によるノイズが大半だった' +
+  '(PR #387実測: 最大違反ペアworkspace-infra->storyの46 edges中、実依存は3本のみ)。' +
+  'モジュール間依存の判定は実import/export/require文の決定論的スキャンへ移行し、graph.jsonは文脈情報としてのみ扱う。';
+
+const GRAPH_CONTEXT_RELATIONS = new Set(['calls', 'imports_from', 'method']);
+const RESOLVABLE_EXTENSIONS = ['.js', '.mjs', '.cjs'];
+const INDEX_CANDIDATES = ['index.js', 'index.mjs', 'index.cjs'];
+
+const STATIC_IMPORT_RE = /\bimport\s+(?:[^'"();]*?\sfrom\s+)?['"]([^'"]+)['"]/g;
+const EXPORT_FROM_RE = /\bexport\s+(?:[^'"();]*?\sfrom\s+)?['"]([^'"]+)['"]/g;
+const DYNAMIC_IMPORT_RE = /\bimport\(\s*['"]([^'"]+)['"]\s*\)/g;
+const REQUIRE_RE = /\brequire\(\s*['"]([^'"]+)['"]\s*\)/g;
+const REFERENCE_REGEXPS = [STATIC_IMPORT_RE, EXPORT_FROM_RE, DYNAMIC_IMPORT_RE, REQUIRE_RE];
 
 export async function runArchitectureConformance(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
@@ -14,12 +34,19 @@ export async function runArchitectureConformance(repoRoot, options = {}) {
   const graphPath = path.resolve(root, options.graphPath ?? path.join(WORKSPACE_DIR, 'graphify', 'graph.json'));
 
   const model = await loadTargetModel(modelPath);
-  const graph = await loadGraph(graphPath);
-  const scopeFiles = await collectScopeFiles(root, model.scope_roots);
+  const graphContext = await loadGraphContext(root, graphPath);
 
-  const assignments = assignFilesToModules(scopeFiles.map((entry) => entry.file), model.modules);
-  const dependencyFindings = findDependencyViolations({ graph, model, assignments });
-  const budgetFindings = findBudgetViolations({ scopeFiles, model, assignments });
+  const { jsFiles, allFiles } = await collectScopeSource(root, model.scope_roots);
+  if (jsFiles.length === 0) {
+    throw new Error(
+      `scope_roots (${model.scope_roots.join(', ')}) 配下に .js/.mjs/.cjs ファイルが見つからない。import scan を実行できない。`
+    );
+  }
+
+  const assignments = assignFilesToModules(jsFiles.map((entry) => entry.file), model.modules);
+  const { edges: importEdges, unresolvedReferenceCount } = buildImportDependencyEdges({ jsFiles, allFiles });
+  const dependencyFindings = findDependencyViolations({ importEdges, model, assignments });
+  const budgetFindings = findBudgetViolations({ scopeFiles: jsFiles, model, assignments });
   const orphanFindings = assignments.orphans.map((file) => ({
     kind: 'orphan_file',
     severity: 'review',
@@ -38,6 +65,8 @@ export async function runArchitectureConformance(repoRoot, options = {}) {
   const result = {
     schema_version: CONFORMANCE_SCHEMA_VERSION,
     mode: 'dry_run',
+    edge_source: EDGE_SOURCE,
+    edge_source_note: EDGE_SOURCE_NOTE,
     model: {
       path: toRepoRelative(root, modelPath),
       status: model.status,
@@ -47,11 +76,12 @@ export async function runArchitectureConformance(repoRoot, options = {}) {
     advisory_notice: model.status === 'draft'
       ? 'target model は未裁定(draft)。violation は参考値であり、モデル裁定後に確定する。'
       : null,
-    graph: {
-      path: toRepoRelative(root, graphPath),
-      node_count: graph.nodes.length,
-      dependency_edge_count: graph.dependencyEdges.length
+    import_scan: {
+      scanned_file_count: jsFiles.length,
+      edge_count: importEdges.length,
+      unresolved_reference_count: unresolvedReferenceCount
     },
+    graph_context: graphContext,
     summary: {
       violation_count: violations.length,
       undeclared_dependency_count: dependencyFindings.length,
@@ -120,13 +150,20 @@ export async function loadTargetModel(modelPath) {
   };
 }
 
-async function loadGraph(graphPath) {
+// graph.json is optional context only (dependency-violation detection no
+// longer reads it). Its absence must not fail the conformance run.
+async function loadGraphContext(root, graphPath) {
+  const relPath = toRepoRelative(root, graphPath);
   let raw;
   try {
     raw = await readFile(graphPath, 'utf8');
   } catch (error) {
     if (error.code === 'ENOENT') {
-      throw new Error(`graph.json が存在しない: ${graphPath}。先に \`vibepro graph . --run-graphify\` か \`story diagnose --run-graphify\` を実行する。`);
+      return {
+        available: false,
+        path: relPath,
+        reason: 'graph.json が存在しない(任意情報。import scanはgraph.json無しで動作する)'
+      };
     }
     throw error;
   }
@@ -138,29 +175,22 @@ async function loadGraph(graphPath) {
   }
   const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
   const links = Array.isArray(graph.links) ? graph.links : Array.isArray(graph.edges) ? graph.edges : [];
-  if (nodes.length === 0) {
-    throw new Error(`graph.json に nodes が存在しない: ${graphPath}`);
-  }
-  const fileByNodeId = new Map();
-  for (const node of nodes) {
-    if (node?.id && typeof node.source_file === 'string') {
-      fileByNodeId.set(node.id, normalizePath(node.source_file));
-    }
-  }
-  const dependencyEdges = [];
-  for (const link of links) {
-    const relation = link.relation ?? link.type ?? null;
-    if (!DEPENDENCY_RELATIONS.has(relation)) continue;
-    const sourceFile = fileByNodeId.get(link.source);
-    const targetFile = fileByNodeId.get(link.target);
-    if (!sourceFile || !targetFile || sourceFile === targetFile) continue;
-    dependencyEdges.push({ source_file: sourceFile, target_file: targetFile, relation });
-  }
-  return { nodes, dependencyEdges };
+  const callsEdgeCount = links.filter((link) => GRAPH_CONTEXT_RELATIONS.has(link.relation ?? link.type ?? null)).length;
+  return {
+    available: true,
+    path: relPath,
+    node_count: nodes.length,
+    calls_edge_count: callsEdgeCount,
+    note: 'graph.jsonの"calls"等のエッジは文脈情報のみ。violation判定には使わない (edge_source: import_scan を参照)'
+  };
 }
 
-async function collectScopeFiles(root, scopeRoots) {
-  const results = [];
+// Walk each scope root once and return both the full file set (any
+// extension, used to resolve import specifiers) and the subset of
+// .js/.mjs/.cjs source files (used for import scanning + line-budget checks).
+async function collectScopeSource(root, scopeRoots) {
+  const allFiles = new Set();
+  const jsFiles = [];
   for (const scopeRoot of scopeRoots) {
     const absRoot = path.join(root, scopeRoot);
     let entries;
@@ -171,14 +201,16 @@ async function collectScopeFiles(root, scopeRoots) {
       throw error;
     }
     for (const absFile of entries) {
-      if (!/\.(js|mjs|cjs)$/.test(absFile)) continue;
       const relFile = normalizePath(path.relative(root, absFile));
+      allFiles.add(relFile);
+      if (!/\.(js|mjs|cjs)$/.test(absFile)) continue;
       const content = await readFile(absFile, 'utf8');
       const lineCount = content.length === 0 ? 0 : content.split('\n').length;
-      results.push({ file: relFile, line_count: lineCount });
+      jsFiles.push({ file: relFile, line_count: lineCount, content });
     }
   }
-  return results.sort((a, b) => a.file.localeCompare(b.file));
+  jsFiles.sort((a, b) => a.file.localeCompare(b.file));
+  return { jsFiles, allFiles };
 }
 
 async function walk(dir) {
@@ -205,7 +237,7 @@ export function assignFilesToModules(files, modules) {
     if (match) {
       filesByModule.get(match.module.name).push(file);
       moduleByFile.set(file, match.module.name);
-      matchedPatterns.add(`${match.module.name}\0${match.pattern}`);
+      matchedPatterns.add(`${match.module.name} ${match.pattern}`);
     } else {
       orphans.push(file);
     }
@@ -213,7 +245,7 @@ export function assignFilesToModules(files, modules) {
   const stalePatterns = [];
   for (const module of modules) {
     for (const pattern of module.paths) {
-      if (!matchedPatterns.has(`${module.name}\0${pattern}`)) {
+      if (!matchedPatterns.has(`${module.name} ${pattern}`)) {
         stalePatterns.push({ module: module.name, pattern });
       }
     }
@@ -237,12 +269,82 @@ export function matchPattern(file, pattern) {
   return file === normalized;
 }
 
-function findDependencyViolations({ graph, model, assignments }) {
+// Strip block and line comments (best-effort, regex-based) so that import-ish
+// text inside comments does not produce phantom edges. The negative
+// lookbehind-style guard `(^|[^:])` prevents `https://` style strings from
+// being mistaken for a line comment.
+export function stripComments(source) {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1');
+}
+
+// Extract every distinct module specifier referenced via static import,
+// `export ... from`, dynamic `import()`, or `require()` in a file's source.
+export function extractImportSpecifiers(source) {
+  const stripped = stripComments(source);
+  const specifiers = new Set();
+  for (const re of REFERENCE_REGEXPS) {
+    re.lastIndex = 0;
+    let match = re.exec(stripped);
+    while (match !== null) {
+      specifiers.add(match[1]);
+      match = re.exec(stripped);
+    }
+  }
+  return [...specifiers];
+}
+
+// Resolve a relative import specifier written inside `fromFile` to a
+// repo-relative path, trying the specifier as-is, then with resolvable
+// extensions, then as a directory index. Returns null if nothing on disk
+// (within the scanned scope) matches -- e.g. bare/node: specifiers were
+// already filtered out by the caller, so an unresolved relative specifier
+// here means the target is outside scope_roots or does not exist.
+export function resolveRelativeImport(fromFile, specifier, allFiles) {
+  const fromDir = path.posix.dirname(fromFile);
+  const rawTarget = normalizePath(path.posix.normalize(path.posix.join(fromDir, specifier)));
+  const hasKnownExtension = RESOLVABLE_EXTENSIONS.some((ext) => rawTarget.endsWith(ext)) || rawTarget.endsWith('.json');
+  const candidates = hasKnownExtension
+    ? [rawTarget]
+    : [
+        ...RESOLVABLE_EXTENSIONS.map((ext) => `${rawTarget}${ext}`),
+        ...INDEX_CANDIDATES.map((idx) => `${rawTarget}/${idx}`)
+      ];
+  for (const candidate of candidates) {
+    if (allFiles.has(candidate)) return candidate;
+  }
+  return null;
+}
+
+// Build the internal (repo-relative) import dependency edge set. node:
+// builtins and npm packages (any specifier not starting with '.') are
+// excluded by construction -- only relative specifiers are resolved.
+export function buildImportDependencyEdges({ jsFiles, allFiles }) {
+  const edges = [];
+  let unresolvedReferenceCount = 0;
+  for (const { file, content } of jsFiles) {
+    const specifiers = extractImportSpecifiers(content);
+    for (const specifier of specifiers) {
+      if (!specifier.startsWith('.')) continue;
+      const resolved = resolveRelativeImport(file, specifier, allFiles);
+      if (!resolved) {
+        unresolvedReferenceCount += 1;
+        continue;
+      }
+      if (resolved === file) continue;
+      edges.push({ source_file: file, target_file: resolved });
+    }
+  }
+  return { edges, unresolvedReferenceCount };
+}
+
+function findDependencyViolations({ importEdges, model, assignments }) {
   const allowed = new Map(
     Object.entries(model.allowed_dependencies).map(([from, toList]) => [from, new Set(toList)])
   );
   const grouped = new Map();
-  for (const edge of graph.dependencyEdges) {
+  for (const edge of importEdges) {
     const fromModule = assignments.moduleByFile.get(edge.source_file);
     const toModule = assignments.moduleByFile.get(edge.target_file);
     if (!fromModule || !toModule || fromModule === toModule) continue;
@@ -255,7 +357,7 @@ function findDependencyViolations({ graph, model, assignments }) {
     const entry = grouped.get(key);
     entry.edge_count += 1;
     if (entry.example_edges.length < 3) {
-      entry.example_edges.push(`${edge.source_file} -> ${edge.target_file} (${edge.relation})`);
+      entry.example_edges.push(`${edge.source_file} -> ${edge.target_file}`);
     }
   }
   return [...grouped.values()]
@@ -267,7 +369,7 @@ function findDependencyViolations({ graph, model, assignments }) {
       to_module: entry.to_module,
       edge_count: entry.edge_count,
       example_edges: entry.example_edges,
-      summary: `${entry.from_module} -> ${entry.to_module} は宣言されていない依存 (${entry.edge_count} edges)`
+      summary: `${entry.from_module} -> ${entry.to_module} は宣言されていない依存 (${entry.edge_count} edges, import scan)`
     }));
 }
 
@@ -314,9 +416,13 @@ export function renderConformanceMarkdown(result) {
     '# Architecture Conformance (dry-run)',
     '',
     `- model: ${result.model.path} (status=${result.model.status}, modules=${result.model.module_count})`,
-    `- graph: ${result.graph.path} (nodes=${result.graph.node_count}, dependency_edges=${result.graph.dependency_edge_count})`,
+    `- edge_source: ${result.edge_source} (${result.import_scan.scanned_file_count} files scanned, ${result.import_scan.edge_count} internal import edges, ${result.import_scan.unresolved_reference_count} unresolved references)`,
+    `- graph_context: ${result.graph_context.available ? `${result.graph_context.path} (nodes=${result.graph_context.node_count}, calls_edges=${result.graph_context.calls_edge_count}, context only)` : `unavailable (${result.graph_context.reason})`}`,
     `- violations: ${result.summary.violation_count} (undeclared_dependency=${result.summary.undeclared_dependency_count}, budget=${result.summary.budget_violation_count}, orphan=${result.summary.orphan_file_count}, stale_pattern=${result.summary.stale_pattern_count})`
   ];
+  if (result.edge_source_note) {
+    lines.push('', `> ${result.edge_source_note}`);
+  }
   if (result.advisory_notice) {
     lines.push('', `> ${result.advisory_notice}`);
   }
