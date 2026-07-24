@@ -99,7 +99,7 @@ import {
 import { buildCodeTopologyContext } from './code-topology-provider.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { recordResolvedGateOutcomes } from './gate-outcome-ledger.js';
-import { assertArtifactWritePath, collectCurrentGeneratedProjectionPaths, projectArtifact, resolveArtifactRoute, resolveGraphifyArtifactFile } from './artifact-routing.js';
+import { assertArtifactWritePath, collectCurrentGeneratedProjectionPaths, projectArtifact, resolveArtifactRoute, resolveGraphifyArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -338,28 +338,38 @@ export async function preparePullRequest(repoRoot, options = {}) {
     ? path.dirname(await assertArtifactWritePath(root, prRoute.canonical.relative_path))
     : await mkdtemp(path.join(os.tmpdir(), 'vibepro-pr-prepare-'));
   await mkdir(prDir, { recursive: true });
-  const evidenceReusePath = path.join(prDir, 'evidence-reuse.json');
-  const evidencePlanPath = path.join(prDir, 'evidence-plan.json');
-  const evidenceDrilldownLogPath = path.join(prDir, 'evidence-drilldown-log.json');
-  const decisionIndexPath = path.join(prDir, 'decision-index.json');
+  const resolvePrSibling = (fileName) => workspace.initialized
+    ? resolvePrArtifactFile(root, story.story_id, fileName)
+    : Promise.resolve(path.join(prDir, fileName));
+  const evidenceReusePath = await resolvePrSibling('evidence-reuse.json');
+  const evidencePlanPath = await resolvePrSibling('evidence-plan.json');
+  const evidenceDrilldownLogPath = await resolvePrSibling('evidence-drilldown-log.json');
+  const decisionIndexPath = await resolvePrSibling('decision-index.json');
   const jsonPath = prRoute?.canonical.absolute_path ?? path.join(prDir, 'pr-prepare.json');
-  const reportPath = path.join(prDir, 'pr-prepare.html');
-  const reviewCockpitPath = path.join(prDir, 'review-cockpit.html');
-  const humanReviewPath = path.join(prDir, 'human-review.json');
-  const architectureReviewPath = path.join(prDir, 'architecture-review.json');
-  const decisionRecordsPath = path.join(prDir, 'decision-records.json');
-  const bodyPath = path.join(prDir, 'pr-body.md');
-  const designSsotPath = path.join(prDir, 'design-ssot-reconciliation.json');
-  const seniorGapJudgmentPath = path.join(prDir, 'senior-gap-judgment.json');
-  const refTopologyPath = path.join(prDir, 'ref-topology.json');
+  const reportPath = await resolvePrSibling('pr-prepare.html');
+  const reviewCockpitPath = await resolvePrSibling('review-cockpit.html');
+  const humanReviewPath = await resolvePrSibling('human-review.json');
+  const architectureReviewPath = await resolvePrSibling('architecture-review.json');
+  const decisionRecordsPath = await resolvePrSibling('decision-records.json');
+  const bodyPath = await resolvePrSibling('pr-body.md');
+  const designSsotPath = await resolvePrSibling('design-ssot-reconciliation.json');
+  const seniorGapJudgmentPath = await resolvePrSibling('senior-gap-judgment.json');
+  const refTopologyPath = await resolvePrSibling('ref-topology.json');
   const gateDagJsonPath = gateRoute
     ? await assertArtifactWritePath(root, gateRoute.canonical.relative_path)
     : path.join(prDir, 'gate-dag.json');
   await mkdir(path.dirname(gateDagJsonPath), { recursive: true });
-  const gateDagReportPath = path.join(prDir, 'gate-dag.html');
-  const splitPlanJsonPath = path.join(prDir, 'split-plan.json');
-  const splitPlanReportPath = path.join(prDir, 'split-plan.html');
-  const traceabilityPath = path.join(prDir, 'traceability.json');
+  const gateDagReportPath = await resolvePrSibling('gate-dag.html');
+  const splitPlanJsonPath = await resolvePrSibling('split-plan.json');
+  const splitPlanReportPath = await resolvePrSibling('split-plan.html');
+  const traceabilityPath = workspace.initialized
+    ? await resolvePrArtifactFile(root, story.story_id, 'traceability.json')
+    : path.join(prDir, 'traceability.json');
+  const artifactRefs = Object.fromEntries((await Promise.all([
+    'pr-prepare.json', 'pr-body.md', 'decision-index.json', 'traceability.json',
+    'evidence-reuse.json', 'evidence-plan.json', 'split-plan.json', 'senior-gap-judgment.json'
+  ].map(async (filename) => [filename, toWorkspaceRelative(root, await resolvePrSibling(filename))]))));
+  artifactRefs['gate-dag.json'] = toWorkspaceRelative(root, gateDagJsonPath);
   const previousPrPrepare = workspace.initialized
     ? await progress.stage('read_previous_pr_prepare', () => readJsonIfExists(jsonPath))
     : null;
@@ -381,9 +391,14 @@ export async function preparePullRequest(repoRoot, options = {}) {
     : '';
   const changedFilesForTraceability = (reviewGit.changed_files ?? [])
     .map((file) => ({ path: file.path ?? file }));
-  const testsForTraceability = changedFilesForTraceability
-    .filter((file) => /(^|\/)(test|tests|e2e)\//.test(file.path) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(file.path));
+  const testsForTraceability = await Promise.all(changedFilesForTraceability
+    .filter((file) => /(^|\/)(test|tests|e2e)\//.test(file.path) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(file.path))
+    .map(async (file) => ({
+      ...file,
+      content: await readFile(path.join(root, file.path), 'utf8').catch(() => '')
+    })));
   const traceabilityMap = buildTraceabilityClauseMap({
+    storyId: story.story_id,
     storyText: storyTextForTraceability,
     changedFiles: changedFilesForTraceability,
     tests: testsForTraceability,
@@ -623,11 +638,14 @@ export async function preparePullRequest(repoRoot, options = {}) {
     splitPlan,
     narrative: prBodyNarrative,
     artifactBudget: artifactBudgetPlan,
+    artifactRefs,
     language: outputLanguage
   }));
   const preparation = {
     schema_version: '0.1.0',
     story,
+    artifact: toWorkspaceRelative(root, jsonPath),
+    artifact_refs: artifactRefs,
     created_at: createdAt,
     output: {
       language: outputLanguage
@@ -733,7 +751,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
       lifecycle: 'in_progress',
       evidence: traceabilityEvidence,
       acceptanceCriteria: traceabilityMap.acceptance_criteria,
-      scenarioClauses: traceabilityMap.scenario_clauses
+      scenarioClauses: traceabilityMap.scenario_clauses,
+      scenarioLineage: traceabilityMap.scenario_lineage
     }), null, 2)}\n`, { signal });
     const existingArchitectureReview = await readJsonIfExists(architectureReviewPath);
     const existingHumanReview = await readJsonIfExists(humanReviewPath);
@@ -761,12 +780,12 @@ export async function preparePullRequest(repoRoot, options = {}) {
     // within-budget artifacts never leave a sibling behind (PAB invariant).
     const generatedSummaryFilenames = new Set(artifactBudgetPlan.summaries.map((summary) => summary.filename));
     for (const summary of artifactBudgetPlan.summaries) {
-      await writeFile(path.join(prDir, summary.filename), summary.content, { signal });
+      await writeFile(await resolvePrSibling(summary.filename), summary.content, { signal });
     }
     for (const filename of scannedArtifactFilenames) {
       const summaryFilename = filename.replace(/\.json$/i, '') + '.summary.json';
       if (!generatedSummaryFilenames.has(summaryFilename)) {
-        await rm(path.join(prDir, summaryFilename), { force: true });
+        await rm(await resolvePrSibling(summaryFilename), { force: true });
       }
     }
   });
@@ -909,12 +928,35 @@ export async function evaluateGateReadiness(repoRoot, options = {}) {
     };
   }
 
-  const workspaceDir = getWorkspaceDir(root);
-  const prRoute = await resolveArtifactRoute(root, 'pr', { storyId });
-  const gateRoute = await resolveArtifactRoute(root, 'gate', { storyId });
-  const prDir = path.dirname(prRoute.canonical.absolute_path);
-  const gateDir = path.dirname(gateRoute.canonical.absolute_path);
-  const gateOutcomesDir = path.join(workspaceDir, 'gate-outcomes');
+  let prDir;
+  let gateDir;
+  let gateOutcomesDir;
+  try {
+    const workspaceDir = getWorkspaceDir(root);
+    const prRoute = await resolveArtifactRoute(root, 'pr', { storyId });
+    const gateRoute = await resolveArtifactRoute(root, 'gate', { storyId });
+    // Gate checks snapshot and restore these paths before preparePullRequest gets
+    // a chance to validate its write destinations. Validate them here as well so
+    // a configured route through an external symlink cannot turn the read-only
+    // wrapper itself into a repository-external copy/remove operation.
+    prDir = path.dirname(await assertArtifactWritePath(root, prRoute.canonical.relative_path));
+    gateDir = path.dirname(await assertArtifactWritePath(root, gateRoute.canonical.relative_path));
+    gateOutcomesDir = path.join(workspaceDir, 'gate-outcomes');
+    await assertArtifactWritePath(root, toWorkspaceRelative(root, gateOutcomesDir));
+  } catch (error) {
+    return {
+      schema_version: '0.1.0',
+      story_id: storyId,
+      status: 'error',
+      overall_status: 'error',
+      ready_for_pr_create: false,
+      gates: [],
+      unresolved_gate_count: null,
+      critical_unresolved_gate_count: null,
+      error: error instanceof Error ? error.message : String(error),
+      generated_at: generatedAt()
+    };
+  }
   const snapshotRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gate-check-snapshot-'));
   const snapshots = [
     { targetPath: prDir, snapshotPath: path.join(snapshotRoot, 'pr'), existedBefore: existsSync(prDir) },
@@ -1157,7 +1199,7 @@ async function resolvePrBodyForGithub(repoRoot, prepareResult, preparation) {
   const auditOmitted = stripPrBodyAuditLog(generatedBody);
   const candidates = auditOmitted.omitted
     ? [{
-        body: appendPrBodyLimitNotice(auditOmitted.body, preparation.story.story_id),
+        body: appendPrBodyLimitNotice(auditOmitted.body, preparation),
         strategy: 'omit_audit_log_section',
         omittedSections: auditOmitted.omitted_sections
       }]
@@ -1171,7 +1213,7 @@ async function resolvePrBodyForGithub(repoRoot, prepareResult, preparation) {
   let selected = candidates.find((candidate) => measurePrBody(candidate.body).characters <= GITHUB_PR_BODY_CHARACTER_LIMIT);
   if (!selected) {
     selected = {
-      body: forceBoundPrBody(buildMinimalGithubPrBody(preparation, generatedBody)),
+      body: forceBoundPrBody(buildMinimalGithubPrBody(preparation, generatedBody), preparation),
       strategy: 'forced_artifact_reference_fallback',
       omittedSections: auditOmitted.omitted_sections
     };
@@ -1247,19 +1289,27 @@ function stripPrBodyAuditLog(body) {
   };
 }
 
-function appendPrBodyLimitNotice(body, storyId) {
+function preparationArtifactPath(preparation, filename) {
+  if (preparation?.artifact_refs?.[filename]) return preparation.artifact_refs[filename];
+  if (preparation?.artifact) return path.posix.join(path.posix.dirname(preparation.artifact), filename);
+  const storyId = preparation?.story?.story_id ?? preparation?.story_id ?? '<story-id>';
+  return `.vibepro/pr/${storyId}/${filename}`;
+}
+
+function appendPrBodyLimitNotice(body, preparation) {
+  const bodyPath = preparationArtifactPath(preparation, 'pr-body.md');
+  const preparePath = preparationArtifactPath(preparation, 'pr-prepare.json');
   return `${body.trimEnd()}
 
 ## 詳細
 - GitHub本文の65,536文字制限を超えたため、監査ログ詳細はartifact参照に集約しました。
-- 生成本文: ${formatRepoPathLink(`.vibepro/pr/${storyId}/pr-body.md`)}
-- PR準備: ${formatRepoPathLink(`.vibepro/pr/${storyId}/pr-prepare.json`)}
+- 生成本文: ${formatRepoPathLink(bodyPath)}
+- PR準備: ${formatRepoPathLink(preparePath)}
 `;
 }
 
 function buildMinimalGithubPrBody(preparation, generatedBody) {
   const story = preparation.story;
-  const evidenceDir = `.vibepro/pr/${story.story_id}`;
   const gateStatus = preparation.pr_context?.gate_dag?.overall_status ?? '-';
   const executionStatus = preparation.pr_context?.execution_gate?.status ?? '-';
   const sourcePath = preparation.pr_context?.story_source?.path ?? null;
@@ -1276,16 +1326,20 @@ function buildMinimalGithubPrBody(preparation, generatedBody) {
 - 実行状態: ${executionStatus}
 
 ## 詳細
-- 生成本文: ${formatRepoPathLink(`${evidenceDir}/pr-body.md`)}
-- PR準備: ${formatRepoPathLink(`${evidenceDir}/pr-prepare.json`)}
-- 判断索引: ${formatRepoPathLink(`${evidenceDir}/decision-index.json`)}
-- Gate DAG: ${formatRepoPathLink(`${evidenceDir}/gate-dag.json`)}
+- 生成本文: ${formatRepoPathLink(preparationArtifactPath(preparation, 'pr-body.md'))}
+- PR準備: ${formatRepoPathLink(preparationArtifactPath(preparation, 'pr-prepare.json'))}
+- 判断索引: ${formatRepoPathLink(preparationArtifactPath(preparation, 'decision-index.json'))}
+- Gate DAG: ${formatRepoPathLink(preparationArtifactPath(preparation, 'gate-dag.json'))}
 - 生成本文サイズ: ${generatedStats.characters} characters / ${generatedStats.bytes} bytes
 `;
 }
 
-function forceBoundPrBody(body) {
-  const suffix = '\n\n詳細は `.vibepro/pr/` artifacts を確認してください。\n';
+function forceBoundPrBody(body, preparation = null) {
+  const preparePath = preparation ? preparationArtifactPath(preparation, 'pr-prepare.json') : null;
+  const evidenceDir = preparePath?.startsWith('.vibepro/pr/')
+    ? '.vibepro/pr/'
+    : preparePath ? path.posix.dirname(preparePath) : '.vibepro/pr/';
+  const suffix = `\n\n詳細は \`${evidenceDir}\` artifacts を確認してください。\n`;
   const maxBodyCharacters = GITHUB_PR_BODY_CHARACTER_LIMIT - Array.from(suffix).length;
   return `${Array.from(body).slice(0, Math.max(0, maxBodyCharacters)).join('')}${suffix}`;
 }
@@ -2070,9 +2124,8 @@ async function runAutopilotVerificationCommand(repoRoot, storyId, verificationCo
 }
 
 async function writeAutopilotVerificationArtifact(repoRoot, storyId, kind, run) {
-  const dir = path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'autopilot');
-  await mkdir(dir, { recursive: true });
-  const artifactPath = path.join(dir, `${kind}-verification.json`);
+  const artifactPath = await resolvePrArtifactFile(repoRoot, storyId, `autopilot/${kind}-verification.json`);
+  await mkdir(path.dirname(artifactPath), { recursive: true });
   await writeFile(artifactPath, `${JSON.stringify(run, null, 2)}\n`);
   return artifactPath;
 }
@@ -3816,7 +3869,7 @@ function linkifyRepoPathsInText(value) {
     .join('');
 }
 
-function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan, narrative = null, artifactBudget = null, language = 'ja' }) {
+function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, scope, prContext, splitPlan, narrative = null, artifactBudget = null, artifactRefs = {}, language = 'ja' }) {
   const narrativeSection = renderPrNarrative(narrative);
   const managedWorktreeStatus = formatManagedWorktreePrStatus(prContext.managed_worktree_gate);
   const source = prContext.story_source;
@@ -3836,7 +3889,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const acceptedLineage = collectAcceptedCurrentStoryLineage(scope);
   const splitDigest = buildHumanSplitDigest(splitPlan);
   const primaryReviewAreas = buildPrimaryReviewAreas(fileGroups);
-  const evidenceDir = `.vibepro/pr/${story.story_id}`;
+  const evidenceDir = path.posix.dirname(artifactRefs['pr-prepare.json'] ?? `.vibepro/pr/${story.story_id}/pr-prepare.json`);
   const gateStatus = prContext.gate_dag?.overall_status ?? '-';
   const executionStatus = prContext.execution_gate?.status ?? '-';
   const sourceFiles = limitItems(fileGroups?.source?.files ?? [], 3);
@@ -3873,12 +3926,16 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const compatibility = source.compatibility ?? source.compatibility_impact ?? 'なし';
   const userAction = source.user_action ?? source.migration ?? 'なし';
   const decisionIndexHandoff = resolveHandoffArtifact(artifactBudget, 'decision-index.json', evidenceDir);
+  decisionIndexHandoff.full_path = artifactRefs['decision-index.json'] ?? decisionIndexHandoff.full_path;
   const decisionIndexLine = decisionIndexHandoff.is_summary
     ? `- 判断索引: ${formatRepoPathLink(decisionIndexHandoff.path)}（bounded summary / 全文: ${formatRepoPathLink(decisionIndexHandoff.full_path)}）`
     : `- 判断索引: ${formatRepoPathLink(decisionIndexHandoff.full_path)}`;
+  const evidenceRef = path.posix.basename(evidenceDir) === story.story_id
+    ? `${evidenceDir}/`
+    : (artifactRefs['pr-prepare.json'] ?? `${evidenceDir}/pr-prepare.json`);
   const details = [
-    `- 証跡: ${formatRepoPathLink(`${evidenceDir}/`)}`,
-    `- PR準備: ${formatRepoPathLink(`${evidenceDir}/pr-prepare.json`)}`,
+    `- 証跡: ${formatRepoPathLink(evidenceRef)}`,
+    `- PR準備: ${formatRepoPathLink(artifactRefs['pr-prepare.json'] ?? `${evidenceDir}/pr-prepare.json`)}`,
     decisionIndexLine,
     `- Gate: ${gateStatus}`,
     `- 実行状態: ${executionStatus}`,
@@ -4130,7 +4187,10 @@ function resolveTraceabilityEvidenceBindingStatus(command, currentHeadSha) {
 function buildTraceabilityClauseCoverageGate(summary) {
   const weakCount = summary?.weakly_mapped_count ?? 0;
   const unmappedCount = summary?.unmapped_count ?? 0;
-  const status = weakCount === 0 && unmappedCount === 0 ? 'passed' : 'needs_evidence';
+  const lineageUnmapped = summary?.scenario_lineage?.status === 'unmapped';
+  const missingIds = summary?.scenario_lineage?.missing_story_scenario_ids ?? [];
+  const unknownIds = summary?.scenario_lineage?.unknown_story_scenario_ids ?? [];
+  const status = weakCount === 0 && unmappedCount === 0 && !lineageUnmapped ? 'passed' : 'needs_evidence';
   return {
     id: 'gate:traceability_clause_coverage',
     type: 'traceability_clause_coverage_gate',
@@ -4139,10 +4199,11 @@ function buildTraceabilityClauseCoverageGate(summary) {
     required: true,
     reason: status === 'passed'
       ? 'Every extracted AC/scenario clause has clause-specific test, review, or verification evidence'
-      : `${weakCount} weakly_mapped and ${unmappedCount} unmapped AC/scenario clause(s) require clause-specific evidence`,
+      : `${weakCount} weakly_mapped and ${unmappedCount} unmapped AC/scenario clause(s) require clause-specific evidence; scenario lineage missing=${missingIds.length}, unknown=${unknownIds.length}`,
     coverage_summary: summary ?? null,
     required_actions: status === 'passed' ? [] : [
-      'Record verification evidence with --target/--scenario/--observed that names the specific AC or scenario, or add a focused test/review finding that binds to the clause.'
+      'Record verification evidence with --target/--scenario/--observed that names the specific AC or scenario, or add a focused test/review finding that binds to the clause.',
+      ...(lineageUnmapped ? [`Map every Story scenario ID into a Spec scenario clause and remove unknown IDs (missing: ${missingIds.join(', ') || 'none'}; unknown: ${unknownIds.join(', ') || 'none'}).`] : [])
     ]
   };
 }
@@ -4160,6 +4221,9 @@ function renderPrTraceabilityClauseCoverage(summary, language = 'ja') {
       `- mapped: ${summary.mapped_count}`,
       `- weakly_mapped: ${summary.weakly_mapped_count}`,
       `- unmapped: ${summary.unmapped_count}`,
+      `- scenario_lineage: ${summary.scenario_lineage?.status ?? 'not_available'}`,
+      `- missing_story_scenario_ids: ${(summary.scenario_lineage?.missing_story_scenario_ids ?? []).join(', ') || 'none'}`,
+      `- unknown_story_scenario_ids: ${(summary.scenario_lineage?.unknown_story_scenario_ids ?? []).join(', ') || 'none'}`,
       '',
       '### Weak/Unmapped Examples',
       examples
@@ -4169,6 +4233,9 @@ function renderPrTraceabilityClauseCoverage(summary, language = 'ja') {
       `- mapped: ${summary.mapped_count}`,
       `- weakly_mapped: ${summary.weakly_mapped_count}`,
       `- unmapped: ${summary.unmapped_count}`,
+      `- scenario_lineage: ${summary.scenario_lineage?.status ?? 'not_available'}`,
+      `- missing_story_scenario_ids: ${(summary.scenario_lineage?.missing_story_scenario_ids ?? []).join(', ') || 'none'}`,
+      `- unknown_story_scenario_ids: ${(summary.scenario_lineage?.unknown_story_scenario_ids ?? []).join(', ') || 'none'}`,
       '',
       '### Weak/Unmapped Examples',
       examples
@@ -6055,7 +6122,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
       schema_version: '0.1.0',
       model: 'vibepro-decision-records-v1',
       story_id: story.story_id,
-      artifact: toWorkspaceRelative(repoRoot, path.join(getWorkspaceDir(repoRoot), 'pr', story.story_id, 'decision-records.json')),
+      artifact: toWorkspaceRelative(repoRoot, await resolvePrArtifactFile(repoRoot, story.story_id, 'decision-records.json')),
       summary: decisionRecordSummary,
       decisions: []
     },
@@ -6170,11 +6237,10 @@ function buildMissingLifecycleArtifact(kind) {
 }
 
 async function inspectPrLifecycleArtifacts(repoRoot, storyId, { currentHeadSha, checkedAt }) {
-  const prDir = path.join(getWorkspaceDir(repoRoot), 'pr', storyId);
   const artifacts = [];
   for (const spec of PR_LIFECYCLE_ARTIFACT_SPECS) {
-    const jsonPath = path.join(prDir, spec.fileName);
-    const reportPath = path.join(prDir, spec.reportName);
+    const jsonPath = await resolvePrArtifactFile(repoRoot, storyId, spec.fileName);
+    const reportPath = await resolvePrArtifactFile(repoRoot, storyId, spec.reportName);
     const artifact = await readJsonIfExists(jsonPath);
     if (!artifact) {
       artifacts.push({
@@ -6211,11 +6277,10 @@ async function inspectPrLifecycleArtifacts(repoRoot, storyId, { currentHeadSha, 
 }
 
 async function annotatePrLifecycleArtifacts(repoRoot, storyId, lifecycleArtifacts, options = {}) {
-  const prDir = path.join(getWorkspaceDir(repoRoot), 'pr', storyId);
   for (const spec of PR_LIFECYCLE_ARTIFACT_SPECS) {
     const freshness = lifecycleArtifacts?.artifacts?.find((item) => item.kind === spec.kind);
     if (!freshness?.exists) continue;
-    const jsonPath = path.join(prDir, spec.fileName);
+    const jsonPath = await resolvePrArtifactFile(repoRoot, storyId, spec.fileName);
     const artifact = await readJsonIfExists(jsonPath);
     if (!artifact) continue;
     const annotated = annotatePrLifecycleArtifact(artifact, freshness);
@@ -6223,7 +6288,7 @@ async function annotatePrLifecycleArtifacts(repoRoot, storyId, lifecycleArtifact
       ? renderPrMergeHtml(annotated, { language: annotated.output?.language ?? 'ja' })
       : renderPrCreateHtml(annotated, { language: annotated.output?.language ?? 'ja' });
     await writeFile(jsonPath, `${JSON.stringify(annotated, null, 2)}\n`, { signal: options.signal });
-    await writeFile(path.join(prDir, spec.reportName), reportHtml, { signal: options.signal });
+    await writeFile(await resolvePrArtifactFile(repoRoot, storyId, spec.reportName), reportHtml, { signal: options.signal });
   }
 }
 
@@ -6308,7 +6373,7 @@ const PR_LIFECYCLE_ARTIFACT_SPECS = [
 ];
 
 async function readVerificationEvidenceIfExists(repoRoot, storyId) {
-  const evidencePath = path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'verification-evidence.json');
+  const evidencePath = await resolvePrArtifactFile(repoRoot, storyId, 'verification-evidence.json');
   try {
     const evidence = JSON.parse(await readFile(evidencePath, 'utf8'));
     return {
@@ -6793,7 +6858,10 @@ function extractScenarioCoverageClauses(inferredSpec) {
     .filter((clause) => clause?.type === 'scenario' && typeof clause.statement === 'string' && clause.statement.trim())
     .map((clause) => ({
       id: clause.id,
-      statement: clause.statement
+      statement: clause.statement,
+      story_scenario_ids: Array.isArray(clause.story_scenario_ids)
+        ? clause.story_scenario_ids.filter((id) => typeof id === 'string' && id.trim())
+        : []
     }));
 }
 
@@ -11021,7 +11089,7 @@ function hasCurrentBugPhysicsEvidence(verificationEvidence, matcher) {
   return (verificationEvidence?.commands ?? []).some((item) => {
     if (item.binding?.status !== 'current') return false;
     if (!['pass', 'passed', 'success', 'ok'].includes(item.status)) return false;
-    return matcher.test(`${item.command ?? ''}\n${item.summary ?? ''}\n${item.artifact ?? ''}`);
+    return matcher.test(resolveVerificationCommandSearchText(item).text);
   });
 }
 
@@ -15058,6 +15126,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'design_ssot_reconciliation_gate',
       'senior_gap_judgment_gate',
       'failure_mode_coverage_gate',
+      'traceability_clause_coverage_gate',
       'path_surface_matrix_gate',
       'journey_context_gate',
       'design_diagrams_gate',
@@ -15462,9 +15531,15 @@ function isMatchingHeadOid(actual, expected) {
 }
 
 async function writePrCreateArtifacts(repoRoot, prepareResult, execution) {
-  const prDir = path.dirname(prepareResult.artifacts.json);
-  const jsonPath = path.join(prDir, 'pr-create.json');
-  const reportPath = path.join(prDir, 'pr-create.html');
+  const storyId = execution.story.story_id;
+  const jsonPath = execution.workspace_initialized
+    ? await resolvePrArtifactFile(repoRoot, storyId, 'pr-create.json')
+    : path.join(path.dirname(prepareResult.artifacts.json), 'pr-create.json');
+  const reportPath = execution.workspace_initialized
+    ? await resolvePrArtifactFile(repoRoot, storyId, 'pr-create.html')
+    : path.join(path.dirname(prepareResult.artifacts.json), 'pr-create.html');
+  await mkdir(path.dirname(jsonPath), { recursive: true });
+  await mkdir(path.dirname(reportPath), { recursive: true });
   await writeFile(jsonPath, `${JSON.stringify(execution, null, 2)}\n`);
   await writeFile(reportPath, renderPrCreateHtml(execution, {
     language: execution.output?.language ?? 'ja'

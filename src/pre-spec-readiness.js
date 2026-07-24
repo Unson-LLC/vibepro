@@ -129,7 +129,7 @@ async function buildPreSpecReadiness(repoRoot, { storyId, prPrepare }) {
     } : null,
     pr_prepare: prPrepare ? {
       created_at: prPrepare.created_at ?? null,
-      artifact: `.vibepro/pr/${storyId}/pr-prepare.json`,
+      artifact: prPrepare.artifact_refs?.['pr-prepare.json'] ?? `.vibepro/pr/${storyId}/pr-prepare.json`,
       gate_dag_status: gateDag?.overall_status ?? null
     } : null,
     next_actions: buildNextActions(checks, storyId)

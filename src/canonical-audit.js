@@ -11,6 +11,7 @@ import {
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { findBudgetSummaryPath } from './pr-artifact-budget.js';
 import { resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
+import { resolveReconciliationAction } from './reconciliation-action.js';
 
 export const CANONICAL_AUDIT_ROOT = path.join('docs', 'management', 'audit-artifacts');
 
@@ -396,7 +397,8 @@ function buildPrPrepareArtifactRefs(preparation, context) {
 }
 
 function prPrepareArtifactPath(preparation, filename) {
-  if (filename === 'pr-prepare.json' && preparation?.artifact) return preparation.artifact;
+  if (preparation?.artifact_refs?.[filename]) return preparation.artifact_refs[filename];
+  if (preparation?.artifact) return path.posix.join(path.posix.dirname(preparation.artifact), filename);
   const storyId = preparation?.story?.story_id ?? preparation?.story_id ?? '<story-id>';
   return `.vibepro/pr/${storyId}/${filename}`;
 }
@@ -436,7 +438,13 @@ function isPassingGateStatus(status) {
   return ['pass', 'passed', 'ready', 'ready_for_review', 'satisfied', 'ok', 'skipped'].includes(String(status ?? '').toLowerCase());
 }
 
-export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source = 'execute_merge', merge = null, now = null } = {}) {
+export async function promoteCanonicalAuditArtifacts(repoRoot, {
+  storyId,
+  source = 'execute_merge',
+  merge = null,
+  now = null,
+  onArtifactWritten = null
+} = {}) {
   if (!storyId) throw new Error('canonical audit promotion requires storyId');
   const root = path.resolve(repoRoot);
   const canonicalDir = getCanonicalAuditDir(root, storyId);
@@ -454,7 +462,8 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
     source,
     merge,
     promotedAt: reusablePromotedAt,
-    canonicalDir
+    canonicalDir,
+    onArtifactWritten
   });
   if (
     existingBundle
@@ -468,7 +477,8 @@ export async function promoteCanonicalAuditArtifacts(repoRoot, { storyId, source
       source,
       merge,
       promotedAt: candidatePromotedAt,
-      canonicalDir
+      canonicalDir,
+      onArtifactWritten
     });
   }
   return result;
@@ -545,7 +555,14 @@ function normalizeCanonicalAuditSourceData(kind, data) {
   return { data, excluded: [], reserialize: false };
 }
 
-async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, promotedAt, canonicalDir }) {
+async function writeCanonicalAuditArtifacts(root, {
+  storyId,
+  source,
+  merge,
+  promotedAt,
+  canonicalDir,
+  onArtifactWritten
+}) {
   const inventory = await collectAuditSourceInventory(root, storyId, canonicalDir);
   const costSummary = buildCanonicalEvidenceCostSummary({
     artifactLineCount: inventory.artifact_line_count,
@@ -561,7 +578,8 @@ async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, prom
     const referenceResolution = await promoteReferencedAuditArtifacts({
       root,
       canonicalDir,
-      artifacts: inventory.artifacts
+      artifacts: inventory.artifacts,
+      onArtifactWritten
     });
     return writeCompactCanonicalAuditArtifacts(root, {
       storyId,
@@ -571,7 +589,8 @@ async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, prom
       canonicalDir,
       inventory,
       costSummary,
-      referenceResolution
+      referenceResolution,
+      onArtifactWritten
     });
   }
 
@@ -585,7 +604,8 @@ async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, prom
       targetPath: path.join(canonicalDir, 'pr', fileName),
       kind,
       artifacts,
-      missing_artifacts
+      missing_artifacts,
+      onArtifactWritten
     });
   }
 
@@ -605,7 +625,8 @@ async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, prom
           targetPath: path.join(canonicalDir, 'reviews', stage, entry),
           kind,
           artifacts,
-          missing_artifacts
+          missing_artifacts,
+          onArtifactWritten
         });
         continue;
       }
@@ -616,7 +637,8 @@ async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, prom
           targetPath: path.join(canonicalDir, 'reviews', stage, entry),
           kind: 'review_request',
           artifacts,
-          missing_artifacts
+          missing_artifacts,
+          onArtifactWritten
         });
       }
     }
@@ -625,7 +647,8 @@ async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, prom
   const referenceResolution = await promoteReferencedAuditArtifacts({
     root,
     canonicalDir,
-    artifacts
+    artifacts,
+    onArtifactWritten
   });
   const decisionIndex = buildDecisionIndex({
     storyId,
@@ -663,6 +686,11 @@ async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, prom
     automation_value_audit: decisionIndex.automation_value_audit,
     merge: merge ? {
       status: merge.status ?? null,
+      base: merge.base ?? null,
+      delivery: merge.delivery ?? null,
+      reconciliation: merge.reconciliation ?? null,
+      reconciliation_action: resolveReconciliationAction(merge),
+      execution_state_sync: merge.execution_state_sync ?? null,
       pr_url: merge.pr?.url ?? merge.pr?.selector ?? null,
       merge_commit_sha: merge.merge_commit_sha ?? null,
       merged_at: merge.merged_at ?? null,
@@ -686,8 +714,11 @@ async function writeCanonicalAuditArtifacts(root, { storyId, source, merge, prom
   const bundlePath = path.join(canonicalDir, 'audit-bundle.json');
   await mkdir(path.dirname(bundlePath), { recursive: true });
   await writeFile(indexPath, `${JSON.stringify(decisionIndex, null, 2)}\n`);
+  await onArtifactWritten?.(indexPath);
   await writeFile(summaryPath, renderDecisionSummary(decisionIndex));
+  await onArtifactWritten?.(summaryPath);
   await writeFile(bundlePath, `${JSON.stringify(bundle, null, 2)}\n`);
+  await onArtifactWritten?.(bundlePath);
   return {
     canonical_dir: canonicalDir,
     bundle_path: bundlePath,
@@ -703,7 +734,8 @@ async function writeCompactCanonicalAuditArtifacts(root, {
   canonicalDir,
   inventory,
   costSummary,
-  referenceResolution
+  referenceResolution,
+  onArtifactWritten
 }) {
   const decisionIndex = buildDecisionIndex({
     storyId,
@@ -725,7 +757,8 @@ async function writeCompactCanonicalAuditArtifacts(root, {
     decisionIndex,
     inventory,
     costSummary,
-    merge
+    merge,
+    onArtifactWritten
   });
   decisionIndex.replay_bundle = replayBundle;
   costSummary.replay_bundle = replayBundle.cost;
@@ -848,13 +881,17 @@ async function writeCompactCanonicalAuditArtifacts(root, {
       decisionIndex,
       inventory,
       costSummary,
-      merge
+      merge,
+      onArtifactWritten
     });
   }
   await writeFile(indexPath, `${JSON.stringify(decisionIndex, null, 2)}\n`);
+  await onArtifactWritten?.(indexPath);
   await writeFile(summaryPath, renderDecisionSummary(decisionIndex));
+  await onArtifactWritten?.(summaryPath);
   const bundlePath = path.join(canonicalDir, 'audit-bundle.json');
   await writeFile(bundlePath, `${JSON.stringify(bundle, null, 2)}\n`);
+  await onArtifactWritten?.(bundlePath);
   return {
     canonical_dir: canonicalDir,
     bundle_path: bundlePath,
@@ -963,7 +1000,8 @@ async function writeCompressedReplayBundle(root, {
   decisionIndex,
   inventory,
   costSummary,
-  merge
+  merge,
+  onArtifactWritten
 }) {
   const replayPayload = {
     schema_version: '0.1.0',
@@ -981,6 +1019,11 @@ async function writeCompressedReplayBundle(root, {
     verdict: buildReplayVerdict(decisionIndex),
     merge: merge ? {
       status: merge.status ?? null,
+      base: merge.base ?? null,
+      delivery: merge.delivery ?? null,
+      reconciliation: merge.reconciliation ?? null,
+      reconciliation_action: resolveReconciliationAction(merge),
+      execution_state_sync: merge.execution_state_sync ?? null,
       pr_url: merge.pr?.url ?? merge.pr?.selector ?? merge.pr_url ?? null,
       merge_commit_sha: merge.merge_commit_sha ?? null,
       merged_at: merge.merged_at ?? null,
@@ -993,6 +1036,7 @@ async function writeCompressedReplayBundle(root, {
   const compressed = gzipSync(Buffer.from(expandedText, 'utf8'));
   const bundlePath = path.join(canonicalDir, COMPRESSED_REPLAY_BUNDLE_FILE);
   await writeFile(bundlePath, compressed);
+  await onArtifactWritten?.(bundlePath);
   const includedKinds = [...new Set(replayPayload.artifacts.map((artifact) => artifact.kind))].sort();
   return {
     schema_version: '0.1.0',
@@ -1065,6 +1109,11 @@ function summarizeReplayArtifact(artifact) {
   if (artifact.kind === 'pr_merge') {
     return compactObject({
       status: data?.status,
+      base: data?.base,
+      delivery: data?.delivery,
+      reconciliation: data?.reconciliation,
+      reconciliation_action: resolveReconciliationAction(data),
+      execution_state_sync: data?.execution_state_sync,
       pr_url: data?.pr?.url ?? data?.pr_url,
       merge_commit_sha: data?.merge_commit_sha,
       merged_at: data?.merged_at,
@@ -1479,6 +1528,11 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
       present: Boolean(prMerge),
       summary: prMerge ? {
         status: prMerge.status ?? null,
+        base: prMerge.base ?? null,
+        delivery: prMerge.delivery ?? null,
+        reconciliation: prMerge.reconciliation ?? null,
+        reconciliation_action: resolveReconciliationAction(prMerge),
+        execution_state_sync: prMerge.execution_state_sync ?? null,
         pr_url: prMerge.pr?.url ?? prMerge.pr?.selector ?? prMerge.pr_url ?? null,
         merge_commit_sha: prMerge.merge_commit_sha ?? null,
         merged_at: prMerge.merged_at ?? null,
@@ -1570,6 +1624,8 @@ function buildAutomationValueAuditContract(index) {
     merge_context: {
       pr_url: index.pr_merge?.summary?.pr_url ?? index.pr_create?.pr_url ?? null,
       merge_status: index.pr_merge?.summary?.status ?? null,
+      delivery: index.pr_merge?.summary?.delivery ?? null,
+      reconciliation: index.pr_merge?.summary?.reconciliation ?? null,
       merge_commit_sha: index.pr_merge?.summary?.merge_commit_sha ?? null,
       merged_at: index.pr_merge?.summary?.merged_at ?? null
     },
@@ -1629,6 +1685,7 @@ function buildAutomationValueAuditContract(index) {
 
 function automationReadinessStatus({ index, cost }) {
   if (index.pr_merge?.present !== true) return 'not_merged';
+  if (index.pr_merge?.summary?.reconciliation?.status !== 'reconciled') return 'needs_evidence';
   if ((index.missing_artifacts?.length ?? 0) > 0 || cost.diff_stats_status !== 'available') return 'needs_evidence';
   if (
     cost.token_accounting?.status !== 'available'
@@ -1772,7 +1829,7 @@ function renderDecisionSummary(index) {
 - evidence_reuse: ${index.evidence_reuse.present ? `${index.evidence_reuse.status ?? 'present'} key=${index.evidence_reuse.evidence_key ?? 'unknown'} verification_updated_at=${index.evidence_reuse.verification_evidence_updated_at ?? 'unknown'} verification_fingerprint=${index.evidence_reuse.verification_summary_fingerprint ?? 'unknown'}` : 'missing'}
 - senior_gap_judgment: ${index.senior_gap_judgment.present ? `${index.senior_gap_judgment.status ?? 'present'} gaps=${index.senior_gap_judgment.gap_count} blocking=${index.senior_gap_judgment.blocking_gap_count} residual=${index.senior_gap_judgment.residual_risk_count}` : 'missing'}
 - pr_create: ${index.pr_create.present ? index.pr_create.status ?? index.pr_create.pr_url ?? 'present' : 'missing'}
-- pr_merge: ${index.pr_merge.present ? index.pr_merge.summary?.status ?? 'present' : 'missing'}
+- pr_merge: ${index.pr_merge.present ? `${index.pr_merge.summary?.status ?? 'present'} delivery=${index.pr_merge.summary?.delivery?.status ?? 'unknown'} reconciliation=${index.pr_merge.summary?.reconciliation?.status ?? 'unknown'} reasons=${index.pr_merge.summary?.reconciliation?.reasons?.join('|') || 'none'} action=${index.pr_merge.summary?.reconciliation_action?.commands?.join(' -> ') || 'none'}` : 'missing'}
 - verification: commands=${index.verification.command_count} pass=${index.verification.pass_count} fail=${index.verification.fail_count}
 - review: summaries=${index.review.summary_count} results=${index.review.result_count} pass=${index.review.pass_count} block=${index.review.block_count}
 - missing_artifacts: ${index.missing_artifacts.length}
@@ -1879,6 +1936,10 @@ function scopedPrLifecycle(data, artifactKind, excluded) {
     workspace_initialized: data?.workspace_initialized,
     repository_slug: data?.repository_slug,
     strategy: data?.strategy,
+    delivery: data?.delivery,
+    reconciliation: data?.reconciliation,
+    reconciliation_action: resolveReconciliationAction(data),
+    execution_state_sync: data?.execution_state_sync,
     branch_cleanup: data?.branch_cleanup,
     delete_branch: data?.delete_branch,
     preconditions: data?.preconditions,
@@ -2199,7 +2260,7 @@ function excerpt(value, limit = 240) {
   return text.length > limit ? `${text.slice(0, limit)}...` : text;
 }
 
-async function promoteReferencedAuditArtifacts({ root, canonicalDir, artifacts }) {
+async function promoteReferencedAuditArtifacts({ root, canonicalDir, artifacts, onArtifactWritten }) {
   const sourceToCanonical = new Map();
   for (const artifact of artifacts) {
     if (artifact.source && artifact.canonical_path) {
@@ -2249,6 +2310,7 @@ async function promoteReferencedAuditArtifacts({ root, canonicalDir, artifacts }
     const targetPath = path.join(canonicalDir, 'references', ref.replace(/^\.vibepro\//, 'vibepro/'));
     await mkdir(path.dirname(targetPath), { recursive: true });
     await writeFile(targetPath, await readFile(sourcePath));
+    await onArtifactWritten?.(targetPath);
     const canonicalPath = toWorkspaceRelative(root, targetPath);
     copied_references.push({
       source: ref,
@@ -2349,7 +2411,15 @@ export function mergeArtifactsPreferLocal(localArtifacts, canonicalArtifacts) {
   return [...byKey.values()].sort((a, b) => String(a.path).localeCompare(String(b.path)));
 }
 
-async function copyJsonArtifact({ root, sourcePath, targetPath, kind, artifacts, missing_artifacts }) {
+async function copyJsonArtifact({
+  root,
+  sourcePath,
+  targetPath,
+  kind,
+  artifacts,
+  missing_artifacts,
+  onArtifactWritten
+}) {
   const text = await readTextIfExists(sourcePath);
   if (text === null) {
     missing_artifacts.push({
@@ -2362,6 +2432,7 @@ async function copyJsonArtifact({ root, sourcePath, targetPath, kind, artifacts,
   const scoped = applyCanonicalAuditScope(kind, normalization.data);
   await mkdir(path.dirname(targetPath), { recursive: true });
   await writeFile(targetPath, `${JSON.stringify(scoped.data, null, 2)}\n`);
+  await onArtifactWritten?.(targetPath);
   artifacts.push({
     kind,
     source: toWorkspaceRelative(root, sourcePath),
@@ -2372,7 +2443,15 @@ async function copyJsonArtifact({ root, sourcePath, targetPath, kind, artifacts,
   });
 }
 
-async function copyFileArtifact({ root, sourcePath, targetPath, kind, artifacts, missing_artifacts }) {
+async function copyFileArtifact({
+  root,
+  sourcePath,
+  targetPath,
+  kind,
+  artifacts,
+  missing_artifacts,
+  onArtifactWritten
+}) {
   const sourceStat = await statIfExists(sourcePath);
   if (!sourceStat || !sourceStat.isFile()) {
     missing_artifacts.push({
@@ -2392,6 +2471,7 @@ async function copyFileArtifact({ root, sourcePath, targetPath, kind, artifacts,
   }
   await mkdir(path.dirname(targetPath), { recursive: true });
   await writeFile(targetPath, await readFile(sourcePath));
+  await onArtifactWritten?.(targetPath);
   artifacts.push({
     kind,
     source: toWorkspaceRelative(root, sourcePath),
@@ -2616,6 +2696,11 @@ function buildDecisionIndexPrArtifacts({ root, storyId, index, indexPath, bundle
         created_at: index.generated_at,
         story: { story_id: storyId },
         status: index.pr_merge.summary?.status ?? null,
+        base: index.pr_merge.summary?.base ?? null,
+        delivery: index.pr_merge.summary?.delivery ?? null,
+        reconciliation: index.pr_merge.summary?.reconciliation ?? null,
+        reconciliation_action: index.pr_merge.summary?.reconciliation_action ?? null,
+        execution_state_sync: index.pr_merge.summary?.execution_state_sync ?? null,
         merged_at: index.pr_merge.summary?.merged_at ?? null,
         merge_commit_sha: index.pr_merge.summary?.merge_commit_sha ?? null,
         current_head_sha: index.pr_merge.summary?.current_head_sha ?? null,

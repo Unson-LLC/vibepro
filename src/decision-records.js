@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -45,9 +46,8 @@ export async function recordDecision(repoRoot, options = {}) {
 
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root);
-  const decisionDir = getDecisionDir(root, storyId);
-  await mkdir(decisionDir, { recursive: true });
-  const evidencePath = getDecisionRecordsPath(root, storyId);
+  const evidencePath = await resolvePrArtifactFile(root, storyId, 'decision-records.json');
+  await mkdir(path.dirname(evidencePath), { recursive: true });
   const existing = await readDecisionRecords(root, storyId);
   const gitContext = await collectGitContext(root);
   const rawText = options.stdinText?.trim() || options.summary;
@@ -113,10 +113,11 @@ export async function getDecisionStatus(repoRoot, options = {}) {
   const storyId = requireValue(options.storyId, 'decision status requires --id <story-id>');
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root);
+  const evidencePath = await resolvePrArtifactFile(root, storyId, 'decision-records.json');
   const records = await readDecisionRecords(root, storyId);
   return {
     story_id: storyId,
-    artifact: toWorkspaceRelative(root, getDecisionRecordsPath(root, storyId)),
+    artifact: toWorkspaceRelative(root, evidencePath),
     records,
     summary: summarizeDecisionRecords(records)
   };
@@ -125,12 +126,13 @@ export async function getDecisionStatus(repoRoot, options = {}) {
 export async function readDecisionRecordsIfExists(repoRoot, storyId) {
   const root = path.resolve(repoRoot);
   try {
-    const records = JSON.parse(await readFile(getDecisionRecordsPath(root, storyId), 'utf8'));
+    const evidencePath = await resolvePrArtifactFile(root, storyId, 'decision-records.json');
+    const records = JSON.parse(await readFile(evidencePath, 'utf8'));
     return {
       ...records,
       decisions: Array.isArray(records.decisions) ? records.decisions : [],
       summary: summarizeDecisionRecords(records),
-      artifact: toWorkspaceRelative(root, getDecisionRecordsPath(root, storyId))
+      artifact: toWorkspaceRelative(root, evidencePath)
     };
   } catch (error) {
     if (error.code === 'ENOENT') return null;
@@ -195,7 +197,7 @@ export function summarizeDecisionRecords(records) {
 // decision, so downstream consumers (pr-manager.js, cross-repo handoff flows)
 // do not have to separately open and cross-reference verification-evidence.json.
 async function buildVerificationEvidenceSummary(repoRoot, storyId) {
-  const evidencePath = path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'verification-evidence.json');
+  const evidencePath = await resolvePrArtifactFile(repoRoot, storyId, 'verification-evidence.json');
   let parsed;
   try {
     parsed = JSON.parse(await readFile(evidencePath, 'utf8'));
@@ -214,7 +216,8 @@ async function buildVerificationEvidenceSummary(repoRoot, storyId) {
 
 async function readDecisionRecords(repoRoot, storyId) {
   try {
-    const parsed = JSON.parse(await readFile(getDecisionRecordsPath(repoRoot, storyId), 'utf8'));
+    const recordsPath = await resolvePrArtifactFile(repoRoot, storyId, 'decision-records.json');
+    const parsed = JSON.parse(await readFile(recordsPath, 'utf8'));
     return {
       ...parsed,
       decisions: Array.isArray(parsed.decisions) ? parsed.decisions : []
@@ -231,14 +234,6 @@ async function readDecisionRecords(repoRoot, storyId) {
     }
     throw error;
   }
-}
-
-function getDecisionDir(repoRoot, storyId) {
-  return path.join(getWorkspaceDir(repoRoot), 'pr', storyId);
-}
-
-function getDecisionRecordsPath(repoRoot, storyId) {
-  return path.join(getDecisionDir(repoRoot, storyId), 'decision-records.json');
 }
 
 async function assertInitializedWorkspace(repoRoot) {

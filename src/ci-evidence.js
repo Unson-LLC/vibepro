@@ -10,6 +10,7 @@ import {
   recordValidationPhase,
   writeValidationSequence
 } from './validation-sequencing.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
 const CI_IMPORT_RECEIPT = Symbol('validated-ci-import');
@@ -195,10 +196,9 @@ export function renderCiImportSummary(result) {
 }
 
 async function writeCiArtifact(root, storyId, check, headSha, prUrl) {
-  const dir = path.join(getWorkspaceDir(root), 'pr', storyId, 'ci-evidence');
-  await mkdir(dir, { recursive: true });
   const fileName = `${check.name.replace(/[^a-z0-9._-]+/gi, '_')}.json`;
-  const artifactPath = path.join(dir, fileName);
+  const artifactPath = await resolvePrArtifactFile(root, storyId, path.join('ci-evidence', fileName));
+  await mkdir(path.dirname(artifactPath), { recursive: true });
   const doc = {
     schema_version: '0.1.0',
     status: 'pass',

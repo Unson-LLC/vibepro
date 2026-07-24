@@ -228,7 +228,7 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   await mkdir(reviewDir, { recursive: true });
   const gitContext = await collectReviewGitContext(root, storyId);
   const evidenceReuseArtifact = await readEvidenceReuseIfExists(root, storyId);
-  const verificationEvidence = await readJsonIfExists(path.join(getWorkspaceDir(root), 'pr', storyId, 'verification-evidence.json'));
+  const verificationEvidence = await readJsonIfExists(await resolvePrArtifactFile(root, storyId, 'verification-evidence.json'));
   const evidenceReuse = evaluateEvidenceReuseForReview({
     reuse: evidenceReuseArtifact,
     gitContext,

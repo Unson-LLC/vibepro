@@ -163,7 +163,12 @@ import {
   renderStoryRunPortfolioError,
   renderStoryRunPortfolioSummary
 } from './story-run-portfolio.js';
-import { executeMerge, renderPrMergeSummary } from './merge-manager.js';
+import {
+  executeMerge,
+  persistMergeFollowupState,
+  persistMergeRecoveryState,
+  renderPrMergeSummary
+} from './merge-manager.js';
 import {
   assertManagedWorktreeCommandAllowed,
   buildManagedWorktreeCommandBinding,
@@ -2377,6 +2382,7 @@ export async function runCli(argv, io = {}) {
         storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
         target: getOption(rest, '--target') ?? 'pr_create',
         baseRef: getOption(rest, '--base'),
+        pr: getOption(rest, '--pr'),
         branchName: getOption(rest, '--branch'),
         worktreePath: getOption(rest, '--worktree-path'),
         taskId: getOption(rest, '--task'),
@@ -2630,7 +2636,46 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'status') {
-        const result = await getExecutionStatus(repoRoot, executionOptions);
+        let result;
+        try {
+          result = await getExecutionStatus(repoRoot, executionOptions);
+        } catch (error) {
+          if (!String(error?.message ?? '').startsWith('execution state JSON is corrupt:')) throw error;
+          const corruptState = {
+            ok: false,
+            error: {
+              code: 'execution_state_corrupt',
+              status: 'quarantined',
+              story_id: executionOptions.storyId,
+              message: error.message,
+              recovery: {
+                start_command: `vibepro execute start ${repoRoot} --story-id ${executionOptions.storyId}`
+              }
+            }
+          };
+          write(stderr, hasFlag(rest, '--json')
+            ? `${JSON.stringify(corruptState, null, 2)}\n`
+            : `${corruptState.error.message} Run ${corruptState.error.recovery.start_command} to create a clean state.\n`);
+          return { exitCode: 1, command, subcommand, result: corruptState };
+        }
+        if (!result.found) {
+          const missingState = {
+            ok: false,
+            error: {
+              code: 'execution_state_missing',
+              status: 'not_found',
+              story_id: executionOptions.storyId,
+              message: `Execution state is missing for ${executionOptions.storyId}.`,
+              recovery: {
+                start_command: `vibepro execute start ${repoRoot} --story-id ${executionOptions.storyId}`
+              }
+            }
+          };
+          write(stderr, hasFlag(rest, '--json')
+            ? `${JSON.stringify(missingState, null, 2)}\n`
+            : `${missingState.error.message} Run ${missingState.error.recovery.start_command} before querying status.\n`);
+          return { exitCode: 1, command, subcommand, result: missingState };
+        }
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.state, null, 2)}\n`
           : renderExecutionStateSummary(result));
@@ -2650,7 +2695,13 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.state ?? result, null, 2)}\n`
           : result.state ? renderExecutionStateSummary(result) : renderExecutionReconcileAllSummary(result));
-        return { exitCode: 0, command, subcommand, result };
+        const reconciledState = result.state ?? result;
+        const unresolved = hasFlag(rest, '--all-merged')
+          ? (result.stories ?? []).some((story) => story.after_status !== 'merged')
+          : reconciledState.completion_status === 'failed'
+            || (Boolean(reconciledState.reconciliation?.status)
+              && reconciledState.reconciliation.status !== 'reconciled');
+        return { exitCode: unresolved ? 2 : 0, command, subcommand, result };
       }
       if (subcommand === 'merge') {
         const storyId = executionOptions.storyId ?? await resolveSelectedStoryId(repoRoot, 'execute merge');
@@ -2658,7 +2709,8 @@ export async function runCli(argv, io = {}) {
           storyId,
           commandName: 'execute merge'
         });
-        const result = await executeMerge(repoRoot, {
+        const runExecuteMerge = io.executeMerge ?? executeMerge;
+        const result = await runExecuteMerge(repoRoot, {
           ...executionOptions,
           storyId,
           strategy: getOption(rest, '--strategy'),
@@ -2674,16 +2726,113 @@ export async function runCli(argv, io = {}) {
           dryRun: hasFlag(rest, '--dry-run'),
           env: io.env
         });
+        // The returned merge may contain canonical-audit metadata calculated
+        // after the last local pr-merge write. Use the persisted local artifact
+        // as the CAS baseline when available so a real public invocation can
+        // append sync-failure guidance without mistaking its own finalization
+        // delta for a concurrent operator write.
+        let expectedMergeBeforeExecutionStateSync = structuredClone(
+          result.execution_state_sync_baseline ?? result.merge
+        );
+        const persistedMergePath = result.artifacts?.pr_merge_json ?? null;
+        if (!result.execution_state_sync_baseline && persistedMergePath) {
+          try {
+            expectedMergeBeforeExecutionStateSync = JSON.parse(await readFile(
+              path.resolve(repoRoot, persistedMergePath),
+              'utf8'
+            ));
+          } catch {
+            // Preserve the returned merge as a conservative fallback. The
+            // follow-up CAS will still fail closed if the artifact differs.
+          }
+        }
+        let executionStateSyncFailure = null;
+        try {
+          const syncExecutionState = io.updateExecutionStateFromPrMerge ?? updateExecutionStateFromPrMerge;
+          await syncExecutionState(repoRoot, result, {
+            target: executionOptions.target,
+            baseRef: executionOptions.baseRef,
+            storyId
+          });
+        } catch (error) {
+          executionStateSyncFailure = `Execution-state synchronization failed after merge processing: ${error.message}`;
+          const executionStateSyncError = serializeCliError(error);
+          const retainedPrSelector = result.merge.pr?.url
+            ?? result.merge.pr?.selector
+            ?? result.merge.delivery?.pr_url
+            ?? result.merge.pr_url
+            ?? null;
+          result.merge.execution_state_sync = {
+            status: 'failed',
+            reason: executionStateSyncFailure,
+            error: executionStateSyncError,
+            recovery_command: `vibepro execute reconcile . --story-id ${storyId} --base ${executionOptions.baseRef ?? result.merge.base ?? 'main'}${retainedPrSelector ? ` --pr ${retainedPrSelector}` : ''}`
+          };
+          result.merge.reconciliation_action = {
+            status: 'required',
+            reason: 'execution_state_sync_failed',
+            commands: [result.merge.execution_state_sync.recovery_command]
+          };
+          result.merge.reconciliation = {
+            status: 'reconciliation_required',
+            reasons: [...new Set([...(result.merge.reconciliation?.reasons ?? []), 'execution_state_sync_failed'])],
+            evaluated_at: new Date().toISOString(),
+            head_sha: result.merge.current_head_sha ?? null
+          };
+          result.merge.stop_reason = 'execution_state_sync_failed';
+          const persistFollowup = (
+            process.env.NODE_ENV === 'test'
+            && process.env.VIBEPRO_TEST_FORCE_MERGE_FOLLOWUP_FAILURE === '1'
+          )
+            ? async () => {
+                const error = new Error('injected canonical merge follow-up persistence failure');
+                error.code = 'merge_followup_test_failure';
+                throw error;
+              }
+            : (io.persistMergeFollowupState ?? persistMergeFollowupState);
+          try {
+            await persistFollowup(repoRoot, {
+              storyId,
+              merge: result.merge,
+              expectedMerge: expectedMergeBeforeExecutionStateSync
+            });
+            result.merge.execution_state_sync.followup_persistence = 'persisted';
+          } catch (persistenceError) {
+            result.merge.execution_state_sync.followup_persistence = 'failed';
+            result.merge.execution_state_sync.persistence_error = persistenceError.message;
+            result.merge.execution_state_sync.persistence_error_details = serializeCliError(persistenceError);
+            const persistRecovery = io.persistMergeRecoveryState ?? persistMergeRecoveryState;
+            try {
+              const recoveryMerge = structuredClone(result.merge);
+              recoveryMerge.execution_state_sync.recovery_persistence = 'persisted_local';
+              await persistRecovery(repoRoot, {
+                storyId,
+                merge: recoveryMerge,
+                expectedMerge: expectedMergeBeforeExecutionStateSync
+              });
+              result.merge.execution_state_sync.recovery_persistence = 'persisted_local';
+            } catch (recoveryPersistenceError) {
+              result.merge.execution_state_sync.recovery_persistence = 'failed';
+              result.merge.execution_state_sync.recovery_persistence_error = recoveryPersistenceError.message;
+              result.merge.execution_state_sync.recovery_persistence_error_details = serializeCliError(recoveryPersistenceError);
+            }
+            executionStateSyncFailure += `; follow-up persistence failed: ${persistenceError.message}`;
+          }
+          write(stderr, `${executionStateSyncFailure}\n`);
+        }
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.merge, null, 2)}\n`
           : renderPrMergeSummary(result));
-        await updateExecutionStateFromPrMerge(repoRoot, result, {
-          target: executionOptions.target,
-          baseRef: executionOptions.baseRef,
-          storyId
-        }).catch(() => null);
         return {
-          exitCode: result.merge.status === 'blocked' ? 2 : result.merge.status === 'failed' ? 1 : 0,
+          exitCode: executionStateSyncFailure
+            ? 1
+            : result.merge.status === 'failed'
+            ? 1
+            : result.merge.reconciliation?.status === 'reconciliation_required'
+              ? 2
+              : result.merge.status === 'blocked'
+                ? 2
+                : 0,
           command,
           subcommand,
           result
@@ -3681,7 +3830,11 @@ export async function runCli(argv, io = {}) {
     write(stderr, `Unknown command: ${command}\n\n${renderHelp()}`);
     return { exitCode: 1, command };
   } catch (error) {
-    write(stderr, `${error.message}\n`);
+    if (hasFlag(argv, '--json')) {
+      write(stderr, `${JSON.stringify(buildCliErrorPayload(error), null, 2)}\n`);
+    } else {
+      write(stderr, `${error.message}\n`);
+    }
     return { exitCode: 1, command };
   }
 }
@@ -3733,6 +3886,46 @@ function renderArtifactMigrationPlan(result) {
     lines.push(`- overwrite-risk: ${risk.code}: ${risk.message}; path=${risk.path}`);
   }
   return `${lines.join('\n')}\n`;
+}
+
+export function buildCliErrorPayload(error) {
+  return {
+    ok: false,
+    error: serializeCliError(error)
+  };
+}
+
+function serializeCliError(error, seen = new Set()) {
+  if (!(error instanceof Error)) {
+    return {
+      message: String(error),
+      code: null,
+      cause: null,
+      cause_details: null,
+      restore_error: null,
+      restore_errors: []
+    };
+  }
+  if (seen.has(error)) {
+    return {
+      message: error.message,
+      code: error.code ?? null,
+      cause: '[circular error cause]',
+      cause_details: null,
+      restore_error: error.restore_error ?? null,
+      restore_errors: error.restore_errors ?? []
+    };
+  }
+  seen.add(error);
+  const cause = error.cause instanceof Error ? error.cause : null;
+  return {
+    message: error.message,
+    code: error.code ?? null,
+    cause: cause?.message ?? null,
+    cause_details: cause ? serializeCliError(cause, seen) : null,
+    restore_error: error.restore_error ?? null,
+    restore_errors: error.restore_errors ?? []
+  };
 }
 
 function resolveDiagnosisPhaseOption(args) {

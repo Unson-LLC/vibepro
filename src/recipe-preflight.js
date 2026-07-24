@@ -24,6 +24,7 @@ import path from 'node:path';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { recordVerificationEvidence } from './verification-evidence.js';
 import { resolveAcceptedSpecFile } from './spec-store.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 
 export const PREFLIGHT_SCHEMA_VERSION = '0.1.0';
 
@@ -141,12 +142,11 @@ const verifyStatusArtifactRecipe = {
     };
   },
   async fix({ repoRoot, storyId, detection }) {
-    const artifactDir = path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'preflight-artifacts');
-    await mkdir(artifactDir, { recursive: true });
     const artifacts = [];
     for (const command of detection.targets) {
       const exitCode = resolveExitCode(command);
-      const artifactPath = path.join(artifactDir, `${command.kind}-status.json`);
+      const artifactPath = await resolvePrArtifactFile(repoRoot, storyId, path.join('preflight-artifacts', `${command.kind}-status.json`));
+      await mkdir(path.dirname(artifactPath), { recursive: true });
       await writeFile(artifactPath, `${JSON.stringify({ status: 'pass', exit_code: exitCode }, null, 2)}\n`);
       await recordVerificationEvidence(repoRoot, {
         storyId,
@@ -366,11 +366,11 @@ async function readJsonIfExists(filePath) {
 }
 
 async function readVerificationEvidence(repoRoot, storyId) {
-  return readJsonIfExists(path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'verification-evidence.json'));
+  return readJsonIfExists(await resolvePrArtifactFile(repoRoot, storyId, 'verification-evidence.json'));
 }
 
 async function readDecisionRecords(repoRoot, storyId) {
-  const records = await readJsonIfExists(path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'decision-records.json'));
+  const records = await readJsonIfExists(await resolvePrArtifactFile(repoRoot, storyId, 'decision-records.json'));
   return Array.isArray(records?.decisions) ? records.decisions : [];
 }
 

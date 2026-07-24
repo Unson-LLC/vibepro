@@ -12,7 +12,9 @@ import {
   summarizeGateRoi
 } from './gate-outcome-ledger.js';
 import { resolveHumanOutputLanguage } from './language.js';
+import { discoverPrArtifactStoryIds, resolveArtifactRoute, resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 import { getWorkspaceDir, MANIFEST_FILE, toWorkspaceRelative } from './workspace.js';
+import { resolveReconciliationAction } from './reconciliation-action.js';
 
 const execFileAsync = promisify(execFile);
 const ROI_AGENT_SYSTEMS = new Set(['codex', 'claude_code']);
@@ -23,15 +25,20 @@ export async function createUsageReport(repoRoot, options = {}) {
   const workspaceDir = getWorkspaceDir(root);
   const since = parseSince(options.since);
   const language = await resolveHumanOutputLanguage(root, { language: options.language }).catch(() => options.language ?? 'ja');
-  const localPrArtifacts = await collectPrArtifacts(root, workspaceDir, since);
+  const storyDocs = await collectStoryDocs(root, since);
+  const discoveryStoryDocs = await collectStoryDocs(root, null);
+  const localPrArtifacts = await collectPrArtifacts(root, workspaceDir, since, discoveryStoryDocs.map((doc) => doc.story_id));
   const manifestPrArtifacts = await collectManifestPrArtifacts(root, workspaceDir, since);
-  const localReviewArtifacts = await collectReviewArtifacts(root, workspaceDir, since);
+  const reviewStoryIds = [...new Set([
+    ...discoveryStoryDocs.map((doc) => doc.story_id),
+    ...localPrArtifacts.map((artifact) => artifact.story_id)
+  ])];
+  const localReviewArtifacts = await collectReviewArtifacts(root, workspaceDir, since, reviewStoryIds);
   const canonicalArtifacts = await collectCanonicalAuditArtifacts(root, since);
-  const prArtifactsWithoutManifest = mergeArtifactsPreferLocal(localPrArtifacts, canonicalArtifacts.prArtifacts);
+  const prArtifactsWithoutManifest = mergePrArtifactsPreferLocal(localPrArtifacts, canonicalArtifacts.prArtifacts);
   const prArtifacts = [...prArtifactsWithoutManifest, ...filterManifestFallbackArtifacts(manifestPrArtifacts.artifacts, prArtifactsWithoutManifest)];
   const reviewArtifacts = mergeArtifactsPreferLocal(localReviewArtifacts, canonicalArtifacts.reviewArtifacts);
   const executionArtifacts = await collectExecutionArtifacts(root, workspaceDir, since);
-  const storyDocs = await collectStoryDocs(root, since);
   const logs = await collectUsageLogs(root, options);
   const gateOutcomeLedger = await readGateOutcomeLedger(root);
   const gate_outcomes = summarizeGateOutcomeLedger(gateOutcomeLedger, { since });
@@ -75,6 +82,35 @@ export async function createUsageReport(repoRoot, options = {}) {
     if (artifact.kind === 'pr_merge') {
       story.pr_merge_count += 1;
       story.latest_merge_status = artifact.data?.status ?? story.latest_merge_status;
+      story.latest_delivery_status = artifact.data?.delivery?.status ?? story.latest_delivery_status;
+      story.latest_reconciliation_status = artifact.data?.reconciliation?.status ?? story.latest_reconciliation_status;
+      story.latest_reconciliation_reasons = artifact.data?.reconciliation?.reasons ?? story.latest_reconciliation_reasons;
+      const reconciliationAction = resolveReconciliationAction(artifact.data);
+      if (reconciliationAction?.status === 'blocked' && reconciliationAction.reason) {
+        story.latest_reconciliation_reasons = [
+          ...new Set([...(story.latest_reconciliation_reasons ?? []), reconciliationAction.reason])
+        ];
+        story.blocked = true;
+      }
+      story.latest_reconciliation_action = reconciliationAction?.commands?.length
+        ? reconciliationAction.commands.join(' && ')
+        : story.latest_reconciliation_action;
+      story.latest_pr_url = artifact.data?.pr?.url ?? artifact.data?.pr_url ?? story.latest_pr_url;
+      story.latest_base_branch = artifact.data?.base
+        ?? artifact.data?.git?.base_branch
+        ?? artifact.data?.pr?.base_ref_name
+        ?? story.latest_base_branch;
+      const contradictoryDeliveryState = artifact.data?.delivery?.status === 'unverified'
+        && artifact.data?.reconciliation?.status === 'reconciled';
+      if (contradictoryDeliveryState) {
+        story.latest_reconciliation_status = 'blocked';
+        story.latest_reconciliation_reasons = [
+          ...new Set([...(story.latest_reconciliation_reasons ?? []), 'delivery_unverified_reconciliation_reconciled'])
+        ];
+      }
+      story.blocked ||= contradictoryDeliveryState
+        || (Boolean(artifact.data?.delivery?.status)
+          && artifact.data?.reconciliation?.status !== 'reconciled');
       story.latest_merged_at = artifact.data?.merged_at ?? story.latest_merged_at;
     }
     if (artifact.kind === 'gate_dag') collectGateMetrics(artifact.data, artifact.story_id, storyMap);
@@ -198,7 +234,7 @@ export function renderUsageReport(report) {
   const language = report.output?.language ?? 'ja';
   const storyRows = report.stories.length
     ? report.stories.map((story) => (
-        `- ${story.story_id}: prepared=${story.prepared} blocked=${story.blocked} ready=${story.ready_for_pr_create} pr_created=${story.pr_created} waiver_required=${story.waiver_required} raw_pr_bypass_suspected=${story.raw_pr_bypass_suspected} stale_evidence=${story.stale_evidence} story_source_mismatch=${story.story_source_mismatch} evidence_reuse=${story.evidence_reuse?.latest_status ?? 'unknown'} traceability=${story.traceability_resolution?.status ?? 'unknown'} clause_traceability=${formatClauseTraceability(story.traceability_clause_coverage)} handoff_replay=${story.handoff_replay_status ?? 'unknown'} artifact_source=${formatArtifactSources(story.artifact_sources)}`
+        `- ${story.story_id}: prepared=${story.prepared} blocked=${story.blocked} ready=${story.ready_for_pr_create} pr_created=${story.pr_created} waiver_required=${story.waiver_required} raw_pr_bypass_suspected=${story.raw_pr_bypass_suspected} stale_evidence=${story.stale_evidence} story_source_mismatch=${story.story_source_mismatch} delivery=${story.latest_delivery_status ?? 'unknown'} reconciliation=${story.latest_reconciliation_status ?? 'unknown'} reconciliation_reasons=${story.latest_reconciliation_reasons?.join(',') || 'none'} reconciliation_action=${formatReconciliationAction(story)} evidence_reuse=${story.evidence_reuse?.latest_status ?? 'unknown'} traceability=${story.traceability_resolution?.status ?? 'unknown'} clause_traceability=${formatClauseTraceability(story.traceability_clause_coverage)} handoff_replay=${story.handoff_replay_status ?? 'unknown'} artifact_source=${formatArtifactSources(story.artifact_sources)}`
       )).join('\n')
     : '- none';
   const gateRows = report.gate_metrics.length
@@ -350,6 +386,29 @@ ${manifestParseRows}
 `;
 }
 
+function mergePrArtifactsPreferLocal(localArtifacts, canonicalArtifacts) {
+  const localAuthorities = new Set(
+    localArtifacts.map((artifact) => `${artifact.story_id}:${artifact.kind}`)
+  );
+  return mergeArtifactsPreferLocal(
+    localArtifacts,
+    canonicalArtifacts.filter(
+      (artifact) => !localAuthorities.has(`${artifact.story_id}:${artifact.kind}`)
+    )
+  );
+}
+
+function formatReconciliationAction(story) {
+  if (!story.latest_reconciliation_status || story.latest_reconciliation_status === 'reconciled') return 'none';
+  if (story.latest_reconciliation_action) return `"${story.latest_reconciliation_action}"`;
+  const failClosedWithoutFallback = story.latest_reconciliation_reasons?.some((reason) => [
+    'execution_state_sync_recovery_command_missing',
+    'delivery_unverified_reconciliation_reconciled'
+  ].includes(reason));
+  if (failClosedWithoutFallback) return 'none';
+  return `"vibepro pr prepare . --story-id ${story.story_id} --base ${story.latest_base_branch ?? 'main'} && vibepro execute merge . --story-id ${story.story_id} --base ${story.latest_base_branch ?? 'main'}${story.latest_pr_url ? ` --pr ${story.latest_pr_url}` : ''}"`;
+}
+
 function ensureStoryUsage(storyMap, storyId) {
   const key = storyId || 'unknown';
   if (!storyMap.has(key)) {
@@ -431,6 +490,11 @@ function ensureStoryUsage(storyMap, storyId) {
       latest_execution_status: null,
       latest_pr_url: null,
       latest_merge_status: null,
+      latest_delivery_status: null,
+      latest_reconciliation_status: null,
+      latest_reconciliation_reasons: [],
+      latest_reconciliation_action: null,
+      latest_base_branch: null,
       latest_merged_at: null,
       artifacts: [],
       log_findings: [],
@@ -448,14 +512,25 @@ function ensureStoryUsage(storyMap, storyId) {
   return storyMap.get(key);
 }
 
-async function collectPrArtifacts(root, workspaceDir, since) {
-  const prDir = path.join(workspaceDir, 'pr');
-  const storyDirs = await safeReaddir(prDir);
+async function collectPrArtifacts(root, workspaceDir, since, discoveredStoryIds = []) {
+  const config = await readJsonIfExists(path.join(workspaceDir, 'config.json'));
+  const configuredStoryIds = (config?.brainbase?.stories ?? [])
+    .map((story) => story?.story_id)
+    .filter(Boolean);
+  const legacyStoryIds = config?.artifact_routing?.artifacts?.pr
+    ? []
+    : await safeReaddir(path.join(workspaceDir, 'pr'));
+  const routedStoryIds = await discoverPrArtifactStoryIds(root);
+  const storyDirs = [...new Set([...configuredStoryIds, ...discoveredStoryIds, ...routedStoryIds, ...legacyStoryIds])];
   const artifacts = [];
+  const seenPaths = new Set();
   for (const storyId of storyDirs) {
-    const storyDir = path.join(prDir, storyId);
     for (const [file, kind] of [['evidence-reuse.json', 'evidence_reuse'], ['pr-prepare.json', 'pr_prepare'], ['pr-create.json', 'pr_create'], ['gate-dag.json', 'gate_dag'], ['senior-gap-judgment.json', 'senior_gap_judgment'], ['pr-merge.json', 'pr_merge'], ['traceability.json', 'traceability'], ['verification-evidence.json', 'verification_evidence']]) {
-      const filePath = path.join(storyDir, file);
+      const filePath = kind === 'gate_dag'
+        ? await resolveGateArtifactFile(root, storyId)
+        : await resolvePrArtifactFile(root, storyId, file);
+      if (seenPaths.has(filePath)) continue;
+      seenPaths.add(filePath);
       const data = await readJsonIfExists(filePath);
       if (!data || !isWithinSince(data.created_at ?? data.generated_at ?? data.updated_at ?? data.merged_at, since)) continue;
       artifacts.push({ kind, story_id: data.story?.story_id ?? data.story_id ?? storyId, path: toWorkspaceRelative(root, filePath), data });
@@ -493,7 +568,11 @@ async function collectManifestPrArtifacts(root, workspaceDir, since) {
       data: {
         schema_version: manifest.schema_version ?? '0.1.0',
         story_id: storyId,
-        status: record.latest_dry_run ? 'dry_run_planned' : 'merged',
+        status: record.latest_status
+          ?? (record.latest_dry_run ? 'dry_run_planned' : 'merged'),
+        delivery: record.latest_delivery ?? null,
+        reconciliation: record.latest_reconciliation ?? null,
+        base: record.latest_base ?? null,
         pr_url: record.latest_pr_url ?? null,
         merge_commit_sha: record.latest_merge_commit ?? null,
         merged_at: record.latest_merged_at ?? null,
@@ -530,12 +609,15 @@ async function collectStoryDocs(root, since) {
   return docs;
 }
 
-async function collectReviewArtifacts(root, workspaceDir, since) {
-  const reviewDir = path.join(workspaceDir, 'reviews');
+async function collectReviewArtifacts(root, workspaceDir, since, discoveredStoryIds = []) {
+  const config = await readJsonIfExists(path.join(workspaceDir, 'config.json'));
+  const configuredStoryIds = (config?.brainbase?.stories ?? []).map((story) => story?.story_id).filter(Boolean);
+  const legacyStoryIds = config?.artifact_routing?.artifacts?.review ? [] : await safeReaddir(path.join(workspaceDir, 'reviews'));
   const artifacts = [];
-  for (const storyId of await safeReaddir(reviewDir)) {
-    for (const stage of await safeReaddir(path.join(reviewDir, storyId))) {
-      const stageDir = path.join(reviewDir, storyId, stage);
+  for (const storyId of new Set([...configuredStoryIds, ...discoveredStoryIds, ...legacyStoryIds])) {
+    const reviewDir = (await resolveArtifactRoute(root, 'review', { storyId })).canonical.absolute_path;
+    for (const stage of await safeReaddir(reviewDir)) {
+      const stageDir = path.join(reviewDir, stage);
       const filePath = path.join(stageDir, 'review-summary.json');
       const data = await readJsonIfExists(filePath);
       if (data && isWithinSince(data.updated_at, since)) {
@@ -664,9 +746,10 @@ async function buildArtifactSourceHints(root, since, artifactCounts) {
     if (worktree.prunable) continue;
 
     const workspaceDir = getWorkspaceDir(candidateRoot);
+    const candidateStoryDocs = await collectStoryDocs(candidateRoot, null);
     const [prArtifacts, reviewArtifacts, executionArtifacts] = await Promise.all([
-      collectPrArtifacts(candidateRoot, workspaceDir, since),
-      collectReviewArtifacts(candidateRoot, workspaceDir, since),
+      collectPrArtifacts(candidateRoot, workspaceDir, since, candidateStoryDocs.map((doc) => doc.story_id)),
+      collectReviewArtifacts(candidateRoot, workspaceDir, since, candidateStoryDocs.map((doc) => doc.story_id)),
       collectExecutionArtifacts(candidateRoot, workspaceDir, since)
     ]);
     const counts = {
@@ -1060,15 +1143,19 @@ function artifactTime(artifact) {
 
 function isMergedOrClosedStory(story, createArtifact, mergeArtifact) {
   const status = String(story.story_status ?? '').toLowerCase();
+  const deliveryStatus = mergeArtifact?.data?.delivery?.status ?? mergeArtifact?.data?.status;
   return ['merged', 'closed', 'done', 'completed'].includes(status)
-    || mergeArtifact?.data?.status === 'merged'
+    || ['merged', 'merged_externally'].includes(deliveryStatus)
     || createArtifact?.data?.status === 'merged'
     || createArtifact?.data?.merged === true;
 }
 
 function getStaleMergeArtifactReason({ story, mergeArtifact, createArtifact, prepareArtifact }) {
   if (!mergeArtifact) return 'Story appears merged/closed but pr-merge.json is missing';
-  if (mergeArtifact.data?.status !== 'merged') return `pr-merge.json status is ${mergeArtifact.data?.status ?? 'missing'}, not merged`;
+  const deliveryStatus = mergeArtifact.data?.delivery?.status ?? mergeArtifact.data?.status;
+  if (!['merged', 'merged_externally'].includes(deliveryStatus)) {
+    return `pr-merge.json delivery status is ${deliveryStatus ?? 'missing'}, not merged`;
+  }
   const mergeHead = mergeArtifact.data?.pr?.head_ref_oid ?? mergeArtifact.data?.current_head_sha ?? mergeArtifact.data?.head_sha;
   const prepareHead = prepareArtifact?.data?.toolchain?.source_git?.commit
     ?? prepareArtifact?.data?.current_git_context?.head_sha

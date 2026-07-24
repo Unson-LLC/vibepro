@@ -2230,7 +2230,17 @@ test('GRS-S-10 C-006 bootstrap failure without a legacy commit uses the CLI inte
   });
   assert.equal(result.exitCode, 1);
   assert.equal(stdout.text(), '');
-  assert.equal(stderr.text(), 'fixture bootstrap exploded\n');
+  assert.deepEqual(JSON.parse(stderr.text()), {
+    ok: false,
+    error: {
+      message: 'fixture bootstrap exploded',
+      code: null,
+      cause: null,
+      cause_details: null,
+      restore_error: null,
+      restore_errors: []
+    }
+  });
   await assert.rejects(stat(fixture.runFile(fixture.source, RUN_ID)), { code: 'ENOENT' });
 });
 

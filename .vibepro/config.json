@@ -290,6 +290,11 @@
       "require_known_attribution": false
     },
     "delivery_efficiency_by_story": {
+      "story-vibepro-delivery-reconciliation-state": {
+        "max_subagent_count": 34,
+        "max_agent_consumption_ms": 6000000,
+        "amendment_reason": "Twenty-three historical and current-head lifecycles exhausted the Story-local cap before an implementation_unsound adjudication required a new HEAD. Five replacement authorizations then failed before lifecycle start because sequential review_surface freezes invalidated one another through the shared dispatch artifact. The user explicitly authorized blocker removal and merge completion on 2026-07-24. Account for those five fail-closed attempts, reserve exactly five final authorize-then-start lifecycles plus one budget-changing architecture replacement on the corrected frozen HEAD, and reuse the same Luna high reviewer. Spawn no replacement loop and permit no unrelated role or global budget expansion."
+      },
       "story-vibepro-surface-aware-agent-review-freshness": {
         "max_subagent_count": 22,
         "amendment_reason": "Historical repair and two CI-discovered compatibility assertions exhausted the Story-local cap before canonical current-HEAD closure. The user explicitly instructed continuation twice on 2026-07-24. Permit only four bounded lifecycles with the existing independent reviewers for the budget-changing architecture preflight, frozen runtime final review, gate evidence, and adjudication; do not spawn replacement agents or amend the budget again."
@@ -377,6 +382,20 @@
         "category": "dev",
         "artifact_profile": "feature_packet",
         "feature_slug": "routing-profiles-rendered-projections"
+      },
+      {
+        "story_id": "story-vibepro-delivery-reconciliation-state",
+        "title": "Delivery事実と再調整状態を分離する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-17",
+        "due_at": null,
+        "category": "platform",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "delivery-reconciliation-state"
       },
       {
         "story_id": "story-vibepro-session-attribution-boundary-guard",

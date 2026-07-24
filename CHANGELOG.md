@@ -27,6 +27,9 @@ All notable changes to VibePro will be documented in this file.
 - Standardize PR release-note sections so the authoring LLM writes the release
   explanation once before merge and post-merge automation performs no LLM calls.
 
+- `vibepro execute merge` now returns exit code 2 when external delivery was observed but local reconciliation still requires operator action, and exit code 1 when canonical-audit persistence itself fails. The JSON `status`, `delivery`, `reconciliation`, `base`, and `pr.selector` fields remain available for existing consumers; automation should inspect these fields before retrying with `vibepro execute reconcile`.
+  The release operator owns unresolved reconciliation: monitor `vibepro execute status` delivery/reconciliation fields, then run `vibepro execute reconcile . --story-id <id> --base <ref> --pr <number-or-url> --json`. Rollback may revert the exit policy or consumers, but must retain observed delivery facts and quarantined corrupt-state bytes.
+
 ## 0.2.0-beta.0 - 2026-07-16
 
 - Document the complete guarded delivery loop: managed execution, independent

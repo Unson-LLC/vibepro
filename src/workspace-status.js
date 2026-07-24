@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { readdir, readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { resolvePrArtifactFile } from './artifact-routing.js';
+import { discoverPrArtifactStoryIds, readArtifactRoutingConfig, resolvePrArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -62,7 +62,9 @@ function classifyArtifact(artifact, headSha) {
 async function readStoryStatuses(worktree) {
   try {
     const config = JSON.parse(await readFile(path.join(worktree.path, '.vibepro', 'config.json'), 'utf8'));
-    const storyIds = [...new Set((config.brainbase?.stories ?? []).map((story) => story.story_id ?? story.id).filter(Boolean))];
+    const configuredStoryIds = (config.brainbase?.stories ?? []).map((story) => story.story_id ?? story.id).filter(Boolean);
+    const routedStoryIds = await discoverPrArtifactStoryIds(worktree.path);
+    const storyIds = [...new Set([...configuredStoryIds, ...routedStoryIds])];
     if (storyIds.length > 0) {
       const stories = [];
       for (const storyId of storyIds.sort()) {
@@ -84,6 +86,8 @@ async function readStoryStatuses(worktree) {
       }
       return stories.length > 0 ? stories : [{ story_id: null, status: 'unknown', reason: 'no_pr_prepare_artifact' }];
     }
+    const { routing } = await readArtifactRoutingConfig(worktree.path);
+    if (routing?.artifacts?.pr) return [{ story_id: null, status: 'unknown', reason: 'no_pr_prepare_artifact' }];
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }

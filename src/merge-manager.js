@@ -1,5 +1,6 @@
 import { execFile } from 'node:child_process';
-import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { cp, lstat, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -12,11 +13,13 @@ import {
   computeCentralLedgerPromotion
 } from './gate-outcome-ledger.js';
 import { renderPrMergeHtml } from './html-report.js';
+import { resolveReconciliationAction } from './reconciliation-action.js';
 import {
   buildMergeGateAuthorization,
   resolveCurrentMergeGateStatus
 } from './merge-gate-authorization.js';
 import { collectSessionEfficiencyAudit } from './session-efficiency-audit.js';
+import { withStoryTransactionLocks } from './story-transaction-lock.js';
 import { bindStoryTraceability } from './traceability.js';
 import { resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 import { getWorkspaceDir, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
@@ -30,28 +33,66 @@ export async function executeMerge(repoRoot, options = {}) {
   const storyId = options.storyId;
   if (!storyId) throw new Error('execute merge requires --story-id <id>');
 
+  return withStoryTransactionLocks(
+    [root],
+    storyId,
+    () => executeMergeLocked(root, options),
+    options.storyTransactionLock
+  );
+}
+
+async function executeMergeLocked(root, options = {}) {
+  const storyId = options.storyId;
+
   const prPreparePath = await resolvePrArtifactFile(root, storyId);
-  const prDir = path.dirname(prPreparePath);
   const gateDagPath = await resolveGateArtifactFile(root, storyId);
-  const [prPrepare, prCreate, executionState, gateDagArtifact] = await Promise.all([
+  const prCreatePath = await resolvePrArtifactFile(root, storyId, 'pr-create.json');
+  const prMergePath = await resolvePrArtifactFile(root, storyId, 'pr-merge.json');
+  const [prPrepare, prCreate, executionState, gateDagArtifact, localPrMerge, canonicalPrMerge] = await Promise.all([
     readJsonIfExists(prPreparePath),
-    readJsonIfExists(path.join(prDir, 'pr-create.json')),
+    readJsonIfExists(prCreatePath),
     readJsonIfExists(path.join(getWorkspaceDir(root), 'executions', storyId, 'state.json')),
-    readJsonIfExists(gateDagPath)
+    readJsonIfExists(gateDagPath),
+    readJsonIfExists(prMergePath),
+    readJsonIfExists(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'pr', 'pr-merge.json'))
   ]);
   const strategy = normalizeMergeStrategy(options.strategy);
   const deleteBranch = options.deleteBranch === true;
   const dryRun = options.dryRun === true;
   const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
+  const currentPrPrepare = isCurrentPrLifecycleArtifact(prPrepare, currentHeadSha) ? prPrepare : null;
   const currentPrCreate = isCurrentPrLifecycleArtifact(prCreate, currentHeadSha) ? prCreate : null;
   const story = currentPrCreate?.story ?? prPrepare?.story ?? executionState?.story ?? { story_id: storyId };
   const currentBranch = await gitOptional(root, ['branch', '--show-current']);
-  const nonWorkspaceDirtyFiles = await collectNonWorkspaceDirtyFiles(root);
-  const gateDag = gateDagArtifact ?? prPrepare?.pr_context?.gate_dag ?? currentPrCreate?.gate_dag ?? null;
-  const currentGateStatus = resolveCurrentMergeGateStatus(prPrepare, currentHeadSha, gateDag);
+  const nonWorkspaceDirtyFiles = await collectNonWorkspaceDirtyFiles(root, { storyId });
+  // A standalone gate DAG has no authority unless it is explicitly bound to
+  // the current HEAD. Prefer the current pr-prepare embedded DAG because that
+  // artifact carries the source git commit. This prevents an older
+  // ready_for_review DAG from reconciling a delivery whose current evidence is
+  // blocked or missing.
+  const currentGateDagArtifact = isCurrentPrLifecycleArtifact(gateDagArtifact, currentHeadSha)
+    ? gateDagArtifact
+    : null;
+  const gateDag = currentPrPrepare?.pr_context?.gate_dag
+    ?? currentPrCreate?.gate_dag
+    ?? currentGateDagArtifact
+    ?? null;
+  // A separately routed DAG cannot grant authority without current-head
+  // binding, but it can reveal that the embedded PR status no longer
+  // represents the routed gate surface. Reconcile against it conservatively
+  // so a critical routed gate cannot be hidden by a ready embedded snapshot.
+  const currentGateStatus = resolveCurrentMergeGateStatus(
+    currentPrPrepare,
+    currentHeadSha,
+    gateDagArtifact ?? gateDag
+  );
   const gateAuthorization = buildMergeGateAuthorization(gateDag, currentPrCreate, currentGateStatus);
   const baseBranch = stripRemote(options.baseRef ?? currentPrCreate?.base ?? prPrepare?.git?.base_ref ?? 'main');
   const prSelector = options.pr ?? currentPrCreate?.pr_url ?? null;
+  const priorObservedMerge = resolvePriorObservedMerge([localPrMerge, canonicalPrMerge], {
+    baseBranch,
+    prSelector
+  });
   const repositorySlug = await resolveGitHubRepositorySlug(root, { prCreate: currentPrCreate, prPrepare, executionState });
   const createdAt = new Date().toISOString();
   const costAccountingResult = await collectExecuteMergeCostAccounting(root, {
@@ -143,6 +184,20 @@ export async function executeMerge(repoRoot, options = {}) {
       }
     },
     warnings: [],
+    delivery: {
+      status: 'unknown',
+      source: null,
+      pr_url: null,
+      merge_commit_sha: null,
+      merged_at: null,
+      observed_at: null
+    },
+    reconciliation: {
+      status: 'pending',
+      reasons: [],
+      evaluated_at: null,
+      head_sha: currentHeadSha ?? null
+    },
     commands: [],
     results: [],
     branch_cleanup: {
@@ -184,7 +239,7 @@ export async function executeMerge(repoRoot, options = {}) {
       merge.warnings.push('Ignored stale pr-create artifact PR URL because it is not bound to the current HEAD; pass --pr explicitly after confirming the target PR.');
     }
     const artifacts = await writePrMergeArtifacts(root, storyId, merge);
-    return { merge, artifacts };
+    return attachExecutionStateSyncBaseline(merge, artifacts);
   }
   if (!options.pr && prCreate?.pr_url && !currentPrCreate) {
     merge.warnings.push('Ignored stale pr-create artifact PR URL because it is not bound to the current HEAD; pass --pr explicitly after confirming the target PR.');
@@ -223,10 +278,11 @@ export async function executeMerge(repoRoot, options = {}) {
       merge.stop_reason = 'external_checks_skipped_dry_run';
     }
     const artifacts = await writePrMergeArtifacts(root, storyId, merge);
-    return { merge, artifacts };
+    return attachExecutionStateSyncBaseline(merge, artifacts);
   }
 
-  if (merge.preconditions.gate_ready !== true) {
+  const originUrl = await gitOptional(root, ['remote', 'get-url', 'origin']);
+  if (merge.preconditions.gate_ready !== true && !originUrl) {
     merge.status = 'blocked';
     merge.stop_reason = 'gate_not_ready';
     merge.preconditions.base_freshness.status = 'not_run';
@@ -235,17 +291,40 @@ export async function executeMerge(repoRoot, options = {}) {
     merge.preconditions.review_policy.status = 'not_run';
     merge.preconditions.open_pull_request.status = 'not_run';
     const artifacts = await writePrMergeArtifacts(root, storyId, merge);
-    return { merge, artifacts };
+    return attachExecutionStateSyncBaseline(merge, artifacts);
   }
 
+  // Refresh the read-only base observation before deciding whether a stale
+  // local gate may be bypassed for external-delivery reconciliation. Checking
+  // origin/<base> first can return gate_not_ready from a stale clone even when
+  // another clone has already merged the selected PR.
   const fetchResult = await runCommand(root, fetchCommand, options);
   merge.results.push(fetchResult);
   if (fetchResult.exit_code !== 0) {
     merge.stop_reason = 'base_fetch_failed';
     merge.preconditions.base_freshness.status = 'blocked';
     merge.error = `Command failed: ${fetchResult.command}`;
+    applyProviderObservationFailure(merge, priorObservedMerge, 'base_fetch_failed');
     const artifacts = await writePrMergeArtifacts(root, storyId, merge);
-    return { merge, artifacts };
+    return attachExecutionStateSyncBaseline(merge, artifacts);
+  }
+
+  // Reject an unauthorized managed merge before provider mutation, while still
+  // allowing reconciliation when the freshly observed base proves that the
+  // story HEAD was delivered externally. Provider observation remains required
+  // to bind that delivery to the selected PR.
+  const locallyDeliveredHead = await gitIsAncestor(root, currentHeadSha, `origin/${baseBranch}`);
+  const locallyDeliveredTree = await gitTreesEqual(root, currentHeadSha, `origin/${baseBranch}`);
+  if (merge.preconditions.gate_ready !== true && !locallyDeliveredHead && !locallyDeliveredTree) {
+    merge.status = 'blocked';
+    merge.stop_reason = 'gate_not_ready';
+    merge.preconditions.base_freshness.status = 'not_run';
+    merge.preconditions.remote_head_match.status = 'not_run';
+    merge.preconditions.checks_ready.status = 'not_run';
+    merge.preconditions.review_policy.status = 'not_run';
+    merge.preconditions.open_pull_request.status = 'not_run';
+    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+    return attachExecutionStateSyncBaseline(merge, artifacts);
   }
 
   const containsBase = await gitIsAncestor(root, `origin/${baseBranch}`, currentHeadSha);
@@ -257,11 +336,21 @@ export async function executeMerge(repoRoot, options = {}) {
   if (prViewResult.exit_code !== 0) {
     merge.stop_reason = 'pr_view_failed';
     merge.error = `Command failed: ${prViewResult.command}`;
+    applyProviderObservationFailure(merge, priorObservedMerge, 'provider_command_failed');
     const artifacts = await writePrMergeArtifacts(root, storyId, merge);
-    return { merge, artifacts };
+    return attachExecutionStateSyncBaseline(merge, artifacts);
   }
 
-  const prView = JSON.parse(prViewResult.stdout || '{}');
+  const prViewParse = parseProviderJson(prViewResult, 'pr_view_response_parse_failed');
+  if (!prViewParse.ok) {
+    merge.stop_reason = prViewParse.reason;
+    merge.error = prViewParse.error;
+    applyProviderObservationFailure(merge, priorObservedMerge, 'provider_response_parse_failed');
+    merge.warnings.push(prViewParse.error);
+    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+    return attachExecutionStateSyncBaseline(merge, artifacts);
+  }
+  const prView = prViewParse.value;
   const checks = normalizeChecks(prView.statusCheckRollup);
   const checkSummary = summarizeChecks(checks);
   merge.pr = {
@@ -318,7 +407,7 @@ export async function executeMerge(repoRoot, options = {}) {
       merge.status = 'blocked';
       merge.stop_reason = blockingReasons.join(',');
       const artifacts = await writePrMergeArtifacts(root, storyId, merge);
-      return { merge, artifacts };
+      return attachExecutionStateSyncBaseline(merge, artifacts);
     }
 
     merge.commands.push(formatCommand(prMergeCommand));
@@ -338,10 +427,91 @@ export async function executeMerge(repoRoot, options = {}) {
       merge.stop_reason = 'gh_merge_failed';
       merge.error = `Command failed: ${mergeResult.command}`;
       const artifacts = await writePrMergeArtifacts(root, storyId, merge);
-      return { merge, artifacts };
+      return attachExecutionStateSyncBaseline(merge, artifacts);
+    }
+
+    // `gh pr merge` updates the remote base after the precondition fetch. Refresh
+    // it again before using origin/<base> as delivery authority; otherwise a
+    // successful managed merge is compared with the stale pre-merge ref.
+    const postMergeFetchResult = await runCommand(root, fetchCommand, options);
+    merge.results.push(postMergeFetchResult);
+    if (postMergeFetchResult.exit_code !== 0) {
+      merge.stop_reason = 'post_merge_base_fetch_failed';
+      merge.error = `Post-merge base fetch failed: ${postMergeFetchResult.command}`;
+      applyPostMergeObservationFailure(merge, priorObservedMerge, 'base_fetch_failed', {
+        managedMergeCompleted: true
+      });
+      merge.warnings.push(merge.error);
+      const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+      return attachExecutionStateSyncBaseline(merge, artifacts);
     }
   }
 
+  const mergedViewResult = await runCommand(
+    root,
+    ['gh', buildPrViewArgs(prSelector, repositorySlug, 'url,state,mergedAt,mergeCommit')],
+    options,
+    { cwd: os.tmpdir() }
+  );
+  merge.results.push(mergedViewResult);
+  if (mergedViewResult.exit_code !== 0) {
+    merge.stop_reason = 'post_merge_pr_view_failed';
+    merge.error = `Post-merge PR view failed: ${mergedViewResult.command}`;
+    applyPostMergeObservationFailure(merge, priorObservedMerge, 'provider_command_failed', {
+      managedMergeCompleted: !externallyMerged
+    });
+    merge.warnings.push(merge.error);
+    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+    return attachExecutionStateSyncBaseline(merge, artifacts);
+  }
+  const mergedViewParse = parseProviderJson(mergedViewResult, 'post_merge_response_parse_failed');
+  if (!mergedViewParse.ok) {
+    merge.stop_reason = mergedViewParse.reason;
+    merge.error = mergedViewParse.error;
+    applyPostMergeObservationFailure(merge, priorObservedMerge, 'provider_response_parse_failed', {
+      managedMergeCompleted: !externallyMerged
+    });
+    merge.warnings.push(mergedViewParse.error);
+    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+    return attachExecutionStateSyncBaseline(merge, artifacts);
+  }
+  const mergedView = mergedViewParse.value;
+  merge.pr.url = mergedView.url ?? merge.pr.url;
+  merge.pr.state = mergedView.state ?? merge.pr.state;
+  merge.merge_commit_sha = mergedView.mergeCommit?.oid ?? null;
+  merge.merged_at = mergedView.mergedAt ?? null;
+  if (merge.git?.diff_stats?.refs) {
+    merge.git.diff_stats.refs.merge_commit_sha = merge.merge_commit_sha ?? null;
+  }
+
+  const mergeCommitOnBase = mergedViewParse?.ok === true && merge.pr.state === 'MERGED' && merge.merge_commit_sha
+    ? await gitIsAncestor(root, merge.merge_commit_sha, `origin/${baseBranch}`)
+    : false;
+  if (!mergeCommitOnBase) {
+    merge.delivery.status = 'unverified';
+    merge.delivery.source = 'github_pr';
+    merge.delivery.pr_url = merge.pr.url ?? null;
+    merge.delivery.merge_commit_sha = merge.merge_commit_sha ?? null;
+    merge.delivery.merged_at = merge.merged_at ?? null;
+    merge.reconciliation.status = 'blocked';
+    merge.reconciliation.reasons = [
+      'delivery_not_verified',
+      ...(mergedViewParse && !mergedViewParse.ok ? ['provider_response_parse_failed'] : [])
+    ];
+    merge.reconciliation.evaluated_at = new Date().toISOString();
+    merge.status = 'blocked';
+    merge.stop_reason = externallyMerged ? 'pr_merged_externally_unverified' : 'pr_delivery_unverified';
+    merge.warnings.push(
+      `Delivery could not be confirmed: merge commit ${merge.merge_commit_sha ?? '(unknown)'} is not verified on origin/${baseBranch}; run \`git fetch origin ${baseBranch}\` and retry, or verify the PR manually.`
+    );
+    const artifacts = await writePrMergeArtifacts(root, storyId, merge);
+    return attachExecutionStateSyncBaseline(merge, artifacts);
+  }
+
+  // Branch cleanup is irreversible and must follow authoritative delivery
+  // verification. A successful `gh pr merge` response alone is insufficient:
+  // if the merged view or base ancestry cannot be verified, retain the branch
+  // so an operator can inspect and recover the delivery.
   if (!externallyMerged && deleteBranch && merge.pr.head_ref_name) {
     const remoteDeleteArgs = ['git', ['push', 'origin', '--delete', merge.pr.head_ref_name]];
     merge.branch_cleanup.remote.attempted = true;
@@ -368,52 +538,35 @@ export async function executeMerge(repoRoot, options = {}) {
     }
   }
 
-  const mergedViewResult = await runCommand(
-    root,
-    ['gh', buildPrViewArgs(prSelector, repositorySlug, 'url,state,mergedAt,mergeCommit')],
-    options,
-    { cwd: os.tmpdir() }
-  );
-  merge.results.push(mergedViewResult);
-  if (mergedViewResult.exit_code === 0) {
-    const mergedView = JSON.parse(mergedViewResult.stdout || '{}');
-    merge.pr.url = mergedView.url ?? merge.pr.url;
-    merge.merge_commit_sha = mergedView.mergeCommit?.oid ?? null;
-    merge.merged_at = mergedView.mergedAt ?? null;
-  } else {
-    merge.warnings.push(`Post-merge PR view failed: ${mergedViewResult.command}`);
-  }
-  if (merge.git?.diff_stats?.refs) {
-    merge.git.diff_stats.refs.merge_commit_sha = merge.merge_commit_sha ?? null;
-  }
-
   if (externallyMerged) {
-    if (mergedViewResult.exit_code !== 0) {
-      merge.status = 'blocked';
-      merge.stop_reason = 'pr_merged_externally_unverified';
-      merge.warnings.push('PR is already merged, but the merged PR view could not be fetched to verify the merge commit.');
-      const artifacts = await writePrMergeArtifacts(root, storyId, merge);
-      return { merge, artifacts };
-    }
-    const mergeCommitOnBase = merge.merge_commit_sha
-      ? await gitIsAncestor(root, merge.merge_commit_sha, `origin/${baseBranch}`)
-      : false;
-    if (!mergeCommitOnBase) {
-      merge.status = 'blocked';
-      merge.stop_reason = 'pr_merged_externally_unverified';
-      merge.warnings.push(
-        `PR is already merged, but merge commit ${merge.merge_commit_sha ?? '(unknown)'} could not be confirmed on origin/${baseBranch}; run \`git fetch origin ${baseBranch}\` and retry, or verify the PR manually.`
-      );
-      const artifacts = await writePrMergeArtifacts(root, storyId, merge);
-      return { merge, artifacts };
-    }
     merge.warnings.push(
       `PR was already merged externally at ${merge.merged_at ?? 'unknown time'} (commit ${merge.merge_commit_sha}); reconciled as merged_externally instead of blocking.`
     );
   }
 
+  const deliveryStatus = externallyMerged ? 'merged_externally' : 'merged';
+  merge.delivery = {
+    status: deliveryStatus,
+    source: 'github_pr',
+    pr_url: merge.pr.url ?? null,
+    merge_commit_sha: merge.merge_commit_sha ?? null,
+    merged_at: merge.merged_at ?? null,
+    observed_at: new Date().toISOString()
+  };
+  const reconciliationReasons = collectDeliveryReconciliationReasons(merge);
+  merge.reconciliation = {
+    status: reconciliationReasons.length > 0 ? 'reconciliation_required' : 'reconciled',
+    reasons: reconciliationReasons,
+    evaluated_at: new Date().toISOString(),
+    head_sha: currentHeadSha ?? null
+  };
+  if (reconciliationReasons.length > 0) {
+    merge.warnings.push(
+      `Delivery is verified, but local reconciliation is required: ${reconciliationReasons.join(', ')}`
+    );
+  }
   merge.status = externallyMerged ? 'merged_externally' : 'merged';
-  merge.stop_reason = null;
+  merge.stop_reason = reconciliationReasons.length > 0 ? 'delivery_reconciliation_required' : null;
   let artifacts = await writePrMergeArtifacts(root, storyId, merge);
   await bindStoryTraceability(root, {
     storyId,
@@ -504,7 +657,356 @@ export async function executeMerge(repoRoot, options = {}) {
   await writeCanonicalAuditManifest(root, storyId, canonicalAudit, merge);
   artifacts.canonical_audit_bundle = canonicalAudit.bundle_path;
   artifacts.canonical_audit_dir = canonicalAudit.canonical_dir;
-  return { merge, artifacts };
+  // Capture the persisted merge artifact before releasing the story lock.
+  // The CLI must use this exact snapshot as its follow-up CAS baseline; reading
+  // it after executeMerge returns would accept an intervening operator write.
+  return attachExecutionStateSyncBaseline(merge, artifacts);
+}
+
+async function attachExecutionStateSyncBaseline(merge, artifacts) {
+  const executionStateSyncBaseline = await readJsonIfExists(artifacts?.pr_merge_json);
+  return { merge, artifacts, execution_state_sync_baseline: executionStateSyncBaseline };
+}
+
+function resolvePriorObservedMerge(candidates, { baseBranch, prSelector } = {}) {
+  if (!baseBranch || !prSelector) return null;
+  const candidate = candidates.find((candidate) => {
+    const deliveryStatus = candidate?.delivery?.status ?? candidate?.status;
+    if (!['merged', 'merged_externally'].includes(deliveryStatus)) return false;
+    const candidateBase = candidate.base ?? candidate.git?.base_branch ?? candidate.git?.base_ref ?? null;
+    if (!candidateBase || stripRemote(candidateBase) !== stripRemote(baseBranch)) return false;
+    const candidateSelector = candidate.pr?.selector ?? candidate.pr?.url ?? candidate.delivery?.pr_url ?? null;
+    return candidateSelector === prSelector;
+  }) ?? null;
+  if (!candidate) return null;
+  const deliveryStatus = candidate.delivery?.status ?? candidate.status;
+  return {
+    ...candidate,
+    delivery: {
+      ...(candidate.delivery ?? {}),
+      status: deliveryStatus,
+      observed: candidate.delivery?.observed ?? true,
+      source: candidate.delivery?.source ?? 'legacy_pr_merge',
+      pr_url: candidate.delivery?.pr_url ?? candidate.pr?.url ?? candidate.pr?.selector ?? null,
+      merge_commit_sha: candidate.delivery?.merge_commit_sha ?? candidate.merge_commit_sha ?? null,
+      merged_at: candidate.delivery?.merged_at ?? candidate.merged_at ?? null
+    }
+  };
+}
+
+function applyProviderObservationFailure(merge, priorObservedMerge, reason) {
+  const evaluatedAt = new Date().toISOString();
+  if (priorObservedMerge) {
+    merge.delivery = { ...priorObservedMerge.delivery };
+    merge.merge_commit_sha = priorObservedMerge.merge_commit_sha
+      ?? priorObservedMerge.delivery?.merge_commit_sha
+      ?? null;
+    merge.merged_at = priorObservedMerge.merged_at
+      ?? priorObservedMerge.delivery?.merged_at
+      ?? null;
+    merge.reconciliation = {
+      status: 'reconciliation_required',
+      reasons: [reason],
+      evaluated_at: evaluatedAt,
+      head_sha: merge.current_head_sha ?? null
+    };
+    merge.warnings.push('Preserved previously observed delivery while the current provider observation failed.');
+    return;
+  }
+  merge.delivery.status = 'unverified';
+  merge.delivery.source = 'github_pr';
+  merge.reconciliation.status = 'blocked';
+  merge.reconciliation.reasons = [reason];
+  merge.reconciliation.evaluated_at = evaluatedAt;
+}
+
+function applyPostMergeObservationFailure(merge, priorObservedMerge, reason, {
+  managedMergeCompleted = false
+} = {}) {
+  applyProviderObservationFailure(merge, priorObservedMerge, reason);
+  // A command that has just completed the provider merge but cannot finish
+  // provider/base post-processing is an initial processing failure (exit 1).
+  // A retry with an identity-bound prior delivery remains an unresolved
+  // reconciliation (exit 2) and must not erase that immutable delivery fact.
+  merge.status = managedMergeCompleted && !priorObservedMerge ? 'failed' : 'blocked';
+}
+
+function collectDeliveryReconciliationReasons(merge) {
+  const reasons = [];
+  if (merge.preconditions.gate_ready !== true) reasons.push('gate_not_ready');
+  if (!merge.preconditions.clean_worktree) reasons.push('dirty_worktree');
+  if (merge.preconditions.remote_head_match.status !== 'passed') reasons.push('remote_head_mismatch');
+  if (merge.preconditions.checks_ready.status !== 'passed') reasons.push('checks_not_ready');
+  if (merge.preconditions.review_policy.status !== 'passed') reasons.push('review_policy_not_satisfied');
+  return reasons;
+}
+
+function parseProviderJson(result, reason) {
+  try {
+    return { ok: true, value: JSON.parse(result.stdout || '{}') };
+  } catch (error) {
+    return {
+      ok: false,
+      reason,
+      error: `Provider JSON response could not be parsed for ${result.command}: ${error.message}`
+    };
+  }
+}
+
+export async function persistMergeFollowupState(
+  repoRoot,
+  { storyId, merge, expectedMerge = null },
+  dependencies = {}
+) {
+  if (!storyId || !merge) throw new Error('persistMergeFollowupState requires storyId and merge');
+  const root = path.resolve(repoRoot);
+  return withStoryTransactionLocks([root], storyId, async () => {
+    const mergeArtifactPath = await resolvePrArtifactFile(root, storyId, 'pr-merge.json');
+    if (expectedMerge) {
+      const currentMerge = await readJsonIfExists(mergeArtifactPath);
+      if (!jsonValuesEqual(currentMerge, expectedMerge)) {
+        const conflict = new Error('merge follow-up changed concurrently; refusing to overwrite newer operator guidance');
+        conflict.code = 'merge_followup_transaction_conflict';
+        conflict.artifact_path = mergeArtifactPath;
+        conflict.restore_errors = [{ artifact_path: conflict.artifact_path, message: conflict.message }];
+        throw conflict;
+      }
+    }
+  const originalMerge = structuredClone(merge);
+  try {
+    return await withMergeFollowupPersistenceTransaction(root, storyId, async (runTransactionStep) => {
+      const artifacts = await runTransactionStep((onArtifactWritten) => writePrMergeArtifacts(root, storyId, merge, {
+        onArtifactWritten
+      }));
+      const canonicalAudit = await runTransactionStep((onArtifactWritten) => (
+        dependencies.promoteCanonicalAuditArtifacts ?? promoteCanonicalAuditArtifacts
+      )(root, {
+          storyId,
+          source: 'execute_merge_followup',
+          merge,
+          onArtifactWritten
+        }));
+      merge.canonical_audit = {
+        ...(merge.canonical_audit ?? {}),
+        bundle: toWorkspaceRelative(root, canonicalAudit.bundle_path),
+        directory: toWorkspaceRelative(root, canonicalAudit.canonical_dir),
+        artifact_count: canonicalAudit.bundle.artifacts.length,
+        missing_artifact_count: canonicalAudit.bundle.missing_artifacts.length
+      };
+      await runTransactionStep((onArtifactWritten) => writeCanonicalAuditManifest(
+        root,
+        storyId,
+        canonicalAudit,
+        merge,
+        { onArtifactWritten }
+      ));
+      await runTransactionStep((onArtifactWritten) => writePrMergeArtifacts(root, storyId, merge, {
+        onArtifactWritten
+      }));
+      const canonicalPrDir = path.join(canonicalAudit.canonical_dir, 'pr');
+      await runTransactionStep(async (onArtifactWritten) => {
+        await mkdir(canonicalPrDir, { recursive: true });
+        const canonicalJsonPath = path.join(canonicalPrDir, 'pr-merge.json');
+        const canonicalReportPath = path.join(canonicalPrDir, 'pr-merge.html');
+        await writeFile(canonicalJsonPath, `${JSON.stringify(merge, null, 2)}\n`);
+        await onArtifactWritten(canonicalJsonPath);
+        await writeFile(canonicalReportPath, renderPrMergeHtml(merge, {
+          language: merge.output?.language ?? 'ja'
+        }));
+        await onArtifactWritten(canonicalReportPath);
+      });
+      return { artifacts, canonical_audit: canonicalAudit };
+    });
+  } catch (error) {
+    for (const key of Object.keys(merge)) delete merge[key];
+    Object.assign(merge, originalMerge);
+    throw error;
+  }
+  });
+}
+
+export async function persistMergeRecoveryState(
+  repoRoot,
+  { storyId, merge, expectedMerge = null }
+) {
+  if (!storyId || !merge) throw new Error('persistMergeRecoveryState requires storyId and merge');
+  const root = path.resolve(repoRoot);
+  return withStoryTransactionLocks([root], storyId, async () => {
+    const mergeArtifactPath = await resolvePrArtifactFile(root, storyId, 'pr-merge.json');
+    if (expectedMerge) {
+      const currentMerge = await readJsonIfExists(mergeArtifactPath);
+      if (!jsonValuesEqual(currentMerge, expectedMerge)) {
+        const conflict = new Error('merge recovery state changed concurrently; refusing to overwrite newer operator guidance');
+        conflict.code = 'merge_recovery_state_conflict';
+        conflict.artifact_path = mergeArtifactPath;
+        throw conflict;
+      }
+    }
+    return writePrMergeArtifacts(root, storyId, merge);
+  });
+}
+
+async function withMergeFollowupPersistenceTransaction(repoRoot, storyId, persist) {
+  const root = path.resolve(repoRoot);
+  const transactionRoot = await mkdtemp(path.join(os.tmpdir(), `vibepro-merge-followup-${storyId}-`));
+  const routedPrDir = path.dirname(await resolvePrArtifactFile(root, storyId, 'pr-merge.json'));
+  const targets = collapseMergeFollowupTransactionTargets([
+    routedPrDir,
+    path.join(root, 'docs', 'management', 'audit-artifacts', storyId),
+    path.join(getWorkspaceDir(root), 'vibepro-manifest.json')
+  ]);
+  const snapshots = [];
+  const ownedArtifacts = new Map();
+  try {
+    for (const [index, target] of targets.entries()) {
+      const backup = path.join(transactionRoot, String(index));
+      try {
+        await cp(target, backup, { recursive: true, force: true });
+        snapshots.push({
+          target,
+          backup,
+          existed: true,
+          original_fingerprint: await fingerprintMergeFollowupPath(target),
+          expected_fingerprint: await fingerprintMergeFollowupPath(target),
+          written_fingerprint: null
+        });
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+        snapshots.push({
+          target,
+          backup,
+          existed: false,
+          original_fingerprint: 'missing',
+          expected_fingerprint: 'missing',
+          written_fingerprint: null
+        });
+      }
+    }
+    const markWrites = async (paths) => {
+      for (const artifactPath of [...new Set(paths.map((item) => path.resolve(item)))]) {
+        const snapshot = findMergeFollowupSnapshot(snapshots, artifactPath);
+        if (!snapshot) {
+          throw new Error(`merge follow-up transaction did not snapshot owned artifact: ${artifactPath}`);
+        }
+        const existing = ownedArtifacts.get(artifactPath);
+        ownedArtifacts.set(artifactPath, {
+          artifact_path: artifactPath,
+          original_fingerprint: existing?.original_fingerprint
+            ?? await fingerprintMergeFollowupBackup(snapshot, artifactPath),
+          written_fingerprint: await fingerprintMergeFollowupPath(artifactPath),
+          snapshot
+        });
+        snapshot.expected_fingerprint = await fingerprintMergeFollowupPath(snapshot.target);
+      }
+    };
+    const assertObservedAuthoritiesUnchanged = async () => {
+      for (const snapshot of snapshots) {
+        const observed = await fingerprintMergeFollowupPath(snapshot.target);
+        if (observed === snapshot.expected_fingerprint) continue;
+        const conflict = new Error(
+          `merge follow-up authority changed concurrently; refusing to overwrite newer operator guidance: ${snapshot.target}`
+        );
+        conflict.code = 'merge_followup_transaction_conflict';
+        conflict.artifact_path = snapshot.target;
+        conflict.restore_errors = [{ artifact_path: snapshot.target, message: conflict.message }];
+        throw conflict;
+      }
+    };
+    const runTransactionStep = async (step) => {
+      await assertObservedAuthoritiesUnchanged();
+      return step(async (artifactPath) => {
+        await markWrites([artifactPath]);
+        await assertObservedAuthoritiesUnchanged();
+      });
+    };
+    const result = await persist(runTransactionStep);
+    await assertObservedAuthoritiesUnchanged();
+    return result;
+  } catch (error) {
+    const rollbackErrors = [];
+    for (const owned of [...ownedArtifacts.values()].reverse()) {
+      try {
+        const currentFingerprint = await fingerprintMergeFollowupPath(owned.artifact_path);
+        if (currentFingerprint === owned.original_fingerprint) continue;
+        if (!owned.written_fingerprint || currentFingerprint !== owned.written_fingerprint) {
+          const conflict = new Error(`merge follow-up changed concurrently; refusing rollback overwrite: ${owned.artifact_path}`);
+          conflict.code = 'merge_followup_transaction_conflict';
+          throw conflict;
+        }
+        await restoreMergeFollowupArtifact(owned);
+      } catch (rollbackError) {
+        rollbackErrors.push({ artifact_path: owned.artifact_path, message: rollbackError.message });
+      }
+    }
+    if (rollbackErrors.length > 0) {
+      const transactionError = new Error(
+        `${error.message}; merge follow-up rollback failed: ${rollbackErrors.map((item) => `${item.artifact_path}: ${item.message}`).join('; ')}`,
+        { cause: error }
+      );
+      transactionError.code = 'merge_followup_transaction_restore_failed';
+      transactionError.restore_errors = rollbackErrors;
+      throw transactionError;
+    }
+    throw error;
+  } finally {
+    await rm(transactionRoot, { recursive: true, force: true }).catch(() => null);
+  }
+}
+
+function collapseMergeFollowupTransactionTargets(targets) {
+  const resolved = [...new Set(targets.map((target) => path.resolve(target)))];
+  return resolved.filter((candidate) => !resolved.some((other) => (
+    other !== candidate && candidate.startsWith(`${other}${path.sep}`)
+  )));
+}
+
+function findMergeFollowupSnapshot(snapshots, artifactPath) {
+  return snapshots.find((snapshot) => (
+    artifactPath === snapshot.target
+    || artifactPath.startsWith(`${snapshot.target}${path.sep}`)
+  ));
+}
+
+function mergeFollowupBackupPath(snapshot, artifactPath) {
+  if (artifactPath === snapshot.target) return snapshot.backup;
+  return path.join(snapshot.backup, path.relative(snapshot.target, artifactPath));
+}
+
+async function fingerprintMergeFollowupBackup(snapshot, artifactPath) {
+  if (!snapshot.existed) return 'missing';
+  return fingerprintMergeFollowupPath(mergeFollowupBackupPath(snapshot, artifactPath));
+}
+
+async function restoreMergeFollowupArtifact(owned) {
+  const backupPath = mergeFollowupBackupPath(owned.snapshot, owned.artifact_path);
+  await rm(owned.artifact_path, { recursive: true, force: true });
+  if (owned.original_fingerprint === 'missing') return;
+  await mkdir(path.dirname(owned.artifact_path), { recursive: true });
+  await cp(backupPath, owned.artifact_path, { recursive: true, force: true });
+}
+
+async function fingerprintMergeFollowupPath(targetPath) {
+  try {
+    const metadata = await lstat(targetPath);
+    if (!metadata.isDirectory()) {
+      return `file:${createHash('sha256').update(await readFile(targetPath)).digest('hex')}`;
+    }
+    const hash = createHash('sha256');
+    for (const entry of (await readdir(targetPath)).sort()) {
+      hash.update(entry);
+      hash.update('\0');
+      hash.update(await fingerprintMergeFollowupPath(path.join(targetPath, entry)));
+      hash.update('\0');
+    }
+    return `dir:${hash.digest('hex')}`;
+  } catch (error) {
+    if (error.code === 'ENOENT') return 'missing';
+    throw error;
+  }
+}
+
+function jsonValuesEqual(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right);
 }
 
 async function collectExecuteMergeCostAccounting(root, { storyId, options = {}, baseBranch, currentHeadSha, collectedAt } = {}) {
@@ -796,6 +1298,22 @@ export function renderPrMergeSummary(result) {
   const merge = result.merge ?? result;
   const checks = merge.pr?.checks ?? [];
   const failures = checks.filter((check) => check.status !== 'COMPLETED' || !SUCCESSFUL_CHECK_CONCLUSIONS.has(check.conclusion));
+  const reconciliationAction = resolveReconciliationAction(merge);
+  const persistenceDetails = merge.execution_state_sync?.persistence_error_details ?? null;
+  const restoreErrors = Array.isArray(persistenceDetails?.restore_errors)
+    ? persistenceDetails.restore_errors
+    : [];
+  const synchronizationDiagnostics = merge.execution_state_sync?.status === 'failed'
+    ? [
+        '- execution_state_sync: failed',
+        `- execution_state_sync_reason: ${merge.execution_state_sync.reason}`,
+        `- followup_persistence: ${merge.execution_state_sync.followup_persistence ?? 'unknown'}`,
+        ...(persistenceDetails?.code ? [`- followup_persistence_code: ${persistenceDetails.code}`] : []),
+        ...(persistenceDetails?.cause ? [`- followup_persistence_original_error: ${persistenceDetails.cause}`] : []),
+        `- followup_rollback: ${restoreErrors.length > 0 ? 'incomplete' : 'complete_or_not_required'}`,
+        ...restoreErrors.map((item, index) => `- followup_restore_error_${index + 1}: ${item.artifact_path ?? '-'}: ${item.message ?? 'unknown restore error'}`)
+      ].join('\n')
+    : '';
   return `# Execute Merge
 
 - story: ${merge.story?.story_id ?? '-'}
@@ -805,6 +1323,11 @@ export function renderPrMergeSummary(result) {
 - stop_reason: ${merge.stop_reason ?? 'none'}
 - merge_commit: ${merge.merge_commit_sha ?? '-'}
 - merged_at: ${merge.merged_at ?? '-'}
+- delivery: ${merge.delivery?.status ?? 'unknown'}
+- reconciliation: ${merge.reconciliation?.status ?? 'unknown'}
+- reconciliation_reasons: ${(merge.reconciliation?.reasons ?? []).join('|') || 'none'}
+${reconciliationAction ? reconciliationAction.commands.map((command, index) => `- reconciliation_action_${index + 1}: ${command}`).join('\n') : ''}
+${synchronizationDiagnostics}
 
 ## Preconditions
 
@@ -875,15 +1398,38 @@ function summarizeChecks(checks) {
   }, { pending_count: 0, failing_count: 0 });
 }
 
-async function collectNonWorkspaceDirtyFiles(repoRoot) {
-  const output = await gitOptional(repoRoot, ['status', '--porcelain']);
+async function collectNonWorkspaceDirtyFiles(repoRoot, { storyId } = {}) {
+  const canonicalAuditPrefix = storyId
+    ? `docs/management/audit-artifacts/${storyId}/`
+    : null;
+  const routedPrDir = storyId
+    ? toPosixPath(path.relative(repoRoot, path.dirname(await resolvePrArtifactFile(repoRoot, storyId))))
+    : null;
+  const routedGateArtifact = storyId
+    ? toPosixPath(path.relative(repoRoot, await resolveGateArtifactFile(repoRoot, storyId)))
+    : null;
+  const output = await gitOptional(repoRoot, ['status', '--porcelain', '-uall']);
   const files = String(output ?? '')
     .split('\n')
     .filter(Boolean)
     .map((line) => line.slice(3).trim())
     .filter(Boolean)
-    .filter((file) => !file.startsWith('.vibepro/'));
+    .filter((file) => !file.startsWith('.vibepro/'))
+    .filter((file) => canonicalAuditPrefix === null || !file.startsWith(canonicalAuditPrefix))
+    .filter((file) => file !== routedGateArtifact)
+    .filter((file) => !isRoutedPrLifecycleArtifact(file, routedPrDir));
   return [...new Set(files)];
+}
+
+function isRoutedPrLifecycleArtifact(file, routedPrDir) {
+  if (!routedPrDir) return false;
+  const relative = path.posix.relative(routedPrDir, toPosixPath(file));
+  if (!relative || relative.startsWith('../') || relative.includes('/')) return false;
+  return relative.startsWith('pr-') || relative === 'verification-evidence.json';
+}
+
+function toPosixPath(value) {
+  return String(value).split(path.sep).join('/');
 }
 
 function stripRemote(ref) {
@@ -1015,6 +1561,16 @@ async function gitIsAncestor(repoRoot, ancestor, descendant) {
   }
 }
 
+async function gitTreesEqual(repoRoot, left, right) {
+  if (!left || !right || left === right) return false;
+  try {
+    await execFileAsync('git', ['diff', '--quiet', left, right, '--'], { cwd: repoRoot, encoding: 'utf8' });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function readJsonIfExists(filePath) {
   try {
     return JSON.parse(await readFile(filePath, 'utf8'));
@@ -1028,6 +1584,7 @@ function isCurrentPrLifecycleArtifact(artifact, currentHeadSha) {
   if (!artifact || !currentHeadSha) return false;
   const artifactHeadSha = artifact.artifact_freshness?.artifact_head_sha
     ?? artifact.current_head_sha
+    ?? artifact.git?.head_sha
     ?? artifact.toolchain?.source_git?.commit
     ?? artifact.git_context?.head_sha
     ?? null;
@@ -1053,15 +1610,17 @@ function buildCurrentPrLifecycleArtifactFreshness(kind, headSha, checkedAt) {
   };
 }
 
-async function writePrMergeArtifacts(repoRoot, storyId, merge) {
-  const prDir = path.join(getWorkspaceDir(repoRoot), 'pr', storyId);
-  await mkdir(prDir, { recursive: true });
-  const jsonPath = path.join(prDir, 'pr-merge.json');
-  const reportPath = path.join(prDir, 'pr-merge.html');
+async function writePrMergeArtifacts(repoRoot, storyId, merge, options = {}) {
+  const jsonPath = await resolvePrArtifactFile(repoRoot, storyId, 'pr-merge.json');
+  const reportPath = await resolvePrArtifactFile(repoRoot, storyId, 'pr-merge.html');
+  await mkdir(path.dirname(jsonPath), { recursive: true });
+  await mkdir(path.dirname(reportPath), { recursive: true });
   await writeFile(jsonPath, `${JSON.stringify(merge, null, 2)}\n`);
+  await options.onArtifactWritten?.(jsonPath);
   await writeFile(reportPath, renderPrMergeHtml(merge, {
     language: merge.output?.language ?? 'ja'
   }));
+  await options.onArtifactWritten?.(reportPath);
 
   try {
     const manifest = await readManifest(repoRoot);
@@ -1073,10 +1632,15 @@ async function writePrMergeArtifacts(repoRoot, storyId, merge) {
         latest_pr_url: merge.pr?.url ?? null,
         latest_merge_commit: merge.merge_commit_sha ?? null,
         latest_merged_at: merge.merged_at ?? null,
-        latest_dry_run: merge.dry_run
+        latest_dry_run: merge.dry_run,
+        latest_status: merge.status ?? null,
+        latest_delivery: merge.delivery ?? null,
+        latest_reconciliation: merge.reconciliation ?? null,
+        latest_base: merge.base ?? merge.git?.base_branch ?? null
       }
     };
     await writeManifest(repoRoot, manifest);
+    await options.onArtifactWritten?.(path.join(getWorkspaceDir(repoRoot), 'vibepro-manifest.json'));
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }
@@ -1087,7 +1651,7 @@ async function writePrMergeArtifacts(repoRoot, storyId, merge) {
   };
 }
 
-async function writeCanonicalAuditManifest(repoRoot, storyId, canonicalAudit, merge) {
+async function writeCanonicalAuditManifest(repoRoot, storyId, canonicalAudit, merge, options = {}) {
   try {
     const manifest = await readManifest(repoRoot);
     manifest.canonical_audit_artifacts = {
@@ -1102,6 +1666,7 @@ async function writeCanonicalAuditManifest(repoRoot, storyId, canonicalAudit, me
       }
     };
     await writeManifest(repoRoot, manifest);
+    await options.onArtifactWritten?.(path.join(getWorkspaceDir(repoRoot), 'vibepro-manifest.json'));
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }

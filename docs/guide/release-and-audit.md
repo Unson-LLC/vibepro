@@ -29,6 +29,31 @@ Finalize the intended review surface, commit, record verification and independen
 review, then run `pr prepare` and `pr create`. After CI completes, import it,
 refresh preparation and the existing PR, then merge through `execute merge`.
 
+### Delivery reconciliation operations
+
+The release operator owns reconciliation until the execution state reports a
+reconciled delivery. Observe it with:
+
+```bash
+vibepro execute status . --story-id <story-id> --json
+```
+
+Exit `0` means a valid state was read; inspect its reconciliation fields to
+decide whether follow-up is required. Exit `1` is reserved for a missing or
+corrupt state; stdout remains empty on that failed query and stderr contains
+either a structured JSON error (`--json`) or an operator-facing message.
+Recover a delivered but unreconciled Story with:
+
+```bash
+vibepro execute reconcile . --story-id <story-id> --base <base-ref> --pr <url-or-number>
+```
+
+If no execution state exists yet, use `vibepro execute start` before querying it.
+Reconciliation never rolls back an observed provider delivery. Rollback is
+limited to local execution or canonical-audit persistence state: preserve the
+delivery fact, retain the failed reason and recovery command, repair the local
+or canonical artifact, then rerun `execute reconcile`.
+
 ## Canonical Audit and ROI
 
 `audit replay` checks whether the shipped Story can be reconstructed from canonical artifacts. `usage report --gate-roi --subagent-roi` shows whether gates and independent reviews produced useful decisions relative to their cost. A blocked source remains blocked; it must not appear as zero activity.
