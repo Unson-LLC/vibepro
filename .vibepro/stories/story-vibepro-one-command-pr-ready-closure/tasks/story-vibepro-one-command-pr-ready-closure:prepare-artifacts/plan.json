@@ -1,0 +1,129 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-07-24T13:12:00.000Z",
+  "mode": "implementation_plan",
+  "story": {
+    "story_id": "story-vibepro-one-command-pr-ready-closure",
+    "title": "1コマンド自律実装を実Runtime E2Eで閉じる",
+    "ssot": "local",
+    "status": "completed",
+    "horizon": "now",
+    "view": "dev",
+    "period": "2026-07",
+    "started_at": "2026-07-21",
+    "due_at": null,
+    "category": "quality"
+  },
+  "source_run": {
+    "run_id": "dispatch-76d744478e3f04bc",
+    "gate_status": "stale_evidence",
+    "head_sha": "a9109350819af99df22448d6ed8bd75adf611e36",
+    "source_plan_generated_at": "2026-07-24T13:10:34.245Z"
+  },
+  "task": {
+    "id": "story-vibepro-one-command-pr-ready-closure:prepare-artifacts",
+    "title": "Prepare missing planning artifacts for current-head artifact consistency recovery",
+    "priority": "medium",
+    "finding_id": "gate:artifact_consistency",
+    "source_type": "runtime_dispatch",
+    "source_id": "dispatch-76d744478e3f04bc"
+  },
+  "group": null,
+  "execution": {
+    "plan_allows_repository_changes": true,
+    "cli_mutates_repository": false,
+    "allowed_change_surface": "planning_artifacts_only",
+    "note": "This plan closes the missing Task projection only. It does not close stale review evidence."
+  },
+  "target_routes": [],
+  "target_files": [
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/tasks.json",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/tasks.md",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/briefing.json",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/briefing.md",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/plan.json",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/plan.md",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/handoff.json",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/handoff.md",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/execution.json",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/execution.md"
+  ],
+  "read_first_files": [
+    {
+      "file": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+      "reason": "Story source for acceptance and task surface"
+    },
+    {
+      "file": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "reason": "Architecture source for prepare_artifacts ownership"
+    },
+    {
+      "file": "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+      "reason": "Spec source for traceability"
+    },
+    {
+      "file": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+      "reason": "Gate source of truth for stale current-head review artifacts"
+    }
+  ],
+  "recommended_strategy": {
+    "id": "planning-artifact-recovery",
+    "reason": "The canonical Story, Architecture, and Spec already exist; create only the missing Task projection for the runtime prepare_artifacts dispatch."
+  },
+  "implementation_steps": [
+    {
+      "id": "story",
+      "title": "Confirm Story source",
+      "detail": "Use docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md as the Story authority."
+    },
+    {
+      "id": "architecture",
+      "title": "Confirm Architecture source",
+      "detail": "Use docs/architecture/story-vibepro-one-command-pr-ready-closure.md as the prepare_artifacts action ownership authority."
+    },
+    {
+      "id": "spec",
+      "title": "Confirm Spec source",
+      "detail": "Use docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json and the test plan as canonical Spec inputs."
+    },
+    {
+      "id": "task",
+      "title": "Create Task projection",
+      "detail": "Register the current-head planning-only Task package for story-vibepro-one-command-pr-ready-closure:prepare-artifacts."
+    }
+  ],
+  "verification_commands": [
+    {
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('.vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/tasks.json','utf8'))\"",
+      "reason": "Validate task index JSON"
+    },
+    {
+      "command": "find .vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts -type f | sort",
+      "reason": "Validate task package files exist"
+    },
+    {
+      "command": "node bin/vibepro.js pr prepare . --story-id story-vibepro-one-command-pr-ready-closure --summary-json",
+      "reason": "Refresh VibePro gate summary after artifact creation without creating a PR"
+    }
+  ],
+  "acceptance_criteria": [
+    "Task package exists for story-vibepro-one-command-pr-ready-closure:prepare-artifacts.",
+    "Task package is bound to current HEAD a9109350819af99df22448d6ed8bd75adf611e36.",
+    "Task package references the existing Story, Architecture, and Spec sources.",
+    "Change surface is limited to VibePro planning artifacts."
+  ],
+  "rollback_considerations": [
+    "Remove only the prepare-artifacts task package and its task-index entries."
+  ],
+  "guardrails": [
+    "Do not create or merge a PR.",
+    "Do not waive gates.",
+    "Do not deploy, publish, or perform external side effects.",
+    "Do not modify product code.",
+    "Do not claim gate:artifact_consistency is closed by planning artifacts alone."
+  ],
+  "source_briefing": {
+    "mode": "pre_fix_briefing",
+    "generated_at": "2026-07-24T13:12:00.000Z"
+  }
+}
