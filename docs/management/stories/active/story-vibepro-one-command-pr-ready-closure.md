@@ -12,6 +12,7 @@ architecture_docs:
 spec_docs:
   - docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json
   - docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md
+  - docs/specs/story-vibepro-one-command-pr-ready-closure-execution-topology-replay.md
 related_stories:
   - story-vibepro-autonomous-action-dag
   - story-vibepro-production-runtime-connectors
@@ -43,7 +44,7 @@ updated_at: 2026-07-23
 ## Implementation Tasks
 
 1. `[ARCH]` Architecture、canonical Spec、test planを確定する。
-   - `docs/architecture/story-vibepro-one-command-pr-ready-closure.md`、`docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json`、`docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md`がOCR-S-1..8、run-session callback注入、既存connector/review再利用、human authority境界を固定し、Design SSOTで整合する。
+   - `docs/architecture/story-vibepro-one-command-pr-ready-closure.md`、`docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json`、`docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md`、`docs/specs/story-vibepro-one-command-pr-ready-closure-execution-topology-replay.md`がOCR-S-1..8、run-session callback注入、既存connector/review再利用、human authority境界、execution_topology replay planningを固定し、Design SSOTで整合する。
 2. `[FOUNDATION]` Story scope、Task projection、run-session所属を正本へ登録する。
    - `.vibepro/config.json`、`design-ssot.json`、`src/task-manager.js`、`test/scope-boundary-gate.test.js`、`docs/architecture/target-model.json`、`src/safe-action-orchestrator.js`、`test/safe-action-orchestrator.test.js`がcurrent Story、全変更pathのexact Task target、repair後のverify/review suffix再実行、新ownerのrun-session所属、legacy profile互換を固定する。review継続専用の一時budget amendmentは最終PR surfaceから除去する。
 3. `[CORE]` production action ownerとrepair convergenceを実装する。

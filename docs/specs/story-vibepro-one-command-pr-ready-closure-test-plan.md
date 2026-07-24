@@ -110,6 +110,7 @@ remain compatible without the autonomous seven-field decision descriptor.
 Target artifacts:
 
 - `test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts`
+- `docs/specs/story-vibepro-one-command-pr-ready-closure-execution-topology-replay.md`
 - `.vibepro/verification/story-vibepro-one-command-pr-ready-closure.json`
 - `.vibepro/executions/story-vibepro-one-command-pr-ready-closure/runs/<run-id>/state.json`
 - `.vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json`
@@ -131,6 +132,12 @@ the two explicit branches of OCR-S-2/OCR-S-6, so an environment-backed
 capability stop is not misreported as a failed available-provider execution.
 The Story dogfood run must finish at current-HEAD Trusted PR-ready or a typed
 evidence-backed stop.
+
+The execution-topology replay artifact is the planning source for the
+`flow_replay`, `artifact_replay`, `agent_review`, and `current_verification`
+evidence refresh. It fixes the process, worker, agent, gate, retry, and artifact
+lifecycle checkpoints that the current-head E2E, verification record, and
+independent review must bind after any planning commit.
 
 OCR-S-8 pre-PR acceptance must cite merged PR #372, #377, and #382 for the
 three predecessor Stories without changing or duplicating their implementation.
