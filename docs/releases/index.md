@@ -173,3 +173,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:387:start -->
 - [PR #387](https://github.com/Unson-LLC/vibepro/pull/387) — [2026-07](/releases/2026-07): story-vibepro-infra-story-dependency-cut - workspace-infraからstoryへの許可外依存を削減する
 <!-- vibepro-release-index-pr:387:end -->
+
+<!-- vibepro-release-index-pr:388:start -->
+- [PR #388](https://github.com/Unson-LLC/vibepro/pull/388) — [2026-07](/releases/2026-07): story-vibepro-autonomous-roadmap-catalog-closure - 自律実装ロードマップのStory catalogを完了状態へ整合する
+<!-- vibepro-release-index-pr:388:end -->
