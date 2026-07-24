@@ -165,7 +165,7 @@ export async function refreshOutcome(repoRoot, options = {}) {
       merge
     });
   } catch (error) {
-    await restoreDirectory(canonicalDir, canonicalSnapshot);
+    await restoreDirectorySnapshot(canonicalDir, canonicalSnapshot);
     await rm(canonicalSnapshot.tempRoot, { recursive: true, force: true });
     throw error;
   } finally {
@@ -190,7 +190,7 @@ export async function refreshOutcome(repoRoot, options = {}) {
           );
         }
         if (restorePostcondition.status !== 'applied') {
-          await restoreDirectory(canonicalDir, canonicalSnapshot);
+          await restoreDirectorySnapshot(canonicalDir, canonicalSnapshot);
           await rm(canonicalSnapshot.tempRoot, { recursive: true, force: true });
           throw new OutcomeCommandError(
             'outcome_local_restore_failed',
@@ -205,6 +205,7 @@ export async function refreshOutcome(repoRoot, options = {}) {
     }
   }
   let persistence;
+  let preserveCanonicalSnapshot = false;
   try {
     const relativeDir = toWorkspaceRelative(root, canonical.canonical_dir);
     const persist = options.persistenceService ?? persistCanonicalArtifactsToBase;
@@ -228,10 +229,26 @@ export async function refreshOutcome(repoRoot, options = {}) {
       });
     }
   } catch (error) {
-    await restoreDirectory(canonicalDir, canonicalSnapshot);
+    try {
+      await restoreDirectorySnapshot(canonicalDir, canonicalSnapshot);
+    } catch (restoreError) {
+      preserveCanonicalSnapshot = true;
+      const recoveryError = new OutcomeCommandError(
+        'outcome_canonical_restore_failed',
+        `${error.message}; canonical rollback could not be completed`,
+        {
+          recovery_snapshot: canonicalSnapshot.backup,
+          recovery: 'restore the canonical audit directory from recovery_snapshot before retrying outcome refresh'
+        }
+      );
+      recoveryError.cause = restoreError;
+      throw recoveryError;
+    }
     throw error;
   } finally {
-    await rm(canonicalSnapshot.tempRoot, { recursive: true, force: true });
+    if (!preserveCanonicalSnapshot) {
+      await rm(canonicalSnapshot.tempRoot, { recursive: true, force: true });
+    }
   }
   const reconciliationPath = path.join(
     getWorkspaceDir(root),
@@ -925,11 +942,36 @@ async function snapshotDirectory(target) {
   return { tempRoot, backup, existed };
 }
 
-async function restoreDirectory(target, snapshot) {
-  await rm(target, { recursive: true, force: true });
-  if (snapshot.existed) {
-    await mkdir(path.dirname(target), { recursive: true });
-    await cp(snapshot.backup, target, { recursive: true });
+export async function restoreDirectorySnapshot(target, snapshot, operations = {}) {
+  const copy = operations.cp ?? cp;
+  const makeDirectory = operations.mkdir ?? mkdir;
+  const makeTemporaryDirectory = operations.mkdtemp ?? mkdtemp;
+  const move = operations.rename ?? rename;
+  const remove = operations.rm ?? rm;
+  const parent = path.dirname(target);
+  await makeDirectory(parent, { recursive: true });
+  const restoreRoot = await makeTemporaryDirectory(path.join(parent, `.${path.basename(target)}-restore-`));
+  const replacement = path.join(restoreRoot, 'replacement');
+  const displaced = path.join(restoreRoot, 'displaced');
+  let displacedCurrent = false;
+  try {
+    if (snapshot.existed) {
+      await copy(snapshot.backup, replacement, { recursive: true });
+    }
+    try {
+      await move(target, displaced);
+      displacedCurrent = true;
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+    try {
+      if (snapshot.existed) await move(replacement, target);
+    } catch (error) {
+      if (displacedCurrent) await move(displaced, target);
+      throw error;
+    }
+  } finally {
+    await remove(restoreRoot, { recursive: true, force: true }).catch(() => null);
   }
 }
 

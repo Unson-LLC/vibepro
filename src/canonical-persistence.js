@@ -4,6 +4,12 @@ import path from 'node:path';
 import { executeManagedCommand, sanitizeDiagnostic } from './managed-command-executor.js';
 import { isSafeStoryId } from './story-id.js';
 
+const DEFAULT_CANONICAL_DIRECTORY_LIMITS = Object.freeze({
+  maxFiles: 2_048,
+  maxBytes: 64 * 1024 * 1024,
+  maxDepth: 16
+});
+
 /**
  * Persist a prepared canonical artifact set onto the verified post-merge base.
  * Callers own artifact generation; this service owns base verification,
@@ -250,18 +256,36 @@ function comparablePath(value) {
   return process.platform === 'darwin' ? resolved.replace(/^\/private(?=\/)/, '') : resolved;
 }
 
-export async function collectCanonicalDirectoryFiles(sourceDir, relativeDir) {
+export async function collectCanonicalDirectoryFiles(sourceDir, relativeDir, limits = {}) {
+  const policy = { ...DEFAULT_CANONICAL_DIRECTORY_LIMITS, ...limits };
   const files = new Map();
-  async function visit(current, suffix = '') {
+  let totalBytes = 0;
+  async function visit(current, suffix = '', depth = 0) {
+    if (depth > policy.maxDepth) throw canonicalCollectionLimitError('depth', policy.maxDepth);
     for (const entry of await readdir(current, { withFileTypes: true })) {
       const nextSuffix = suffix ? path.join(suffix, entry.name) : entry.name;
       const absolute = path.join(current, entry.name);
-      if (entry.isDirectory()) await visit(absolute, nextSuffix);
-      else if (entry.isFile()) files.set(path.join(relativeDir, nextSuffix), await readFile(absolute));
+      if (entry.isDirectory()) {
+        await visit(absolute, nextSuffix, depth + 1);
+      } else if (entry.isFile()) {
+        if (files.size >= policy.maxFiles) throw canonicalCollectionLimitError('files', policy.maxFiles);
+        const bytes = await readFile(absolute);
+        totalBytes += bytes.byteLength;
+        if (totalBytes > policy.maxBytes) throw canonicalCollectionLimitError('bytes', policy.maxBytes);
+        files.set(path.join(relativeDir, nextSuffix), bytes);
+      }
     }
   }
   await visit(sourceDir);
   return files;
+}
+
+function canonicalCollectionLimitError(kind, limit) {
+  const error = new Error(`canonical artifact collection exceeded ${kind} limit (${limit})`);
+  error.code = 'canonical_artifact_collection_limit_exceeded';
+  error.limit_kind = kind;
+  error.limit = limit;
+  return error;
 }
 
 function assertAllowedPath(relativePath, allowedRoots) {

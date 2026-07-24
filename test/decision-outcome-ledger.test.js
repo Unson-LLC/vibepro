@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { chmod, mkdtemp, mkdir, readFile, readdir, stat, unlink, writeFile } from 'node:fs/promises';
+import { chmod, cp, mkdtemp, mkdir, readFile, readdir, rename, rm, stat, unlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -28,6 +28,7 @@ import {
   prUrlMatchesRemote,
   recordOutcome,
   refreshOutcome,
+  restoreDirectorySnapshot,
   tryBindDecisionOutcomeDelivery
 } from '../src/outcome-manager.js';
 import { getCanonicalAuditDir, promoteCanonicalAuditArtifacts } from '../src/canonical-audit.js';
@@ -37,6 +38,33 @@ import { readReviewResultForDecisionOutcome, renderDecisionOutcomeReviewInput } 
 import { atomicReplaceFile } from '../src/atomic-file.js';
 
 const STORY_ID = 'story-decision-outcome';
+
+test('canonical rollback stages replacement before displacing current bytes', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-outcome-atomic-restore-'));
+  const target = path.join(root, 'canonical');
+  const backup = path.join(root, 'backup');
+  await mkdir(target, { recursive: true });
+  await mkdir(backup, { recursive: true });
+  await writeFile(path.join(target, 'state.json'), '{"state":"current"}\n');
+  await writeFile(path.join(backup, 'state.json'), '{"state":"prior"}\n');
+
+  await assert.rejects(
+    restoreDirectorySnapshot(target, { existed: true, backup }, {
+      cp,
+      mkdir,
+      mkdtemp,
+      rm,
+      rename: async (from, to) => {
+        if (path.basename(from) === 'replacement') throw new Error('injected replacement rename failure');
+        return rename(from, to);
+      }
+    }),
+    /injected replacement rename failure/
+  );
+
+  assert.equal(await readFile(path.join(target, 'state.json'), 'utf8'), '{"state":"current"}\n');
+  assert.equal(await readFile(path.join(backup, 'state.json'), 'utf8'), '{"state":"prior"}\n');
+});
 
 test('decision outcome ledger accepts existing safe Story ID conventions', () => {
   for (const storyId of ['STR-047', 'US-002', STORY_ID]) {

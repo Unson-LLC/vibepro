@@ -206,6 +206,37 @@ test('canonical audit bundle copies handoff references and reports unresolved re
   );
 });
 
+test('canonical audit ignores traversal-shaped .vibepro references', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-reference-boundary-'));
+  const storyId = 'story-canonical-reference-boundary';
+  const outside = path.join(root, 'outside-secret.json');
+  await writeJson(outside, { secret: true });
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId },
+    crafted_reference: '.vibepro/../../outside-secret.json'
+  });
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
+
+  assert.equal(
+    promoted.bundle.resolved_references.some((item) => item.source.includes('..')),
+    false
+  );
+  await assert.rejects(
+    readFile(path.join(
+      root,
+      'docs',
+      'management',
+      'audit-artifacts',
+      storyId,
+      'references',
+      'outside-secret.json'
+    )),
+    (error) => error.code === 'ENOENT'
+  );
+});
+
 test('canonical audit bundle promotes review requests even when no JSON references them', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-review-request-'));
   const storyId = 'story-review-request-omission';

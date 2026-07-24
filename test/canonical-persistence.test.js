@@ -6,7 +6,10 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 import test from 'node:test';
 
-import { persistCanonicalArtifactsToBase } from '../src/canonical-persistence.js';
+import {
+  collectCanonicalDirectoryFiles,
+  persistCanonicalArtifactsToBase
+} from '../src/canonical-persistence.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -31,6 +34,25 @@ test('GDL-S-9 canonical persistence rejects traversal story IDs before construct
   assert.equal(result.summary.worktree_path, null);
   assert.equal(result.summary.resource.acquisition, 'not_attempted');
   assert.equal(commandCalls, 0);
+});
+
+test('canonical directory collection fails closed on file byte and depth limits', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-collection-limit-'));
+  await mkdir(path.join(root, 'nested', 'deeper'), { recursive: true });
+  await writeFile(path.join(root, 'one.json'), '{}\n');
+  await writeFile(path.join(root, 'two.json'), '{}\n');
+  await writeFile(path.join(root, 'nested', 'deeper', 'three.json'), '{}\n');
+
+  for (const limits of [
+    { maxFiles: 1 },
+    { maxBytes: 2 },
+    { maxDepth: 1 }
+  ]) {
+    await assert.rejects(
+      collectCanonicalDirectoryFiles(root, 'docs/audit', limits),
+      (error) => error.code === 'canonical_artifact_collection_limit_exceeded'
+    );
+  }
 });
 
 test('GDL-CONTRACT-008 persists prepared files atomically and dedupes identical revisions', async () => {

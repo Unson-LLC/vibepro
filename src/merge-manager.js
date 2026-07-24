@@ -27,6 +27,7 @@ import {
   buildDecisionOutcomeDelivery,
   tryBindDecisionOutcomeDelivery
 } from './outcome-manager.js';
+import { assertSafeStoryId } from './story-id.js';
 import { withStoryTransactionLocks } from './story-transaction-lock.js';
 import { bindStoryTraceability } from './traceability.js';
 import { resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
@@ -40,6 +41,7 @@ export async function executeMerge(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = options.storyId;
   if (!storyId) throw new Error('execute merge requires --story-id <id>');
+  assertSafeStoryId(storyId, 'execute merge requires a safe story-* id');
 
   return withStoryTransactionLocks(
     [root],
@@ -1020,6 +1022,7 @@ export async function persistMergeRecoveryState(
 
 async function withMergeFollowupPersistenceTransaction(repoRoot, storyId, persist) {
   const root = path.resolve(repoRoot);
+  assertSafeStoryId(storyId, 'merge follow-up persistence requires a safe story-* id');
   const transactionRoot = await mkdtemp(path.join(os.tmpdir(), `vibepro-merge-followup-${storyId}-`));
   const routedPrDir = path.dirname(await resolvePrArtifactFile(root, storyId, 'pr-merge.json'));
   const targets = collapseMergeFollowupTransactionTargets([

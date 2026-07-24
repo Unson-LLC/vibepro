@@ -2396,7 +2396,7 @@ async function promoteReferencedAuditArtifacts({ root, canonicalDir, artifacts, 
       continue;
     }
 
-    const sourcePath = path.join(root, ref);
+    const sourcePath = resolveContainedPath(root, ref);
     const sourceStat = await statIfExists(sourcePath);
     if (!sourceStat || !sourceStat.isFile()) {
       unresolved_references.push({
@@ -2414,7 +2414,10 @@ async function promoteReferencedAuditArtifacts({ root, canonicalDir, artifacts, 
       continue;
     }
 
-    const targetPath = path.join(canonicalDir, 'references', ref.replace(/^\.vibepro\//, 'vibepro/'));
+    const targetPath = resolveContainedPath(
+      path.join(canonicalDir, 'references'),
+      ref.replace(/^\.vibepro\//, 'vibepro/')
+    );
     await mkdir(path.dirname(targetPath), { recursive: true });
     await writeFile(targetPath, await readFile(sourcePath));
     await onArtifactWritten?.(targetPath);
@@ -2590,7 +2593,25 @@ function extractVibeProReferences(text) {
   if (!text) return [];
   return [...String(text).matchAll(VIBEPRO_REFERENCE_RE)]
     .map((match) => match[0].replace(/[),.;:"'\\\]}]+$/g, ''))
-    .filter((ref) => ref.startsWith('.vibepro/'));
+    .filter(isSafeVibeProReference);
+}
+
+function isSafeVibeProReference(ref) {
+  if (!ref.startsWith('.vibepro/')) return false;
+  const normalized = ref.replaceAll('\\', '/');
+  if (path.posix.normalize(normalized) !== normalized) return false;
+  return normalized.split('/').every((segment) => segment !== '..' && segment !== '');
+}
+
+function resolveContainedPath(root, relativePath) {
+  const resolvedRoot = path.resolve(root);
+  const resolved = path.resolve(resolvedRoot, relativePath);
+  if (resolved !== resolvedRoot && !resolved.startsWith(`${resolvedRoot}${path.sep}`)) {
+    const error = new Error(`artifact reference escapes its authority root: ${relativePath}`);
+    error.code = 'canonical_reference_outside_root';
+    throw error;
+  }
+  return resolved;
 }
 
 async function statIfExists(filePath) {
