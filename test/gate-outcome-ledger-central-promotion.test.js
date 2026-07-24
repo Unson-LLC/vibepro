@@ -10,10 +10,12 @@ import {
   computeCentralLedgerPromotion,
   getGateOutcomeLedgerPath,
   readCentralGateOutcomeLedger,
+  readPromotableGateOutcomeEntries,
   serializeCentralGateOutcomeLedger,
   summarizeGateRoi
 } from '../src/gate-outcome-ledger.js';
 import { createUsageReport } from '../src/usage-report.js';
+import { applyDecisionOutcomeBinding, buildDecisionOutcomeBinding } from '../src/merge-manager.js';
 
 function entry(overrides = {}) {
   return {
@@ -21,6 +23,8 @@ function entry(overrides = {}) {
     entry_key: 'story-x|gate:requirement|needs_review|passed|prev|curr',
     story_id: 'story-x',
     gate_id: 'gate:requirement',
+    previous_status: 'needs_review',
+    resolved_status: 'passed',
     outcome: 'source_fix',
     classification: 'resolving_diff_contains_source_changes',
     resolved_at: '2026-07-07T00:00:00.000Z',
@@ -88,6 +92,102 @@ test('RML-S-3: empty/absent local ledger yields no_entries and writes nothing', 
   assert.equal(undef.status, 'no_entries');
 });
 
+test('GDO-S-2/GDO-S-3: delivery binding requires every local outcome to be promoted or deduplicated', () => {
+  const bound = buildDecisionOutcomeBinding({
+    localEntries: [entry({ entry_key: 'k1' }), entry({ entry_key: 'k2' })],
+    promotion: { status: 'promoted', promoted_count: 1, duplicate_count: 1 },
+    merge: {
+      base: 'develop',
+      delivery: {
+        status: 'merged',
+        pr_url: 'https://github.com/example/repo/pull/2',
+        merge_commit_sha: 'immutable-delivery'
+      }
+    }
+  });
+  assert.equal(bound.status, 'bound');
+  assert.equal(bound.expected_entry_count, 2);
+  assert.equal(bound.promoted_count + bound.duplicate_count, 2);
+  assert.equal(bound.delivery.merge_commit_sha, 'immutable-delivery');
+
+  const pushed = buildDecisionOutcomeBinding({
+    localEntries: [entry({ entry_key: 'k1' })],
+    promotion: { status: 'promoted', promoted_count: 1, duplicate_count: 0 },
+    persistence: { status: 'pushed' }
+  });
+  const alreadyPresent = buildDecisionOutcomeBinding({
+    localEntries: [entry({ entry_key: 'k1' })],
+    promotion: { status: 'promoted', promoted_count: 1, duplicate_count: 0 },
+    persistence: { status: 'already_present' }
+  });
+  assert.equal(pushed.status, 'bound');
+  assert.equal(alreadyPresent.status, 'bound');
+  assert.equal(pushed.persistence_status, null, 'successful persistence does not perturb canonical bytes');
+  assert.equal(alreadyPresent.persistence_status, null, 'idempotent persistence has the same canonical projection');
+
+  const persistenceFailed = buildDecisionOutcomeBinding({
+    localEntries: [entry({ entry_key: 'k1' })],
+    promotion: { status: 'promoted', promoted_count: 1, duplicate_count: 0 },
+    persistence: { status: 'failed', reason: 'canonical_push_failed' }
+  });
+  assert.equal(persistenceFailed.status, 'failed');
+  assert.equal(persistenceFailed.persistence_status, 'failed');
+  assert.equal(persistenceFailed.reason, 'canonical_push_failed');
+
+  const missing = buildDecisionOutcomeBinding({
+    localEntries: [entry()],
+    promotion: null,
+    merge: {
+      base: 'develop',
+      delivery: {
+        status: 'merged',
+        pr_url: 'https://github.com/example/repo/pull/2',
+        merge_commit_sha: 'immutable-delivery'
+      }
+    }
+  });
+  assert.equal(missing.status, 'failed');
+  assert.equal(missing.reason, 'decision_outcome_promotion_missing');
+  assert.equal(missing.delivery.merge_commit_sha, 'immutable-delivery');
+
+  const partial = buildDecisionOutcomeBinding({
+    localEntries: [entry({ entry_key: 'k1' }), entry({ entry_key: 'k2' })],
+    promotion: { status: 'promoted', promoted_count: 1, duplicate_count: 0 }
+  });
+  assert.equal(partial.status, 'failed');
+  assert.equal(partial.reason, 'decision_outcome_binding_count_mismatch');
+
+  const merge = {
+    status: 'merged',
+    stop_reason: null,
+    delivery: {
+      status: 'merged',
+      pr_url: 'https://github.com/example/repo/pull/2',
+      merge_commit_sha: 'immutable-delivery'
+    },
+    reconciliation: { status: 'reconciled', reasons: [] }
+  };
+  applyDecisionOutcomeBinding(merge, {
+    localEntries: [entry()],
+    promotion: { status: 'failed', reason: 'central_ledger_parse_failed' }
+  });
+  assert.equal(merge.status, 'merged', 'immutable delivery projection remains merged');
+  assert.equal(merge.delivery.merge_commit_sha, 'immutable-delivery');
+  assert.equal(merge.reconciliation.status, 'reconciliation_required');
+  assert.deepEqual(merge.reconciliation.reasons, ['decision_outcome_binding_failed']);
+  assert.equal(merge.stop_reason, 'decision_outcome_binding_failed');
+});
+
+test('GDO-S-4: stories without local decision outcomes do not invent a binding failure', () => {
+  const binding = buildDecisionOutcomeBinding({
+    localEntries: [],
+    promotion: { status: 'no_entries', promoted_count: 0, duplicate_count: 0 }
+  });
+  assert.equal(binding.status, 'not_applicable');
+  assert.equal(binding.required, false);
+  assert.equal(binding.reason, 'no_local_decision_outcomes');
+});
+
 test('RML-S-6: corrupt central ledger fails the promotion and is not overwritten', () => {
   const corrupt = computeCentralLedgerPromotion({
     localEntries: [entry()],
@@ -104,6 +204,59 @@ test('RML-S-6: corrupt central ledger fails the promotion and is not overwritten
   assert.equal(invalidShape.status, 'failed');
   assert.equal(invalidShape.reason, 'central_ledger_shape_invalid');
   assert.equal(invalidShape.serialized, null);
+});
+
+test('RML-S-6: central promotion rejects incompatible envelopes and malformed entries', () => {
+  const cases = [
+    [
+      JSON.stringify({ schema_version: '9.9.9', model: 'vibepro-gate-outcome-ledger-v3', entries: [] }),
+      'central_ledger_schema_invalid'
+    ],
+    [
+      JSON.stringify({ schema_version: '0.1.0', model: 'wrong-model', entries: [] }),
+      'central_ledger_model_invalid'
+    ],
+    [centralText([entry({ entry_key: '' })]), 'central_ledger_entry_invalid'],
+    [centralText([entry({ entry_key: 'duplicate' }), entry({ entry_key: 'duplicate' })]), 'central_ledger_entry_duplicate']
+  ];
+  for (const [centralTextValue, reason] of cases) {
+    const result = computeCentralLedgerPromotion({ localEntries: [entry()], centralText: centralTextValue });
+    assert.equal(result.status, 'failed');
+    assert.equal(result.reason, reason);
+    assert.equal(result.serialized, null);
+  }
+});
+
+test('GDL-S-7 promotion source rejects malformed entries across the complete local ledger', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-rml-entry-validation-'));
+  const ledgerPath = getGateOutcomeLedgerPath(repo);
+  await mkdir(path.dirname(ledgerPath), { recursive: true });
+  const invalidEntries = [
+    entry({ entry_key: '' }),
+    entry({ entry_key: 'wrong-schema', schema_version: '9.9.9' }),
+    entry({ entry_key: 'missing-story', story_id: '' }),
+    entry({ entry_key: 'bad-outcome', outcome: 'invented' })
+  ];
+  await writeFile(ledgerPath, JSON.stringify({
+    schema_version: '0.1.0',
+    model: 'vibepro-gate-outcome-ledger-v3',
+    entries: [entry({ entry_key: 'mine', story_id: 'story-mine' }), ...invalidEntries]
+  }));
+
+  const result = await readPromotableGateOutcomeEntries(repo, 'story-mine');
+  assert.equal(result.status, 'failed');
+  assert.equal(result.reason, 'local_gate_outcome_ledger_entry_invalid');
+  assert.deepEqual(result.entries, []);
+});
+
+test('GDO-S-2 malformed local entries fail promotion instead of producing a bound count', () => {
+  const result = computeCentralLedgerPromotion({
+    localEntries: [entry({ entry_key: '' })],
+    centralText: null
+  });
+  assert.equal(result.status, 'failed');
+  assert.equal(result.reason, 'local_gate_outcome_ledger_entry_invalid');
+  assert.equal(result.serialized, null);
 });
 
 test('RML-S-5: serialization is deterministic regardless of input order', () => {
@@ -154,6 +307,57 @@ test('collectPromotableGateOutcomeEntries filters the local ledger by story_id',
   const entries = await collectPromotableGateOutcomeEntries(repo, 'story-mine');
   assert.equal(entries.length, 1);
   assert.equal(entries[0].entry_key, 'mine');
+});
+
+test('GDL-S-7 promotion source distinguishes absent, genuine empty, parse, schema, model, and shape states', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-rml-source-state-'));
+  const ledgerPath = getGateOutcomeLedgerPath(repo);
+
+  const absent = await readPromotableGateOutcomeEntries(repo, 'story-mine');
+  assert.equal(absent.status, 'absent');
+  assert.equal(absent.reason, 'local_gate_outcome_ledger_absent');
+
+  await mkdir(path.dirname(ledgerPath), { recursive: true });
+  await writeFile(ledgerPath, JSON.stringify({
+    schema_version: '0.1.0',
+    model: 'vibepro-gate-outcome-ledger-v3',
+    entries: []
+  }));
+  const empty = await readPromotableGateOutcomeEntries(repo, 'story-mine');
+  assert.equal(empty.status, 'empty');
+  assert.equal(empty.reason, 'no_local_decision_outcomes');
+
+  const invalidCases = [
+    ['{not-json', 'local_gate_outcome_ledger_parse_failed'],
+    [JSON.stringify({ schema_version: '9.9.9', model: 'vibepro-gate-outcome-ledger-v3', entries: [] }), 'local_gate_outcome_ledger_schema_invalid'],
+    [JSON.stringify({ schema_version: '0.1.0', model: 'wrong-model', entries: [] }), 'local_gate_outcome_ledger_model_invalid'],
+    [JSON.stringify({ schema_version: '0.1.0', model: 'vibepro-gate-outcome-ledger-v3', entries: {} }), 'local_gate_outcome_ledger_shape_invalid']
+  ];
+  for (const [contents, reason] of invalidCases) {
+    await writeFile(ledgerPath, contents);
+    const invalid = await readPromotableGateOutcomeEntries(repo, 'story-mine');
+    assert.equal(invalid.status, 'failed');
+    assert.equal(invalid.reason, reason);
+    assert.deepEqual(invalid.entries, []);
+  }
+});
+
+test('GDL-S-7 known v1 and v2 ledgers remain readable as legacy empty promotion sources', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-rml-legacy-promotion-'));
+  const ledgerPath = getGateOutcomeLedgerPath(repo);
+  await mkdir(path.dirname(ledgerPath), { recursive: true });
+
+  for (const model of ['vibepro-gate-outcome-ledger-v1', 'vibepro-gate-outcome-ledger-v2']) {
+    await writeFile(ledgerPath, JSON.stringify({
+      schema_version: '0.1.0',
+      model,
+      entries: [entry({ entry_key: `${model}-entry`, story_id: 'story-mine' })]
+    }));
+    const result = await readPromotableGateOutcomeEntries(repo, 'story-mine');
+    assert.equal(result.status, 'empty', model);
+    assert.equal(result.reason, 'legacy_gate_outcome_ledger_not_promotable', model);
+    assert.deepEqual(result.entries, [], model);
+  }
 });
 
 test('RML-S-4: usage report --gate-roi reads the central ledger with explicit gaps', async () => {

@@ -13,6 +13,10 @@ export const GATE_OUTCOMES = new Set([
 
 const LEDGER_SCHEMA_VERSION = '0.1.0';
 const LEDGER_MODEL = 'vibepro-gate-outcome-ledger-v3';
+const LEGACY_LEDGER_MODELS = new Set([
+  'vibepro-gate-outcome-ledger-v1',
+  'vibepro-gate-outcome-ledger-v2'
+]);
 export const UNRESOLVED_STATUSES = new Set([
   'block',
   'blocked',
@@ -38,11 +42,71 @@ export function getCentralGateOutcomeLedgerPath(repoRoot) {
   return path.join(path.resolve(repoRoot), CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH);
 }
 
+// Promotion is a delivery-time boundary, so it must distinguish a genuinely
+// absent/empty ledger from one whose contents cannot be trusted. The regular
+// readGateOutcomeLedger path remains tolerant for existing local consumers.
+export async function readPromotableGateOutcomeEntries(repoRoot, storyId) {
+  const ledgerPath = getGateOutcomeLedgerPath(repoRoot);
+  let text;
+  try {
+    text = await readFile(ledgerPath, 'utf8');
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return promotionSourceResult('absent', 'local_gate_outcome_ledger_absent', []);
+    }
+    throw error;
+  }
+
+  let data;
+  try {
+    data = JSON.parse(text);
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      return promotionSourceResult('failed', 'local_gate_outcome_ledger_parse_failed', []);
+    }
+    throw error;
+  }
+
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return promotionSourceResult('failed', 'local_gate_outcome_ledger_shape_invalid', []);
+  }
+  if (data.schema_version !== LEDGER_SCHEMA_VERSION) {
+    return promotionSourceResult('failed', 'local_gate_outcome_ledger_schema_invalid', []);
+  }
+  if (LEGACY_LEDGER_MODELS.has(data.model)) {
+    return promotionSourceResult('empty', 'legacy_gate_outcome_ledger_not_promotable', []);
+  }
+  if (data.model !== LEDGER_MODEL) {
+    return promotionSourceResult('failed', 'local_gate_outcome_ledger_model_invalid', []);
+  }
+  if (!Array.isArray(data.entries)) {
+    return promotionSourceResult('failed', 'local_gate_outcome_ledger_shape_invalid', []);
+  }
+  const entryValidation = validateGateOutcomeEntries(data.entries);
+  if (!entryValidation.valid) {
+    return promotionSourceResult('failed', entryValidation.duplicate
+      ? 'local_gate_outcome_ledger_entry_duplicate'
+      : 'local_gate_outcome_ledger_entry_invalid', []);
+  }
+
+  const entries = data.entries.filter((entry) => entry?.story_id === storyId);
+  return promotionSourceResult(
+    entries.length > 0 ? 'ok' : 'empty',
+    entries.length > 0 ? null : 'no_local_decision_outcomes',
+    entries
+  );
+}
+
 // Collects the local ledger entries that belong to a single story so they can be
 // promoted into the tracked central ledger during execute merge.
 export async function collectPromotableGateOutcomeEntries(repoRoot, storyId) {
-  const ledger = await readGateOutcomeLedger(repoRoot);
-  return (ledger.entries ?? []).filter((entry) => entry.story_id === storyId);
+  const result = await readPromotableGateOutcomeEntries(repoRoot, storyId);
+  if (result.status === 'failed') {
+    const error = new Error(result.reason);
+    error.code = result.reason;
+    throw error;
+  }
+  return result.entries;
 }
 
 // Deterministic serialization of the central ledger: entries sorted by entry_key
@@ -77,6 +141,13 @@ export function computeCentralLedgerPromotion({ localEntries = [], centralText =
     };
   }
 
+  const localValidation = validateGateOutcomeEntries(localEntries);
+  if (!localValidation.valid) {
+    return failedPromotion(localValidation.duplicate
+      ? 'local_gate_outcome_ledger_entry_duplicate'
+      : 'local_gate_outcome_ledger_entry_invalid', centralPath);
+  }
+
   let existing = [];
   if (centralText !== null && String(centralText).trim() !== '') {
     let parsed;
@@ -92,15 +163,20 @@ export function computeCentralLedgerPromotion({ localEntries = [], centralText =
         serialized: null
       };
     }
-    if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.entries)) {
-      return {
-        status: 'failed',
-        reason: 'central_ledger_shape_invalid',
-        promoted_count: 0,
-        duplicate_count: 0,
-        central_ledger_path: centralPath,
-        serialized: null
-      };
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed) || !Array.isArray(parsed.entries)) {
+      return failedPromotion('central_ledger_shape_invalid', centralPath);
+    }
+    if (parsed.schema_version !== LEDGER_SCHEMA_VERSION) {
+      return failedPromotion('central_ledger_schema_invalid', centralPath);
+    }
+    if (parsed.model !== LEDGER_MODEL) {
+      return failedPromotion('central_ledger_model_invalid', centralPath);
+    }
+    const centralValidation = validateGateOutcomeEntries(parsed.entries);
+    if (!centralValidation.valid) {
+      return failedPromotion(centralValidation.duplicate
+        ? 'central_ledger_entry_duplicate'
+        : 'central_ledger_entry_invalid', centralPath);
     }
     existing = parsed.entries;
   }
@@ -125,6 +201,38 @@ export function computeCentralLedgerPromotion({ localEntries = [], centralText =
     duplicate_count: duplicate,
     central_ledger_path: centralPath,
     serialized: serializeCentralGateOutcomeLedger(merged)
+  };
+}
+
+function validateGateOutcomeEntries(entries) {
+  if (!Array.isArray(entries)) return { valid: false, duplicate: false };
+  const keys = new Set();
+  for (const entry of entries) {
+    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+      return { valid: false, duplicate: false };
+    }
+    const requiredText = ['entry_key', 'story_id', 'gate_id', 'classification'];
+    if (entry.schema_version !== LEDGER_SCHEMA_VERSION
+      || requiredText.some((field) => typeof entry[field] !== 'string' || entry[field].trim() === '')
+      || !GATE_OUTCOMES.has(entry.outcome)
+      || typeof entry.resolved_at !== 'string'
+      || !Number.isFinite(Date.parse(entry.resolved_at))) {
+      return { valid: false, duplicate: false };
+    }
+    if (keys.has(entry.entry_key)) return { valid: false, duplicate: true };
+    keys.add(entry.entry_key);
+  }
+  return { valid: true, duplicate: false };
+}
+
+function failedPromotion(reason, centralPath) {
+  return {
+    status: 'failed',
+    reason,
+    promoted_count: 0,
+    duplicate_count: 0,
+    central_ledger_path: centralPath,
+    serialized: null
   };
 }
 
@@ -428,6 +536,15 @@ function emptyLedger() {
     model: LEDGER_MODEL,
     updated_at: null,
     entries: []
+  };
+}
+
+function promotionSourceResult(status, reason, entries) {
+  return {
+    status,
+    reason,
+    source_ledger: '.vibepro/gate-outcomes/ledger.json',
+    entries
   };
 }
 

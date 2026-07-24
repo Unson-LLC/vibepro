@@ -1,5 +1,7 @@
 import crypto from 'node:crypto';
 
+import { projectDecisionOutcomeSummary } from './decision-outcome-ledger.js';
+
 /**
  * Per-artifact size budget for `pr prepare`.
  *
@@ -122,24 +124,53 @@ const KNOWN_EXTRACTORS = {
         unused_artifact_count: ledger.unused_artifact_count ?? 0
       }
     };
+  },
+  'decision-outcome-ledger.json'(parsed, { detailLimit = 5 } = {}) {
+    const projection = projectDecisionOutcomeSummary(parsed, { limit: detailLimit });
+    return {
+      status_fields: {
+        model: parsed?.model ?? null,
+        ledger_path: projection?.ledger_path ?? null,
+        ledger_digest: projection?.ledger_digest ?? null,
+        evidence_head_sha: projection?.evidence_head_sha ?? null
+      },
+      top_level_counts: {
+        total_count: projection?.total_count ?? 0,
+        returned_count: projection?.returned_count ?? 0,
+        omitted_count: projection?.omitted_count ?? 0
+      },
+      details: {
+        status_counts: projection?.status_counts ?? {},
+        entries: projection?.entries ?? []
+      }
+    };
   }
 };
 
-function buildConclusion(filename, parsed) {
+function buildConclusion(filename, parsed, options = {}) {
   const extractor = KNOWN_EXTRACTORS[filename];
   if (extractor) {
-    const known = extractor(parsed);
+    const known = extractor(parsed, options);
     const generic = extractGenericConclusion(parsed);
     return {
       status_fields: { ...generic.status_fields, ...known.status_fields },
-      top_level_counts: { ...generic.top_level_counts, ...known.top_level_counts }
+      top_level_counts: { ...generic.top_level_counts, ...known.top_level_counts },
+      ...(known.details ? { details: known.details } : {})
     };
   }
   return extractGenericConclusion(parsed);
 }
 
-function buildSummaryObject({ filename, parsed, content, bytes, budgetBytes, highlightLimit = MAX_HIGHLIGHTS }) {
-  const conclusion = buildConclusion(filename, parsed);
+function buildSummaryObject({
+  filename,
+  parsed,
+  content,
+  bytes,
+  budgetBytes,
+  highlightLimit = MAX_HIGHLIGHTS,
+  detailLimit = 5
+}) {
+  const { details, ...conclusion } = buildConclusion(filename, parsed, { detailLimit });
   const highlights = Object.entries(conclusion.status_fields)
     .slice(0, highlightLimit)
     .map(([key, value]) => `${key}=${value}`);
@@ -150,6 +181,7 @@ function buildSummaryObject({ filename, parsed, content, bytes, budgetBytes, hig
     source_bytes: bytes,
     source_content_hash: sha256(content),
     conclusion,
+    ...(details ? { details } : {}),
     highlights,
     over_budget_reason: `source_bytes exceeds budget ${budgetBytes}`,
     full_artifact_path: filename
@@ -168,11 +200,21 @@ function serializeSummary(summary) {
 export function buildArtifactSummaryContent({ filename, content, bytes, budgetBytes }) {
   const parsed = JSON.parse(content);
   const maxSummaryBytes = Math.floor(bytes * SUMMARY_MAX_FRACTION);
-  for (const highlightLimit of [MAX_HIGHLIGHTS, 4, 0]) {
-    const summary = buildSummaryObject({ filename, parsed, content, bytes, budgetBytes, highlightLimit });
-    const serialized = serializeSummary(summary);
-    if (Buffer.byteLength(serialized, 'utf8') <= maxSummaryBytes) {
-      return serialized;
+  for (const detailLimit of [5, 4, 3, 2, 1, 0]) {
+    for (const highlightLimit of [MAX_HIGHLIGHTS, 4, 0]) {
+      const summary = buildSummaryObject({
+        filename,
+        parsed,
+        content,
+        bytes,
+        budgetBytes,
+        highlightLimit,
+        detailLimit
+      });
+      const serialized = serializeSummary(summary);
+      if (Buffer.byteLength(serialized, 'utf8') <= maxSummaryBytes) {
+        return serialized;
+      }
     }
   }
   return null;

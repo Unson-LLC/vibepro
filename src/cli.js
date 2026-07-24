@@ -167,6 +167,7 @@ import {
   executeMerge,
   persistMergeFollowupState,
   persistMergeRecoveryState,
+  projectPublicPrMergeResult,
   renderPrMergeSummary
 } from './merge-manager.js';
 import {
@@ -196,6 +197,8 @@ import {
   renderDecisionRecordSummary,
   renderDecisionStatusSummary
 } from './decision-records.js';
+import { OutcomeCommandError, recordOutcome, refreshOutcome, requireOutcomeStoryId } from './outcome-manager.js';
+import { sanitizeDiagnostic } from './managed-command-executor.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import {
   exportStoryEngineeringPlaybook,
@@ -497,6 +500,9 @@ Usage:
   vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
+  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]
+  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]
+  Outcome workflow: usage report --json -> choose trace/collision, parent revision, and one eligible source -> outcome record -> outcome refresh. Zero sources require current trace-specific verification evidence or an accepted waiver before rerunning pr prepare/report; multiple sources require an explicit --source from the bounded report; stale parents require a fresh report.
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
   vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
@@ -770,6 +776,9 @@ Usage:
   vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
+  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]
+  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]
+  Outcome workflow: usage report --json -> choose trace/collision, parent revision, and one eligible source -> outcome record -> outcome refresh. Zero sources require current trace-specific verification evidence or an accepted waiver before rerunning pr prepare/report; multiple sources require an explicit --source from the bounded report; stale parents require a fresh report.
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
   vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
@@ -833,7 +842,7 @@ export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'doctor', 'status', 'usage', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
   'playbook', 'journey', 'execute',
-  'decision', 'verify', 'review', 'adjudicate', 'guard', 'checkpoint', 'gate', 'spec', 'report',
+  'decision', 'outcome', 'verify', 'review', 'adjudicate', 'guard', 'checkpoint', 'gate', 'spec', 'report',
   'audit', 'design-modernize', 'design-system', 'design-ssot', 'uiux', 'explore', 'performance',
   'workspace'
 ];
@@ -2311,6 +2320,60 @@ export async function runCli(argv, io = {}) {
       return { exitCode: 1, command };
     }
 
+    if (command === 'outcome') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h') {
+        write(stdout, renderOutcomeHelp(null, getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (!['record', 'refresh'].includes(subcommand)) {
+        write(stderr, `Unknown outcome command: ${subcommand ?? ''}\n\n${renderOutcomeHelp(null, getOption(rest, '--language'))}`);
+        return { exitCode: 1, command };
+      }
+      if (hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderOutcomeHelp(subcommand, getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand };
+      }
+      const storyId = requireOutcomeStoryId(
+        getOption(rest, '--id'),
+        `outcome ${subcommand} requires --id <story-id>`
+      );
+      await assertManagedWorktreeCommandAllowed(repoRoot, { storyId, commandName: `outcome ${subcommand}` });
+      if (subcommand === 'record') {
+        const valueJson = getOption(rest, '--value-json');
+        let parsedValue;
+        try {
+          parsedValue = valueJson == null ? undefined : JSON.parse(valueJson);
+        } catch {
+          throw new OutcomeCommandError('outcome_value_json_invalid', '--value-json must contain valid JSON');
+        }
+        const result = await recordOutcome(repoRoot, {
+          storyId,
+          traceId: getOption(rest, '--trace'),
+          collisionGroup: getOption(rest, '--collision-group'),
+          traceSourceRef: getOption(rest, '--trace-source-ref'),
+          parentRevision: getOption(rest, '--parent-revision'),
+          status: getOption(rest, '--status'),
+          producer: getOption(rest, '--producer'),
+          source: getOption(rest, '--source'),
+          value: parsedValue,
+          reason: getOption(rest, '--reason')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderOutcomeCommandResult(result, { subcommand }));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'refresh') {
+        const result = await refreshOutcome(repoRoot, { storyId, baseRef: getOption(rest, '--base') });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderOutcomeCommandResult(result, { subcommand }));
+        return { exitCode: 0, command, subcommand, result };
+      }
+    }
+
     if (command === 'checkpoint') {
       const stage = rest[0] && !rest[0].startsWith('--') ? rest[0] : null;
       const repoIndex = stage ? 1 : 0;
@@ -2824,7 +2887,7 @@ export async function runCli(argv, io = {}) {
           write(stderr, `${executionStateSyncFailure}\n`);
         }
         write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.merge, null, 2)}\n`
+          ? `${JSON.stringify(projectPublicPrMergeResult(result), null, 2)}\n`
           : renderPrMergeSummary(result));
         return {
           exitCode: executionStateSyncFailure
@@ -3833,7 +3896,11 @@ export async function runCli(argv, io = {}) {
     write(stderr, `Unknown command: ${command}\n\n${renderHelp()}`);
     return { exitCode: 1, command };
   } catch (error) {
-    if (hasFlag(argv, '--json')) {
+    if (error instanceof OutcomeCommandError) {
+      write(stderr, hasFlag(argv, '--json')
+        ? `${JSON.stringify(serializeOutcomeCommandError(error), null, 2)}\n`
+        : renderOutcomeCommandError(error));
+    } else if (hasFlag(argv, '--json')) {
       write(stderr, `${JSON.stringify(buildCliErrorPayload(error), null, 2)}\n`);
     } else {
       write(stderr, `${error.message}\n`);
@@ -3929,6 +3996,143 @@ function serializeCliError(error, seen = new Set()) {
     restore_error: error.restore_error ?? null,
     restore_errors: error.restore_errors ?? []
   };
+}
+
+export function serializeOutcomeCommandError(error) {
+  return sanitizeOutcomeErrorValue(error.toJSON());
+}
+
+function sanitizeOutcomeErrorValue(value) {
+  if (Array.isArray(value)) return value.map(sanitizeOutcomeErrorValue);
+  if (typeof value === 'string') return sanitizeDiagnostic(value, { maxBytes: 4096 });
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(Object.entries(value)
+    .filter(([key]) => ![
+      'stdout', 'stderr', 'output', 'command', 'commands', 'args', 'env',
+      'results', 'worktree_path', 'primary'
+    ].includes(key))
+    .map(([key, child]) => [key, sanitizeOutcomeErrorValue(child)]));
+}
+
+export function renderOutcomeCommandError(error) {
+  const safeError = serializeOutcomeCommandError(error);
+  const details = safeError;
+  const sources = details.eligible_outcome_sources;
+  const lines = [`${safeError.error_id}: ${safeError.message}`];
+  if (details.ledger_path) lines.push(`ledger: ${details.ledger_path} digest=${details.ledger_digest ?? 'unknown'}`);
+  if (Array.isArray(details.candidates)) {
+    lines.push(`trace candidates: total=${details.candidate_count ?? details.candidates.length} returned=${details.candidates.length} omitted=${details.omitted_count ?? 0} truncated=${details.truncated === true}`);
+    for (const candidate of details.candidates) {
+      const selector = candidate.decision_trace_id
+        ? `trace=${candidate.decision_trace_id}`
+        : `collision-group=${candidate.collision_group} trace-source-ref=${candidate.trace_source_ref}`;
+      lines.push(`- ${selector} parent-revision=${candidate.parent_revision_fingerprint}`);
+    }
+  }
+  if (sources) {
+    lines.push(`eligible sources: total=${sources.total_count ?? 0} returned=${sources.returned_count ?? sources.entries?.length ?? 0} omitted=${sources.omitted_count ?? 0} truncated=${sources.truncated === true}`);
+    for (const source of sources.entries ?? []) lines.push(`- ${source.ref} (${source.kind}, digest=${source.digest})`);
+  }
+  if (details.verification_failure) lines.push(`authority verification: ${details.verification_failure}`);
+  if (details.persistence) lines.push(...renderPersistenceFailure(details.persistence));
+  if (details.ledger_postcondition) {
+    lines.push(`ledger postcondition: status=${details.ledger_postcondition.status ?? 'unknown'} expected-digest=${details.ledger_postcondition.expected_digest ?? 'unknown'} observed-digest=${details.ledger_postcondition.observed_digest ?? 'unknown'}`);
+  }
+  if (details.reconciliation) {
+    lines.push(`reconciliation: status=${details.reconciliation.status ?? 'unknown'} artifact-status=${details.reconciliation.artifact_status ?? 'unknown'} artifact=${details.reconciliation.artifact_path ?? 'unknown'}`);
+  }
+  if (details.original_error) {
+    lines.push(`original failure: code=${details.original_error.code ?? 'unknown'} message=${details.original_error.message ?? 'unknown'}`);
+    if (details.original_error.persistence) {
+      lines.push(...renderPersistenceFailure(details.original_error.persistence)
+        .map((line) => `original ${line}`));
+    }
+    if (details.original_error.ledger_postcondition) {
+      lines.push(`original ledger postcondition: status=${details.original_error.ledger_postcondition.status ?? 'unknown'} expected-digest=${details.original_error.ledger_postcondition.expected_digest ?? 'unknown'} observed-digest=${details.original_error.ledger_postcondition.observed_digest ?? 'unknown'}`);
+    }
+    if (details.original_error.reconciliation) {
+      lines.push(`original reconciliation: status=${details.original_error.reconciliation.status ?? 'unknown'} artifact-status=${details.original_error.reconciliation.artifact_status ?? 'unknown'} artifact=${details.original_error.reconciliation.artifact_path ?? 'unknown'}`);
+    }
+  }
+  if (details.recovery) lines.push(`recovery: ${details.recovery}`);
+  return `${lines.join('\n')}\n`;
+}
+
+export function renderOutcomeCommandResult(result, { subcommand } = {}) {
+  const lines = [
+    `outcome ${subcommand ?? 'command'}: ${result.status ?? 'completed'}`,
+    `story: ${result.story_id ?? 'unknown'}`
+  ];
+  if (subcommand === 'record') {
+    const selector = result.resolved_selector ?? {};
+    if (selector.decision_trace_id) lines.push(`trace: ${selector.decision_trace_id}`);
+    else if (selector.collision_group || selector.trace_source_ref) {
+      lines.push(`trace: collision-group=${selector.collision_group ?? 'unknown'} source-ref=${selector.trace_source_ref ?? 'unknown'}`);
+    }
+    lines.push(`parent revision: ${result.parent_revision_fingerprint ?? 'unknown'}`);
+    lines.push(`observation: ${result.artifact_path ?? 'unknown'} digest=${result.artifact_digest ?? 'unknown'}`);
+    lines.push(`producer: ${result.producer ?? 'unknown'}`);
+    if (result.resolved_source) {
+      lines.push(`source: ${result.resolved_source.ref ?? 'unknown'} kind=${result.resolved_source.kind ?? 'unknown'} digest=${result.resolved_source.digest ?? 'unknown'}`);
+    }
+  } else if (subcommand === 'refresh') {
+    lines.push(`ledger: ${result.ledger_path ?? 'unknown'} digest=${result.ledger_digest ?? 'unknown'}`);
+    lines.push(`observations: ${result.observation_count ?? 0}`);
+    lines.push(`canonical bundle: ${result.canonical_bundle ?? 'unknown'}`);
+    if (result.persistence) {
+      lines.push(`persistence: status=${result.persistence.status ?? 'unknown'} commit=${result.persistence.commit_sha ?? 'unknown'}`);
+    }
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+function renderPersistenceFailure(persistence) {
+  const primary = persistence.primary ?? {};
+  const failure = primary.failure ?? persistence.failure ?? {};
+  const postcondition = persistence.push_postcondition ?? {};
+  const cleanup = persistence.cleanup ?? {};
+  const lines = [
+    `persistence: status=${persistence.status ?? 'unknown'} reason=${persistence.reason ?? 'unknown'} pushed=${persistence.pushed === true}`
+  ];
+  if (persistence.primary) {
+    lines.push(`primary failure: status=${primary.status ?? 'unknown'} reason=${primary.reason ?? 'unknown'} stage=${failure.stage ?? 'unknown'} command-status=${failure.status ?? 'unknown'} kind=${failure.failure_kind ?? 'unknown'}`);
+  }
+  lines.push(
+    `push postcondition: status=${postcondition.status ?? 'not_checked'} remote-sha=${postcondition.remote_sha ?? 'unknown'}`,
+    `cleanup: status=${cleanup.status ?? 'unknown'} attempted=${cleanup.attempted === true} removed=${cleanup.removed === true}`
+  );
+  lines.push(`recovery: ${persistenceRecoveryGuidance(persistence)}`);
+  return lines;
+}
+
+function persistenceRecoveryGuidance(persistence) {
+  const actions = [];
+  const postcondition = persistence.push_postcondition?.status;
+  const cleanup = persistence.cleanup ?? {};
+  if (postcondition === 'indeterminate') actions.push('verify the remote branch before retrying');
+  else if (persistence.pushed === true || postcondition === 'applied') actions.push('treat the canonical revision as applied and do not replay the push');
+  else actions.push(`resolve ${persistence.primary?.reason ?? persistence.reason ?? 'the persistence failure'} and retry outcome refresh`);
+  if (cleanup.attempted === true && cleanup.removed !== true) {
+    actions.push('inspect and remove the temporary worktree if it remains');
+  }
+  return actions.join('; ');
+}
+
+function renderOutcomeHelp(subcommand = null, language = null) {
+  const english = normalizeOutputLanguage(language) === 'en';
+  if (subcommand === 'record') {
+    return english
+      ? `VibePro outcome record\n\nUsage:\n  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]\n\nStatus inputs:\n  observed requires --value-json <json>.\n  not_applicable requires --reason <text>.\n\nFlow:\n  vibepro usage report . --json -> choose trace/collision, parent revision, and one eligible source -> vibepro outcome record -> vibepro outcome refresh\n`
+      : `VibePro outcome record\n\n使い方:\n  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]\n\nstatusごとの必須入力:\n  observed には --value-json <json> が必要です。\n  not_applicable には --reason <text> が必要です。\n\n操作フロー:\n  vibepro usage report . --json -> trace/collision、parent revision、eligible sourceを1つ選択 -> vibepro outcome record -> vibepro outcome refresh\n`;
+  }
+  if (subcommand === 'refresh') {
+    return english
+      ? `VibePro outcome refresh\n\nUsage:\n  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]\n\nEffect:\n  Rebuilds the decision outcome ledger and persists a canonical revision after verified merge authority.\n\nOperator flow:\n  Inspect bounded selectors and the ledger digest with vibepro usage report . --json or vibepro pr prepare . --story-id <story-id> --view gate-evidence. Record an observation with vibepro outcome record, then run outcome refresh. Verify the routed pr-create.json, pr-merge.json, and decision-outcome-ledger.json artifacts when merge authority is rejected.\n\nResults:\n  promoted: a new canonical revision was pushed.\n  already_present: the canonical revision was already present.\n  reconciliation_required: verify the canonical revision and rerun this command.\n\nRecovery and rollback:\n  Follow the bounded recovery field on failure. Verify the remote postcondition before retrying; restore the reported recovery snapshot when rollback is incomplete.\n`
+      : `VibePro outcome refresh\n\n使い方:\n  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]\n\n作用:\n  検証済みmerge authorityに基づきdecision outcome ledgerを再構築し、canonical revisionを永続化します。\n\n操作フロー:\n  vibepro usage report . --json または vibepro pr prepare . --story-id <story-id> --view gate-evidence でbounded selectorとledger digestを確認し、vibepro outcome recordで観測を記録してからoutcome refreshを実行します。merge authorityが拒否された場合はrouted pr-create.json、pr-merge.json、decision-outcome-ledger.jsonを確認します。\n\n結果:\n  promoted: 新しいcanonical revisionをpushしました。\n  already_present: canonical revisionは既に存在します。\n  reconciliation_required: canonical revisionを確認して、このコマンドを再実行してください。\n\n復旧とrollback:\n  失敗時はboundedなrecovery欄に従います。再実行前にremote postconditionを確認し、rollback未完了時は表示されたrecovery snapshotから復元してください。\n`;
+  }
+  return english
+    ? `VibePro Outcome\n\nCommands:\n  vibepro outcome record   Record a downstream outcome observation.\n  vibepro outcome refresh  Rebuild and persist the canonical outcome revision.\n\nRun a command with --help for its exact options.\n`
+    : `VibePro Outcome\n\nコマンド:\n  vibepro outcome record   downstream outcome observationを記録します。\n  vibepro outcome refresh  canonical outcome revisionを再構築して永続化します。\n\n各コマンドの正確なオプションは --help で確認できます。\n`;
 }
 
 function resolveDiagnosisPhaseOption(args) {

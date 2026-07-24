@@ -237,6 +237,74 @@ test('DRS-CONTRACT-005 execute status preserves valid execution-state bytes', as
   assert.equal(await readFile(statePath, 'utf8'), before);
 });
 
+test('GDO-S-3 execute merge fails closed on a corrupt local gate outcome ledger without losing verified delivery', async (t) => {
+  const cases = [
+    {
+      name: 'malformed JSON',
+      contents: '{"schema_version":"0.1.0","model":',
+      reason: 'local_gate_outcome_ledger_parse_failed'
+    },
+    {
+      name: 'wrong model',
+      contents: JSON.stringify({
+        schema_version: '0.1.0',
+        model: 'vibepro-gate-outcome-ledger-v999',
+        entries: []
+      }),
+      reason: 'local_gate_outcome_ledger_model_invalid'
+    },
+    {
+      name: 'wrong entries shape',
+      contents: JSON.stringify({
+        schema_version: '0.1.0',
+        model: 'vibepro-gate-outcome-ledger-v3',
+        entries: {}
+      }),
+      reason: 'local_gate_outcome_ledger_shape_invalid'
+    }
+  ];
+
+  for (const fixture of cases) {
+    await t.test(fixture.name, async () => {
+      const { root, headSha, mergeCommitSha } = await setupMergedPrRepo();
+      const ledgerDir = path.join(root, '.vibepro', 'gate-outcomes');
+      await mkdir(ledgerDir, { recursive: true });
+      await writeFile(path.join(ledgerDir, 'ledger.json'), fixture.contents);
+      const gh = await makeFakeGhAlreadyMerged({
+        url: 'https://github.example.test/unson/vibepro/pull/999',
+        headRefName: 'feature/honesty',
+        headRefOid: headSha,
+        baseRefName: 'main',
+        mergedAt: '2026-07-10T01:23:45Z',
+        mergeCommit: mergeCommitSha,
+        statusCheckRollup: [{ name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }]
+      });
+
+      const result = await runCli(
+        ['execute', 'merge', root, '--story-id', 'story-status-honesty', '--base', 'main', '--json'],
+        { env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` } }
+      );
+
+      assert.equal(result.exitCode, 2);
+      const merge = result.result.merge;
+      assert.equal(merge.status, 'merged_externally');
+      assert.equal(merge.delivery.status, 'merged_externally');
+      assert.equal(merge.delivery.merge_commit_sha, mergeCommitSha);
+      assert.equal(merge.merge_commit_sha, mergeCommitSha);
+      assert.equal(merge.decision_outcome_binding.status, 'failed');
+      assert.equal(merge.decision_outcome_binding.reason, fixture.reason);
+      assert.equal(merge.decision_outcome_binding.expected_entry_count, null);
+      assert.equal(merge.decision_outcome_binding.delivery.status, 'merged_externally');
+      assert.equal(merge.decision_outcome_binding.delivery.merge_commit_sha, mergeCommitSha);
+      assert.equal(merge.roi_ledger_promotion.status, 'failed');
+      assert.equal(merge.roi_ledger_promotion.reason, fixture.reason);
+      assert.equal(merge.reconciliation.status, 'reconciliation_required');
+      assert.equal(merge.reconciliation.reasons.includes('decision_outcome_binding_failed'), true);
+      assert.equal(merge.stop_reason, 'decision_outcome_binding_failed');
+    });
+  }
+});
+
 test('DRS-STORY-S-002 story-vibepro-delivery-reconciliation-state:S-004 DRS-SCENARIO-001 DRS-S-4 DRS-S-6 execute merge reconciles an already-merged PR as merged_externally with a full merge record', async () => {
   const { root, headSha, mergeCommitSha } = await setupMergedPrRepo();
   const providerState = {
@@ -264,6 +332,7 @@ test('DRS-STORY-S-002 story-vibepro-delivery-reconciliation-state:S-004 DRS-SCEN
   assert.equal(merge.merged_at, '2026-07-10T01:23:45Z');
   assert.equal(merge.delivery.status, 'merged_externally');
   assert.equal(merge.delivery.merge_commit_sha, mergeCommitSha);
+  assert.equal(merge.decision_outcome_delivery.status, 'not_available');
   assert.equal(merge.reconciliation.status, 'reconciled');
   assert.deepEqual(merge.reconciliation.reasons, []);
   assert.equal(merge.warnings.some((w) => /merged externally|already merged/i.test(w)), true);
@@ -271,6 +340,7 @@ test('DRS-STORY-S-002 story-vibepro-delivery-reconciliation-state:S-004 DRS-SCEN
   const artifact = await readJson(path.join(root, '.vibepro', 'pr', 'story-status-honesty', 'pr-merge.json'));
   assert.equal(artifact.status, 'merged_externally');
   assert.equal(artifact.merge_commit_sha, mergeCommitSha);
+  assert.equal(artifact.decision_outcome_delivery.status, 'not_available');
 
   const traceability = await readJson(path.join(root, '.vibepro', 'pr', 'story-status-honesty', 'traceability.json'));
   assert.equal(traceability.lifecycle, 'merged');

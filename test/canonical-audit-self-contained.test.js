@@ -206,6 +206,37 @@ test('canonical audit bundle copies handoff references and reports unresolved re
   );
 });
 
+test('canonical audit ignores traversal-shaped .vibepro references', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-reference-boundary-'));
+  const storyId = 'story-canonical-reference-boundary';
+  const outside = path.join(root, 'outside-secret.json');
+  await writeJson(outside, { secret: true });
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId },
+    crafted_reference: '.vibepro/../../outside-secret.json'
+  });
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
+
+  assert.equal(
+    promoted.bundle.resolved_references.some((item) => item.source.includes('..')),
+    false
+  );
+  await assert.rejects(
+    readFile(path.join(
+      root,
+      'docs',
+      'management',
+      'audit-artifacts',
+      storyId,
+      'references',
+      'outside-secret.json'
+    )),
+    (error) => error.code === 'ENOENT'
+  );
+});
+
 test('canonical audit bundle promotes review requests even when no JSON references them', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-review-request-'));
   const storyId = 'story-review-request-omission';
@@ -408,6 +439,12 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
         status: 'failed',
         recovery_command: 'vibepro execute reconcile . --story-id story-compact --base release/2026 --pr https://github.com/example/repo/pull/1'
       },
+      decision_outcome_binding: {
+        status: 'bound',
+        expected_entry_count: 2,
+        promoted_count: 1,
+        duplicate_count: 1
+      },
       merged_at: '2026-06-23T00:05:00.000Z',
       merge_commit_sha: 'abc123',
       pr: { url: 'https://github.com/example/repo/pull/1' }
@@ -419,6 +456,7 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(bundle.merge.reconciliation.status, 'reconciliation_required');
   assert.equal(bundle.merge.base, 'release/2026');
   assert.equal(bundle.merge.reconciliation_action.commands[0], bundle.merge.execution_state_sync.recovery_command);
+  assert.equal(bundle.merge.decision_outcome_binding.status, 'bound');
   assert.equal(bundle.artifact_policy.compacted, true);
   assert.equal(bundle.evidence_depth, 'standard');
   assert.equal(Object.hasOwn(bundle, 'cost_summary'), false);
@@ -445,7 +483,9 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(auditIndex.pr_merge.summary.reconciliation_action.commands[0], auditIndex.pr_merge.summary.execution_state_sync.recovery_command);
   const decisionSummary = await readFile(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'decision-summary.md'), 'utf8');
   assert.match(decisionSummary, /pr_merge: merged delivery=merged reconciliation=reconciliation_required reasons=gate_not_ready/);
+  assert.equal(auditIndex.pr_merge.summary.decision_outcome_binding.status, 'bound');
   assert.equal(auditIndex.automation_value_audit.merge_context.delivery.status, 'merged');
+  assert.equal(auditIndex.automation_value_audit.merge_context.decision_outcome_binding.status, 'bound');
   assert.equal(auditIndex.evidence_reuse.verification_summary_fingerprint, 'sha256:compact-verification');
   assert.equal(auditIndex.evidence_reuse.verification_evidence_updated_at, '2026-06-23T00:02:00.000Z');
   assert.equal(auditIndex.evidence_reuse.verification_command_timestamps[0].executed_at, '2026-06-23T00:02:00.000Z');
@@ -470,6 +510,7 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(replayPayload.verdict.pr_prepare, 'ready_for_review');
   assert.equal(replayPayload.merge.delivery.status, 'merged');
   assert.equal(replayPayload.merge.reconciliation.status, 'reconciliation_required');
+  assert.equal(replayPayload.merge.decision_outcome_binding.status, 'bound');
   assert.equal(replayPayload.artifacts.some((artifact) => Object.hasOwn(artifact, 'data')), false);
   assert.equal(replayPayload.artifacts.some((artifact) => Object.hasOwn(artifact, 'content')), false);
   assert.equal(replayPayload.artifacts.every((artifact) => artifact.summary && typeof artifact.summary === 'object'), true);

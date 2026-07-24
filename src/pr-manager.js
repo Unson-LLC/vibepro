@@ -83,6 +83,11 @@ import {
   summarizeEvidenceReuse
 } from './evidence-reuse.js';
 import {
+  collectDecisionOutcomeSources,
+  projectDecisionOutcomeSummary,
+  writeDecisionOutcomeLedger
+} from './decision-outcome-ledger.js';
+import {
   buildResponsibilityAuthorityGate,
   renderResponsibilityAuthorityPrSection,
   resolveResponsibilityAuthority
@@ -570,6 +575,25 @@ export async function preparePullRequest(repoRoot, options = {}) {
       overrideOutcome: options.gateOutcome ?? null
     }))
     : null;
+  const decisionOutcomeLedger = workspace.initialized
+    ? await progress.stage('write_decision_outcome_ledger', async () => {
+      const result = await writeDecisionOutcomeLedger(root, story.story_id, {
+        sources: collectDecisionOutcomeSources({
+          storyId: story.story_id,
+          agentReviews: prContext.agent_reviews,
+          decisionRecords,
+          gateOutcomeLedger
+        }),
+        verificationEvidence,
+        currentHeadSha: reviewGit.head_sha,
+        createdAt
+      });
+      return result.ledger;
+    })
+    : null;
+  const decisionOutcomeSummary = projectDecisionOutcomeSummary(decisionOutcomeLedger);
+  evidenceReuse.decision_outcome_summary = decisionOutcomeSummary;
+  evidenceReuseSummary.decision_outcome_summary = decisionOutcomeSummary;
   const traceabilityEvidence = buildTraceabilityEvidence({
     root,
     bodyPath,
@@ -652,6 +676,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     evidence_plan: evidencePlan,
     decision_index: decisionIndex,
     evidence_reuse: evidenceReuse,
+    decision_outcome_summary: decisionOutcomeSummary,
     artifact_budget: artifactBudgetReport,
     gate_status: gateStatus,
     session_boundary: buildSessionBoundaryAdvisory({
@@ -5437,6 +5462,13 @@ function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphC
   const gateInfraFiles = repoControlFiles.filter((file) => isE2eInfraPath(file) || (e2eGateRequired && isPackageManifestPath(file)));
   const repoPolicyFiles = repoControlFiles.filter((file) => !gateInfraFiles.includes(file));
   const storyBoundSupportDocs = fileGroups.other.files.filter((file) => isStoryBoundSupportDoc(file, prContext.story_source));
+  const storyText = JSON.stringify(prContext.story_source ?? {}).toLowerCase();
+  const declaredRequirementsSsotFiles = fileGroups.other.files.filter(
+    (file) => (
+      storyText.includes(file.toLowerCase())
+      || (file === 'design-ssot.json' && /design[\s_-]*ssot/.test(storyText))
+    ) && /requirements?|要求/.test(storyText)
+  );
 
   addLane({
     id: 'repo-control',
@@ -5463,7 +5495,8 @@ function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphC
       ...fileGroups.specifications.files,
       ...fileGroups.architecture_docs.files,
       ...fileGroups.policy_docs.files,
-      ...storyBoundSupportDocs
+      ...storyBoundSupportDocs,
+      ...declaredRequirementsSsotFiles
     ],
     required_gates: ['Requirement Gate'],
     review_focus: [
@@ -5508,7 +5541,9 @@ function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphC
   });
 
   const remainingFiles = [
-    ...fileGroups.other.files.filter((file) => !storyBoundSupportDocs.includes(file)),
+    ...fileGroups.other.files.filter(
+      (file) => !storyBoundSupportDocs.includes(file) && !declaredRequirementsSsotFiles.includes(file)
+    ),
     ...getAllGroupFiles(fileGroups).filter((file) => !used.has(file))
   ];
   addLane({
@@ -10874,10 +10909,10 @@ function buildBugPhysicsTriage({ storySource = {}, inferredSpec = null, verifica
 }
 
 const bugPhysicsClassMatchers = {
-  timing: /\b(timing|race|async|orphaned promise|intermittent|statistical|violation[-_\s]?rate|slo|settle[-_\s]?contract)\b|タイミング|競合|非同期/,
+  timing: /\b(timing|race|async|orphaned promise|intermittent|statistical|violation[-_\s]?rate|slo|settle[-_\s]?contract)\b|タイミング|実行時.{0,12}競合|並行.{0,12}競合|データ競合|非同期/,
   'state-invariant': /\b(state[-_\s]?invariant|illegal[-_\s]?state|unrepresentable|by[-_\s]?construction|sticky[-_\s]?done|two visible surfaces|2 visible surfaces)\b|不正状態|状態不変/,
   'deterministic-byte': /\b(deterministic[-_\s]?byte|byte[-_\s]?sequence|real[-_\s]?byte|byte[-_\s]?fixture|headless replay|pty|xterm|alt[-_\s]?screen|terminal rendering|\\x1b)\b|バイト列|端末/,
-  observability: /\b(observability|authoritative[-_\s]?signal|signal[-_\s]?source|signal[-_\s]?fusion|no reliable ground|monitoring|hook killed|indicator)\b|観測|監視|信号/,
+  observability: /\b(observability|authoritative[-_\s]?signal|signal[-_\s]?source|signal[-_\s]?fusion|no reliable ground|monitoring|hook killed|indicator)\b|状態.{0,12}観測|監視|信号/,
   deployment: /\b(deployment|deploy|version[-_\s]?stamp|artifact version|running session|expected artifact|settings\.json|browser cache)\b|デプロイ|配布|実行中/
 };
 

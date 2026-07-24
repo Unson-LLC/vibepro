@@ -23,6 +23,7 @@ import {
   selectRiskAdaptiveReviewCoverage
 } from './delivery-efficiency-guardrail.js';
 import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js';
+import { assertSafeStoryPathSegment } from './story-id.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -2073,6 +2074,7 @@ function renderEvidenceReuseReviewInput(plan, language = 'ja') {
     .slice(0, 5)
     .map((timestamp) => `- ${timestamp.kind ?? 'unknown'}: executed_at=${timestamp.executed_at ?? '-'} git_recorded_at=${timestamp.git_recorded_at ?? '-'}`)
     .join('\n');
+  const decisionOutcomeInput = renderDecisionOutcomeReviewInput(reuse.decision_outcome_summary, language);
   if (language === 'en') {
     return `
 ## Evidence Reuse First Input
@@ -2089,6 +2091,7 @@ function renderEvidenceReuseReviewInput(plan, language = 'ja') {
 ${timestampRows ? `\nVerification command timestamps in reuse key:\n${timestampRows}` : ''}
 ${currentTimestampRows ? `\nCurrent verification command timestamps:\n${currentTimestampRows}` : ''}
 ${staleReasonRows ? `\nStale reasons:\n${staleReasonRows}` : ''}
+${decisionOutcomeInput}
 `;
   }
   return `
@@ -2106,7 +2109,28 @@ ${staleReasonRows ? `\nStale reasons:\n${staleReasonRows}` : ''}
 ${timestampRows ? `\nReuse key内のverification command timestamps:\n${timestampRows}` : ''}
 ${currentTimestampRows ? `\n現在のverification command timestamps:\n${currentTimestampRows}` : ''}
 ${staleReasonRows ? `\nStale reasons:\n${staleReasonRows}` : ''}
+${decisionOutcomeInput}
 `;
+}
+
+export function renderDecisionOutcomeReviewInput(summary, language = 'ja') {
+  if (!summary) return '';
+  const rows = (summary.entries ?? []).slice(0, 20).map((entry) => {
+    const selector = entry.decision_trace_id
+      ? `decision_trace_id=${entry.decision_trace_id}`
+      : `collision_group=${entry.collision_group ?? '-'} trace_source_ref=${entry.trace_source_ref ?? '-'}`;
+    const chain = {
+      finding: entry.finding?.value ?? null,
+      disposition: entry.disposition?.value ?? null,
+      decision: entry.decision?.value ?? null,
+      behavior_delta: entry.behavior_delta ?? null,
+      delivery: entry.delivery ?? null,
+      downstream_outcome: entry.downstream_outcome ?? null
+    };
+    return `- ${entry.trace_status ?? 'unknown'} ${selector} parent_revision=${entry.parent_revision_fingerprint ?? '-'} chain=${formatReviewValue(chain)}`;
+  }).join('\n');
+  const title = language === 'en' ? 'Decision Outcome Ledger Summary' : 'Decision Outcome Ledger Summary';
+  return `\n## ${title}\n\n- ledger: ${summary.ledger_path ?? '-'}\n- digest: ${summary.ledger_digest ?? '-'}\n- total: ${summary.total_count ?? 0}\n- returned: ${summary.returned_count ?? 0}\n- omitted: ${summary.omitted_count ?? 0}\n- truncated: ${summary.truncated === true}\n${rows || '- entries: none'}\n`;
 }
 
 function formatReviewValue(value) {
@@ -2673,6 +2697,34 @@ async function pathExists(filePath) {
   } catch (error) {
     if (error.code === 'ENOENT') return false;
     throw error;
+  }
+}
+
+export async function readReviewResultForDecisionOutcome(filePath, options = {}) {
+  const sourceRef = options.sourceRef ?? filePath;
+  const readText = options.readText ?? ((target) => readFile(target, 'utf8'));
+  try {
+    return {
+      artifact: JSON.parse(await readText(filePath)),
+      source_errors: []
+    };
+  } catch (error) {
+    if (error?.code === 'ENOENT' && options.expected !== true) {
+      return { artifact: null, source_errors: [] };
+    }
+    const code = error?.code === 'ENOENT'
+      ? 'source_missing'
+      : error instanceof SyntaxError
+        ? 'source_malformed'
+        : 'source_unreadable';
+    return {
+      artifact: null,
+      source_errors: [{
+        code,
+        source_ref: sourceRef,
+        detail: String(error?.message ?? error ?? code).slice(0, 240)
+      }]
+    };
   }
 }
 
@@ -3340,7 +3392,7 @@ function normalizeArtifact(repoRoot, artifact) {
 
 function requireStoryId(storyId, commandName) {
   if (!storyId) throw new Error(`${commandName} requires --id <story-id>`);
-  return storyId;
+  return assertSafeStoryPathSegment(storyId, `${commandName} requires a valid story id`);
 }
 
 function requireStage(stage, commandName) {

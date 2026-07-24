@@ -6,12 +6,14 @@ import { promisify } from 'node:util';
 import { readDecisionRecordsIfExists } from './decision-records.js';
 import { refreshManagedWorktree, resolveManagedWorktreeMode } from './managed-worktree.js';
 import { getWorkspaceDir } from './workspace.js';
+import { assertSafeStoryPathSegment } from './story-id.js';
 
 const execFileAsync = promisify(execFile);
 
 export async function buildManagedWorktreeGate(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = options.storyId;
+  if (storyId) assertSafeStoryPathSegment(storyId, 'managed worktree gate requires a valid story id');
   const state = storyId ? await readBoundExecutionState(root, storyId) : null;
   let managedWorktree = state?.managed_worktree ?? null;
   if (managedWorktree?.path) {
@@ -120,6 +122,7 @@ export function formatManagedWorktreePrStatus(gate) {
 }
 
 async function readExecutionStateIfExists(repoRoot, storyId) {
+  assertSafeStoryPathSegment(storyId, 'managed worktree gate requires a valid story id');
   try {
     return JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'executions', storyId, 'state.json'), 'utf8'));
   } catch (error) {

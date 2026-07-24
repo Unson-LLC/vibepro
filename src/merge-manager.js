@@ -6,19 +6,29 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { promoteCanonicalAuditArtifacts } from './canonical-audit.js';
+import {
+  collectCanonicalDirectoryFiles,
+  persistCanonicalArtifactsToBase
+} from './canonical-persistence.js';
 import { parseNumstat } from './evidence-cost-budget.js';
 import {
   CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH,
-  collectPromotableGateOutcomeEntries,
-  computeCentralLedgerPromotion
+  computeCentralLedgerPromotion,
+  readPromotableGateOutcomeEntries
 } from './gate-outcome-ledger.js';
 import { renderPrMergeHtml } from './html-report.js';
+import { executeManagedCommand } from './managed-command-executor.js';
 import { resolveReconciliationAction } from './reconciliation-action.js';
 import {
   buildMergeGateAuthorization,
   resolveCurrentMergeGateStatus
 } from './merge-gate-authorization.js';
 import { collectSessionEfficiencyAudit } from './session-efficiency-audit.js';
+import {
+  buildDecisionOutcomeDelivery,
+  tryBindDecisionOutcomeDelivery
+} from './outcome-manager.js';
+import { assertSafeStoryId } from './story-id.js';
 import { withStoryTransactionLocks } from './story-transaction-lock.js';
 import { bindStoryTraceability } from './traceability.js';
 import { resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
@@ -32,6 +42,7 @@ export async function executeMerge(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const storyId = options.storyId;
   if (!storyId) throw new Error('execute merge requires --story-id <id>');
+  assertSafeStoryId(storyId, 'execute merge requires a safe story-* id');
 
   return withStoryTransactionLocks(
     [root],
@@ -567,6 +578,44 @@ async function executeMergeLocked(root, options = {}) {
   }
   merge.status = externallyMerged ? 'merged_externally' : 'merged';
   merge.stop_reason = reconciliationReasons.length > 0 ? 'delivery_reconciliation_required' : null;
+  merge.decision_outcome_delivery = await tryBindDecisionOutcomeDelivery(
+    root,
+    storyId,
+    buildDecisionOutcomeDelivery(
+      storyId,
+      merge,
+      path.relative(root, await resolvePrArtifactFile(root, storyId, 'pr-merge.json')).split(path.sep).join('/')
+    )
+  );
+  if (merge.decision_outcome_delivery.status === 'unavailable') {
+    merge.warnings.push(
+      'Decision outcome delivery projection is unavailable; repair the local decision outcome ledger and rerun outcome refresh.'
+    );
+  }
+  const roiLedgerSource = await readPromotableGateOutcomeEntries(root, storyId);
+  const roiLedgerLocalEntries = roiLedgerSource.entries;
+  const centralLedgerAtMerge = await gitOptional(root, [
+    'show',
+    `${merge.merge_commit_sha}:${CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH}`
+  ]);
+  const anticipatedRoiPromotion = roiLedgerSource.status === 'failed'
+    ? {
+        status: 'failed',
+        reason: roiLedgerSource.reason,
+        promoted_count: 0,
+        duplicate_count: 0,
+        source_ledger: roiLedgerSource.source_ledger,
+        central_ledger_path: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH
+      }
+    : computeCentralLedgerPromotion({
+        localEntries: roiLedgerLocalEntries,
+        centralText: centralLedgerAtMerge
+      });
+  applyDecisionOutcomeBinding(merge, {
+    localEntries: roiLedgerLocalEntries,
+    promotion: anticipatedRoiPromotion,
+    localLedgerSource: roiLedgerSource
+  });
   let artifacts = await writePrMergeArtifacts(root, storyId, merge);
   await bindStoryTraceability(root, {
     storyId,
@@ -590,17 +639,38 @@ async function executeMergeLocked(root, options = {}) {
     missing_artifact_count: canonicalAudit.bundle.missing_artifacts.length
   };
   await writeCanonicalAuditManifest(root, storyId, canonicalAudit, merge);
-  const roiLedgerLocalEntries = await collectPromotableGateOutcomeEntries(root, storyId);
   const canonicalPersistence = await persistCanonicalAuditToBase(root, {
     storyId,
     canonicalAudit,
     baseBranch,
     merge,
     options,
-    roiLedgerPromotion: { localEntries: roiLedgerLocalEntries }
+    roiLedgerPromotion: roiLedgerSource.status === 'failed'
+      ? null
+      : { localEntries: roiLedgerLocalEntries }
   });
   merge.canonical_audit.persistence = canonicalPersistence.summary;
-  merge.roi_ledger_promotion = canonicalPersistence.roi_ledger_promotion ?? null;
+  merge.roi_ledger_promotion = roiLedgerSource.status === 'failed'
+    ? {
+        status: 'failed',
+        reason: roiLedgerSource.reason,
+        promoted_count: 0,
+        duplicate_count: 0,
+        source_ledger: roiLedgerSource.source_ledger,
+        central_ledger_path: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH
+      }
+    : canonicalPersistence.roi_ledger_promotion ?? null;
+  applyDecisionOutcomeBinding(merge, {
+    localEntries: roiLedgerLocalEntries,
+    promotion: merge.roi_ledger_promotion,
+    localLedgerSource: roiLedgerSource,
+    persistence: canonicalPersistence.summary
+  });
+  if (merge.decision_outcome_binding.status === 'failed') {
+    merge.warnings.push(
+      `Decision outcome binding failed: ${merge.decision_outcome_binding.reason ?? 'unknown'} (delivery remains immutable; reconciliation required)`
+    );
+  }
   if (merge.roi_ledger_promotion?.status === 'failed') {
     merge.warnings.push(
       `ROI ledger promotion failed: ${merge.roi_ledger_promotion.reason ?? 'unknown'} (central ledger left untouched)`
@@ -608,8 +678,7 @@ async function executeMergeLocked(root, options = {}) {
   }
   if (canonicalPersistence.summary.status === 'failed') {
     merge.warnings.push(`Canonical audit persistence failed: ${canonicalPersistence.summary.reason}`);
-    merge.status = 'failed';
-    merge.stop_reason = 'canonical_audit_persistence_failed';
+    merge.stop_reason = 'delivery_reconciliation_required';
   }
   artifacts = {
     ...artifacts,
@@ -631,8 +700,7 @@ async function executeMergeLocked(root, options = {}) {
     merge.canonical_audit.final_persistence = finalCanonicalPersistence.summary;
     if (finalCanonicalPersistence.summary.status === 'failed') {
       merge.warnings.push(`Canonical audit final artifact persistence failed: ${finalCanonicalPersistence.summary.reason}`);
-      merge.status = 'failed';
-      merge.stop_reason = 'canonical_audit_final_persistence_failed';
+      merge.stop_reason = 'delivery_reconciliation_required';
     }
   }
   merge.canonical_audit.bundle = toWorkspaceRelative(root, canonicalAudit.bundle_path);
@@ -739,6 +807,117 @@ function collectDeliveryReconciliationReasons(merge) {
   if (merge.preconditions.checks_ready.status !== 'passed') reasons.push('checks_not_ready');
   if (merge.preconditions.review_policy.status !== 'passed') reasons.push('review_policy_not_satisfied');
   return reasons;
+}
+
+export function buildDecisionOutcomeBinding({
+  localEntries = [],
+  promotion = null,
+  merge = null,
+  localLedgerSource = null,
+  persistence = null
+} = {}) {
+  const sourceFailed = localLedgerSource?.status === 'failed';
+  const expectedEntryCount = sourceFailed
+    ? null
+    : Array.isArray(localEntries) ? localEntries.length : 0;
+  const promotedCount = Number.isFinite(promotion?.promoted_count) ? promotion.promoted_count : 0;
+  const duplicateCount = Number.isFinite(promotion?.duplicate_count) ? promotion.duplicate_count : 0;
+  const accountedEntryCount = promotedCount + duplicateCount;
+  const required = sourceFailed || expectedEntryCount > 0;
+  const persistenceStatus = persistence?.status ?? null;
+  const persistenceConfirmed = persistenceStatus == null
+    || ['pushed', 'already_present'].includes(persistenceStatus);
+  // A successful persistence result is recorded in canonical_audit.persistence.
+  // Re-projecting it into the content being persisted would make the first
+  // canonical commit (null) differ from the post-push state (pushed), forcing a
+  // second push. Keep the binding stable across confirmed success while still
+  // retaining an actionable failed status.
+  const bindingPersistenceStatus = persistenceConfirmed ? null : persistenceStatus;
+  const delivery = {
+    status: merge?.delivery?.status ?? null,
+    pr_url: merge?.delivery?.pr_url ?? merge?.pr?.url ?? null,
+    merge_commit_sha: merge?.delivery?.merge_commit_sha ?? merge?.merge_commit_sha ?? null,
+    base: merge?.base ?? null
+  };
+
+  if (sourceFailed) {
+    return {
+      schema_version: '0.1.0',
+      status: 'failed',
+      required: true,
+      reason: localLedgerSource.reason ?? 'local_gate_outcome_ledger_invalid',
+      source_ledger: localLedgerSource.source_ledger ?? '.vibepro/gate-outcomes/ledger.json',
+      source_ledger_status: localLedgerSource.status,
+      canonical_ledger: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH,
+      expected_entry_count: null,
+      promoted_count: promotedCount,
+      duplicate_count: duplicateCount,
+      persistence_status: bindingPersistenceStatus,
+      delivery
+    };
+  }
+
+  if (!required) {
+    return {
+      schema_version: '0.1.0',
+      status: 'not_applicable',
+      required: false,
+      reason: 'no_local_decision_outcomes',
+      source_ledger: '.vibepro/gate-outcomes/ledger.json',
+      canonical_ledger: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH,
+      expected_entry_count: 0,
+      promoted_count: promotedCount,
+      duplicate_count: duplicateCount,
+      persistence_status: bindingPersistenceStatus,
+      delivery
+    };
+  }
+
+  const bound = promotion?.status === 'promoted'
+    && accountedEntryCount === expectedEntryCount
+    && persistenceConfirmed;
+  return {
+    schema_version: '0.1.0',
+    status: bound ? 'bound' : 'failed',
+    required: true,
+    reason: bound
+      ? 'all_local_decision_outcomes_bound_to_canonical_ledger'
+      : !persistenceConfirmed
+        ? persistence?.reason ?? `canonical_persistence_${persistenceStatus ?? 'unconfirmed'}`
+      : promotion?.status === 'promoted'
+        ? 'decision_outcome_binding_count_mismatch'
+        : promotion?.reason ?? `decision_outcome_promotion_${promotion?.status ?? 'missing'}`,
+    source_ledger: '.vibepro/gate-outcomes/ledger.json',
+    canonical_ledger: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH,
+    expected_entry_count: expectedEntryCount,
+    promoted_count: promotedCount,
+    duplicate_count: duplicateCount,
+    persistence_status: bindingPersistenceStatus,
+    delivery
+  };
+}
+
+export function applyDecisionOutcomeBinding(merge, {
+  localEntries = [],
+  promotion = null,
+  localLedgerSource = null,
+  persistence = null
+} = {}) {
+  const binding = buildDecisionOutcomeBinding({ localEntries, promotion, merge, localLedgerSource, persistence });
+  merge.decision_outcome_binding = binding;
+  if (binding.status !== 'failed') return binding;
+
+  merge.reconciliation = {
+    ...merge.reconciliation,
+    status: 'reconciliation_required',
+    reasons: [...new Set([
+      ...(merge.reconciliation?.reasons ?? []),
+      'decision_outcome_binding_failed'
+    ])],
+    evaluated_at: new Date().toISOString()
+  };
+  merge.stop_reason = 'decision_outcome_binding_failed';
+  return binding;
 }
 
 function parseProviderJson(result, reason) {
@@ -848,6 +1027,7 @@ export async function persistMergeRecoveryState(
 
 async function withMergeFollowupPersistenceTransaction(repoRoot, storyId, persist) {
   const root = path.resolve(repoRoot);
+  assertSafeStoryId(storyId, 'merge follow-up persistence requires a safe story-* id');
   const transactionRoot = await mkdtemp(path.join(os.tmpdir(), `vibepro-merge-followup-${storyId}-`));
   const routedPrDir = path.dirname(await resolvePrArtifactFile(root, storyId, 'pr-merge.json'));
   const targets = collapseMergeFollowupTransactionTargets([
@@ -1358,6 +1538,35 @@ ${(merge.warnings ?? []).map((warning) => `- ${warning}`).join('\n') || '- none'
 `;
 }
 
+export function projectPublicPrMergeResult(result) {
+  const merge = result?.merge ?? result ?? {};
+  return projectPublicMergeValue(merge, []);
+}
+
+const PRIVATE_MERGE_DIAGNOSTIC_KEYS = new Set([
+  'worktree_path',
+  'commands',
+  'results',
+  'stdout',
+  'stderr',
+  'primary'
+]);
+
+function projectPublicMergeValue(value, keyPath) {
+  if (Array.isArray(value)) {
+    return value.map((item) => projectPublicMergeValue(item, keyPath));
+  }
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => (
+        !PRIVATE_MERGE_DIAGNOSTIC_KEYS.has(key)
+        || (key === 'commands' && keyPath.at(-1) === 'reconciliation_action')
+      ))
+      .map(([key, item]) => [key, projectPublicMergeValue(item, [...keyPath, key])])
+  );
+}
+
 function normalizeMergeStrategy(strategy) {
   const normalized = strategy ?? 'merge';
   if (!VALID_MERGE_STRATEGIES.has(normalized)) {
@@ -1447,41 +1656,27 @@ function shellQuote(value) {
 }
 
 async function runCommand(repoRoot, command, options = {}, execution = {}) {
-  const [bin, args] = command;
-  const startedAt = new Date().toISOString();
-  try {
-    const result = await execFileAsync(bin, args, {
-      cwd: execution.cwd ?? repoRoot,
-      encoding: 'utf8',
-      env: options.env
-    });
-    return {
-      command: formatCommand(command),
-      started_at: startedAt,
-      finished_at: new Date().toISOString(),
-      exit_code: 0,
-      stdout: result.stdout.trim(),
-      stderr: result.stderr.trim()
-    };
-  } catch (error) {
-    return {
-      command: formatCommand(command),
-      started_at: startedAt,
-      finished_at: new Date().toISOString(),
-      exit_code: Number.isInteger(error.code) ? error.code : 1,
-      stdout: String(error.stdout ?? '').trim(),
-      stderr: String(error.stderr ?? error.message ?? '').trim()
-    };
-  }
+  const result = await executeManagedCommand({
+    command,
+    stage: execution.stage ?? 'merge.command',
+    cwd: execution.cwd ?? repoRoot,
+    env: options.env,
+    timeoutMs: execution.timeoutMs ?? options.commandTimeoutMs,
+    terminationGraceMs: options.terminationGraceMs,
+    closeTimeoutMs: options.closeTimeoutMs,
+    maxOutputBytes: options.maxDiagnosticBytes,
+    redactValues: options.redactValues
+  });
+  return {
+    ...result,
+    stdout: result.stdout.trim(),
+    stderr: result.stderr.trim()
+  };
 }
 
 async function gitOptional(repoRoot, args) {
-  try {
-    const result = await execFileAsync('git', args, { cwd: repoRoot, encoding: 'utf8' });
-    return result.stdout.trim() || null;
-  } catch {
-    return null;
-  }
+  const result = await runCommand(repoRoot, ['git', args], {}, { stage: 'merge.git_optional' });
+  return result.exit_code === 0 ? result.stdout || null : null;
 }
 
 async function collectMergeDiffLineStats(repoRoot, { baseBranch, currentHeadSha, pr } = {}) {
@@ -1531,44 +1726,31 @@ async function collectMergeDiffLineStats(repoRoot, { baseBranch, currentHeadSha,
 }
 
 async function runGitForOutput(repoRoot, command) {
-  const [bin, args] = command;
-  try {
-    const result = await execFileAsync(bin, args, { cwd: repoRoot, encoding: 'utf8' });
-    return {
-      command: formatCommand(command),
-      exit_code: 0,
-      stdout: result.stdout.trim(),
-      stderr: result.stderr.trim()
-    };
-  } catch (error) {
-    return {
-      command: formatCommand(command),
-      exit_code: Number.isInteger(error.code) ? error.code : 1,
-      stdout: String(error.stdout ?? '').trim(),
-      stderr: String(error.stderr ?? error.message ?? '').trim()
-    };
-  }
+  const result = await runCommand(repoRoot, command, {}, { stage: 'merge.git_output' });
+  return { ...result, command: formatCommand(command) };
 }
 
 async function gitIsAncestor(repoRoot, ancestor, descendant) {
   if (!ancestor || !descendant) return false;
   if (ancestor === descendant) return true;
-  try {
-    await execFileAsync('git', ['merge-base', '--is-ancestor', ancestor, descendant], { cwd: repoRoot, encoding: 'utf8' });
-    return true;
-  } catch {
-    return false;
-  }
+  const result = await runCommand(
+    repoRoot,
+    ['git', ['merge-base', '--is-ancestor', ancestor, descendant]],
+    {},
+    { stage: 'merge.git_is_ancestor' }
+  );
+  return result.exit_code === 0;
 }
 
 async function gitTreesEqual(repoRoot, left, right) {
   if (!left || !right || left === right) return false;
-  try {
-    await execFileAsync('git', ['diff', '--quiet', left, right, '--'], { cwd: repoRoot, encoding: 'utf8' });
-    return true;
-  } catch {
-    return false;
-  }
+  const result = await runCommand(
+    repoRoot,
+    ['git', ['diff', '--quiet', left, right, '--']],
+    {},
+    { stage: 'merge.git_trees_equal' }
+  );
+  return result.exit_code === 0;
 }
 
 async function readJsonIfExists(filePath) {
@@ -1674,153 +1856,52 @@ async function writeCanonicalAuditManifest(repoRoot, storyId, canonicalAudit, me
 
 async function persistCanonicalAuditToBase(repoRoot, { storyId, canonicalAudit, baseBranch, merge, options = {}, roiLedgerPromotion = null } = {}) {
   const relativeDir = toWorkspaceRelative(repoRoot, canonicalAudit.canonical_dir);
-  const roiPromotionResult = roiLedgerPromotion
-    ? {
-        status: 'not_run',
-        reason: 'roi_promotion_not_reached',
-        promoted_count: 0,
-        duplicate_count: 0,
-        central_ledger_path: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH
+  const allowedRoots = [relativeDir];
+  if (roiLedgerPromotion) allowedRoots.push(CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH);
+  const persistence = await persistCanonicalArtifactsToBase({
+    repoRoot,
+    storyId,
+    relativeDir,
+    allowedRoots,
+    baseBranch,
+    mergeCommitSha: merge?.merge_commit_sha,
+    options,
+    prepare: async ({ worktreeRoot }) => {
+      const files = await collectCanonicalDirectoryFiles(canonicalAudit.canonical_dir, relativeDir);
+      let promotion = null;
+      if (roiLedgerPromotion) {
+        const centralPath = path.join(worktreeRoot, CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH);
+        const centralText = await readFile(centralPath, 'utf8').catch((error) => {
+          if (error.code === 'ENOENT') return null;
+          throw error;
+        });
+        promotion = computeCentralLedgerPromotion({
+          localEntries: roiLedgerPromotion.localEntries,
+          centralText
+        });
+        if (promotion.status === 'promoted' && promotion.serialized !== null) {
+          files.set(CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH, promotion.serialized);
+        }
       }
-    : null;
-  const tempWorktree = path.join(os.tmpdir(), `vibepro-canonical-audit-${storyId}-${Date.now()}`);
-  const commands = [];
-  const results = [];
-  const summary = {
-    schema_version: '0.1.0',
-    status: 'not_run',
-    base: baseBranch,
-    directory: relativeDir,
-    worktree_path: tempWorktree,
-    base_head_sha: null,
-    merge_commit_on_base: null,
-    commit_sha: null,
-    pushed: false,
-    reason: null,
-    cleanup: {
-      attempted: false,
-      removed: false,
-      exit_code: null
-    },
-    commands,
-    results
+      return { files, metadata: { roi_ledger_promotion: promotion } };
+    }
+  });
+  return {
+    summary: persistence.summary,
+    commands: persistence.summary.commands,
+    results: persistence.summary.results,
+    roi_ledger_promotion: persistence.prepared?.roi_ledger_promotion ?? (
+      roiLedgerPromotion
+        ? {
+            status: 'not_run',
+            reason: persistence.summary.reason ?? 'roi_promotion_not_reached',
+            promoted_count: 0,
+            duplicate_count: 0,
+            central_ledger_path: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH
+          }
+        : null
+    )
   };
-
-  if (!merge?.merge_commit_sha) {
-    summary.status = 'failed';
-    summary.reason = 'canonical_audit_merge_commit_missing';
-    return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-  }
-
-  const run = async (command, execution = {}) => {
-    commands.push(formatCommand(command));
-    const result = await runCommand(repoRoot, command, options, execution);
-    results.push(result);
-    return result;
-  };
-
-  const refreshBase = await run(['git', ['fetch', 'origin', baseBranch]]);
-  if (refreshBase.exit_code !== 0) {
-    summary.status = 'failed';
-    summary.reason = 'canonical_audit_post_merge_base_fetch_failed';
-    return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-  }
-  summary.base_head_sha = await gitOptional(repoRoot, ['rev-parse', `origin/${baseBranch}`]);
-  summary.merge_commit_on_base = await gitIsAncestor(repoRoot, merge.merge_commit_sha, `origin/${baseBranch}`);
-  if (!summary.merge_commit_on_base) {
-    summary.status = 'failed';
-    summary.reason = 'canonical_audit_post_merge_base_missing_merge_commit';
-    return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-  }
-
-  const addWorktree = await run(['git', ['worktree', 'add', '--detach', tempWorktree, `origin/${baseBranch}`]]);
-  if (addWorktree.exit_code !== 0) {
-    summary.status = 'failed';
-    summary.reason = 'canonical_audit_worktree_add_failed';
-    return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-  }
-
-  try {
-    const destination = path.join(tempWorktree, relativeDir);
-    await mkdir(path.dirname(destination), { recursive: true });
-    await cp(canonicalAudit.canonical_dir, destination, { recursive: true });
-
-    const stagePaths = [relativeDir];
-    if (roiLedgerPromotion) {
-      const centralPath = path.join(tempWorktree, CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH);
-      const centralText = await readFile(centralPath, 'utf8').catch((error) => {
-        if (error.code === 'ENOENT') return null;
-        throw error;
-      });
-      const promotion = computeCentralLedgerPromotion({
-        localEntries: roiLedgerPromotion.localEntries,
-        centralText
-      });
-      roiPromotionResult.status = promotion.status;
-      roiPromotionResult.reason = promotion.reason;
-      roiPromotionResult.promoted_count = promotion.promoted_count;
-      roiPromotionResult.duplicate_count = promotion.duplicate_count;
-      roiPromotionResult.central_ledger_path = promotion.central_ledger_path;
-      if (promotion.status === 'promoted' && promotion.serialized !== null) {
-        await mkdir(path.dirname(centralPath), { recursive: true });
-        await writeFile(centralPath, promotion.serialized);
-        stagePaths.push(CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH);
-      }
-      // status === 'failed' never rewrites the central ledger (RML-CONTRACT-004);
-      // status === 'no_entries' has nothing to stage.
-    }
-
-    const addResult = await run(['git', ['add', '--', ...stagePaths]], { cwd: tempWorktree });
-    if (addResult.exit_code !== 0) {
-      summary.status = 'failed';
-      summary.reason = 'canonical_audit_git_add_failed';
-      return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-    }
-
-    const diffResult = await run(['git', ['diff', '--cached', '--quiet', '--', ...stagePaths]], { cwd: tempWorktree });
-    if (diffResult.exit_code === 0) {
-      summary.status = 'already_present';
-      summary.pushed = false;
-      summary.reason = 'canonical_audit_already_present_on_base';
-      return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-    }
-    if (diffResult.exit_code !== 1) {
-      summary.status = 'failed';
-      summary.reason = 'canonical_audit_diff_check_failed';
-      return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-    }
-
-    const commitResult = await run([
-      'git',
-      ['commit', '-m', `docs: persist VibePro audit artifacts for ${storyId}`]
-    ], { cwd: tempWorktree });
-    if (commitResult.exit_code !== 0) {
-      summary.status = 'failed';
-      summary.reason = 'canonical_audit_commit_failed';
-      return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-    }
-    summary.commit_sha = await gitOptional(tempWorktree, ['rev-parse', 'HEAD']);
-
-    const pushResult = await run(['git', ['push', 'origin', `HEAD:${baseBranch}`]], { cwd: tempWorktree });
-    if (pushResult.exit_code !== 0) {
-      summary.status = 'failed';
-      summary.reason = 'canonical_audit_push_failed';
-      return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-    }
-    summary.status = 'pushed';
-    summary.pushed = true;
-    summary.reason = `canonical audit bundle persisted after merge ${merge.merge_commit_sha ?? 'unknown'}`;
-    return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-  } finally {
-    summary.cleanup.attempted = true;
-    const removeResult = await run(['git', ['worktree', 'remove', '--force', tempWorktree]]);
-    summary.cleanup.exit_code = removeResult.exit_code;
-    summary.cleanup.removed = removeResult.exit_code === 0;
-    if (removeResult.exit_code !== 0) {
-      summary.reason = `${summary.reason ?? 'canonical_audit_persistence'}; cleanup_failed`;
-      if (summary.status !== 'failed') summary.status = 'failed';
-    }
-  }
 }
 
 const PR_VIEW_FIELDS = [
@@ -1836,25 +1917,31 @@ const PR_VIEW_FIELDS = [
 ].join(',');
 
 async function resolveGitHubRepositorySlug(repoRoot, context = {}) {
-  const candidates = [
-    await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']),
-    context.prCreate?.pr_url,
-    context.executionState?.pr_url,
-    context.prCreate?.toolchain?.source_git?.origin_url,
-    context.prPrepare?.toolchain?.source_git?.origin_url
-  ];
-  for (const candidate of candidates) {
-    const slug = githubRepositorySlug(candidate);
-    if (slug) return slug;
+  const originUrl = await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']);
+  if (!originUrl) {
+    throw new Error('GitHub repository authority is unavailable: remote.origin.url could not be resolved');
   }
-  return null;
+  const candidates = [originUrl, context.prCreate?.pr_url, context.executionState?.pr_url].filter(Boolean);
+  const identities = candidates.map(githubRepositoryIdentity);
+  if (identities.some((identity) => identity == null)) {
+    throw new Error('GitHub repository authority is unparseable');
+  }
+  const unique = [...new Set(identities.map(({ host, slug }) => `${host}/${slug}`.toLowerCase()))];
+  if (unique.length > 1) {
+    throw new Error(`GitHub repository authority mismatch: ${unique.join(', ')}`);
+  }
+  return identities[0]?.slug ?? null;
 }
 
 function githubRepositorySlug(value) {
+  return githubRepositoryIdentity(value)?.slug ?? null;
+}
+
+function githubRepositoryIdentity(value) {
   if (typeof value !== 'string' || value.length === 0) return null;
-  const sshMatch = value.match(/github\.com[:/]([^/]+\/[^/.]+?)(?:\.git)?$/i);
-  if (sshMatch) return sshMatch[1];
-  const httpMatch = value.match(/^https?:\/\/github\.com\/([^/]+\/[^/.]+?)(?:\.git)?(?:\/pull\/\d+)?\/?$/i);
-  if (httpMatch) return httpMatch[1];
+  const sshMatch = value.match(/^(?:ssh:\/\/)?git@([^/:]+)(?::\d+)?[:/]([^/]+\/[^/.]+?)(?:\.git)?$/i);
+  if (sshMatch) return { host: sshMatch[1].toLowerCase(), slug: sshMatch[2] };
+  const httpMatch = value.match(/^https?:\/\/([^/]+)\/([^/]+\/[^/.]+?)(?:\.git)?(?:\/pull\/\d+)?\/?$/i);
+  if (httpMatch) return { host: httpMatch[1].toLowerCase(), slug: httpMatch[2] };
   return null;
 }
