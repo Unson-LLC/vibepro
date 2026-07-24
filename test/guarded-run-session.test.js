@@ -114,20 +114,20 @@ test('OCR-S-1 production owner returns a persisted typed runtime stop without re
   assert.equal(result.state.status, 'waiting_for_runtime');
   assert.equal(result.state.stop_reason.code, 'runtime_unavailable');
   assert.equal(result.state.stop_reason.details.provider, 'capability-limited-runtime');
-  assert.deepEqual(result.state.stop_reason.details.missing_capabilities, ['workspace_write']);
+  assert.deepEqual(result.state.stop_reason.details.missing_capabilities, ['workspace_write', 'local_workspace_only']);
   assert.deepEqual(result.state.stop_reason.details.recovery, {
     action: 'resume_run',
     story_id: STORY_ID,
     run_id: RUN_ID,
     dispatch_id: result.state.runtime_dispatches.at(-1).dispatch_id,
     provider: 'capability-limited-runtime',
-    required_capabilities: ['workspace_write'],
-    missing_capabilities: ['workspace_write'],
+    required_capabilities: ['workspace_write', 'local_workspace_only'],
+    missing_capabilities: ['workspace_write', 'local_workspace_only'],
     condition: {
       kind: 'runtime_available',
       provider: 'capability-limited-runtime',
-      required_capabilities: ['workspace_write'],
-      missing_capabilities: ['workspace_write']
+      required_capabilities: ['workspace_write', 'local_workspace_only'],
+      missing_capabilities: ['workspace_write', 'local_workspace_only']
     },
     next_command: `vibepro execute resume ${fixture.managed} --story-id ${STORY_ID} --run-id ${RUN_ID} --until pr-ready`
   });
@@ -187,20 +187,20 @@ for (const scenario of [
     assert.equal(result.state.status, 'waiting_for_runtime');
     assert.equal(result.state.stop_reason.code, 'runtime_unavailable');
     assert.equal(result.state.stop_reason.details.provider, scenario.provider);
-    assert.deepEqual(result.state.stop_reason.details.missing_capabilities, ['workspace_write']);
+    assert.deepEqual(result.state.stop_reason.details.missing_capabilities, ['workspace_write', 'local_workspace_only']);
     assert.deepEqual(result.state.stop_reason.details.recovery, {
       action: 'resume_run',
       story_id: STORY_ID,
       run_id: RUN_ID,
       dispatch_id: result.state.runtime_dispatches.at(-1).dispatch_id,
       provider: scenario.provider,
-      required_capabilities: ['workspace_write'],
-      missing_capabilities: ['workspace_write'],
+      required_capabilities: ['workspace_write', 'local_workspace_only'],
+      missing_capabilities: ['workspace_write', 'local_workspace_only'],
       condition: {
         kind: 'runtime_available',
         provider: scenario.provider,
-        required_capabilities: ['workspace_write'],
-        missing_capabilities: ['workspace_write']
+        required_capabilities: ['workspace_write', 'local_workspace_only'],
+        missing_capabilities: ['workspace_write', 'local_workspace_only']
       },
       next_command: `vibepro execute resume ${fixture.managed} --story-id ${STORY_ID} --run-id ${RUN_ID} --until pr-ready`
     });
