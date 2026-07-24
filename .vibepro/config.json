@@ -294,7 +294,7 @@
         "max_subagent_count": 456,
         "max_agent_consumption_ms": 1448270856,
         "max_review_dispatches_by_role": {
-          "architecture_boundary": 2,
+          "architecture_boundary": 3,
           "gate_evidence": 14,
           "pr_split_scope": 12,
           "release_risk": 15,
