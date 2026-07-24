@@ -150,9 +150,32 @@ export async function refreshOutcome(repoRoot, options = {}) {
   const canonicalDir = path.join(root, 'docs', 'management', 'audit-artifacts', storyId);
   const canonicalSnapshot = await snapshotDirectory(canonicalDir);
   const atomicWrite = options.atomicWrite ?? atomicReplaceFile;
+  const restoreSnapshot = options.restoreDirectorySnapshot ?? restoreDirectorySnapshot;
   const revisedBytes = `${JSON.stringify(revised, null, 2)}\n`;
   let canonical;
   let revisedExposed = false;
+  let preserveCanonicalSnapshot = false;
+  const restoreCanonicalOrThrow = async (originalError) => {
+    try {
+      await restoreSnapshot(canonicalDir, canonicalSnapshot);
+    } catch (restoreError) {
+      preserveCanonicalSnapshot = true;
+      const recoveryError = new OutcomeCommandError(
+        'outcome_canonical_restore_failed',
+        `${originalError.message}; canonical rollback could not be completed`,
+        {
+          original_error: {
+            code: originalError.error_id ?? originalError.code ?? null,
+            message: originalError.message
+          },
+          recovery_snapshot: canonicalSnapshot.backup,
+          recovery: 'restore the canonical audit directory from recovery_snapshot before retrying outcome refresh'
+        }
+      );
+      recoveryError.cause = restoreError;
+      throw recoveryError;
+    }
+  };
   try {
     // Canonical promotion currently reads the workspace ledger. Expose the revised
     // bytes only while building the staged canonical bundle, then restore the
@@ -165,8 +188,10 @@ export async function refreshOutcome(repoRoot, options = {}) {
       merge
     });
   } catch (error) {
-    await restoreDirectorySnapshot(canonicalDir, canonicalSnapshot);
-    await rm(canonicalSnapshot.tempRoot, { recursive: true, force: true });
+    await restoreCanonicalOrThrow(error);
+    if (!preserveCanonicalSnapshot) {
+      await rm(canonicalSnapshot.tempRoot, { recursive: true, force: true });
+    }
     throw error;
   } finally {
     if (revisedExposed) {
@@ -190,9 +215,7 @@ export async function refreshOutcome(repoRoot, options = {}) {
           );
         }
         if (restorePostcondition.status !== 'applied') {
-          await restoreDirectorySnapshot(canonicalDir, canonicalSnapshot);
-          await rm(canonicalSnapshot.tempRoot, { recursive: true, force: true });
-          throw new OutcomeCommandError(
+          const localRestoreError = new OutcomeCommandError(
             'outcome_local_restore_failed',
             'temporary outcome ledger bytes could not be restored',
             {
@@ -200,12 +223,16 @@ export async function refreshOutcome(repoRoot, options = {}) {
               recovery: 'restore the local decision outcome ledger from version control, then rerun vibepro outcome refresh'
             }
           );
+          await restoreCanonicalOrThrow(localRestoreError);
+          if (!preserveCanonicalSnapshot) {
+            await rm(canonicalSnapshot.tempRoot, { recursive: true, force: true });
+          }
+          throw localRestoreError;
         }
       }
     }
   }
   let persistence;
-  let preserveCanonicalSnapshot = false;
   try {
     const relativeDir = toWorkspaceRelative(root, canonical.canonical_dir);
     const persist = options.persistenceService ?? persistCanonicalArtifactsToBase;
@@ -229,21 +256,7 @@ export async function refreshOutcome(repoRoot, options = {}) {
       });
     }
   } catch (error) {
-    try {
-      await restoreDirectorySnapshot(canonicalDir, canonicalSnapshot);
-    } catch (restoreError) {
-      preserveCanonicalSnapshot = true;
-      const recoveryError = new OutcomeCommandError(
-        'outcome_canonical_restore_failed',
-        `${error.message}; canonical rollback could not be completed`,
-        {
-          recovery_snapshot: canonicalSnapshot.backup,
-          recovery: 'restore the canonical audit directory from recovery_snapshot before retrying outcome refresh'
-        }
-      );
-      recoveryError.cause = restoreError;
-      throw recoveryError;
-    }
+    await restoreCanonicalOrThrow(error);
     throw error;
   } finally {
     if (!preserveCanonicalSnapshot) {

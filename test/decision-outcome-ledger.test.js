@@ -1652,6 +1652,68 @@ test('GDL-S-9 promotion failure preserves its error after a transient ledger res
   );
 });
 
+test('GDL-S-9 permanent canonical rollback failure exposes a recovery snapshot', async () => {
+  const fixture = await createOutcomeRepository('vibepro-outcome-canonical-restore-failure-');
+  const { root } = fixture;
+  const prDir = path.join(root, '.vibepro', 'pr', STORY_ID);
+  await mkdir(prDir, { recursive: true });
+  const ledger = buildDecisionOutcomeLedger({ storyId: STORY_ID, sources: [finding('canonical-restore-failure')] });
+  await writeFile(path.join(prDir, 'decision-outcome-ledger.json'), `${JSON.stringify(ledger, null, 2)}\n`);
+  await writeMergeAuthority(prDir, fixture.head);
+
+  await assert.rejects(refreshOutcome(root, {
+    storyId: STORY_ID,
+    githubPrView: authoritativePr(fixture.head),
+    atomicWrite: async () => {
+      throw new Error('injected promotion staging failure');
+    },
+    restoreDirectorySnapshot: async () => {
+      throw new Error('injected permanent canonical restore failure');
+    },
+    persistenceService: async () => assert.fail('persistence must not run')
+  }), (error) => {
+    assert.equal(error.error_id, 'outcome_canonical_restore_failed');
+    assert.equal(error.details.original_error.message, 'injected promotion staging failure');
+    assert.match(error.details.recovery_snapshot, /canonical$/);
+    assert.match(error.details.recovery, /recovery_snapshot/);
+    assert.match(error.cause.message, /permanent canonical restore failure/);
+    return true;
+  });
+});
+
+test('GDL-S-9 permanent rollback failure after local ledger restore preserves recovery evidence', async () => {
+  const fixture = await createOutcomeRepository('vibepro-outcome-local-and-canonical-restore-failure-');
+  const { root } = fixture;
+  const prDir = path.join(root, '.vibepro', 'pr', STORY_ID);
+  const ledgerPath = path.join(prDir, 'decision-outcome-ledger.json');
+  await mkdir(prDir, { recursive: true });
+  const ledger = buildDecisionOutcomeLedger({ storyId: STORY_ID, sources: [finding('local-canonical-restore-failure')] });
+  await writeFile(ledgerPath, `${JSON.stringify(ledger, null, 2)}\n`);
+  await writeMergeAuthority(prDir, fixture.head);
+  let writeCount = 0;
+
+  await assert.rejects(refreshOutcome(root, {
+    storyId: STORY_ID,
+    githubPrView: authoritativePr(fixture.head),
+    atomicWrite: async (target, data) => {
+      writeCount += 1;
+      if (writeCount >= 2) throw new Error('injected permanent local restore failure');
+      return atomicReplaceFile(target, data);
+    },
+    restoreDirectorySnapshot: async () => {
+      throw new Error('injected permanent canonical restore failure');
+    },
+    persistenceService: async () => assert.fail('persistence must not run')
+  }), (error) => {
+    assert.equal(error.error_id, 'outcome_canonical_restore_failed');
+    assert.equal(error.details.original_error.code, 'outcome_local_restore_failed');
+    assert.match(error.details.recovery_snapshot, /canonical$/);
+    assert.match(error.cause.message, /permanent canonical restore failure/);
+    return true;
+  });
+  assert.equal(writeCount, 3);
+});
+
 test('GDL-S-9 outcome refresh rejects a requested base that differs from live PR authority', async () => {
   const fixture = await createOutcomeRepository('vibepro-outcome-base-authority-');
   const prDir = path.join(fixture.root, '.vibepro', 'pr', STORY_ID);
