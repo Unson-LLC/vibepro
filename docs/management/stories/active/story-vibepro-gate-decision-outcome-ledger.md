@@ -84,3 +84,4 @@ VibeProのgateが実欠陥を捕捉しても、finding、判断、修正、PR、
 - 修正は公開 merge result を bounded projection に通し、既存の公開契約を保ちながら内部 diagnostic key を除外する回帰テストを追加する。
 - 修正で HEAD が変わるため、同じ `architecture_boundary` role による独立再確認を1回だけ許可する。waiver、無関係な role、反復 replacement loop には使わない。
 - その再確認で、内部診断の一律除外が公開 recovery command まで削除する契約破壊を検出した。`343e54c8` の文脈依存 projection 修正だけを再確認する最終 `architecture_boundary` dispatch を1回追加し、追加ループには使わない。
+- その修正確認では実装契約は解消済みだったが、実 `runCli --json` stdout 経路の恒常テスト不足が残った。依存注入した実 CLI 経路テストの確認に限り、最終 dispatch を1回追加する。

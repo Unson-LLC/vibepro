@@ -168,8 +168,8 @@ test('outcome promotion text exposes bounded recovery diagnostics without raw co
   assert.doesNotMatch(json, /worktree_path|primary|commands|results/);
 });
 
-test('execute merge JSON projects bounded persistence diagnostics without internal command output', () => {
-  const projected = projectPublicPrMergeResult({
+test('execute merge JSON projects bounded persistence diagnostics without internal command output', async () => {
+  const rawResult = {
     merge: {
       status: 'failed',
       strategy: 'merge',
@@ -198,7 +198,8 @@ test('execute merge JSON projects bounded persistence diagnostics without intern
         commands: ['vibepro execute reconcile . --story-id story-x --base main']
       }
     }
-  });
+  };
+  const projected = projectPublicPrMergeResult(rawResult);
 
   assert.equal(projected.canonical_audit.persistence.status, 'failed');
   assert.equal(projected.canonical_audit.persistence.reason, 'canonical_audit_push_indeterminate');
@@ -218,6 +219,33 @@ test('execute merge JSON projects bounded persistence diagnostics without intern
   ]);
   const json = JSON.stringify(projected);
   assert.doesNotMatch(json, /SECRET_SHOULD_NOT_RENDER|raw failure|worktree_path|git push|results|token@example/);
+
+  const repo = await makeStoryRepo();
+  let stdout = '';
+  const cliResult = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-x',
+    '--json'
+  ], {
+    executeMerge: async () => structuredClone(rawResult),
+    updateExecutionStateFromPrMerge: async () => {},
+    stdout: { write: (chunk) => { stdout += chunk; } },
+    stderr: { write: () => {} },
+    env: process.env
+  });
+  assert.equal(cliResult.exitCode, 1);
+  const cliJson = JSON.parse(stdout);
+  assert.equal(cliJson.execution_state_sync.reason, 'primary sync failure');
+  assert.deepEqual(cliJson.reconciliation_action.commands, [
+    'vibepro execute reconcile . --story-id story-x --base main'
+  ]);
+  assert.doesNotMatch(
+    stdout,
+    /SECRET_SHOULD_NOT_RENDER|raw failure|worktree_path|git push|results|token@example/
+  );
 });
 
 test('outcome finalization text exposes local reconciliation state and recovery artifact', () => {
