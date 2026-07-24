@@ -1539,6 +1539,71 @@ test('CDI-S-8 production bridge rejects a host without push resume registration'
   }), /registerResumeHandler/);
 });
 
+test('OCR-S-4 production bridge composes the public codex runtime with the embedded subagent runtime', async (t) => {
+  const fixture = await createFixture(t, { mode: 'disabled' });
+  let starts = 0;
+  const host = {
+    async probe() { return { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }; },
+    async spawn() { throw new Error('embedded host must not receive public codex dispatch'); },
+    async status() { return { status: 'running' }; },
+    async shutdown() { return { status: 'cancelled' }; },
+    async subscribeCompletion() { return { subscription_id: 'unused' }; },
+    registerResumeHandler() {},
+    async wake() {},
+    async detach() {}
+  };
+  const publicCodex = {
+    id: 'codex',
+    async probe() {
+      return {
+        available: true,
+        capabilities: ['workspace_write', 'local_workspace_only'],
+        sandbox: 'workspace-write',
+        approval_policy: 'never'
+      };
+    },
+    async start(request) {
+      starts += 1;
+      return {
+        provider_run_id: 'public-codex-run',
+        agent_identity: 'codex-implementation',
+        session_id: 'public-codex-run',
+        thread_id: 'public-codex-run',
+        head_sha: request.input_head_sha
+      };
+    },
+    async status() { return { status: 'running' }; },
+    async cancel() { return { status: 'cancelled' }; },
+    async collect_result() { throw new Error('not completed'); }
+  };
+  const dependencies = fixture.dependencies();
+  const bridge = createCodexGuardedRunBridge({
+    repoRoot: fixture.source,
+    host,
+    now: dependencies.now,
+    runtimeConnectors: [publicCodex],
+    guardedRunDependencies: dependencies
+  });
+  const run = await bridge.session.run(fixture.source, { storyId: STORY_ID });
+  const dispatched = await bridge.session.dispatchRuntime(fixture.source, {
+    storyId: STORY_ID,
+    runId: run.run_id,
+    request: {
+      adapter_id: 'codex',
+      task_id: 'public-codex-implementation',
+      role: 'implementation',
+      requirements: {
+        capabilities: ['workspace_write', 'local_workspace_only'],
+        timeout_ms: 1000,
+        managed_worktree: run.execution_context.root_realpath
+      }
+    }
+  });
+  assert.equal(dispatched.dispatch.adapter_id, 'codex');
+  assert.equal(dispatched.dispatch.provider_run_id, 'public-codex-run');
+  assert.equal(starts, 1);
+});
+
 test('CDI-S-9 public CLI dispatches Codex runtime and auto-registers push resume', async (t) => {
   const fixture = await createFixture(t, { mode: 'disabled' });
   const guardedRunDependencies = fixture.dependencies();

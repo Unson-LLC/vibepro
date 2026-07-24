@@ -2447,6 +2447,7 @@ export async function runCli(argv, io = {}) {
             repoRoot,
             host: io.codexSubagentHost,
             now: io.guardedRunDependencies?.now,
+            env: io.env ?? process.env,
             guardedRunDependencies: io.guardedRunDependencies ?? {},
             recordAgentReview: io.guardedRunDependencies?.recordAgentReview ?? recordAgentReview
           })
