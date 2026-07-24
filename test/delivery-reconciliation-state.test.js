@@ -224,10 +224,35 @@ test('public projection allows only bounded recovery commands and execution-stat
   assert.doesNotMatch(JSON.stringify(projected), /operator|secret|git push|provider_token|curl|cat/);
 });
 
-test('public projection does not unwrap a domain merge field from a merge result', () => {
+test('public projection does not unwrap or publish an unknown domain merge field', () => {
   const fixture = mergeFixture();
   fixture.merge = { internal: 'nested domain state' };
   const projected = projectPublicPrMergeResult(fixture);
   assert.equal(projected.status, 'merged_externally');
-  assert.deepEqual(projected.merge, { internal: 'nested domain state' });
+  assert.equal(Object.hasOwn(projected, 'merge'), false);
+});
+
+test('public projection fails closed for unknown top-level and nested merge diagnostics', () => {
+  const fixture = mergeFixture();
+  fixture.arbitrary_diagnostic = 'SECRET';
+  fixture.pr.diagnostics = 'provider_token=SECRET';
+  fixture.pr.raw_response = 'Authorization: Bearer SECRET';
+  fixture.reconciliation.diagnostics = 'raw provider response';
+  fixture.delivery.authorization = 'Bearer SECRET';
+  fixture.gate_authorization = {
+    allowed: false,
+    source: 'pr_create',
+    reason: 'authorization=SECRET',
+    diagnostics: 'SECRET'
+  };
+
+  const projected = projectPublicPrMergeResult(fixture);
+  assert.equal(Object.hasOwn(projected, 'arbitrary_diagnostic'), false);
+  assert.equal(Object.hasOwn(projected.pr, 'diagnostics'), false);
+  assert.equal(Object.hasOwn(projected.pr, 'raw_response'), false);
+  assert.equal(Object.hasOwn(projected.reconciliation, 'diagnostics'), false);
+  assert.equal(Object.hasOwn(projected.delivery, 'authorization'), false);
+  assert.equal(Object.hasOwn(projected.gate_authorization, 'diagnostics'), false);
+  assert.equal(projected.gate_authorization.reason, '[REDACTED]');
+  assert.doesNotMatch(JSON.stringify(projected), /SECRET|provider_token|raw provider response|Bearer SECRET/);
 });
