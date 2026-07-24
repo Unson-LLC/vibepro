@@ -1889,6 +1889,9 @@ const PR_VIEW_FIELDS = [
 
 async function resolveGitHubRepositorySlug(repoRoot, context = {}) {
   const originUrl = await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']);
+  if (!originUrl) {
+    throw new Error('GitHub repository authority is unavailable: remote.origin.url could not be resolved');
+  }
   const candidates = [originUrl, context.prCreate?.pr_url, context.executionState?.pr_url].filter(Boolean);
   const identities = candidates.map(githubRepositoryIdentity);
   if (identities.some((identity) => identity == null)) {

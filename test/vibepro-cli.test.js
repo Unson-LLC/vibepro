@@ -430,7 +430,7 @@ async function prepareExecuteMergeDryRunFixture(repo, storyId = 'story-pr-prepar
     execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
     base: 'main',
     head: 'feature/test-story',
-    pr_url: 'https://github.example.test/unson/vibepro/pull/123',
+    pr_url: 'https://github.com/unson/target-product/pull/123',
     current_head_sha: headSha,
     artifact_freshness: {
       kind: 'pr_create',
@@ -13654,7 +13654,7 @@ test('story-vibepro-merge-waiver-propagation ac:1 ac:2 ac:4 ac:5 S-001 scenario_
     },
     base: 'main',
     head: 'feature/test-story',
-    pr_url: 'https://github.example.test/unson/vibepro/pull/123',
+    pr_url: 'https://github.com/unson/target-product/pull/123',
     current_head_sha: headSha,
     artifact_freshness: {
       kind: 'pr_create',
@@ -13731,6 +13731,34 @@ process.exit(99);
   assert.equal(manifest.pr_merges['story-pr-prepare'].latest_merge, '.vibepro/pr/story-pr-prepare/pr-merge.json');
   assert.equal(manifest.pr_merges['story-pr-prepare'].latest_base, 'main');
   assert.equal(manifest.canonical_audit_artifacts?.['story-pr-prepare'], undefined);
+});
+
+test('GDL-CONTRACT-009 execute merge fails closed when remote origin authority is unavailable', async () => {
+  const repo = await makeGitRepoWithStory();
+  await git(repo, ['remote', 'add', 'origin', 'https://github.com/unson/target-product.git']);
+  await prepareExecuteMergeDryRunFixture(repo);
+  await git(repo, ['remote', 'remove', 'origin']);
+
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-missing-origin-bin-'));
+  const ghCallLog = path.join(binDir, 'gh-called.log');
+  await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(ghCallLog)}, process.argv.slice(2).join(' ') + '\\n');
+process.exit(99);
+`);
+  await chmod(path.join(binDir, 'gh'), 0o755);
+
+  let stderr = '';
+  const result = await runCli([
+    'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--dry-run', '--json'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` },
+    stderr: { write(chunk) { stderr += chunk; } }
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.equal(await pathExists(ghCallLog), false);
+  assert.match(stderr, /repository authority is unavailable/i);
 });
 
 test('execute merge dry-run keeps absent and unreadable cost accounting explicit without zeros', async () => {
