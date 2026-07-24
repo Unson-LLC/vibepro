@@ -1,0 +1,67 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-ARC-1",
+      "type": "invariant",
+      "statement": "The parent roadmap Story document and canonical Story catalog both expose completed lifecycle state.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "id": "ARC-S-1" }
+        ],
+        "architecture_refs": [
+          { "file": "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md", "section": "Decision" }
+        ],
+        "code_refs": [
+          { "file": ".vibepro/config.json", "anchor": "story-vibepro-autonomous-implementation-closure-roadmap" }
+        ],
+        "test_refs": [
+          { "file": "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md", "case": "ARC-T-1 Canonical lifecycle agreement" }
+        ]
+      }
+    },
+    {
+      "id": "C-ARC-2",
+      "type": "contract",
+      "statement": "Roadmap completion evidence distinguishes the PR 385 implementation merge from the PR 386 delivery reconciliation merge.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "id": "ARC-S-2" }
+        ],
+        "architecture_refs": [
+          { "file": "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md", "section": "Decision" }
+        ],
+        "code_refs": [
+          { "file": "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md", "anchor": "Delivery reconciliation" }
+        ],
+        "test_refs": [
+          { "file": "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md", "case": "ARC-T-2 Delivery lineage" }
+        ]
+      }
+    },
+    {
+      "id": "INV-ARC-3",
+      "type": "invariant",
+      "statement": "The correction changes metadata, documentation, and one focused catalog-contract assertion only, and introduces no runtime or architecture dependency edge.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "id": "ARC-S-3" }
+        ],
+        "architecture_refs": [
+          { "file": "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md", "section": "Boundary" }
+        ],
+        "code_refs": [
+          { "file": ".vibepro/config.json", "anchor": "story-vibepro-autonomous-roadmap-catalog-closure" }
+        ],
+        "test_refs": [
+          { "file": "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md", "case": "ARC-T-3 Scope and conformance" }
+        ]
+      }
+    }
+  ]
+}
