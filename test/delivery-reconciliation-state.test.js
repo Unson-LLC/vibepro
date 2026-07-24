@@ -158,3 +158,18 @@ test('public JSON, text, and HTML replace raw merge warnings with one bounded wa
     assert.doesNotMatch(projection, /git fetch/);
   }
 });
+
+test('public JSON, text, and HTML strip URL credentials and bound reconciliation reasons', () => {
+  const fixture = mergeFixture();
+  fixture.pr.url = 'https://operator:secret@example.test/pr/1';
+  fixture.reconciliation.reasons = ['gate_not_ready', 'raw parser error: secret output'];
+
+  const summary = renderPrMergeSummary(fixture);
+  const html = renderPrMergeHtml(fixture);
+  for (const projection of [summary, html]) {
+    assert.match(projection, /https:\/\/example\.test\/pr\/1/);
+    assert.match(projection, /gate_not_ready/);
+    assert.match(projection, /merge_reconciliation_required/);
+    assert.doesNotMatch(projection, /operator|secret|raw parser error/);
+  }
+});

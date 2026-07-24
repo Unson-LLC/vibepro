@@ -1,5 +1,5 @@
 import { localizedText } from './language.js';
-import { projectPublicMergeWarnings } from './merge-public-projection.js';
+import { projectPublicPrMergeResult } from './merge-public-projection.js';
 import { resolveReconciliationAction } from './reconciliation-action.js';
 import { describeScanStatus } from './scan-status.js';
 
@@ -289,26 +289,23 @@ export function renderPrCreateHtml(execution, options = {}) {
 }
 
 export function renderPrMergeHtml(merge, options = {}) {
-  merge = {
-    ...merge,
-    warnings: projectPublicMergeWarnings(merge.warnings)
-  };
+  const privatePersistenceDetails = merge.execution_state_sync?.persistence_error_details ?? null;
+  const privateRestoreErrors = Array.isArray(privatePersistenceDetails?.restore_errors)
+    ? privatePersistenceDetails.restore_errors
+    : [];
+  const publicPersistenceCode = /^[a-z0-9_]+$/i.test(privatePersistenceDetails?.code ?? '')
+    ? privatePersistenceDetails.code
+    : null;
+  merge = projectPublicPrMergeResult(merge);
   const language = options.language ?? merge.output?.language ?? 'ja';
   const reconciliationAction = resolveReconciliationAction(merge);
-  const persistenceDetails = merge.execution_state_sync?.persistence_error_details ?? null;
-  const restoreErrors = Array.isArray(persistenceDetails?.restore_errors)
-    ? persistenceDetails.restore_errors
-    : [];
-  const persistenceCode = /^[a-z0-9_]+$/i.test(persistenceDetails?.code ?? '')
-    ? persistenceDetails.code
-    : null;
   const synchronizationDiagnostics = merge.execution_state_sync?.status === 'failed'
     ? [
         `sync_status: failed`,
         'sync_reason: Execution-state synchronization failed after merge processing.',
         `followup_persistence: ${merge.execution_state_sync.followup_persistence ?? 'unknown'}`,
-        ...(persistenceCode ? [`persistence_code: ${persistenceCode}`] : []),
-        `rollback: ${restoreErrors.length > 0 ? 'incomplete' : 'complete_or_not_required'}`
+        ...(publicPersistenceCode ? [`persistence_code: ${publicPersistenceCode}`] : []),
+        `rollback: ${privateRestoreErrors.length > 0 ? 'incomplete' : 'complete_or_not_required'}`
       ]
     : [];
   return renderDocument({

@@ -173,6 +173,8 @@ test('execute merge JSON projects bounded persistence diagnostics without intern
     merge: {
       status: 'failed',
       strategy: 'merge',
+      pr: { url: 'https://operator:secret@example.invalid/pr/1' },
+      reconciliation: { reasons: ['raw parser error: secret output'] },
       warnings: ['Provider JSON response could not be parsed for gh pr view https://token@example.invalid: raw failure'],
       canonical_audit: {
         status: 'failed',
@@ -228,6 +230,8 @@ test('execute merge JSON projects bounded persistence diagnostics without intern
   assert.deepEqual(projected.warnings, [
     'Merge processing produced a warning. Inspect stop_reason and reconciliation state.'
   ]);
+  assert.equal(projected.pr.url, 'https://example.invalid/pr/1');
+  assert.deepEqual(projected.reconciliation.reasons, ['merge_reconciliation_required']);
   const json = JSON.stringify(projected);
   assert.doesNotMatch(json, /SECRET_SHOULD_NOT_RENDER|raw failure|worktree_path|git push|results|token@example/);
 
