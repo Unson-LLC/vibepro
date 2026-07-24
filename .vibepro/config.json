@@ -291,9 +291,9 @@
     },
     "delivery_efficiency_by_story": {
       "story-vibepro-delivery-reconciliation-state": {
-        "max_subagent_count": 23,
-        "max_agent_consumption_ms": 4522425,
-        "amendment_reason": "Sixteen historical closed lifecycles exhausted the numeric Story cap even though the prior amendment explicitly reserved five final current-HEAD lifecycles. The user explicitly authorized blocker removal and merge completion on 2026-07-24. Reserve the current-head architecture_boundary preflight, gate_evidence, pr_split_scope, release_risk, and runtime_contract, plus one accounting slot consumed by a fail-closed surface-digest authorization that never started an agent lifecycle and one replacement architecture preflight required because the budget-only correction itself changed strict HEAD. Collect all remaining decisions with one independent Luna high reviewer, spawn no replacement loop, and permit no unrelated role or global budget expansion."
+        "max_subagent_count": 28,
+        "max_agent_consumption_ms": 6000000,
+        "amendment_reason": "Twenty-three historical and current-head lifecycles exhausted the Story-local cap before an implementation_unsound adjudication required a new HEAD. The user explicitly authorized blocker removal and merge completion on 2026-07-24. Reserve exactly five replacement lifecycles on the corrected frozen HEAD for architecture_boundary, runtime_contract, gate_evidence, pr_split_scope, and release_risk using the same Luna high reviewer. The additional consumption allowance is bounded to those five roles; spawn no replacement loop and permit no unrelated role or global budget expansion."
       },
       "story-vibepro-surface-aware-agent-review-freshness": {
         "max_subagent_count": 22,
