@@ -292,16 +292,16 @@
     "delivery_efficiency_by_story": {
       "story-vibepro-gate-decision-outcome-ledger": {
         "max_subagent_count": 448,
-        "max_agent_consumption_ms": 1437970800,
+        "max_agent_consumption_ms": 1444670856,
         "max_review_dispatches_by_role": {
           "gate_evidence": 10,
           "pr_split_scope": 8,
-          "release_risk": 10,
+          "release_risk": 11,
           "preview_smoke": 16,
           "network_runtime": 16,
           "human_usability": 16
         },
-        "amendment_reason": "Four hundred forty historical and superseded review lifecycles exhausted the prior Story-local cap. The final release-risk review then found that execute merge bypassed the managed canonical-persistence service and could regress an already-observed merge to failed; commit f05ba8f1 fixed both production-path defects and necessarily invalidated the three prior gate reviews. The user explicitly authorized blocker removal and merge completion on 2026-07-24. Reserve exactly eight final accounting slots for one current-HEAD pass across gate_evidence, pr_split_scope, release_risk, preview_smoke, network_runtime, human_usability, and the bounded evidence plus judgment adjudications, all with gpt-5.6-luna high. Add 4800000 ms, permit no replacement loop or unrelated role, and leave global budgets unchanged."
+        "amendment_reason": "Four hundred thirty-eight historical and superseded review lifecycles consumed 1438670856 ms before final closure. The final release-risk review found that execute merge bypassed the managed canonical-persistence service and could regress an already-observed merge to failed; commit f05ba8f1 fixed both production-path defects. Final requirement diagnosis then exposed one undeclared inherited dispatch-authorization guard and one stale Spec anchor; the canonical Spec correction necessarily created one last HEAD and invalidated current-head evidence. The user explicitly authorized blocker removal and merge completion on 2026-07-24. Keep the existing hard cap of 448 lifecycles, add exactly 6000000 ms above observed consumption, and permit one additional release_risk dispatch. Use the remaining ten lifecycle slots only for the current-HEAD roles demanded by pr prepare, with gpt-5.6-luna high; permit no replacement loop or unrelated role and leave global budgets unchanged."
       },
       "story-vibepro-delivery-reconciliation-state": {
         "max_subagent_count": 34,

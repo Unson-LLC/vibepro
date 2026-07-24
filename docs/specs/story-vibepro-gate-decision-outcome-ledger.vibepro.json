@@ -163,7 +163,7 @@
       "statement": "Best-effort decision_outcome_delivery and fail-closed decision_outcome_binding remain separate fields and failure contracts.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 13 }],
-        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "decision_outcome_delivery" }],
+        "code_refs": [{ "file": "src/merge-manager.js", "anchor": "buildDecisionOutcomeBinding" }],
         "test_refs": [{ "file": "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js", "case": "AC:14" }]
       },
       "verifiable_by": { "test_pattern": [{ "file_glob": "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js", "must_cover": "AC:14" }] }
