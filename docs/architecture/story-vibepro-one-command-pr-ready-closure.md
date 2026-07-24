@@ -141,9 +141,10 @@ Autonomous Action DAG and connector tests remain regression inputs; they are not
 treated as proof of the new default or production closure.
 
 Target architecture conformance is compared to the fetched `origin/main` baseline
-`db8f0ef3f7d3cfcb2dc0d31504e40e01025293dd`: 86 violations (65 undeclared
-dependencies, 9 budget violations, 12 orphans). Current HEAD also has 86
-violations (66 undeclared dependencies, 9 budget violations, 11 orphans). New
+`6222d118315e7001abcbdc786aca932e48c58232`: 85 violations (65 undeclared
+dependencies, 9 budget violations, 11 orphans). Reviewed HEAD
+`ce89e4589ba8c96a418249cd2f9aa673acea646b` has the same 85 violations with the
+same 65/9/11 breakdown. New
 code and the previously orphaned production connector belong to `run-session`,
 add no new run-session-to-CLI reverse dependency, and do not worsen the latest
 main baseline total.

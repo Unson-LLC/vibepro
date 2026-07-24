@@ -327,21 +327,21 @@
         "max_observed_work_ms": null,
         "max_active_wait_ms": null,
         "max_tool_wait_ms": null,
-        "max_subagent_count": 178,
+        "max_subagent_count": 180,
         "max_agent_consumption_ms": null,
         "max_review_dispatches_by_role": {
-          "architecture_boundary": 48,
+          "architecture_boundary": 49,
           "gate_evidence": 13,
           "human_usability": 1,
           "network_runtime": 1,
           "regression_risk": 6,
           "release_risk": 13,
           "runtime_contract": 21,
-          "spec_consistency": 21,
+          "spec_consistency": 22,
           "unit_integration": 9,
           "ux_completion": 10
         },
-        "amendment_reason": "PR #385 merged the closure implementation, but its post-merge reconciliation exposed one schema 0.2 artifact-route defect. The corrected follow-up begins with 166 historical review lifecycles already recorded while the Story-specific budget is absent from current main. User explicitly instructed continuation on 2026-07-24. Reserve exactly twelve bounded current-HEAD lifecycles for the architecture preflight, six strict artifact-consistency roles, runtime final review, gate evidence, release risk, and independent adjudication; reuse the existing independent reviewers, permit no waiver, and do not widen global defaults."
+        "amendment_reason": "PR #385 merged the closure implementation, but its post-merge reconciliation exposed one schema 0.2 artifact-route defect. The corrected follow-up begins with 166 historical review lifecycles already recorded while the Story-specific budget is absent from current main. User explicitly instructed continuation on 2026-07-24. Reserve twelve bounded current-HEAD lifecycles for the architecture preflight, six strict artifact-consistency roles, runtime final review, gate evidence, release risk, and independent adjudication. The first architecture and spec reviews then independently found one stale conformance paragraph; reserve exactly one repair review for each of those roles. Reuse the existing independent reviewers, permit no waiver, and do not widen global defaults or other role limits."
       },
       "story-vibepro-atomic-scope-review-contract": {
         "max_subagent_count": 274,
