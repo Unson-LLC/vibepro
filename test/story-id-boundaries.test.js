@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 
 import { resolveArtifactRoute } from '../src/artifact-routing.js';
 import { buildManagedWorktreeGate } from '../src/managed-worktree-gate.js';
-import { readManagedExecutionState } from '../src/managed-worktree.js';
+import {
+  buildPendingManagedWorktree,
+  ensureManagedWorktree,
+  readManagedExecutionState
+} from '../src/managed-worktree.js';
 import { executeMerge } from '../src/merge-manager.js';
 import { isSafeStoryId, isSafeStoryPathSegment } from '../src/story-id.js';
 
@@ -26,6 +30,14 @@ test('GDL-S-9 managed execution rejects unsafe Story IDs before state lookup', a
   for (const storyId of UNSAFE_IDS) {
     await assert.rejects(
       () => readManagedExecutionState(ROOT, storyId),
+      (error) => error.code === 'story_id_invalid'
+    );
+    await assert.rejects(
+      () => ensureManagedWorktree(ROOT, { storyId, mode: 'required' }),
+      (error) => error.code === 'story_id_invalid'
+    );
+    await assert.rejects(
+      () => buildPendingManagedWorktree(ROOT, { storyId, mode: 'required' }),
       (error) => error.code === 'story_id_invalid'
     );
     await assert.rejects(

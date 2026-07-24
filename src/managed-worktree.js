@@ -41,6 +41,7 @@ export async function ensureManagedWorktree(repoRoot, options = {}) {
 
   const storyId = options.storyId;
   if (!storyId) throw new Error('managed worktree requires storyId');
+  assertSafeStoryPathSegment(storyId, 'managed worktree requires a valid story id');
   const baseRef = options.baseRef ?? 'HEAD';
   const createdFromSha = await gitOptional(root, ['rev-parse', baseRef]);
   const shortId = buildShortId(storyId, createdFromSha || baseRef);
@@ -115,6 +116,7 @@ export async function buildPendingManagedWorktree(repoRoot, options = {}) {
 
   const storyId = options.storyId;
   if (!storyId) throw new Error('managed worktree requires storyId');
+  assertSafeStoryPathSegment(storyId, 'managed worktree requires a valid story id');
   const baseRef = options.baseRef ?? 'HEAD';
   const createdFromSha = await gitOptional(root, ['rev-parse', baseRef]);
   const shortId = buildShortId(storyId, createdFromSha || baseRef);
