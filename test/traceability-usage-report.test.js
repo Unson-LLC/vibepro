@@ -623,6 +623,61 @@ test('DRS-S-5 execution-state sync failure without a recovery command fails clos
   assert.doesNotMatch(renderUsageReport(await createUsageReport(root)), /vibepro pr prepare|vibepro execute merge/);
 });
 
+test('DRS-S-5 local fail-closed merge authority outranks a coexisting compact canonical fallback', async () => {
+  const storyId = 'story-sync-recovery-mixed-authority';
+  const root = await setupReportRepo([{ story_id: storyId }]);
+  const localDir = path.join(root, '.vibepro', 'pr', storyId);
+  await mkdir(localDir, { recursive: true });
+  await writeFile(path.join(localDir, 'pr-merge.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: storyId,
+    story: { story_id: storyId },
+    status: 'failed',
+    base: 'main',
+    delivery: { status: 'merged', observed: true },
+    reconciliation: { status: 'reconciliation_required', reasons: ['execution_state_sync_failed'] },
+    execution_state_sync: { status: 'failed', recovery_command: null },
+    merged_at: '2026-07-18T00:20:00.000Z'
+  }, null, 2));
+
+  const auditDir = path.join(root, 'docs', 'management', 'audit-artifacts', storyId);
+  await mkdir(auditDir, { recursive: true });
+  await writeFile(path.join(auditDir, 'audit-index.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: storyId,
+    generated_at: '2026-07-18T00:21:00.000Z',
+    pr_prepare: { present: false },
+    pr_create: { present: false },
+    pr_merge: {
+      present: true,
+      summary: {
+        status: 'merged_externally',
+        base: 'main',
+        delivery: { status: 'merged_externally', observed: true },
+        reconciliation: { status: 'reconciliation_required', reasons: ['canonical_summary_requires_reconciliation'] },
+        reconciliation_action: {
+          status: 'required',
+          commands: [
+            `vibepro pr prepare . --story-id ${storyId} --base main`,
+            `vibepro execute merge . --story-id ${storyId} --base main`
+          ]
+        }
+      }
+    },
+    traceability: { present: false },
+    verification: { present: false },
+    review: { summary_count: 0, result_count: 0, pass_count: 0, block_count: 0 },
+    missing_artifacts: []
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, storyId);
+  assert.equal(story.pr_merge_count, 1);
+  assert.equal(story.latest_reconciliation_action, null);
+  assert.equal(story.latest_reconciliation_reasons.includes('execution_state_sync_recovery_command_missing'), true);
+  assert.doesNotMatch(renderUsageReport(report), /vibepro pr prepare|vibepro execute merge/);
+});
+
 test('DRS-S-2 contradictory unverified delivery and reconciled state fails closed', async () => {
   const root = await setupReportRepo([
     { story_id: 'story-contradictory-delivery' }

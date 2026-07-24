@@ -35,7 +35,7 @@ export async function createUsageReport(repoRoot, options = {}) {
   ])];
   const localReviewArtifacts = await collectReviewArtifacts(root, workspaceDir, since, reviewStoryIds);
   const canonicalArtifacts = await collectCanonicalAuditArtifacts(root, since);
-  const prArtifactsWithoutManifest = mergeArtifactsPreferLocal(localPrArtifacts, canonicalArtifacts.prArtifacts);
+  const prArtifactsWithoutManifest = mergePrArtifactsPreferLocal(localPrArtifacts, canonicalArtifacts.prArtifacts);
   const prArtifacts = [...prArtifactsWithoutManifest, ...filterManifestFallbackArtifacts(manifestPrArtifacts.artifacts, prArtifactsWithoutManifest)];
   const reviewArtifacts = mergeArtifactsPreferLocal(localReviewArtifacts, canonicalArtifacts.reviewArtifacts);
   const executionArtifacts = await collectExecutionArtifacts(root, workspaceDir, since);
@@ -384,6 +384,18 @@ ${manifestParseRows}
 - VibePro command mentions: ${report.log_signals.vibepro_command_mentions.length}
 - subagent activity mentions: ${report.log_signals.subagent_activity_mentions?.length ?? 0}
 `;
+}
+
+function mergePrArtifactsPreferLocal(localArtifacts, canonicalArtifacts) {
+  const localAuthorities = new Set(
+    localArtifacts.map((artifact) => `${artifact.story_id}:${artifact.kind}`)
+  );
+  return mergeArtifactsPreferLocal(
+    localArtifacts,
+    canonicalArtifacts.filter(
+      (artifact) => !localAuthorities.has(`${artifact.story_id}:${artifact.kind}`)
+    )
+  );
 }
 
 function formatReconciliationAction(story) {
