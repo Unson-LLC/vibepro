@@ -1,0 +1,584 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-conformance-nul-escape",
+  "updated_at": "2026-07-24T23:55:58.457Z",
+  "events": [
+    {
+      "event_id": "c18122ce-c4ae-4542-a8a5-f76eafe652e0",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc contains concrete intent (restore text-file status while preserving NUL composite-key semantics), background identifying the introducing commit and grep/file(1) symptoms, and a reason block covering alternatives, compatibility, rollback, boundary. Matches the actual diff (2-byte source change + story + config registration); substantive, not token-only.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a363a6c0a78e4d131",
+        "session_ref": "subagent-a363a6c0a78e4d131"
+      },
+      "head_commit": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+      "recorded_at": "2026-07-24T23:13:44.647Z"
+    },
+    {
+      "event_id": "122f78eb-c5ce-471f-8c42-2f98fbadd120",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "flow_replay evidence is real: the e2e test executes the actual CLI (bin/vibepro.js architecture conformance . --json) end-to-end and compares HEAD assignFilesToModules against the origin/main pre-fix raw-NUL module on the real repo file list. Judge reproduced the equivalence independently (deepStrictEqual OK on 7859 files, stale probe reported identically).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a363a6c0a78e4d131",
+        "session_ref": "subagent-a363a6c0a78e4d131"
+      },
+      "head_commit": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+      "recorded_at": "2026-07-24T23:13:45.201Z"
+    },
+    {
+      "event_id": "11a6ec67-4cba-4080-bb1d-c5545cd4881e",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec clauses INV-001 and S-001 exist in spec.json and state the actual invariant of this diff. Verified beyond token matching: byte-offset scan (0 now, 2 at 7944/8164 before) plus behavioral equivalence replay, both reproduced by the judge.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a363a6c0a78e4d131",
+        "session_ref": "subagent-a363a6c0a78e4d131"
+      },
+      "head_commit": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+      "recorded_at": "2026-07-24T23:13:45.796Z"
+    },
+    {
+      "event_id": "ffa19a56-e30b-4cb8-9c31-f287ee8b36cb",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Accepted decision record decision-1784933799491-78a1eca8 cites scope-review artifact and both evidence artifacts. Boundary claim holds against the code: matchedPatterns is a function-local Set with symmetric add/has and no serialization path, so the change surface is exactly the two template literals.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a363a6c0a78e4d131",
+        "session_ref": "subagent-a363a6c0a78e4d131"
+      },
+      "head_commit": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+      "recorded_at": "2026-07-24T23:13:46.475Z"
+    },
+    {
+      "event_id": "a662d408-fb3d-424f-a5ff-20a81af7d6ce",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The failure mode this key guards — stale-pattern reporting silently diverging if the composite key changed — is exercised, not just named: the e2e negative path adds a nonexistent-probe module and asserts both old and new modules report it in stalePatterns identically; judge reproduced this.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a363a6c0a78e4d131",
+        "session_ref": "subagent-a363a6c0a78e4d131"
+      },
+      "head_commit": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+      "recorded_at": "2026-07-24T23:13:47.063Z"
+    },
+    {
+      "event_id": "57a2b98c-0912-4d3f-ad1d-c8e40114b463",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Both artifacts record head 56150b3d equal to current HEAD; every spot-checked value reproduces exactly: nul_bytes_remaining=0, offsets 7944/8164, grep=3, 12/12 unit pass, 7859-file equivalence, negative-path probe. Done evidence grounded in the outcome, not test names.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a363a6c0a78e4d131",
+        "session_ref": "subagent-a363a6c0a78e4d131"
+      },
+      "head_commit": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+      "recorded_at": "2026-07-24T23:13:47.638Z"
+    },
+    {
+      "event_id": "1781ee0b-6bc8-4c3f-b6d5-9982e759c89b",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No-contract-break judgment supported beyond tokens: runtime string proven byte-identical, matchedPatterns never leaves assignFilesToModules, e2e replay runs the real CLI (dry_run, exit 0) and asserts regenerated conformance.json matches CLI output. Supporting accepted decision decision-1784933797056-533d090d documents the contract reasoning.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a363a6c0a78e4d131",
+        "session_ref": "subagent-a363a6c0a78e4d131"
+      },
+      "head_commit": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+      "recorded_at": "2026-07-24T23:13:48.137Z"
+    },
+    {
+      "event_id": "335112c5-5ab8-4883-8e56-7d115f7cefdb",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Diff is 3 commits / 48 insertions: a 2-byte source representation change, the hand-written Story, and the mandatory config.json registration — a single coherent intent readable by one reviewer in one pass, as the accepted scope-review decision states. Splitting registration from Story would break the self-dogfood flow.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a363a6c0a78e4d131",
+        "session_ref": "subagent-a363a6c0a78e4d131"
+      },
+      "head_commit": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+      "recorded_at": "2026-07-24T23:13:48.689Z"
+    },
+    {
+      "event_id": "050811d1-e416-482f-b77c-8aa10793874c",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Although architecture-conformance.js feeds gate-adjacent artifacts, misleading-green-artifact regression is affirmatively ruled out: the e2e artifact replay regenerates conformance.json through the changed code and asserts stale_pattern_count=0 and violation_count consistency, and the equivalence replay proves assignment output identical to pre-fix.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a363a6c0a78e4d131",
+        "session_ref": "subagent-a363a6c0a78e4d131"
+      },
+      "head_commit": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+      "recorded_at": "2026-07-24T23:13:49.191Z"
+    },
+    {
+      "event_id": "067ed08a-d722-49ed-906d-d9ba1aa11454",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc carries a real, specific intent — restore text-file status while preserving the deliberate NUL composite-key separator pattern from content-binding.js — with a reason block genuinely covering alternatives (space separator rejected), compatibility (local Set, no serialization), rollback (single revert), boundary (2 sites). Judge checked the diff matches this intent exactly; not boilerplate token-matching.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7057e7c9589d6e66",
+        "session_ref": "subagent-a7057e7c9589d6e66"
+      },
+      "head_commit": "7244402fbeaadcf3835880982ee912485a10858e",
+      "recorded_at": "2026-07-24T23:23:11.267Z"
+    },
+    {
+      "event_id": "5082a397-606b-47b9-b9c8-9448ada8f519",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "flow_replay is substantive: the e2e test imports the actual pre-fix origin/main module (asserting its 2 raw NULs survive retargeting), runs both versions on the real repo file list and target model, and replays the CLI conformance flow regenerating conformance.json. Judge re-ran it at current head 7244402f; both tests pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7057e7c9589d6e66",
+        "session_ref": "subagent-a7057e7c9589d6e66"
+      },
+      "head_commit": "7244402fbeaadcf3835880982ee912485a10858e",
+      "recorded_at": "2026-07-24T23:23:12.022Z"
+    },
+    {
+      "event_id": "98e95fba-3632-4256-96eb-4a6513ce658d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec clauses INV-001/S-001 state the precise invariant (no raw 0x00 in source; runtime key still contains U+0000; stale-pattern reporting unchanged), verified two ways the judge reproduced: byte-level source proof and deepStrictEqual runtime equivalence including the stale-pattern path.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7057e7c9589d6e66",
+        "session_ref": "subagent-a7057e7c9589d6e66"
+      },
+      "head_commit": "7244402fbeaadcf3835880982ee912485a10858e",
+      "recorded_at": "2026-07-24T23:23:12.616Z"
+    },
+    {
+      "event_id": "96f199ba-741f-4973-a188-57d53909b21f",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Declared boundary (2 template-literal sites, no logic change) provably respected: byte-level comparison shows the source delta is exactly the two escape replacements. Judge examined the tension between the earlier design-SSOT not-applicable decision and the later stricter registration commit 7244402f: supersession is registration-only, so the boundary judgment stands.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7057e7c9589d6e66",
+        "session_ref": "subagent-a7057e7c9589d6e66"
+      },
+      "head_commit": "7244402fbeaadcf3835880982ee912485a10858e",
+      "recorded_at": "2026-07-24T23:23:13.218Z"
+    },
+    {
+      "event_id": "c675a2f7-8843-49c8-8c07-89bd52a9d246",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The failure mode this key guards — stale-pattern reporting masked by key collision — is exercised by an explicit negative-path probe asserting both pre-fix and fixed modules report the unmatched pattern identically; unit suite additionally covers fail-loud paths. Judge re-ran both at head; genuine failure-mode verification.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7057e7c9589d6e66",
+        "session_ref": "subagent-a7057e7c9589d6e66"
+      },
+      "head_commit": "7244402fbeaadcf3835880982ee912485a10858e",
+      "recorded_at": "2026-07-24T23:23:13.844Z"
+    },
+    {
+      "event_id": "b7334115-6444-4f94-8883-747cf12a1d7f",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence (unit 12/12, e2e 2/2, byte-scan=0, grep=3, file=UTF-8 text) recorded with concrete observed values, and every value reproduced independently at current head 7244402f in the judge's own runs; head gap to 56150b3d closed via git diff showing only design-ssot.json changed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7057e7c9589d6e66",
+        "session_ref": "subagent-a7057e7c9589d6e66"
+      },
+      "head_commit": "7244402fbeaadcf3835880982ee912485a10858e",
+      "recorded_at": "2026-07-24T23:23:14.459Z"
+    },
+    {
+      "event_id": "9df6d9aa-9c54-4eea-a4e0-ce0d3842f9e1",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No exported API, CLI flag, config schema, or output format changes: source delta is 2 bytes inside private template literals, runtime output proven byte-identical, CLI conformance replay confirms unchanged artifact schema and dry_run behavior. The only externally visible change — grep/file treating the file as text — is the Story's stated goal, not a contract break.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7057e7c9589d6e66",
+        "session_ref": "subagent-a7057e7c9589d6e66"
+      },
+      "head_commit": "7244402fbeaadcf3835880982ee912485a10858e",
+      "recorded_at": "2026-07-24T23:23:15.053Z"
+    },
+    {
+      "event_id": "0aae7fb6-fe8d-41db-8c0d-61bfcdbbdd24",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Full diff origin/main..HEAD is 4 files forming one intent: the 2-byte fix, its Story doc, its config registration, and its design-ssot lineage link — 69 insertions total, readable by one reviewer in one pass. Verified via git diff --stat by the judge; no split warranted.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7057e7c9589d6e66",
+        "session_ref": "subagent-a7057e7c9589d6e66"
+      },
+      "head_commit": "7244402fbeaadcf3835880982ee912485a10858e",
+      "recorded_at": "2026-07-24T23:23:15.588Z"
+    },
+    {
+      "event_id": "11725138-01fe-41ad-96f7-c23b4d75c52b",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "not_required classification correct on the merits: the change touches conformance-report generation, not gate/review/evidence lifecycle code, and behavior is proven byte-identical so it cannot newly produce misleading green artifacts; the pre-fix binary-classification state was itself the lifecycle risk this change removes, and the artifact-regeneration replay shows conformance.json output unchanged.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7057e7c9589d6e66",
+        "session_ref": "subagent-a7057e7c9589d6e66"
+      },
+      "head_commit": "7244402fbeaadcf3835880982ee912485a10858e",
+      "recorded_at": "2026-07-24T23:23:16.193Z"
+    },
+    {
+      "event_id": "9ec2520e-0bcd-4e87-9b5f-669045a26fbc",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Not token-matching: Story states a concrete intent (restore text-file status while preserving the deliberate NUL composite-key separator mirroring content-binding.js), reason frontmatter weighs the rejected space-separator alternative, and the actual diff does exactly and only what the intent says — verified byte-for-byte.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3ba1fae62a44ce6",
+        "session_ref": "subagent-aa3ba1fae62a44ce6"
+      },
+      "head_commit": "3dbc7eb8467f6333a743d2ef7655b1994a4a4481",
+      "recorded_at": "2026-07-24T23:33:16.460Z"
+    },
+    {
+      "event_id": "bee3934a-1165-4d30-b805-1699bcfa4995",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "flow_replay evidence is real: the e2e spec asserts origin/main carries exactly 2 raw NULs, imports both module versions, compares outputs on the real repo file list, and reruns the CLI conformance flow regenerating conformance.json. Artifact head 3dbc7eb8 = current head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3ba1fae62a44ce6",
+        "session_ref": "subagent-aa3ba1fae62a44ce6"
+      },
+      "head_commit": "3dbc7eb8467f6333a743d2ef7655b1994a4a4481",
+      "recorded_at": "2026-07-24T23:33:17.081Z"
+    },
+    {
+      "event_id": "dede79ac-cc48-4ab7-aaa2-166130d4e0fe",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec INV-001 states the substantive invariant; though its verifiable_by code_pattern is weak token matching, the invariant is independently discharged by the equivalence replay (deepStrictEqual on real inputs including stale-pattern negative path) and the judge's own byte-level proof the files differ only by the escape substitution.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3ba1fae62a44ce6",
+        "session_ref": "subagent-aa3ba1fae62a44ce6"
+      },
+      "head_commit": "3dbc7eb8467f6333a743d2ef7655b1994a4a4481",
+      "recorded_at": "2026-07-24T23:33:17.638Z"
+    },
+    {
+      "event_id": "93202d8c-2389-4e43-b79d-2ae472ef1399",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story boundary (2 sites in one file, no logic changes) confirmed by byte-level diff; remaining diff files are the dogfood registration surface. The earlier not-applicable design-registration decision is superseded by the stricter final-state registration under vibepro-target-architecture-conformance with parent_design declared — the coherent final state; current_verification at final head satisfies the boundary requirement.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3ba1fae62a44ce6",
+        "session_ref": "subagent-aa3ba1fae62a44ce6"
+      },
+      "head_commit": "3dbc7eb8467f6333a743d2ef7655b1994a4a4481",
+      "recorded_at": "2026-07-24T23:33:18.401Z"
+    },
+    {
+      "event_id": "8e45fdce-d054-478e-b115-cd078c8b41c3",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The failure mode the NUL key guards — stale-pattern reporting via composite-key membership and collision avoidance — is exercised by an actual negative path: a probe module with an unmatched pattern is reported in stalePatterns identically by fixed and pre-fix modules.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3ba1fae62a44ce6",
+        "session_ref": "subagent-aa3ba1fae62a44ce6"
+      },
+      "head_commit": "3dbc7eb8467f6333a743d2ef7655b1994a4a4481",
+      "recorded_at": "2026-07-24T23:33:18.976Z"
+    },
+    {
+      "event_id": "709548d5-cab1-4c87-88ee-31f7950083b5",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "All three evidence entries (unit 12/12, e2e 2/2, typecheck exit 0) recorded with head 3dbc7eb8 = adjudicated head; artifacts exist with matching content; judge reproduced the unit result and AC-1/AC-4 byte facts at this head. Only working-tree dirt is the benign current_story_id pointer flip.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3ba1fae62a44ce6",
+        "session_ref": "subagent-aa3ba1fae62a44ce6"
+      },
+      "head_commit": "3dbc7eb8467f6333a743d2ef7655b1994a4a4481",
+      "recorded_at": "2026-07-24T23:33:19.691Z"
+    },
+    {
+      "event_id": "8f99564a-8d5b-47d8-a0bf-d95b945e16cd",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No public surface can break: src change proven byte-identical at runtime, exports/CLI flags/JSON schema untouched, e2e replay runs the real CLI at final head confirming output schema and artifact regeneration. Remaining diff files are internal registration metadata.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3ba1fae62a44ce6",
+        "session_ref": "subagent-aa3ba1fae62a44ce6"
+      },
+      "head_commit": "3dbc7eb8467f6333a743d2ef7655b1994a4a4481",
+      "recorded_at": "2026-07-24T23:33:20.206Z"
+    },
+    {
+      "event_id": "63553acf-0b24-4727-a405-d9387cfa1d05",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Four files, 70 insertions, one intent: a 2-byte encoding fix plus its mandatory self-dogfood registration surface. A single reviewer holds the entire change as one judgment; no split warranted.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3ba1fae62a44ce6",
+        "session_ref": "subagent-aa3ba1fae62a44ce6"
+      },
+      "head_commit": "3dbc7eb8467f6333a743d2ef7655b1994a4a4481",
+      "recorded_at": "2026-07-24T23:33:20.759Z"
+    },
+    {
+      "event_id": "b1b60a9e-64c1-4e9c-9f34-f38a89c8053f",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "not_required holds on substance: the change touches conformance source encoding only, not gate/review/evidence lifecycle code; runtime behavior proven byte-identical so it cannot produce misleading green artifacts — the fix reduces this risk by making the file visible to grep-based gates again.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aa3ba1fae62a44ce6",
+        "session_ref": "subagent-aa3ba1fae62a44ce6"
+      },
+      "head_commit": "3dbc7eb8467f6333a743d2ef7655b1994a4a4481",
+      "recorded_at": "2026-07-24T23:33:21.321Z"
+    },
+    {
+      "event_id": "7137ed8f-0a53-4945-966d-9d074d7eee64",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story states a precise intent (restore text-file status without changing runtime key strings) with a reason block genuinely covering alternatives, compatibility (local Set confirmed by reading assignFilesToModules), rollback, and boundary; the diff implements exactly that intent.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0566591a77282bfa",
+        "session_ref": "subagent-a0566591a77282bfa"
+      },
+      "head_commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "recorded_at": "2026-07-24T23:55:53.039Z"
+    },
+    {
+      "event_id": "547a5998-e814-4826-94b0-ca92d5412226",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Pre-fix reality (2 raw NULs, file(1)=data, grep suppression) is independently reproducible from the origin/main blob; flow_replay runs the real CLI conformance flow at the rebased head against real inputs, regenerating the artifact, and asserts the original blob still carries the NULs before comparing.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0566591a77282bfa",
+        "session_ref": "subagent-a0566591a77282bfa"
+      },
+      "head_commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "recorded_at": "2026-07-24T23:55:53.657Z"
+    },
+    {
+      "event_id": "ba60d81a-b4cf-4564-8c85-087514c6f808",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "INV-001 in the accepted spec is exactly the right invariant and is verified by direct evidence — byte scan, node check that \\0 produces U+0000, and deepStrictEqual equivalence on real inputs. Not a string-presence check.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0566591a77282bfa",
+        "session_ref": "subagent-a0566591a77282bfa"
+      },
+      "head_commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "recorded_at": "2026-07-24T23:55:54.217Z"
+    },
+    {
+      "event_id": "9a12b92d-de42-4fcf-94b0-819a5775ffc8",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Diff touches only the 2 template-literal sites plus registration surface; matchedPatterns is a function-local Set with symmetric add/has, no serialization boundary; typecheck passes at the rebased head. The early not-applicable SSOT decision was superseded by actually registering the Story under vibepro-target-architecture-conformance — the more conservative final state.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0566591a77282bfa",
+        "session_ref": "subagent-a0566591a77282bfa"
+      },
+      "head_commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "recorded_at": "2026-07-24T23:55:54.986Z"
+    },
+    {
+      "event_id": "c7c08d14-4278-4bd3-a988-d480b36083c6",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The concrete failure mode — key mismatch between add and has causing false stalePatterns — is actively probed: the negative path injects an unmatched pattern and asserts identical stalePatterns reporting across both module versions; deepStrictEqual on real inputs rules out silent divergence; the stale-pattern unit test passes in the judge's own run.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0566591a77282bfa",
+        "session_ref": "subagent-a0566591a77282bfa"
+      },
+      "head_commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "recorded_at": "2026-07-24T23:55:55.803Z"
+    },
+    {
+      "event_id": "48a9a698-b098-4b53-b286-f8418301783e",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "unit (12/12 re-run by judge), e2e flow/artifact replay, and typecheck are all recorded at aa22e2d2. The one stale item — the CI import bound to pre-rebase head — is honestly labeled with its head_sha and redundant given fresh local evidence at the rebased head plus empty diff on story-owned files across the rebase.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0566591a77282bfa",
+        "session_ref": "subagent-a0566591a77282bfa"
+      },
+      "head_commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "recorded_at": "2026-07-24T23:55:56.393Z"
+    },
+    {
+      "event_id": "df1a36e5-1076-4ce0-a230-45441473e3c8",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The changed strings live in a function-local Set consumed symmetrically; CLI flags, JSON schema, and exports untouched; equivalence replay proves output identity on real inputs including the regenerated conformance artifact.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0566591a77282bfa",
+        "session_ref": "subagent-a0566591a77282bfa"
+      },
+      "head_commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "recorded_at": "2026-07-24T23:55:57.013Z"
+    },
+    {
+      "event_id": "4c0a4fc4-75f5-4a1c-8097-925b74b76000",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Single coherent intent readable by one reviewer: a 2-byte source-representation fix plus its own Story registration — 4 files, ~70 doc/registration lines, zero behavior change; no independently reviewable boundary justifies splitting.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0566591a77282bfa",
+        "session_ref": "subagent-a0566591a77282bfa"
+      },
+      "head_commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "recorded_at": "2026-07-24T23:55:57.637Z"
+    },
+    {
+      "event_id": "442a0621-5ee1-4b50-aeee-542a2e31c1a6",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Representation-only rewrite with byte-identical runtime output proven by deepStrictEqual and an identical negative-path stale probe; the CLI replay regenerated the conformance artifact with stale_pattern_count=0 and artifact/CLI consistency asserted — misleading-green drift excluded by direct verification; restoring grep-visibility reduces the silent-miss risk.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0566591a77282bfa",
+        "session_ref": "subagent-a0566591a77282bfa"
+      },
+      "head_commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "recorded_at": "2026-07-24T23:55:58.453Z"
+    }
+  ]
+}

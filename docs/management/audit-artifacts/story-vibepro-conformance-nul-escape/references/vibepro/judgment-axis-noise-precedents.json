@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-conformance-nul-escape",
+      "decision_id": "decision-1784933799491-78a1eca8",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed with review_owner_map: 2-byte source fix + mandatory registration, one reviewer one pass",
+      "artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/scope-review.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T22:56:57.896Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|pr_route:runtime_change|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-conformance-nul-escape",
+      "decision_id": "decision-1784933797056-533d090d",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "No public contract change: contract_doc = accepted Spec INV-001/S-001; e2e equivalence replay proves byte-identical behavior",
+      "artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/public-contract.md",
+      "activation_candidates": [
+        "pr_route:runtime_change",
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T22:56:57.896Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:1158|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-conformance-nul-escape",
+      "decision_id": "decision-1784933799491-78a1eca8",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed with review_owner_map: 2-byte source fix + mandatory registration, one reviewer one pass",
+      "artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/scope-review.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:1158",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T23:34:04.494Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-conformance-nul-escape",
+      "decision_id": "decision-1784933797056-533d090d",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "No public contract change: contract_doc = accepted Spec INV-001/S-001; e2e equivalence replay proves byte-identical behavior",
+      "artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/public-contract.md",
+      "activation_candidates": [
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T23:34:04.494Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

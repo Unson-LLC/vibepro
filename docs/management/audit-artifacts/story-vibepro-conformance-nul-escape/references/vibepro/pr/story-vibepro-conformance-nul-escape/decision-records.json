@@ -1,0 +1,469 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-conformance-nul-escape",
+  "updated_at": "2026-07-24T23:16:42.456Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+      "expected_root": null,
+      "expected_head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+      "current_head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784935002455-4665efda",
+      "story_id": "story-vibepro-conformance-nul-escape",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": null,
+      "summary": "Story doc is a hand-written self-dogfood Story, not a design-system doc; Design SSOT registration not applicable for this 2-byte source-encoding fix",
+      "reason": "The single design lineage action item is the Story doc itself ([REDACTED:db670965346c]-vibepro-conformance-nul-escape.md) flagged as an unregistered changed design doc. It is the mandatory Story registration surface for the self-dogfood flow, not a design artifact: the change is a 2-byte source-encoding fix in src/architecture-conformance.js with no UI, design-token, or design-doc impact. Registering it in Design SSOT would be a category error; reviewed and accepted as not applicable.",
+      "reviewer": "佐藤圭吾",
+      "artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/scope-review.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/e2e-replay-artifact.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/typecheck-artifact.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/unit-status-artifact.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "expected_root": null,
+          "expected_head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+          "current_head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+        "current_branch": "claude/story-vibepro-conformance-nul-escape",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-24T23:16:42.449Z"
+      },
+      "recorded_at": "2026-07-24T23:16:42.456Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784933799491-78a1eca8",
+      "story_id": "story-vibepro-conformance-nul-escape",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed with review_owner_map: 2-byte source fix + mandatory registration, one reviewer one pass",
+      "reason": "scope_reviewed with review_owner_map: 2-byte source fix + mandatory registration, one reviewer one pass",
+      "reviewer": "佐藤圭吾",
+      "artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/scope-review.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/e2e-replay-artifact.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/unit-status-artifact.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "expected_root": null,
+          "expected_head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+          "current_head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+        "current_branch": "claude/story-vibepro-conformance-nul-escape",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-24T22:56:39.476Z"
+      },
+      "recorded_at": "2026-07-24T22:56:39.493Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784933797056-533d090d",
+      "story_id": "story-vibepro-conformance-nul-escape",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": null,
+      "summary": "No public contract change: contract_doc = accepted Spec INV-001/S-001; e2e equivalence replay proves byte-identical behavior",
+      "reason": "No public contract change: contract_doc = accepted Spec INV-001/S-001; e2e equivalence replay proves byte-identical behavior",
+      "reviewer": "佐藤圭吾",
+      "artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/public-contract.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/e2e-replay-artifact.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/unit-status-artifact.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "expected_root": null,
+          "expected_head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+          "current_head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+        "current_branch": "claude/story-vibepro-conformance-nul-escape",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-24T22:56:37.045Z"
+      },
+      "recorded_at": "2026-07-24T22:56:37.058Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784933794499-64f480d9",
+      "story_id": "story-vibepro-conformance-nul-escape",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": "Only .vibepro/config.json committed (mandatory story registration); no diagnostic artifacts committed",
+      "reason": "Only .vibepro/config.json committed (mandatory story registration); no diagnostic artifacts committed",
+      "reviewer": "佐藤圭吾",
+      "artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/artifact-policy.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/e2e-replay-artifact.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/unit-status-artifact.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "expected_root": null,
+          "expected_head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+          "current_head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+        "current_branch": "claude/story-vibepro-conformance-nul-escape",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-24T22:56:34.488Z"
+      },
+      "recorded_at": "2026-07-24T22:56:34.502Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784933791976-0343da0d",
+      "story_id": "story-vibepro-conformance-nul-escape",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "scope_reviewed: no split needed — one intent, review_owner_map recorded, single-reviewer readable diff",
+      "reason": "scope_reviewed: no split needed — one intent, review_owner_map recorded, single-reviewer readable diff",
+      "reviewer": "佐藤圭吾",
+      "artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/scope-review.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/e2e-replay-artifact.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/unit-status-artifact.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "expected_root": null,
+          "expected_head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+          "current_head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+        "current_branch": "claude/story-vibepro-conformance-nul-escape",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-24T22:56:31.966Z"
+      },
+      "recorded_at": "2026-07-24T22:56:31.978Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784933790358-edf23af5",
+      "story_id": "story-vibepro-conformance-nul-escape",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Bundled scope justified: single intent, 2 commits / 3 files, story registration inseparable from the fix",
+      "reason": "Bundled scope justified: single intent, 2 commits / 3 files, story registration inseparable from the fix",
+      "reviewer": "佐藤圭吾",
+      "artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/scope-review.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/e2e-replay-artifact.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/unit-status-artifact.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "expected_root": null,
+          "expected_head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+          "current_head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15e86d189471b1423dca38675ead3880cbd35f0c",
+        "current_branch": "claude/story-vibepro-conformance-nul-escape",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-24T22:56:30.350Z"
+      },
+      "recorded_at": "2026-07-24T22:56:30.359Z"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "open": 0,
+    "by_type": {
+      "needs_review": 6
+    },
+    "by_status": {
+      "accepted": 6
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+        "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+        "expected_root": null,
+        "expected_head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+        "current_head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784935002455-4665efda",
+      "story_id": "story-vibepro-conformance-nul-escape",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": null,
+      "summary": "Story doc is a hand-written self-dogfood Story, not a design-system doc; Design SSOT registration not applicable for this 2-byte source-encoding fix",
+      "reason": "The single design lineage action item is the Story doc itself ([REDACTED:db670965346c]-vibepro-conformance-nul-escape.md) flagged as an unregistered changed design doc. It is the mandatory Story registration surface for the self-dogfood flow, not a design artifact: the change is a 2-byte source-encoding fix in src/architecture-conformance.js with no UI, design-token, or design-doc impact. Registering it in Design SSOT would be a category error; reviewed and accepted as not applicable.",
+      "reviewer": "佐藤圭吾",
+      "artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/scope-review.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/e2e-replay-artifact.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/typecheck-artifact.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/unit-status-artifact.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "expected_root": null,
+          "expected_head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+          "current_head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+        "current_branch": "claude/story-vibepro-conformance-nul-escape",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-24T23:16:42.449Z"
+      },
+      "recorded_at": "2026-07-24T23:16:42.456Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-conformance-nul-escape/decision-records.json"
+}

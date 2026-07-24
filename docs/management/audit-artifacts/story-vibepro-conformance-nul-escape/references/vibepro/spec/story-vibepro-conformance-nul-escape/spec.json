@@ -1,0 +1,119 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-conformance-nul-escape",
+  "generated_by": {
+    "caller": "unknown",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "src/architecture-conformance.js must contain no raw 0x00 bytes; the matchedPatterns composite-key separator is expressed as the two-character escape sequence \\0 in source, while the runtime key string still contains U+0000 between module name and pattern, so file(1) reports the file as text and plain grep matches its content.",
+      "rationale": "Raw NUL bytes made the file binary to grep-based tooling and gates, which silently returned no matches; the \\0 escape restores text-file status without changing runtime strings (AC-1, AC-2, AC-4).",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "0x00バイトが存在しない（バイトスキャンで0件）"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-conformance-nul-escape.md",
+            "section": "背景",
+            "text_snippet": "生の0x00バイト"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "matchedPatterns"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance.test.js",
+            "case": "files outside every module are orphans and unmatched patterns are stale"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance.js",
+            "must_contain": "matchedPatterns"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance.test.js",
+            "must_cover": "unmatched patterns are stale"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-24T22:47:08.190Z",
+      "last_revised_at": "2026-07-24T22:47:08.190Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given a target model and a repository file list, assignFilesToModules records each matched (module, pattern) pair in matchedPatterns and reports patterns that never matched any file as stalePatterns; this matching behavior is unchanged by the escape rewrite because the \\0 escape produces a runtime string byte-identical to the previous raw-byte literal.",
+      "inherited_behavior": {
+        "condition": "assignFilesToModules matching, orphan detection, and stale-pattern reporting are unchanged/existing",
+        "classification": "inherited",
+        "files": [
+          "src/architecture-conformance.js"
+        ]
+      },
+      "rationale": "The fix is a source-encoding change only; the local Set is used symmetrically at add/has, with no serialization path, so behavior must be provably identical (AC-2, AC-3).",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "ランタイムの文字列値は変更前とバイト単位で同一"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-conformance-nul-escape.md",
+            "section": "受け入れ条件",
+            "text_snippet": "バイト単位で同一"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "assignFilesToModules"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance.test.js",
+            "case": "files outside every module are orphans and unmatched patterns are stale"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance.js",
+            "must_contain": "assignFilesToModules"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance.test.js",
+            "must_cover": "orphans"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-24T22:47:08.190Z",
+      "last_revised_at": "2026-07-24T22:47:08.190Z"
+    }
+  ],
+  "generated_at": "2026-07-24T22:47:08.187Z",
+  "previous_spec_id": null
+}
