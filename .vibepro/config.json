@@ -292,16 +292,16 @@
     "delivery_efficiency_by_story": {
       "story-vibepro-gate-decision-outcome-ledger": {
         "max_subagent_count": 448,
-        "max_agent_consumption_ms": 1444670856,
+        "max_agent_consumption_ms": 1448270856,
         "max_review_dispatches_by_role": {
-          "gate_evidence": 10,
-          "pr_split_scope": 8,
-          "release_risk": 11,
+          "gate_evidence": 11,
+          "pr_split_scope": 9,
+          "release_risk": 12,
           "preview_smoke": 16,
           "network_runtime": 16,
           "human_usability": 16
         },
-        "amendment_reason": "Four hundred thirty-eight historical and superseded review lifecycles consumed 1438670856 ms before final closure. The final release-risk review found that execute merge bypassed the managed canonical-persistence service and could regress an already-observed merge to failed; commit f05ba8f1 fixed both production-path defects. Final requirement diagnosis then exposed one undeclared inherited dispatch-authorization guard and one stale Spec anchor; the canonical Spec correction necessarily created one last HEAD and invalidated current-head evidence. The user explicitly authorized blocker removal and merge completion on 2026-07-24. Keep the existing hard cap of 448 lifecycles, add exactly 6000000 ms above observed consumption, and permit one additional release_risk dispatch. Use the remaining ten lifecycle slots only for the current-HEAD roles demanded by pr prepare, with gpt-5.6-luna high; permit no replacement loop or unrelated role and leave global budgets unchanged."
+        "amendment_reason": "Four hundred thirty-eight historical and superseded review lifecycles consumed 1438670856 ms before final closure. The exact-f86d368e release-risk review then found a concrete traversal defect: canonical persistence interpolated an unvalidated Story ID into its detached-worktree path. Commit 31cb7e57 added fail-closed validation, a regression test, and the missing Spec binding. That required code correction invalidated the final strict-HEAD reviews after gate_evidence, pr_split_scope, and release_risk had each exhausted their role cap. The user explicitly authorized blocker removal and merge completion on 2026-07-24. Keep the existing hard cap of 448 lifecycles, add exactly one final dispatch for each exhausted gate role and 3600000 ms for those bounded reviews, and use only the nine remaining lifecycle slots for current-HEAD closure with gpt-5.6-luna high. Permit no replacement loop, waiver, unrelated role, or global budget expansion."
       },
       "story-vibepro-delivery-reconciliation-state": {
         "max_subagent_count": 34,
