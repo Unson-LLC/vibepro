@@ -6501,6 +6501,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+            "required": false,
+            "relationship": "verifies",
+            "last_reviewed_root_hash": null
           }
         ],
         "story": [
@@ -6530,6 +6537,22 @@
             "path": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
             "required": true,
             "relationship": "decomposes",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+            "required": true,
+            "relationship": "closes",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+            "required": true,
+            "relationship": "closes",
             "last_reviewed_root_hash": null
           }
         ]
@@ -6578,6 +6601,13 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "required": false,
+          "relationship": "verifies",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "story",
           "path": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
           "required": true,
@@ -6603,6 +6633,20 @@
           "path": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
           "required": true,
           "relationship": "decomposes",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "required": true,
+          "relationship": "closes",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "required": true,
+          "relationship": "closes",
           "last_reviewed_root_hash": null
         }
       ],
@@ -6807,5 +6851,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-24T15:15:01.267Z"
+  "updated_at": "2026-07-24T15:29:52.179Z"
 }

@@ -290,6 +290,10 @@
       "require_known_attribution": false
     },
     "delivery_efficiency_by_story": {
+      "story-vibepro-autonomous-roadmap-catalog-closure": {
+        "max_subagent_count": 12,
+        "amendment_reason": "Six historical gate-review lifecycles exhausted the default Story-local cap before the first current-HEAD review. That review exposed a real typed atomic-scope declaration gap rather than a waiver candidate. The user explicitly instructed continuation and merge completion on 2026-07-24. Account for the first three current-HEAD lifecycles and reserve exactly three final repair-HEAD replacements for gate_evidence, pr_split_scope, and release_risk using the same independent reviewer; permit no additional role, replacement loop, waiver, or global budget expansion."
+      },
       "story-vibepro-delivery-reconciliation-state": {
         "max_subagent_count": 34,
         "max_agent_consumption_ms": 6000000,
@@ -530,7 +534,7 @@
         "story_id": "story-vibepro-autonomous-implementation-closure-roadmap",
         "title": "自律実装の実行プレーンを1コマンドPR-readyへ接続する",
         "ssot": "local",
-        "status": "active",
+        "status": "completed",
         "horizon": "now",
         "view": "dev",
         "period": "2026-07",
@@ -583,6 +587,18 @@
         "view": "dev",
         "period": "2026-07",
         "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+        "title": "自律実装ロードマップのStory catalogを完了状態へ整合する",
+        "ssot": "local",
+        "status": "completed",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-24",
         "due_at": null,
         "category": "quality"
       },
@@ -828,6 +844,6 @@
         "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-infra-story-dependency-cut"
+    "current_story_id": "story-vibepro-autonomous-roadmap-catalog-closure"
   }
 }
