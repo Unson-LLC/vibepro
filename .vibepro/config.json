@@ -291,17 +291,18 @@
     },
     "delivery_efficiency_by_story": {
       "story-vibepro-gate-decision-outcome-ledger": {
-        "max_subagent_count": 452,
+        "max_subagent_count": 456,
         "max_agent_consumption_ms": 1448270856,
         "max_review_dispatches_by_role": {
-          "gate_evidence": 13,
-          "pr_split_scope": 11,
-          "release_risk": 14,
+          "architecture_boundary": 2,
+          "gate_evidence": 14,
+          "pr_split_scope": 12,
+          "release_risk": 15,
           "preview_smoke": 16,
           "network_runtime": 16,
           "human_usability": 16
         },
-        "amendment_reason": "Historical and superseded review lifecycles exhausted the Story-local limits while independent release review continued to find concrete defects. The exact-eddbf431 release-risk review identified a permanent rollback-restore failure that replaced the primary error and hid the recovery snapshot. The user explicitly authorized blocker removal and merge completion on 2026-07-24. The corrective commit adds typed outcome_canonical_restore_failed recovery evidence and permanent-failure regression tests, which necessarily invalidates the three strict-HEAD reviews and both adjudications. Reserve exactly four final Luna-high agents: one each for gate_evidence, pr_split_scope, release_risk, and Engineering Judgment adjudication. Increase each review-role cap by one and the Story-local subagent cap from 448 to 452. Permit no replacement loop, waiver, unrelated role, or global budget expansion."
+        "amendment_reason": "Historical and superseded review lifecycles exhausted the Story-local limits while independent release review continued to find concrete defects. The exact-ed333d69 release-risk review identified three current defects: a non-existent recovery snapshot when the canonical directory was originally absent, credential-bearing rollback diagnostics, and dropped push/cleanup/worktree/ledger postconditions. The user explicitly authorized blocker removal and merge completion on 2026-07-24. This corrective commit makes the snapshot actionable, sanitizes every public diagnostic string, and preserves bounded primary failure evidence, which necessarily invalidates all strict-HEAD reviews. Reserve exactly four final Luna-high agents: one architecture-boundary plus Engineering Judgment agent, and one each for gate_evidence, pr_split_scope, and release_risk. Increase the Story-local subagent cap from 452 to 456 and only the four corresponding role allowances by one. Permit no replacement loop, waiver, unrelated role, or global budget expansion."
       },
       "story-vibepro-delivery-reconciliation-state": {
         "max_subagent_count": 34,

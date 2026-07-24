@@ -192,6 +192,51 @@ test('outcome finalization text exposes local reconciliation state and recovery 
   assert.match(rendered, /recovery: Verify the canonical revision, then retry outcome refresh/);
 });
 
+test('outcome restore failure diagnostics redact credential-like values in text and JSON', () => {
+  const error = new OutcomeCommandError(
+    'outcome_canonical_restore_failed',
+    'canonical rollback failed after Authorization: Bearer super-secret-token',
+    {
+      original_error: {
+        code: 'outcome_promotion_failed',
+        message: 'token=super-secret-token',
+        persistence: {
+          status: 'push_failed',
+          reason: 'canonical_audit_push_indeterminate',
+          pushed: false,
+          worktree_path: '/tmp/vibepro-canonical-recovery',
+          primary: {
+            status: 'failed',
+            reason: 'canonical_audit_push_indeterminate',
+            failure: { stage: 'canonical.push', status: 'timed_out', failure_kind: 'timeout' }
+          },
+          push_postcondition: { status: 'indeterminate', remote_sha: null },
+          cleanup: { attempted: true, removed: false, status: 'failed' }
+        },
+        ledger_postcondition: {
+          status: 'not_applied',
+          expected_digest: 'expected',
+          observed_digest: 'observed'
+        }
+      },
+      recovery_snapshot: '/tmp/recovery/canonical',
+      recovery: 'restore password=super-secret-token before retrying'
+    }
+  );
+
+  const rendered = renderOutcomeCommandError(error);
+  const json = JSON.stringify(serializeOutcomeCommandError(error));
+  assert.doesNotMatch(rendered, /super-secret-token/);
+  assert.doesNotMatch(json, /super-secret-token/);
+  assert.match(rendered, /\[REDACTED\]/);
+  assert.match(json, /\[REDACTED\]/);
+  assert.match(rendered, /original primary failure: status=failed reason=canonical_audit_push_indeterminate stage=canonical\.push command-status=timed_out kind=timeout/);
+  assert.match(rendered, /original push postcondition: status=indeterminate remote-sha=unknown/);
+  assert.match(rendered, /original cleanup: status=failed attempted=true removed=false/);
+  assert.match(rendered, /original temporary worktree: path=\/tmp\/vibepro-canonical-recovery residual=possible/);
+  assert.match(rendered, /original ledger postcondition: status=not_applied expected-digest=expected observed-digest=observed/);
+});
+
 test('outcome success text exposes the bounded record contract while JSON preserves the public result', () => {
   const result = {
     status: 'recorded',

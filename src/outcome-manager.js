@@ -16,7 +16,7 @@ import { promoteCanonicalAuditArtifacts } from './canonical-audit.js';
 import { collectCanonicalDirectoryFiles, persistCanonicalArtifactsToBase } from './canonical-persistence.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { evaluateContentBinding } from './content-binding.js';
-import { executeManagedCommand, executeManagedOperation } from './managed-command-executor.js';
+import { executeManagedCommand, executeManagedOperation, sanitizeDiagnostic } from './managed-command-executor.js';
 import { isSafeStoryId } from './story-id.js';
 
 export class OutcomeCommandError extends Error {
@@ -162,14 +162,11 @@ export async function refreshOutcome(repoRoot, options = {}) {
       preserveCanonicalSnapshot = true;
       const recoveryError = new OutcomeCommandError(
         'outcome_canonical_restore_failed',
-        `${originalError.message}; canonical rollback could not be completed`,
+        'canonical rollback could not be completed after an outcome refresh failure',
         {
-          original_error: {
-            code: originalError.error_id ?? originalError.code ?? null,
-            message: originalError.message
-          },
+          original_error: projectOutcomeRestoreError(originalError),
           recovery_snapshot: canonicalSnapshot.backup,
-          recovery: 'restore the canonical audit directory from recovery_snapshot before retrying outcome refresh'
+          recovery: 'inspect recovery_snapshot; if .vibepro-originally-absent.json marks the directory originally absent, remove the failed canonical directory, otherwise restore the snapshot contents, then retry outcome refresh'
         }
       );
       recoveryError.cause = restoreError;
@@ -368,9 +365,27 @@ function projectOutcomePersistence(summary = {}) {
     reason: summary.reason ?? null,
     commit_sha: summary.commit_sha ?? null,
     pushed: summary.pushed === true,
+    worktree_path: summary.worktree_path ?? null,
     push_postcondition: summary.push_postcondition ?? null,
     cleanup: summary.cleanup ?? null,
     primary: summary.primary ?? null
+  };
+}
+
+function projectOutcomeRestoreError(error) {
+  const details = error?.details ?? {};
+  return {
+    code: error?.error_id ?? error?.code ?? null,
+    message: sanitizeDiagnostic(error?.message, { maxBytes: 1024 }),
+    persistence: details.persistence ? projectOutcomePersistence(details.persistence) : null,
+    ledger_postcondition: details.ledger_postcondition ?? null,
+    reconciliation: details.reconciliation ?? null,
+    verification_failure: details.verification_failure
+      ? sanitizeDiagnostic(details.verification_failure, { maxBytes: 1024 })
+      : null,
+    recovery: details.recovery
+      ? sanitizeDiagnostic(details.recovery, { maxBytes: 2048 })
+      : null
   };
 }
 
@@ -951,7 +966,19 @@ async function snapshotDirectory(target) {
   const backup = path.join(tempRoot, 'canonical');
   let existed = false;
   try { existed = (await stat(target)).isDirectory(); } catch {}
-  if (existed) await cp(target, backup, { recursive: true });
+  if (existed) {
+    await cp(target, backup, { recursive: true });
+  } else {
+    await mkdir(backup, { recursive: true });
+    await writeFile(
+      path.join(backup, '.vibepro-originally-absent.json'),
+      `${JSON.stringify({
+        schema_version: '0.1.0',
+        model: 'vibepro-outcome-canonical-absence-snapshot-v1',
+        originally_absent: true
+      }, null, 2)}\n`
+    );
+  }
   return { tempRoot, backup, existed };
 }
 

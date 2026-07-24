@@ -1660,6 +1660,7 @@ test('GDL-S-9 permanent canonical rollback failure exposes a recovery snapshot',
   const ledger = buildDecisionOutcomeLedger({ storyId: STORY_ID, sources: [finding('canonical-restore-failure')] });
   await writeFile(path.join(prDir, 'decision-outcome-ledger.json'), `${JSON.stringify(ledger, null, 2)}\n`);
   await writeMergeAuthority(prDir, fixture.head);
+  let recoverySnapshot;
 
   await assert.rejects(refreshOutcome(root, {
     storyId: STORY_ID,
@@ -1675,8 +1676,55 @@ test('GDL-S-9 permanent canonical rollback failure exposes a recovery snapshot',
     assert.equal(error.error_id, 'outcome_canonical_restore_failed');
     assert.equal(error.details.original_error.message, 'injected promotion staging failure');
     assert.match(error.details.recovery_snapshot, /canonical$/);
+    recoverySnapshot = error.details.recovery_snapshot;
     assert.match(error.details.recovery, /recovery_snapshot/);
     assert.match(error.cause.message, /permanent canonical restore failure/);
+    return true;
+  });
+  const snapshot = JSON.parse(await readFile(
+    path.join(recoverySnapshot, '.vibepro-originally-absent.json'),
+    'utf8'
+  ));
+  assert.equal(snapshot.originally_absent, true);
+});
+
+test('GDL-S-9 permanent canonical rollback failure preserves bounded push diagnostics', async () => {
+  const fixture = await createOutcomeRepository('vibepro-outcome-canonical-push-restore-failure-');
+  const { root } = fixture;
+  const prDir = path.join(root, '.vibepro', 'pr', STORY_ID);
+  await mkdir(prDir, { recursive: true });
+  const ledger = buildDecisionOutcomeLedger({ storyId: STORY_ID, sources: [finding('canonical-push-restore-failure')] });
+  await writeFile(path.join(prDir, 'decision-outcome-ledger.json'), `${JSON.stringify(ledger, null, 2)}\n`);
+  await writeMergeAuthority(prDir, fixture.head);
+
+  await assert.rejects(refreshOutcome(root, {
+    storyId: STORY_ID,
+    githubPrView: authoritativePr(fixture.head),
+    persistenceService: async () => ({
+      summary: {
+        status: 'push_failed',
+        reason: 'canonical_audit_push_indeterminate',
+        pushed: false,
+        worktree_path: '/tmp/vibepro-canonical-recovery',
+        push_postcondition: { status: 'indeterminate', remote_sha: null },
+        cleanup: { attempted: true, removed: false, status: 'failed' },
+        primary: {
+          status: 'failed',
+          reason: 'canonical_audit_push_indeterminate',
+          failure: { stage: 'canonical.push', status: 'timed_out', failure_kind: 'timeout' }
+        }
+      }
+    }),
+    restoreDirectorySnapshot: async () => {
+      throw new Error('injected permanent canonical restore failure');
+    }
+  }), (error) => {
+    assert.equal(error.error_id, 'outcome_canonical_restore_failed');
+    assert.equal(error.details.original_error.code, 'outcome_promotion_failed');
+    assert.equal(error.details.original_error.persistence.worktree_path, '/tmp/vibepro-canonical-recovery');
+    assert.equal(error.details.original_error.persistence.push_postcondition.status, 'indeterminate');
+    assert.equal(error.details.original_error.persistence.cleanup.status, 'failed');
+    assert.equal(error.details.original_error.persistence.primary.failure.stage, 'canonical.push');
     return true;
   });
 });
@@ -1707,6 +1755,7 @@ test('GDL-S-9 permanent rollback failure after local ledger restore preserves re
   }), (error) => {
     assert.equal(error.error_id, 'outcome_canonical_restore_failed');
     assert.equal(error.details.original_error.code, 'outcome_local_restore_failed');
+    assert.equal(error.details.original_error.ledger_postcondition.status, 'not_applied');
     assert.match(error.details.recovery_snapshot, /canonical$/);
     assert.match(error.cause.message, /permanent canonical restore failure/);
     return true;

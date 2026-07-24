@@ -197,6 +197,7 @@ import {
   renderDecisionStatusSummary
 } from './decision-records.js';
 import { OutcomeCommandError, recordOutcome, refreshOutcome, requireOutcomeStoryId } from './outcome-manager.js';
+import { sanitizeDiagnostic } from './managed-command-executor.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import {
   exportStoryEngineeringPlaybook,
@@ -4002,6 +4003,7 @@ export function serializeOutcomeCommandError(error) {
 
 function sanitizeOutcomeErrorValue(value) {
   if (Array.isArray(value)) return value.map(sanitizeOutcomeErrorValue);
+  if (typeof value === 'string') return sanitizeDiagnostic(value, { maxBytes: 4096 });
   if (!value || typeof value !== 'object') return value;
   return Object.fromEntries(Object.entries(value)
     .filter(([key]) => !['stdout', 'stderr', 'output', 'command', 'args', 'env'].includes(key))
@@ -4009,9 +4011,10 @@ function sanitizeOutcomeErrorValue(value) {
 }
 
 export function renderOutcomeCommandError(error) {
-  const details = error.details ?? {};
+  const safeError = serializeOutcomeCommandError(error);
+  const details = safeError;
   const sources = details.eligible_outcome_sources;
-  const lines = [`${error.error_id}: ${error.message}`];
+  const lines = [`${safeError.error_id}: ${safeError.message}`];
   if (details.ledger_path) lines.push(`ledger: ${details.ledger_path} digest=${details.ledger_digest ?? 'unknown'}`);
   if (Array.isArray(details.candidates)) {
     lines.push(`trace candidates: total=${details.candidate_count ?? details.candidates.length} returned=${details.candidates.length} omitted=${details.omitted_count ?? 0} truncated=${details.truncated === true}`);
@@ -4033,6 +4036,19 @@ export function renderOutcomeCommandError(error) {
   }
   if (details.reconciliation) {
     lines.push(`reconciliation: status=${details.reconciliation.status ?? 'unknown'} artifact-status=${details.reconciliation.artifact_status ?? 'unknown'} artifact=${details.reconciliation.artifact_path ?? 'unknown'}`);
+  }
+  if (details.original_error) {
+    lines.push(`original failure: code=${details.original_error.code ?? 'unknown'} message=${details.original_error.message ?? 'unknown'}`);
+    if (details.original_error.persistence) {
+      lines.push(...renderPersistenceFailure(details.original_error.persistence)
+        .map((line) => `original ${line}`));
+    }
+    if (details.original_error.ledger_postcondition) {
+      lines.push(`original ledger postcondition: status=${details.original_error.ledger_postcondition.status ?? 'unknown'} expected-digest=${details.original_error.ledger_postcondition.expected_digest ?? 'unknown'} observed-digest=${details.original_error.ledger_postcondition.observed_digest ?? 'unknown'}`);
+    }
+    if (details.original_error.reconciliation) {
+      lines.push(`original reconciliation: status=${details.original_error.reconciliation.status ?? 'unknown'} artifact-status=${details.original_error.reconciliation.artifact_status ?? 'unknown'} artifact=${details.original_error.reconciliation.artifact_path ?? 'unknown'}`);
+    }
   }
   if (details.recovery) lines.push(`recovery: ${details.recovery}`);
   return `${lines.join('\n')}\n`;
