@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 
 import { readManifest } from './workspace.js';
+import { assertSafeStoryPathSegment } from './story-id.js';
 
 export const ARTIFACT_ROUTING_SCHEMA_VERSION = '0.2.0';
 export const LEGACY_ARTIFACT_ROUTING_SCHEMA_VERSION = '0.1.0';
@@ -510,7 +511,17 @@ function compareCodePoints(left, right) { const a = Array.from(String(left ?? ''
 function titleForRenderer(id) { return id.split('_').map((v) => v[0]?.toUpperCase() + v.slice(1)).join(' '); }
 function parseFrontmatter(text) { const match = text.match(/^---\s*\n([\s\S]*?)\n---/); if (!match) return {}; const out = {}; for (const line of match[1].split('\n')) { const m = line.match(/^([a-z_][a-z0-9_]*):\s*["']?([^"']*?)["']?\s*$/); if (m) out[m[1]] = m[2].trim(); } return out; }
 
-function normalizeStoryId(value) { if (!value) throw new ArtifactRoutingError('missing_variable', 'storyId is required to resolve artifact routes'); const raw = String(value).trim(); return /^[A-Z][A-Z0-9]*-\d+$/.test(raw) ? raw : slugify(raw, 'story'); }
+function normalizeStoryId(value) {
+  if (!value) throw new ArtifactRoutingError('missing_variable', 'storyId is required to resolve artifact routes');
+  const raw = String(value).trim();
+  if (/^[A-Z][A-Z0-9]*-\d+$/.test(raw)) return raw;
+  try {
+    assertSafeStoryPathSegment(raw, 'artifact routing requires a valid story id');
+    return slugify(raw, 'story');
+  } catch (error) {
+    throw new ArtifactRoutingError('invalid_story_id', error.message, { story_id: raw });
+  }
+}
 function resolveTemplate(root, kind, template, variables, role) { if (typeof template !== 'string' || !template.trim()) throw new ArtifactRoutingError('invalid_template', `Artifact ${kind} ${role} path must be a non-empty string`, { kind, role }); if (path.isAbsolute(template)) throw new ArtifactRoutingError('absolute_path', `Artifact ${kind} ${role} path must be repository-relative: ${template}`, { kind, role, template }); const referenced = [...template.matchAll(VARIABLE_PATTERN)].map((m) => m[1]); const unsupported = referenced.filter((n) => !SUPPORTED_VARIABLES.has(n)); if (unsupported.length) throw new ArtifactRoutingError('unresolved_variable', `Artifact ${kind} ${role} path has unsupported variables: ${unsupported.join(', ')}`, { kind, role, variables: unsupported }); const expanded = template.replace(VARIABLE_PATTERN, (_, n) => variables[n]); if (/[{}]/.test(expanded)) throw new ArtifactRoutingError('unresolved_variable', `Artifact ${kind} ${role} path contains an unresolved variable: ${template}`, { kind, role, template }); const absolute = path.resolve(root, expanded); assertLexicallyInside(root, absolute, `${kind} ${role}`); const relative = toPosix(path.relative(root, absolute)); if (!relative || relative === '.') throw new ArtifactRoutingError('invalid_template', `Artifact ${kind} ${role} path cannot resolve to the repository root`, { kind, role }); return { template, relative_path: relative, absolute_path: absolute }; }
 function assertNoCollisions(routes) { const destinations = new Map(); for (const route of Object.values(routes)) for (const d of [route.canonical, ...route.projections]) { const existing = destinations.get(d.relative_path); if (existing) throw new ArtifactRoutingError('path_collision', `Artifact path collision: ${existing.kind} and ${route.kind} resolve to ${d.relative_path}`, { path: d.relative_path, first: existing, second: { kind: route.kind } }); destinations.set(d.relative_path, { kind: route.kind, role: d === route.canonical ? 'canonical' : 'projection' }); } const entries = [...destinations.entries()]; for (const [candidatePath, candidate] of entries) { const ancestorDirectory = entries.find(([dir, owner]) => dir !== candidatePath && DIRECTORY_ARTIFACT_KINDS.has(owner.kind) && owner.role === 'canonical' && candidatePath.startsWith(`${dir}/`)); if (ancestorDirectory) throw new ArtifactRoutingError('path_collision', `Artifact directory collision: ${ancestorDirectory[0]} contains ${candidatePath}`, { path: ancestorDirectory[0] }); const nestedDirectory = entries.find(([dir, owner]) => dir !== candidatePath && DIRECTORY_ARTIFACT_KINDS.has(owner.kind) && owner.role === 'canonical' && dir.startsWith(`${candidatePath}/`)); if (nestedDirectory) throw new ArtifactRoutingError('path_collision', `Artifact path collision: ${candidatePath} is an ancestor of ${nestedDirectory[0]}`, { path: candidatePath }); } }
 function assertLexicallyInside(root, target, label) { const relative = path.relative(root, target); if (relative.startsWith('..') || path.isAbsolute(relative)) throw new ArtifactRoutingError('repository_traversal', `Artifact ${label} must stay inside the repository`, { target }); }

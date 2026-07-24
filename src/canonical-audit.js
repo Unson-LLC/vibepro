@@ -12,11 +12,14 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { findBudgetSummaryPath } from './pr-artifact-budget.js';
 import { resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
 import { resolveReconciliationAction } from './reconciliation-action.js';
+import { validateDecisionOutcomeLedger } from './decision-outcome-ledger.js';
+import { projectPublicPrMergeResult } from './merge-public-projection.js';
 
 export const CANONICAL_AUDIT_ROOT = path.join('docs', 'management', 'audit-artifacts');
 
 const PR_AUDIT_FILES = [
   ['evidence-reuse.json', 'evidence_reuse'],
+  ['decision-outcome-ledger.json', 'decision_outcome_ledger'],
   ['pr-prepare.json', 'pr_prepare'],
   ['pr-create.json', 'pr_create'],
   ['gate-dag.json', 'gate_dag'],
@@ -563,6 +566,7 @@ async function writeCanonicalAuditArtifacts(root, {
   canonicalDir,
   onArtifactWritten
 }) {
+  await persistDecisionOutcomeRevisions(root, storyId, canonicalDir);
   const inventory = await collectAuditSourceInventory(root, storyId, canonicalDir);
   const costSummary = buildCanonicalEvidenceCostSummary({
     artifactLineCount: inventory.artifact_line_count,
@@ -685,16 +689,7 @@ async function writeCanonicalAuditArtifacts(root, {
     cost_summary: costSummary,
     automation_value_audit: decisionIndex.automation_value_audit,
     merge: merge ? {
-      status: merge.status ?? null,
-      base: merge.base ?? null,
-      delivery: merge.delivery ?? null,
-      reconciliation: merge.reconciliation ?? null,
-      reconciliation_action: resolveReconciliationAction(merge),
-      execution_state_sync: merge.execution_state_sync ?? null,
-      pr_url: merge.pr?.url ?? merge.pr?.selector ?? null,
-      merge_commit_sha: merge.merge_commit_sha ?? null,
-      merged_at: merge.merged_at ?? null,
-      current_head_sha: merge.current_head_sha ?? null,
+      ...buildCanonicalMergeSummary(merge),
       diff_stats_status: costSummary.diff_stats_status,
       diff_stats_source: costSummary.diff_stats_source
     } : null,
@@ -724,6 +719,105 @@ async function writeCanonicalAuditArtifacts(root, {
     bundle_path: bundlePath,
     bundle
   };
+}
+
+async function persistDecisionOutcomeRevisions(root, storyId, canonicalDir) {
+  const sourcePath = path.join(getWorkspaceDir(root), 'pr', storyId, 'decision-outcome-ledger.json');
+  const text = await readTextIfExists(sourcePath);
+  if (text === null) return;
+  let ledger;
+  try {
+    ledger = JSON.parse(text);
+  } catch (error) {
+    const malformed = new Error(`decision outcome ledger is malformed: ${toWorkspaceRelative(root, sourcePath)}`);
+    malformed.code = 'decision_outcome_ledger_malformed';
+    malformed.cause = error;
+    throw malformed;
+  }
+  const validation = validateDecisionOutcomeLedger(ledger, { storyId });
+  if (!validation.valid) {
+    const invalid = new Error(`decision outcome ledger is structurally invalid: ${validation.reason}`);
+    invalid.code = 'decision_outcome_ledger_invalid';
+    invalid.field = validation.field;
+    throw invalid;
+  }
+  const revisionRoot = path.resolve(canonicalDir, 'decision-outcomes');
+  const revisions = (ledger.traces ?? []).map((trace) => {
+    const decisionTraceId = trace?.decision_trace_id;
+    const collisionGroup = trace?.collision_group;
+    const traceSourceRef = trace?.trace_source_ref;
+    const revisionFingerprint = trace?.revision_fingerprint;
+    if (decisionTraceId != null && !/^dt_[a-f0-9]{64}$/.test(decisionTraceId)) {
+      throw invalidDecisionOutcomeRevision('decision_trace_id', decisionTraceId);
+    }
+    if (decisionTraceId == null && !/^cg_[a-f0-9]{64}$/.test(collisionGroup ?? '')) {
+      throw invalidDecisionOutcomeRevision('collision_group', collisionGroup);
+    }
+    if (!/^tsr_[a-f0-9]{64}$/.test(traceSourceRef ?? '')) {
+      throw invalidDecisionOutcomeRevision('trace_source_ref', traceSourceRef);
+    }
+    if (!/^[a-f0-9]{64}$/.test(revisionFingerprint)) {
+      throw invalidDecisionOutcomeRevision('revision_fingerprint', revisionFingerprint);
+    }
+    const selector = decisionTraceId
+      ? `trace-${decisionTraceId}`
+      : `collision-${collisionGroup}-${traceSourceRef}`;
+    const target = path.resolve(revisionRoot, selector, `${revisionFingerprint}.json`);
+    if (target !== revisionRoot && !target.startsWith(`${revisionRoot}${path.sep}`)) {
+      throw invalidDecisionOutcomeRevision('target', target);
+    }
+    const revision = {
+      schema_version: ledger.schema_version ?? '0.1.0',
+      story_id: storyId,
+      ledger_path: ledger.artifact_path ?? toWorkspaceRelative(root, sourcePath),
+      selector: trace.decision_trace_id
+        ? { decision_trace_id: trace.decision_trace_id }
+        : { collision_group: trace.collision_group ?? null, trace_source_ref: trace.trace_source_ref ?? null },
+      parent_revision_fingerprint: trace.parent_revision_fingerprint ?? null,
+      revision_fingerprint: trace.revision_fingerprint,
+      trace
+    };
+    return { target, revision };
+  });
+  for (const { target, revision } of revisions) {
+    await mkdir(path.dirname(target), { recursive: true });
+    await writeImmutableDecisionOutcomeRevision(target, `${JSON.stringify(revision, null, 2)}\n`);
+  }
+}
+
+async function writeImmutableDecisionOutcomeRevision(target, bytes) {
+  try {
+    await writeFile(target, bytes, { flag: 'wx' });
+    return;
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+  }
+  const existing = await readFile(target, 'utf8');
+  if (existing === bytes) return;
+  if (legacyDecisionOutcomeRevisionMatches(existing, bytes)) return;
+  const conflict = new Error(`decision outcome revision already exists with different bytes: ${target}`);
+  conflict.code = 'decision_outcome_revision_conflict';
+  conflict.target = target;
+  throw conflict;
+}
+
+function legacyDecisionOutcomeRevisionMatches(existingBytes, currentBytes) {
+  try {
+    const legacy = JSON.parse(existingBytes);
+    const current = JSON.parse(currentBytes);
+    if (!Object.hasOwn(legacy, 'ledger_digest') || Object.hasOwn(current, 'ledger_digest')) return false;
+    delete legacy.ledger_digest;
+    return JSON.stringify(legacy) === JSON.stringify(current);
+  } catch {
+    return false;
+  }
+}
+
+function invalidDecisionOutcomeRevision(field, value) {
+  const error = new Error(`decision outcome ledger contains an invalid ${field}: ${String(value)}`);
+  error.code = 'decision_outcome_revision_invalid';
+  error.field = field;
+  return error;
 }
 
 async function writeCompactCanonicalAuditArtifacts(root, {
@@ -1017,18 +1111,7 @@ async function writeCompressedReplayBundle(root, {
       pointer: '/cost_summary'
     },
     verdict: buildReplayVerdict(decisionIndex),
-    merge: merge ? {
-      status: merge.status ?? null,
-      base: merge.base ?? null,
-      delivery: merge.delivery ?? null,
-      reconciliation: merge.reconciliation ?? null,
-      reconciliation_action: resolveReconciliationAction(merge),
-      execution_state_sync: merge.execution_state_sync ?? null,
-      pr_url: merge.pr?.url ?? merge.pr?.selector ?? merge.pr_url ?? null,
-      merge_commit_sha: merge.merge_commit_sha ?? null,
-      merged_at: merge.merged_at ?? null,
-      current_head_sha: merge.current_head_sha ?? null
-    } : null,
+    merge: merge ? buildCanonicalMergeSummary(merge) : null,
     artifacts: inventory.artifacts.map((artifact) => buildReplayArtifactManifest(root, artifact)),
     missing_artifacts: dedupeMissingArtifacts(inventory.missing_artifacts)
   };
@@ -1086,6 +1169,40 @@ function buildReplayArtifactManifest(root, artifact) {
   };
 }
 
+function projectCanonicalPublicMerge(data) {
+  return projectPublicPrMergeResult(data ?? {});
+}
+
+function buildCanonicalMergeSummary(data) {
+  const merge = projectCanonicalPublicMerge(data);
+  return compactObject({
+    status: merge?.status ?? null,
+    base: merge?.base ?? null,
+    delivery: merge?.delivery ?? null,
+    reconciliation: merge?.reconciliation ?? null,
+    reconciliation_action: resolveReconciliationAction(merge),
+    execution_state_sync: merge?.execution_state_sync ?? null,
+    decision_outcome_binding: merge?.decision_outcome_binding ?? null,
+    pr_url: merge?.pr?.url ?? merge?.pr?.selector ?? merge?.pr_url ?? null,
+    merge_commit_sha: merge?.merge_commit_sha ?? null,
+    merged_at: merge?.merged_at ?? null,
+    current_head_sha: merge?.current_head_sha ?? null
+  });
+}
+
+function publicMergeField(data, key) {
+  return projectCanonicalPublicMerge(data)?.[key] ?? null;
+}
+
+function resolvePublicReconciliationAction(data) {
+  return resolveReconciliationAction(projectCanonicalPublicMerge(data));
+}
+
+function publicMergeUrl(data) {
+  const projected = projectCanonicalPublicMerge(data);
+  return projected?.pr?.url ?? projected?.pr?.selector ?? projected?.pr_url ?? null;
+}
+
 function summarizeReplayArtifact(artifact) {
   const data = artifact.data;
   if (artifact.kind === 'pr_prepare') {
@@ -1107,19 +1224,11 @@ function summarizeReplayArtifact(artifact) {
     });
   }
   if (artifact.kind === 'pr_merge') {
+    const merge = projectCanonicalPublicMerge(data);
     return compactObject({
-      status: data?.status,
-      base: data?.base,
-      delivery: data?.delivery,
-      reconciliation: data?.reconciliation,
-      reconciliation_action: resolveReconciliationAction(data),
-      execution_state_sync: data?.execution_state_sync,
-      pr_url: data?.pr?.url ?? data?.pr_url,
-      merge_commit_sha: data?.merge_commit_sha,
-      merged_at: data?.merged_at,
-      current_head_sha: data?.current_head_sha,
-      cost_accounting_status: data?.cost_accounting?.status,
-      cost_accounting_collection_status: data?.cost_accounting_collection?.status
+      ...buildCanonicalMergeSummary(merge),
+      cost_accounting_status: merge?.cost_accounting?.status,
+      cost_accounting_collection_status: merge?.cost_accounting_collection?.status
     });
   }
   if (artifact.kind === 'gate_dag') {
@@ -1527,16 +1636,7 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
     pr_merge: {
       present: Boolean(prMerge),
       summary: prMerge ? {
-        status: prMerge.status ?? null,
-        base: prMerge.base ?? null,
-        delivery: prMerge.delivery ?? null,
-        reconciliation: prMerge.reconciliation ?? null,
-        reconciliation_action: resolveReconciliationAction(prMerge),
-        execution_state_sync: prMerge.execution_state_sync ?? null,
-        pr_url: prMerge.pr?.url ?? prMerge.pr?.selector ?? prMerge.pr_url ?? null,
-        merge_commit_sha: prMerge.merge_commit_sha ?? null,
-        merged_at: prMerge.merged_at ?? null,
-        current_head_sha: prMerge.current_head_sha ?? null,
+        ...buildCanonicalMergeSummary(prMerge),
         diff_stats_status: costSummary.diff_stats_status,
         diff_stats_source: costSummary.diff_stats_source
       } : null
@@ -1626,6 +1726,7 @@ function buildAutomationValueAuditContract(index) {
       merge_status: index.pr_merge?.summary?.status ?? null,
       delivery: index.pr_merge?.summary?.delivery ?? null,
       reconciliation: index.pr_merge?.summary?.reconciliation ?? null,
+      decision_outcome_binding: index.pr_merge?.summary?.decision_outcome_binding ?? null,
       merge_commit_sha: index.pr_merge?.summary?.merge_commit_sha ?? null,
       merged_at: index.pr_merge?.summary?.merged_at ?? null
     },
@@ -1915,6 +2016,9 @@ function scopedPrLifecycle(data, artifactKind, excluded) {
   excluded.push('pr_lifecycle.full_gate_dag', 'pr_lifecycle.raw_command_output');
   const gateDag = data?.gate_dag;
   const results = data?.results;
+  const publicMerge = artifactKind === 'canonical_pr_merge_audit_summary'
+    ? projectCanonicalPublicMerge(data)
+    : null;
   return compactObject({
     schema_version: data?.schema_version,
     artifact_kind: artifactKind,
@@ -1922,51 +2026,51 @@ function scopedPrLifecycle(data, artifactKind, excluded) {
     created_at: data?.created_at,
     story: data?.story,
     mode: data?.mode,
-    dry_run: data?.dry_run,
-    status: data?.status,
-    output: data?.output,
-    pr_url: data?.pr_url,
-    pr: data?.pr,
+    dry_run: publicMerge?.dry_run ?? data?.dry_run,
+    status: publicMerge?.status ?? data?.status,
+    output: publicMerge?.output ?? data?.output,
+    pr_url: publicMerge?.pr_url ?? data?.pr_url,
+    pr: publicMerge?.pr ?? data?.pr,
     title: data?.title,
-    base: data?.base,
+    base: publicMerge?.base ?? data?.base,
     head: data?.head,
     body_file: data?.body_file,
     current_branch: data?.current_branch,
-    current_head_sha: data?.current_head_sha,
+    current_head_sha: publicMerge?.current_head_sha ?? data?.current_head_sha,
     workspace_initialized: data?.workspace_initialized,
     repository_slug: data?.repository_slug,
-    strategy: data?.strategy,
-    delivery: data?.delivery,
-    reconciliation: data?.reconciliation,
-    reconciliation_action: resolveReconciliationAction(data),
-    execution_state_sync: data?.execution_state_sync,
-    branch_cleanup: data?.branch_cleanup,
-    delete_branch: data?.delete_branch,
-    preconditions: data?.preconditions,
-    merged_at: data?.merged_at,
-    merge_commit_sha: data?.merge_commit_sha,
-    stop_reason: data?.stop_reason,
-    cost_accounting: data?.cost_accounting,
-    cost_accounting_collection: data?.cost_accounting_collection,
-    canonical_audit: data?.canonical_audit,
+    strategy: publicMerge?.strategy ?? data?.strategy,
+    delivery: publicMerge?.delivery ?? data?.delivery,
+    reconciliation: publicMerge?.reconciliation ?? publicMergeField(data, 'reconciliation'),
+    reconciliation_action: publicMerge
+      ? resolveReconciliationAction(publicMerge)
+      : resolvePublicReconciliationAction(data),
+    execution_state_sync: publicMerge?.execution_state_sync ?? publicMergeField(data, 'execution_state_sync'),
+    decision_outcome_binding: publicMerge?.decision_outcome_binding ?? data?.decision_outcome_binding,
+    branch_cleanup: publicMerge?.branch_cleanup ?? data?.branch_cleanup,
+    delete_branch: publicMerge?.delete_branch ?? data?.delete_branch,
+    preconditions: publicMerge?.preconditions ?? data?.preconditions,
+    merged_at: publicMerge?.merged_at ?? data?.merged_at,
+    merge_commit_sha: publicMerge?.merge_commit_sha ?? data?.merge_commit_sha,
+    stop_reason: publicMerge?.stop_reason ?? data?.stop_reason,
+    cost_accounting: publicMerge?.cost_accounting ?? data?.cost_accounting,
+    cost_accounting_collection: publicMerge?.cost_accounting_collection ?? data?.cost_accounting_collection,
+    canonical_audit: publicMerge?.canonical_audit ?? data?.canonical_audit,
     prepare_artifacts: data?.prepare_artifacts,
     gate_override: data?.gate_override,
     execution_gate: data?.execution_gate,
-    artifact_freshness: data?.artifact_freshness,
-    warnings: data?.warnings,
+    artifact_freshness: publicMerge?.artifact_freshness ?? data?.artifact_freshness,
+    warnings: publicMerge?.warnings ?? data?.warnings,
     toolchain: data?.toolchain,
     gate_dag_summary: scopedGateDag(gateDag, excluded),
-    commands: data?.commands,
+    command_count: Array.isArray(data?.commands) ? data.commands.length : undefined,
     results: Array.isArray(results)
       ? results.map((result) => ({
-          command: result.command,
           started_at: result.started_at,
           finished_at: result.finished_at,
           exit_code: result.exit_code,
           stdout_bytes: byteLength(result.stdout),
-          stderr_bytes: byteLength(result.stderr),
-          stdout_excerpt: excerpt(result.stdout),
-          stderr_excerpt: excerpt(result.stderr)
+          stderr_bytes: byteLength(result.stderr)
         }))
       : results
   });
@@ -2289,7 +2393,7 @@ async function promoteReferencedAuditArtifacts({ root, canonicalDir, artifacts, 
       continue;
     }
 
-    const sourcePath = path.join(root, ref);
+    const sourcePath = resolveContainedPath(root, ref);
     const sourceStat = await statIfExists(sourcePath);
     if (!sourceStat || !sourceStat.isFile()) {
       unresolved_references.push({
@@ -2307,7 +2411,10 @@ async function promoteReferencedAuditArtifacts({ root, canonicalDir, artifacts, 
       continue;
     }
 
-    const targetPath = path.join(canonicalDir, 'references', ref.replace(/^\.vibepro\//, 'vibepro/'));
+    const targetPath = resolveContainedPath(
+      path.join(canonicalDir, 'references'),
+      ref.replace(/^\.vibepro\//, 'vibepro/')
+    );
     await mkdir(path.dirname(targetPath), { recursive: true });
     await writeFile(targetPath, await readFile(sourcePath));
     await onArtifactWritten?.(targetPath);
@@ -2483,7 +2590,25 @@ function extractVibeProReferences(text) {
   if (!text) return [];
   return [...String(text).matchAll(VIBEPRO_REFERENCE_RE)]
     .map((match) => match[0].replace(/[),.;:"'\\\]}]+$/g, ''))
-    .filter((ref) => ref.startsWith('.vibepro/'));
+    .filter(isSafeVibeProReference);
+}
+
+function isSafeVibeProReference(ref) {
+  if (!ref.startsWith('.vibepro/')) return false;
+  const normalized = ref.replaceAll('\\', '/');
+  if (path.posix.normalize(normalized) !== normalized) return false;
+  return normalized.split('/').every((segment) => segment !== '..' && segment !== '');
+}
+
+function resolveContainedPath(root, relativePath) {
+  const resolvedRoot = path.resolve(root);
+  const resolved = path.resolve(resolvedRoot, relativePath);
+  if (resolved !== resolvedRoot && !resolved.startsWith(`${resolvedRoot}${path.sep}`)) {
+    const error = new Error(`artifact reference escapes its authority root: ${relativePath}`);
+    error.code = 'canonical_reference_outside_root';
+    throw error;
+  }
+  return resolved;
 }
 
 async function statIfExists(filePath) {

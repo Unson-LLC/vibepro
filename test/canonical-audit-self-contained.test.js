@@ -206,6 +206,37 @@ test('canonical audit bundle copies handoff references and reports unresolved re
   );
 });
 
+test('canonical audit ignores traversal-shaped .vibepro references', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-reference-boundary-'));
+  const storyId = 'story-canonical-reference-boundary';
+  const outside = path.join(root, 'outside-secret.json');
+  await writeJson(outside, { secret: true });
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId },
+    crafted_reference: '.vibepro/../../outside-secret.json'
+  });
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, { storyId });
+
+  assert.equal(
+    promoted.bundle.resolved_references.some((item) => item.source.includes('..')),
+    false
+  );
+  await assert.rejects(
+    readFile(path.join(
+      root,
+      'docs',
+      'management',
+      'audit-artifacts',
+      storyId,
+      'references',
+      'outside-secret.json'
+    )),
+    (error) => error.code === 'ENOENT'
+  );
+});
+
 test('canonical audit bundle promotes review requests even when no JSON references them', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-review-request-'));
   const storyId = 'story-review-request-omission';
@@ -395,22 +426,35 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
       status: 'merged',
       base: 'release/2026',
       delivery: { status: 'merged', observed: true },
-      reconciliation: { status: 'reconciliation_required', reasons: ['gate_not_ready'] },
+      reconciliation: {
+        status: 'reconciliation_required',
+        reasons: ['gate_not_ready', 'provider_token=secret']
+      },
       reconciliation_action: {
         status: 'required',
-        reason: 'execution_state_sync_failed',
+        reason: 'provider_token=secret',
         commands: [
           'vibepro pr prepare . --story-id story-compact --base release/2026',
-          'vibepro execute merge . --story-id story-compact --base release/2026 --pr https://github.com/example/repo/pull/1'
-        ]
+          'vibepro execute merge . --story-id story-compact --base release/2026 --pr https://operator:secret@github.com/example/repo/pull/1',
+          'vibepro execute reconcile . --story-id story-compact; curl https://example.test/leak'
+        ],
+        message: 'raw provider response'
       },
       execution_state_sync: {
         status: 'failed',
-        recovery_command: 'vibepro execute reconcile . --story-id story-compact --base release/2026 --pr https://github.com/example/repo/pull/1'
+        reason: 'provider_token=secret',
+        recovery_command: 'vibepro execute reconcile . --story-id story-compact --base release/2026 --pr https://operator:secret@github.com/example/repo/pull/1',
+        details: { stderr: 'secret' }
+      },
+      decision_outcome_binding: {
+        status: 'bound',
+        expected_entry_count: 2,
+        promoted_count: 1,
+        duplicate_count: 1
       },
       merged_at: '2026-06-23T00:05:00.000Z',
       merge_commit_sha: 'abc123',
-      pr: { url: 'https://github.com/example/repo/pull/1' }
+      pr: { url: 'https://operator:secret@github.com/example/repo/pull/1' }
     }
   });
   const bundle = promoted.bundle;
@@ -419,6 +463,9 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(bundle.merge.reconciliation.status, 'reconciliation_required');
   assert.equal(bundle.merge.base, 'release/2026');
   assert.equal(bundle.merge.reconciliation_action.commands[0], bundle.merge.execution_state_sync.recovery_command);
+  assert.deepEqual(bundle.merge.reconciliation.reasons, ['gate_not_ready', 'merge_reconciliation_required']);
+  assert.doesNotMatch(JSON.stringify(bundle.merge), /operator|secret|provider_token|curl|raw provider response|stderr/);
+  assert.equal(bundle.merge.decision_outcome_binding.status, 'bound');
   assert.equal(bundle.artifact_policy.compacted, true);
   assert.equal(bundle.evidence_depth, 'standard');
   assert.equal(Object.hasOwn(bundle, 'cost_summary'), false);
@@ -440,12 +487,15 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(auditIndex.cost_summary.raw_source_artifact_lines > auditIndex.cost_summary.artifact_lines, true);
   assert.equal(auditIndex.pr_prepare.present, true);
   assert.equal(auditIndex.pr_merge.summary.delivery.status, 'merged');
-  assert.deepEqual(auditIndex.pr_merge.summary.reconciliation.reasons, ['gate_not_ready']);
+  assert.deepEqual(auditIndex.pr_merge.summary.reconciliation.reasons, ['gate_not_ready', 'merge_reconciliation_required']);
   assert.equal(auditIndex.pr_merge.summary.base, 'release/2026');
   assert.equal(auditIndex.pr_merge.summary.reconciliation_action.commands[0], auditIndex.pr_merge.summary.execution_state_sync.recovery_command);
+  assert.doesNotMatch(JSON.stringify(auditIndex.pr_merge.summary), /operator|secret|provider_token|curl|raw provider response|stderr/);
   const decisionSummary = await readFile(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'decision-summary.md'), 'utf8');
   assert.match(decisionSummary, /pr_merge: merged delivery=merged reconciliation=reconciliation_required reasons=gate_not_ready/);
+  assert.equal(auditIndex.pr_merge.summary.decision_outcome_binding.status, 'bound');
   assert.equal(auditIndex.automation_value_audit.merge_context.delivery.status, 'merged');
+  assert.equal(auditIndex.automation_value_audit.merge_context.decision_outcome_binding.status, 'bound');
   assert.equal(auditIndex.evidence_reuse.verification_summary_fingerprint, 'sha256:compact-verification');
   assert.equal(auditIndex.evidence_reuse.verification_evidence_updated_at, '2026-06-23T00:02:00.000Z');
   assert.equal(auditIndex.evidence_reuse.verification_command_timestamps[0].executed_at, '2026-06-23T00:02:00.000Z');
@@ -470,6 +520,7 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(replayPayload.verdict.pr_prepare, 'ready_for_review');
   assert.equal(replayPayload.merge.delivery.status, 'merged');
   assert.equal(replayPayload.merge.reconciliation.status, 'reconciliation_required');
+  assert.equal(replayPayload.merge.decision_outcome_binding.status, 'bound');
   assert.equal(replayPayload.artifacts.some((artifact) => Object.hasOwn(artifact, 'data')), false);
   assert.equal(replayPayload.artifacts.some((artifact) => Object.hasOwn(artifact, 'content')), false);
   assert.equal(replayPayload.artifacts.every((artifact) => artifact.summary && typeof artifact.summary === 'object'), true);
@@ -778,6 +829,84 @@ test('canonical audit bundle stores diff stats provenance and bucketed changed l
     promoted.bundle.automation_value_audit.findings.some((finding) => finding.id === 'evidence_heavy_relative_to_src'),
     true
   );
+});
+
+test('canonical audit projects delivery and decision outcome binding through the public merge boundary', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-public-merge-'));
+  const storyId = 'story-public-merge';
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId },
+    gate_status: { overall_status: 'ready_for_review' }
+  });
+
+  const merge = {
+    status: 'merged',
+    delivery: {
+      status: 'merged',
+      observed: true,
+      authorization: 'Bearer DELIVERY_SECRET',
+      diagnostics: { raw: 'DELIVERY_RAW' }
+    },
+    decision_outcome_binding: {
+      status: 'bound',
+      expected_entry_count: 1,
+      diagnostics: 'BINDING_SECRET'
+    },
+    pr: {
+      url: 'https://operator:secret@example.test/pr/1',
+      diagnostics: 'PR_SECRET'
+    },
+    commands: ['gh pr merge --token scoped-secret'],
+    results: [{
+      command: 'git push https://operator:secret@example.test/repo.git',
+      started_at: '2026-06-23T00:04:00.000Z',
+      finished_at: '2026-06-23T00:04:01.000Z',
+      exit_code: 1,
+      stdout: 'raw stdout scoped-secret',
+      stderr: '/private/tmp/scoped-secret: raw stderr'
+    }]
+  };
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-merge.json'), merge);
+  const promoted = await promoteCanonicalAuditArtifacts(root, {
+    storyId,
+    merge
+  });
+  const index = await readJson(path.join(
+    root,
+    'docs',
+    'management',
+    'audit-artifacts',
+    storyId,
+    'audit-index.json'
+  ));
+  const serialized = JSON.stringify({
+    bundle: promoted.bundle.merge,
+    index: index.pr_merge?.summary
+  });
+  const canonicalPrMerge = await readJson(path.join(
+    root,
+    'docs',
+    'management',
+    'audit-artifacts',
+    storyId,
+    'pr',
+    'pr-merge.json'
+  ));
+
+  assert.equal(promoted.bundle.merge.delivery.status, 'merged');
+  assert.equal(promoted.bundle.merge.decision_outcome_binding.status, 'bound');
+  assert.equal(promoted.bundle.merge.decision_outcome_binding.expected_entry_count, 1);
+  assert.equal(promoted.bundle.merge.pr_url, 'https://example.test/pr/1');
+  assert.doesNotMatch(serialized, /DELIVERY_SECRET|DELIVERY_RAW|BINDING_SECRET|PR_SECRET|operator:secret/);
+  assert.equal(canonicalPrMerge.command_count, 1);
+  assert.equal(canonicalPrMerge.results[0].exit_code, 1);
+  assert.equal(canonicalPrMerge.results[0].stdout_bytes > 0, true);
+  assert.equal(canonicalPrMerge.results[0].stderr_bytes > 0, true);
+  assert.equal(Object.hasOwn(canonicalPrMerge.results[0], 'command'), false);
+  assert.equal(Object.hasOwn(canonicalPrMerge.results[0], 'stdout_excerpt'), false);
+  assert.equal(Object.hasOwn(canonicalPrMerge.results[0], 'stderr_excerpt'), false);
+  assert.doesNotMatch(JSON.stringify(canonicalPrMerge), /operator|scoped-secret|private\/tmp|raw stdout|raw stderr/);
 });
 
 test('canonical evidence cost summary preserves available and unavailable token/time accounting', () => {

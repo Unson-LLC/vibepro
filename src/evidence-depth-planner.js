@@ -61,6 +61,7 @@ const SUMMARY_SKIPPED_ARTIFACTS = [
 
 const SUMMARY_GENERATED_ARTIFACTS = [
   'evidence-reuse.json',
+  'decision-outcome-ledger.json',
   'evidence-plan.json',
   'decision-index.json',
   'senior-gap-judgment.json',
