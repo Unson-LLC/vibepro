@@ -290,6 +290,16 @@
       "require_known_attribution": false
     },
     "delivery_efficiency_by_story": {
+      "story-vibepro-gate-decision-outcome-ledger": {
+        "max_subagent_count": 432,
+        "max_agent_consumption_ms": 1428370800,
+        "max_review_dispatches_by_role": {
+          "gate_evidence": 8,
+          "pr_split_scope": 6,
+          "release_risk": 8
+        },
+        "amendment_reason": "Four hundred twenty-nine historical review lifecycles, including long-running timeout debt, predate the final corrected HEAD and exhaust the default Story budget before current-HEAD gate closure. The user explicitly authorized blocker removal and merge completion on 2026-07-24. Reserve exactly one final current-HEAD dispatch for each required gate role (gate_evidence, pr_split_scope, release_risk) with gpt-5.6-luna high, permit no replacement loop, and leave global budgets unchanged."
+      },
       "story-vibepro-delivery-reconciliation-state": {
         "max_subagent_count": 34,
         "max_agent_consumption_ms": 6000000,
