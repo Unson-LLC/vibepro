@@ -20,7 +20,10 @@ export async function persistCanonicalArtifactsToBase({
   prepare = null
 } = {}) {
   const root = path.resolve(repoRoot);
-  const tempWorktree = path.join(os.tmpdir(), `vibepro-canonical-audit-${storyId}-${Date.now()}`);
+  const validStoryId = isSafeCanonicalStoryId(storyId);
+  const tempWorktree = validStoryId
+    ? path.join(os.tmpdir(), `vibepro-canonical-audit-${storyId}-${Date.now()}`)
+    : null;
   const commands = [];
   const results = [];
   const summary = {
@@ -37,6 +40,7 @@ export async function persistCanonicalArtifactsToBase({
     },
     commands, results
   };
+  if (!validStoryId) return failed('canonical_audit_story_id_invalid');
   if (!mergeCommitSha) return failed('canonical_audit_merge_commit_missing');
 
   const run = async (command, execution = {}) => {
@@ -237,6 +241,22 @@ export async function persistCanonicalArtifactsToBase({
     summary.reason = reason;
     summary.failure = null;
     summary.primary = { status, reason, failure: null };
+  }
+}
+
+function isSafeCanonicalStoryId(value) {
+  return typeof value === 'string'
+    && /^story-[a-z0-9][a-z0-9._-]*$/.test(value)
+    && !value.includes('..')
+    && !/[\\/%]/.test(value)
+    && decodeSafely(value) === value;
+}
+
+function decodeSafely(value) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return '';
   }
 }
 

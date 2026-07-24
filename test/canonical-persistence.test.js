@@ -10,6 +10,29 @@ import { persistCanonicalArtifactsToBase } from '../src/canonical-persistence.js
 
 const execFileAsync = promisify(execFile);
 
+test('GDL-S-9 canonical persistence rejects traversal story IDs before constructing a worktree path', async () => {
+  let commandCalls = 0;
+  const result = await persistCanonicalArtifactsToBase({
+    repoRoot: os.tmpdir(),
+    storyId: 'story-../../../escaped',
+    relativeDir: 'docs/management/audit-artifacts/story-escaped',
+    baseBranch: 'main',
+    mergeCommitSha: 'a'.repeat(40),
+    options: {
+      commandRunner: async () => {
+        commandCalls += 1;
+        throw new Error('command runner must not be reached');
+      }
+    }
+  });
+
+  assert.equal(result.summary.status, 'failed');
+  assert.equal(result.summary.reason, 'canonical_audit_story_id_invalid');
+  assert.equal(result.summary.worktree_path, null);
+  assert.equal(result.summary.resource.acquisition, 'not_attempted');
+  assert.equal(commandCalls, 0);
+});
+
 test('GDL-CONTRACT-008 persists prepared files atomically and dedupes identical revisions', async () => {
   const fixture = await createRepository();
   const relativeDir = 'docs/management/audit-artifacts/story-outcome';

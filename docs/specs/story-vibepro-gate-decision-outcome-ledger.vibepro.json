@@ -101,16 +101,23 @@
     {
       "id": "GDL-S-9",
       "type": "scenario",
-      "statement": "Outcome record and refresh validate story-scoped selectors, parent revision, producer, managed authority, live delivery, canonical base, atomic local writes, and explicit reconciliation after remote application but local finalization failure.",
+      "statement": "Outcome record, refresh, and canonical persistence validate the Story ID before any ledger or temporary-worktree path construction, then validate story-scoped selectors, parent revision, producer, managed authority, live delivery, canonical base, atomic local writes, and explicit reconciliation after remote application but local finalization failure.",
       "origin": {
         "story_refs": [{ "kind": "acceptance_criteria", "index": 8 }],
         "code_refs": [
           { "file": "src/outcome-manager.js", "anchor": "recordOutcome" },
-          { "file": "src/outcome-manager.js", "anchor": "refreshOutcome" }
+          { "file": "src/outcome-manager.js", "anchor": "refreshOutcome" },
+          { "file": "src/canonical-persistence.js", "anchor": "persistCanonicalArtifactsToBase" }
         ],
-        "test_refs": [{ "file": "test/decision-outcome-ledger.test.js", "case": "GDL-S-9 refresh finalization preserves prior ledger bytes when atomic replacement fails" }]
+        "test_refs": [
+          { "file": "test/decision-outcome-ledger.test.js", "case": "GDL-S-9 refresh finalization preserves prior ledger bytes when atomic replacement fails" },
+          { "file": "test/canonical-persistence.test.js", "case": "GDL-S-9 canonical persistence rejects traversal story IDs before constructing a worktree path" }
+        ]
       },
-      "verifiable_by": { "test_pattern": [{ "file_glob": "test/decision-outcome-ledger.test.js", "must_cover": "GDL-S-9" }] }
+      "verifiable_by": { "test_pattern": [
+        { "file_glob": "test/decision-outcome-ledger.test.js", "must_cover": "GDL-S-9" },
+        { "file_glob": "test/canonical-persistence.test.js", "must_cover": "GDL-S-9 canonical persistence rejects traversal story IDs" }
+      ] }
     },
     {
       "id": "GDO-S-1",
