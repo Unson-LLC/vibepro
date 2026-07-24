@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "head_sha": "56d69700700016747741657b3af580bab5991777",
+  "test_fingerprint": "0c46dc88f81ec8c9b48f375d07cb7f492687975dd682447b9da562ebb0ef6d2b",
+  "validation_phase": "targeted_validation",
+  "kind": "unit",
+  "status": "pass",
+  "tests": 290,
+  "passed": 290,
+  "failed": 0,
+  "exit_code": 0,
+  "command": "node --test test/agent-runtime-adapter.test.js test/guarded-run-session.test.js test/independent-review-orchestrator.test.js test/one-command-pr-ready-closure.test.js test/safe-action-orchestrator.test.js test/scope-boundary-gate.test.js test/session-efficiency-audit.test.js"
+}

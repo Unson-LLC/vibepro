@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "head_sha": "926227f945878299770448a03966c17dfa70158d",
+  "tests": 4,
+  "passed": 4,
+  "failed": 0,
+  "acceptance_coverage": {
+    "status": "passed",
+    "covered": 8,
+    "required": 8,
+    "binding": "Each marker is attached to a substantive behavioral assertion; no marker-only assertion or test exists."
+  },
+  "command": "node --test test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+}

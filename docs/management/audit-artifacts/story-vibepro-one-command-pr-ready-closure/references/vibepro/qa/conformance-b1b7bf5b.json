@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "head_sha": "b1b7bf5b493c47b194dea26347df6dfbe9a0f32e",
+  "baseline_ref": "origin/main",
+  "baseline_violation_count": 81,
+  "violation_count": 80,
+  "delta": -1,
+  "undeclared_dependency_count": 66,
+  "budget_violation_count": 5,
+  "orphan_file_count": 9,
+  "new_run_session_cli_reverse_dependency": false,
+  "command": "node bin/vibepro.js architecture conformance . --json"
+}

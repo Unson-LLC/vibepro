@@ -1,0 +1,182 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Current-HEAD evidence resolves prior ledger and failure-mode blockers, but AC8 is overclaimed because staged roadmap closure is not proven non-circularly.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "ac8-non-circular-staged-closure-proof",
+      "detail": "E2E omits PR #372 and weakens pre-PR active-state assertions; replace the hard-coded marker with stage-aware executable predecessor, active-state, and forbidden-authority checks."
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "verification-ledger-current-head",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [
+    ".vibepro/qa/review-gate-evidence-e7921b85.json"
+  ],
+  "inspection": {
+    "summary": "Inspected Story, architecture/spec/test plan, production owner, guarded-run tests, workflow-heavy E2E, current verification ledger, responsibility contract, gate DAG, pr-prepare, and conformance. AC1-7 have behavioral proof; AC8 still depends on hard-coded text and incomplete predecessor/stage assertions.",
+    "evidence": ".vibepro/qa/review-gate-evidence-e7921b85.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+      "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+      "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+      "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+      "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+      ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json"
+    ]
+  },
+  "judgment_delta": [
+    "Current verification, responsibility, and parse-failure concerns are resolved; AC1-7 are demonstrated, but AC8 remains not demonstrated until staged closure is asserted against all predecessor SSOTs and the pre-PR active boundary."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "e7921b8523cad9e36d08933fa767c4c7537df64c",
+    "current_head_sha": "e7921b8523cad9e36d08933fa767c4c7537df64c",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "e7921b8523cad9e36d08933fa767c4c7537df64c",
+      "dirty": true,
+      "dirty_fingerprint": " M .vibepro/config.json",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M .vibepro/config.json",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T21:02:29.971Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-23T22:39:18.089Z",
+  "git_context": {
+    "head_sha": "e7921b8523cad9e36d08933fa767c4c7537df64c",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "8be6e00841071e369d51254ec5b78b1c68a792a307b847de88e2178118479034",
+    "user_status_fingerprint_hash": "8be6e00841071e369d51254ec5b78b1c68a792a307b847de88e2178118479034",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T22:39:18.077Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "final gate evidence must bind every HEAD change"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "e7921b8523cad9e36d08933fa767c4c7537df64c",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+        "sha256": "a37f60a716453e67453caaa312fe53cd558d048023403411ac33f43277d51f27",
+        "size": 3613
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+        "sha256": "9d77fec7531ce57f04e6c2a029fe98a9d95b3467a9f35ba94b01d50d805e9ae0",
+        "size": 3854
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "7ffb01b6a44e8d435c2acaaea40f398afd6624ddcc356aa0642791d3a1744491",
+        "size": 8067
+      },
+      {
+        "path": "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+        "sha256": "dcea6e542dc6b1039b19dface31d404bedb0b00df39e3cfb0fba4a9a20e1582e",
+        "size": 11885
+      },
+      {
+        "path": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+        "sha256": "44bc68abfb7234c4dd85935d19c12f203c6e9ffb849b74ad4b335f1733f03061",
+        "size": 29142
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "2c04ecbccae46f9da8c0e7d9efc3b137fa7b867ee462afad469753159293f69b"
+  },
+  "source_fingerprint": "d297e30d3de59ccb11aaf00a727222e36ad58c3d92cdb8207ecf97ea8b6816be",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/review_arch_spec",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "/root/review_arch_spec",
+    "session_id": "review-arch-spec-e7921b85-gate",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/review-gate-evidence-e7921b85.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/review-gate-evidence-e7921b85.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "review-arch-spec-e7921b85-gate",
+      "implementation_session_id": "closure-implementation-session-e7921b85",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

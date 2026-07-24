@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "review_type": "implementation:runtime_contract",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "head_sha": "e64469202935397c70b215d3ef069f10809128a1",
+  "status": "pass",
+  "summary": "The frozen clean HEAD implements the public one-command PR-ready runtime contract without acquiring post-PR or material external authority. The public CLI selects the closed seven-action autonomous DAG for --until pr-ready --autonomy guarded; implementation and repair require an authoritative managed-worktree HEAD advance; typed runtime, human-decision, verification, review, timeout, CI-pending, no-progress, and cancellation stops persist for explicit resume; needs_changes is repaired within a fixed bound and replays verification plus independent read-only review on the repaired HEAD; and only final_prepare can return pr_ready after current-HEAD PR preparation reports ready. Production runtime connectors and independent review orchestration remain predecessor-owned modules composed by guarded-run-session, while PR create, execute merge, waiver, deploy, publish, and material external side effects remain explicit human operations.",
+  "inspection_summary": {
+    "worktree_state": "clean",
+    "frozen_head_verified": true,
+    "public_cli_contract": "pass",
+    "seven_action_dag": "pass",
+    "managed_head_advance": "pass",
+    "typed_stop_resume": "pass",
+    "bounded_repair_and_rereview": "pass",
+    "current_head_evidence_rebind": "pass",
+    "predecessor_owner_reuse": "pass",
+    "human_authority_boundary": "pass",
+    "recorded_unit": "288/288",
+    "recorded_e2e": "4/4",
+    "recorded_integration": "4/4",
+    "recorded_typecheck": "pass"
+  },
+  "checks": [
+    {
+      "id": "public_seven_action_contract",
+      "status": "pass",
+      "reason": "src/cli.js accepts execute run --until pr-ready --autonomy guarded and passes actionProfile into createGuardedRunSession. resolveActionProfileDecision selects autonomous for that canonical request. AUTONOMOUS_REGISTRY and ACTION_RUNNER_KEYS contain exactly diagnose, prepare_artifacts, implement, verify, review, repair, and final_prepare, with no post-PR action."
+    },
+    {
+      "id": "real_implementation_head_advance",
+      "status": "pass",
+      "reason": "prepare_artifacts, implement, and repair call the production runtime owner with requireHeadAdvance=true. runtimeActionResult emits typed no_progress when the completed dispatch does not advance the input HEAD, while runSafeActionPlan compares any reported output HEAD with resolveCurrentHead and rejects disagreement."
+    },
+    {
+      "id": "typed_stops_and_resume",
+      "status": "pass",
+      "reason": "The Run schema admits only explicit terminal or recoverable states. Runtime availability/auth/permission/quota/timeout, malformed or missing human decision, verification failure, review block, CI pending, no progress, cancellation, and stale authority produce typed non-green outcomes. Resume starts from the persisted failed node, reuses exact Run authority and idempotency state, and retries only the incomplete allowlisted suffix."
+    },
+    {
+      "id": "bounded_needs_changes_repair",
+      "status": "pass",
+      "reason": "Only a needs_changes verdict enters automated repair. The production owner aggregates findings, caps repair at ONE_COMMAND_MAX_REPAIR_ATTEMPTS, requires a real repair HEAD advance, and returns replay_from_action_id=verify. Other review verdicts stop rather than authorizing mutation."
+    },
+    {
+      "id": "independent_rereview",
+      "status": "pass",
+      "reason": "guarded-run-session composes createGuardedIndependentReviewRunner using the persisted managed worktree. Reviewer identity and session are distinct from implementation provenance, connector probing requires the review capability and read-only sandbox, lifecycle close and record operations are explicit, and repaired HEAD invalidates the prior review checkpoint before re-review."
+    },
+    {
+      "id": "current_head_evidence_rebind",
+      "status": "pass",
+      "reason": "Action completion is rebound to the repository-resolved HEAD. On HEAD advance the safe-action plan is rebuilt for the new authority. final_prepare is the sole autonomous action permitted to return pr_ready, and both the production owner and injected-owner wrapper require prepared_head_sha to equal state.current_head_sha and gate_status.ready_for_pr_create=true."
+    },
+    {
+      "id": "predecessor_owner_reuse",
+      "status": "pass",
+      "reason": "guarded-run-session imports and composes the shipped createProductionRuntimeCoordinator path through CLI dependencies and createGuardedIndependentReviewRunner for review. The closure policy module is callback-injected and does not define a second provider transport, review lifecycle service, CI importer, or merge executor. No run-session module imports src/cli.js."
+    },
+    {
+      "id": "human_only_external_authority",
+      "status": "pass",
+      "reason": "The autonomous registry contains no pr_create, merge, waiver, deploy, publish, or generic external-effect action. Every implementation and repair objective explicitly prohibits those effects. CLI routes pr create and execute merge through separate commands, and critical waiver/material external decisions are bounded human checkpoints rather than autonomous grants."
+    },
+    {
+      "id": "frozen_head_verification",
+      "status": "pass",
+      "reason": "Exact-HEAD artifacts record unit 288/288, production-shaped E2E 4/4 with 8/8 acceptance coverage, integration 4/4, and typecheck pass. The only delta from the previously reviewed implementation HEAD is a focused .vibepro/config.json evidence-budget reservation; it changes no runtime production or test code."
+    }
+  ],
+  "judgment_delta": {
+    "initial": "The runtime contract required fresh inspection because the frozen HEAD adds a lifecycle-budget commit after the earlier implementation review, and a passing suite alone does not prove authority boundaries or current-HEAD evidence freshness.",
+    "final": "Pass after verifying the frozen commit changes only Story-local review accounting, the production runtime surface is unchanged, all eight requested runtime invariants remain enforced in code, and exact-HEAD focused evidence is green. No waiver, inferred merge authority, or fixture-as-real-provider claim was used."
+  },
+  "findings": [],
+  "inspection_inputs": [
+    "git rev-parse HEAD",
+    "git status --short",
+    "git show --stat e64469202935397c70b215d3ef069f10809128a1",
+    "git diff e64469202935397c70b215d3ef069f10809128a1^..e64469202935397c70b215d3ef069f10809128a1 -- .vibepro/config.json",
+    "src/cli.js",
+    "src/guarded-run-session.js",
+    "src/safe-action-orchestrator.js",
+    "src/one-command-pr-ready-closure.js",
+    "src/agent-runtime-connectors.js",
+    "src/independent-review-orchestrator.js",
+    "src/human-decision-checkpoint.js",
+    "src/guarded-stop-codes.js",
+    "src/ci-evidence.js",
+    "src/merge-manager.js",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/guarded-run-session.test.js",
+    "test/independent-review-orchestrator.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    ".vibepro/qa/unit-e6446920.json",
+    ".vibepro/qa/e2e-e6446920.json",
+    ".vibepro/qa/integration-e6446920.json",
+    ".vibepro/qa/typecheck-e6446920.json",
+    ".vibepro/qa/review-architecture-e6446920.json"
+  ]
+}

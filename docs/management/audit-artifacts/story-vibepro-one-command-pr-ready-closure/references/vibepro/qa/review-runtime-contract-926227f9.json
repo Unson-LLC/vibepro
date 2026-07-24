@@ -1,0 +1,42 @@
+{
+  "head_sha": "926227f945878299770448a03966c17dfa70158d",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "The frozen release candidate preserves the production runtime contract: guarded one-command closure advances only through real managed-worktree HEAD changes, typed resumable stops, independent needs_changes repair and re-review, and final current-HEAD Gate rebinding. PR creation, merge, waiver, and material external effects remain explicit human operations.",
+  "findings": [],
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/review-request-runtime_contract.md",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "src/one-command-pr-ready-closure.js",
+    "src/safe-action-orchestrator.js",
+    "src/guarded-run-session.js",
+    "src/agent-runtime-adapter.js",
+    "src/agent-runtime-connectors.js",
+    "src/independent-review-orchestrator.js",
+    "src/cli.js",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/guarded-run-session.test.js",
+    "test/independent-review-orchestrator.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+    ".vibepro/qa/expensive-verification-926227f9.json",
+    ".vibepro/qa/e2e-926227f9.json",
+    ".vibepro/qa/integration-926227f9.json",
+    ".vibepro/qa/typecheck-926227f9.json",
+    ".vibepro/qa/conformance-926227f9.json",
+    "node bin/vibepro.js sequence status . --id story-vibepro-one-command-pr-ready-closure --json",
+    "git diff --check origin/main...HEAD",
+    "node --test --test-name-pattern='same HEAD|needs_changes repair|final_prepare|material ambiguity|provider fallback|cancel|legacy profile' test/one-command-pr-ready-closure.test.js test/guarded-run-session.test.js test/independent-review-orchestrator.test.js"
+  ],
+  "inspection_summary": "Inspected the exact-HEAD production owner composition and public CLI route; managed-worktree and authoritative Git HEAD validation; provider/auth/quota/permission/timeout/cancellation typed-stop contracts; persisted status/resume/cancel and legacy migration paths; independent read-only review lifecycle; bounded needs_changes repair with verify/review suffix replay; final_prepare current-HEAD Gate enforcement; and the absence of autonomous PR-create, merge, waiver, deploy, publish, or other material external-effect nodes. Verified that the Story and architecture compose rather than duplicate the already-merged Production Runtime Connectors (PR #377) and Independent Review Orchestration (PR #382). Reviewed fresh exact-HEAD unit, E2E, integration, typecheck, and conformance artifacts and independently reran 16 focused runtime-contract tests, all passing. No API, DB, auth schema, UI, or network protocol migration is introduced; environment/provider failures remain typed and recoverable.",
+  "judgment_delta": [
+    "Initial concern that runtime-reported completion could falsely advance the Run -> resolved because implementation and repair require a real managed-worktree HEAD advance and reject same-HEAD or reported-versus-authoritative-HEAD mismatch.",
+    "Initial concern that restart, human decision, provider failure, timeout, or cancellation could lose authority -> resolved by persisted typed stop state, exact resume cursors, bounded Human Decision descriptors, ordered provider fallback, and cancellation authority winning stale runtime completion.",
+    "Initial concern that needs_changes could be treated as success or repaired without independent re-review -> resolved because findings are preserved, repair advances HEAD, and the verify/review/final_prepare suffix is invalidated and replayed with a convergence bound.",
+    "Initial concern that stale evidence could yield pr_ready -> resolved because final_prepare re-runs PR preparation, requires the prepared artifact to match authoritative current HEAD, and fails closed as gate_recheck_required or ci_pending when readiness is absent.",
+    "Initial concern that the final Story might reimplement PR #377 or PR #382 or broaden external authority -> resolved because production connectors and independent review remain their existing owners, while the autonomous DAG contains no PR creation, merge, waiver, deployment, publication, or other material external-effect action.",
+    "Regression guard and path-surface coverage concern -> resolved by public CLI run/status/resume/cancel, managed-worktree E2E, legacy and fallback tests, generated Gate artifact behavior, exact-HEAD 288/288 unit evidence, 4/4 E2E evidence, 4/4 integration evidence, typecheck, improving conformance 81 to 80, and an independent 16/16 focused rerun whose assertions would fail on same-HEAD acceptance, stale final preparation, skipped repair replay, forged readiness, or lost typed stops."
+  ]
+}

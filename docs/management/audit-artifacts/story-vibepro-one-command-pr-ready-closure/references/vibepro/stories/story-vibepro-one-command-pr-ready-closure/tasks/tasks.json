@@ -1,0 +1,1234 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-07-24T01:39:07.962Z",
+  "story": {
+    "story_id": "story-vibepro-one-command-pr-ready-closure",
+    "title": "1コマンド自律実装を実Runtime E2Eで閉じる",
+    "ssot": "local",
+    "status": "completed",
+    "horizon": "now",
+    "view": "dev",
+    "period": "2026-07",
+    "started_at": "2026-07-21",
+    "due_at": null,
+    "category": "quality"
+  },
+  "source_run": {
+    "run_id": "2026-07-24T013903Z",
+    "gate_status": "needs_review"
+  },
+  "tasks": [
+    {
+      "id": "story-vibepro-one-command-pr-ready-closure-01-arch-architecture-canonical-spec-test-plan",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-one-command-pr-ready-closure-01-arch-architecture-canonical-spec-test-plan",
+      "finding_id": null,
+      "title": "[ARCH] Architecture、canonical Spec、test planを確定する。",
+      "priority": "medium",
+      "status": "done",
+      "order": 10,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 3,
+      "target_files": [
+        "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+        "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+        "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "step-1",
+          "title": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md、docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json、docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.mdがOCR-S-1..8、run-session callback注入、既存connector/review再利用、human authority境界を固定し、Design SSOTで整合する。",
+          "detail": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md、docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json、docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.mdがOCR-S-1..8、run-session callback注入、既存connector/review再利用、human authority境界を固定し、Design SSOTで整合する。"
+        }
+      ],
+      "acceptance_criteria": [
+        "docs/architecture/story-vibepro-one-command-pr-ready-closure.md、docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json、docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.mdがOCR-S-1..8、run-session callback注入、既存connector/review再利用、human authority境界を固定し、Design SSOTで整合する。"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null,
+      "completed_at": "2026-07-24T01:39:07.962Z",
+      "completion_evidence": {
+        "run_id": "2026-07-24T013903Z",
+        "reason": "source story-vibepro-one-command-pr-ready-closure-01-arch-architecture-canonical-spec-test-plan was not detected in the latest diagnosis"
+      }
+    },
+    {
+      "id": "story-vibepro-one-command-pr-ready-closure-02-foundation-story-scope-task-projection-run-session",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-one-command-pr-ready-closure-02-foundation-story-scope-task-projection-run-session",
+      "finding_id": null,
+      "title": "[FOUNDATION] Story scope、Task projection、run-session所属を正本へ登録する。",
+      "priority": "medium",
+      "status": "done",
+      "order": 20,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 7,
+      "target_files": [
+        ".vibepro/config.json",
+        "design-ssot.json",
+        "docs/architecture/target-model.json",
+        "src/safe-action-orchestrator.js",
+        "src/task-manager.js",
+        "test/safe-action-orchestrator.test.js",
+        "test/scope-boundary-gate.test.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "step-1",
+          "title": ".vibepro/config.json、design-ssot.json、src/task-manager.js、test/scope-boundary-gate.test.js、docs/architecture/target-model.json、src/safe-action-orchestrator.js、test/safe-action-orchestrator.test.jsがcurrent Story、全変更pathのexact Task target、repair後のverify/review suffix再実行、新ownerのrun-session所属、legacy profile互換を固定する。review継続専用の一時budget amendmentは最終PR surfaceから除去する。",
+          "detail": ".vibepro/config.json、design-ssot.json、src/task-manager.js、test/scope-boundary-gate.test.js、docs/architecture/target-model.json、src/safe-action-orchestrator.js、test/safe-action-orchestrator.test.jsがcurrent Story、全変更pathのexact Task target、repair後のverify/review suffix再実行、新ownerのrun-session所属、legacy profile互換を固定する。review継続専用の一時budget amendmentは最終PR surfaceから除去する。"
+        }
+      ],
+      "acceptance_criteria": [
+        ".vibepro/config.json、design-ssot.json、src/task-manager.js、test/scope-boundary-gate.test.js、docs/architecture/target-model.json、src/safe-action-orchestrator.js、test/safe-action-orchestrator.test.jsがcurrent Story、全変更pathのexact Task target、repair後のverify/review suffix再実行、新ownerのrun-session所属、legacy profile互換を固定する。review継続専用の一時budget amendmentは最終PR surfaceから除去する。"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null,
+      "completed_at": "2026-07-24T01:39:07.962Z",
+      "completion_evidence": {
+        "run_id": "2026-07-24T013903Z",
+        "reason": "source story-vibepro-one-command-pr-ready-closure-02-foundation-story-scope-task-projection-run-session was not detected in the latest diagnosis"
+      }
+    },
+    {
+      "id": "story-vibepro-one-command-pr-ready-closure-03-core-production-action-owner-repair-convergence",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-one-command-pr-ready-closure-03-core-production-action-owner-repair-convergence",
+      "finding_id": null,
+      "title": "[CORE] production action ownerとrepair convergenceを実装する。",
+      "priority": "medium",
+      "status": "done",
+      "order": 30,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 5,
+      "target_files": [
+        "src/agent-runtime-adapter.js",
+        "src/agent-runtime-connectors.js",
+        "src/guarded-run-session.js",
+        "src/independent-review-orchestrator.js",
+        "src/one-command-pr-ready-closure.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "step-1",
+          "title": "src/one-command-pr-ready-closure.js、src/guarded-run-session.js、src/agent-runtime-adapter.js、src/agent-runtime-connectors.js、src/independent-review-orchestrator.jsが実装objective、current-HEAD rebind、typed stop/resume、repair後のfresh review dispatchを閉じ、新ownerからCLIへの依存を作らない。",
+          "detail": "src/one-command-pr-ready-closure.js、src/guarded-run-session.js、src/agent-runtime-adapter.js、src/agent-runtime-connectors.js、src/independent-review-orchestrator.jsが実装objective、current-HEAD rebind、typed stop/resume、repair後のfresh review dispatchを閉じ、新ownerからCLIへの依存を作らない。"
+        }
+      ],
+      "acceptance_criteria": [
+        "src/one-command-pr-ready-closure.js、src/guarded-run-session.js、src/agent-runtime-adapter.js、src/agent-runtime-connectors.js、src/independent-review-orchestrator.jsが実装objective、current-HEAD rebind、typed stop/resume、repair後のfresh review dispatchを閉じ、新ownerからCLIへの依存を作らない。"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null,
+      "completed_at": "2026-07-24T01:39:07.962Z",
+      "completion_evidence": {
+        "run_id": "2026-07-24T013903Z",
+        "reason": "source story-vibepro-one-command-pr-ready-closure-03-core-production-action-owner-repair-convergence was not detected in the latest diagnosis"
+      }
+    },
+    {
+      "id": "story-vibepro-one-command-pr-ready-closure-04-ux-1",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-one-command-pr-ready-closure-04-ux-1",
+      "finding_id": null,
+      "title": "[UX] 1コマンドの公開契約を固定する。",
+      "priority": "medium",
+      "status": "done",
+      "order": 40,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 3,
+      "target_files": [
+        "src/cli.js",
+        "test/guarded-run-session.test.js",
+        "test/one-command-pr-ready-closure.test.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "step-1",
+          "title": "src/cli.js、test/one-command-pr-ready-closure.test.js、test/guarded-run-session.test.jsが省略時autonomousとcodex,claude-code provider順、explicit legacy、disable fallback、英日help、dry-run、JSON/human、status/resumeを証明する。",
+          "detail": "src/cli.js、test/one-command-pr-ready-closure.test.js、test/guarded-run-session.test.jsが省略時autonomousとcodex,claude-code provider順、explicit legacy、disable fallback、英日help、dry-run、JSON/human、status/resumeを証明する。"
+        }
+      ],
+      "acceptance_criteria": [
+        "src/cli.js、test/one-command-pr-ready-closure.test.js、test/guarded-run-session.test.jsが省略時autonomousとcodex,claude-code provider順、explicit legacy、disable fallback、英日help、dry-run、JSON/human、status/resumeを証明する。"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null,
+      "completed_at": "2026-07-24T01:39:07.962Z",
+      "completion_evidence": {
+        "run_id": "2026-07-24T013903Z",
+        "reason": "source story-vibepro-one-command-pr-ready-closure-04-ux-1 was not detected in the latest diagnosis"
+      }
+    },
+    {
+      "id": "story-vibepro-one-command-pr-ready-closure-05-verify-acceptance-matrix-architecture-conformance",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-one-command-pr-ready-closure-05-verify-acceptance-matrix-architecture-conformance",
+      "finding_id": null,
+      "title": "[VERIFY] acceptance matrixとarchitecture conformanceを記録する。",
+      "priority": "medium",
+      "status": "done",
+      "order": 50,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 3,
+      "target_files": [
+        "test/guarded-run-session.test.js",
+        "test/independent-review-orchestrator.test.js",
+        "test/one-command-pr-ready-closure.test.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "step-1",
+          "title": "test/one-command-pr-ready-closure.test.js、test/guarded-run-session.test.js、test/independent-review-orchestrator.test.jsがOCR-T-1..4、repair後の旧HEAD checkpoint無効化、既存公開help回帰を実装し、focused/full testsと最新main比target architecture conformanceをcurrent HEADへ記録する。",
+          "detail": "test/one-command-pr-ready-closure.test.js、test/guarded-run-session.test.js、test/independent-review-orchestrator.test.jsがOCR-T-1..4、repair後の旧HEAD checkpoint無効化、既存公開help回帰を実装し、focused/full testsと最新main比target architecture conformanceをcurrent HEADへ記録する。"
+        }
+      ],
+      "acceptance_criteria": [
+        "test/one-command-pr-ready-closure.test.js、test/guarded-run-session.test.js、test/independent-review-orchestrator.test.jsがOCR-T-1..4、repair後の旧HEAD checkpoint無効化、既存公開help回帰を実装し、focused/full testsと最新main比target architecture conformanceをcurrent HEADへ記録する。"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null,
+      "completed_at": "2026-07-24T01:39:07.962Z",
+      "completion_evidence": {
+        "run_id": "2026-07-24T013903Z",
+        "reason": "source story-vibepro-one-command-pr-ready-closure-05-verify-acceptance-matrix-architecture-conformance was not detected in the latest diagnosis"
+      }
+    },
+    {
+      "id": "story-vibepro-one-command-pr-ready-closure-06-qa-dogfood-production-connector-vibe-pro-lifecycle",
+      "source_type": "story_explicit_task",
+      "source_id": "story-vibepro-one-command-pr-ready-closure-06-qa-dogfood-production-connector-vibe-pro-lifecycle",
+      "finding_id": null,
+      "title": "[QA/DOGFOOD] production connectorとVibePro lifecycleを実証する。",
+      "priority": "medium",
+      "status": "done",
+      "order": 60,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 5,
+      "target_files": [
+        "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+        "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
+        "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+        "docs/management/stories/active/story-vibepro-production-runtime-connectors.md",
+        "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+          "reason": "Story本文の明示タスク定義"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "story-explicit-task",
+        "reason": "Story本文の明示タスクとして定義されている"
+      },
+      "implementation_steps": [
+        {
+          "id": "step-1",
+          "title": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.mdのOCR-T-5を実commit、別identity review lifecycle、Gate、PR、CI import、current HEAD rebindの証跡で閉じ、Git文書完了後にvibepro execute mergeの監査証跡を永続化する。",
+          "detail": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.mdのOCR-T-5を実commit、別identity review lifecycle、Gate、PR、CI import、current HEAD rebindの証跡で閉じ、Git文書完了後にvibepro execute mergeの監査証跡を永続化する。"
+        },
+        {
+          "id": "step-2",
+          "title": "docs/management/stories/active/story-vibepro-production-runtime-connectors.mdをmerge済みPR #377の証跡で完了へ更新し、docs/management/stories/active/story-vibepro-independent-review-orchestration.mdをmerge済みPR #382の証跡で完了へ更新する。先行コードは二重実装しない。",
+          "detail": "docs/management/stories/active/story-vibepro-production-runtime-connectors.mdをmerge済みPR #377の証跡で完了へ更新し、docs/management/stories/active/story-vibepro-independent-review-orchestration.mdをmerge済みPR #382の証跡で完了へ更新する。先行コードは二重実装しない。"
+        },
+        {
+          "id": "step-3",
+          "title": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.mdをdogfood、current-HEAD Gate、CIの証跡で完了へ更新し、docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.mdを同じ証跡で完了へ更新する。roadmapのAIC-S-1..5が4 Storyの既存証跡へ追跡できる状態にし、当該PRのmerge SHAは同一commitの前提にせず、execute mergeが.vibepro/pr/.../pr-merge.jsonとcanonical auditへpost-merge confirmationとして記録する。",
+          "detail": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.mdをdogfood、current-HEAD Gate、CIの証跡で完了へ更新し、docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.mdを同じ証跡で完了へ更新する。roadmapのAIC-S-1..5が4 Storyの既存証跡へ追跡できる状態にし、当該PRのmerge SHAは同一commitの前提にせず、execute mergeが.vibepro/pr/.../pr-merge.jsonとcanonical auditへpost-merge confirmationとして記録する。"
+        }
+      ],
+      "acceptance_criteria": [
+        "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.mdのOCR-T-5を実commit、別identity review lifecycle、Gate、PR、CI import、current HEAD rebindの証跡で閉じ、Git文書完了後にvibepro execute mergeの監査証跡を永続化する。",
+        "docs/management/stories/active/story-vibepro-production-runtime-connectors.mdをmerge済みPR #377の証跡で完了へ更新し、docs/management/stories/active/story-vibepro-independent-review-orchestration.mdをmerge済みPR #382の証跡で完了へ更新する。先行コードは二重実装しない。",
+        "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.mdをdogfood、current-HEAD Gate、CIの証跡で完了へ更新し、docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.mdを同じ証跡で完了へ更新する。roadmapのAIC-S-1..5が4 Storyの既存証跡へ追跡できる状態にし、当該PRのmerge SHAは同一commitの前提にせず、execute mergeが.vibepro/pr/.../pr-merge.jsonとcanonical auditへpost-merge confirmationとして記録する。"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [],
+      "graph_context": null,
+      "pre_fix_briefing": null,
+      "completed_at": "2026-07-24T01:39:07.962Z",
+      "completion_evidence": {
+        "run_id": "2026-07-24T013903Z",
+        "reason": "source story-vibepro-one-command-pr-ready-closure-06-qa-dogfood-production-connector-vibe-pro-lifecycle was not detected in the latest diagnosis"
+      }
+    },
+    {
+      "id": "story-vibepro-one-command-pr-ready-closure-source-alignment-review",
+      "source_type": "source_alignment_finding",
+      "source_id": "story-vibepro-one-command-pr-ready-closure-source-alignment-review",
+      "finding_id": null,
+      "title": "Story/Spec/ADR不整合をレビューする",
+      "priority": "high",
+      "status": "done",
+      "order": 70,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 12,
+      "target_files": [
+        "src/agent-runtime-adapter.js",
+        "src/agent-runtime-connectors.js",
+        "src/code-quality-scanner.js",
+        "src/nocodb-story-sync.js",
+        "src/one-command-pr-ready-closure.js",
+        "src/runtime-info.js",
+        "src/story-candidate-generator.js",
+        "src/story-catalog-generator.js",
+        "src/story-html.js",
+        "src/story-manager.js",
+        "src/story-run-portfolio.js",
+        "src/story-task-generator.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "src/agent-runtime-adapter.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/agent-runtime-connectors.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/code-quality-scanner.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/nocodb-story-sync.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/one-command-pr-ready-closure.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/runtime-info.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-candidate-generator.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-catalog-generator.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "source-alignment-review",
+        "reason": "局所変更のつもりで責務境界を跨ぎ、別flowや共有serviceの挙動を壊す可能性がある。"
+      },
+      "implementation_steps": [
+        {
+          "id": "read-sources",
+          "title": "正本を読む",
+          "detail": "Story、Spec、Architecture/ADRの参照を読み、要件・受け入れ基準・境界判断を並べる"
+        },
+        {
+          "id": "read-graph",
+          "title": "Graph影響範囲を読む",
+          "detail": "Graphifyのmatched/related/hub/communityを読み、実際の影響範囲を確認する"
+        },
+        {
+          "id": "classify-mismatch",
+          "title": "不整合を分類する",
+          "detail": "Storyが誤り、Specが誤り、ADRが不足、コードが意図外のどれかを判定する"
+        },
+        {
+          "id": "record-outcome",
+          "title": "判断を記録する",
+          "detail": "修正する場合はタスク化し、正しい場合はレビュー済み理由を正本またはPR本文へ残す"
+        }
+      ],
+      "acceptance_criteria": [
+        "各潜在バグ候補について、Story/Spec/ADR/コードのどれを修正するか判断している",
+        "Graphifyのhub/communityを読んだ上で影響範囲を説明できる",
+        "要件が正しい場合はレビュー済み理由を正本またはPR本文に残している"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [
+        {
+          "id": "story-vibepro-one-command-pr-ready-closure-cross_community_without_architecture",
+          "story_id": "story-vibepro-one-command-pr-ready-closure",
+          "title": "1コマンド自律実装を実Runtime E2Eで閉じる",
+          "type": "cross_community_without_architecture",
+          "severity": "high",
+          "reason": "Graphify上で複数communityに跨るが、Architecture/ADR正本が未確定。",
+          "potential_bug": "局所変更のつもりで責務境界を跨ぎ、別flowや共有serviceの挙動を壊す可能性がある。",
+          "recommended_review": "hub/related fileを先に読み、ADRが必要な境界変更か、Storyをflow単位に分割すべきか判断する。",
+          "evidence": {
+            "story_source_status": "present",
+            "spec_status": "story_backed",
+            "architecture_status": "implicit",
+            "source_type": "config_story",
+            "confidence": "high",
+            "open_questions": [],
+            "story_contract": {
+              "status": "ready",
+              "story_type": "quality_hardening",
+              "unresolved_checks": []
+            },
+            "docs": [
+              "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md"
+            ],
+            "files": [
+              "src/agent-runtime-adapter.js",
+              "src/agent-runtime-connectors.js",
+              "src/code-quality-scanner.js",
+              "src/nocodb-story-sync.js",
+              "src/one-command-pr-ready-closure.js",
+              "src/runtime-info.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-run-portfolio.js",
+              "src/story-task-generator.js"
+            ]
+          },
+          "refs": {
+            "story": [
+              "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md"
+            ],
+            "spec": [],
+            "architecture": []
+          },
+          "graph": {
+            "matched_files": [
+              "src/agent-runtime-adapter.js",
+              "src/agent-runtime-connectors.js",
+              "src/code-quality-scanner.js",
+              "src/nocodb-story-sync.js",
+              "src/one-command-pr-ready-closure.js",
+              "src/runtime-info.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-run-portfolio.js",
+              "src/story-task-generator.js"
+            ],
+            "related_files": [
+              "src/cli.js",
+              "src/workspace.js",
+              "src/diagnostic-engine.js",
+              "src/run-context-capsule.js",
+              "src/artifact-routing.js",
+              "test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js",
+              "src/doctor.js",
+              "src/guarded-run-session.js"
+            ],
+            "hub_nodes": [
+              {
+                "id": "src_cli_runcli",
+                "label": "runCli()",
+                "source_file": "src/cli.js",
+                "community": 1,
+                "degree": 341
+              },
+              {
+                "id": "src_story_catalog_generator_js",
+                "label": "story-catalog-generator.js",
+                "source_file": "src/story-catalog-generator.js",
+                "community": 8,
+                "degree": 128
+              },
+              {
+                "id": "src_story_manager_js",
+                "label": "story-manager.js",
+                "source_file": "src/story-manager.js",
+                "community": 13,
+                "degree": 126
+              },
+              {
+                "id": "src_diagnostic_engine_rundiagnosis",
+                "label": "runDiagnosis()",
+                "source_file": "src/diagnostic-engine.js",
+                "community": 9,
+                "degree": 44
+              },
+              {
+                "id": "src_story_run_portfolio_js",
+                "label": "story-run-portfolio.js",
+                "source_file": "src/story-run-portfolio.js",
+                "community": 38,
+                "degree": 35
+              }
+            ],
+            "affected_communities": [
+              {
+                "id": 8,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 136,
+                "edge_count": 276
+              },
+              {
+                "id": 16,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 52,
+                "edge_count": 128
+              },
+              {
+                "id": 3,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 27,
+                "edge_count": 95
+              },
+              {
+                "id": 13,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 121,
+                "edge_count": 284
+              },
+              {
+                "id": 38,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 37,
+                "edge_count": 107
+              },
+              {
+                "id": 4,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 35,
+                "edge_count": 85
+              },
+              {
+                "id": 40,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 29,
+                "edge_count": 51
+              },
+              {
+                "id": 17,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 20,
+                "edge_count": 53
+              },
+              {
+                "id": 19,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 13,
+                "edge_count": 36
+              },
+              {
+                "id": 29,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 10,
+                "edge_count": 19
+              },
+              {
+                "id": 0,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 3
+              },
+              {
+                "id": 1,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 30
+              },
+              {
+                "id": 22,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 7
+              },
+              {
+                "id": 32,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 7
+              },
+              {
+                "id": 9,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 10
+              }
+            ],
+            "related_edge_count": 1125,
+            "impact_score": 0.0987,
+            "cross_community": true
+          },
+          "execution_policy": "proposal_only",
+          "mutates_repository": false
+        }
+      ],
+      "graph_context": {
+        "matched_route_count": 0,
+        "target_file_count": 12,
+        "matched_file_count": 12,
+        "matched_files": [
+          "src/agent-runtime-adapter.js",
+          "src/agent-runtime-connectors.js",
+          "src/code-quality-scanner.js",
+          "src/nocodb-story-sync.js",
+          "src/one-command-pr-ready-closure.js",
+          "src/runtime-info.js",
+          "src/story-candidate-generator.js",
+          "src/story-catalog-generator.js",
+          "src/story-html.js",
+          "src/story-manager.js",
+          "src/story-run-portfolio.js",
+          "src/story-task-generator.js"
+        ],
+        "unmatched_files": [],
+        "matched_node_count": 485,
+        "affected_communities": [
+          {
+            "id": 8,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 136,
+            "edge_count": 276
+          },
+          {
+            "id": 16,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 52,
+            "edge_count": 128
+          },
+          {
+            "id": 3,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 27,
+            "edge_count": 95
+          },
+          {
+            "id": 13,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 121,
+            "edge_count": 284
+          },
+          {
+            "id": 38,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 37,
+            "edge_count": 107
+          },
+          {
+            "id": 4,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 35,
+            "edge_count": 85
+          },
+          {
+            "id": 40,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 29,
+            "edge_count": 51
+          },
+          {
+            "id": 17,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 20,
+            "edge_count": 53
+          },
+          {
+            "id": 19,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 13,
+            "edge_count": 36
+          },
+          {
+            "id": 29,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 10,
+            "edge_count": 19
+          },
+          {
+            "id": 0,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 3
+          },
+          {
+            "id": 1,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 30
+          },
+          {
+            "id": 22,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 7
+          },
+          {
+            "id": 32,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 7
+          },
+          {
+            "id": 9,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 10
+          }
+        ],
+        "hub_nodes": [
+          {
+            "id": "src_cli_runcli",
+            "label": "runCli()",
+            "source_file": "src/cli.js",
+            "community": 1,
+            "degree": 341
+          },
+          {
+            "id": "src_story_catalog_generator_js",
+            "label": "story-catalog-generator.js",
+            "source_file": "src/story-catalog-generator.js",
+            "community": 8,
+            "degree": 128
+          },
+          {
+            "id": "src_story_manager_js",
+            "label": "story-manager.js",
+            "source_file": "src/story-manager.js",
+            "community": 13,
+            "degree": 126
+          },
+          {
+            "id": "src_diagnostic_engine_rundiagnosis",
+            "label": "runDiagnosis()",
+            "source_file": "src/diagnostic-engine.js",
+            "community": 9,
+            "degree": 44
+          },
+          {
+            "id": "src_story_run_portfolio_js",
+            "label": "story-run-portfolio.js",
+            "source_file": "src/story-run-portfolio.js",
+            "community": 38,
+            "degree": 35
+          }
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/workspace.js",
+          "src/diagnostic-engine.js",
+          "src/run-context-capsule.js",
+          "src/artifact-routing.js",
+          "test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js",
+          "src/doctor.js",
+          "src/guarded-run-session.js"
+        ],
+        "related_edge_count": 1125,
+        "impact_score": 0.0987,
+        "community_span": 15,
+        "cross_community": true
+      },
+      "pre_fix_briefing": null,
+      "completed_at": "2026-07-24T01:39:07.962Z",
+      "completion_evidence": {
+        "run_id": "2026-07-24T013903Z",
+        "reason": "source story-vibepro-one-command-pr-ready-closure-source-alignment-review was not detected in the latest diagnosis"
+      }
+    },
+    {
+      "id": "VP-TASK-ARCH-001",
+      "source_type": "action_candidate",
+      "source_id": "VP-ACTION-ARCH-001",
+      "finding_id": "VP-ARCH-001",
+      "title": "responsibility split campaignをStory化する",
+      "priority": "medium",
+      "status": "todo",
+      "order": 70,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 1,
+      "target_files": [
+        "src/session-efficiency-audit.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "src/session-efficiency-audit.js",
+          "reason": "リファクタリングcampaign VP-CAMPAIGN-REF-001 の対象ファイル"
+        },
+        {
+          "file": "src/cli.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        },
+        {
+          "file": "src/workspace.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        },
+        {
+          "file": "src/run-context-capsule.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        },
+        {
+          "file": "src/run-lineage.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        },
+        {
+          "file": "src/evidence-cost-budget.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        },
+        {
+          "file": "src/merge-manager.js",
+          "reason": "Graphifyで対象ファイルと直接つながる周辺ファイル"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "split-runtime-boundaries",
+        "reason": "責務混在候補は重複削減より先に、認可、DB、検証、外部I/Oの境界を固定する価値が高い。"
+      },
+      "implementation_steps": [
+        {
+          "id": "inventory-current-behavior",
+          "title": "現在の挙動を棚卸しする",
+          "detail": "対象ファイルごとにquery条件、返却shape、fallback、例外処理、呼び出し元期待値を確認する。Graphifyの関連ファイルがある場合は先に呼び出し方向と共有hubを確認する。"
+        },
+        {
+          "id": "decide-abstraction-boundary",
+          "title": "共通境界を決める",
+          "detail": "同じ用途なら共通service/helper/repositoryへ集約する。複数communityに跨る場合は、共通化前にflow単位の責務差分をStory内で分ける。"
+        },
+        {
+          "id": "replace-call-sites",
+          "title": "呼び出し元を置き換える",
+          "detail": "既存の返却shapeを保ったまま、対象箇所を共通境界へ接続する。"
+        },
+        {
+          "id": "rerun-diagnosis",
+          "title": "診断を再実行する",
+          "detail": "型検査・関連テスト・VibePro診断で対象機会が減ったこと、Graphify上の影響範囲外を不用意に変更していないことを確認する。"
+        }
+      ],
+      "acceptance_criteria": [
+        "campaign内の機会がStory単位として実装順に並んでいる。",
+        "最初に直す機会と後続に回す機会の判断根拠がscore/reasonで説明できる。",
+        "修正後のVibePro診断で対象findingまたはopportunityの件数差分を確認できる。",
+        "混在していた責務が読み取れる単位へ分離されている。",
+        "既存テストまたは型検査で入出力互換性が確認されている。",
+        "VibePro診断で責務混在候補の根拠が減っている。"
+      ],
+      "graph_context": {
+        "matched_route_count": 0,
+        "target_file_count": 1,
+        "matched_file_count": 1,
+        "matched_files": [
+          "src/session-efficiency-audit.js"
+        ],
+        "unmatched_files": [],
+        "matched_node_count": 111,
+        "affected_communities": [
+          {
+            "id": 15,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 111,
+            "edge_count": 275
+          }
+        ],
+        "hub_nodes": [
+          {
+            "id": "src_session_efficiency_audit_js",
+            "label": "session-efficiency-audit.js",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 15,
+            "degree": 110
+          },
+          {
+            "id": "src_session_efficiency_audit_collectsessionefficiencyaudit",
+            "label": "collectSessionEfficiencyAudit()",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 15,
+            "degree": 20
+          },
+          {
+            "id": "src_session_efficiency_audit_parsecodexsessionjsonlfiles",
+            "label": "parseCodexSessionJsonlFiles()",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 15,
+            "degree": 14
+          },
+          {
+            "id": "src_session_efficiency_audit_collectstoryartifactinventory",
+            "label": "collectStoryArtifactInventory()",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 15,
+            "degree": 10
+          },
+          {
+            "id": "src_session_efficiency_audit_buildsessionattribution",
+            "label": "buildSessionAttribution()",
+            "source_file": "src/session-efficiency-audit.js",
+            "community": 15,
+            "degree": 9
+          }
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/workspace.js",
+          "src/run-context-capsule.js",
+          "src/run-lineage.js",
+          "src/evidence-cost-budget.js",
+          "src/merge-manager.js"
+        ],
+        "related_edge_count": 275,
+        "impact_score": 0.0234,
+        "community_span": 1,
+        "cross_community": false
+      },
+      "pre_fix_briefing": {
+        "opportunity": {
+          "id": "VP-OPP-ARCH-019",
+          "source": "responsibility_hotspot",
+          "refactoring_intent": "responsibility_split",
+          "rank": 1,
+          "score": {
+            "total": 51,
+            "components": {
+              "security_proximity": 25,
+              "blast_radius": 6,
+              "confidence": 10,
+              "story_fit": 5,
+              "source": 5
+            },
+            "reasons": [
+              "security_proximity:auth_or_identity",
+              "confidence:medium"
+            ]
+          },
+          "suggested_abstraction": {
+            "id": "split-runtime-responsibilities",
+            "label": "runtime責務を境界ごとに分離する",
+            "target_shape": "route/action/service/helpers"
+          },
+          "evidence_refs": {
+            "file": "src/session-efficiency-audit.js",
+            "line_count": 2750,
+            "signals": [
+              "auth",
+              "validation",
+              "environment"
+            ],
+            "examples": []
+          }
+        },
+        "campaign": {
+          "id": "VP-CAMPAIGN-REF-001",
+          "rank": 1,
+          "title": "responsibility split campaignをStory化する",
+          "opportunity_ids": [
+            "VP-OPP-ARCH-019"
+          ],
+          "expected_diagnostic_delta": {
+            "duplicate_query_shapes": 0,
+            "responsibility_hotspots": 1
+          }
+        },
+        "target_files": [
+          "src/session-efficiency-audit.js"
+        ],
+        "graph_context": {
+          "matched_route_count": 0,
+          "target_file_count": 1,
+          "matched_file_count": 1,
+          "matched_files": [
+            "src/session-efficiency-audit.js"
+          ],
+          "unmatched_files": [],
+          "matched_node_count": 111,
+          "affected_communities": [
+            {
+              "id": 15,
+              "route_count": 0,
+              "file_count": 1,
+              "node_count": 111,
+              "edge_count": 275
+            }
+          ],
+          "hub_nodes": [
+            {
+              "id": "src_session_efficiency_audit_js",
+              "label": "session-efficiency-audit.js",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 15,
+              "degree": 110
+            },
+            {
+              "id": "src_session_efficiency_audit_collectsessionefficiencyaudit",
+              "label": "collectSessionEfficiencyAudit()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 15,
+              "degree": 20
+            },
+            {
+              "id": "src_session_efficiency_audit_parsecodexsessionjsonlfiles",
+              "label": "parseCodexSessionJsonlFiles()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 15,
+              "degree": 14
+            },
+            {
+              "id": "src_session_efficiency_audit_collectstoryartifactinventory",
+              "label": "collectStoryArtifactInventory()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 15,
+              "degree": 10
+            },
+            {
+              "id": "src_session_efficiency_audit_buildsessionattribution",
+              "label": "buildSessionAttribution()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 15,
+              "degree": 9
+            }
+          ],
+          "related_files": [
+            "src/cli.js",
+            "src/workspace.js",
+            "src/run-context-capsule.js",
+            "src/run-lineage.js",
+            "src/evidence-cost-budget.js",
+            "src/merge-manager.js"
+          ],
+          "related_edge_count": 275,
+          "impact_score": 0.0234,
+          "community_span": 1,
+          "cross_community": false
+        },
+        "investigation_scope": {
+          "target_files": [
+            "src/session-efficiency-audit.js"
+          ],
+          "read_first_files": [
+            "src/session-efficiency-audit.js",
+            "src/cli.js",
+            "src/workspace.js",
+            "src/run-context-capsule.js",
+            "src/run-lineage.js",
+            "src/evidence-cost-budget.js",
+            "src/merge-manager.js"
+          ],
+          "graph_matched_files": [
+            "src/session-efficiency-audit.js"
+          ],
+          "graph_unmatched_files": [],
+          "related_files": [
+            "src/cli.js",
+            "src/workspace.js",
+            "src/run-context-capsule.js",
+            "src/run-lineage.js",
+            "src/evidence-cost-budget.js",
+            "src/merge-manager.js"
+          ],
+          "hub_nodes": [
+            {
+              "id": "src_session_efficiency_audit_js",
+              "label": "session-efficiency-audit.js",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 15,
+              "degree": 110
+            },
+            {
+              "id": "src_session_efficiency_audit_collectsessionefficiencyaudit",
+              "label": "collectSessionEfficiencyAudit()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 15,
+              "degree": 20
+            },
+            {
+              "id": "src_session_efficiency_audit_parsecodexsessionjsonlfiles",
+              "label": "parseCodexSessionJsonlFiles()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 15,
+              "degree": 14
+            },
+            {
+              "id": "src_session_efficiency_audit_collectstoryartifactinventory",
+              "label": "collectStoryArtifactInventory()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 15,
+              "degree": 10
+            },
+            {
+              "id": "src_session_efficiency_audit_buildsessionattribution",
+              "label": "buildSessionAttribution()",
+              "source_file": "src/session-efficiency-audit.js",
+              "community": 15,
+              "degree": 9
+            }
+          ],
+          "affected_communities": [
+            {
+              "id": 15,
+              "route_count": 0,
+              "file_count": 1,
+              "node_count": 111,
+              "edge_count": 275
+            }
+          ],
+          "community_span": 1,
+          "cross_community": false,
+          "guidance": "同一community内の影響が中心のため、hub/related fileを先に読んで共有境界を決める。"
+        },
+        "invariants": [
+          "APIまたはUIから見える入出力を変えない。",
+          "認可順序とエラーハンドリングを分離前後で維持する。",
+          "副作用を呼び出すタイミングを変えない。"
+        ],
+        "evidence_examples": [],
+        "strategy_options": [
+          {
+            "id": "split-runtime-boundaries",
+            "label": "方針A: runtime責務をroute/action/service/helperへ分離する",
+            "target_count": 1,
+            "candidate_files": [
+              "src/session-efficiency-audit.js"
+            ],
+            "benefits": [
+              "認可、DB、検証、外部I/Oの責務境界を読みやすくできる",
+              "副作用の順序をレビューしやすくなる"
+            ],
+            "cautions": [
+              "入出力と副作用タイミングを先に固定する必要がある"
+            ]
+          },
+          {
+            "id": "extract-side-effect-boundary",
+            "label": "方針B: 外部I/Oや通知など副作用境界から切り出す",
+            "target_count": 1,
+            "candidate_files": [
+              "src/session-efficiency-audit.js"
+            ],
+            "benefits": [
+              "大きなファイルを段階的に小さくできる",
+              "テストしづらい副作用を隔離できる"
+            ],
+            "cautions": [
+              "DB更新やレスポンス整形との順序を変えない確認が必要"
+            ]
+          }
+        ],
+        "recommended_strategy": {
+          "id": "split-runtime-boundaries",
+          "reason": "責務混在候補は重複削減より先に、認可、DB、検証、外部I/Oの境界を固定する価値が高い。"
+        }
+      }
+    }
+  ]
+}

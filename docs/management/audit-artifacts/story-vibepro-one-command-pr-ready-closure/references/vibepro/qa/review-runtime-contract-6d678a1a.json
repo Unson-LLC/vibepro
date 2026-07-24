@@ -1,0 +1,55 @@
+{
+  "status": "pass",
+  "summary": "Both prior runtime-contract findings are resolved at frozen HEAD 6d678a1ae53844703e3c42085b9eddbbbc89ca32: the public guarded Run command path now proves persisted run, same-Run resume, human status rendering, and operator cancellation in a real Git fixture, and target architecture conformance was regenerated and independently rerun at the exact HEAD with 80 violations versus the current origin/main baseline of 81.",
+  "inspection_summary": "reviewed final frozen-HEAD runtime contract",
+  "inspection_inputs": [
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/target-model.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    "bin/vibepro.js",
+    "src/cli.js",
+    "src/guarded-run-session.js",
+    "src/one-command-pr-ready-closure.js",
+    "src/agent-runtime-adapter.js",
+    "src/agent-runtime-connectors.js",
+    "src/independent-review-orchestrator.js",
+    "src/safe-action-orchestrator.js",
+    "src/guarded-stop-codes.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "test/guarded-run-session.test.js",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/agent-runtime-adapter.test.js",
+    "test/independent-review-orchestrator.test.js",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+    ".vibepro/qa/one-command-runtime-e2e.json",
+    ".vibepro/qa/one-command-targeted-unit.json",
+    ".vibepro/qa/one-command-integration.json",
+    ".vibepro/qa/one-command-typecheck.json",
+    ".vibepro/qa/one-command-conformance-6d678a1a.json",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/architecture_spec/review-result-architecture_boundary.json",
+    "command: node --test test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "command: node bin/vibepro.js architecture conformance . --json",
+    "command: git rev-parse HEAD",
+    "command: git rev-parse origin/main"
+  ],
+  "inspection_evidence": ".vibepro/qa/one-command-runtime-e2e.json records 5/5 at strict HEAD 6d678a1ae53844703e3c42085b9eddbbbc89ca32; independent rerun of the E2E file passed 5/5 including S-004; .vibepro/qa/one-command-conformance-6d678a1a.json and an independent exact-HEAD conformance rerun report 80 violations, while origin/main 236937dfe33eb407f912086d54bfbd3d7d699874 remains the recorded 81-violation baseline.",
+  "judgment_delta": [
+    "Prior needs_changes finding runtime-e2e-matrix-does-not-cross-guarded-run-boundary -> resolved because S-004 invokes the actual runCli command router against a real Git repository and persists one guarded Run through execute run, execute resume, execute status human rendering, and execute cancel; the path-specific S-002 producer matrix and existing guarded-run tests compose with this shared public transport proof rather than relying only on direct owner calls.",
+    "Concern that importing runCli might still be an isolated unit simulation -> rejected because bin/vibepro.js is a thin delegating entrypoint to the same exported runCli composition root, and S-004 crosses CLI parsing, run-session orchestration, filesystem persistence, reload, rendering, transition journal, and cancellation boundaries with assertions that the previous direct-owner test could not satisfy.",
+    "Prior needs_changes finding current-head-conformance-evidence-is-stale -> resolved because the 6d678a1a-named artifact was produced after the frozen commit and the conformance command was independently rerun while git rev-parse HEAD returned 6d678a1ae53844703e3c42085b9eddbbbc89ca32; both results report 80 violations with no regression from the current origin/main baseline of 81.",
+    "Regression concern about reverse CLI ownership or duplicated predecessor implementations -> rejected because production run-session modules have no import of src/cli.js, CLI remains the outer composition adapter, and existing createProductionRuntimeCoordinator and createIndependentReviewActionRunner owners are composed rather than reimplemented."
+  ],
+  "findings": [],
+  "lenses": {
+    "regression_guard": {
+      "status": "pass",
+      "detail": "Strict-HEAD verification records E2E 5/5, integration 4/4, unit 254/254, and typecheck pass. The added commit changes only the E2E test surface. The exact-HEAD conformance rerun remains at 80 violations versus origin/main's 81, and production authority boundaries, legacy fallback, connector ownership, and independent-review ownership remain unchanged."
+    },
+    "path_surface_coverage": {
+      "status": "pass",
+      "detail": "The producer matrix covers success, decision, verification failure, repair/no-progress, quota, timeout, CI pending, and cancellation outcomes, while S-004 proves their shared guarded transport surface through public CLI routing, persisted state.json, same-run resume and retry journal, JSON results, human status output, next-command rendering, and terminal operator cancellation. Runtime-specific recovery fields remain separately asserted in guarded-run and adapter tests."
+    }
+  }
+}

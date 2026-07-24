@@ -1,0 +1,217 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "One-command closure preserves run-session ownership and reuses the merged runtime and independent-review owners",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected repaired Story, Architecture, Spec, test plan, target conformance, production run-session/runtime/review source, current-head validation, typed-stop dogfood state, and predecessor SSOTs at af15adaf",
+    "evidence": ".vibepro/qa/review-architecture-af15adaf.json; .vibepro/qa/one-command-conformance-af15adaf.json; .vibepro/qa/one-command-targeted-af15adaf.json; .vibepro/qa/one-command-e2e-af15adaf.json; .vibepro/executions/story-vibepro-one-command-pr-ready-closure/runs/run-20260723T121501Z-793c40ad/state.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+      "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "docs/architecture/target-model.json",
+      "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+      "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+      "src/guarded-run-session.js",
+      "src/one-command-pr-ready-closure.js",
+      "src/agent-runtime-adapter.js",
+      "src/agent-runtime-connectors.js",
+      "src/independent-review-orchestrator.js",
+      "src/safe-action-orchestrator.js",
+      "src/cli.js",
+      "test/one-command-pr-ready-closure.test.js",
+      "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "A one-command facade could create a CLI reverse dependency or duplicate predecessor owners -> exact source and conformance inspection shows run-session ownership, callback composition, predecessor reuse, and no new reverse edge"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "af15adafa679545edadf5b053e8842570f7f842b",
+    "current_head_sha": "af15adafa679545edadf5b053e8842570f7f842b",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "af15adafa679545edadf5b053e8842570f7f842b",
+      "dirty": true,
+      "dirty_fingerprint": " M .vibepro/config.json",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M .vibepro/config.json",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T21:02:29.971Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-23T21:11:04.008Z",
+  "git_context": {
+    "head_sha": "af15adafa679545edadf5b053e8842570f7f842b",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "cb009d842fd536bd7f1a503f825613ca3ef34be8e3859cdef18e13d47b80bb9c",
+    "user_status_fingerprint_hash": "cb009d842fd536bd7f1a503f825613ca3ef34be8e3859cdef18e13d47b80bb9c",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T21:11:03.986Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "workflow-heavy preflight must remain bound to the frozen current HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "af15adafa679545edadf5b053e8842570f7f842b",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "62f7b25cbda9440e3503673f5e3a23578ae699499c132a64b9125465c0e49b27",
+        "size": 10123
+      },
+      {
+        "path": "docs/architecture/target-model.json",
+        "sha256": "28f744bff90edc3c6c70a76ba83d8c573410dda44b19ead46c568671ee8985ef",
+        "size": 8282
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "f55dbaf9421c26f8f3771725f76a1ab3bf59c47c974a409292a8ace2dce1853a",
+        "size": 7706
+      },
+      {
+        "path": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+        "sha256": "58e996d8476306c2398d0e90c5761503b9f368789a605ee5496505a337cb4d75",
+        "size": 8055
+      },
+      {
+        "path": "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+        "sha256": "803536e2ec8aef4c93395f215145ac0f2214fc6cdc8c02efaede2de256cad160",
+        "size": 12002
+      },
+      {
+        "path": "src/agent-runtime-adapter.js",
+        "sha256": "d17f286a9a42c65f8649e8d07c7932a2099c12098db82a7e68efc021b0946a85",
+        "size": 43840
+      },
+      {
+        "path": "src/agent-runtime-connectors.js",
+        "sha256": "8408b47801cc6112e721a835824ff58793d543f03be8051788c3840e17f0333e",
+        "size": 12979
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "ffcf2da2364c5f564acd2d1535abc167ae7210c482ca30f116fa03cdd0b2897d",
+        "size": 224714
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "fadf01bcce5b04fd6975f8d6b756b1d4a8e7e15a46e4734e8b99177577511494",
+        "size": 114569
+      },
+      {
+        "path": "src/independent-review-orchestrator.js",
+        "sha256": "820d06a9a049c4b10845cfa561563a51563f3ab5c12cb53a4ac544c4ac99f456",
+        "size": 26867
+      },
+      {
+        "path": "src/one-command-pr-ready-closure.js",
+        "sha256": "f06c811a7e01853bba95c9d7d807bc102153dc4c3292a5251a4c9d26645f68fd",
+        "size": 28337
+      },
+      {
+        "path": "src/safe-action-orchestrator.js",
+        "sha256": "3d83181335666ee470a6cd4b8daeaf9e339c2c9eea10bfd19d594299229a8735",
+        "size": 19565
+      },
+      {
+        "path": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+        "sha256": "65a9a1f2f413fd08eff9b619dcb21f6ceec483fe4883e4b435123ee9ef5580b5",
+        "size": 25565
+      },
+      {
+        "path": "test/one-command-pr-ready-closure.test.js",
+        "sha256": "766bf11ae15e69d2af8a74d39ba6c8cbe15683c2ec678b5aabad6a7f13ef0e4d",
+        "size": 21086
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "c00d2af7c70b4599973f2337f57487220e0176dceccd5539936d7ac791990115"
+  },
+  "source_fingerprint": "4c0682cd7bf73fb77bca9bb33e7b6f6c647b219809613f16fc6084a8479e9ef2",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/closure_arch_af15",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": "low",
+    "thread_id": "/root/closure_arch_af15",
+    "session_id": "/root/closure_arch_af15",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/review-architecture-af15adaf.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/review-architecture-af15adaf.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "/root/closure_arch_af15",
+      "implementation_session_id": "019f63f2-cdd9-7c63-9bc3-fb9925a3720d",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

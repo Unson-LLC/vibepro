@@ -1,0 +1,80 @@
+{
+  "status": "needs_changes",
+  "head_sha": "56d69700700016747741657b3af580bab5991777",
+  "summary": "Exact-HEAD implementation and verification materially close the earlier gate-evidence gaps: the public CLI E2E now creates the managed worktree, prepares a missing artifact, commits implementation and repair, persists decision and verification-stop resume paths, performs fresh independent review, and reaches current-HEAD final prepare while Codex implementation dispatch is locally contained. Gate Evidence cannot pass yet because the authoritative validation-sequencing artifact marks all five phases invalidated, all current-HEAD acceptance and judgment adjudications are still absent, and pr-prepare reports stale review/artifact consistency plus unresolved critical gates. Rebind the sequence, complete current-HEAD independent adjudication and reviews without waiver, regenerate pr-prepare, and rerun this strict final review.",
+  "inspection_summary": "Inspected clean exact HEAD, the gate review request, Story/Architecture/Spec/topology replay, changed runtime and E2E code, exact-HEAD verification/conformance/review artifacts, validation sequence, review lifecycle, adjudication ledgers, split/decision/senior-gap outputs, and current pr-prepare; reran the focused runtime, connector, review-orchestration, closure, and E2E tests successfully and verified the installed Codex CLI supports the generated containment flags.",
+  "inspection_evidence": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+  "inspection_inputs": [
+    "git rev-parse HEAD",
+    "git status --short",
+    "git diff e64469202935397c70b215d3ef069f10809128a1..56d69700700016747741657b3af580bab5991777",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-request-gate_evidence.md",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-execution-topology-replay.md",
+    "src/agent-runtime-connectors.js",
+    "src/codex-runtime-bridge.js",
+    "src/guarded-run-session.js",
+    "src/independent-review-orchestrator.js",
+    "src/one-command-pr-ready-closure.js",
+    "test/agent-runtime-connectors.test.js",
+    "test/guarded-run-session.test.js",
+    "test/independent-review-orchestrator.test.js",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    ".vibepro/qa/targeted-validation-56d69700.json",
+    ".vibepro/qa/build-56d69700.json",
+    ".vibepro/qa/typecheck-56d69700.json",
+    ".vibepro/qa/integration-56d69700.json",
+    ".vibepro/qa/e2e-56d69700.json",
+    ".vibepro/qa/full-suite-56d69700.json",
+    ".vibepro/qa/conformance-56d69700.json",
+    ".vibepro/qa/review-architecture-boundary-56d69700.json",
+    ".vibepro/qa/review-runtime-contract-56d69700.json",
+    ".vibepro/validation-sequencing/story-vibepro-one-command-pr-ready-closure/state.json",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/lifecycle.json",
+    ".vibepro/adjudication/story-vibepro-one-command-pr-ready-closure/adjudication.json",
+    ".vibepro/adjudication/story-vibepro-one-command-pr-ready-closure/judgment-adjudication.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/decision-index.summary.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/split-plan.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/senior-gap-judgment.json",
+    "node bin/vibepro.js pr prepare . --story-id story-vibepro-one-command-pr-ready-closure --summary-json",
+    "node --test test/guarded-run-session.test.js test/one-command-pr-ready-closure.test.js test/agent-runtime-connectors.test.js test/independent-review-orchestrator.test.js test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "codex exec --help",
+    "codex --version"
+  ],
+  "judgment_delta": [
+    "Initial concern: AC-2 evidence still began after worktree and artifact preparation -> Final conclusion: S-001 now enters through the public CLI, creates the required managed worktree, detects and commits a missing artifact, then commits implementation and repair through the production action owners.",
+    "Initial concern: AC-4 external-side-effect exclusion was prompt-only -> Final conclusion: implementation and repair now require local_workspace_only, and the Codex connector advertises it only with workspace-write sandboxing, network disabled, approval_policy=never, and ignored user config; focused tests and installed CLI help confirm the emitted command surface is supported.",
+    "Initial concern: AC-5/AC-6/AC-7 stop, decision, resume, provider, and recovery paths were incomplete -> Final conclusion: exact-HEAD source and E2E now persist runtime, seven-field human decision, verification failure, recovery command, provider, required/missing capabilities, repair, re-review, and pr_ready transitions.",
+    "regression_guard: the new happy path might hide legacy/runtime regressions -> Final conclusion: exact-HEAD targeted 290/290, integration 4/4, E2E 4/4, full suite 1903/1903, conformance improvement 81 to 80 violations, and the independently rerun focused suite all pass; no code-level regression finding remains for this role.",
+    "path_surface_coverage: source behavior, generated evidence, and review-facing artifacts might disagree -> Final conclusion: source/tests/Story/Architecture/Spec agree on the runtime contract, but validation-sequencing, adjudication, review lifecycle, split recommendation, and current pr-prepare still disagree with a final-pass claim and correctly keep readiness false.",
+    "Initial expectation: exact-HEAD command artifacts might be enough to pass Gate Evidence -> Final decision: needs_changes because the authoritative sequence is invalidated, exact-HEAD adjudication is absent, artifact consistency is stale, required gate reviews remain running or stale, and no waiver exists."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-evidence-validation-sequence-invalidated",
+      "detail": "The authoritative validation sequence marks targeted_validation, preflight_review, code_frozen, expensive_verification, and final_review all status=invalidated, leaves frozen_binding=null, and gate:validation_sequencing reports every phase incomplete. This remains true even though the phase entries and proposed binding name exact HEAD 56d69700, which means standalone exact-HEAD QA files cannot establish the required ordered freeze/verify/review lifecycle. Re-record or repair the sequence so the same frozen binding advances through all five phases, then regenerate pr-prepare."
+    },
+    {
+      "severity": "high",
+      "id": "gate-evidence-current-head-adjudication-missing",
+      "detail": "gate:evidence_adjudication reports 0/8 fresh AC verdicts and gate:judgment_dag_adjudication reports 0/16 fresh judgment verdicts at 56d69700. The ledgers contain older e6446920 and 3da7bb24 verdicts, including superseded not_demonstrated findings, but adjudication is strict current-HEAD and fail-closed. Dispatch fresh independent adjudicators after the review surface is frozen and record all AC and judgment items at 56d69700; do not treat the older verdicts or generated prepare requests as current proof."
+    },
+    {
+      "severity": "high",
+      "id": "gate-evidence-artifact-and-review-consistency",
+      "detail": "Current pr-prepare is overall needs_verification with ready_for_pr_create=false and nine critical unresolved gates. gate:artifact_consistency reports eight stale or unverified review/verification artifacts; gate_evidence and release_risk lifecycles are still running, while spec_consistency, code_spec_alignment, and product_requirement records have HEAD mismatch. Close and record the current gate reviewers, refresh the stale required review roles as directed, rerun pr-prepare, and verify artifact_consistency plus Agent Review clear on the same clean HEAD."
+    },
+    {
+      "severity": "medium",
+      "id": "gate-evidence-split-and-authority-boundary",
+      "detail": "The generated split plan is split_recommended across requirements-ssot, runtime-behavior, e2e-gate, and misc-follow-up, while responsibility_authority, common_judgment_spine, data_state, execution_topology, and senior-gap gates remain unresolved. This is not a code defect in the reviewed runtime contract, but a final Gate pass would ignore the machine-readable adjudication boundary. Either follow the split recommendation or record an explicit accepted non-split decision with the required owner/evidence; no waiver is currently recorded."
+    }
+  ]
+}

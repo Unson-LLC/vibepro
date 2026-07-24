@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "head_sha": "56d69700700016747741657b3af580bab5991777",
+  "kind": "e2e",
+  "status": "pass",
+  "tests": 4,
+  "passed": 4,
+  "failed": 0,
+  "exit_code": 0,
+  "observed": {
+    "public_cli": true,
+    "production_action_owners": true,
+    "implementation_commit": true,
+    "independent_review_needs_changes": true,
+    "repair_commit": true,
+    "fresh_independent_review_pass": true,
+    "current_head_final_prepare": true,
+    "typed_stop_resume_matrix": true,
+    "pre_pr_predecessor_prs": [372, 377, 382],
+    "forbidden_autonomous_actions_absent": ["pr_create", "merge", "waiver"]
+  },
+  "command": "node --test test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+}

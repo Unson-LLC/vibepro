@@ -1,0 +1,394 @@
+TAP version 13
+# Subtest: OCR-S-5 operator cancel contains an active implementation dispatch and wins a stale orchestration poll
+ok 1 - OCR-S-5 operator cancel contains an active implementation dispatch and wins a stale orchestration poll
+  ---
+  duration_ms: 491.61775
+  type: 'test'
+  ...
+# Subtest: AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run session
+ok 2 - AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run session
+  ---
+  duration_ms: 305.848625
+  type: 'test'
+  ...
+# Subtest: AAD-S-3 changed-HEAD checkpoint resumes in a recreated session without replaying implement
+ok 3 - AAD-S-3 changed-HEAD checkpoint resumes in a recreated session without replaying implement
+  ---
+  duration_ms: 814.49825
+  type: 'test'
+  ...
+# Subtest: SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop
+ok 4 - SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop
+  ---
+  duration_ms: 681.820125
+  type: 'test'
+  ...
+# Subtest: NBA-S-7 production orchestration persists an escape decision after two no-progress checkpoints
+ok 5 - NBA-S-7 production orchestration persists an escape decision after two no-progress checkpoints
+  ---
+  duration_ms: 657.216333
+  type: 'test'
+  ...
+# Subtest: HDC-S-3 resumed orchestration preserves its cursor across an action failure and restart
+ok 6 - HDC-S-3 resumed orchestration preserves its cursor across an action failure and restart
+  ---
+  duration_ms: 915.737708
+  type: 'test'
+  ...
+# Subtest: GRS-S-9 INV-004 GAH-S-4 guarded Run source surface excludes runtime/waiver/merge imports and service replacement
+ok 7 - GRS-S-9 INV-004 GAH-S-4 guarded Run source surface excludes runtime/waiver/merge imports and service replacement
+  ---
+  duration_ms: 2.079542
+  type: 'test'
+  ...
+# Subtest: session efficiency audit uses process-manager worktree and Codex token_count window
+ok 8 - session efficiency audit uses process-manager worktree and Codex token_count window
+  ---
+  duration_ms: 633.219625
+  type: 'test'
+  ...
+# Subtest: session efficiency audit estimates audit artifact token exposure from Codex transcript entries
+ok 9 - session efficiency audit estimates audit artifact token exposure from Codex transcript entries
+  ---
+  duration_ms: 1021.147542
+  type: 'test'
+  ...
+# Subtest: session efficiency audit infers the matching Codex session from repo cwd and window
+ok 10 - session efficiency audit infers the matching Codex session from repo cwd and window
+  ---
+  duration_ms: 991.613584
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-001 session inference merges split JSONL files for the same session id
+ok 11 - SCATTR-SCENARIO-001 session inference merges split JSONL files for the same session id
+  ---
+  duration_ms: 1253.698791
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-001 session inference ignores symlink directories during JSONL discovery
+ok 12 - SCATTR-SCENARIO-001 session inference ignores symlink directories during JSONL discovery
+  ---
+  duration_ms: 667.61425
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-001 session inference bounds discovery to the selected window day directories
+ok 13 - SCATTR-SCENARIO-001 session inference bounds discovery to the selected window day directories
+  ---
+  duration_ms: 650.102459
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-002 session cwd from sibling Git worktree still matches canonical repo
+ok 14 - SCATTR-SCENARIO-002 session cwd from sibling Git worktree still matches canonical repo
+  ---
+  duration_ms: 818.037958
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-003 explicit session from another repo remains partial with cwd mismatch
+ok 15 - SCATTR-SCENARIO-003 explicit session from another repo remains partial with cwd mismatch
+  ---
+  duration_ms: 753.8845
+  type: 'test'
+  ...
+# Subtest: SCATTR-SCENARIO-004 bounded session window with no events keeps elapsed unavailable
+ok 16 - SCATTR-SCENARIO-004 bounded session window with no events keeps elapsed unavailable
+  ---
+  duration_ms: 712.105416
+  type: 'test'
+  ...
+# Subtest: SAI-SCENARIO-002 session inference keeps equal top candidates ambiguous without silent selection
+ok 17 - SAI-SCENARIO-002 session inference keeps equal top candidates ambiguous without silent selection
+  ---
+  duration_ms: 732.596875
+  type: 'test'
+  ...
+# Subtest: SAI-SCENARIO-003 session inference keeps low-confidence candidates unavailable
+ok 18 - SAI-SCENARIO-003 session inference keeps low-confidence candidates unavailable
+  ---
+  duration_ms: 589.268125
+  type: 'test'
+  ...
+# Subtest: audit session-cost CLI exposes JSON contract for active session cost audits
+ok 19 - audit session-cost CLI exposes JSON contract for active session cost audits
+  ---
+  duration_ms: 1295.205291
+  type: 'test'
+  ...
+# Subtest: AUTCOST-SCENARIO-001 AUTCOST-SCENARIO-003 AUTCOST-SCENARIO-004 AUTCOST-SCENARIO-005 session efficiency audit uses automation memory daily window when explicit bounds are absent
+ok 20 - AUTCOST-SCENARIO-001 AUTCOST-SCENARIO-003 AUTCOST-SCENARIO-004 AUTCOST-SCENARIO-005 session efficiency audit uses automation memory daily window when explicit bounds are absent
+  ---
+  duration_ms: 1128.50275
+  type: 'test'
+  ...
+# Subtest: AIL-SCENARIO-002 session efficiency audit uses readable detached story artifacts observed in Codex JSONL
+ok 21 - AIL-SCENARIO-002 session efficiency audit uses readable detached story artifacts observed in Codex JSONL
+  ---
+  duration_ms: 700.548042
+  type: 'test'
+  ...
+# Subtest: AIL-SCENARIO-003 session efficiency audit reports observed detached artifacts when temp root is gone
+ok 22 - AIL-SCENARIO-003 session efficiency audit reports observed detached artifacts when temp root is gone
+  ---
+  duration_ms: 822.319834
+  type: 'test'
+  ...
+# Subtest: session efficiency audit makes strict attribution primary and degrades mixed-parent readiness
+ok 23 - session efficiency audit makes strict attribution primary and degrades mixed-parent readiness
+  ---
+  duration_ms: 1539.319375
+  type: 'test'
+  ...
+# Subtest: session efficiency audit fails closed when one event references the target and another story
+ok 24 - session efficiency audit fails closed when one event references the target and another story
+  ---
+  duration_ms: 834.894667
+  type: 'test'
+  ...
+# Subtest: session efficiency audit reports unknown risk and partial readiness with no associated evidence
+ok 25 - session efficiency audit reports unknown risk and partial readiness with no associated evidence
+  ---
+  duration_ms: 602.514209
+  type: 'test'
+  ...
+# Subtest: session efficiency audit applies high risk only to strict-over-associated threshold breach
+ok 26 - session efficiency audit applies high risk only to strict-over-associated threshold breach
+  ---
+  duration_ms: 810.964125
+  type: 'test'
+  ...
+# Subtest: session efficiency audit preserves valid rows and accounts malformed JSONL as unattributed
+ok 27 - session efficiency audit preserves valid rows and accounts malformed JSONL as unattributed
+  ---
+  duration_ms: 932.133584
+  type: 'test'
+  ...
+# Subtest: bounded session audit preserves timestamp-less malformed JSONL as unattributed unknown exposure
+ok 28 - bounded session audit preserves timestamp-less malformed JSONL as unattributed unknown exposure
+  ---
+  duration_ms: 700.681917
+  type: 'test'
+  ...
+# Subtest: session efficiency audit fails attribution closed when a selected JSONL file cannot be read
+ok 29 - session efficiency audit fails attribution closed when a selected JSONL file cannot be read
+  ---
+  duration_ms: 940.633417
+  type: 'test'
+  ...
+# Subtest: session efficiency audit keeps unavailable attribution explicit when inference selects no session
+ok 30 - session efficiency audit keeps unavailable attribution explicit when inference selects no session
+  ---
+  duration_ms: 958.814375
+  type: 'test'
+  ...
+# Subtest: SAB-S-6 session efficiency audit returns unavailable attribution when session selection is omitted
+ok 31 - SAB-S-6 session efficiency audit returns unavailable attribution when session selection is omitted
+  ---
+  duration_ms: 853.681041
+  type: 'test'
+  ...
+# Subtest: PR preparation session boundary is advisory and delegates mixed-session detection to session-cost
+ok 32 - PR preparation session boundary is advisory and delegates mixed-session detection to session-cost
+  ---
+  duration_ms: 0.237125
+  type: 'test'
+  ...
+# Subtest: harness learn records session learning candidates for human skill review
+ok 33 - harness learn records session learning candidates for human skill review
+  ---
+  duration_ms: 42.505792
+  type: 'test'
+  ...
+# Subtest: review status keeps content-bound review current after merge delta outside inspected inputs
+ok 34 - review status keeps content-bound review current after merge delta outside inspected inputs
+  ---
+  duration_ms: 6029.320125
+  type: 'test'
+  ...
+# Subtest: review status keeps stale review after merge delta touches inspected inputs
+ok 35 - review status keeps stale review after merge delta touches inspected inputs
+  ---
+  duration_ms: 2361.974042
+  type: 'test'
+  ...
+# Subtest: review status keeps stale review when merge delta diff cannot be resolved
+ok 36 - review status keeps stale review when merge delta diff cannot be resolved
+  ---
+  duration_ms: 2251.723958
+  type: 'test'
+  ...
+# Subtest: agent review PR section shows merge delta binding reasons
+ok 37 - agent review PR section shows merge delta binding reasons
+  ---
+  duration_ms: 0.365334
+  type: 'test'
+  ...
+# Subtest: execute status keeps merged delivery without inferring incomplete review evidence
+ok 38 - execute status keeps merged delivery without inferring incomplete review evidence
+  ---
+  duration_ms: 1053.919875
+  type: 'test'
+  ...
+# Subtest: story-vibepro-merge-waiver-propagation ac:1 ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path execute merge dry-run plans external checks without executing them
+ok 39 - story-vibepro-merge-waiver-propagation ac:1 ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path execute merge dry-run plans external checks without executing them
+  ---
+  duration_ms: 1959.8095
+  type: 'test'
+  ...
+# Subtest: execute merge dry-run keeps absent and unreadable cost accounting explicit without zeros
+ok 40 - execute merge dry-run keeps absent and unreadable cost accounting explicit without zeros
+  ---
+  duration_ms: 1884.693792
+  type: 'test'
+  ...
+# Subtest: execute merge dry-run preserves partial cost accounting as unavailable fields instead of zeros
+ok 41 - execute merge dry-run preserves partial cost accounting as unavailable fields instead of zeros
+  ---
+  duration_ms: 1644.148542
+  type: 'test'
+  ...
+# Subtest: AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accounting with automation memory window provenance
+ok 42 - AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accounting with automation memory window provenance
+  ---
+  duration_ms: 3651.741042
+  type: 'test'
+  ...
+# Subtest: story-vibepro-merge-waiver-propagation ac:3 S-001 scenario_clause_e2e failure_mode: schema_failure execute merge dry-run rejects a stale pr-create waiver even with an explicit PR selector
+ok 43 - story-vibepro-merge-waiver-propagation ac:3 S-001 scenario_clause_e2e failure_mode: schema_failure execute merge dry-run rejects a stale pr-create waiver even with an explicit PR selector
+  ---
+  duration_ms: 2391.956333
+  type: 'test'
+  ...
+# Subtest: story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted, conflicting, or stale waiver authority fails before non-dry-run GitHub operations
+ok 44 - story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted, conflicting, or stale waiver authority fails before non-dry-run GitHub operations
+  ---
+  duration_ms: 8264.820583
+  type: 'test'
+  ...
+# Subtest: story-vibepro-merge-waiver-propagation ac:3 S-001 failure_mode: parse_failure malformed pr-create authority fails before GitHub merge
+ok 45 - story-vibepro-merge-waiver-propagation ac:3 S-001 failure_mode: parse_failure malformed pr-create authority fails before GitHub merge
+  ---
+  duration_ms: 813.25625
+  type: 'test'
+  ...
+# Subtest: story-vibepro-merge-waiver-propagation ac:4 S-001 failure_mode: persistence_failure merge artifact write failure stops before GitHub merge
+ok 46 - story-vibepro-merge-waiver-propagation ac:4 S-001 failure_mode: persistence_failure merge artifact write failure stops before GitHub merge
+  ---
+  duration_ms: 814.8985
+  type: 'test'
+  ...
+# Subtest: story-vibepro-merge-waiver-propagation ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path CAA-VERIFY-001 execute merge completes merge artifacts, execution state, and canonical audit bundle after a successful GitHub merge
+ok 47 - story-vibepro-merge-waiver-propagation ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path CAA-VERIFY-001 execute merge completes merge artifacts, execution state, and canonical audit bundle after a successful GitHub merge
+  ---
+  duration_ms: 6960.326667
+  type: 'test'
+  ...
+# Subtest: CAA-VERIFY-001 execute merge fails closed before canonical audit when merge commit evidence is missing
+ok 48 - CAA-VERIFY-001 execute merge fails closed before canonical audit when merge commit evidence is missing
+  ---
+  duration_ms: 3629.699041
+  type: 'test'
+  ...
+# Subtest: DRS-SCENARIO-002 externally merged ancestor refreshes stale origin/base before bypassing a stale local gate
+ok 49 - DRS-SCENARIO-002 externally merged ancestor refreshes stale origin/base before bypassing a stale local gate
+  ---
+  duration_ms: 7488.180833
+  type: 'test'
+  ...
+# Subtest: DRS-SCENARIO-007 execute merge fails closed at the real canonical persistence boundary
+ok 50 - DRS-SCENARIO-007 execute merge fails closed at the real canonical persistence boundary
+  ---
+  duration_ms: 5022.225917
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 execute merge preserves observed delivery across execution-state synchronization failure
+ok 51 - DRS-CONTRACT-007 execute merge preserves observed delivery across execution-state synchronization failure
+  ---
+  duration_ms: 5154.0805
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 execute merge preserves the primary sync failure when follow-up persistence also fails
+ok 52 - DRS-CONTRACT-007 execute merge preserves the primary sync failure when follow-up persistence also fails
+  ---
+  duration_ms: 718.589334
+  type: 'test'
+  ...
+# Subtest: CAA-VERIFY-001 execute merge lands a single canonical audit commit and skips the redundant second push (idempotent persistence)
+ok 53 - CAA-VERIFY-001 execute merge lands a single canonical audit commit and skips the redundant second push (idempotent persistence)
+  ---
+  duration_ms: 4626.5665
+  type: 'test'
+  ...
+# Subtest: execute merge deletes the remote branch and records local cleanup skip when the merged branch is checked out
+ok 54 - execute merge deletes the remote branch and records local cleanup skip when the merged branch is checked out
+  ---
+  duration_ms: 3874.187542
+  type: 'test'
+  ...
+# Subtest: execute reconcile --all-merged recalculates merged story state from artifacts
+ok 55 - execute reconcile --all-merged recalculates merged story state from artifacts
+  ---
+  duration_ms: 917.978333
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-009 execute reconcile --all-merged discovers only the configured PR route
+ok 56 - DRS-CONTRACT-009 execute reconcile --all-merged discovers only the configured PR route
+  ---
+  duration_ms: 864.97125
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-009 execute reconcile --all-merged discovers schema 0.2 named PR routes
+ok 57 - DRS-CONTRACT-009 execute reconcile --all-merged discovers schema 0.2 named PR routes
+  ---
+  duration_ms: 837.861542
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 execute reconcile --all-merged exits non-zero for legacy delivery without reconciliation
+ok 58 - DRS-CONTRACT-007 execute reconcile --all-merged exits non-zero for legacy delivery without reconciliation
+  ---
+  duration_ms: 921.168042
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 execute reconcile --all-merged uses current local delivery over stale canonical conflict
+ok 59 - DRS-CONTRACT-007 execute reconcile --all-merged uses current local delivery over stale canonical conflict
+  ---
+  duration_ms: 893.761917
+  type: 'test'
+  ...
+# Subtest: pr body verification checklist checks exact current evidence even when the integration gate uses another command
+ok 60 - pr body verification checklist checks exact current evidence even when the integration gate uses another command
+  ---
+  duration_ms: 3342.9045
+  type: 'test'
+  ...
+# Subtest: pr prepare recommends a clean branch for broad session diffs
+ok 61 - pr prepare recommends a clean branch for broad session diffs
+  ---
+  duration_ms: 2460.143667
+  type: 'test'
+  ...
+# Subtest: pr prepare accepts a versioned branch merge only when canonical remote topology resolves to a merge parent
+ok 62 - pr prepare accepts a versioned branch merge only when canonical remote topology resolves to a merge parent
+  ---
+  duration_ms: 4184.70475
+  type: 'test'
+  ...
+# Subtest: pr prepare does not trust a spoofed two-parent versioned Story merge
+ok 63 - pr prepare does not trust a spoofed two-parent versioned Story merge
+  ---
+  duration_ms: 2588.709458
+  type: 'test'
+  ...
+# Subtest: pr prepare does not trust a merge-like versioned Story title on a single-parent commit
+ok 64 - pr prepare does not trust a merge-like versioned Story title on a single-parent commit
+  ---
+  duration_ms: 2288.301833
+  type: 'test'
+  ...
+1..64
+# tests 64
+# suites 0
+# pass 64
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 90133.423

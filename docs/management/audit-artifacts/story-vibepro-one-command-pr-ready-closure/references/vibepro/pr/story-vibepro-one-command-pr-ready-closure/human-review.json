@@ -1,0 +1,142 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "created_at": "2026-07-24T06:33:20.321Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 46 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-one-command-pr-ready-closure.md, docs/architecture/target-model.json)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json, docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md, docs/specs/story-vibepro-one-command-pr-ready-closure-execution-topology-replay.md)"
+    },
+    "decision_records": {
+      "total": 4,
+      "open": 0,
+      "by_type": {
+        "needs_review": 4
+      },
+      "by_status": {
+        "accepted": 4
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784873419248-2b4d8a16",
+        "story_id": "story-vibepro-one-command-pr-ready-closure",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_data_state",
+        "source_status": null,
+        "summary": "Versioned run-session state migration, rollback, idempotency, and query/replay semantics are demonstrated on current HEAD",
+        "reason": "migration_plan: persisted Run artifacts remain additive/versioned and legacy state is normalized on read without destructive migration. rollback_plan: reverting this focused PR leaves prior readers and prior run artifacts valid because new fields and actions are additive and fail closed. idempotency_test: focused and public CLI E2E cover resume, retry, no-progress, repair convergence, duplicate-safe action progression, and current-HEAD evidence rebind. query_semantics_test: status/watch/resume select persisted runs deterministically and replay the canonical state through the run-session owner; targeted 290/290, integration 64/64, and public CLI E2E 4/4 pass on HEAD 3ba30980. No database schema, cache-key, or user-data migration is introduced.",
+        "reviewer": "codex-primary",
+        "artifact": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+        "verification_evidence_summary": {
+          "count": 5,
+          "entries": [
+            {
+              "path": ".vibepro/qa/targeted-064dd1f6.tap",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/e2e-3ba30980-post-freeze.tap",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/runtime-cost-integration-064dd1f6.tap",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/build-3ba30980.json",
+              "type": "build",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/typecheck-064dd1f6.json",
+              "type": "typecheck",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+          "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-24T06:10:19.245Z"
+        },
+        "recorded_at": "2026-07-24T06:10:19.248Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-24T06:33:16.332Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "db8f0ef3f7d3cfcb2dc0d31504e40e01025293dd",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

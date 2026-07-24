@@ -1,0 +1,90 @@
+{
+  "schema_version": "0.1.0",
+  "review_type": "architecture_spec:architecture_boundary",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "head_sha": "b1b7bf5b493c47b194dea26347df6dfbe9a0f32e",
+  "status": "pass",
+  "summary": "The current-head repair removes a circular prose-only acceptance test and corrects the Story evidence to the four production-shaped E2E scenarios without changing runtime source. The one-command closure remains a callback-injected run-session policy module, introduces no reverse dependency on the CLI layer, reuses the existing production connector and independent-review owners, and excludes PR creation, merge, waiver, and重大 external side effects from autonomous execution.",
+  "checks": [
+    {
+      "id": "repair_surface",
+      "status": "pass",
+      "reason": "HEAD changes only the closure Story evidence and its E2E file: the literal-only acceptance marker was deleted and 5/5 was corrected to 4/4. Runtime source and architecture are unchanged."
+    },
+    {
+      "id": "run_session_boundary",
+      "status": "pass",
+      "reason": "src/one-command-pr-ready-closure.js remains a callback-injected run-session policy module. It does not import CLI, Gate, PR, production connector, or independent-review implementation modules."
+    },
+    {
+      "id": "cli_reverse_dependency",
+      "status": "pass",
+      "reason": "No run-session module imports from the CLI layer. The exact-head conformance artifact also records new_run_session_cli_reverse_dependency=false."
+    },
+    {
+      "id": "predecessor_reuse",
+      "status": "pass",
+      "reason": "Production runtime connectors remain owned by src/agent-runtime-connectors.js and independent review remains owned by src/independent-review-orchestrator.js, with guarded-run-session composing the review runner. The closure policy does not duplicate the merged PR #377 or PR #382 implementations."
+    },
+    {
+      "id": "human_authority",
+      "status": "pass",
+      "reason": "The autonomous action registry is limited to diagnose, prepare_artifacts, implement, verify, review, repair, and final_prepare. PR creation, merge, waiver, and重大 external side effects are not autonomous actions and remain explicit human operations or typed approval stops."
+    },
+    {
+      "id": "conformance",
+      "status": "pass",
+      "reason": "Target architecture conformance passes and improves the origin/main baseline from 81 violations to 80, delta -1."
+    },
+    {
+      "id": "current_verification",
+      "status": "pass",
+      "reason": "At the exact reviewed HEAD, the four production-shaped E2E scenarios and six scope-boundary tests all pass. Exact-head recorded artifacts also report expensive verification 288/288, integration 4/4, typecheck pass, and build pass."
+    }
+  ],
+  "findings": [],
+  "conformance": {
+    "artifact": ".vibepro/qa/conformance-b1b7bf5b.json",
+    "status": "pass",
+    "baseline": "origin/main",
+    "baseline_violation_count": 81,
+    "current_violation_count": 80,
+    "delta": -1,
+    "new_run_session_cli_reverse_dependency": false
+  },
+  "verification": {
+    "command": "node --test test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts test/scope-boundary-gate.test.js",
+    "tests": 10,
+    "passed": 10,
+    "failed": 0,
+    "e2e": {
+      "tests": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    "scope_boundary": {
+      "tests": 6,
+      "passed": 6,
+      "failed": 0
+    },
+    "recorded_exact_head": {
+      "e2e": "4/4 pass",
+      "integration": "4/4 pass",
+      "expensive_verification": "288/288 pass",
+      "typecheck": "pass",
+      "build": "pass"
+    }
+  },
+  "inspected_inputs": [
+    ".vibepro/qa/conformance-b1b7bf5b.json",
+    ".vibepro/qa/e2e-b1b7bf5b.json",
+    "src/one-command-pr-ready-closure.js",
+    "src/guarded-run-session.js",
+    "src/agent-runtime-connectors.js",
+    "src/independent-review-orchestrator.js",
+    "src/safe-action-orchestrator.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "test/scope-boundary-gate.test.js",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md"
+  ]
+}

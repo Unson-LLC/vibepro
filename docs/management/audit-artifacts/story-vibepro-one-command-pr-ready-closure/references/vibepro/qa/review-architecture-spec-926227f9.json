@@ -1,0 +1,136 @@
+{
+  "schema_version": "0.1.0",
+  "review_type": "architecture_spec:spec_consistency",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "head_sha": "926227f945878299770448a03966c17dfa70158d",
+  "baseline_ref": "origin/main@118b68091b296f6bb8c4414cfc5eadb69ed73dc0",
+  "status": "pass",
+  "verdict": "pass",
+  "summary": "The six-clause canonical JSON Spec is consistent with the Architecture decision, Story acceptance criteria, target-model run-session ownership, Design SSOT parent/child routing, and current implementation boundaries. Every Architecture section and code anchor referenced by the Spec exists; the CLI remains an outer adapter with no reverse import from run-session sources; and merged connector/review orchestration owners are composed rather than duplicated.",
+  "inspection_summary": "Inspected all six Spec clauses and traced each Story reference, Architecture section, code anchor, inherited behavior, and test surface. Confirmed the closed action profile, current-HEAD pr_ready invariant, explicit human-authority exclusions, typed-stop/decision lifecycle, managed-worktree implementation and separate read-only review, and staged post-PR closure contract. Cross-checked target architecture conformance and the exact-head behavioral acceptance mapping.",
+  "inspection_evidence": {
+    "review_artifact": ".vibepro/qa/review-architecture-spec-926227f9.json",
+    "canonical_spec": "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "clause_count": 6,
+    "clause_results": [
+      {
+        "id": "C-OCR-1",
+        "type": "contract",
+        "status": "pass",
+        "reason": "The default guarded profile, ordered provider fallback, explicit legacy compatibility, and public CLI composition match Architecture Decision and the referenced guarded-run-session, safe-action, and CLI anchors."
+      },
+      {
+        "id": "INV-OCR-2",
+        "type": "invariant",
+        "status": "pass",
+        "reason": "The Architecture and implementation agree that only final_prepare can return pr_ready and only for a pr-prepare result bound to the authoritative current managed-worktree HEAD with ready_for_pr_create=true."
+      },
+      {
+        "id": "INV-OCR-3",
+        "type": "invariant",
+        "status": "pass",
+        "reason": "The autonomous registry and bounded runtime objectives exclude PR creation, merge, critical waiver, deployment, publication, and material external side effects; Human Decision creation remains guarded-run-session authority."
+      },
+      {
+        "id": "S-OCR-4",
+        "type": "scenario",
+        "status": "pass",
+        "reason": "The typed-stop, resume, cancellation, human-decision, verification failure, repair convergence, and current-HEAD rebind contract is represented consistently in Architecture and the referenced run-session/action/checkpoint modules."
+      },
+      {
+        "id": "S-OCR-5",
+        "type": "scenario",
+        "status": "pass",
+        "reason": "The production connector remains the managed-worktree implementation adapter and Independent Review Orchestration remains the separate read-only lifecycle owner. The referenced repair-HEAD regression exists as IRO-S-7 with equivalent wording and semantics."
+      },
+      {
+        "id": "S-OCR-6",
+        "type": "scenario",
+        "status": "pass",
+        "reason": "The pre-PR acceptance/post-PR delivery split matches Architecture and Story: PR #372, #377, and #382 are predecessor evidence, the final Story and roadmap stay active pre-PR, and CI import, explicit execute merge, and canonical audit remain later explicit lifecycle owners."
+      }
+    ],
+    "reference_validation": {
+      "architecture_sections_resolved": "6/6 clauses",
+      "code_anchors_resolved": "17/17 references",
+      "referenced_files_present": true,
+      "note": "The S-OCR-5 test_ref case label 'repaired HEAD invalidates the prior review operation checkpoint' is a semantic label rather than an exact test-title match; it resolves to the present test 'IRO-S-7 repair HEAD invalidates the old review checkpoint and dispatches a fresh review'."
+    },
+    "boundary_validation": {
+      "target_module": "run-session",
+      "new_run_session_cli_reverse_dependency": false,
+      "one_command_owner_imports": [
+        "node:timers/promises"
+      ],
+      "connector_owner": "src/agent-runtime-connectors.js#createProductionRuntimeConnectors",
+      "review_owner": "src/independent-review-orchestrator.js#createGuardedIndependentReviewRunner",
+      "composition_owner": "src/guarded-run-session.js"
+    },
+    "conformance": {
+      "artifact": ".vibepro/qa/conformance-926227f9.json",
+      "status": "pass",
+      "baseline_violation_count": 81,
+      "current_violation_count": 80,
+      "delta": -1,
+      "new_run_session_cli_reverse_dependency": false
+    },
+    "acceptance_coverage": {
+      "artifact": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+      "status": "passed",
+      "acceptance_criteria_count": 8,
+      "covered_acceptance_criteria_count": 8,
+      "missing_acceptance_criteria": []
+    }
+  },
+  "judgment_delta": [
+    {
+      "initial_concern": "The six-clause Spec could describe a second orchestration layer distinct from the Architecture or current source topology.",
+      "final_judgment": "Each clause maps to an existing Architecture section and concrete owner anchor. The only new focused policy owner is inside run-session and is composed by guarded-run-session; no parallel CLI-owned workflow is specified or implemented."
+    },
+    {
+      "initial_concern": "Spec references to connector and independent review could authorize reimplementation of predecessor Stories.",
+      "final_judgment": "S-OCR-5 and S-OCR-6 explicitly classify these contracts as inherited. Current code uses createProductionRuntimeConnectors and createGuardedIndependentReviewRunner from the merged PR #377/#382 modules, preserving their capability, sandbox, identity, lifecycle, provenance, and verdict responsibilities."
+    },
+    {
+      "initial_concern": "The CLI code_ref in C-OCR-1 could imply a forbidden dependency from the run-session domain back to src/cli.js.",
+      "final_judgment": "The reference identifies the public adapter surface only. Reverse-import inspection over all target-model run-session sources returns no src/cli.js dependency, and exact-head conformance independently reports no new reverse dependency."
+    },
+    {
+      "initial_concern": "The S-OCR-5 repair-checkpoint test_ref label does not exactly equal the current Node test title.",
+      "final_judgment": "The referenced file contains the uniquely corresponding IRO-S-7 regression, 'repair HEAD invalidates the old review checkpoint and dispatches a fresh review'. The semantic contract, owner, and executable target are unambiguous, so this wording variation does not create a consistency defect."
+    },
+    {
+      "initial_concern": "The staged closure clause could conflate pre-PR acceptance with future CI and merge evidence.",
+      "final_judgment": "Architecture, Story, Spec, and Design SSOT agree on a two-stage protocol: pre-PR proves predecessor evidence and leaves Story/roadmap active; PR creation, CI import, closure commit, evidence rebind, rereview, re-import, and explicit merge are post-PR lifecycle operations."
+    }
+  ],
+  "findings": [],
+  "inspection_inputs": [
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/target-model.json",
+    "design-ssot.json",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+    "docs/management/stories/active/story-vibepro-production-runtime-connectors.md",
+    "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    "src/one-command-pr-ready-closure.js",
+    "src/guarded-run-session.js",
+    "src/safe-action-orchestrator.js",
+    "src/human-decision-checkpoint.js",
+    "src/guarded-stop-codes.js",
+    "src/agent-runtime-adapter.js",
+    "src/agent-runtime-connectors.js",
+    "src/independent-review-orchestrator.js",
+    "src/ci-evidence.js",
+    "src/merge-manager.js",
+    "src/canonical-audit.js",
+    "src/cli.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "test/independent-review-orchestrator.test.js",
+    ".vibepro/qa/conformance-926227f9.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    "origin/main@118b68091b296f6bb8c4414cfc5eadb69ed73dc0"
+  ]
+}

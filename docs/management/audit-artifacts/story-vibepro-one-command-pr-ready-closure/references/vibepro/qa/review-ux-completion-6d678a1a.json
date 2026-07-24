@@ -1,0 +1,36 @@
+{
+  "status": "pass",
+  "head_sha": "6d678a1ae53844703e3c42085b9eddbbbc89ca32",
+  "summary": "The current public guarded-Run UX is actionable: an operator can start one command, receive typed stop/recovery information, resume the same Run, read the rendered status, and cancel it. Human input is requested only for a bounded material decision, while PR creation, merge, waiver, and material external effects remain explicit human authority. This is a ux_completion role verdict only; it does not make the stale pr-prepare snapshot PR-ready or approve CI/PR/merge lifecycle actions.",
+  "inspection_summary": "Inspected the Story, architecture, test plan, current public execute help, action-owner decision boundary, guarded-session recovery/rendering, current dogfood state, and the sole 6d678a1a change (S-004). Re-ran node --test test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts at 6d678a1a: 5/5 passed. S-004 drives the public runCli composition through execute run, same-Run resume, human status rendering, and operator cancel, and asserts persisted runtime_unavailable recovery, verification_failed after resume, retry journal, next command, and cancelled transition. S-001 remains a production-shaped real-Git commit/repair/review regression path; S-002 covers the typed-stop and material-human-decision matrix; help and S-005 confirm the authority boundary. The dogfood Run records a typed runtime_unavailable stop with provider, required/missing capability, runtime_available condition, and exact resume command. Regression guard and path-surface coverage both pass: autonomous, legacy/disabled fallback, public JSON/human/status surfaces, persisted state/retry journal, recovery, cancel, and authority exclusions have evidence; no silent suppression or contradictory user-facing output was found.",
+  "inspection_inputs": [
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    "src/cli.js",
+    "src/one-command-pr-ready-closure.js",
+    "src/guarded-run-session.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/guarded-run-session.test.js"
+  ],
+  "inspection_evidence": "node --test test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts (2026-07-24, 5/5 pass at 6d678a1a); node bin/vibepro.js execute --help; .vibepro/executions/story-vibepro-one-command-pr-ready-closure/runs/run-20260723T191944Z-7f564484/state.json; .vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+  "judgment_delta": [
+    "Prior UX evidence was stale at 97c7684; the 6d678a1a S-004 public CLI scenario now directly proves run -> typed runtime stop -> resume -> human status -> cancel at the composition root, so the UX verdict is current for the changed surface.",
+    "The review concern that only internal owner tests could prove typed recovery is resolved: S-004 reads the persisted state file and asserts the public human renderer's status, stop code, and resume command, not just an internal return value.",
+    "The real dogfood runtime remains unavailable rather than a successful provider execution, but its persisted typed stop is the intended user recovery path. S-001 separately preserves the available-provider production-shaped Git/review/repair regression contract, so this review does not equate runtime unavailability with absence of proof.",
+    "Current pr-prepare remains needs_verification and is bound to the previous 97c7684 snapshot; that is an outstanding lifecycle/gate condition, not a UX defect, and this pass does not waive or override it."
+  ],
+  "findings": [],
+  "lenses": {
+    "regression_guard": {
+      "status": "pass",
+      "evidence": "The only production-adjacent delta is a test-only public runCli scenario. It passes with S-001 through S-005 (5/5); S-001 exercises real temporary Git commits, an independent review, repair, and replay on the repaired HEAD, while guarded-run tests cover explicit autonomous-to-legacy fallback and prevent autonomous verification from silently invoking the legacy autopilot."
+    },
+    "path_surface_coverage": {
+      "status": "pass",
+      "evidence": "Inputs inspected: execute run, resume, status, cancel, material decision, unavailable runtime, verification failure, legacy/disabled fallback, and operator cancellation. Outputs inspected: CLI JSON result, human summary/help, persisted run state, typed stop/recovery, retry journal, transitions, decision/recovery command, Gate-bound final readiness, and the explicit exclusion of PR create/merge/waiver/external effects. S-004 would not pass before its addition because the public composition path did not execute these assertions."
+    }
+  }
+}

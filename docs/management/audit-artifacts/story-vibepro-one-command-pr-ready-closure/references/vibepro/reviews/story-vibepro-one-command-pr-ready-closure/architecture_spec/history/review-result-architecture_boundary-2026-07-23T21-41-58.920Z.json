@@ -1,0 +1,283 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "At exact HEAD 3da7bb249c8ac1212f53f26bf06432fb1d7d6071, One-command PR-ready Closure preserves the run-session architecture boundary. The independent-review action re-reads the selected Run immediately before execution, derives its repository from the validated managed-worktree authority, and carries current safe-action HEAD/journal state without losing freshly persisted runtime-dispatch provenance. No run-session module imports the CLI, and the final Story composes rather than duplicates the owner contracts merged by PR #372, #377, and #382. OCR-S-8 is staged and non-circular: PR creation, CI import, closure-state update, re-binding, and explicit execute merge remain post-acceptance delivery operations.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected the origin/main...HEAD source and documentation surface, current-head run-session/review/runtime topology, design SSOT child registration, parent roadmap staged completion state, exact Task target projection, runtime typed-stop normalization, safe-action human-stop compatibility and suffix containment, scope-boundary exact-path behavior, exact predecessor merge commits, current Story acceptance and Post-PR Delivery Closure Record, target architecture conformance, and exact-head unit, integration, E2E, typecheck, and targeted-validation artifacts. The final 3da7bb24 repair eliminates the stale lexical review root and stale implementation provenance concern by reloading current Run authority per review action while retaining the safe-action current HEAD.",
+    "evidence": ".vibepro/qa/review-architecture-3da7bb24.json",
+    "inputs": [
+      "design-ssot.json",
+      "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "docs/architecture/target-model.json",
+      "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+      "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+      "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
+      "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+      "docs/management/stories/active/story-vibepro-production-runtime-connectors.md",
+      "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+      "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+      "src/agent-runtime-adapter.js",
+      "src/agent-runtime-connectors.js",
+      "src/cli.js",
+      "src/guarded-run-session.js",
+      "src/independent-review-orchestrator.js",
+      "src/one-command-pr-ready-closure.js",
+      "src/safe-action-orchestrator.js",
+      "src/task-manager.js",
+      "test/agent-runtime-adapter.test.js",
+      "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+      "test/guarded-run-session.test.js",
+      "test/independent-review-orchestrator.test.js",
+      "test/one-command-pr-ready-closure.test.js",
+      "test/safe-action-orchestrator.test.js",
+      "test/scope-boundary-gate.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: buildIndependentReviewRunner could retain the Run snapshot and repository root captured before implementation or repair -> Final conclusion: the runner now calls loadSelectedRun immediately before each review action, derives the validated selected Run managed-worktree path, and passes the freshly persisted runtime dispatches while overlaying current safe-action HEAD and journal. | Initial concern: managed-worktree canonicalization could diverge between dispatch identity and review repository selection -> Final conclusion: loadSelectedRun validates the selected execution authority and git identity first, while review uses the persisted managed-worktree path required by runtime dispatch equality; record/poll/checkpoint callbacks reload the same selected Run authority. | Initial concern: the final Story might reimplement Autonomous Action DAG, Production Runtime Connectors, or Independent Review Orchestration -> Final conclusion: merge commits for PR #372, #377, and #382 are present and cited as predecessor SSOTs. The new closure module is callback-injected policy composition; connector changes propagate bounded objective data, and review changes invoke the existing review verdict/lifecycle owner rather than replace it. | Initial concern: one-command orchestration could introduce a run-session-to-CLI reverse dependency -> Final conclusion: no src run-session owner imports ./cli.js; src/one-command-pr-ready-closure.js imports only timer support and receives bounded operations by callback. Exact-head conformance reports new_run_session_cli_reverse_dependency=false and improves total violations from origin/main 81 to 80. | Initial concern: OCR-S-8 might require evidence that can exist only after PR creation or merge, creating a circular Gate -> Final conclusion: pre-PR acceptance requires predecessor canonical evidence, non-duplication, and active staged Story/roadmap state only. PR creation, CI import, focused completion commit, current-HEAD rebind, re-review/re-CI, and explicit execute merge are tracked separately in the Post-PR Delivery Closure Record. | Initial concern: Design SSOT or parent-roadmap state could prematurely declare delivery closure -> Final conclusion: design-ssot.json keeps the roadmap active and registers the final ADR, test plan, and Story as required implementation/decomposition children; the roadmap also remains active with AIC-S-2/AIC-S-3 unchecked until post-PR delivery evidence closes all four Stories. | Initial concern: implementation delegation could receive broad or reference-only Task targets -> Final conclusion: src/task-manager.js preserves explicit target_files and only infers exact non-glob allowed paths from mutation-bearing mentions. test/scope-boundary-gate.test.js proves suffix lookalikes, English/Japanese negative constraints, and read-only references are excluded while explicit targets remain authoritative. | Initial concern: typed runtime/human stops or repair replay could escape bounded orchestration -> Final conclusion: test/agent-runtime-adapter.test.js verifies provider, missing-capability, recovery Run identity, review sandbox, and usage-accounting normalization; test/safe-action-orchestrator.test.js preserves legacy human-stop compatibility, requires structured autonomous decisions, and stops every dependent suffix on typed terminal states. The exact-head targeted-validation artifact includes all three suites. | Initial concern: current-head repair could lack regression proof across the full autonomous path -> Final conclusion: exact-head evidence passes 155 focused unit tests, 12 connector integration tests, 5 public-CLI E2E tests, typecheck, and 287 targeted validations. E2E observes implementation commit, independent needs_changes, repair commit, fresh review pass, and current-HEAD final prepare."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+    "current_head_sha": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "dirty": true,
+      "dirty_fingerprint": " M .vibepro/config.json",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M .vibepro/config.json",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T21:02:29.971Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-23T21:41:58.920Z",
+  "git_context": {
+    "head_sha": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "53d8b1f77e93d965defdb1cfb36281a0c7ec976888136dfc3c34df422e8a1bd7",
+    "user_status_fingerprint_hash": "53d8b1f77e93d965defdb1cfb36281a0c7ec976888136dfc3c34df422e8a1bd7",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T21:41:58.904Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "validation preflight must bind all planned current-HEAD inspection inputs"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "7c80a7b6b1a3a269a1f205572169817a0073129c6c5eeae43f0b1a4cfe76bef8",
+        "size": 215893
+      },
+      {
+        "path": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "3af6fa873c76a9dc17abc4a50da29feb54419dc9e1e4e96922ebed4206c758e2",
+        "size": 10278
+      },
+      {
+        "path": "docs/architecture/target-model.json",
+        "sha256": "28f744bff90edc3c6c70a76ba83d8c573410dda44b19ead46c568671ee8985ef",
+        "size": 8282
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+        "sha256": "a37f60a716453e67453caaa312fe53cd558d048023403411ac33f43277d51f27",
+        "size": 3613
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+        "sha256": "9d77fec7531ce57f04e6c2a029fe98a9d95b3467a9f35ba94b01d50d805e9ae0",
+        "size": 3854
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
+        "sha256": "496053804ae4f9386f85ed4f94e90c25502007d15b74e5b5e001eaf060928c67",
+        "size": 3504
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "7ffb01b6a44e8d435c2acaaea40f398afd6624ddcc356aa0642791d3a1744491",
+        "size": 8067
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-production-runtime-connectors.md",
+        "sha256": "e634bf40fd6758696bb0c70527fa13e776792f66fa96f7e905c0db2735836dae",
+        "size": 2490
+      },
+      {
+        "path": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+        "sha256": "f9cb691b06654c6e1e8dc0c8893427a5658d2994fbd3e2e641e48289b66f0da8",
+        "size": 8326
+      },
+      {
+        "path": "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+        "sha256": "dcea6e542dc6b1039b19dface31d404bedb0b00df39e3cfb0fba4a9a20e1582e",
+        "size": 11885
+      },
+      {
+        "path": "src/agent-runtime-adapter.js",
+        "sha256": "d17f286a9a42c65f8649e8d07c7932a2099c12098db82a7e68efc021b0946a85",
+        "size": 43840
+      },
+      {
+        "path": "src/agent-runtime-connectors.js",
+        "sha256": "8408b47801cc6112e721a835824ff58793d543f03be8051788c3840e17f0333e",
+        "size": 12979
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "ffcf2da2364c5f564acd2d1535abc167ae7210c482ca30f116fa03cdd0b2897d",
+        "size": 224714
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "c1748f041318218de03d95e29fa60ea4bb45484aa8758f9b574c3a8d5a638e8f",
+        "size": 115080
+      },
+      {
+        "path": "src/independent-review-orchestrator.js",
+        "sha256": "820d06a9a049c4b10845cfa561563a51563f3ab5c12cb53a4ac544c4ac99f456",
+        "size": 26867
+      },
+      {
+        "path": "src/one-command-pr-ready-closure.js",
+        "sha256": "f06c811a7e01853bba95c9d7d807bc102153dc4c3292a5251a4c9d26645f68fd",
+        "size": 28337
+      },
+      {
+        "path": "src/safe-action-orchestrator.js",
+        "sha256": "3d83181335666ee470a6cd4b8daeaf9e339c2c9eea10bfd19d594299229a8735",
+        "size": 19565
+      },
+      {
+        "path": "src/task-manager.js",
+        "sha256": "3aa0dd361dcfab2e85d262c979bacb44fea08252149424b592038e2327b965c3",
+        "size": 48425
+      },
+      {
+        "path": "test/agent-runtime-adapter.test.js",
+        "sha256": "6ca2b87e1df98dc0d9a84b36ac36c17c8f02760279599555a56df8974f9f379a",
+        "size": 30235
+      },
+      {
+        "path": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+        "sha256": "784e6831b53754a0cdfab1b6cca7a3a2780252a3e44dba09046506b4f04944ea",
+        "size": 28857
+      },
+      {
+        "path": "test/guarded-run-session.test.js",
+        "sha256": "b22453bf163bfbbd1207ac17c0f415bc647eb4fcb5743dcb4bf7169034e1a287",
+        "size": 227271
+      },
+      {
+        "path": "test/independent-review-orchestrator.test.js",
+        "sha256": "56bfcfa412b84dfb5b4866c11cc96b4839e46002eeaa9b84def5ac39d7e7340c",
+        "size": 20338
+      },
+      {
+        "path": "test/one-command-pr-ready-closure.test.js",
+        "sha256": "766bf11ae15e69d2af8a74d39ba6c8cbe15683c2ec678b5aabad6a7f13ef0e4d",
+        "size": 21086
+      },
+      {
+        "path": "test/safe-action-orchestrator.test.js",
+        "sha256": "7ff46cf0fbd4f2398d776fe4f49b0cb7f69a4e99ee9490f528f33d64dd8a0de1",
+        "size": 25821
+      },
+      {
+        "path": "test/scope-boundary-gate.test.js",
+        "sha256": "7d5ce67e759f76832416a8283b440b66dd12bf21f74e6b96d3993055008abd1d",
+        "size": 11733
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "c4c6da9e269df00e685e49ed0947243e97d15711393763fb7862ba71a2f62c30"
+  },
+  "source_fingerprint": "22753aa640f32be2004d23511273e63b9c9b22841e5f6616e6a47de769e7adfa",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "closure_arch_3da7",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "closure_arch_3da7",
+    "session_id": "closure_arch_3da7",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/review-architecture-3da7bb24.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/review-architecture-3da7bb24.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "closure_arch_3da7",
+      "implementation_session_id": "019f63f2-cdd9-7c63-9bc3-fb9925a3720d",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,147 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "test_plan",
+  "role": "unit_integration",
+  "status": "pass",
+  "summary": "Current-HEAD unit/integration plan covers success, typed failures, retries, lifecycle regressions, runtime-cost unit_regression, managed worktree authority, and human-only external operations.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/qa/review-test-plan-unit-926227f9.json"
+  ],
+  "inspection": {
+    "summary": "Inspected the test plan and exact evidence for 288 unit, 4 integration, 4 E2E, 8 AC, and focused 16-test coverage across positive, negative, lifecycle, cost and authority paths.",
+    "evidence": ".vibepro/qa/review-test-plan-unit-926227f9.json",
+    "inputs": [
+      "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+      "test/one-command-pr-ready-closure.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Stale test-plan evidence became pass because current exact evidence includes every required regression class including VIBE-CORE-COST-001/unit_regression."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "926227f945878299770448a03966c17dfa70158d",
+    "current_head_sha": "926227f945878299770448a03966c17dfa70158d",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "926227f945878299770448a03966c17dfa70158d",
+      "dirty": true,
+      "dirty_fingerprint": " M .vibepro/config.json",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M .vibepro/config.json",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T21:02:29.971Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-24T00:10:20.389Z",
+  "git_context": {
+    "head_sha": "926227f945878299770448a03966c17dfa70158d",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "7af7c2dd8036e7ecdbd7450e810b0bb674586064b4c682dd596ebe000798d1dc",
+    "user_status_fingerprint_hash": "7af7c2dd8036e7ecdbd7450e810b0bb674586064b4c682dd596ebe000798d1dc",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T00:10:20.378Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Test plan recovery must remain exact-HEAD bound through PR-ready closure."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "926227f945878299770448a03966c17dfa70158d",
+    "surface_files": [
+      {
+        "path": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+        "sha256": "f9cb691b06654c6e1e8dc0c8893427a5658d2994fbd3e2e641e48289b66f0da8",
+        "size": 8326
+      },
+      {
+        "path": "test/one-command-pr-ready-closure.test.js",
+        "sha256": "5976417f8edffe406989ceafa5cca01c4616d708d7218985418725fe32226e76",
+        "size": 21622
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "6be9652f3ad9bfff7a6db9be844e854406a9d5c2f30d41b40af3e1abf72ed3af"
+  },
+  "source_fingerprint": "4fdd41c4e686663f3e238c7bc5024315a26aac85d3c32f331d0f3b42b9b65696",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "test-plan-unit-926227f9",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "/root/review_tests",
+    "session_id": "test-plan-unit-926227f9",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/review-test-plan-unit-926227f9.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/test_plan/review-request-unit_integration.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/review-test-plan-unit-926227f9.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "test-plan-unit-926227f9",
+      "implementation_session_id": "/root",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

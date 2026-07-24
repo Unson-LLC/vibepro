@@ -1,0 +1,18 @@
+{
+  "schema_version": "0.1.0",
+  "head_sha": "af15adafa679545edadf5b053e8842570f7f842b",
+  "status": "pass",
+  "origin_main_head_sha": "236937dfe33eb407f912086d54bfbd3d7d699874",
+  "baseline_violation_count": 81,
+  "current_violation_count": 80,
+  "delta": -1,
+  "current_breakdown": {
+    "undeclared_dependency_count": 66,
+    "budget_violation_count": 5,
+    "orphan_file_count": 9,
+    "stale_pattern_count": 0,
+    "run_session_file_count": 11
+  },
+  "new_run_session_to_cli_reverse_dependency": false,
+  "canonical_artifact": ".vibepro/architecture/conformance/conformance.json"
+}

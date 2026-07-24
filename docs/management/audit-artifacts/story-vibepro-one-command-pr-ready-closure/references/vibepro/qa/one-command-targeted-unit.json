@@ -1,0 +1,1534 @@
+TAP version 13
+# Subtest: ARA-S-1 ARA-S-2 provider-neutral contract reports quota wait before start
+ok 1 - ARA-S-1 ARA-S-2 provider-neutral contract reports quota wait before start
+  ---
+  duration_ms: 5.882291
+  type: 'test'
+  ...
+# Subtest: ARA-S-2 waiting runtime dispatch re-probes after capability recovery
+ok 2 - ARA-S-2 waiting runtime dispatch re-probes after capability recovery
+  ---
+  duration_ms: 1.10575
+  type: 'test'
+  ...
+# Subtest: ARA-S-2 auth denial remains a typed resumable stop
+ok 3 - ARA-S-2 auth denial remains a typed resumable stop
+  ---
+  duration_ms: 1.196542
+  type: 'test'
+  ...
+# Subtest: PRC-S-3 typed provider failure survives status normalization
+ok 4 - PRC-S-3 typed provider failure survives status normalization
+  ---
+  duration_ms: 0.652625
+  type: 'test'
+  ...
+# Subtest: ARA-S-3 successful implementation result is structured and HEAD-bearing
+ok 5 - ARA-S-3 successful implementation result is structured and HEAD-bearing
+  ---
+  duration_ms: 0.4545
+  type: 'test'
+  ...
+# Subtest: ARA-S-3 unit_regression runtime cost telemetry is normalized and invalid usage fails closed
+ok 6 - ARA-S-3 unit_regression runtime cost telemetry is normalized and invalid usage fails closed
+  ---
+  duration_ms: 1.210959
+  type: 'test'
+  ...
+# Subtest: ARA-S-4 review requires separate identity and closed parallel provenance
+ok 7 - ARA-S-4 review requires separate identity and closed parallel provenance
+  ---
+  duration_ms: 1.986125
+  type: 'test'
+  ...
+# Subtest: ARA-S-4 review requires review capability before provider start
+ok 8 - ARA-S-4 review requires review capability before provider start
+  ---
+  duration_ms: 0.176375
+  type: 'test'
+  ...
+# Subtest: ARA-S-4 review rejects a provider result that impersonates the implementer
+ok 9 - ARA-S-4 review rejects a provider result that impersonates the implementer
+  ---
+  duration_ms: 1.377125
+  type: 'test'
+  ...
+# Subtest: ARA-S-4 review rejects stale HEAD and same implementation session
+ok 10 - ARA-S-4 review rejects stale HEAD and same implementation session
+  ---
+  duration_ms: 1.0835
+  type: 'test'
+  ...
+# Subtest: ARA-S-4 review result must correlate to the reviewer runtime returned by start
+ok 11 - ARA-S-4 review result must correlate to the reviewer runtime returned by start
+  ---
+  duration_ms: 0.417584
+  type: 'test'
+  ...
+# Subtest: ARA-S-4 review start without session or thread provenance is contained
+ok 12 - ARA-S-4 review start without session or thread provenance is contained
+  ---
+  duration_ms: 0.319542
+  type: 'test'
+  ...
+# Subtest: ARA-S-4 review dispatch identity changes with the implementation session
+ok 13 - ARA-S-4 review dispatch identity changes with the implementation session
+  ---
+  duration_ms: 0.433833
+  type: 'test'
+  ...
+# Subtest: ARA-S-4 review runtime is read-only at request and result boundaries
+ok 14 - ARA-S-4 review runtime is read-only at request and result boundaries
+  ---
+  duration_ms: 0.432125
+  type: 'test'
+  ...
+# Subtest: ARA-S-4 review rejects a mutable provider sandbox before start
+ok 15 - ARA-S-4 review rejects a mutable provider sandbox before start
+  ---
+  duration_ms: 0.322584
+  type: 'test'
+  ...
+# Subtest: ARA-S-4 review validates started identity and contains the wrong runtime
+ok 16 - ARA-S-4 review validates started identity and contains the wrong runtime
+  ---
+  duration_ms: 0.636709
+  type: 'test'
+  ...
+# Subtest: ARA-S-2 permission wait during polling becomes a typed Run stop
+ok 17 - ARA-S-2 permission wait during polling becomes a typed Run stop
+  ---
+  duration_ms: 0.414125
+  type: 'test'
+  ...
+# Subtest: ARA-S-2 permission wait clears stale Run stop after provider resumes
+ok 18 - ARA-S-2 permission wait clears stale Run stop after provider resumes
+  ---
+  duration_ms: 0.248916
+  type: 'test'
+  ...
+# Subtest: ARA-S-5 adapter id participates in dispatch identity
+ok 19 - ARA-S-5 adapter id participates in dispatch identity
+  ---
+  duration_ms: 0.111916
+  type: 'test'
+  ...
+# Subtest: ARA-S-6 provider operations enforce the requested timeout
+ok 20 - ARA-S-6 provider operations enforce the requested timeout
+  ---
+  duration_ms: 11.633042
+  type: 'test'
+  ...
+# Subtest: ARA-S-5 duplicate dispatch is reused and cancel confirms terminal runtime
+ok 21 - ARA-S-5 duplicate dispatch is reused and cancel confirms terminal runtime
+  ---
+  duration_ms: 0.628459
+  type: 'test'
+  ...
+# Subtest: CDI-S-4 CDI-S-10 terminal failure cannot replacement-spawn the same logical dispatch
+ok 22 - CDI-S-4 CDI-S-10 terminal failure cannot replacement-spawn the same logical dispatch
+  ---
+  duration_ms: 0.231
+  type: 'test'
+  ...
+# Subtest: ARA-S-5 nonterminal cancel fails closed as orphaned agent
+ok 23 - ARA-S-5 nonterminal cancel fails closed as orphaned agent
+  ---
+  duration_ms: 0.160084
+  type: 'test'
+  ...
+# Subtest: ARA-S-5 cancel escalates to force before declaring an orphan
+ok 24 - ARA-S-5 cancel escalates to force before declaring an orphan
+  ---
+  duration_ms: 0.131542
+  type: 'test'
+  ...
+# Subtest: ARA-S-6 cancel provider failure escalates and reports an orphan when containment fails
+ok 25 - ARA-S-6 cancel provider failure escalates and reports an orphan when containment fails
+  ---
+  duration_ms: 0.118667
+  type: 'test'
+  ...
+# Subtest: ARA-S-5 start timeout invokes dispatch-scoped force containment
+ok 26 - ARA-S-5 start timeout invokes dispatch-scoped force containment
+  ---
+  duration_ms: 6.532
+  type: 'test'
+  ...
+# Subtest: ARA-S-5 start timeout is orphaned unless dispatch-scoped containment confirms terminal status
+ok 27 - ARA-S-5 start timeout is orphaned unless dispatch-scoped containment confirms terminal status
+  ---
+  duration_ms: 7.339667
+  type: 'test'
+  ...
+# Subtest: ARA-S-5 generic start failure is contained before redispatch can occur
+ok 28 - ARA-S-5 generic start failure is contained before redispatch can occur
+  ---
+  duration_ms: 0.422792
+  type: 'test'
+  ...
+# Subtest: ARA-S-6 timeout and malformed success never become completion
+ok 29 - ARA-S-6 timeout and malformed success never become completion
+  ---
+  duration_ms: 0.555042
+  type: 'test'
+  ...
+# Subtest: ARA-S-5 operation timeout contains the provider runtime before allowing redispatch
+ok 30 - ARA-S-5 operation timeout contains the provider runtime before allowing redispatch
+  ---
+  duration_ms: 6.630625
+  type: 'test'
+  ...
+# Subtest: ARA-S-5 operation timeout reports an orphan when containment cannot confirm terminal state
+ok 31 - ARA-S-5 operation timeout reports an orphan when containment cannot confirm terminal state
+  ---
+  duration_ms: 11.974916
+  type: 'test'
+  ...
+# Subtest: ARA-S-5 result timeout contains the provider runtime before failing
+ok 32 - ARA-S-5 result timeout contains the provider runtime before failing
+  ---
+  duration_ms: 7.167125
+  type: 'test'
+  ...
+# Subtest: ARA-S-7 adapter definition rejects incomplete provider contracts
+ok 33 - ARA-S-7 adapter definition rejects incomplete provider contracts
+  ---
+  duration_ms: 0.594458
+  type: 'test'
+  ...
+# Subtest: GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams
+ok 34 - GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams
+  ---
+  duration_ms: 1.020542
+  type: 'test'
+  ...
+# Subtest: OCR-S-1 canonical one-command request defaults to autonomous with codex then claude-code
+ok 35 - OCR-S-1 canonical one-command request defaults to autonomous with codex then claude-code
+  ---
+  duration_ms: 148.701541
+  type: 'test'
+  ...
+# Subtest: OCR-S-1 production owner returns a persisted typed runtime stop without replaying the same transition
+ok 36 - OCR-S-1 production owner returns a persisted typed runtime stop without replaying the same transition
+  ---
+  duration_ms: 378.193291
+  type: 'test'
+  ...
+# Subtest: OCR-S-1 unregistered adapter persists and renders same-Run typed recovery
+ok 37 - OCR-S-1 unregistered adapter persists and renders same-Run typed recovery
+  ---
+  duration_ms: 265.915875
+  type: 'test'
+  ...
+# Subtest: OCR-S-1 provider probe failure persists and renders same-Run typed recovery
+ok 38 - OCR-S-1 provider probe failure persists and renders same-Run typed recovery
+  ---
+  duration_ms: 256.779666
+  type: 'test'
+  ...
+# Subtest: OCR-S-1 auth denial persists actionable same-Run recovery and resumes in place
+ok 39 - OCR-S-1 auth denial persists actionable same-Run recovery and resumes in place
+  ---
+  duration_ms: 292.612792
+  type: 'test'
+  ...
+# Subtest: OCR-S-1 permission wait stops without containment and preserves same-Run recovery
+ok 40 - OCR-S-1 permission wait stops without containment and preserves same-Run recovery
+  ---
+  duration_ms: 2537.504958
+  type: 'test'
+  ...
+# Subtest: AAD-S-1 Guarded Run composes the autonomous DAG through closed action owners
+ok 41 - AAD-S-1 Guarded Run composes the autonomous DAG through closed action owners
+  ---
+  duration_ms: 412.772625
+  type: 'test'
+  ...
+# Subtest: OCR-S-5 operator cancel contains an active implementation dispatch and wins a stale orchestration poll
+ok 42 - OCR-S-5 operator cancel contains an active implementation dispatch and wins a stale orchestration poll
+  ---
+  duration_ms: 425.687584
+  type: 'test'
+  ...
+# Subtest: OCR-S-4 material ambiguity persists the exact Human Decision and resumes from prepare_artifacts
+ok 43 - OCR-S-4 material ambiguity persists the exact Human Decision and resumes from prepare_artifacts
+  ---
+  duration_ms: 526.625042
+  type: 'test'
+  ...
+# Subtest: OCR-S-4 waiting_for_human without a seven-field descriptor fails closed without persistence
+ok 44 - OCR-S-4 waiting_for_human without a seven-field descriptor fails closed without persistence
+  ---
+  duration_ms: 166.911042
+  type: 'test'
+  ...
+# Subtest: OCR-S-5 successful repair replays verify and independent review before final preparation
+ok 45 - OCR-S-5 successful repair replays verify and independent review before final preparation
+  ---
+  duration_ms: 543.259542
+  type: 'test'
+  ...
+# Subtest: IRO-S-1 Guarded Run composes the production independent-review owner, persists its checkpoint, and keeps injected review runners authoritative
+ok 46 - IRO-S-1 Guarded Run composes the production independent-review owner, persists its checkpoint, and keeps injected review runners authoritative
+  ---
+  duration_ms: 2964.944125
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 Guarded Run persists an operation checkpoint before a review action stops and restores it after resume
+ok 47 - IRO-S-3 Guarded Run persists an operation checkpoint before a review action stops and restores it after resume
+  ---
+  duration_ms: 672.316083
+  type: 'test'
+  ...
+# Subtest: IRO-S-2 production review fails closed without actual implementation runtime provenance
+ok 48 - IRO-S-2 production review fails closed without actual implementation runtime provenance
+  ---
+  duration_ms: 340.441875
+  type: 'test'
+  ...
+# Subtest: AAD-S-3 autonomous implement HEAD change rebinds verify through final_prepare immediately
+ok 49 - AAD-S-3 autonomous implement HEAD change rebinds verify through final_prepare immediately
+  ---
+  duration_ms: 462.224625
+  type: 'test'
+  ...
+# Subtest: AAD-S-5 Guarded Run records explicit autonomous disable as the legacy profile
+ok 50 - AAD-S-5 Guarded Run records explicit autonomous disable as the legacy profile
+  ---
+  duration_ms: 41.8245
+  type: 'test'
+  ...
+# Subtest: AAD-S-5 disabling autonomous execution migrates an existing Run before resume
+ok 51 - AAD-S-5 disabling autonomous execution migrates an existing Run before resume
+  ---
+  duration_ms: 953.1405
+  type: 'test'
+  ...
+# Subtest: AAD-S-5 public CLI selects autonomous execution and reports an explicit new-Run fallback
+ok 52 - AAD-S-5 public CLI selects autonomous execution and reports an explicit new-Run fallback
+  ---
+  duration_ms: 94.714
+  type: 'test'
+  ...
+# Subtest: AAD-S-5 public CLI disables autonomous execution before resuming an existing Run
+ok 53 - AAD-S-5 public CLI disables autonomous execution before resuming an existing Run
+  ---
+  duration_ms: 947.37925
+  type: 'test'
+  ...
+# Subtest: AAD-S-5 public CLI rejects invalid and off-path autonomous options
+ok 54 - AAD-S-5 public CLI rejects invalid and off-path autonomous options
+  ---
+  duration_ms: 2.248542
+  type: 'test'
+  ...
+# Subtest: OCR-S-2 production autonomous owners are composed without injected runners
+ok 55 - OCR-S-2 production autonomous owners are composed without injected runners
+  ---
+  duration_ms: 268.919583
+  type: 'test'
+  ...
+# Subtest: OCR-S-3 production final_prepare owner rechecks the Gate SSOT
+ok 56 - OCR-S-3 production final_prepare owner rechecks the Gate SSOT
+  ---
+  duration_ms: 380.4185
+  type: 'test'
+  ...
+# Subtest: IRO-S-1 Guarded Run executes the independent review action owner in the canonical DAG
+ok 57 - IRO-S-1 Guarded Run executes the independent review action owner in the canonical DAG
+  ---
+  duration_ms: 358.624083
+  type: 'test'
+  ...
+# Subtest: AAD-S-7 autonomous verify never falls through to the legacy pr-ready autopilot
+ok 58 - AAD-S-7 autonomous verify never falls through to the legacy pr-ready autopilot
+  ---
+  duration_ms: 228.309958
+  type: 'test'
+  ...
+# Subtest: AAD-S-4 injected final_prepare cannot bypass the current-head Gate SSOT
+ok 59 - AAD-S-4 injected final_prepare cannot bypass the current-head Gate SSOT
+  ---
+  duration_ms: 361.011333
+  type: 'test'
+  ...
+# Subtest: AAD-S-1 final_prepare owner receives the canonical action context
+ok 60 - AAD-S-1 final_prepare owner receives the canonical action context
+  ---
+  duration_ms: 345.02525
+  type: 'test'
+  ...
+# Subtest: AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run session
+ok 61 - AAD-S-3 autonomous checkpoints resume after recreating the Guarded Run session
+  ---
+  duration_ms: 247.280792
+  type: 'test'
+  ...
+# Subtest: AAD-S-3 changed-HEAD checkpoint resumes in a recreated session without replaying implement
+ok 62 - AAD-S-3 changed-HEAD checkpoint resumes in a recreated session without replaying implement
+  ---
+  duration_ms: 506.2765
+  type: 'test'
+  ...
+# Subtest: AAD-S-4 AAD-S-7 public autonomous CLI exposes final_prepare typed outcomes
+ok 63 - AAD-S-4 AAD-S-7 public autonomous CLI exposes final_prepare typed outcomes
+  ---
+  duration_ms: 1033.354625
+  type: 'test'
+  ...
+# Subtest: AAD-S-7 autonomous composition preserves canonical owner artifact references
+ok 64 - AAD-S-7 autonomous composition preserves canonical owner artifact references
+  ---
+  duration_ms: 359.526125
+  type: 'test'
+  ...
+# Subtest: RCC-S-4 guarded Run persistence emits capsule refresh events after authority commit
+ok 65 - RCC-S-4 guarded Run persistence emits capsule refresh events after authority commit
+  ---
+  duration_ms: 7.690125
+  type: 'test'
+  ...
+# Subtest: ARA-S-1 ARA-S-3 ARA-S-4 GAH-S-3 Guarded Run persists adapter state and bridges completed review provenance into Agent Review
+ok 66 - ARA-S-1 ARA-S-3 ARA-S-4 GAH-S-3 Guarded Run persists adapter state and bridges completed review provenance into Agent Review
+  ---
+  duration_ms: 172.296541
+  type: 'test'
+  ...
+# Subtest: CDI-S-7 Guarded Run reuses an existing logical dispatch after an explicitly unchanged rebase surface
+ok 67 - CDI-S-7 Guarded Run reuses an existing logical dispatch after an explicitly unchanged rebase surface
+  ---
+  duration_ms: 212.91825
+  type: 'test'
+  ...
+# Subtest: CDI-S-1 CDI-S-3 CDI-S-9 Guarded Run persists Codex Inbox completion and records the closed review lifecycle
+ok 68 - CDI-S-1 CDI-S-3 CDI-S-9 Guarded Run persists Codex Inbox completion and records the closed review lifecycle
+  ---
+  duration_ms: 239.32075
+  type: 'test'
+  ...
+# Subtest: CDI-S-8 production bridge rejects a host without push resume registration
+ok 69 - CDI-S-8 production bridge rejects a host without push resume registration
+  ---
+  duration_ms: 1.88425
+  type: 'test'
+  ...
+# Subtest: CDI-S-9 public CLI dispatches Codex runtime and auto-registers push resume
+ok 70 - CDI-S-9 public CLI dispatches Codex runtime and auto-registers push resume
+  ---
+  duration_ms: 215.97225
+  type: 'test'
+  ...
+# Subtest: Guarded Run rejects provider identities already persisted in a separate Run artifact
+ok 71 - Guarded Run rejects provider identities already persisted in a separate Run artifact
+  ---
+  duration_ms: 41.609292
+  type: 'test'
+  ...
+# Subtest: Guarded Run reuses the same persisted legacy dispatch identity within one Run and dispatch
+ok 72 - Guarded Run reuses the same persisted legacy dispatch identity within one Run and dispatch
+  ---
+  duration_ms: 121.284958
+  type: 'test'
+  ...
+# Subtest: ARA-S-3 Guarded Run collects an implementation result after the managed worktree HEAD advances and rebinds authority
+ok 73 - ARA-S-3 Guarded Run collects an implementation result after the managed worktree HEAD advances and rebinds authority
+  ---
+  duration_ms: 123.119584
+  type: 'test'
+  ...
+# Subtest: ARA-S-3 Guarded Run rejects an implementation result whose reported HEAD differs from the managed worktree
+ok 74 - ARA-S-3 Guarded Run rejects an implementation result whose reported HEAD differs from the managed worktree
+  ---
+  duration_ms: 83.211458
+  type: 'test'
+  ...
+# Subtest: Guarded Run rejects dispatch when managed authority is partial even with execution_context present
+ok 75 - Guarded Run rejects dispatch when managed authority is partial even with execution_context present
+  ---
+  duration_ms: 46.744
+  type: 'test'
+  ...
+# Subtest: ARA-S-4 Agent Review bridge revalidates persisted review provenance fail closed
+ok 76 - ARA-S-4 Agent Review bridge revalidates persisted review provenance fail closed
+  ---
+  duration_ms: 126.920791
+  type: 'test'
+  ...
+# Subtest: HDC-S-3 HDC-S-6 waiting Run resumes only after its typed decision is resolved
+ok 77 - HDC-S-3 HDC-S-6 waiting Run resumes only after its typed decision is resolved
+  ---
+  duration_ms: 114.249125
+  type: 'test'
+  ...
+# Subtest: HDC-S-3 waiting Run is side-effect free until the human decision is answered
+ok 78 - HDC-S-3 waiting Run is side-effect free until the human decision is answered
+  ---
+  duration_ms: 75.03625
+  type: 'test'
+  ...
+# Subtest: HDC-S-3 HDC-S-6 CLI resume answers a typed decision and continues the same Run
+ok 79 - HDC-S-3 HDC-S-6 CLI resume answers a typed decision and continues the same Run
+  ---
+  duration_ms: 118.378875
+  type: 'test'
+  ...
+# Subtest: GRS-S-1 GRS-S-2 GRS-S-4 GAH-S-1 repository Run persists guarded defaults and repeated cancel is byte-stable
+ok 80 - GRS-S-1 GRS-S-2 GRS-S-4 GAH-S-1 repository Run persists guarded defaults and repeated cancel is byte-stable
+  ---
+  duration_ms: 155.60475
+  type: 'test'
+  ...
+# Subtest: GAH-S-1 GAH-S-2 budget deadline retry and provider policy produce typed non-success stops
+ok 81 - GAH-S-1 GAH-S-2 budget deadline retry and provider policy produce typed non-success stops
+  ---
+  duration_ms: 197.123541
+  type: 'test'
+  ...
+# Subtest: GAH-S-2 persisted retry policy rejects non-retryable and interrupted backoff before resuming
+ok 82 - GAH-S-2 persisted retry policy rejects non-retryable and interrupted backoff before resuming
+  ---
+  duration_ms: 191.082458
+  type: 'test'
+  ...
+# Subtest: GAH-S-2 persisted retry policy governs arbitrary configured stop codes
+ok 83 - GAH-S-2 persisted retry policy governs arbitrary configured stop codes
+  ---
+  duration_ms: 158.690791
+  type: 'test'
+  ...
+# Subtest: GAH-S-8 GAH-S-9 cockpit preserves unknown usage instead of converting it to zero
+ok 84 - GAH-S-8 GAH-S-9 cockpit preserves unknown usage instead of converting it to zero
+  ---
+  duration_ms: 41.035833
+  type: 'test'
+  ...
+# Subtest: GAH-S-10 efficiency metrics use only typed completed measurements and preserve unknown
+ok 85 - GAH-S-10 efficiency metrics use only typed completed measurements and preserve unknown
+  ---
+  duration_ms: 0.214209
+  type: 'test'
+  ...
+# Subtest: GAH-S-10 typed outcome measurements survive authority persistence validation
+ok 86 - GAH-S-10 typed outcome measurements survive authority persistence validation
+  ---
+  duration_ms: 39.677166
+  type: 'test'
+  ...
+# Subtest: GAH-S-3 provider fallback tries persisted adapters in order and retains failed attempts for audit
+ok 87 - GAH-S-3 provider fallback tries persisted adapters in order and retains failed attempts for audit
+  ---
+  duration_ms: 78.458209
+  type: 'test'
+  ...
+# Subtest: GAH-S-2 CLI rejects guarded policy options outside execute run
+ok 88 - GAH-S-2 CLI rejects guarded policy options outside execute run
+  ---
+  duration_ms: 1.934417
+  type: 'test'
+  ...
+# Subtest: GAH-S-1 GAH-S-8 runtime usage is accumulated and budget enforcement remains typed
+ok 89 - GAH-S-1 GAH-S-8 runtime usage is accumulated and budget enforcement remains typed
+  ---
+  duration_ms: 229.551375
+  type: 'test'
+  ...
+# Subtest: GAH-S-2 exhausted runtime fallback stop codes remain resumable by the default policy
+ok 90 - GAH-S-2 exhausted runtime fallback stop codes remain resumable by the default policy
+  ---
+  duration_ms: 82.658459
+  type: 'test'
+  ...
+# Subtest: GAH-S-2 contained runtime start timeout persists and resumes under the default policy
+ok 91 - GAH-S-2 contained runtime start timeout persists and resumes under the default policy
+  ---
+  duration_ms: 139.148667
+  type: 'test'
+  ...
+# Subtest: GAH-S-2 contained runtime status timeout persists and resumes under the default policy
+ok 92 - GAH-S-2 contained runtime status timeout persists and resumes under the default policy
+  ---
+  duration_ms: 162.336292
+  type: 'test'
+  ...
+# Subtest: GAH-S-2 contained runtime result timeout persists and resumes under the default policy
+ok 93 - GAH-S-2 contained runtime result timeout persists and resumes under the default policy
+  ---
+  duration_ms: 160.500875
+  type: 'test'
+  ...
+# Subtest: GAH-S-2 guarded CLI exposes auditable retry and provider fallback policy controls
+ok 94 - GAH-S-2 guarded CLI exposes auditable retry and provider fallback policy controls
+  ---
+  duration_ms: 0.21925
+  type: 'test'
+  ...
+# Subtest: Portfolio creation request identity returns the same guarded Run exactly once
+ok 95 - Portfolio creation request identity returns the same guarded Run exactly once
+  ---
+  duration_ms: 48.033875
+  type: 'test'
+  ...
+# Subtest: Portfolio creation request fails closed when any Run candidate is corrupt
+ok 96 - Portfolio creation request fails closed when any Run candidate is corrupt
+  ---
+  duration_ms: 52.098333
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and repairs only from authority
+ok 97 - GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and repairs only from authority
+  ---
+  duration_ms: 48.384541
+  type: 'test'
+  ...
+# Subtest: GRS-S-3 GRS-S-8 INV-004 symlink legacy source root is persisted canonically and remains an allowed control root
+ok 98 - GRS-S-3 GRS-S-8 INV-004 symlink legacy source root is persisted canonically and remains an allowed control root
+  ---
+  duration_ms: 202.487625
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 GRS-S-9 managed metadata cannot downgrade its Run authority kind
+ok 99 - GRS-S-8 GRS-S-9 managed metadata cannot downgrade its Run authority kind
+  ---
+  duration_ms: 41.617959
+  type: 'test'
+  ...
+# Subtest: GRS-S-3 GRS-S-8 S-001 S-009 C-007 source fallback survives restart paths and rejects repair without mutation, but pre-existing unavailable fails closed
+ok 100 - GRS-S-3 GRS-S-8 S-001 S-009 C-007 source fallback survives restart paths and rejects repair without mutation, but pre-existing unavailable fails closed
+  ---
+  duration_ms: 204.714792
+  type: 'test'
+  ...
+# Subtest: GRS-S-3 S-009 copied unavailable metadata cannot grant source fallback control to another root
+ok 101 - GRS-S-3 S-009 copied unavailable metadata cannot grant source fallback control to another root
+  ---
+  duration_ms: 48.641584
+  type: 'test'
+  ...
+# Subtest: GRS-S-3 GRS-S-7 S-005 source fallback authority and fingerprint failures are non-mutating
+ok 102 - GRS-S-3 GRS-S-7 S-005 source fallback authority and fingerprint failures are non-mutating
+  ---
+  duration_ms: 73.578375
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 S-008 existing creation lock fails closed without bootstrapping and preserves the lock
+ok 103 - GRS-S-8 S-008 existing creation lock fails closed without bootstrapping and preserves the lock
+  ---
+  duration_ms: 9.996875
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 INV-004 source and managed callers use the same Story creation lock
+ok 104 - GRS-S-8 INV-004 source and managed callers use the same Story creation lock
+  ---
+  duration_ms: 7.036875
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 INV-004 concurrent linked worktrees share the bootstrap lock before legacy authority exists
+ok 105 - GRS-S-8 INV-004 concurrent linked worktrees share the bootstrap lock before legacy authority exists
+  ---
+  duration_ms: 60.211959
+  type: 'test'
+  ...
+# Subtest: GRS-S-10 S-008 partial legacy bootstrap stops Run creation, releases the lock, and makes the next attempt fail closed
+ok 106 - GRS-S-10 S-008 partial legacy bootstrap stops Run creation, releases the lock, and makes the next attempt fail closed
+  ---
+  duration_ms: 20.514291
+  type: 'test'
+  ...
+# Subtest: GRS-S-10 C-006 bootstrap failure without a legacy commit uses the CLI internal-error path
+ok 107 - GRS-S-10 C-006 bootstrap failure without a legacy commit uses the CLI internal-error path
+  ---
+  duration_ms: 3.344792
+  type: 'test'
+  ...
+# Subtest: GRS-S-10 S-002 managed mirror failure reports the committed authority artifact and leaves no mirror Run
+ok 108 - GRS-S-10 S-002 managed mirror failure reports the committed authority artifact and leaves no mirror Run
+  ---
+  duration_ms: 4.787708
+  type: 'test'
+  ...
+# Subtest: GRS-S-10 S-002 existing mutation commits once across mirror failure and explicit repair
+ok 109 - GRS-S-10 S-002 existing mutation commits once across mirror failure and explicit repair
+  ---
+  duration_ms: 43.495667
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 C-005 implicit Run selection orders by created_at then lexical run_id
+ok 110 - GRS-S-8 C-005 implicit Run selection orders by created_at then lexical run_id
+  ---
+  duration_ms: 140.504958
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 C-005 implicit Run selection fails closed when any candidate is rejected
+ok 111 - GRS-S-8 C-005 implicit Run selection fails closed when any candidate is rejected
+  ---
+  duration_ms: 72.791167
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 C-006 human errors expose linked-copy recovery handles and exact repair command
+ok 112 - GRS-S-6 C-006 human errors expose linked-copy recovery handles and exact repair command
+  ---
+  duration_ms: 0.513833
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 C-006 guarded CLI rejects incompatible target instead of ignoring it
+ok 113 - GRS-S-6 C-006 guarded CLI rejects incompatible target instead of ignoring it
+  ---
+  duration_ms: 31.389375
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 C-001 repair-linked-copy CLI returns repaired authority in JSON and human forms
+ok 114 - GRS-S-6 C-001 repair-linked-copy CLI returns repaired authority in JSON and human forms
+  ---
+  duration_ms: 61.935417
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 C-006 repair-linked-copy is rejected before dispatch for every non-watch execute surface
+ok 115 - GRS-S-6 C-006 repair-linked-copy is rejected before dispatch for every non-watch execute surface
+  ---
+  duration_ms: 3.59325
+  type: 'test'
+  ...
+# Subtest: GRS-S-5 GRS-S-7 INV-002 resume fails closed on a stale authoritative HEAD without mutating the Run
+ok 116 - GRS-S-5 GRS-S-7 INV-002 resume fails closed on a stale authoritative HEAD without mutating the Run
+  ---
+  duration_ms: 91.630583
+  type: 'test'
+  ...
+# Subtest: GRS-S-5 resume from another worktree fails closed without mutating either artifact
+ok 117 - GRS-S-5 resume from another worktree fails closed without mutating either artifact
+  ---
+  duration_ms: 50.784792
+  type: 'test'
+  ...
+# Subtest: GRS-S-4 GRS-S-5 INV-005 failed Run can return to running only through resume
+ok 118 - GRS-S-4 GRS-S-5 INV-005 failed Run can return to running only through resume
+  ---
+  duration_ms: 275.742833
+  type: 'test'
+  ...
+# Subtest: GRS-S-4 GRS-S-5 INV-005 GAH-S-7 lifecycle matrix accepts only the closed transition set
+ok 119 - GRS-S-4 GRS-S-5 INV-005 GAH-S-7 lifecycle matrix accepts only the closed transition set
+  ---
+  duration_ms: 5317.602666
+  type: 'test'
+  ...
+# Subtest: GRS-S-5 unknown persisted status and transition target fail closed without mutation
+ok 120 - GRS-S-5 unknown persisted status and transition target fail closed without mutation
+  ---
+  duration_ms: 101.024417
+  type: 'test'
+  ...
+# Subtest: GRS-S-2 GRS-S-5 INV-002 recoverable transitions require a fresh typed stop reason without mutation
+ok 121 - GRS-S-2 GRS-S-5 INV-002 recoverable transitions require a fresh typed stop reason without mutation
+  ---
+  duration_ms: 312.5485
+  type: 'test'
+  ...
+# Subtest: GRS-S-2 GRS-S-5 INV-002 malformed transition metadata fails before persistence
+ok 122 - GRS-S-2 GRS-S-5 INV-002 malformed transition metadata fails before persistence
+  ---
+  duration_ms: 395.207125
+  type: 'test'
+  ...
+# Subtest: GRS-S-2 GRS-S-7 INV-001 INV-002 nullable state unions reject canonical and predecessor values without mutation
+ok 123 - GRS-S-2 GRS-S-7 INV-001 INV-002 nullable state unions reject canonical and predecessor values without mutation
+  ---
+  duration_ms: 765.254042
+  type: 'test'
+  ...
+# Subtest: GRS-S-2 GRS-S-7 historical stopped null remains readable while valid typed stop surfaces are observable
+ok 124 - GRS-S-2 GRS-S-7 historical stopped null remains readable while valid typed stop surfaces are observable
+  ---
+  duration_ms: 95.313125
+  type: 'test'
+  ...
+# Subtest: GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt state is quarantined, and future schema is preserved
+ok 125 - GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt state is quarantined, and future schema is preserved
+  ---
+  duration_ms: 85.25675
+  type: 'test'
+  ...
+# Subtest: GAH-S-1 existing pre-hardening 0.2.0 Run migrates advisory limits before resume
+ok 126 - GAH-S-1 existing pre-hardening 0.2.0 Run migrates advisory limits before resume
+  ---
+  duration_ms: 119.922833
+  type: 'test'
+  ...
+# Subtest: GRS-S-4 GRS-S-7 S-005 predecessor cancellation migrates once and missing fields never default
+ok 127 - GRS-S-4 GRS-S-7 S-005 predecessor cancellation migrates once and missing fields never default
+  ---
+  duration_ms: 164.3115
+  type: 'test'
+  ...
+# Subtest: GRS-S-7 GRS-S-10 S-002 managed predecessor migration commits authority once and requires explicit mirror repair
+ok 128 - GRS-S-7 GRS-S-10 S-002 managed predecessor migration commits authority once and requires explicit mirror repair
+  ---
+  duration_ms: 68.778959
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 GRS-S-9 artifact path identity mismatches fail without mutation
+ok 129 - GRS-S-8 GRS-S-9 artifact path identity mismatches fail without mutation
+  ---
+  duration_ms: 79.193459
+  type: 'test'
+  ...
+# Subtest: GRS-S-9 malformed Story catalog and legacy JSON fail closed without mutating state
+ok 130 - GRS-S-9 malformed Story catalog and legacy JSON fail closed without mutating state
+  ---
+  duration_ms: 64.260959
+  type: 'test'
+  ...
+# Subtest: GRS-S-4 GRS-S-7 forbidden persisted transition history is invalid and non-mutating
+ok 131 - GRS-S-4 GRS-S-7 forbidden persisted transition history is invalid and non-mutating
+  ---
+  duration_ms: 61.472375
+  type: 'test'
+  ...
+# Subtest: GRS-S-9 INV-004 Gate readiness is the only positive pr_ready transition
+ok 132 - GRS-S-9 INV-004 Gate readiness is the only positive pr_ready transition
+  ---
+  duration_ms: 126.525542
+  type: 'test'
+  ...
+# Subtest: GRS-S-9 C-006 strict ids fail before path composition and CLI emits typed exit-2 JSON
+ok 133 - GRS-S-9 C-006 strict ids fail before path composition and CLI emits typed exit-2 JSON
+  ---
+  duration_ms: 5.268625
+  type: 'test'
+  ...
+# Subtest: GRS-S-1 GRS-S-9 C-001 C-006 execute run rejects supplied valid and invalid Run ids before every side effect
+ok 134 - GRS-S-1 GRS-S-9 C-001 C-006 execute run rejects supplied valid and invalid Run ids before every side effect
+  ---
+  duration_ms: 5.493125
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 C-001 C-006 CLI success JSON equals persisted Run and legacy status without run-id stays on the legacy route
+ok 135 - GRS-S-6 C-001 C-006 CLI success JSON equals persisted Run and legacy status without run-id stays on the legacy route
+  ---
+  duration_ms: 102.0685
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 C-001 execute help advertises guarded commands without removing legacy commands
+ok 136 - GRS-S-6 C-001 execute help advertises guarded commands without removing legacy commands
+  ---
+  duration_ms: 0.573541
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 INV-002 production Git identity resolves a real repository and linked worktree
+ok 137 - GRS-S-8 INV-002 production Git identity resolves a real repository and linked worktree
+  ---
+  duration_ms: 413.316458
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 INV-004 separate Git directories keep bootstrap locks repository-scoped
+ok 138 - GRS-S-8 INV-004 separate Git directories keep bootstrap locks repository-scoped
+  ---
+  duration_ms: 375.073666
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 GRS-S-8 C-001 C-007 S-009 GAH-S-5 repository CLI survives fresh processes and repair is non-mutating
+ok 139 - GRS-S-6 GRS-S-8 C-001 C-007 S-009 GAH-S-5 repository CLI survives fresh processes and repair is non-mutating
+  ---
+  duration_ms: 2873.518667
+  type: 'test'
+  ...
+# Subtest: SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop
+ok 140 - SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop
+  ---
+  duration_ms: 237.187709
+  type: 'test'
+  ...
+# Subtest: NBA-S-7 production orchestration persists an escape decision after two no-progress checkpoints
+ok 141 - NBA-S-7 production orchestration persists an escape decision after two no-progress checkpoints
+  ---
+  duration_ms: 392.917
+  type: 'test'
+  ...
+# Subtest: NBA-S-7 autonomous escape resumes at the canonical diagnose node after human resolution
+ok 142 - NBA-S-7 autonomous escape resumes at the canonical diagnose node after human resolution
+  ---
+  duration_ms: 353.656083
+  type: 'test'
+  ...
+# Subtest: HDC-S-3 resume rejects a different pending decision without mutating the waiting Run
+ok 143 - HDC-S-3 resume rejects a different pending decision without mutating the waiting Run
+  ---
+  duration_ms: 93.939166
+  type: 'test'
+  ...
+# Subtest: HDC-S-3 resumed orchestration preserves its cursor across an action failure and restart
+ok 144 - HDC-S-3 resumed orchestration preserves its cursor across an action failure and restart
+  ---
+  duration_ms: 533.3125
+  type: 'test'
+  ...
+# Subtest: NBA persisted legacy decisions omit additive fields while malformed present fields fail closed
+ok 145 - NBA persisted legacy decisions omit additive fields while malformed present fields fail closed
+  ---
+  duration_ms: 278.729834
+  type: 'test'
+  ...
+# Subtest: NBA rollback switch ignores escape handling and restores the complete canonical plan
+ok 146 - NBA rollback switch ignores escape handling and restores the complete canonical plan
+  ---
+  duration_ms: 326.093958
+  type: 'test'
+  ...
+# Subtest: SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail
+ok 147 - SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail
+  ---
+  duration_ms: 0.50275
+  type: 'test'
+  ...
+# Subtest: GAH-S-8 human summary renders pending decision and a safe fallback when recovery is absent
+ok 148 - GAH-S-8 human summary renders pending decision and a safe fallback when recovery is absent
+  ---
+  duration_ms: 0.096417
+  type: 'test'
+  ...
+# Subtest: NBA-S-7 public CLI derives a bounded escape after repeated unchanged resumes
+ok 149 - NBA-S-7 public CLI derives a bounded escape after repeated unchanged resumes
+  ---
+  duration_ms: 576.749292
+  type: 'test'
+  ...
+# Subtest: SAO-S-5 verification block persists failed kinds for public JSON and human status
+ok 150 - SAO-S-5 verification block persists failed kinds for public JSON and human status
+  ---
+  duration_ms: 310.417959
+  type: 'test'
+  ...
+# Subtest: SAO-S-1 SAO-S-2 non-dry CLI run and resume --until preserve checkpoints and typed output
+ok 151 - SAO-S-1 SAO-S-2 non-dry CLI run and resume --until preserve checkpoints and typed output
+  ---
+  duration_ms: 428.355
+  type: 'test'
+  ...
+# Subtest: SAO-S-2 action checkpoint survives a later action failure
+ok 152 - SAO-S-2 action checkpoint survives a later action failure
+  ---
+  duration_ms: 295.938084
+  type: 'test'
+  ...
+# Subtest: SAO-S-2 C-004 resume retries only the failed action and preserves the completed checkpoint
+ok 153 - SAO-S-2 C-004 resume retries only the failed action and preserves the completed checkpoint
+  ---
+  duration_ms: 477.683708
+  type: 'test'
+  ...
+# Subtest: SAO-S-2 GAH-S-6 pr_ready is revoked until a changed HEAD passes the Gate DAG
+ok 154 - SAO-S-2 GAH-S-6 pr_ready is revoked until a changed HEAD passes the Gate DAG
+  ---
+  duration_ms: 495.826167
+  type: 'test'
+  ...
+# Subtest: SAO-S-2 SAO-S-3 changed-HEAD Gate exception persists rebound and typed recovery
+ok 155 - SAO-S-2 SAO-S-3 changed-HEAD Gate exception persists rebound and typed recovery
+  ---
+  duration_ms: 369.37425
+  type: 'test'
+  ...
+# Subtest: SAO-S-1 dry-run CLI is side-effect free and unknown --until fails typed
+ok 156 - SAO-S-1 dry-run CLI is side-effect free and unknown --until fails typed
+  ---
+  duration_ms: 8.008709
+  type: 'test'
+  ...
+# Subtest: GRS-S-9 INV-004 GAH-S-4 guarded Run source surface excludes runtime/waiver/merge imports and service replacement
+ok 157 - GRS-S-9 INV-004 GAH-S-4 guarded Run source surface excludes runtime/waiver/merge imports and service replacement
+  ---
+  duration_ms: 1.160584
+  type: 'test'
+  ...
+# Subtest: IRO-S-1 runs roles in a stage concurrently and keeps the next stage behind its record barrier
+ok 158 - IRO-S-1 runs roles in a stage concurrently and keeps the next stage behind its record barrier
+  ---
+  duration_ms: 4.754
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 restart reuses every completed journal operation exactly once
+ok 159 - IRO-S-3 restart reuses every completed journal operation exactly once
+  ---
+  duration_ms: 0.372958
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 persists stopped operations, closes their lifecycle, and restart never repolls
+ok 160 - IRO-S-3 persists stopped operations, closes their lifecycle, and restart never repolls
+  ---
+  duration_ms: 0.387792
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 reserves dispatch before the external boundary and reconciles its idempotency key after a crash
+ok 161 - IRO-S-3 reserves dispatch before the external boundary and reconciles its idempotency key after a crash
+  ---
+  duration_ms: 1.597125
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 resumes a reserved record with the same idempotency key
+ok 162 - IRO-S-3 resumes a reserved record with the same idempotency key
+  ---
+  duration_ms: 0.953458
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 serializes parallel-role checkpoint writes so an older snapshot cannot win
+ok 163 - IRO-S-3 serializes parallel-role checkpoint writes so an older snapshot cannot win
+  ---
+  duration_ms: 12.834333
+  type: 'test'
+  ...
+# Subtest: IRO-S-4 preserves existing pass, needs_changes, and block verdicts
+ok 164 - IRO-S-4 preserves existing pass, needs_changes, and block verdicts
+  ---
+  duration_ms: 0.635959
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 a malformed persisted review record fails closed after restart
+ok 165 - IRO-S-3 a malformed persisted review record fails closed after restart
+  ---
+  duration_ms: 0.086333
+  type: 'test'
+  ...
+# Subtest: IRO-S-5 timeout, schema_failure, retry_or_async_failure, auth_denied, workflow_state_regression, and provenance stops never become pass
+ok 166 - IRO-S-5 timeout, schema_failure, retry_or_async_failure, auth_denied, workflow_state_regression, and provenance stops never become pass
+  ---
+  duration_ms: 3.357667
+  type: 'test'
+  ...
+# Subtest: IRO-S-6 same-session/runtime rejection and a needs_changes result are contained
+ok 167 - IRO-S-6 same-session/runtime rejection and a needs_changes result are contained
+  ---
+  duration_ms: 1.164833
+  type: 'test'
+  ...
+# Subtest: IRO-S-7 Guarded Run adapter completes serial stages and preserves needs_changes for repair
+ok 168 - IRO-S-7 Guarded Run adapter completes serial stages and preserves needs_changes for repair
+  ---
+  duration_ms: 0.665458
+  type: 'test'
+  ...
+# Subtest: IRO-S-7 repair HEAD invalidates the old review checkpoint and dispatches a fresh review
+ok 169 - IRO-S-7 repair HEAD invalidates the old review checkpoint and dispatches a fresh review
+  ---
+  duration_ms: 0.1715
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 production review runtime polls running to completed before closing and recording
+ok 170 - IRO-S-3 production review runtime polls running to completed before closing and recording
+  ---
+  duration_ms: 1.23825
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 interrupted active review poll resumes the same dispatch and converges
+ok 171 - IRO-S-3 interrupted active review poll resumes the same dispatch and converges
+  ---
+  duration_ms: 1.952333
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 production read-only stop is typed and resume redispatches the reserved review
+ok 172 - IRO-S-3 production read-only stop is typed and resume redispatches the reserved review
+  ---
+  duration_ms: 0.731125
+  type: 'test'
+  ...
+# Subtest: IRO-S-5 active review timeout cancels the dispatch and remains a typed stop
+ok 173 - IRO-S-5 active review timeout cancels the dispatch and remains a typed stop
+  ---
+  duration_ms: 0.187375
+  type: 'test'
+  ...
+# Subtest: OCR-T-1 production owners use ordered default providers and transmit a bounded implementation objective
+ok 174 - OCR-T-1 production owners use ordered default providers and transmit a bounded implementation objective
+  ---
+  duration_ms: 4.088416
+  type: 'test'
+  ...
+# Subtest: OCR-T-3 production-shaped runtime keeps polling the same running dispatch through completion
+ok 175 - OCR-T-3 production-shaped runtime keeps polling the same running dispatch through completion
+  ---
+  duration_ms: 0.565291
+  type: 'test'
+  ...
+# Subtest: OCR-T-3 runtime timeout and cancellation remain typed, contained stops
+ok 176 - OCR-T-3 runtime timeout and cancellation remain typed, contained stops
+  ---
+  duration_ms: 4.16825
+  type: 'test'
+  ...
+# Subtest: OCR-T-4 owner deadline fails closed when dispatch containment is not terminal
+ok 177 - OCR-T-4 owner deadline fails closed when dispatch containment is not terminal
+  ---
+  duration_ms: 2.750666
+  type: 'test'
+  ...
+# Subtest: OCR-T-4 owner deadline preserves a production-shaped orphaned containment failure
+ok 178 - OCR-T-4 owner deadline preserves a production-shaped orphaned containment failure
+  ---
+  duration_ms: 4.031625
+  type: 'test'
+  ...
+# Subtest: OCR-T-2 missing artifacts are delegated only when needed and no-progress fails closed
+ok 179 - OCR-T-2 missing artifacts are delegated only when needed and no-progress fails closed
+  ---
+  duration_ms: 0.441125
+  type: 'test'
+  ...
+# Subtest: OCR-T-2 material ambiguity returns exactly the bounded seven-field Human Decision descriptor
+ok 180 - OCR-T-2 material ambiguity returns exactly the bounded seven-field Human Decision descriptor
+  ---
+  duration_ms: 2.134958
+  type: 'test'
+  ...
+# Subtest: OCR-T-2 production readiness converts only explicit Story contract ambiguity into a Human Decision
+ok 181 - OCR-T-2 production readiness converts only explicit Story contract ambiguity into a Human Decision
+  ---
+  duration_ms: 0.594958
+  type: 'test'
+  ...
+# Subtest: OCR-T-2 missing or malformed Human Decision descriptors fail closed before persistence
+ok 182 - OCR-T-2 missing or malformed Human Decision descriptors fail closed before persistence
+  ---
+  duration_ms: 1.271958
+  type: 'test'
+  ...
+# Subtest: OCR-T-2 production owner boundary rejects every external authority seam without invoking it
+ok 183 - OCR-T-2 production owner boundary rejects every external authority seam without invoking it
+  ---
+  duration_ms: 0.462084
+  type: 'test'
+  ...
+# Subtest: OCR-T-3 verification and final prepare remain bound to typed current-HEAD Gate outcomes
+ok 184 - OCR-T-3 verification and final prepare remain bound to typed current-HEAD Gate outcomes
+  ---
+  duration_ms: 0.264041
+  type: 'test'
+  ...
+# Subtest: OCR-T-3 needs_changes repair advances HEAD, requests verify replay, and stops at the convergence bound
+ok 185 - OCR-T-3 needs_changes repair advances HEAD, requests verify replay, and stops at the convergence bound
+  ---
+  duration_ms: 0.283042
+  type: 'test'
+  ...
+# Subtest: OCR-T-3 repair objective aggregates production review record findings across roles
+ok 186 - OCR-T-3 repair objective aggregates production review record findings across roles
+  ---
+  duration_ms: 0.089875
+  type: 'test'
+  ...
+# Subtest: OCR-T-4 runtime adapter preserves objective in the normalized provider request
+ok 187 - OCR-T-4 runtime adapter preserves objective in the normalized provider request
+  ---
+  duration_ms: 6.914583
+  type: 'test'
+  ...
+# Subtest: OCR-T-4 production connector includes the runtime objective in the provider prompt
+ok 188 - OCR-T-4 production connector includes the runtime objective in the provider prompt
+  ---
+  duration_ms: 0.471917
+  type: 'test'
+  ...
+# Subtest: SAO-S-1 dry-run returns a closed plan without invoking a runner
+ok 189 - SAO-S-1 dry-run returns a closed plan without invoking a runner
+  ---
+  duration_ms: 1.412708
+  type: 'test'
+  ...
+# Subtest: SAO-S-2 completed same Run node and HEAD is skipped
+ok 190 - SAO-S-2 completed same Run node and HEAD is skipped
+  ---
+  duration_ms: 2.545458
+  type: 'test'
+  ...
+# Subtest: AAD-S-5 legacy human stop remains compatible without an autonomous decision descriptor
+ok 191 - AAD-S-5 legacy human stop remains compatible without an autonomous decision descriptor
+  ---
+  duration_ms: 0.396459
+  type: 'test'
+  ...
+# Subtest: SAO-S-3 action failure stops and records action_failed
+ok 192 - SAO-S-3 action failure stops and records action_failed
+  ---
+  duration_ms: 0.26325
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 typed action stops persist the owner checkpoint for restart
+ok 193 - IRO-S-3 typed action stops persist the owner checkpoint for restart
+  ---
+  duration_ms: 0.168917
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 runner checkpoint hook awaits each durable journal snapshot
+ok 194 - IRO-S-3 runner checkpoint hook awaits each durable journal snapshot
+  ---
+  duration_ms: 0.382625
+  type: 'test'
+  ...
+# Subtest: SAO-S-4 forbidden action never invokes a runner
+ok 195 - SAO-S-4 forbidden action never invokes a runner
+  ---
+  duration_ms: 0.096917
+  type: 'test'
+  ...
+# Subtest: SAO-S-4 GAH-S-4 unknown action cannot claim repo_local_safe classification
+ok 196 - SAO-S-4 GAH-S-4 unknown action cannot claim repo_local_safe classification
+  ---
+  duration_ms: 0.073459
+  type: 'test'
+  ...
+# Subtest: SAO-S-4 canonical metadata spoofing is rejected before idempotency skip
+ok 197 - SAO-S-4 canonical metadata spoofing is rejected before idempotency skip
+  ---
+  duration_ms: 0.7575
+  type: 'test'
+  ...
+# Subtest: SAO-S-4 canonical action without a registered runner is rejected before idempotency skip
+ok 198 - SAO-S-4 canonical action without a registered runner is rejected before idempotency skip
+  ---
+  duration_ms: 0.888917
+  type: 'test'
+  ...
+# Subtest: SAO-S-2 forged execution identity cannot bypass a completed canonical checkpoint
+ok 199 - SAO-S-2 forged execution identity cannot bypass a completed canonical checkpoint
+  ---
+  duration_ms: 0.334542
+  type: 'test'
+  ...
+# Subtest: SAO-S-2 forged journal identity cannot silently skip a canonical action
+ok 200 - SAO-S-2 forged journal identity cannot silently skip a canonical action
+  ---
+  duration_ms: 0.190042
+  type: 'test'
+  ...
+# Subtest: SAO-S-1 injected plan cannot omit, reorder, or duplicate canonical dependencies
+ok 201 - SAO-S-1 injected plan cannot omit, reorder, or duplicate canonical dependencies
+  ---
+  duration_ms: 0.133875
+  type: 'test'
+  ...
+# Subtest: SAO-S-5 typed verification and critical stops are preserved
+ok 202 - SAO-S-5 typed verification and critical stops are preserved
+  ---
+  duration_ms: 0.166334
+  type: 'test'
+  ...
+# Subtest: SAO-S-2 completed actions are checkpointed before the next action starts
+ok 203 - SAO-S-2 completed actions are checkpointed before the next action starts
+  ---
+  duration_ms: 0.121625
+  type: 'test'
+  ...
+# Subtest: AAD-S-1 autonomous profile exposes the closed implementation DAG
+ok 204 - AAD-S-1 autonomous profile exposes the closed implementation DAG
+  ---
+  duration_ms: 0.101625
+  type: 'test'
+  ...
+# Subtest: AAD-S-2 autonomous checkpoints are idempotent for the same Run and HEAD
+ok 205 - AAD-S-2 autonomous checkpoints are idempotent for the same Run and HEAD
+  ---
+  duration_ms: 0.421416
+  type: 'test'
+  ...
+# Subtest: AAD-S-3 HEAD-changing implement rebinds the remaining autonomous suffix
+ok 206 - AAD-S-3 HEAD-changing implement rebinds the remaining autonomous suffix
+  ---
+  duration_ms: 0.306083
+  type: 'test'
+  ...
+# Subtest: AAD-S-3 forged output HEAD cannot rebind a suffix or reach pr_ready
+ok 207 - AAD-S-3 forged output HEAD cannot rebind a suffix or reach pr_ready
+  ---
+  duration_ms: 0.194625
+  type: 'test'
+  ...
+# Subtest: AAD-S-3 autonomous profile rejects missing runners and forged plans
+ok 208 - AAD-S-3 autonomous profile rejects missing runners and forged plans
+  ---
+  duration_ms: 0.123167
+  type: 'test'
+  ...
+# Subtest: AAD-S-4 autonomous runners must return a typed result
+ok 209 - AAD-S-4 autonomous runners must return a typed result
+  ---
+  duration_ms: 0.086416
+  type: 'test'
+  ...
+# Subtest: AAD-S-5 unknown action profiles fail closed
+ok 210 - AAD-S-5 unknown action profiles fail closed
+  ---
+  duration_ms: 0.175333
+  type: 'test'
+  ...
+# Subtest: AAD-S-2 policy-denied autonomous actions fail closed before their runner executes
+ok 211 - AAD-S-2 policy-denied autonomous actions fail closed before their runner executes
+  ---
+  duration_ms: 0.075208
+  type: 'test'
+  ...
+# Subtest: AAD-S-4 only final_prepare may produce pr_ready
+ok 212 - AAD-S-4 only final_prepare may produce pr_ready
+  ---
+  duration_ms: 0.08675
+  type: 'test'
+  ...
+# Subtest: AAD-S-4 final_prepare cannot continue past the terminal DAG node
+ok 213 - AAD-S-4 final_prepare cannot continue past the terminal DAG node
+  ---
+  duration_ms: 0.207625
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 diagnose waiting_for_human stops before dependent autonomous nodes
+ok 214 - AAD-S-6 diagnose waiting_for_human stops before dependent autonomous nodes
+  ---
+  duration_ms: 1.828416
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 diagnose waiting_for_runtime stops before dependent autonomous nodes
+ok 215 - AAD-S-6 diagnose waiting_for_runtime stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.255916
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 diagnose blocked stops before dependent autonomous nodes
+ok 216 - AAD-S-6 diagnose blocked stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.379208
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 diagnose failed stops before dependent autonomous nodes
+ok 217 - AAD-S-6 diagnose failed stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.782875
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 prepare_artifacts waiting_for_human stops before dependent autonomous nodes
+ok 218 - AAD-S-6 prepare_artifacts waiting_for_human stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.250958
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 prepare_artifacts waiting_for_runtime stops before dependent autonomous nodes
+ok 219 - AAD-S-6 prepare_artifacts waiting_for_runtime stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.256875
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 prepare_artifacts blocked stops before dependent autonomous nodes
+ok 220 - AAD-S-6 prepare_artifacts blocked stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.334834
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 prepare_artifacts failed stops before dependent autonomous nodes
+ok 221 - AAD-S-6 prepare_artifacts failed stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.210166
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 implement waiting_for_human stops before dependent autonomous nodes
+ok 222 - AAD-S-6 implement waiting_for_human stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.349416
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 implement waiting_for_runtime stops before dependent autonomous nodes
+ok 223 - AAD-S-6 implement waiting_for_runtime stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.426334
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 implement blocked stops before dependent autonomous nodes
+ok 224 - AAD-S-6 implement blocked stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.448667
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 implement failed stops before dependent autonomous nodes
+ok 225 - AAD-S-6 implement failed stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.271917
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 verify waiting_for_human stops before dependent autonomous nodes
+ok 226 - AAD-S-6 verify waiting_for_human stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.366917
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 verify waiting_for_runtime stops before dependent autonomous nodes
+ok 227 - AAD-S-6 verify waiting_for_runtime stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.402167
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 verify blocked stops before dependent autonomous nodes
+ok 228 - AAD-S-6 verify blocked stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.164292
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 verify failed stops before dependent autonomous nodes
+ok 229 - AAD-S-6 verify failed stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.129542
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 review waiting_for_human stops before dependent autonomous nodes
+ok 230 - AAD-S-6 review waiting_for_human stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.317083
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 review waiting_for_runtime stops before dependent autonomous nodes
+ok 231 - AAD-S-6 review waiting_for_runtime stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.359333
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 review blocked stops before dependent autonomous nodes
+ok 232 - AAD-S-6 review blocked stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.143167
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 review failed stops before dependent autonomous nodes
+ok 233 - AAD-S-6 review failed stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.129167
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 repair waiting_for_human stops before dependent autonomous nodes
+ok 234 - AAD-S-6 repair waiting_for_human stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.141542
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 repair waiting_for_runtime stops before dependent autonomous nodes
+ok 235 - AAD-S-6 repair waiting_for_runtime stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.366708
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 repair blocked stops before dependent autonomous nodes
+ok 236 - AAD-S-6 repair blocked stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.510584
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 repair failed stops before dependent autonomous nodes
+ok 237 - AAD-S-6 repair failed stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.465167
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 final_prepare waiting_for_human stops before dependent autonomous nodes
+ok 238 - AAD-S-6 final_prepare waiting_for_human stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.346333
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 final_prepare waiting_for_runtime stops before dependent autonomous nodes
+ok 239 - AAD-S-6 final_prepare waiting_for_runtime stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.172041
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 final_prepare blocked stops before dependent autonomous nodes
+ok 240 - AAD-S-6 final_prepare blocked stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.425917
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 final_prepare failed stops before dependent autonomous nodes
+ok 241 - AAD-S-6 final_prepare failed stops before dependent autonomous nodes
+  ---
+  duration_ms: 0.238041
+  type: 'test'
+  ...
+# Subtest: AAD-S-5 explicitly selecting legacy keeps the two-node rollback path
+ok 242 - AAD-S-5 explicitly selecting legacy keeps the two-node rollback path
+  ---
+  duration_ms: 0.348041
+  type: 'test'
+  ...
+# Subtest: AAD-S-5 disabling autonomous explicitly falls back to the legacy plan
+ok 243 - AAD-S-5 disabling autonomous explicitly falls back to the legacy plan
+  ---
+  duration_ms: 0.150042
+  type: 'test'
+  ...
+# Subtest: AAD-S-6 dependency-incomplete suffix cannot execute its runner
+ok 244 - AAD-S-6 dependency-incomplete suffix cannot execute its runner
+  ---
+  duration_ms: 0.243667
+  type: 'test'
+  ...
+# Subtest: SAO-S-5 safe autopilot classifies missing and failed current evidence without executing commands
+ok 245 - SAO-S-5 safe autopilot classifies missing and failed current evidence without executing commands
+  ---
+  duration_ms: 0.702292
+  type: 'test'
+  ...
+# Subtest: SAO-S-5 S-005 S-006 S-007 safe adapter resolves CLI, config, and pr_prepare verification inputs without execution
+ok 246 - SAO-S-5 S-005 S-006 S-007 safe adapter resolves CLI, config, and pr_prepare verification inputs without execution
+  ---
+  duration_ms: 21.258
+  type: 'test'
+  ...
+# Subtest: SAO-S-8 external safe autopilot options stop before preparation
+ok 247 - SAO-S-8 external safe autopilot options stop before preparation
+  ---
+  duration_ms: 0.291708
+  type: 'test'
+  ...
+# Subtest: SAO-S-5 production safe adapter maps critical and human Gate outcomes
+ok 248 - SAO-S-5 production safe adapter maps critical and human Gate outcomes
+  ---
+  duration_ms: 0.729333
+  type: 'test'
+  ...
+# Subtest: scope boundary gate is absent when no tasks.json exists for the story
+ok 249 - scope boundary gate is absent when no tasks.json exists for the story
+  ---
+  duration_ms: 2482.281708
+  type: 'test'
+  ...
+# Subtest: scope boundary gate is informational only when the story never declared a boundary
+ok 250 - scope boundary gate is informational only when the story never declared a boundary
+  ---
+  duration_ms: 2334.615
+  type: 'test'
+  ...
+# Subtest: scope boundary gate passes when every changed file matches the declared globs
+ok 251 - scope boundary gate passes when every changed file matches the declared globs
+  ---
+  duration_ms: 2764.542916
+  type: 'test'
+  ...
+# Subtest: scope boundary gate blocks PR creation when a changed file falls outside the declared scope
+ok 252 - scope boundary gate blocks PR creation when a changed file falls outside the declared scope
+  ---
+  duration_ms: 4479.843584
+  type: 'test'
+  ...
+# Subtest: task create --allowed-paths persists a declared scope boundary; without it the boundary is derived and informational
+ok 253 - task create --allowed-paths persists a declared scope boundary; without it the boundary is derived and informational
+  ---
+  duration_ms: 264.120958
+  type: 'test'
+  ...
+# Subtest: task target inference is exact-path-safe and preserves explicit targets
+ok 254 - task target inference is exact-path-safe and preserves explicit targets
+  ---
+  duration_ms: 0.964583
+  type: 'test'
+  ...
+1..254
+# tests 254
+# suites 0
+# pass 254
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 38408.423583

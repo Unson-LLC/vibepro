@@ -1,0 +1,91 @@
+{
+  "schema_version": "0.1.0",
+  "review_type": "planning_spec:architecture_boundary",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "head_sha": "926227f945878299770448a03966c17dfa70158d",
+  "baseline_ref": "origin/main@118b68091b296f6bb8c4414cfc5eadb69ed73dc0",
+  "status": "pass",
+  "verdict": "pass",
+  "summary": "The planning and architecture contract is implementable and matches the current source topology. Closure orchestration is owned by run-session modules, src/cli.js remains the permitted outer composition root, managed-worktree mutation and independent read-only review authorities fail closed, and the already-merged Production Runtime Connectors and Independent Review Orchestration are composed rather than reimplemented. Exact-head target architecture conformance passes without a new run-session-to-CLI reverse dependency.",
+  "inspection_summary": "Inspected the exact-head Story, canonical Spec clauses, test plan references, architecture decision, target model, Design SSOT routing, source imports and composition edges, managed-worktree dispatch validation, independent-review isolation, predecessor evidence boundaries, current pr-prepare acceptance mapping, and exact-head conformance. The current repair commit changes only the behavioral E2E traceability surface and does not alter production architecture.",
+  "inspection_evidence": {
+    "review_artifact": ".vibepro/qa/review-planning-architecture-926227f9.json",
+    "conformance_artifact": ".vibepro/qa/conformance-926227f9.json",
+    "pr_prepare_artifact": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    "conformance": {
+      "status": "pass",
+      "baseline_violation_count": 81,
+      "current_violation_count": 80,
+      "delta": -1,
+      "new_run_session_cli_reverse_dependency": false
+    },
+    "acceptance_traceability": {
+      "status": "passed",
+      "acceptance_criteria_count": 8,
+      "covered_acceptance_criteria_count": 8,
+      "missing_acceptance_criteria": []
+    },
+    "source_checks": [
+      "src/one-command-pr-ready-closure.js imports only node:timers/promises and accepts readiness, preparation, runtime dispatch, polling, cancellation, and persistence as bounded callbacks.",
+      "src/guarded-run-session.js composes createOneCommandPrReadyRunSessionOwners and createGuardedIndependentReviewRunner; no inspected run-session source imports src/cli.js.",
+      "runtime dispatch requires request.requirements.managed_worktree to equal the Guarded Run authority root and validates the reported implementation HEAD against the real authoritative worktree HEAD.",
+      "implementation requests require workspace_write; review requests require review capability, a read-only sandbox, no workspace_write capability, no changed files, a separate reviewer identity/session, and a closed lifecycle.",
+      "the autonomous action registry ends at final_prepare; PR creation, merge, waiver, deployment, publication, and material external side effects remain outside the autonomous plan."
+    ],
+    "verification": [
+      "node --check src/one-command-pr-ready-closure.js",
+      "node --check src/guarded-run-session.js",
+      "git diff --check",
+      "node --test test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts test/scope-boundary-gate.test.js test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts (18/18 pass at this exact HEAD)"
+    ]
+  },
+  "judgment_delta": [
+    {
+      "initial_concern": "The final integration Story could place orchestration policy in the CLI or cause run-session code to call back into the command layer.",
+      "final_judgment": "The Architecture and target model assign the owner to run-session. src/one-command-pr-ready-closure.js is callback-injected, guarded-run-session performs composition, reverse-import inspection finds no CLI dependency, and exact-head conformance records new_run_session_cli_reverse_dependency=false."
+    },
+    {
+      "initial_concern": "One-command implementation could mutate a checkout other than the authoritative managed worktree or accept an unverified runtime HEAD.",
+      "final_judgment": "guarded-run-session derives an explicit authority root, rejects dispatches whose managed_worktree differs, resolves git identity before and after execution, and rejects completed implementation results whose reported HEAD differs from the authoritative worktree HEAD."
+    },
+    {
+      "initial_concern": "The final Story could duplicate the merged PR #377 connector implementation or PR #382 independent-review lifecycle.",
+      "final_judgment": "The planning contract explicitly classifies those behaviors as inherited. The source composes createProductionRuntimeConnectors and createGuardedIndependentReviewRunner from their existing modules; provider capability, sandbox, identity, lifecycle, provenance, and verdict validation remain with those owners."
+    },
+    {
+      "initial_concern": "Autonomous closure could silently cross human authority by creating or merging a PR, waiving a critical gate, or performing an external side effect.",
+      "final_judgment": "The Spec invariant and action registry stop at current-HEAD final_prepare/pr_ready. Runtime objectives explicitly prohibit create/merge/waive/deploy/publish behavior, and the behavioral E2E confirms pr_create, merge, and waiver are absent from the autonomous plan."
+    },
+    {
+      "initial_concern": "The AC traceability-only repair at 926227f9 could mask an architecture regression or rely on circular Story prose.",
+      "final_judgment": "The repair changes only the closure runtime E2E, binds AC markers to observed runtime and repository assertions, and leaves production modules unchanged. pr prepare reports 8/8 criteria covered, focused closure/scope/freshness tests pass 18/18, and conformance remains improved from 81 to 80 violations."
+    }
+  ],
+  "findings": [],
+  "inspection_inputs": [
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/target-model.json",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+    "docs/management/stories/active/story-vibepro-production-runtime-connectors.md",
+    "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    "design-ssot.json",
+    "src/one-command-pr-ready-closure.js",
+    "src/guarded-run-session.js",
+    "src/safe-action-orchestrator.js",
+    "src/agent-runtime-adapter.js",
+    "src/agent-runtime-connectors.js",
+    "src/independent-review-orchestrator.js",
+    "src/cli.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "test/scope-boundary-gate.test.js",
+    "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+    ".vibepro/qa/conformance-926227f9.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    "git diff --name-status origin/main...HEAD",
+    "git diff --name-status 5cb813d26c831d0e3770f453dec2a82750f731cb..HEAD",
+    "origin/main@118b68091b296f6bb8c4414cfc5eadb69ed73dc0"
+  ]
+}

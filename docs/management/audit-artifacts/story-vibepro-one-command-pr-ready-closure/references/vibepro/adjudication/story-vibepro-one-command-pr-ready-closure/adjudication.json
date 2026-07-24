@@ -1,0 +1,200 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "updated_at": "2026-07-24T05:52:49.215Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "Story、Spec、E2Eはmerged PR #372、#377、#382を先行ownerとして参照してcompositionし、履歴でもclosure commit直前のStoryと親roadmapがactive、その後のfocused closureでcompletedへ遷移したことを確認できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:49.213Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "専用production-shaped fixtureはTrusted pr_readyへ到達し、同Storyの実self-dogfoodはruntime capability不足を契約どおりのwaiting_for_runtime typed stopとして証拠化している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:49.043Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "available契約はproduction-shaped E2Eの実commitと実装sessionから分離されたread-only reviewer identityで保証される。実self-dogfoodはcapability不足をmutation前に止め、provider、required/missing capabilities、同一Runの再開条件を永続化している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:48.871Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "S-001、S-002、S-004とfocused state-machine testsがsuccess、resume、human decision、verification failure、repair convergence、no progress、quota、timeout、CI pending、cancelをbehavior assertionで通している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:48.688Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "自律DAGにPR create、merge、waiver、deploy、publish ownerはなく、実装と修正はworkspace_writeとlocal_workspace_onlyを必須化する。Codex connectorはworkspace sandbox、network_access=false、approval_policy=neverを強制できる場合だけlocal capabilityを広告する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:48.505Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "final_prepareのsource guardとnegative testsにより、prepared HEADと永続current HEADが一致し、かつready_for_pr_create=trueの場合に限ってpr_readyを返す。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:48.302Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "公開runCliが選ぶproduction action ownerを使うS-001は、実Git managed worktreeでartifact準備、実装commit、検証、独立Review、needs_changes修正commit、再検証、再Review、current-HEAD final prepareを1 Runで完走する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:48.122Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "公開CLIはguarded closure profileへ接続され、default autonomous、explicit legacy、provider override、help、JSON/human出力、status/resume/cancelをfocused testとpublic CLI E2Eが確認している。現HEAD変更はArchitecture記述のみでpublic contract実装は不変である。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:47.944Z"
+    },
+    {
+      "clause_id": "OCR-S-8",
+      "verdict": "demonstrated",
+      "reason": "Current canonical Story, Architecture, and Spec now define only pre-PR staged closure as OCR-S-8: PR #372, #377, and #382 are the predecessor SSOT evidence; the closure Story and parent roadmap are both active at this initial candidate; and source/topology inspection shows composition of, not replacement for, connector and review owners. PR creation, CI import, the focused completion commit, rebind, rereview, CI re-import, execute merge, and post-merge confirmation are explicitly segregated into a Post-PR Delivery Closure Record and are not pre-PR prerequisites. This removes the previous circular acceptance premise.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:36.337Z"
+    },
+    {
+      "clause_id": "OCR-S-7",
+      "verdict": "demonstrated",
+      "reason": "The Story's real CLI dogfood Run is a contract-permitted terminal: it remains in one persisted Run and stops before implementation mutation with runtime_unavailable, the selected claude-code provider, missing workspace_write capability, and the recovery boundary. The dedicated fixture independently reaches pr_ready through the public production-owner path.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:36.190Z"
+    },
+    {
+      "clause_id": "OCR-S-6",
+      "verdict": "demonstrated",
+      "reason": "The available-capability branch is now regression-protected by the public-CLI production-owner S-001 path: real implementation and repair commits are recorded, review runs use distinct read-only identities and closed lifecycles, and review provenance is rebound to the live current Run/HEAD immediately before dispatch. The incapable-provider alternative is independently demonstrated by real CLI dogfood that persisted runtime_unavailable, provider, missing workspace_write capability, and a same-Run recovery command before mutation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:36.055Z"
+    },
+    {
+      "clause_id": "OCR-S-5",
+      "verdict": "demonstrated",
+      "reason": "The exact-head E2E and focused suites exercise success, restart/resume, seven-field human decision, verification failure, needs_changes repair convergence, no progress, quota, timeout, CI pending, cancellation, and stale-dispatch containment. The E2E artifact is 5/5 and the targeted validation is 287/287 at the adjudicated HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:35.922Z"
+    },
+    {
+      "clause_id": "OCR-S-4",
+      "verdict": "demonstrated",
+      "reason": "The autonomous plan ends at final_prepare and has no pr_create, merge, waiver, deploy, or publication node. Material ambiguity is transported as a bounded Human Decision and persisted only by guarded-run-session. Public help and executable S-005 assertions retain PR creation, merge, waiver, and material external effects as explicit human operations.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:35.790Z"
+    },
+    {
+      "clause_id": "OCR-S-3",
+      "verdict": "demonstrated",
+      "reason": "The production final_prepare owner compares the prepared artifact's Git HEAD with the real managed-worktree HEAD and returns pr_ready only for gate_status.ready_for_pr_create=true. Stale-head, CI-pending, forged-ready, and positive current-head cases are covered by current-HEAD focused tests; S-001 confirms the persisted final prepare is completed on the repaired HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:35.658Z"
+    },
+    {
+      "clause_id": "OCR-S-2",
+      "verdict": "demonstrated",
+      "reason": "Scenario S-001 now enters through the public runCli execute-run command and supplies no custom implement, repair, or review action runners. The same production run-session owners selected by the CLI create two real managed-worktree Git commits, run verification twice, dispatch the shipped independent-review lifecycle twice with needs_changes then pass, and finish final_prepare on the repaired HEAD. The exact-head E2E record reports all seven required observations true and 5/5 passing.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:35.520Z"
+    },
+    {
+      "clause_id": "OCR-S-1",
+      "verdict": "demonstrated",
+      "reason": "The current public English and Japanese execute help describes a resumable guarded Run, the autonomous Action DAG default, typed stopping boundaries, and the explicit human-only PR-create, merge, waiver, and material-external-effect boundary. The prior claim that the command does not start an agent is absent, and public-help regression tests verify both locales.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:35.383Z"
+    }
+  ]
+}

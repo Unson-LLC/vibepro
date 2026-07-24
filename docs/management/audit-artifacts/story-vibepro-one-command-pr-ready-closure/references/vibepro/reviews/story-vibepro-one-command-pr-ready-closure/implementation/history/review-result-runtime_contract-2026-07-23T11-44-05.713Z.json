@@ -1,0 +1,151 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "needs_changes",
+  "summary": "Active implementation dispatch can survive operator cancellation and overwrite terminal Run state",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "OCR-RUNTIME-CANCEL-001",
+      "detail": "Active provider dispatch is not cancelled and a stale orchestrator can overwrite terminal cancellation"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "reviewed runtime contract; risk_surfaces=service_orchestration,core_workflow_state; regression_guard=needs_changes; path_surface_coverage=needs_changes; active provider-dispatch cancellation race is uncovered",
+    "evidence": ".vibepro/qa/one-command-full-suite.json",
+    "inputs": [
+      "src/one-command-pr-ready-closure.js",
+      "src/guarded-run-session.js",
+      "test/one-command-pr-ready-closure.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial bounded orchestration appeared safe -> active concurrent operator cancellation can be overwritten, so repair is required"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "bcf83a880285ebf4ba9eb2b20bbe2d2f8a617244",
+    "current_head_sha": "bcf83a880285ebf4ba9eb2b20bbe2d2f8a617244",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "bcf83a880285ebf4ba9eb2b20bbe2d2f8a617244",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T11:05:22.484Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-23T11:44:05.713Z",
+  "git_context": {
+    "head_sha": "bcf83a880285ebf4ba9eb2b20bbe2d2f8a617244",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-23T11:44:05.704Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "bind final review to the frozen release candidate"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "bcf83a880285ebf4ba9eb2b20bbe2d2f8a617244",
+    "surface_files": [
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "1295e0f5a24e174cb870e42eb78a25ba63ee5e4fd275725e4ffa4a3c363293db",
+        "size": 106777
+      },
+      {
+        "path": "src/one-command-pr-ready-closure.js",
+        "sha256": "b157c978e0a1de6245a9226524d56ca14f6b60c71693c4ac321852396badfc47",
+        "size": 25170
+      },
+      {
+        "path": "test/one-command-pr-ready-closure.test.js",
+        "sha256": "4662c9a79844b2e69c5ad44e1102b9b13c9d804024f2bbccfae99127096adf50",
+        "size": 18405
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "29e41fd7fc64828091cc8f40c339eba0993fb0b8de342364eb1b3cdd924013c8"
+  },
+  "source_fingerprint": "56dc220e4d909c7105ff33059b9c846723ad049e8cb5ac217cf5e9ac5426a2d1",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/runtime_final_bcf",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/agent-transcript-runtime_contract-bcf83a88.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/agent-transcript-runtime_contract-bcf83a88.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

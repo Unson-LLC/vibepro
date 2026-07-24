@@ -1,0 +1,43 @@
+{
+  "status": "pass",
+  "summary": "Frozen HEAD 639878a940ae797d11ea087f9332729ea6dd601e conforms to the implementation/runtime contract. The canonical guarded one-command path delegates only missing work, contains provider failures with typed resumable stops, bounds needs_changes repair, replays invalidated verification/review stages, and requires current-HEAD PR-ready evidence. Merge, waiver, deployment, publication, and unknown external-authority seams remain outside autonomous execution.",
+  "inspection_summary": "Inspected the complete runtime_contract review request, Story and architecture, the origin/main...HEAD implementation diff, production owner composition, guarded session lifecycle, runtime connectors/adapters, independent review orchestration, safe-action replay, task authority handling, and focused tests. Regression guard and path-surface coverage were satisfied across default and explicit-legacy CLI routing, provider fallback, permission/auth/quota recovery, cancellation and orphan containment, managed-worktree authority, implementation HEAD validation, independent read-only review, bounded repair, current-HEAD evidence rebinding, CI-pending stops, and external-side-effect boundaries. No reverse dependency from the run-session modules to the CLI layer was found, and git diff --check passed.",
+  "inspection_evidence": "HEAD 639878a940ae797d11ea087f9332729ea6dd601e; .vibepro/qa/one-command-targeted-unit.json records 269 pass and 0 fail; current typecheck passes; conformance is 80 versus origin/main baseline 81 with no new CLI reverse call.",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/review-request-runtime_contract.md",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "src/one-command-pr-ready-closure.js",
+    "src/guarded-run-session.js",
+    "src/independent-review-orchestrator.js",
+    "src/agent-runtime-adapter.js",
+    "src/agent-runtime-connectors.js",
+    "src/safe-action-orchestrator.js",
+    "src/task-manager.js",
+    "src/cli.js",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/guarded-run-session.test.js",
+    "test/agent-runtime-adapter.test.js",
+    "test/independent-review-orchestrator.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    ".vibepro/qa/one-command-targeted-unit.json",
+    ".vibepro/qa/one-command-typecheck.json",
+    ".vibepro/qa/one-command-conformance.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+    "git diff --check origin/main...HEAD"
+  ],
+  "judgment_delta": [
+    "Canonical autonomous routing regression concern resolved by explicit legacy-mode preservation and regression coverage.",
+    "Async wait and provider failure orphan concern resolved by persisted typed stops, same-dispatch resume, bounded polling, cancellation, and fail-closed containment.",
+    "Stale evidence concern resolved by suffix invalidation, replay, managed-worktree HEAD checks, independent-review binding, and authoritative current-HEAD final preparation.",
+    "External side-effect concern resolved by explicit rejection of merge, waiver, deployment, publication, and unknown external-authority seams."
+  ],
+  "findings": [],
+  "agent": {
+    "system": "codex",
+    "agent_id": "ocr_runtime_639_final",
+    "thread_id": "/root/ocr_runtime_639_final",
+    "session_id": "/root/ocr_runtime_639_final",
+    "closed": true
+  }
+}

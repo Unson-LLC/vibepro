@@ -1,0 +1,200 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Current HEAD is not Gate-ready because executable acceptance evidence, artifact consistency, and current-head adjudication remain incomplete.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-current-head-artifact-consistency",
+      "detail": "Strict verification and multiple review surfaces are not current-bound."
+    },
+    {
+      "severity": "high",
+      "id": "gate-s001-s005-executable-coverage",
+      "detail": "S-001 and S-005 need executable E2E assertions instead of labels or prose matching."
+    },
+    {
+      "severity": "high",
+      "id": "gate-frozen-surface-is-dirty",
+      "detail": "Tracked .vibepro/config.json differs from the frozen HEAD."
+    },
+    {
+      "severity": "medium",
+      "id": "gate-failure-mode-and-authority-labels",
+      "detail": "parse_failure and unit_regression telemetry responsibility require executable evidence."
+    },
+    {
+      "severity": "medium",
+      "id": "gate-runtime-e2e-head-contradiction",
+      "detail": "Runtime E2E artifact SHA does not match current HEAD."
+    },
+    {
+      "severity": "medium",
+      "id": "gate-adjudication-and-spine-open",
+      "detail": "Acceptance and judgment adjudication are not current-bound."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected frozen HEAD, Story, Architecture, Spec, test plan, runtime E2E, focused QA artifacts, verification traceability, conformance, and authoritative pr-prepare blockers.",
+    "evidence": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+      "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+      "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+      "src/one-command-pr-ready-closure.js",
+      "src/guarded-run-session.js"
+    ]
+  },
+  "judgment_delta": [
+    "Promising current-head focused execution -> authoritative Gate remains blocked by contradictory and non-executable evidence."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "639878a940ae797d11ea087f9332729ea6dd601e",
+    "current_head_sha": "639878a940ae797d11ea087f9332729ea6dd601e",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "639878a940ae797d11ea087f9332729ea6dd601e",
+      "dirty": true,
+      "dirty_fingerprint": " M .vibepro/config.json",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M .vibepro/config.json",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T17:21:18.906Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-23T17:33:25.279Z",
+  "git_context": {
+    "head_sha": "639878a940ae797d11ea087f9332729ea6dd601e",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "3db6be28f1ae3891cf375c8a1541f16e5bf520c3057eae75b28a3b42811229ef",
+    "user_status_fingerprint_hash": "3db6be28f1ae3891cf375c8a1541f16e5bf520c3057eae75b28a3b42811229ef",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T17:33:25.263Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "PR-final Gate evidence must bind the exact frozen candidate."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "639878a940ae797d11ea087f9332729ea6dd601e",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "39e782a841ca6ad666131a8cb7dfd80a5ee733835873e254f54c993647c82c91",
+        "size": 10017
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "011f019ed163b6ecc089f357cc775f3d95a7a76425c9cabce9d77e1069bee4dd",
+        "size": 6977
+      },
+      {
+        "path": "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+        "sha256": "3dbc03ef593a9cde4eaaa0154ce4a6eab360e76354881555aeec671dc71cf888",
+        "size": 11627
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "370b4fc5bdd178b09f3b6d7ad75dcacf0f39dc13ad0c8b34e625f8cb27b63a52",
+        "size": 112694
+      },
+      {
+        "path": "src/one-command-pr-ready-closure.js",
+        "sha256": "8d0a61b1d2ae865f799df61f7deb79284d606d20a85eabfcaed67a1109753b4b",
+        "size": 27413
+      },
+      {
+        "path": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+        "sha256": "34087e39c218efef97482ab4a7b2def66abea4c09740cc1534e1e3ec6fc0b746",
+        "size": 11841
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "09a9960cb24443398008bf22a3f19defd2a31aba742c1e17a4340bdcfd593a62"
+  },
+  "source_fingerprint": "0ea9a5dff04192a52dc55f1ae681249781c688047fd75bcdb6e28ddce38fa7fb",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "ocr_gate_evidence_639",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "/root/ocr_gate_evidence_639",
+    "session_id": "/root/ocr_gate_evidence_639",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/transcript-gate_evidence-639878a9.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "codex-agent:/root/ocr_gate_evidence_639",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "/root/ocr_gate_evidence_639",
+      "implementation_session_id": "run-20260723T121501Z-793c40ad",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,2056 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "updated_at": "2026-07-24T05:52:52.115Z",
+  "events": [
+    {
+      "event_id": "d1d9fd19-72ee-49bb-a74c-77a44f8d4d44",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The implementation and Story consistently define guarded autonomous closure only through pr-ready, leaving merge, waiver, and material external side effects to explicit human action.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:54.266Z"
+    },
+    {
+      "event_id": "0aca6ea1-255e-4a88-b54d-6709a9c8b340",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The production-shaped and unavailable-provider paths are evidenced, but a live provider-available end-to-end run and final PR/CI/merge state remain delivery-time facts.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:54.789Z"
+    },
+    {
+      "event_id": "c0178673-ba26-4c8d-a7da-d664200c308f",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Tests and orchestration boundaries preserve managed worktree ownership, current-HEAD evidence binding, independent review, and explicit human control for merge and waiver.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:54.997Z"
+    },
+    {
+      "event_id": "6e128599-34ab-4a4b-abff-6955d43a872e",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The run-session module owns closure orchestration through injected ports and does not introduce a reverse dependency on the CLI layer or duplicate predecessor connectors and review orchestration.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:55.233Z"
+    },
+    {
+      "event_id": "9e4a1d2d-4258-41d1-830d-d68fccd95369",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The classifier expects every listed failure mode to be a defect; several are intentionally typed, resumable stop outcomes and are therefore valid contract behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:55.611Z"
+    },
+    {
+      "event_id": "d487385c-3d5c-4691-b806-1dfbde0038d7",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-HEAD tests, reviews, and conformance can establish PR readiness, while CI import, merge evidence, and roadmap closure must be judged after those external lifecycle events occur.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:55.850Z"
+    },
+    {
+      "event_id": "f9902835-e4eb-4a43-8604-cf9ced182028",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The execute run command contract exposes until pr-ready and guarded autonomy with typed completion and stop outcomes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:56.114Z"
+    },
+    {
+      "event_id": "f1575cb9-cf94-4075-9705-3147f87911a1",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Persisted resumable session and evidence state is intentional lifecycle data, not an accidental mutation or hidden external side effect.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:56.342Z"
+    },
+    {
+      "event_id": "15b3b523-0523-4250-841d-efb537ec4fda",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Production-shaped connector paths and unavailable-provider behavior are verified, but a provider-available live delegated run is environment-dependent and remains a human delivery judgment.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:56.575Z"
+    },
+    {
+      "event_id": "6025a6ca-0a2e-42d7-919b-c52cbe539b1a",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The focused implementation is reviewable, but final scope acceptance depends on current-HEAD independent reviews and the PR artifact still to be created.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:56.948Z"
+    },
+    {
+      "event_id": "d00076b2-c146-4ae1-941f-66cd4188f7a9",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Timeout is intentionally normalized to a typed resumable stop with bounded retry metadata, so its presence is contract coverage rather than an unsound implementation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:57.209Z"
+    },
+    {
+      "event_id": "ca024bb2-961b-4e70-80d8-7012e7ebf9c3",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed completed runtime results fail closed as invalid_runtime_result and are covered by executable regression evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:57.470Z"
+    },
+    {
+      "event_id": "8a789a88-81e0-4eff-9512-c6ec79ce3069",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Provider failure is an expected typed stop and recovery input, not evidence that the closure orchestrator itself is defective.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:57.771Z"
+    },
+    {
+      "event_id": "57ac1e96-bce4-4e77-8e8b-12c48c9af4c6",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Retryable review readiness and permission waits are explicitly persisted and resumed; the classifier premise conflicts with the required resumable-stop contract.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:57.993Z"
+    },
+    {
+      "event_id": "25acfa70-6703-40ab-aabb-df564a740815",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Evidence invalidation and current-HEAD rebinding are protective lifecycle behavior exercised by tests, not a regression merely because stale evidence is rejected.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:58.184Z"
+    },
+    {
+      "event_id": "26417669-645a-403b-8133-88e0bc945d2f",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Typed state transitions and resumable stops preserve the workflow state machine; the classifier treats required non-terminal states as regressions without supporting premise.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "27027954f91102f52ec05b21b712467b40cf2978",
+      "recorded_at": "2026-07-23T17:57:58.422Z"
+    },
+    {
+      "event_id": "8dd212a4-617d-4992-91ad-ad6e4052e9be",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story defines acceptance, forbidden authority boundaries, and two-stage completion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:22:59.393Z"
+    },
+    {
+      "event_id": "c785f889-6b77-49f9-91b7-4a518d0a0b11",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current tests distinguish available runtime behavior from typed capability-unavailable stops.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:22:59.618Z"
+    },
+    {
+      "event_id": "5435bbec-90fe-492c-934c-608381d4ee1d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-HEAD pr_ready, repair revalidation, and fail-closed invariants are tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:22:59.826Z"
+    },
+    {
+      "event_id": "bcc19dcc-ed9a-4b1c-bcd9-fdd9a52de859",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "PR creation, merge, waiver, deployment, publication, and external side effects remain explicit human actions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:23:00.045Z"
+    },
+    {
+      "event_id": "5518558f-febd-4492-beb8-7bd93fb45ffd",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Strict aggregate covers the required failure-mode scenarios.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:23:00.269Z"
+    },
+    {
+      "event_id": "e4a92fc3-7f71-49ce-9a05-cb7adcefa948",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "PR, CI import, explicit merge, and roadmap closure are not yet complete at this checkpoint.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:23:00.481Z"
+    },
+    {
+      "event_id": "238a44ea-aeb2-431e-bcc0-0253db9e71f7",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Default and legacy profiles, help text, and forbidden action boundaries are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:23:00.723Z"
+    },
+    {
+      "event_id": "74c5cc31-1d7c-47d3-be4d-60deaa58a9c5",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Durable run state supports replay, resume, and evidence lifecycle checks.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:23:00.936Z"
+    },
+    {
+      "event_id": "c41a9fc0-6b8e-44cb-9847-e6b57b80fd05",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Managed worktree, independent read-only review, cancellation, resume, and typed stops are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:23:01.147Z"
+    },
+    {
+      "event_id": "08b3d157-be31-47a5-961f-fdd107bb3002",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story registers canonical Architecture, Spec, Test Plan, owner paths, and review surface.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:23:01.372Z"
+    },
+    {
+      "event_id": "4aae6765-d6b6-4c28-9eea-ac6bd482ddaa",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Timeout containment and recovery pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:23:01.584Z"
+    },
+    {
+      "event_id": "248979e0-dabe-4cf7-9021-634408e2a866",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed completion cannot become success.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:23:01.789Z"
+    },
+    {
+      "event_id": "e5f0438d-8d4f-47b5-ac2e-c5c5426573f7",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Provider failure preserves typed normalization and fallback.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:23:02.044Z"
+    },
+    {
+      "event_id": "20fb53a0-349a-4676-9004-3fcd145a53f4",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Duplicate dispatch, retry containment, and permission resume are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:23:02.266Z"
+    },
+    {
+      "event_id": "23f26e42-bb56-4915-a9a5-441497b013bd",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Stale HEAD and non-independent review provenance fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:23:02.505Z"
+    },
+    {
+      "event_id": "78e1ab07-7b50-4f4f-8465-285f431170ba",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Terminal cancellation authority wins over stale in-flight completion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_judgment_adjudicator",
+        "session_ref": "/root/closure_judgment_adjudicator"
+      },
+      "head_commit": "639360c81283a7993f9ef736a554a1c309dd5269",
+      "recorded_at": "2026-07-23T18:23:02.720Z"
+    },
+    {
+      "event_id": "de844391-60c2-414d-8166-a53fdd298884",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The implementation realizes the stated intent as one guarded public command that closes the implementation-to-PR-ready loop while keeping merge and external authority explicit; Story, Architecture, Spec, CLI, and E2E are aligned.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:36.476Z"
+    },
+    {
+      "event_id": "0c6b30b3-06c2-44fc-8415-9cd3090ea035",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current reality is exercised rather than inferred from changed-file classification: exact-head S-001 traverses public CLI, production owners, real managed Git mutation, current Run authority, two review lifecycles, repair, and current-HEAD final preparation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:36.625Z"
+    },
+    {
+      "event_id": "bb922710-ed3e-4ecf-b822-23ae15a2bdd8",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Managed-worktree authority, current-HEAD-only readiness, distinct read-only review identity, bounded human-decision shape, typed stops, repair suffix replay, and external-action exclusion are explicit in design and enforced by current-head tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:36.760Z"
+    },
+    {
+      "event_id": "60c44ef5-2d02-4988-979b-1910662433fd",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The new owner is inside run-session, receives Gate and runtime capabilities as callbacks, and does not import the CLI. It composes the shipped runtime connector and independent-review boundaries. Conformance improves from 81 to 80 violations and reports no new run-session-to-CLI reverse dependency.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:36.903Z"
+    },
+    {
+      "event_id": "5a11ab5a-ef01-4117-858a-0e6668c9829d",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Failure behavior is executable: malformed/incomplete runtime results, provider absence/auth/quota, timeout and containment, retry/poll/restart, verification failure, needs_changes repair, CI pending, cancellation, stale dispatch, and stale review authority all fail closed or yield typed recovery.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:37.041Z"
+    },
+    {
+      "event_id": "6c2e328f-6110-467d-b798-61560cb30cf1",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence is exact-head and outcome-grounded: 5/5 public production-owner E2E, 287/287 targeted validation, 155/155 unit, 12/12 connector integration, typecheck pass, real CLI typed-stop dogfood, and conformance 80 versus main 81. Post-PR delivery is correctly not claimed as pre-PR done.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:37.178Z"
+    },
+    {
+      "event_id": "7506d353-6580-4a63-aa95-ac94e6df5f78",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The canonical command defaults to autonomous guarded execution, explicit legacy and disable paths remain, JSON and human surfaces retain status/resume/cancel semantics, and help accurately states the authority boundary in both languages.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:37.322Z"
+    },
+    {
+      "event_id": "d5d833fb-7bc1-4879-9d46-27ea8ea62f36",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Run authority is persisted before mirrors, runtime dispatches and retry journals are idempotent, resumes reuse the same Run, repair invalidates downstream checkpoints, cancellation is terminal, and malformed or stale persisted state fails closed under focused regression tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:37.461Z"
+    },
+    {
+      "event_id": "b61a014a-caa4-4109-b7c9-7d3ae2d0a6c4",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The former split-topology gap is closed: public CLI now traverses the production run-session owner, coordinator, managed worktree, independent-review prepare/authorize/start/close/record lifecycle, repair replay, and final prepare as one available-provider E2E. Review reloads current Run authority before dispatch.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:37.613Z"
+    },
+    {
+      "event_id": "f5c29d17-805f-4362-9b70-5ebbd3d384c4",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Although broad, the diff is one coherent final integration Story with explicit run-session ownership, exact Task targets, named predecessor boundaries, focused tests, and separate post-PR closure record. Connector and review predecessor implementations are reused rather than folded into a new owner.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:37.746Z"
+    },
+    {
+      "event_id": "9dd10ab9-b14e-4e62-ba53-4ae70a8b8ff9",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Runtime polling is deadline-bounded, containment attempts cancellation, terminal status is recorded, runtime_probe_timeout is typed, and unit plus E2E matrix cases verify the timeout branch and safe resume.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:37.884Z"
+    },
+    {
+      "event_id": "eb30e603-d947-495d-a745-b4803c20ea17",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed Story catalog, legacy state, transition metadata, runtime results, and incomplete review results do not become green completion; current focused tests verify parse/schema failures before mutation or persistence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:38.024Z"
+    },
+    {
+      "event_id": "13e8b72e-d61b-476f-b8e1-bb671b87968a",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Unavailable, capability-limited, unauthenticated, quota-limited, failed-probe, and incomplete providers produce typed non-green stops with provider and recovery context. Real CLI dogfood confirms the pre-mutation missing-capability terminal.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:38.165Z"
+    },
+    {
+      "event_id": "209c42e8-bcac-4852-b28e-2bf6d9a071e1",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Persisted idempotency keys, bounded polling, provider fallback order, retry journal, restart/resume, cancellation containment, and stale completion authority are covered. In-flight work cannot overwrite terminal cancellation or skip the required suffix.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:38.319Z"
+    },
+    {
+      "event_id": "8146cbec-ae44-48b5-bfd6-d1f039d3400f",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The repaired implementation reloads selected Run authority immediately before review, binds review to the authoritative managed worktree and live HEAD/action journal, reruns review after repair, and permits final pr_ready only from current-HEAD prepare. OCR-S-8 no longer requires future PR/CI evidence for pre-PR acceptance.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:38.526Z"
+    },
+    {
+      "event_id": "3d25bcd5-7f9a-425a-b244-71a4c5daf2ba",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Typed stops, exact resume node, repair replay from verify, current-HEAD rebind, terminal cancellation, corruption rejection, CI-pending containment, and final-ready validation prevent stale, pending, or over-green workflow states.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:38.685Z"
+    },
+    {
+      "event_id": "15cbb08e-d014-4918-97ff-0c21e9b75890",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff implements the Story's actual intent as one guarded public command that autonomously advances the implementation-to-PR-ready loop while keeping PR creation, merge, waiver, and material external effects under explicit human authority. Story, Architecture, Spec, CLI help, closed action plan, and production-shaped E2E agree on that boundary.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:50.455Z"
+    },
+    {
+      "event_id": "b81d3618-2497-4f88-b8db-459a8183fe1c",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current reality is exercised through public runCli and production action-owner composition in a real temporary Git repository and managed worktree. S-001 observes implementation and repair commits, two distinct read-only review lifecycles, repeated verification, and final preparation on the repaired HEAD; the real provider-unavailable path separately persists a typed pre-mutation stop.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:50.613Z"
+    },
+    {
+      "event_id": "b65087aa-1ad0-4e35-8d57-c64f9f3dd797",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Managed-worktree authority, idempotent dispatch, distinct review identity, read-only review, bounded human decisions, repair suffix replay, current-HEAD-only readiness, terminal cancellation, and exclusion of post-PR authority are explicit design invariants and have positive and negative executable tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:50.749Z"
+    },
+    {
+      "event_id": "a4f19b5c-f776-469a-bec6-96d8f4edf0dc",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The new policy owner resides in the run-session boundary and receives Gate, runtime, verification, and review operations as callbacks; it does not import the CLI. The CLI remains the outer composition layer, and shipped runtime connector and independent-review owners are reused. Exact-HEAD conformance improves violations from 81 to 80 and reports no new run-session-to-CLI reverse dependency.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:50.880Z"
+    },
+    {
+      "event_id": "ab8a5149-8bfb-45b2-93f4-7938917b8459",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Failure behavior is materially exercised rather than merely named: malformed and incomplete runtime results, malformed persisted state, provider absence and quota, start/status/result timeouts, failed containment, no-progress mutation, verification failure, needs_changes repair, CI pending, retry backoff, cancellation, stale HEAD, and stale asynchronous completion all fail closed or yield typed recovery.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:51.009Z"
+    },
+    {
+      "event_id": "314615df-b8d1-48dc-948a-ed5793de6b48",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence is exact-HEAD and outcome-grounded: public production-owner E2E is 4/4, integration is 4/4, focused unit validation is 288/288, typecheck passes, the real CLI self-dogfood stop is persisted, and conformance improves by one violation. The removed circular marker scenario is not counted, and post-PR CI/merge is correctly not claimed as pre-PR done. Canonical Gate readiness remains separately false until current evidence is recorded.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:51.142Z"
+    },
+    {
+      "event_id": "33731803-a7f1-40b4-be1e-9fa6031249cf",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The canonical command, defaults, typed JSON state, human status rendering, resume/cancel surfaces, and bilingual help are tested through the public CLI. Compatibility paths remain explicit, unsupported combinations stop typed, and the help accurately states what the command will and will not authorize.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:51.280Z"
+    },
+    {
+      "event_id": "08e8def7-1fab-47de-854b-3d5a96328fd0",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Despite the classifier's needs_evidence label, direct state tests establish the answer: canonical Run authority is persisted before projections, dispatch idempotency reuses provider work, retries are journaled, resume retains the Run id, repair invalidates the downstream suffix, cancellation is terminal, predecessor state migrates, and malformed current or legacy JSON/state is rejected without mutation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:51.421Z"
+    },
+    {
+      "event_id": "9deba731-3c00-4039-b9fb-246306080645",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Despite the classifier's needs_evidence label, the former split-topology risk is directly covered. Public CLI traverses the production run-session owner, runtime coordinator, managed worktree, verification, independent-review prepare/authorize/start/close/record lifecycle, repair replay, and final prepare. Polling is bounded; timeout requires containment before retry; review reloads current Run authority; terminal cancellation defeats late completion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:51.551Z"
+    },
+    {
+      "event_id": "1643a18a-1c59-46d6-bc83-1cb64623619a",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff is broad but remains one coherent final integration Story: one public contract, one run-session policy owner, one closed action DAG, explicit predecessor interfaces, and a focused verification matrix. Runtime transport and independent-review implementation are predecessor modules reused by composition rather than reimplemented. Splitting the final owner from its CLI wiring and end-to-end proof would obscure the cross-boundary invariant being reviewed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:51.691Z"
+    },
+    {
+      "event_id": "3247e313-0399-462f-86f2-9f541ebff8b9",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The classifier's missing_coverage result is contradicted by direct executable coverage. Probe, start, status, and result operations are deadline-bounded; start/status/result timeout cases persist their typed stop, cancel and confirm containment before retry, then resume under policy. Failed containment becomes orphaned_agent and blocks redispatch rather than over-green completion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:51.828Z"
+    },
+    {
+      "event_id": "babe849f-da20-45c9-b5c4-e4922bb2991b",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The classifier's missing_coverage result is contradicted by direct parser and schema tests. Truncated provider JSON rejects with invalid_runtime_result; completed results missing required fields fail instead of completing; malformed transition metadata and malformed Story catalog or legacy state fail before mutation. Adding the objective to the provider prompt does not weaken structured-result validation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:51.961Z"
+    },
+    {
+      "event_id": "3e225271-54dd-4f49-a8ca-eff0f3f01cf3",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Unavailable, disabled, unauthenticated, capability-limited, quota-limited, failed-probe, process-failed, and incomplete-result providers map to typed non-green states with recovery context. The real self-dogfood path confirms that missing workspace_write stops before mutation and preserves a same-Run resume command.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:52.093Z"
+    },
+    {
+      "event_id": "76ca5e6b-a168-4241-8a21-0e2833e47585",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The classifier's missing_coverage result is contradicted by persisted retry and race tests. Dispatch and review lifecycle idempotency keys prevent duplicate work, backoff and allowlists govern retry, arbitrary retryable and permanent stop codes are distinguished, process restart resumes from the persisted cursor, and terminal cancellation or failed containment prevents stale asynchronous completion from advancing the Run.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:52.224Z"
+    },
+    {
+      "event_id": "205db0e9-3b24-4fee-a676-288e32457cc9",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Evidence cannot remain misleadingly green across repair or HEAD change: needs_changes invalidates the verify-review-final_prepare suffix, review dispatch reloads authoritative Run state and binds to managed-worktree/live HEAD context, a new independent review follows repair, and final pr_ready requires current-HEAD prepare with ready_for_pr_create=true. The currently false pr-prepare artifact demonstrates that acceptance prose alone does not satisfy the Gate.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:52.353Z"
+    },
+    {
+      "event_id": "9732d978-39f9-4588-832b-6bf3b5883c3e",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Typed stops, exact resume cursor, persisted retry journal, repair replay from verify, current-HEAD rebind, terminal cancellation, stale-HEAD rejection, corruption rejection, CI-pending containment, and final-ready validation prevent stale, pending, or over-green workflow states. S-004 also proves persisted public status, resume, failure, and cancel behavior across invocations.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "review_planning",
+        "session_ref": "/root/review_planning"
+      },
+      "head_commit": "926227f945878299770448a03966c17dfa70158d",
+      "recorded_at": "2026-07-23T23:37:52.491Z"
+    },
+    {
+      "event_id": "66da47f6-e975-45e6-82ff-a9e30c77bf43",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "8件のAcceptance CriteriaをStory、Architecture、Spec、実装責務、E2E assertionまで追跡した。単なる意図文ではなく、1コマンドの実装ループとPR作成・merge・waiver・外部副作用を人間操作に残す境界が実装と負テストに一致している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:07.552Z"
+    },
+    {
+      "event_id": "3f01063b-ee71-44c9-8848-124cef4d632f",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "公開CLIとproduction action ownerを通るE2Eが、実Git managed worktreeで実装HEAD前進、needs_changes、修復HEAD、再検証、別read-only review、final prepareを再生する。実provider能力不足はfixture成功と混同せず、pre-mutation typed stopとして別途実証されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:07.863Z"
+    },
+    {
+      "event_id": "3e64dcf4-9ecc-48c1-9f02-a1732a08fc2f",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "7-action allowlist、managed-worktree権威、実HEAD照合、final_prepare専用pr_ready、bounded human decision、独立review identity、修復後suffix replay、外部権限除外がSpecだけでなくコードの強制条件と正負テストに対応している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:08.364Z"
+    },
+    {
+      "event_id": "cb0762d4-54e1-40b7-ae84-1512ff749bc3",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "新policy ownerはrun-session内のcallback-injected moduleでCLIをimportしない。provider transportとreview lifecycleは既存ownerを合成し、PR prepare、CI import、mergeは各所有moduleに残る。conformanceもbaseline 81から80へ改善し、run-sessionからCLIへの新規逆依存がない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:09.095Z"
+    },
+    {
+      "event_id": "71e5424e-b433-48d1-9599-f80626ba82c1",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "成功系ラベルだけでなく、auth、permission、quota、timeout、containment失敗、no-progress、verification failure、CI pending、malformed decision/state/provider result、repair exhaustion、cancelとstale poll競合が個別の負テストで非green結果になることを確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:09.409Z"
+    },
+    {
+      "event_id": "a97f12c6-2236-4fae-a2b8-21c612e63e3a",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "exact HEAD証跡はunit 288/288、E2E 4/4かつAC 8/8、integration 4/4、typecheck/build-equivalent passである。実provider不足時のtyped stopも契約上の正規結果として区別されている。現在のpr-prepareがjudgment・current-HEAD review記録待ちでfalseな点は、実装done証拠と最終Gate完了を混同していない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:10.085Z"
+    },
+    {
+      "event_id": "1ded6b54-9ca9-4d9b-92d5-394ee33f92b6",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "英日help、JSON/human出力、status/resume/cancel、guarded default、explicit legacy、provider override、無効なoption組合せが公開CLIテストで固定されている。既存legacy routeを残し、PR createとexecute mergeは別コマンドのままである。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:10.419Z"
+    },
+    {
+      "event_id": "b0b80302-186d-43da-8e69-08d1a72ca0fa",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Run authority-before-mirror、dispatch/review idempotency reservation、同一Run resume、repair時downstream invalidation、terminal cancellation、predecessor schema migration、corrupt/future/malformed JSONのfail-closed処理が永続状態テストで直接検証されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:10.720Z"
+    },
+    {
+      "event_id": "f877c7c0-db21-4bab-9962-ad452f0b42fd",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "classifierのneeds_evidenceに反し、process境界の予約後crashと同一idempotency key再利用、provider polling timeoutとcontainment、cancel対stale completion、review lifecycle close/record、repair後verify-review replay、restart/resumeが直接テストされている。deadlockを断言で除外せず、bounded timeoutとtyped orphan stopで閉じる設計も確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:10.953Z"
+    },
+    {
+      "event_id": "359f3a2f-d7ac-4f73-a61e-f2042a7c9f75",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "差分は大きいが、最終integration Storyの1つの公開契約と7-action DAGに集約され、Architecture、6-clause Spec、test plan、focused owner、production-shaped E2Eでreview spineが明確である。既存connector/review実装は再実装せず、必要な適応差分だけなので、分割するとcurrent-HEAD横断不変条件を切断する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:11.186Z"
+    },
+    {
+      "event_id": "b278441c-3df2-40a0-ae22-c42be0e685ab",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "probe/start/status/resultとreview pollingのtimeoutが検証され、cancel・force containment後のみ再試行可能になる。containment確認不能時はorphaned_agentとなり、pr_readyや重複dispatchへ進まない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:11.434Z"
+    },
+    {
+      "event_id": "be344bf7-6857-460d-9c4f-a2b1bd0aeca4",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "classifierはmissing_coverageだが、truncated provider JSONがconnector収集時にinvalid_runtime_resultとなる直接テストと、completedだが必須結果fieldを欠くadapter応答がfailedになるexact-HEAD unit evidenceがある。malformed persisted transition、Story catalog、legacy JSONもmutation前に拒否される。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:11.675Z"
+    },
+    {
+      "event_id": "6f104310-ddfb-4764-8e7f-14614adc86f6",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "provider unavailable、disabled、auth denial、permission wait、quota、capability不足、probe/start/status/result失敗、不完全結果が型付き非green状態と復旧条件へ写像される。実dogfoodもworkspace_write不足をmutation前停止として記録している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:12.026Z"
+    },
+    {
+      "event_id": "0e1b2b3d-e76c-4b52-8e30-cb3a832e2a38",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "dispatchとreview operationは外部境界前に予約され、crash後も同一idempotency keyでreconcileする。persisted retry allowlist/backoff、重複dispatch再利用、timeout containment、terminal cancelがstale poll完了に勝つことが直接検証されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:12.258Z"
+    },
+    {
+      "event_id": "4428bf73-c414-4206-81c8-530f6dd6bc62",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "HEAD変更はdownstream action evidenceを再bindし、needs_changes修復はverifyから再生して旧review checkpointを無効化する。final_prepareはprepared HEAD一致とready_for_pr_create=trueの両方を要求する。現pr-prepareが旧strict-HEAD reviewsをstaleとして実際にblockしており、誤greenを防ぐ挙動も観測できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:12.488Z"
+    },
+    {
+      "event_id": "0797f290-7779-459f-a372-01e7f9e5fb4a",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "typed stop、persisted resume cursor、current-HEAD rebind、repair suffix replay、terminal cancellation、stale authority拒否、corrupt-state quarantine、CI-pending containment、final-ready検証によりstale・pending・over-green状態を防ぐ。公開status/resume/cancelの複数invocation E2Eもある。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-adjudicator-e6446920",
+        "session_ref": "/root/review_arch_spec"
+      },
+      "head_commit": "e64469202935397c70b215d3ef069f10809128a1",
+      "recorded_at": "2026-07-24T01:08:12.832Z"
+    },
+    {
+      "event_id": "febf1669-c79c-4c82-8dfd-a1f5cbe4dca0",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Storyの8 criteriaは、公開command、権限境界、failure matrix、実provider不足時のterminal、staged closureまで具体化され、実装とSpecへ追跡できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:33.765Z"
+    },
+    {
+      "event_id": "5af8887a-69d7-4fe8-9588-6ea2c93083d4",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "機械状態はneeds_evidenceだが、現HEADには公開CLIを通るproduction-shaped実Git E2E、実self-dogfood typed stop、290/290 focused、4/4 integration、4/4 E2Eがあり、現在の実行経路を直接観測できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:33.943Z"
+    },
+    {
+      "event_id": "144e7c83-b0d1-4756-8102-fa12d971125c",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current-HEADのみpr_ready、managed-worktree HEAD、独立read-only review、typed stop、明示mergeという不変条件がArchitecture/Specだけでなくsource guardとnegative testsで成立する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:34.123Z"
+    },
+    {
+      "event_id": "953b1977-a5dc-4751-a9cc-4e46b2395d95",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "runtime ownerと外部権限の境界はDAG node欠如だけでなく、local_workspace_only、network denial、approval_policy=never、read-only review、pre-start capability stopで強制される。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:34.305Z"
+    },
+    {
+      "event_id": "a3234220-8779-4701-bb51-4b10b110482b",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "provider不足、quota、permission、probe/start/status/result timeout、malformed result、no progress、verification failure、review repair、CI pending、cancel、orphan containmentを直接assertするテストがある。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:34.484Z"
+    },
+    {
+      "event_id": "b529e50c-133e-4a01-92bc-e65f358e03bb",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "機能証拠はexact HEADでfocused 290/290、integration 4/4、E2E 4/4、full 1903/1903、build/typecheck/conformance pass。なお配送Gateは別で、現行pr-prepareはrunning/stale role review等によりready_for_pr_create=falseと正しく非greenである。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:34.662Z"
+    },
+    {
+      "event_id": "f0e233d5-4455-49da-8bbb-18bcec5dce0c",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "新しいrun/status/resume/cancelのJSON・human・help surfaceをテストし、legacy profileと明示disable fallbackを維持している。unknown/malformed inputはfail closedする。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:34.835Z"
+    },
+    {
+      "event_id": "8eed553f-3431-43da-89f2-3d5a975c4a7e",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Run authority先行永続化、dispatch idempotency、予約後crash再開、同一Run resume、repair suffix invalidation、terminal cancel優先、legacy migration、malformed state拒否がstate/replay testsで確認できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:35.015Z"
+    },
+    {
+      "event_id": "bf48f46a-70d5-47ea-b70f-c240cb8ce520",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "run-session→managed worktree→verify→independent review→repair→fresh review→final prepareの順序、serial review barrier、poll再開、timeout/cancel containmentがtopology planと実行テストで一致する。conformanceはrun-session→CLI reverse dependency 0。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:35.191Z"
+    },
+    {
+      "event_id": "10660580-8561-467e-aafc-a6ad475c51c0",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "差分は広いが単一のclosure intentにまとまり、既存connector/review ownerをcompositionし、Story→Architecture→Spec→test→runtimeの読順とfocused artifactsがある。先行3 ownerを別PRの正本として残す分割境界も妥当である。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:35.364Z"
+    },
+    {
+      "event_id": "9bb33e3c-6f21-446b-b5a8-b6d7eeffdb18",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "機械状態missing_coverageに反し、probe/start/status/resultとreview lifecycleの各timeoutがtyped stop、cancel、terminal確認、orphan fail-closedまで直接テストされる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:35.539Z"
+    },
+    {
+      "event_id": "158e3f96-68d1-4155-b6c9-3d80b9c0a806",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed provider JSON、必須field欠落、malformed transition/review/Run stateはinvalid_runtime_resultまたはinvalid_stateとなり、completionやmutationへ進まない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:35.722Z"
+    },
+    {
+      "event_id": "f342e384-a921-4167-9115-ba0544b4c6ea",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "auth、quota、permission、unavailable、process failureはtyped non-greenへ正規化され、capability不足の実production smokeでもmutation前stopと同一Run recoveryが観測された。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:35.909Z"
+    },
+    {
+      "event_id": "d5801008-507d-4519-b95d-299012ff370f",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "dispatch予約、同一idempotency key再利用、poll restart、backoff、terminal failure非再spawn、cancel後stale completion抑止、parallel checkpoint serializationが直接テストされる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:36.325Z"
+    },
+    {
+      "event_id": "88a11beb-88a0-475f-ad09-73905296d739",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "HEAD変更時のverification/review suffix invalidation、repair後fresh review、review lifecycle close/provenance、stale/forged HEAD拒否、current-HEAD final prepareが直接assertされる。現行stale reviewがpr-prepareを実際にblockしておりfail-closedも観測できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:36.507Z"
+    },
+    {
+      "event_id": "e2424a73-cddc-473a-9687-f0526aadc4e9",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "state transition schema、typed terminal/resumable stop、resume cursor、human decision journal、cancel terminal authority、unknown/malformed action拒否をunit/integration/E2Eで確認している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-56d69700",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "56d69700700016747741657b3af580bab5991777",
+      "recorded_at": "2026-07-24T04:15:36.686Z"
+    },
+    {
+      "event_id": "068486c0-c870-47cf-a937-3dc985f73139",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "8 criteriaは公開command、current-HEAD権威、外部権限境界、failure matrix、provider不足時terminal、staged closureを具体化し、Spec・実装・testへ追跡できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:02.716Z"
+    },
+    {
+      "event_id": "4f0816f9-05b9-49c8-ac87-5a8c9014a7d2",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "公開CLIを通るproduction-shaped実Git E2E、実self-dogfood typed stop、290/290 focused、4/4 E2E、1903/1903 full suiteにより現在の経路を直接観測できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:02.883Z"
+    },
+    {
+      "event_id": "bdfdbeea-e0ac-4665-9a65-308ccec2679a",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current-HEADのみpr_ready、managed-worktree HEAD、独立read-only review、typed stop、明示mergeがArchitecture/Specだけでなくsource guardとnegative testsで成立する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:03.024Z"
+    },
+    {
+      "event_id": "a2c02057-1eea-4300-be4e-75c4a554b15d",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "run-session ownership、既存connector/review composition、local_workspace_only、network denial、approval_policy=never、read-only review、pre-start capability stopが外部権限越境を防ぐ。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:03.164Z"
+    },
+    {
+      "event_id": "439d82c7-8737-45d0-b2ff-e7678b541921",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "provider不足、quota、permission、各runtime timeout、malformed result、no progress、verification failure、review repair、CI pending、cancel、orphan containmentを直接assertするtestがある。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:03.294Z"
+    },
+    {
+      "event_id": "6f19e66b-5086-4129-b983-ce687b872e6b",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "機能証拠はexact HEADでfocused 290/290、E2E 4/4、full 1903/1903、runtime-cost integration 56/56、build/typecheck pass。ただし配送Gateが非greenである事実も明示され、機能受入と配送完了を混同していない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:03.429Z"
+    },
+    {
+      "event_id": "9116649d-4753-423a-986d-cd4e04147fff",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "default autonomous、explicit legacy、provider override、disable fallback、help、dry-run、JSON/human、status/resume/cancelの互換surfaceをtestし、unknown/malformed inputはfail closedする。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:03.561Z"
+    },
+    {
+      "event_id": "d8990068-5557-4b0e-b378-0cfb9f057288",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Run authority先行永続化、dispatch idempotency、予約後crash再開、同一Run resume、repair suffix invalidation、terminal cancel優先、legacy migration、malformed state拒否をstate/replay testsが確認する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:03.692Z"
+    },
+    {
+      "event_id": "88188efe-0c4e-4a13-95ab-f3ac960a50f5",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "run-sessionからmanaged worktree、verify、独立review、repair、fresh review、final prepareへの順序、serial barrier、poll再開、timeout/cancel containmentがtopology planと実行testで一致する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:03.822Z"
+    },
+    {
+      "event_id": "97a09502-8e1e-4456-a6f5-5c11727849bf",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "差分は大きいが単一closure intentで、先行3 ownerを別PRの正本として保持し、Story→Architecture→Spec→runtime→focused testの読順と責任境界が明確である。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:03.953Z"
+    },
+    {
+      "event_id": "01716ec6-3d5c-4b26-b6b0-bda7a162f899",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "probe/start/status/result/review lifecycle timeoutをtyped stop、cancel、terminal確認、orphan fail-closedまで直接testしている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:04.087Z"
+    },
+    {
+      "event_id": "962b57ec-97ff-48c3-957d-1680ee3d8382",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed provider JSON、必須field欠落、malformed transition/review/Run stateはinvalid_runtime_resultまたはinvalid_stateとなり、completionやmutationへ進まない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:04.223Z"
+    },
+    {
+      "event_id": "65cac8ee-29df-49e5-87aa-e3584c9aad41",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "auth、quota、permission、unavailable、process failureはtyped non-greenへ正規化され、実production smokeでもmutation前stopと同一Run recoveryが観測された。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:04.358Z"
+    },
+    {
+      "event_id": "5c66a5a1-92e3-4aea-8a59-6642fe9e878b",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "dispatch予約、同一idempotency key再利用、poll restart、backoff、terminal failure非再spawn、cancel後stale completion抑止、parallel checkpoint serializationをtestしている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:04.495Z"
+    },
+    {
+      "event_id": "91ed7203-68ea-476d-bb54-c1342e8fa68e",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "HEAD変更時のverification/review suffix invalidation、repair後fresh review、lifecycle close/provenance、stale/forged HEAD拒否、current-HEAD final prepareが直接assertされ、現行Gateも旧HEAD reviewを非greenとして扱う。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:04.630Z"
+    },
+    {
+      "event_id": "14756bf5-f511-47ce-94bd-1b0162fb7eda",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "typed terminal/resumable stop、resume cursor、human decision journal、cancel terminal authority、unknown/malformed action拒否をunit、integration、E2Eで確認している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication-66131d96",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "66131d96a869fc317519a66c13ea0e3b0b8d3e1d",
+      "recorded_at": "2026-07-24T05:25:04.768Z"
+    },
+    {
+      "event_id": "439ce730-fbfa-49d1-ad68-1d8151d750b5",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "8 criteriaは公開command、current-HEAD権威、外部権限境界、failure matrix、provider不足時terminal、staged closureを具体化し、Spec、実装、testへ追跡できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:49.408Z"
+    },
+    {
+      "event_id": "25273775-7511-428d-8f45-716122844e85",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "実装親HEADの公開CLIを通るproduction-shaped実Git E2E 4/4、実self-dogfood typed stop、focused 290/290、runtime integration 64/64により現在の経路を直接観測できる。現HEADはArchitecture記述だけを変更している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:49.592Z"
+    },
+    {
+      "event_id": "13a68396-fe57-496a-860e-e580ec2ee06e",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current-HEADのみpr_ready、managed-worktree HEAD、独立read-only review、typed stop、明示mergeがArchitecture、Spec、source guard、negative testsで一致する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:49.765Z"
+    },
+    {
+      "event_id": "dabcab52-d3e6-4a33-b710-7f02124a83fe",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "run-session ownership、既存connector/review composition、local_workspace_only、network denial、approval_policy=never、read-only review、pre-start capability stopが外部権限越境を防ぐ。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:49.947Z"
+    },
+    {
+      "event_id": "a27409fb-b1fb-4685-aee0-81478622a1f6",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "provider不足、quota、permission、runtime timeout、malformed result、no progress、verification failure、review repair、CI pending、cancel、orphan containmentをfocused/E2E testが直接assertする。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:50.121Z"
+    },
+    {
+      "event_id": "442c7815-9434-4f7c-955e-92976fb0f7d8",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "機能証拠は実装親HEADでfocused 290/290、production-shaped E2E 4/4、runtime integration 64/64がpassし、現HEADの唯一のArchitecture変更は実測86件とlatest-main baseline 86件の記述を整合させた。一方、canonical delivery ledgerが旧HEADである事実は別 finding として保持する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:50.307Z"
+    },
+    {
+      "event_id": "8c903365-37e8-414c-bed1-15cbdab0a89f",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "default autonomous、explicit legacy、provider override、disable fallback、help、dry-run、JSON/human、status/resume/cancelの互換surfaceをtestし、unknown/malformed inputはfail closedする。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:50.502Z"
+    },
+    {
+      "event_id": "9bda1934-614d-4382-b0c9-ae58adf56abf",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Run authority先行永続化、dispatch idempotency、予約後crash再開、同一Run resume、repair suffix invalidation、terminal cancel優先、malformed state拒否をstate/replay testsが確認する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:50.674Z"
+    },
+    {
+      "event_id": "67cc19d8-5648-48f6-a55c-463201b2fe93",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "run-sessionからmanaged worktree、verify、独立review、repair、fresh review、final prepareへの順序、serial barrier、poll再開、timeout/cancel containmentがcanonical topology planとexecution testsで一致する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:50.845Z"
+    },
+    {
+      "event_id": "92582019-75ff-40b0-9768-b9f4b9ef4805",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "差分は大きいが単一closure intentで、先行3 ownerを別PRの正本として保持し、StoryからArchitecture、Spec、runtime、focused testへ至る読順と責任境界が明確である。最新Architectureはbase/currentの内訳差も開示する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:51.021Z"
+    },
+    {
+      "event_id": "cb44a8d9-10e0-4347-b09b-74f8e06b76fd",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "probe、start、status、result、review lifecycle timeoutをtyped stop、cancel、terminal確認、orphan fail-closedまで直接testしている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:51.190Z"
+    },
+    {
+      "event_id": "bb5b1c6a-9320-4fa0-9ca4-93753d1e12e9",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed provider JSON、必須field欠落、malformed transition/review/Run stateはinvalid_runtime_resultまたはinvalid_stateとなり、completionやmutationへ進まない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:51.406Z"
+    },
+    {
+      "event_id": "b6e09ab6-c4a8-4795-8632-08bb2e746cc4",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "auth、quota、permission、unavailable、process failureはtyped non-greenへ正規化され、実self-dogfoodでもmutation前stopと同一Run recoveryが観測された。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:51.579Z"
+    },
+    {
+      "event_id": "7c8160e9-9f8c-4fba-8e73-8a6d5c0d0add",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "dispatch予約、同一idempotency key再利用、poll restart、backoff、terminal failure非再spawn、cancel後stale completion抑止、checkpoint serializationをtestしている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:51.756Z"
+    },
+    {
+      "event_id": "ee788f28-6488-4a39-9658-6cd1127e1e14",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "HEAD変更時のverification/review suffix invalidation、repair後fresh review、lifecycle close/provenance、stale/forged HEAD拒否、current-HEAD final prepareが直接assertされ、現行Gateも旧HEAD artifactを非greenとして扱う。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:51.927Z"
+    },
+    {
+      "event_id": "fa31a0cb-ad43-49ad-8a3e-a7593e4d4fc4",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "typed terminal/resumable stop、resume cursor、human decision journal、cancel terminal authority、unknown/malformed action拒否をfocused testとE2Eで確認している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "final-adjudication",
+        "session_ref": "/root/final_adjudication"
+      },
+      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "recorded_at": "2026-07-24T05:52:52.113Z"
+    }
+  ]
+}

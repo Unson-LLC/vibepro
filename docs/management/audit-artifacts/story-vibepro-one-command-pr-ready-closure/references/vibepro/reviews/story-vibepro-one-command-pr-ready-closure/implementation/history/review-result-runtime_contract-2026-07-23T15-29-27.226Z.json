@@ -1,0 +1,167 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "final current-HEAD runtime contract review passed",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "OCR-RUNTIME-CONTAINMENT-FAILURE",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "reviewed final frozen-HEAD runtime cancellation, containment, repair, and rebind contract",
+    "evidence": null,
+    "inputs": [
+      "src/one-command-pr-ready-closure.js",
+      "src/guarded-run-session.js",
+      "src/independent-review-orchestrator.js",
+      "test/one-command-pr-ready-closure.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "prior containment finding closed; no blocking findings"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "24bf9788eeb300447d4265df8991d48d54c85aff",
+    "current_head_sha": "24bf9788eeb300447d4265df8991d48d54c85aff",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "24bf9788eeb300447d4265df8991d48d54c85aff",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T11:59:07.093Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-23T15:29:27.226Z",
+  "git_context": {
+    "head_sha": "24bf9788eeb300447d4265df8991d48d54c85aff",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T15:29:27.214Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "bind final review to the frozen release candidate"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "24bf9788eeb300447d4265df8991d48d54c85aff",
+    "surface_files": [
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "08edce27b82bb3e13e06ffddcb720eb3c617d697bd8ec8d9ff831b9c01df034d",
+        "size": 110940
+      },
+      {
+        "path": "src/independent-review-orchestrator.js",
+        "sha256": "0c9b94b2732d347c75f4ca2b2f07d34b03712850ae96027fe54cf7a2b1ebfc51",
+        "size": 24781
+      },
+      {
+        "path": "src/one-command-pr-ready-closure.js",
+        "sha256": "6899eb0c1e6ae1bfe4b39568579a3542a76a8aa2939a95a14ed090ba491681bf",
+        "size": 27030
+      },
+      {
+        "path": "test/one-command-pr-ready-closure.test.js",
+        "sha256": "766bf11ae15e69d2af8a74d39ba6c8cbe15683c2ec678b5aabad6a7f13ef0e4d",
+        "size": 21086
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "70236a6ac4c02f16cc7a18e0d160c6803d62f4866e06608ae70c5e65d4efb32e"
+  },
+  "source_fingerprint": "f263977dffc2113be9f732fb4cf15efff91d4331ad8311aa5c32f81d55601b79",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "runtime-contract-24bf9788",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "final_runtime_contract",
+    "session_id": "final_runtime_contract",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/agent-transcript-runtime-contract-24bf9788-pass.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/agent-transcript-runtime-contract-24bf9788-pass.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "final_runtime_contract",
+      "implementation_session_id": "run-20260723T121501Z-793c40ad",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}
