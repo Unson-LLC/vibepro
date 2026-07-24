@@ -567,6 +567,30 @@ async function executeMergeLocked(root, options = {}) {
   }
   merge.status = externallyMerged ? 'merged_externally' : 'merged';
   merge.stop_reason = reconciliationReasons.length > 0 ? 'delivery_reconciliation_required' : null;
+  const roiLedgerSource = await readPromotableGateOutcomeEntries(root, storyId);
+  const roiLedgerLocalEntries = roiLedgerSource.entries;
+  const centralLedgerAtMerge = await gitOptional(root, [
+    'show',
+    `${merge.merge_commit_sha}:${CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH}`
+  ]);
+  const anticipatedRoiPromotion = roiLedgerSource.status === 'failed'
+    ? {
+        status: 'failed',
+        reason: roiLedgerSource.reason,
+        promoted_count: 0,
+        duplicate_count: 0,
+        source_ledger: roiLedgerSource.source_ledger,
+        central_ledger_path: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH
+      }
+    : computeCentralLedgerPromotion({
+        localEntries: roiLedgerLocalEntries,
+        centralText: centralLedgerAtMerge
+      });
+  applyDecisionOutcomeBinding(merge, {
+    localEntries: roiLedgerLocalEntries,
+    promotion: anticipatedRoiPromotion,
+    localLedgerSource: roiLedgerSource
+  });
   let artifacts = await writePrMergeArtifacts(root, storyId, merge);
   await bindStoryTraceability(root, {
     storyId,
@@ -590,8 +614,6 @@ async function executeMergeLocked(root, options = {}) {
     missing_artifact_count: canonicalAudit.bundle.missing_artifacts.length
   };
   await writeCanonicalAuditManifest(root, storyId, canonicalAudit, merge);
-  const roiLedgerSource = await readPromotableGateOutcomeEntries(root, storyId);
-  const roiLedgerLocalEntries = roiLedgerSource.entries;
   const canonicalPersistence = await persistCanonicalAuditToBase(root, {
     storyId,
     canonicalAudit,

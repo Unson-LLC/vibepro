@@ -3540,8 +3540,7 @@ function isRepoControlPath(filePath) {
 }
 
 function isArchitectureDocPath(filePath) {
-  return filePath === 'design-ssot.json'
-    || filePath.startsWith('docs/architecture/')
+  return filePath.startsWith('docs/architecture/')
     || filePath.startsWith('docs/management/architecture/')
     || /^docs\/.+\/ADR-[^/]+\.md$/i.test(filePath);
 }
@@ -5438,6 +5437,13 @@ function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphC
   const gateInfraFiles = repoControlFiles.filter((file) => isE2eInfraPath(file) || (e2eGateRequired && isPackageManifestPath(file)));
   const repoPolicyFiles = repoControlFiles.filter((file) => !gateInfraFiles.includes(file));
   const storyBoundSupportDocs = fileGroups.other.files.filter((file) => isStoryBoundSupportDoc(file, prContext.story_source));
+  const storyText = JSON.stringify(prContext.story_source ?? {}).toLowerCase();
+  const declaredRequirementsSsotFiles = fileGroups.other.files.filter(
+    (file) => (
+      storyText.includes(file.toLowerCase())
+      || (file === 'design-ssot.json' && /design[\s_-]*ssot/.test(storyText))
+    ) && /requirements?|要求/.test(storyText)
+  );
 
   addLane({
     id: 'repo-control',
@@ -5464,7 +5470,8 @@ function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphC
       ...fileGroups.specifications.files,
       ...fileGroups.architecture_docs.files,
       ...fileGroups.policy_docs.files,
-      ...storyBoundSupportDocs
+      ...storyBoundSupportDocs,
+      ...declaredRequirementsSsotFiles
     ],
     required_gates: ['Requirement Gate'],
     review_focus: [
@@ -5509,7 +5516,9 @@ function buildSplitLanes({ fileGroups, scope, prContext, suggestedBranch, graphC
   });
 
   const remainingFiles = [
-    ...fileGroups.other.files.filter((file) => !storyBoundSupportDocs.includes(file)),
+    ...fileGroups.other.files.filter(
+      (file) => !storyBoundSupportDocs.includes(file) && !declaredRequirementsSsotFiles.includes(file)
+    ),
     ...getAllGroupFiles(fileGroups).filter((file) => !used.has(file))
   ];
   addLane({
