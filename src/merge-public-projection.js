@@ -20,7 +20,9 @@ const PUBLIC_EXECUTION_STATE_SYNC_KEYS = new Set([
   'reason',
   'recovery_command',
   'followup_persistence',
-  'recovery_persistence'
+  'recovery_persistence',
+  'error',
+  'persistence_error_details'
 ]);
 const PUBLIC_RECONCILIATION_ACTION_KEYS = new Set(['status', 'reason', 'commands']);
 const PUBLIC_MERGE_KEYS_BY_PATH = new Map([
@@ -108,7 +110,14 @@ const PUBLIC_MERGE_KEYS_BY_PATH = new Map([
     'promoted_count',
     'duplicate_count'
   ])],
-  ['canonical_audit', new Set(['artifact_count', 'persistence'])],
+  ['canonical_audit', new Set([
+    'bundle',
+    'directory',
+    'artifact_count',
+    'missing_artifact_count',
+    'persistence',
+    'final_persistence'
+  ])],
   ['canonical_audit.persistence', new Set([
     'status',
     'reason',
@@ -120,13 +129,39 @@ const PUBLIC_MERGE_KEYS_BY_PATH = new Map([
   ])],
   ['canonical_audit.persistence.push_postcondition', new Set(['status', 'remote_sha'])],
   ['canonical_audit.persistence.cleanup', new Set(['attempted', 'removed', 'status'])],
-  ['cost_accounting', new Set(['schema_version', 'token_accounting', 'elapsed_time_accounting'])],
+  ['canonical_audit.final_persistence', new Set([
+    'status',
+    'reason',
+    'pushed',
+    'commit_sha',
+    'push_postcondition',
+    'cleanup',
+    'recovery'
+  ])],
+  ['canonical_audit.final_persistence.push_postcondition', new Set(['status', 'remote_sha'])],
+  ['canonical_audit.final_persistence.cleanup', new Set(['attempted', 'removed', 'status'])],
+  ['cost_accounting', new Set([
+    'schema_version',
+    'status',
+    'source',
+    'source_path',
+    'story_id',
+    'session_id',
+    'collected_at',
+    'token_accounting',
+    'elapsed_time_accounting',
+    'artifact_token_accounting',
+    'session_efficiency_audit'
+  ])],
   ['cost_accounting.token_accounting', new Set([
     'status',
     'total_tokens',
     'input_tokens',
     'output_tokens',
     'cached_input_tokens',
+    'fresh_input_tokens',
+    'reasoning_output_tokens',
+    'reason',
     'source',
     'window'
   ])],
@@ -135,12 +170,129 @@ const PUBLIC_MERGE_KEYS_BY_PATH = new Map([
     'elapsed_ms',
     'started_at',
     'finished_at',
+    'reason',
     'source',
     'window'
   ])],
-  ['cost_accounting.token_accounting.window', new Set(['session_id', 'scope'])],
-  ['cost_accounting.elapsed_time_accounting.window', new Set(['session_id', 'scope'])],
-  ['cost_accounting_collection', new Set(['status', 'reason', 'artifact'])],
+  ['cost_accounting.token_accounting.window', new Set(['story_id', 'session_id', 'scope', 'start', 'end'])],
+  ['cost_accounting.elapsed_time_accounting.window', new Set(['story_id', 'session_id', 'scope', 'start', 'end'])],
+  ['cost_accounting.artifact_token_accounting', new Set([
+    'status',
+    'estimated_total_tokens',
+    'classified_estimated_tokens',
+    'total_session_tokens',
+    'source',
+    'estimate_method',
+    'coverage',
+    'buckets',
+    'provenance_buckets',
+    'unique_estimated_tokens',
+    'duplicate_estimated_tokens',
+    'carryover_control',
+    'top_exposures',
+    'unmatched_event_count',
+    'unmatched_estimated_tokens',
+    'window',
+    'reason'
+  ])],
+  ['cost_accounting.artifact_token_accounting.carryover_control', new Set([
+    'status',
+    'replayed_context_estimated_tokens',
+    'duplicate_estimated_tokens',
+    'duplicate_over_unique',
+    'duplicate_over_unique_threshold'
+  ])],
+  ['cost_accounting.artifact_token_accounting.window', new Set(['story_id', 'session_id', 'scope', 'start', 'end'])],
+  ['cost_accounting.session_efficiency_audit', new Set([
+    'artifact_kind',
+    'audit_readiness',
+    'observed_worktree',
+    'observed_worktree_source',
+    'cost_breakdown',
+    'attribution',
+    'primary',
+    'upper_bound',
+    'mixed_parent',
+    'strict_over_associated',
+    'artifact_token_accounting'
+  ])],
+  ['cost_accounting.session_efficiency_audit.audit_readiness', new Set(['status', 'reason', 'missing'])],
+  ['cost_accounting.session_efficiency_audit.attribution', new Set([
+    'status',
+    'primary',
+    'upper_bound',
+    'mixed_parent',
+    'strict_over_associated'
+  ])],
+  ['cost_accounting.session_efficiency_audit.primary', new Set([
+    'basis',
+    'event_count',
+    'active_span_ms',
+    'active_burst_ms',
+    'tool_test_ci_wait_ms',
+    'tool_other_wait_ms',
+    'observed_work_ms'
+  ])],
+  ['cost_accounting.session_efficiency_audit.upper_bound', new Set([
+    'basis',
+    'event_count',
+    'active_span_ms',
+    'active_burst_ms',
+    'tool_test_ci_wait_ms',
+    'tool_other_wait_ms',
+    'observed_work_ms'
+  ])],
+  ['cost_accounting.session_efficiency_audit.attribution.primary', new Set([
+    'basis',
+    'event_count',
+    'active_span_ms',
+    'active_burst_ms',
+    'tool_test_ci_wait_ms',
+    'tool_other_wait_ms',
+    'observed_work_ms'
+  ])],
+  ['cost_accounting.session_efficiency_audit.attribution.upper_bound', new Set([
+    'basis',
+    'event_count',
+    'active_span_ms',
+    'active_burst_ms',
+    'tool_test_ci_wait_ms',
+    'tool_other_wait_ms',
+    'observed_work_ms'
+  ])],
+  ['cost_accounting_collection', new Set([
+    'status',
+    'reason',
+    'artifact',
+    'source',
+    'source_path',
+    'session_id',
+    'collected_at',
+    'session_selection',
+    'automation_memory',
+    'automation_memory_path',
+    'observed_worktree',
+    'observed_worktree_source',
+    'audit_readiness'
+  ])],
+  ['cost_accounting_collection.session_selection', new Set([
+    'status',
+    'reason',
+    'session_id',
+    'source',
+    'candidate_count'
+  ])],
+  ['cost_accounting_collection.automation_memory', new Set([
+    'status',
+    'source_path',
+    'last_run',
+    'window_start',
+    'window_end',
+    'reason'
+  ])],
+  ['cost_accounting_collection.audit_readiness', new Set(['status', 'reason', 'missing'])],
+  ['execution_state_sync.error', new Set(['code'])],
+  ['execution_state_sync.persistence_error_details', new Set(['code'])],
   ['output', new Set(['language'])],
   ['git', new Set(['base_branch'])]
 ]);
@@ -195,13 +347,14 @@ function projectPublicMergeValue(value, keyPath) {
     ? PUBLIC_EXECUTION_STATE_SYNC_KEYS
     : keyPath.at(-1) === 'reconciliation_action'
       ? PUBLIC_RECONCILIATION_ACTION_KEYS
-      : PUBLIC_MERGE_KEYS_BY_PATH.get(keyPath.join('.')) ?? new Set();
+      : resolvePublicKeys(keyPath);
   return Object.fromEntries(
     Object.entries(value)
       .filter(([key]) => (
         (!publicKeys || publicKeys.has(key))
         && (!PRIVATE_MERGE_DIAGNOSTIC_KEYS.has(key)
         || (key === 'commands' && keyPath.at(-1) === 'reconciliation_action')
+        || (['error', 'persistence_error_details'].includes(key) && keyPath.at(-1) === 'execution_state_sync')
         )
       ))
       .map(([key, item]) => [
@@ -213,6 +366,46 @@ function projectPublicMergeValue(value, keyPath) {
           : projectPublicMergeValue(item, [...keyPath, key])
       ])
   );
+}
+
+function resolvePublicKeys(keyPath) {
+  const path = keyPath.join('.');
+  const exact = PUBLIC_MERGE_KEYS_BY_PATH.get(path);
+  if (exact) return exact;
+  if (/^cost_accounting(?:\.session_efficiency_audit)?\.artifact_token_accounting\.buckets\.[^.]+$/.test(path)) {
+    return new Set([
+      'id',
+      'label',
+      'estimated_tokens',
+      'event_count',
+      'ratio_of_classified_exposure',
+      'ratio_of_session_tokens',
+      'matched_signals'
+    ]);
+  }
+  if (/^cost_accounting(?:\.session_efficiency_audit)?\.artifact_token_accounting\.provenance_buckets\.[^.]+$/.test(path)) {
+    return new Set([
+      'id',
+      'estimated_tokens',
+      'unique_estimated_tokens',
+      'duplicate_estimated_tokens',
+      'event_count',
+      'unique_digest_count'
+    ]);
+  }
+  if (/^cost_accounting(?:\.session_efficiency_audit)?\.artifact_token_accounting\.(?:buckets|provenance_buckets)$/.test(path)) {
+    return null;
+  }
+  if (path === 'cost_accounting.session_efficiency_audit.artifact_token_accounting') {
+    return PUBLIC_MERGE_KEYS_BY_PATH.get('cost_accounting.artifact_token_accounting');
+  }
+  if (path === 'cost_accounting.session_efficiency_audit.artifact_token_accounting.carryover_control') {
+    return PUBLIC_MERGE_KEYS_BY_PATH.get('cost_accounting.artifact_token_accounting.carryover_control');
+  }
+  if (path === 'cost_accounting.session_efficiency_audit.artifact_token_accounting.window') {
+    return PUBLIC_MERGE_KEYS_BY_PATH.get('cost_accounting.artifact_token_accounting.window');
+  }
+  return new Set();
 }
 
 function projectPublicReconciliationReason(reason) {

@@ -1,0 +1,145 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "Eight tracked files form one atomic catalog closure with one focused contract assertion and bounded Story-only review budget",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected origin/main...HEAD file list and confirmed splitting would detach the assertion and review lifecycle from the metadata it verifies",
+    "evidence": "No src/bin changes; no runtime, CLI, run-session, connector, or review implementation changes",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+      "test/story-discovery.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial split concern -> pass because the entire delta is one lifecycle-parity decision and its direct assertion"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-autonomous-roadmap-catalog-closure-93uhhw",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-autonomous-roadmap-catalog-closure-93uhhw",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-autonomous-roadmap-catalog-closure-93uhhw",
+    "expected_head_sha": "0943ea303d310079962848dfb6f0d53df1835ab6",
+    "current_head_sha": "0943ea303d310079962848dfb6f0d53df1835ab6",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-autonomous-roadmap-catalog-closure-93uhhw",
+      "branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+      "actual_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+      "current_head_sha": "0943ea303d310079962848dfb6f0d53df1835ab6",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-24T16:04:30.512Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-24T16:08:16.607Z",
+  "git_context": {
+    "head_sha": "0943ea303d310079962848dfb6f0d53df1835ab6",
+    "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T16:08:16.599Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "0943ea303d310079962848dfb6f0d53df1835ab6",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+        "sha256": "4ebc40a42db4945c7d2bfb9cfe1494341d54b2622c11580cc3147136c4351196",
+        "size": 2280
+      },
+      {
+        "path": "test/story-discovery.test.js",
+        "sha256": "aec7e87504da7b572090088fb90f1b10d94ee7c35d3a4c80302e7415f0c6ace5",
+        "size": 13842
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "01165914f9d3d5190e44c98ae7ab7568626a47618746a403b75eb3d52f693f9a"
+  },
+  "source_fingerprint": "a4f98b625e0309809421d06e12fd9b0e188d07a54c89ad38d0df10f300eb6b66",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/roadmap_closure_review",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "low",
+    "thread_id": "/root/roadmap_closure_review",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-autonomous-roadmap-catalog-closure/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "/root/roadmap_closure_review",
+      "implementation_session_id": "codex-root",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

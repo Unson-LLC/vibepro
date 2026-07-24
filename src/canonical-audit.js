@@ -689,17 +689,7 @@ async function writeCanonicalAuditArtifacts(root, {
     cost_summary: costSummary,
     automation_value_audit: decisionIndex.automation_value_audit,
     merge: merge ? {
-      status: merge.status ?? null,
-      base: merge.base ?? null,
-      delivery: merge.delivery ?? null,
-      reconciliation: publicMergeField(merge, 'reconciliation'),
-      reconciliation_action: resolvePublicReconciliationAction(merge),
-      execution_state_sync: publicMergeField(merge, 'execution_state_sync'),
-      decision_outcome_binding: merge.decision_outcome_binding ?? null,
-      pr_url: publicMergeUrl(merge),
-      merge_commit_sha: merge.merge_commit_sha ?? null,
-      merged_at: merge.merged_at ?? null,
-      current_head_sha: merge.current_head_sha ?? null,
+      ...buildCanonicalMergeSummary(merge),
       diff_stats_status: costSummary.diff_stats_status,
       diff_stats_source: costSummary.diff_stats_source
     } : null,
@@ -1121,19 +1111,7 @@ async function writeCompressedReplayBundle(root, {
       pointer: '/cost_summary'
     },
     verdict: buildReplayVerdict(decisionIndex),
-    merge: merge ? {
-      status: merge.status ?? null,
-      base: merge.base ?? null,
-      delivery: merge.delivery ?? null,
-      reconciliation: publicMergeField(merge, 'reconciliation'),
-      reconciliation_action: resolvePublicReconciliationAction(merge),
-      execution_state_sync: publicMergeField(merge, 'execution_state_sync'),
-      decision_outcome_binding: merge.decision_outcome_binding ?? null,
-      pr_url: publicMergeUrl(merge),
-      merge_commit_sha: merge.merge_commit_sha ?? null,
-      merged_at: merge.merged_at ?? null,
-      current_head_sha: merge.current_head_sha ?? null
-    } : null,
+    merge: merge ? buildCanonicalMergeSummary(merge) : null,
     artifacts: inventory.artifacts.map((artifact) => buildReplayArtifactManifest(root, artifact)),
     missing_artifacts: dedupeMissingArtifacts(inventory.missing_artifacts)
   };
@@ -1195,6 +1173,23 @@ function projectCanonicalPublicMerge(data) {
   return projectPublicPrMergeResult(data ?? {});
 }
 
+function buildCanonicalMergeSummary(data) {
+  const merge = projectCanonicalPublicMerge(data);
+  return compactObject({
+    status: merge?.status ?? null,
+    base: merge?.base ?? null,
+    delivery: merge?.delivery ?? null,
+    reconciliation: merge?.reconciliation ?? null,
+    reconciliation_action: resolveReconciliationAction(merge),
+    execution_state_sync: merge?.execution_state_sync ?? null,
+    decision_outcome_binding: merge?.decision_outcome_binding ?? null,
+    pr_url: merge?.pr?.url ?? merge?.pr?.selector ?? merge?.pr_url ?? null,
+    merge_commit_sha: merge?.merge_commit_sha ?? null,
+    merged_at: merge?.merged_at ?? null,
+    current_head_sha: merge?.current_head_sha ?? null
+  });
+}
+
 function publicMergeField(data, key) {
   return projectCanonicalPublicMerge(data)?.[key] ?? null;
 }
@@ -1229,19 +1224,11 @@ function summarizeReplayArtifact(artifact) {
     });
   }
   if (artifact.kind === 'pr_merge') {
+    const merge = projectCanonicalPublicMerge(data);
     return compactObject({
-      status: data?.status,
-      base: data?.base,
-      delivery: data?.delivery,
-      reconciliation: publicMergeField(data, 'reconciliation'),
-      reconciliation_action: resolvePublicReconciliationAction(data),
-      execution_state_sync: publicMergeField(data, 'execution_state_sync'),
-      pr_url: publicMergeUrl(data),
-      merge_commit_sha: data?.merge_commit_sha,
-      merged_at: data?.merged_at,
-      current_head_sha: data?.current_head_sha,
-      cost_accounting_status: data?.cost_accounting?.status,
-      cost_accounting_collection_status: data?.cost_accounting_collection?.status
+      ...buildCanonicalMergeSummary(merge),
+      cost_accounting_status: merge?.cost_accounting?.status,
+      cost_accounting_collection_status: merge?.cost_accounting_collection?.status
     });
   }
   if (artifact.kind === 'gate_dag') {
@@ -1649,17 +1636,7 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
     pr_merge: {
       present: Boolean(prMerge),
       summary: prMerge ? {
-        status: prMerge.status ?? null,
-        base: prMerge.base ?? null,
-        delivery: prMerge.delivery ?? null,
-        reconciliation: publicMergeField(prMerge, 'reconciliation'),
-        reconciliation_action: resolvePublicReconciliationAction(prMerge),
-        execution_state_sync: publicMergeField(prMerge, 'execution_state_sync'),
-        decision_outcome_binding: prMerge.decision_outcome_binding ?? null,
-        pr_url: publicMergeUrl(prMerge),
-        merge_commit_sha: prMerge.merge_commit_sha ?? null,
-        merged_at: prMerge.merged_at ?? null,
-        current_head_sha: prMerge.current_head_sha ?? null,
+        ...buildCanonicalMergeSummary(prMerge),
         diff_stats_status: costSummary.diff_stats_status,
         diff_stats_source: costSummary.diff_stats_source
       } : null
@@ -2039,6 +2016,9 @@ function scopedPrLifecycle(data, artifactKind, excluded) {
   excluded.push('pr_lifecycle.full_gate_dag', 'pr_lifecycle.raw_command_output');
   const gateDag = data?.gate_dag;
   const results = data?.results;
+  const publicMerge = artifactKind === 'pr_merge'
+    ? projectCanonicalPublicMerge(data)
+    : null;
   return compactObject({
     schema_version: data?.schema_version,
     artifact_kind: artifactKind,
@@ -2046,39 +2026,41 @@ function scopedPrLifecycle(data, artifactKind, excluded) {
     created_at: data?.created_at,
     story: data?.story,
     mode: data?.mode,
-    dry_run: data?.dry_run,
-    status: data?.status,
-    output: data?.output,
-    pr_url: data?.pr_url,
-    pr: data?.pr,
+    dry_run: publicMerge?.dry_run ?? data?.dry_run,
+    status: publicMerge?.status ?? data?.status,
+    output: publicMerge?.output ?? data?.output,
+    pr_url: publicMerge?.pr_url ?? data?.pr_url,
+    pr: publicMerge?.pr ?? data?.pr,
     title: data?.title,
-    base: data?.base,
+    base: publicMerge?.base ?? data?.base,
     head: data?.head,
     body_file: data?.body_file,
     current_branch: data?.current_branch,
-    current_head_sha: data?.current_head_sha,
+    current_head_sha: publicMerge?.current_head_sha ?? data?.current_head_sha,
     workspace_initialized: data?.workspace_initialized,
     repository_slug: data?.repository_slug,
-    strategy: data?.strategy,
-    delivery: data?.delivery,
-    reconciliation: publicMergeField(data, 'reconciliation'),
-    reconciliation_action: resolvePublicReconciliationAction(data),
-    execution_state_sync: publicMergeField(data, 'execution_state_sync'),
-    decision_outcome_binding: data?.decision_outcome_binding,
-    branch_cleanup: data?.branch_cleanup,
-    delete_branch: data?.delete_branch,
-    preconditions: data?.preconditions,
-    merged_at: data?.merged_at,
-    merge_commit_sha: data?.merge_commit_sha,
-    stop_reason: data?.stop_reason,
-    cost_accounting: data?.cost_accounting,
-    cost_accounting_collection: data?.cost_accounting_collection,
-    canonical_audit: data?.canonical_audit,
+    strategy: publicMerge?.strategy ?? data?.strategy,
+    delivery: publicMerge?.delivery ?? data?.delivery,
+    reconciliation: publicMerge?.reconciliation ?? publicMergeField(data, 'reconciliation'),
+    reconciliation_action: publicMerge
+      ? resolveReconciliationAction(publicMerge)
+      : resolvePublicReconciliationAction(data),
+    execution_state_sync: publicMerge?.execution_state_sync ?? publicMergeField(data, 'execution_state_sync'),
+    decision_outcome_binding: publicMerge?.decision_outcome_binding ?? data?.decision_outcome_binding,
+    branch_cleanup: publicMerge?.branch_cleanup ?? data?.branch_cleanup,
+    delete_branch: publicMerge?.delete_branch ?? data?.delete_branch,
+    preconditions: publicMerge?.preconditions ?? data?.preconditions,
+    merged_at: publicMerge?.merged_at ?? data?.merged_at,
+    merge_commit_sha: publicMerge?.merge_commit_sha ?? data?.merge_commit_sha,
+    stop_reason: publicMerge?.stop_reason ?? data?.stop_reason,
+    cost_accounting: publicMerge?.cost_accounting ?? data?.cost_accounting,
+    cost_accounting_collection: publicMerge?.cost_accounting_collection ?? data?.cost_accounting_collection,
+    canonical_audit: publicMerge?.canonical_audit ?? data?.canonical_audit,
     prepare_artifacts: data?.prepare_artifacts,
     gate_override: data?.gate_override,
     execution_gate: data?.execution_gate,
-    artifact_freshness: data?.artifact_freshness,
-    warnings: data?.warnings,
+    artifact_freshness: publicMerge?.artifact_freshness ?? data?.artifact_freshness,
+    warnings: publicMerge?.warnings ?? data?.warnings,
     toolchain: data?.toolchain,
     gate_dag_summary: scopedGateDag(gateDag, excluded),
     commands: data?.commands,

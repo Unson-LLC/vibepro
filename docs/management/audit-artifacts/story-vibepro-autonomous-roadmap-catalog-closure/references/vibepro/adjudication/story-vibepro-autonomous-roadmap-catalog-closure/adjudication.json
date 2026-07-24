@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+  "updated_at": "2026-07-24T17:05:18.848Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Current HEAD has the same eight-path metadata and focused-test surface, no src or bin changes, and current-head AC-3 evidence reports runtime_paths_changed=0.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:18.847Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Current HEAD independently verifies PR #385 implementation merge and PR #386 reconciliation merge as distinct origin/main ancestors and preserves both references.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:18.726Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Current HEAD regression assertion and independent inspection confirm both the parent roadmap and canonical catalog are completed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:18.604Z"
+    }
+  ]
+}

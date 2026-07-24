@@ -831,6 +831,56 @@ test('canonical audit bundle stores diff stats provenance and bucketed changed l
   );
 });
 
+test('canonical audit projects delivery and decision outcome binding through the public merge boundary', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-canonical-public-merge-'));
+  const storyId = 'story-public-merge';
+  await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId },
+    gate_status: { overall_status: 'ready_for_review' }
+  });
+
+  const promoted = await promoteCanonicalAuditArtifacts(root, {
+    storyId,
+    merge: {
+      status: 'merged',
+      delivery: {
+        status: 'merged',
+        observed: true,
+        authorization: 'Bearer DELIVERY_SECRET',
+        diagnostics: { raw: 'DELIVERY_RAW' }
+      },
+      decision_outcome_binding: {
+        status: 'bound',
+        expected_entry_count: 1,
+        diagnostics: 'BINDING_SECRET'
+      },
+      pr: {
+        url: 'https://operator:secret@example.test/pr/1',
+        diagnostics: 'PR_SECRET'
+      }
+    }
+  });
+  const index = await readJson(path.join(
+    root,
+    'docs',
+    'management',
+    'audit-artifacts',
+    storyId,
+    'audit-index.json'
+  ));
+  const serialized = JSON.stringify({
+    bundle: promoted.bundle.merge,
+    index: index.pr_merge?.summary
+  });
+
+  assert.equal(promoted.bundle.merge.delivery.status, 'merged');
+  assert.equal(promoted.bundle.merge.decision_outcome_binding.status, 'bound');
+  assert.equal(promoted.bundle.merge.decision_outcome_binding.expected_entry_count, 1);
+  assert.equal(promoted.bundle.merge.pr_url, 'https://example.test/pr/1');
+  assert.doesNotMatch(serialized, /DELIVERY_SECRET|DELIVERY_RAW|BINDING_SECRET|PR_SECRET|operator:secret/);
+});
+
 test('canonical evidence cost summary preserves available and unavailable token/time accounting', () => {
   const cost = buildCanonicalEvidenceCostSummary({
     artifactLineCount: 10,

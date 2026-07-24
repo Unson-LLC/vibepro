@@ -807,3 +807,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-infra-story-
 なし
 
 <!-- vibepro-release-pr:387:end -->
+
+<!-- vibepro-release-pr:388:start -->
+## [#388](https://github.com/Unson-LLC/vibepro/pull/388) story-vibepro-autonomous-roadmap-catalog-closure - 自律実装ロードマップのStory catalogを完了状態へ整合する
+
+- Author: @sintariran
+- Merged: 2026-07-24T17:15:54Z
+- Commit: `5897a47a385b6f0ef12f800858ee7e95b5b76fb5`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md), [docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:388:end -->

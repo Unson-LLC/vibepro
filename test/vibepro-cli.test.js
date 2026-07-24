@@ -398,6 +398,10 @@ async function makeAutopilotRepo() {
 }
 
 async function prepareExecuteMergeDryRunFixture(repo, storyId = 'story-pr-prepare') {
+  const remotes = (await git(repo, ['remote'])).stdout.trim().split('\n').filter(Boolean);
+  if (!remotes.includes('origin')) {
+    await git(repo, ['remote', 'add', 'origin', 'https://github.com/unson/target-product.git']);
+  }
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const prDir = path.join(repo, '.vibepro', 'pr', storyId);
   await mkdir(prDir, { recursive: true });
@@ -13888,6 +13892,7 @@ test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accoun
   await git(repo, ['remote', 'add', 'origin', remote]);
   await git(repo, ['push', '-u', 'origin', 'main']);
   await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  await git(repo, ['remote', 'set-url', 'origin', 'https://github.com/unson/target-product.git']);
   const { env } = await prepareExecuteMergeDryRunFixture(repo);
   const codexHome = await mkdtemp(path.join(os.tmpdir(), 'vibepro-execute-merge-codex-'));
   const sessionId = '019f0405-d790-70e1-882f-a436d8074dcd';
@@ -15251,7 +15256,7 @@ test('DRS-CONTRACT-007 execute merge preserves observed delivery across executio
   assert.match(output.execution_state_sync.recovery_command, /vibepro execute reconcile .*--base develop/);
   assert.match(output.execution_state_sync.recovery_command, /--pr https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/777/);
   assert.match(result.stderr, /Execution-state synchronization failed after merge processing/);
-  assert.match(result.stderr, /simulated state write failure/);
+  assert.doesNotMatch(result.stderr, /simulated state write failure/);
   const localFollowup = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
   const canonicalFollowup = await readJson(path.join(
     repo,
@@ -15512,18 +15517,14 @@ test('DRS-CONTRACT-007 execute merge preserves the primary sync failure when fol
   assert.equal(output.reconciliation.status, 'reconciliation_required');
   assert.equal(output.execution_state_sync.followup_persistence, 'failed');
   assert.equal(output.execution_state_sync.recovery_persistence, 'persisted_local');
-  assert.match(output.execution_state_sync.persistence_error, /follow-up rollback failure/);
   assert.equal(output.execution_state_sync.error.code, 'execution_state_write_failed');
   assert.equal(output.execution_state_sync.persistence_error_details.code, 'merge_followup_transaction_restore_failed');
-  assert.equal(output.execution_state_sync.persistence_error_details.cause, 'simulated follow-up persistence failure');
-  assert.equal(
-    output.execution_state_sync.persistence_error_details.cause_details.message,
-    'simulated follow-up persistence failure'
-  );
-  assert.deepEqual(output.execution_state_sync.persistence_error_details.restore_errors, [
-    { artifact_path: '/tmp/pr-merge.json', message: 'concurrent operator update' }
-  ]);
-  assert.match(result.stderr, /state write failure/);
+  assert.equal(Object.hasOwn(output.execution_state_sync, 'persistence_error'), false);
+  assert.equal(Object.hasOwn(output.execution_state_sync.persistence_error_details, 'cause'), false);
+  assert.equal(Object.hasOwn(output.execution_state_sync.persistence_error_details, 'cause_details'), false);
+  assert.equal(Object.hasOwn(output.execution_state_sync.persistence_error_details, 'restore_errors'), false);
+  assert.doesNotMatch(result.stdout, /simulated|concurrent operator update|\/tmp\/pr-merge\.json/);
+  assert.doesNotMatch(result.stderr, /state write failure/);
   assert.match(result.stderr, /follow-up persistence failed/);
 });
 
