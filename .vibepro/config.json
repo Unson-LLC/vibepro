@@ -291,8 +291,8 @@
     },
     "delivery_efficiency_by_story": {
       "story-vibepro-delivery-reconciliation-state": {
-        "max_subagent_count": 7,
-        "amendment_reason": "Four bounded architecture review lifecycles were required to close three concrete current-HEAD findings. The Story also requires three distinct PR-final gate roles, so the default cap of six cannot represent the mandatory seven-role lifecycle. Raise only this Story to the exact minimum seven; reuse one already-running lightweight reviewer for the three final roles, permit no replacement spawn, and do not amend the cap again."
+        "max_subagent_count": 11,
+        "amendment_reason": "Four bounded architecture review lifecycles closed three concrete implementation findings, and three current-HEAD final-role authorizations exposed that the budget-only commit correctly invalidates every strict-HEAD review. Reserve exactly four additional current-HEAD lifecycles: one architecture preflight plus gate_evidence, pr_split_scope, and release_risk. Reuse the same independent lightweight reviewer for all four roles, spawn no replacement agent, and do not amend the cap again."
       },
       "story-vibepro-surface-aware-agent-review-freshness": {
         "max_subagent_count": 22,
