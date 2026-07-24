@@ -324,6 +324,7 @@ export async function updateExecutionStateFromPrMerge(repoRoot, mergeResult, opt
   const failureReason = merge.stop_reason ?? 'merge_failed';
   const retainedPrSelector = resolvePrSelector(merge) ?? result.state.pr_url ?? null;
   const reconciliationAction = merge ? resolveReconciliationAction(merge) : null;
+  const synchronizationRecoveryRequired = merge.execution_state_sync?.status === 'failed';
   await options.beforeMergeStateCommit?.({
     repoRoot: path.resolve(repoRoot),
     storyId,
@@ -332,8 +333,12 @@ export async function updateExecutionStateFromPrMerge(repoRoot, mergeResult, opt
   });
   const state = {
     ...result.state,
-    completion_status: mergeFailed ? 'failed' : reconciliationRequired ? 'merged_reconciliation_required' : 'merged',
-    current_phase: mergeFailed
+    completion_status: synchronizationRecoveryRequired || reconciliationRequired
+      ? 'merged_reconciliation_required'
+      : mergeFailed ? 'failed' : 'merged',
+    current_phase: synchronizationRecoveryRequired
+      ? 'reconcile_delivery'
+      : mergeFailed
       ? ['canonical_audit_persistence_failed', 'canonical_audit_final_persistence_failed'].includes(failureReason)
         ? 'persist_canonical_audit'
         : 'merge'
@@ -346,7 +351,9 @@ export async function updateExecutionStateFromPrMerge(repoRoot, mergeResult, opt
     pr_url: retainedPrSelector,
     delivery: merge.delivery ?? null,
     reconciliation: merge.reconciliation ?? null,
-    next_actions: mergeFailed
+    next_actions: synchronizationRecoveryRequired
+      ? reconciliationAction?.commands ?? []
+      : mergeFailed
       ? [`Resolve ${failureReason} and re-run \`vibepro execute merge . --story-id ${storyId} --base ${merge.base ?? 'main'}${retainedPrSelector ? ` --pr ${retainedPrSelector}` : ''}\``]
       : reconciliationRequired
       ? reconciliationAction?.commands ?? [
@@ -354,7 +361,13 @@ export async function updateExecutionStateFromPrMerge(repoRoot, mergeResult, opt
           `Re-run \`vibepro execute merge . --story-id ${storyId} --base ${merge.base ?? 'main'}${retainedPrSelector ? ` --pr ${retainedPrSelector}` : ''}\` after reconciliation`
         ]
       : [],
-    blocking_gate: mergeFailed
+    blocking_gate: synchronizationRecoveryRequired
+      ? {
+          id: 'delivery_reconciliation',
+          status: 'blocked',
+          reasons: unique([...reconciliationReasons, reconciliationAction?.reason].filter(Boolean))
+        }
+      : mergeFailed
       ? { id: 'merge_failure', status: 'blocked', reason: failureReason }
       : reconciliationRequired
       ? {
@@ -603,6 +616,7 @@ async function buildExecutionState(repoRoot, options = {}) {
     !deliveryObserved || reconciliation?.status !== 'reconciled'
   );
   const mergeFailed = currentPrMerge?.status === 'failed';
+  const synchronizationRecoveryRequired = currentPrMerge?.execution_state_sync?.status === 'failed';
   const mergeFailureGate = mergeFailed
     ? {
         id: 'merge_failure',
@@ -617,7 +631,9 @@ async function buildExecutionState(repoRoot, options = {}) {
         reasons: reconciliation?.reasons ?? []
       }
     : null;
-  const blockingGate = mergeFailureGate ?? deliveryReconciliationGate ?? executionBlockingGate ?? pickBlockingGate(blockingGates);
+  const blockingGate = synchronizationRecoveryRequired
+    ? deliveryReconciliationGate
+    : mergeFailureGate ?? deliveryReconciliationGate ?? executionBlockingGate ?? pickBlockingGate(blockingGates);
   const prCreated = Boolean(currentPrCreate?.pr_url && currentPrCreate?.dry_run !== true);
   const merged = deliveryObserved || (!hasExplicitDelivery && (
     currentPrMerge?.status === 'merged' || Boolean(currentPrMerge?.merged_at || currentPrMerge?.merge_commit_sha)
@@ -637,7 +653,9 @@ async function buildExecutionState(repoRoot, options = {}) {
       ? unresolvedGates.length > 0 && blockingGates.length === 0
       : gateStatus?.execution_gate?.status === 'waiver_required'
   );
-  const completionStatus = mergeFailed
+  const completionStatus = synchronizationRecoveryRequired
+    ? 'merged_reconciliation_required'
+    : mergeFailed
     ? 'failed'
     : reconciliationRequired
     ? 'merged_reconciliation_required'
@@ -656,7 +674,9 @@ async function buildExecutionState(repoRoot, options = {}) {
       : currentPrPrepare
         ? 'blocked'
         : 'not_prepared';
-  const currentPhase = mergeFailed
+  const currentPhase = synchronizationRecoveryRequired
+    ? 'reconcile_delivery'
+    : mergeFailed
     ? (deliveryObserved ? 'persist_canonical_audit' : 'merge')
     : deliveryResolutionRequired
     ? 'reconcile_delivery'
@@ -691,7 +711,9 @@ async function buildExecutionState(repoRoot, options = {}) {
   }, managedWorktree, { expectedHeadSha });
   const retainedPrSelector = resolvePrSelector(currentPrMerge);
   const reconciliationAction = currentPrMerge ? resolveReconciliationAction(currentPrMerge) : null;
-  const nextActions = mergeFailed
+  const nextActions = synchronizationRecoveryRequired
+    ? reconciliationAction?.commands ?? []
+    : mergeFailed
     ? [
         `Resolve ${currentPrMerge?.stop_reason ?? 'the merge failure'} and re-run \`vibepro execute merge . --story-id ${storyId} --base ${resolvedBaseRef}${retainedPrSelector ? ` --pr ${retainedPrSelector}` : ''}\``
       ]

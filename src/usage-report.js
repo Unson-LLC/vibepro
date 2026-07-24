@@ -389,6 +389,11 @@ ${manifestParseRows}
 function formatReconciliationAction(story) {
   if (!story.latest_reconciliation_status || story.latest_reconciliation_status === 'reconciled') return 'none';
   if (story.latest_reconciliation_action) return `"${story.latest_reconciliation_action}"`;
+  const failClosedWithoutFallback = story.latest_reconciliation_reasons?.some((reason) => [
+    'execution_state_sync_recovery_command_missing',
+    'delivery_unverified_reconciliation_reconciled'
+  ].includes(reason));
+  if (failClosedWithoutFallback) return 'none';
   return `"vibepro pr prepare . --story-id ${story.story_id} --base ${story.latest_base_branch ?? 'main'} && vibepro execute merge . --story-id ${story.story_id} --base ${story.latest_base_branch ?? 'main'}${story.latest_pr_url ? ` --pr ${story.latest_pr_url}` : ''}"`;
 }
 

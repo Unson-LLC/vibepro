@@ -1407,6 +1407,36 @@ test('DRS-CONTRACT-007 execution status preserves the authoritative synchronizat
   assert.deepEqual(next.next.next_actions, [recoveryCommand]);
 });
 
+test('DRS-CONTRACT-007 synchronization failure without recovery command suppresses merge retry', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-execution-sync-missing-recovery-'));
+  await execFileAsync('git', ['init'], { cwd: root });
+  await execFileAsync('git', ['config', 'user.email', 'test@example.test'], { cwd: root });
+  await execFileAsync('git', ['config', 'user.name', 'VibePro Test'], { cwd: root });
+  await writeFile(path.join(root, 'README.md'), '# fixture\n');
+  await execFileAsync('git', ['add', 'README.md'], { cwd: root });
+  await execFileAsync('git', ['commit', '-m', 'test: initialize fixture'], { cwd: root });
+  const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: root });
+  const headSha = stdout.trim();
+  const storyId = 'story-sync-missing-recovery';
+  const prDir = path.join(root, '.vibepro', 'pr', storyId);
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'pr-merge.json'), JSON.stringify({
+    story: { story_id: storyId },
+    status: 'failed',
+    stop_reason: 'execution_state_sync_failed',
+    base: 'main',
+    current_head_sha: headSha,
+    delivery: { status: 'merged', merge_commit_sha: headSha },
+    reconciliation: { status: 'reconciliation_required', reasons: ['execution_state_sync_failed'] },
+    execution_state_sync: { status: 'failed', recovery_command: null }
+  }));
+
+  const result = await getExecutionStatus(root, { storyId });
+  assert.deepEqual(result.state.next_actions, []);
+  assert.doesNotMatch(result.state.next_actions.join('\n'), /vibepro pr prepare|vibepro execute merge/);
+  assert.equal(result.state.blocking_gate.id, 'delivery_reconciliation');
+});
+
 test('DRS-CONTRACT-007 current-head local delivery outranks stale canonical conflict', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-execution-source-priority-'));
   await execFileAsync('git', ['init'], { cwd: root });

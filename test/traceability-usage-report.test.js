@@ -620,6 +620,7 @@ test('DRS-S-5 execution-state sync failure without a recovery command fails clos
   assert.equal(story.blocked, true);
   assert.equal(story.latest_reconciliation_action, null);
   assert.equal(story.latest_reconciliation_reasons.includes('execution_state_sync_recovery_command_missing'), true);
+  assert.doesNotMatch(renderUsageReport(await createUsageReport(root)), /vibepro pr prepare|vibepro execute merge/);
 });
 
 test('DRS-S-2 contradictory unverified delivery and reconciled state fails closed', async () => {
@@ -645,6 +646,7 @@ test('DRS-S-2 contradictory unverified delivery and reconciled state fails close
   assert.equal(story.latest_reconciliation_status, 'blocked');
   assert.equal(story.latest_reconciliation_reasons.includes('delivery_unverified_reconciliation_reconciled'), true);
   assert.match(renderUsageReport(report), /delivery=unverified reconciliation=blocked reconciliation_reasons=delivery_unverified_reconciliation_reconciled/);
+  assert.doesNotMatch(renderUsageReport(report), /vibepro pr prepare|vibepro execute merge/);
 });
 
 test('merged_externally delivery resolves traceability for active and completed stories', async () => {
