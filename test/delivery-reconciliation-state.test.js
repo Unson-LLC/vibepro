@@ -133,9 +133,10 @@ test('human and HTML projections distinguish persistence conflict and incomplete
   const html = renderPrMergeHtml(fixture);
   for (const projection of [summary, html]) {
     assert.match(projection, /merge_followup_transaction_restore_failed/);
-    assert.match(projection, /follow-up persistence failed/);
     assert.match(projection, /rollback[\s\S]{0,120}incomplete/i);
-    assert.match(projection, /changed concurrently/);
-    assert.match(projection, /newer operator guidance preserved/);
+    assert.doesNotMatch(projection, /follow-up persistence failed/);
+    assert.doesNotMatch(projection, /changed concurrently/);
+    assert.doesNotMatch(projection, /newer operator guidance preserved/);
+    assert.doesNotMatch(projection, /\/tmp\/pr-merge\.json/);
   }
 });

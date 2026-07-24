@@ -1475,23 +1475,25 @@ function hasUsableAccounting(input) {
 }
 
 export function renderPrMergeSummary(result) {
-  const merge = result.merge ?? result;
+  const rawMerge = result.merge ?? result;
+  const persistenceDetails = rawMerge.execution_state_sync?.persistence_error_details ?? null;
+  const persistenceCode = /^[a-z0-9_]+$/i.test(persistenceDetails?.code ?? '')
+    ? persistenceDetails.code
+    : null;
+  const rollbackIncomplete = Array.isArray(persistenceDetails?.restore_errors)
+    && persistenceDetails.restore_errors.length > 0;
+  const merge = projectPublicPrMergeResult(result);
   const checks = merge.pr?.checks ?? [];
   const failures = checks.filter((check) => check.status !== 'COMPLETED' || !SUCCESSFUL_CHECK_CONCLUSIONS.has(check.conclusion));
   const reconciliationAction = resolveReconciliationAction(merge);
-  const persistenceDetails = merge.execution_state_sync?.persistence_error_details ?? null;
-  const restoreErrors = Array.isArray(persistenceDetails?.restore_errors)
-    ? persistenceDetails.restore_errors
-    : [];
   const synchronizationDiagnostics = merge.execution_state_sync?.status === 'failed'
     ? [
         '- execution_state_sync: failed',
         `- execution_state_sync_reason: ${merge.execution_state_sync.reason}`,
         `- followup_persistence: ${merge.execution_state_sync.followup_persistence ?? 'unknown'}`,
-        ...(persistenceDetails?.code ? [`- followup_persistence_code: ${persistenceDetails.code}`] : []),
-        ...(persistenceDetails?.cause ? [`- followup_persistence_original_error: ${persistenceDetails.cause}`] : []),
-        `- followup_rollback: ${restoreErrors.length > 0 ? 'incomplete' : 'complete_or_not_required'}`,
-        ...restoreErrors.map((item, index) => `- followup_restore_error_${index + 1}: ${item.artifact_path ?? '-'}: ${item.message ?? 'unknown restore error'}`)
+        ...(persistenceCode ? [`- followup_persistence_code: ${persistenceCode}`] : []),
+        `- followup_rollback: ${rollbackIncomplete ? 'incomplete' : 'complete_or_not_required'}`,
+        `- recovery_persistence: ${merge.execution_state_sync.recovery_persistence ?? 'not_required'}`
       ].join('\n')
     : '';
   return `# Execute Merge
@@ -1523,10 +1525,6 @@ ${synchronizationDiagnostics}
 - review_policy: ${merge.preconditions.review_policy.status}
 - open_pull_request: ${merge.preconditions.open_pull_request.status}
 
-## Commands
-
-${merge.commands.map((command) => `- ${command}`).join('\n')}
-
 ## Check Summary
 
 - checks: ${checks.length}
@@ -1545,11 +1543,20 @@ export function projectPublicPrMergeResult(result) {
 
 const PRIVATE_MERGE_DIAGNOSTIC_KEYS = new Set([
   'worktree_path',
+  'command',
   'commands',
+  'args',
+  'env',
+  'output',
   'results',
   'stdout',
   'stderr',
-  'primary'
+  'primary',
+  'error',
+  'persistence_error',
+  'persistence_error_details',
+  'recovery_persistence_error',
+  'recovery_persistence_error_details'
 ]);
 
 function projectPublicMergeValue(value, keyPath) {
@@ -1563,7 +1570,12 @@ function projectPublicMergeValue(value, keyPath) {
         !PRIVATE_MERGE_DIAGNOSTIC_KEYS.has(key)
         || (key === 'commands' && keyPath.at(-1) === 'reconciliation_action')
       ))
-      .map(([key, item]) => [key, projectPublicMergeValue(item, [...keyPath, key])])
+      .map(([key, item]) => [
+        key,
+        key === 'reason' && keyPath.at(-1) === 'execution_state_sync'
+          ? 'Execution-state synchronization failed after merge processing.'
+          : projectPublicMergeValue(item, [...keyPath, key])
+      ])
   );
 }
 

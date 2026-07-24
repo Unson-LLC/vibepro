@@ -2821,7 +2821,7 @@ export async function runCli(argv, io = {}) {
             storyId
           });
         } catch (error) {
-          executionStateSyncFailure = `Execution-state synchronization failed after merge processing: ${error.message}`;
+          executionStateSyncFailure = 'Execution-state synchronization failed after merge processing.';
           const executionStateSyncError = serializeCliError(error);
           const retainedPrSelector = result.merge.pr?.url
             ?? result.merge.pr?.selector
@@ -2882,7 +2882,7 @@ export async function runCli(argv, io = {}) {
               result.merge.execution_state_sync.recovery_persistence_error = recoveryPersistenceError.message;
               result.merge.execution_state_sync.recovery_persistence_error_details = serializeCliError(recoveryPersistenceError);
             }
-            executionStateSyncFailure += `; follow-up persistence failed: ${persistenceError.message}`;
+            executionStateSyncFailure = 'Execution-state synchronization and follow-up persistence failed after merge processing.';
           }
           write(stderr, `${executionStateSyncFailure}\n`);
         }

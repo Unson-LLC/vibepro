@@ -288,25 +288,22 @@ export function renderPrCreateHtml(execution, options = {}) {
 }
 
 export function renderPrMergeHtml(merge, options = {}) {
-  const recordedResults = Array.isArray(merge.results) ? merge.results : [];
-  const results = recordedResults.length === 0
-    ? [{ command: 'dry-run', exit_code: 0, stdout: '', stderr: '' }]
-    : recordedResults;
   const language = options.language ?? merge.output?.language ?? 'ja';
   const reconciliationAction = resolveReconciliationAction(merge);
   const persistenceDetails = merge.execution_state_sync?.persistence_error_details ?? null;
   const restoreErrors = Array.isArray(persistenceDetails?.restore_errors)
     ? persistenceDetails.restore_errors
     : [];
+  const persistenceCode = /^[a-z0-9_]+$/i.test(persistenceDetails?.code ?? '')
+    ? persistenceDetails.code
+    : null;
   const synchronizationDiagnostics = merge.execution_state_sync?.status === 'failed'
     ? [
         `sync_status: failed`,
-        `sync_reason: ${merge.execution_state_sync.reason}`,
+        'sync_reason: Execution-state synchronization failed after merge processing.',
         `followup_persistence: ${merge.execution_state_sync.followup_persistence ?? 'unknown'}`,
-        ...(persistenceDetails?.code ? [`persistence_code: ${persistenceDetails.code}`] : []),
-        ...(persistenceDetails?.cause ? [`original_error: ${persistenceDetails.cause}`] : []),
-        `rollback: ${restoreErrors.length > 0 ? 'incomplete' : 'complete_or_not_required'}`,
-        ...restoreErrors.map((item) => `restore_error: ${item.artifact_path ?? '-'}: ${item.message ?? 'unknown restore error'}`)
+        ...(persistenceCode ? [`persistence_code: ${persistenceCode}`] : []),
+        `rollback: ${restoreErrors.length > 0 ? 'incomplete' : 'complete_or_not_required'}`
       ]
     : [];
   return renderDocument({
@@ -373,19 +370,6 @@ export function renderPrMergeHtml(merge, options = {}) {
       <section>
         <h2>Check Rollup</h2>
         ${renderList((merge.pr?.checks ?? []).map((check) => `${check.name}: ${check.status}/${check.conclusion || '-'}`))}
-      </section>
-      <section>
-        <h2>Command Timeline</h2>
-        <div class="timeline">
-          ${results.map((item, index) => `
-            <article class="timeline-item" data-command-index="${index}">
-              <strong>${escapeHtml(item.command)}</strong>
-              <span class="${statusClass(item.exit_code === 0 ? 'pass' : 'failed')}">exit=${escapeHtml(item.exit_code)}</span>
-              ${item.stdout ? `<pre>${escapeHtml(item.stdout)}</pre>` : ''}
-              ${item.stderr ? `<pre>${escapeHtml(item.stderr)}</pre>` : ''}
-            </article>
-          `).join('')}
-        </div>
       </section>
     `
   });

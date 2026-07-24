@@ -180,7 +180,11 @@ test('execute merge JSON projects bounded persistence diagnostics without intern
           reason: 'canonical_audit_push_indeterminate',
           pushed: false,
           worktree_path: '/tmp/vibepro-canonical-audit-story-x-1',
+          command: 'git push https://token@example.invalid/repo.git',
           commands: ['git push https://token@example.invalid/repo.git'],
+          args: ['push', 'https://token@example.invalid/repo.git'],
+          env: { GH_TOKEN: 'SECRET_ENV_SHOULD_NOT_RENDER' },
+          output: 'SECRET_OUTPUT_SHOULD_NOT_RENDER',
           results: [{ stdout: 'SECRET_SHOULD_NOT_RENDER', stderr: 'raw failure' }],
           push_postcondition: { status: 'indeterminate', remote_sha: null },
           cleanup: { attempted: true, removed: false, status: 'failed' },
@@ -213,7 +217,10 @@ test('execute merge JSON projects bounded persistence diagnostics without intern
     status: 'failed'
   });
   assert.equal(projected.canonical_audit.persistence.recovery, 'verify remote state before retrying');
-  assert.equal(projected.execution_state_sync.reason, 'primary sync failure');
+  assert.equal(
+    projected.execution_state_sync.reason,
+    'Execution-state synchronization failed after merge processing.'
+  );
   assert.deepEqual(projected.reconciliation_action.commands, [
     'vibepro execute reconcile . --story-id story-x --base main'
   ]);
@@ -238,14 +245,78 @@ test('execute merge JSON projects bounded persistence diagnostics without intern
   });
   assert.equal(cliResult.exitCode, 1);
   const cliJson = JSON.parse(stdout);
-  assert.equal(cliJson.execution_state_sync.reason, 'primary sync failure');
+  assert.equal(
+    cliJson.execution_state_sync.reason,
+    'Execution-state synchronization failed after merge processing.'
+  );
   assert.deepEqual(cliJson.reconciliation_action.commands, [
     'vibepro execute reconcile . --story-id story-x --base main'
   ]);
   assert.doesNotMatch(
     stdout,
-    /SECRET_SHOULD_NOT_RENDER|raw failure|worktree_path|git push|results|token@example/
+    /SECRET_SHOULD_NOT_RENDER|SECRET_ENV_SHOULD_NOT_RENDER|SECRET_OUTPUT_SHOULD_NOT_RENDER|raw failure|worktree_path|git push|results|token@example|\"command\"|\"args\"|\"env\"|\"output\"/
   );
+});
+
+test('execute merge JSON sanitizes dependency-injected synchronization failure details', async () => {
+  const repo = await makeStoryRepo();
+  let stdout = '';
+  let stderr = '';
+  const rawResult = {
+    merge: {
+      status: 'merged',
+      strategy: 'merge',
+      base: 'main',
+      current_head_sha: 'deadbeef',
+      pr: { url: 'https://example.test/pr/1' },
+      preconditions: {
+        gate_ready: true,
+        clean_worktree: true,
+        base_freshness: { status: 'passed' },
+        remote_head_match: { status: 'passed' },
+        checks_ready: { status: 'passed' },
+        review_policy: { status: 'passed' },
+        open_pull_request: { status: 'passed' }
+      },
+      commands: ['gh pr merge 1 --repo token@example.invalid/repo'],
+      warnings: []
+    }
+  };
+
+  const cliResult = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-x',
+    '--json'
+  ], {
+    executeMerge: async () => structuredClone(rawResult),
+    updateExecutionStateFromPrMerge: async () => {
+      const error = new Error('SECRET_SYNC_ERROR');
+      error.code = 'SECRET_SYNC_CODE';
+      throw error;
+    },
+    persistMergeFollowupState: async () => {},
+    stdout: { write: (chunk) => { stdout += chunk; } },
+    stderr: { write: (chunk) => { stderr += chunk; } },
+    env: process.env
+  });
+
+  assert.equal(cliResult.exitCode, 1);
+  const cliJson = JSON.parse(stdout);
+  assert.equal(
+    cliJson.execution_state_sync.reason,
+    'Execution-state synchronization failed after merge processing.'
+  );
+  assert.deepEqual(cliJson.reconciliation_action.commands, [
+    'vibepro execute reconcile . --story-id story-x --base main --pr https://example.test/pr/1'
+  ]);
+  assert.match(stderr, /Execution-state synchronization failed after merge processing/);
+  assert.equal(Object.hasOwn(cliJson, 'commands'), false);
+  assert.equal(Object.hasOwn(cliJson.execution_state_sync, 'error'), false);
+  assert.doesNotMatch(stdout, /SECRET_SYNC_ERROR|SECRET_SYNC_CODE|token@example/);
+  assert.doesNotMatch(stderr, /SECRET_SYNC_ERROR|SECRET_SYNC_CODE/);
 });
 
 test('outcome finalization text exposes local reconciliation state and recovery artifact', () => {
