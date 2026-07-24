@@ -420,7 +420,7 @@ async function runImplementationRuntime({
     role: 'implementation',
     objective,
     requirements: {
-      capabilities: ['workspace_write'],
+      capabilities: ['workspace_write', 'local_workspace_only'],
       timeout_ms: runtimeTimeoutMs,
       managed_worktree: resolveManagedWorktree(context.state)
     }

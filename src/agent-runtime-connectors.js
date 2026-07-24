@@ -59,11 +59,17 @@ export function createCliRuntimeConnector(options = {}) {
         return unavailable(classifyUnavailable(error));
       }
       const review = role === 'review';
+      const locallyContainedImplementation = !review && id === 'codex';
       return {
         available: true,
-        capabilities: review ? ['review'] : ['workspace_write'],
+        capabilities: review
+          ? ['review']
+          : [
+              'workspace_write',
+              ...(locallyContainedImplementation ? ['local_workspace_only'] : [])
+            ],
         sandbox: review ? 'read-only' : 'workspace-write',
-        approval_policy: 'managed',
+        approval_policy: locallyContainedImplementation ? 'never' : 'managed',
         reason: null
       };
     },
@@ -157,7 +163,22 @@ export async function probeCliRuntime(command, { env, id, execCommand = execFile
 function buildInvocation(id, request) {
   const prompt = buildPrompt(request);
   if (id === 'codex') {
-    return { args: ['exec', '--json', '--color', 'never', '--sandbox', request.role === 'review' ? 'read-only' : 'workspace-write', '-C', request.requirements.managed_worktree, prompt] };
+    const implementationIsolation = request.role === 'review'
+      ? []
+      : [
+          '--ignore-user-config',
+          '-c', 'approval_policy="never"',
+          '-c', 'sandbox_workspace_write.network_access=false'
+        ];
+    return {
+      args: [
+        'exec', '--json', '--color', 'never',
+        ...implementationIsolation,
+        '--sandbox', request.role === 'review' ? 'read-only' : 'workspace-write',
+        '-C', request.requirements.managed_worktree,
+        prompt
+      ]
+    };
   }
   return {
     args: [

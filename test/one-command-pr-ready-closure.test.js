@@ -82,7 +82,10 @@ test('OCR-T-1 production owners use ordered default providers and transmit a bou
   assert.equal(captured.request.adapter_id, 'codex');
   assert.deepEqual(captured.request.provider_fallbacks, ['codex', 'claude-code']);
   assert.equal(captured.request.role, 'implementation');
-  assert.deepEqual(captured.request.requirements.capabilities, ['workspace_write']);
+  assert.deepEqual(
+    captured.request.requirements.capabilities,
+    ['workspace_write', 'local_workspace_only']
+  );
   assert.equal(captured.request.requirements.managed_worktree, '/managed');
   assert.match(captured.request.objective, /Implement the approved VibePro Task scope/);
   assert.match(captured.request.objective, /Do not create or merge a PR/);

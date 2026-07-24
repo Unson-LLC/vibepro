@@ -223,7 +223,7 @@ test('OCR-S-1 auth denial persists actionable same-Run recovery and resumes in p
     async probe() {
       return {
         available: true,
-        capabilities: ['workspace_write'],
+        capabilities: ['workspace_write', 'local_workspace_only'],
         sandbox: 'workspace-write',
         approval_policy: 'managed'
       };
@@ -283,7 +283,7 @@ test('OCR-S-1 permission wait stops without containment and preserves same-Run r
     async probe() {
       return {
         available: true,
-        capabilities: ['workspace_write'],
+        capabilities: ['workspace_write', 'local_workspace_only'],
         sandbox: 'workspace-write',
         approval_policy: 'managed'
       };
@@ -393,7 +393,7 @@ test('OCR-S-5 operator cancel contains an active implementation dispatch and win
     async probe() {
       return {
         available: true,
-        capabilities: ['workspace_write'],
+        capabilities: ['workspace_write', 'local_workspace_only'],
         sandbox: 'workspace-write',
         approval_policy: 'managed'
       };
@@ -647,7 +647,12 @@ test('IRO-S-1 Guarded Run composes the production independent-review owner, pers
     id: 'codex',
     async probe({ role }) { return role === 'review'
       ? { available: true, capabilities: ['review'], sandbox: 'read-only', approval_policy: 'managed' }
-      : { available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write', approval_policy: 'managed' }; },
+      : {
+          available: true,
+          capabilities: ['workspace_write', 'local_workspace_only'],
+          sandbox: 'workspace-write',
+          approval_policy: 'managed'
+        }; },
     async start(value) {
       request = value;
       return value.role === 'review'
@@ -4055,7 +4060,12 @@ test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', as
       status: 'waiting_for_runtime',
       stop_reason: 'runtime_required',
       artifact: 'prepare.json',
-      recovery: { missing_kinds: ['unit'] }
+      recovery: {
+        action: 'open_external_console',
+        condition: { kind: 'arbitrary_fixture_condition' },
+        next_command: 'unsafe fixture command',
+        missing_kinds: ['unit']
+      }
     })
   });
   await session.run(fixture.source, { storyId: STORY_ID });
@@ -4064,7 +4074,12 @@ test('SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop', as
   assert.equal(result.state.status, 'waiting_for_runtime');
   assert.equal(result.state.stop_reason.code, 'runtime_required');
   assert.deepEqual(result.state.stop_reason.details.recovery.missing_kinds, ['unit']);
+  assert.equal(result.state.stop_reason.details.provider, 'unresolved');
+  assert.equal(result.state.stop_reason.details.recovery.action, 'resume_run');
+  assert.equal(result.state.stop_reason.details.recovery.condition.kind, 'runtime_available');
+  assert.equal(result.state.stop_reason.details.recovery.condition.provider, 'unresolved');
   assert.match(result.state.stop_reason.details.recovery.next_command, /execute resume .*--until pr-ready/);
+  assert.equal(result.state.stop_reason.details.recovery.next_command.includes('unsafe fixture command'), false);
   assert.deepEqual(result.state.action_journal.map((entry) => entry.action_id), ['pr_prepare', 'pr_autopilot_safe']);
   assert.deepEqual(result.state.action_journal.map((entry) => entry.artifact), ['prepare.json', 'prepare.json']);
   assert.equal(result.state.next_best_action_decisions.length, 1);

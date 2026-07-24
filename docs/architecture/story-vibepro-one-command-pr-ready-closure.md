@@ -60,7 +60,7 @@ and a persisted Run retains the provider order chosen when it was created.
 
 1. `diagnose` reads the injected current Gate/readiness snapshot and classifies its missing inputs. Story diagnosis and Graphify remain pre-implementation planning evidence produced before this run; this action does not refresh them or import their modules.
 2. `prepare_artifacts` creates only missing Architecture, Spec, and Task inputs that can be derived without a material product decision. A material ambiguity returns a bounded `human_decision` descriptor (`type`, `question`, `choices`, `material_reason`, `impact_scope`, `source_refs`, and `stop_node_id`) with `waiting_for_human`. The safe-action layer carries that untrusted descriptor without writing it; `guarded-run-session` validates it through the existing `createHumanDecision` authority, persists the decision artifact and `pending_decision`, and binds `stop_node_id` to `prepare_artifacts`. `resume` resolves that exact decision, journals the answer and `reflected_in` paths, clears `pending_decision`, and resumes from `prepare_artifacts`.
-3. `implement` dispatches the production implementation runtime into the authoritative managed worktree and accepts completion only when the reported HEAD equals the real managed-worktree HEAD.
+3. `implement` dispatches the production implementation runtime into the authoritative managed worktree and accepts completion only when the reported HEAD equals the real managed-worktree HEAD. Every implementation and repair request requires both `workspace_write` and `local_workspace_only`; a connector may advertise the latter only when it enforces workspace sandboxing, disabled network access, and non-interactive approval denial for that invocation. A provider that cannot enforce that envelope stops before `start` with typed missing-capability recovery.
 4. `verify` invokes the injected PR-preparation callback to classify the
    implementation runtime's current-HEAD verification records and Gate
    evidence. Verification commands themselves are part of the bounded
@@ -87,7 +87,7 @@ valid descriptor fails closed instead of producing an unresumable Run.
 
 ## Safety and Human Authority
 
-Guarded closure may create/reuse a managed worktree, write repository artifacts, produce focused commits, run validation, and dispatch implementation or read-only review runtimes. It must not:
+Guarded closure may create/reuse a managed worktree, write repository artifacts, produce focused commits, run validation, and dispatch implementation or read-only review runtimes. Implementation dispatch is fail-closed unless its connector enforces the `local_workspace_only` capability envelope. It must not:
 
 - create or merge a PR;
 - grant a critical waiver;

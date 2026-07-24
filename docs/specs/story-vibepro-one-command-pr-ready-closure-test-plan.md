@@ -35,6 +35,11 @@ Target: `test/one-command-pr-ready-closure.test.js`.
 - The run-session composes diagnose, missing-artifact preparation,
   implementation, verification, repair, and final preparation without importing
   the CLI.
+- Every implementation and repair dispatch requires `workspace_write` plus
+  `local_workspace_only`. The production connector may advertise the latter
+  only when workspace sandboxing, network denial, and non-interactive approval
+  denial are enforced; otherwise adapter dispatch stops before `start` with
+  provider, missing capability, same-Run recovery, and resume condition.
 - Verification classifies current-HEAD evidence through the injected
   PR-preparation callback; bounded commands and evidence recording remain in the
   implementation/repair runtime objective.

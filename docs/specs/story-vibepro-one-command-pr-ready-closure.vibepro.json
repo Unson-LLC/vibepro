@@ -76,7 +76,7 @@
     {
       "id": "INV-OCR-3",
       "type": "invariant",
-      "statement": "The guarded closure never creates or merges a PR, grants a critical waiver, or performs a material external side effect; it returns a typed stop or leaves those operations to an explicit human command.",
+      "statement": "The guarded closure never creates or merges a PR, grants a critical waiver, or performs a material external side effect. Every implementation and repair dispatch requires workspace_write plus local_workspace_only, which a connector may advertise only when it enforces workspace sandboxing, disabled network access, and non-interactive approval denial; otherwise dispatch stops before start with typed same-Run recovery.",
       "inherited_behaviors": [
         {
           "condition": "state.status === 'cancelled'",
@@ -98,7 +98,9 @@
         ],
         "code_refs": [
           { "file": "src/safe-action-orchestrator.js", "anchor": "AUTONOMOUS_REGISTRY" },
-          { "file": "src/human-decision-checkpoint.js", "anchor": "createHumanDecision" }
+          { "file": "src/human-decision-checkpoint.js", "anchor": "createHumanDecision" },
+          { "file": "src/one-command-pr-ready-closure.js", "anchor": "runImplementationRuntime" },
+          { "file": "src/agent-runtime-connectors.js", "anchor": "buildInvocation" }
         ],
         "test_refs": [
           { "file": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md", "case": "OCR-T-2 Production action-owner composition" },

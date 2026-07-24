@@ -305,7 +305,11 @@ function completeRuntimeRecovery(state, stopReason) {
   const recovery = details.recovery ?? {};
   const requiredCapabilities = [...(recovery.required_capabilities ?? details.required_capabilities ?? [])];
   const missingCapabilities = [...(recovery.missing_capabilities ?? details.missing_capabilities ?? [])];
-  const provider = recovery.provider ?? details.provider ?? null;
+  const provider = recovery.provider
+    ?? details.provider
+    ?? state.provider_fallbacks?.[0]
+    ?? 'unresolved';
+  const nextCommand = `vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${state.story_id} --run-id ${state.run_id} --until pr-ready`;
   return {
     ...stopReason,
     details: {
@@ -315,20 +319,19 @@ function completeRuntimeRecovery(state, stopReason) {
       missing_capabilities: missingCapabilities,
       recovery: {
         ...recovery,
-        action: recovery.action ?? 'resume_run',
-        story_id: recovery.story_id ?? state.story_id,
-        run_id: recovery.run_id ?? state.run_id,
+        action: 'resume_run',
+        story_id: state.story_id,
+        run_id: state.run_id,
         provider,
         required_capabilities: requiredCapabilities,
         missing_capabilities: missingCapabilities,
-        condition: recovery.condition ?? {
+        condition: {
           kind: 'runtime_available',
           provider,
           required_capabilities: requiredCapabilities,
           missing_capabilities: missingCapabilities
         },
-        next_command: recovery.next_command
-          ?? `vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${state.story_id} --run-id ${state.run_id} --until pr-ready`
+        next_command: nextCommand
       }
     }
   };

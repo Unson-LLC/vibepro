@@ -22,16 +22,18 @@ import test from "node:test";
 import { promisify } from "node:util";
 import { createAgentRuntimeCoordinator } from "../../src/agent-runtime-adapter.js";
 import { runCli } from "../../src/cli.js";
+import { startExecution } from "../../src/execution-state.js";
 import { createOneCommandPrReadyActionOwners } from "../../src/one-command-pr-ready-closure.js";
 import { buildSafeActionPlan } from "../../src/safe-action-orchestrator.js";
 
 const execFileAsync = promisify(execFile);
+const normalizedMacPath = (value) => value.replace(/^\/private(?=\/var\/)/, "");
 
 test("scenario:S-001 public guarded Run composes production owners for available-provider commit, review, repair, and final prepare", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "vibepro-ocr-e2e-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const source = path.join(root, "source");
-  const managed = path.join(source, ".worktrees", "vibepro", "ocr-e2e");
+  const managed = path.join(root, "managed");
   const storyId = "story-vibepro-one-command-pr-ready-closure-e2e";
   const branch = "codex/ocr-e2e";
   await mkdir(source, { recursive: true });
@@ -42,62 +44,44 @@ test("scenario:S-001 public guarded Run composes production owners for available
   await writeFile(path.join(source, ".gitignore"), ".worktrees/\n.vibepro/executions/\n");
   await writeFile(path.join(source, ".vibepro", "config.json"), `${JSON.stringify({
     schema_version: "0.1.0",
-    brainbase: { stories: [{ story_id: storyId, title: "OCR production-shaped E2E" }] }
+    brainbase: { stories: [{ story_id: storyId, title: "OCR production-shaped E2E" }] },
+    execution: { managed_worktree: "required" }
   }, null, 2)}\n`);
+  await writeFile(
+    path.join(source, ".vibepro", "vibepro-manifest.json"),
+    `${JSON.stringify({ schema_version: "0.1.0", tool: "vibepro" }, null, 2)}\n`
+  );
   await writeFile(path.join(source, "implementation.txt"), "initial\n");
-  await execFileAsync("git", ["add", ".gitignore", ".vibepro/config.json", "implementation.txt"], { cwd: source });
+  await execFileAsync(
+    "git",
+    ["add", ".gitignore", ".vibepro/config.json", ".vibepro/vibepro-manifest.json", "implementation.txt"],
+    { cwd: source }
+  );
   await execFileAsync("git", ["commit", "-m", "test: initialize OCR fixture"], { cwd: source });
   const initialHead = (await execFileAsync("git", ["rev-parse", "HEAD"], { cwd: source })).stdout.trim();
-  await mkdir(path.dirname(managed), { recursive: true });
-  await execFileAsync("git", ["worktree", "add", "-b", branch, managed, initialHead], { cwd: source });
-
-  const legacy = {
-    schema_version: "0.1.0",
-    story_id: storyId,
-    target: "pr_create",
-    managed_worktree: {
-      status: "created",
-      required: true,
-      mode: "required",
-      source_repo: source,
-      source_relative_path: null,
-      path: managed,
-      relative_path: ".worktrees/vibepro/ocr-e2e",
-      branch,
-      actual_branch: branch,
-      branch_match: true,
-      base_ref: "main",
-      created_from_sha: initialHead,
-      current_head_sha: initialHead,
-      dirty: false,
-      dirty_paths: [],
-      dirty_check_error: null,
-      failure_reason: null
-    }
-  };
-  const writeLegacy = async () => {
-    for (const repo of [source, managed]) {
-      const file = path.join(repo, ".vibepro", "executions", storyId, "state.json");
-      await mkdir(path.dirname(file), { recursive: true });
-      await writeFile(file, `${JSON.stringify(legacy, null, 2)}\n`);
-    }
-  };
   const currentHead = async () =>
     (await execFileAsync("git", ["rev-parse", "HEAD"], { cwd: managed })).stdout.trim();
   let implementationHead = initialHead;
+  let artifactHead = initialHead;
   let repairedHead = initialHead;
   let reviewCalls = 0;
   let runtimeSequence = 0;
   let lifecycleSequence = 0;
   const runtimeRequests = new Map();
   const reviewLifecycleEvents = [];
+  const prepareArtifact = ".vibepro/pr/ocr-e2e/pr-prepare.json";
   const coordinator = createAgentRuntimeCoordinator({
     adapters: [{
       id: "codex",
       async probe({ role }) {
         return role === "review"
           ? { available: true, capabilities: ["review"], sandbox: "read-only", approval_policy: "managed" }
-          : { available: true, capabilities: ["workspace_write"], sandbox: "workspace-write", approval_policy: "managed" };
+          : {
+              available: true,
+              capabilities: ["workspace_write", "local_workspace_only"],
+              sandbox: "workspace-write",
+              approval_policy: "never"
+            };
       },
       async start(request) {
         runtimeSequence += 1;
@@ -128,30 +112,36 @@ test("scenario:S-001 public guarded Run composes production owners for available
         const request = runtimeRequests.get(provider_run_id);
         assert.ok(request, `missing deterministic request for ${provider_run_id}`);
         if (request.role === "implementation") {
+          const prepareArtifacts = request.task_id.endsWith(":prepare-artifacts");
           const repair = request.task_id.endsWith(":repair-1");
-          await writeFile(
-            path.join(managed, "implementation.txt"),
-            repair
+          const changedFile = prepareArtifacts ? "runtime-artifact.md" : "implementation.txt";
+          await writeFile(path.join(managed, changedFile), prepareArtifacts
+            ? "# Runtime-created artifact\n"
+            : repair
               ? "repaired by production-shaped runtime\n"
-              : "implemented by production-shaped runtime\n"
-          );
-          await execFileAsync("git", ["add", "implementation.txt"], { cwd: managed });
+              : "implemented by production-shaped runtime\n");
+          await execFileAsync("git", ["add", changedFile], { cwd: managed });
           await execFileAsync(
             "git",
-            ["commit", "-m", repair
-              ? "fix: repair independent review finding"
-              : "test: advance managed runtime head"],
+            ["commit", "-m", prepareArtifacts
+              ? "docs: create diagnosed runtime artifact"
+              : repair
+                ? "fix: repair independent review finding"
+                : "test: advance managed runtime head"],
             { cwd: managed }
           );
           const head = await currentHead();
-          if (repair) repairedHead = head;
+          if (prepareArtifacts) artifactHead = head;
+          else if (repair) repairedHead = head;
           else implementationHead = head;
           return {
             completion_status: "completed",
-            changed_files: ["implementation.txt"],
+            changed_files: [changedFile],
             head_sha: head,
             test_suggestions: ["node --test test/one-command-pr-ready-closure.test.js"],
-            summary: repair
+            summary: prepareArtifacts
+              ? "managed artifact runtime committed"
+              : repair
               ? "managed repair runtime committed"
               : "managed implementation runtime committed"
           };
@@ -188,29 +178,44 @@ test("scenario:S-001 public guarded Run composes production owners for available
   const guardedRunDependencies = {
     now: () => new Date("2026-07-23T15:00:00.000Z"),
     randomBytes: () => Buffer.from([9, 8, 7, 6]),
-    startExecution: async () => {
-      await writeLegacy();
-      return { state: legacy, found: true };
-    },
-    agentRuntimeCoordinator: coordinator,
-    readGateReadiness: async () => ({
-      ready_for_pr_create: false,
-      missing_artifacts: []
+    startExecution: async (repoRoot, options) => startExecution(repoRoot, {
+      ...options,
+      branchName: branch,
+      worktreePath: managed
     }),
-    preparePullRequest: async () => ({
-      git: { head_sha: await currentHead() },
-      preparation: {
-        gate_status: { ready_for_pr_create: true, next_required_actions: [] },
-        pr_context: {
-          agent_reviews: {
-            parallel_dispatch: {
-              required_stages: [{ stage: "implementation", roles: ["runtime_contract"] }]
+    agentRuntimeCoordinator: coordinator,
+    readGateReadiness: async () => {
+      try {
+        await readFile(path.join(managed, "runtime-artifact.md"), "utf8");
+        return { ready_for_pr_create: false, missing_artifacts: [] };
+      } catch (error) {
+        if (error.code !== "ENOENT") throw error;
+        return {
+          ready_for_pr_create: false,
+          missing_artifacts: ["runtime-artifact.md"]
+        };
+      }
+    },
+    preparePullRequest: async () => {
+      const prepared = {
+        git: { head_sha: await currentHead() },
+        preparation: {
+          gate_status: { ready_for_pr_create: true, next_required_actions: [] },
+          pr_context: {
+            agent_reviews: {
+              parallel_dispatch: {
+                required_stages: [{ stage: "implementation", roles: ["runtime_contract"] }]
+              }
             }
           }
-        }
-      },
-      artifacts: { json: ".vibepro/pr/ocr-e2e/pr-prepare.json" }
-    }),
+        },
+        artifacts: { json: prepareArtifact }
+      };
+      const artifactFile = path.join(managed, prepareArtifact);
+      await mkdir(path.dirname(artifactFile), { recursive: true });
+      await writeFile(artifactFile, `${JSON.stringify(prepared, null, 2)}\n`);
+      return prepared;
+    },
     agentReviewOps: {
       prepare: async (_root, value) => {
         reviewLifecycleEvents.push(["prepare", value.stage, value.roles]);
@@ -272,7 +277,10 @@ test("scenario:S-001 public guarded Run composes production owners for available
     "autonomous",
     "AC-1: the public guarded one-command path defaults to the autonomous closure profile"
   );
-  const artifact = path.join(managed, ".vibepro", "executions", storyId, "runs", result.state.run_id, "state.json");
+  const artifact = path.join(
+    result.state.execution_context.root_realpath,
+    ".vibepro", "executions", storyId, "runs", result.state.run_id, "state.json"
+  );
   const persisted = JSON.parse(await readFile(artifact, "utf8"));
   assert.equal(
     result.state.status,
@@ -285,23 +293,39 @@ test("scenario:S-001 public guarded Run composes production owners for available
     })}`
   );
   assert.equal(persisted.current_head_sha, repairedHead);
+  assert.equal(normalizedMacPath(persisted.managed_worktree.path), normalizedMacPath(managed));
+  assert.equal(persisted.managed_worktree.branch, branch);
+  assert.equal(normalizedMacPath(persisted.execution_context.root_realpath), normalizedMacPath(managed));
+  assert.equal(
+    (await execFileAsync("git", ["branch", "--show-current"], { cwd: managed })).stdout.trim(),
+    branch
+  );
   assert.notEqual(repairedHead, implementationHead);
   assert.notEqual(implementationHead, initialHead);
   const implementations = persisted.runtime_dispatches.filter(({ role }) => role === "implementation");
   const reviews = persisted.runtime_dispatches.filter(({ role }) => role === "review");
   const verify = persisted.action_journal.filter(({ action_id }) => action_id === "verify");
   const finalPrepare = persisted.action_journal.findLast(({ action_id }) => action_id === "final_prepare");
+  const persistedPrepare = JSON.parse(await readFile(path.join(managed, prepareArtifact), "utf8"));
   // S-001: public CLI entered the production run-session owner composition; no
   // custom implementation, repair, or review action runner produced this evidence.
   assert.deepEqual(
     implementations.map(({ result }) => result.head_sha),
-    [implementationHead, repairedHead],
-    "AC-2: the canonical implementation owner commits both implementation and repair"
+    [artifactHead, implementationHead, repairedHead],
+    "AC-2: the canonical implementation owner closes diagnosed artifacts, implementation, and repair"
   );
   assert.equal(
-    implementations.every(({ requirements }) => requirements.managed_worktree === managed),
+    implementations.every(({ requirements }) =>
+      normalizedMacPath(requirements.managed_worktree) === normalizedMacPath(managed)),
     true,
     "AC-6: production connector mutations are constrained to the managed worktree"
+  );
+  assert.equal(
+    implementations.every(({ requirements, approval_policy }) =>
+      requirements.capabilities.includes("local_workspace_only")
+      && approval_policy === "never"),
+    true,
+    "AC-4: every implementation dispatch is pre-authorized only for locally contained side effects"
   );
   assert.equal(reviewCalls, 2);
   assert.equal(verify.length, 2);
@@ -320,7 +344,10 @@ test("scenario:S-001 public guarded Run composes production owners for available
     "prepare", "authorize", "start", "close", "record"
   ]);
   assert.equal(finalPrepare.output_head_sha, repairedHead);
+  assert.equal(finalPrepare.artifact, prepareArtifact);
   assert.equal(finalPrepare.status, "completed");
+  assert.equal(persistedPrepare.git.head_sha, repairedHead);
+  assert.equal(persistedPrepare.preparation.gate_status.ready_for_pr_create, true);
 });
 
 test("scenario:S-002 typed stop and resume matrix executes independently of unit imports", async () => {
@@ -482,7 +509,7 @@ test("scenario:S-002 typed stop and resume matrix executes independently of unit
   assert.equal((await cancelled.implement(context("implement"))).stop_reason, "runtime_cancelled");
 });
 
-test("scenario:S-004 public guarded Run CLI persists typed stops across resume, render, and cancel", async (t) => {
+test("scenario:S-004 public guarded Run CLI persists runtime, decision, and verification stops through pr_ready", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "vibepro-ocr-public-run-e2e-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const storyId = "story-vibepro-one-command-pr-ready-closure-public-run-e2e";
@@ -502,31 +529,80 @@ test("scenario:S-004 public guarded Run CLI persists typed stops across resume, 
   await execFileAsync("git", ["commit", "-m", "test: initialize guarded Run public E2E"], { cwd: root });
 
   let implementAttempts = 0;
+  let verifyAttempts = 0;
+  const verificationProof = path.join(root, "verification-proof.txt");
   const guardedRunDependencies = {
     now: () => new Date("2026-07-24T00:00:00.000Z"),
     randomBytes: () => Buffer.from([1, 2, 3, 4]),
+    preparePullRequest: async () => ({
+      git: {
+        head_sha: (await execFileAsync("git", ["rev-parse", "HEAD"], { cwd: root })).stdout.trim()
+      },
+      preparation: {
+        gate_status: { ready_for_pr_create: true, next_required_actions: [] }
+      },
+      artifacts: { json: ".vibepro/pr/public-e2e/pr-prepare.json" }
+    }),
     actionRunners: {
       diagnose: async () => ({ status: "continue", summary: "fixture diagnosis complete" }),
       prepare_artifacts: async () => ({ status: "continue", summary: "fixture artifacts ready" }),
       implement: async () => {
         implementAttempts += 1;
-        return implementAttempts === 1
-          ? {
+        if (implementAttempts === 1) {
+          return {
               status: "waiting_for_runtime",
               stop_reason: "runtime_unavailable",
               recovery: {
                 provider: "deterministic-e2e",
-                required_capabilities: ["workspace_write"]
+                required_capabilities: ["workspace_write", "local_workspace_only"]
               },
               summary: "deterministic runtime is unavailable"
-            }
-          : {
-              status: "blocked",
-              stop_reason: "verification_failed",
-              recovery: { required_actions: ["refresh focused verification evidence"] },
-              summary: "deterministic verification stop after resume"
             };
-      }
+        }
+        if (implementAttempts === 2) {
+          return {
+            status: "waiting_for_human",
+            stop_reason: "human_decision_required",
+            human_decision: {
+              type: "scope_split",
+              question: "Keep material external side effects outside this Run?",
+              choices: ["keep-local", "expand-authority"],
+              material_reason: "The answer changes the authority boundary.",
+              impact_scope: ["runtime side effects"],
+              source_refs: ["story:OCR-S-4"],
+              stop_node_id: "implement"
+            },
+            summary: "explicit authority decision required"
+          };
+        }
+        return {
+          status: "continue",
+          summary: "deterministic implementation completed"
+        };
+      },
+      verify: async () => {
+        verifyAttempts += 1;
+        try {
+          await readFile(verificationProof, "utf8");
+          return { status: "continue", summary: "focused verification refreshed" };
+        } catch (error) {
+          if (error.code !== "ENOENT") throw error;
+          return {
+            status: "blocked",
+            stop_reason: "verification_failed",
+            recovery: { required_actions: ["create verification-proof.txt"] },
+            summary: "focused verification evidence is missing"
+          };
+        }
+      },
+      review: async () => ({ status: "continue", summary: "independent review passed" }),
+      repair: async () => ({ status: "continue", summary: "no repair required" }),
+      final_prepare: async ({ state }) => ({
+        status: "pr_ready",
+        artifact: ".vibepro/pr/public-e2e/pr-prepare.json",
+        output_head_sha: state.current_head_sha,
+        summary: "current HEAD is PR-ready"
+      })
     }
   };
   const invoke = async (args, { json = true } = {}) => {
@@ -556,36 +632,62 @@ test("scenario:S-004 public guarded Run CLI persists typed stops across resume, 
   const initialState = JSON.parse(await readFile(stateFile, "utf8"));
   assert.equal(initialState.status, "waiting_for_runtime");
   assert.equal(initialState.resume_from_node_id, "implement");
+  assert.equal(initialState.stop_reason.details.provider, "deterministic-e2e");
+  assert.deepEqual(
+    initialState.stop_reason.details.required_capabilities,
+    ["workspace_write", "local_workspace_only"]
+  );
   assert.equal(initialState.stop_reason.details.recovery.action, "resume_run");
+  assert.equal(initialState.stop_reason.details.recovery.condition.kind, "runtime_available");
+  assert.match(initialState.stop_reason.details.recovery.next_command, /vibepro execute resume/);
 
   const resumed = await invoke([
     "execute", "resume", root, "--story-id", storyId, "--run-id", runId, "--until", "pr-ready"
   ]);
   assert.equal(resumed.invocation.exitCode, 0);
-  assert.equal(resumed.invocation.result.state.status, "blocked");
-  assert.equal(resumed.invocation.result.state.stop_reason.code, "verification_failed");
+  assert.equal(resumed.invocation.result.state.status, "waiting_for_human");
+  assert.equal(resumed.invocation.result.state.stop_reason.code, "human_decision_required");
+  const decisionId = resumed.invocation.result.state.pending_decision.decision_id;
+  const decided = await invoke([
+    "execute", "resume", root, "--story-id", storyId, "--run-id", runId,
+    "--decision", decisionId, "--answer", "keep-local", "--answered-by", "e2e-operator",
+    "--reflected-in", "README.md",
+    "--until", "pr-ready"
+  ]);
+  assert.equal(decided.invocation.exitCode, 0);
+  assert.equal(decided.invocation.result.state.status, "blocked");
+  assert.equal(decided.invocation.result.state.stop_reason.code, "verification_failed");
+  const decidedState = JSON.parse(await readFile(stateFile, "utf8"));
+  assert.equal(decidedState.human_decision_journal.at(-1).decision_id, decisionId);
+  assert.equal(decidedState.human_decision_journal.at(-1).answer, "keep-local");
+  assert.deepEqual(decidedState.human_decision_journal.at(-1).reflected_in, ["README.md"]);
+
+  await writeFile(verificationProof, "operator refreshed focused verification evidence\n");
+  const verificationResumed = await invoke([
+    "execute", "resume", root, "--story-id", storyId, "--run-id", runId, "--until", "pr-ready"
+  ]);
+  assert.equal(verificationResumed.invocation.exitCode, 0);
+  assert.equal(
+    verificationResumed.invocation.result.state.status,
+    "pr_ready",
+    JSON.stringify(verificationResumed.invocation.result.state.stop_reason)
+  );
   const resumedState = JSON.parse(await readFile(stateFile, "utf8"));
-  assert.equal(implementAttempts, 2);
-  assert.equal(resumedState.retry_journal.at(-1).stop_code, "runtime_unavailable");
-  assert.equal(resumedState.stop_reason.code, "verification_failed");
+  assert.equal(implementAttempts, 3);
+  assert.equal(verifyAttempts, 2);
+  assert.equal(resumedState.retry_journal.some(({ stop_code }) => stop_code === "runtime_unavailable"), true);
+  assert.equal(
+    resumedState.action_journal.filter(({ action_id }) => action_id === "verify").length,
+    2
+  );
+  assert.equal(resumedState.stop_reason, null);
 
   const rendered = await invoke([
     "execute", "status", root, "--story-id", storyId, "--run-id", runId
   ], { json: false });
   assert.equal(rendered.invocation.exitCode, 0);
   assert.match(rendered.stdout, /# VibePro Guarded Run/);
-  assert.match(rendered.stdout, /- status: blocked/);
-  assert.match(rendered.stdout, /- stop_reason: verification_failed:/);
-  assert.match(rendered.stdout, /next_command: vibepro execute resume/);
-
-  const cancelled = await invoke([
-    "execute", "cancel", root, "--story-id", storyId, "--run-id", runId
-  ]);
-  assert.equal(cancelled.invocation.exitCode, 0);
-  assert.equal(cancelled.invocation.result.status, "cancelled");
-  const cancelledState = JSON.parse(await readFile(stateFile, "utf8"));
-  assert.equal(cancelledState.stop_reason.code, "cancelled_by_operator");
-  assert.equal(cancelledState.transitions.at(-1).reason, "operator_cancelled");
+  assert.match(rendered.stdout, /- status: pr_ready/);
 });
 
 test("scenario:S-005 roadmap closure keeps external authority explicit and predecessor evidence canonical", async () => {
