@@ -291,18 +291,18 @@
     },
     "delivery_efficiency_by_story": {
       "story-vibepro-gate-decision-outcome-ledger": {
-        "max_subagent_count": 457,
+        "max_subagent_count": 464,
         "max_agent_consumption_ms": 1448270856,
         "max_review_dispatches_by_role": {
-          "architecture_boundary": 85,
-          "gate_evidence": 14,
-          "pr_split_scope": 12,
-          "release_risk": 15,
+          "architecture_boundary": 86,
+          "gate_evidence": 16,
+          "pr_split_scope": 14,
+          "release_risk": 17,
           "preview_smoke": 16,
           "network_runtime": 16,
           "human_usability": 16
         },
-        "amendment_reason": "Historical and superseded review lifecycles exhausted the Story-local limits while independent release review continued to find concrete defects. The exact-ed333d69 release-risk review identified three current defects: a non-existent recovery snapshot when the canonical directory was originally absent, credential-bearing rollback diagnostics, and dropped push/cleanup/worktree/ledger postconditions. The user explicitly authorized blocker removal and merge completion on 2026-07-24. The first final architecture review confirmed those three fixes but found one additional direct-helper Story-ID validation boundary; that finding was corrected at c370a0f9 and requires one exact-HEAD independent confirmation. Reserve exactly five final Luna-high agents in total: the completed finding-producing architecture review, one architecture correction review, and one each for gate_evidence, pr_split_scope, and release_risk. Increase the Story-local subagent cap from 452 to 457. Preserve all 84 historical/current architecture-boundary lifecycles and allow exactly one correction dispatch by setting that role limit to 85; raise each of the other three role allowances by one. Permit no further replacement loop, waiver, unrelated role, or global budget expansion."
+        "amendment_reason": "Historical and superseded review lifecycles exhausted the Story-local limits while independent release review continued to find concrete defects. The exact-ed333d69 release-risk review identified three current defects: a non-existent recovery snapshot when the canonical directory was originally absent, credential-bearing rollback diagnostics, and dropped push/cleanup/worktree/ledger postconditions. The user explicitly authorized blocker removal and merge completion on 2026-07-24. The first final architecture review confirmed those three fixes but found one additional direct-helper Story-ID validation boundary; that finding was corrected at c370a0f9. Subsequent final-head architecture and network review found delivery provenance, managed command routing, repository authority, and fingerprint compatibility defects; all were corrected through 4d2e89ea with focused regression evidence. The initial three-role closure at 0e6ad87f passed, but the risk-adaptive validation sequence then required one current-head architecture_boundary preflight before freeze; that role's historical allowance was exhausted. Because this tracked Story-local amendment changes HEAD and invalidates the three final gate reviews, reserve exactly one replacement dispatch for architecture_boundary, gate_evidence, pr_split_scope, and release_risk, increasing the Story-local cap from 460 to 464. This is the final budget amendment: permit no further replacement loop, waiver, unrelated role, or global budget expansion."
       },
       "story-vibepro-delivery-reconciliation-state": {
         "max_subagent_count": 34,
