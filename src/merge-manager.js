@@ -1538,6 +1538,30 @@ ${(merge.warnings ?? []).map((warning) => `- ${warning}`).join('\n') || '- none'
 `;
 }
 
+export function projectPublicPrMergeResult(result) {
+  const merge = result?.merge ?? result ?? {};
+  return projectPublicMergeValue(merge);
+}
+
+const PRIVATE_MERGE_DIAGNOSTIC_KEYS = new Set([
+  'worktree_path',
+  'commands',
+  'results',
+  'stdout',
+  'stderr',
+  'primary'
+]);
+
+function projectPublicMergeValue(value) {
+  if (Array.isArray(value)) return value.map(projectPublicMergeValue);
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => !PRIVATE_MERGE_DIAGNOSTIC_KEYS.has(key))
+      .map(([key, item]) => [key, projectPublicMergeValue(item)])
+  );
+}
+
 function normalizeMergeStrategy(strategy) {
   const normalized = strategy ?? 'merge';
   if (!VALID_MERGE_STRATEGIES.has(normalized)) {

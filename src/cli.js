@@ -167,6 +167,7 @@ import {
   executeMerge,
   persistMergeFollowupState,
   persistMergeRecoveryState,
+  projectPublicPrMergeResult,
   renderPrMergeSummary
 } from './merge-manager.js';
 import {
@@ -2886,7 +2887,7 @@ export async function runCli(argv, io = {}) {
           write(stderr, `${executionStateSyncFailure}\n`);
         }
         write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.merge, null, 2)}\n`
+          ? `${JSON.stringify(projectPublicPrMergeResult(result), null, 2)}\n`
           : renderPrMergeSummary(result));
         return {
           exitCode: executionStateSyncFailure

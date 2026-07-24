@@ -77,3 +77,9 @@ VibeProのgateが実欠陥を捕捉しても、finding、判断、修正、PR、
 - `observability evidence`: owner-visibleな一次信号は `.vibepro/pr/<story>/decision-outcome-ledger.json`、各commandのbounded JSON、canonical revisionの `decision_outcome_binding.status` / `reason` / `expected_entry_count` / `promoted_count` / `duplicate_count` である。`bound`、`not_applicable`、`reconciliation_required` と process exit code を監視し、raw stdout/stderrやsecretを監視面へ再掲しない。
 - `support / rollback owner`: VibePro maintainer が owner。問題時は新commandの利用を停止して当該変更commitをrevertし、既存ledgerを保持したまま従来の review/pr-prepare/usage-report projectionへ戻す。canonical promotionが途中なら immutable delivery identity を保ち、`reconciliation_required` の対象revisionを owner が再実行または手動調査する。履歴ledgerの削除・上書きはrollback手順に含めない。
 - `state transitions`: `not_observed -> observed|not_applicable` は current authorityの検証とrecord成功時だけ、local outcomeは `pending -> bound|not_applicable|reconciliation_required` を取り、refresh/promotion失敗は必ず `reconciliation_required` に留まる。
+
+## Review Budget Amendment
+
+- 2026-07-24 の current-HEAD architecture preflight は、`execute merge --json` が canonical persistence の内部 command 結果、一時 worktree path、raw stdout/stderr を公開し得る P1 境界漏れを検出した。
+- 修正は公開 merge result を bounded projection に通し、既存の公開契約を保ちながら内部 diagnostic key を除外する回帰テストを追加する。
+- 修正で HEAD が変わるため、同じ `architecture_boundary` role による独立再確認を1回だけ許可する。waiver、無関係な role、反復 replacement loop には使わない。

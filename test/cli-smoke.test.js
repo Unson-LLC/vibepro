@@ -7,6 +7,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
 import { renderOutcomeCommandError, renderOutcomeCommandResult, runCli, serializeOutcomeCommandError, TOP_LEVEL_COMMANDS } from '../src/cli.js';
+import { projectPublicPrMergeResult } from '../src/merge-manager.js';
 import { OutcomeCommandError } from '../src/outcome-manager.js';
 
 const execFileAsync = promisify(execFile);
@@ -165,6 +166,44 @@ test('outcome promotion text exposes bounded recovery diagnostics without raw co
   assert.match(json, /canonical_audit_push_indeterminate/);
   assert.doesNotMatch(json, /SECRET_SHOULD_NOT_RENDER/);
   assert.doesNotMatch(json, /worktree_path|primary|commands|results/);
+});
+
+test('execute merge JSON projects bounded persistence diagnostics without internal command output', () => {
+  const projected = projectPublicPrMergeResult({
+    merge: {
+      status: 'failed',
+      strategy: 'merge',
+      canonical_audit: {
+        status: 'failed',
+        persistence: {
+          status: 'failed',
+          reason: 'canonical_audit_push_indeterminate',
+          pushed: false,
+          worktree_path: '/tmp/vibepro-canonical-audit-story-x-1',
+          commands: ['git push https://token@example.invalid/repo.git'],
+          results: [{ stdout: 'SECRET_SHOULD_NOT_RENDER', stderr: 'raw failure' }],
+          push_postcondition: { status: 'indeterminate', remote_sha: null },
+          cleanup: { attempted: true, removed: false, status: 'failed' },
+          recovery: 'verify remote state before retrying'
+        }
+      }
+    }
+  });
+
+  assert.equal(projected.canonical_audit.persistence.status, 'failed');
+  assert.equal(projected.canonical_audit.persistence.reason, 'canonical_audit_push_indeterminate');
+  assert.deepEqual(projected.canonical_audit.persistence.push_postcondition, {
+    status: 'indeterminate',
+    remote_sha: null
+  });
+  assert.deepEqual(projected.canonical_audit.persistence.cleanup, {
+    attempted: true,
+    removed: false,
+    status: 'failed'
+  });
+  assert.equal(projected.canonical_audit.persistence.recovery, 'verify remote state before retrying');
+  const json = JSON.stringify(projected);
+  assert.doesNotMatch(json, /SECRET_SHOULD_NOT_RENDER|raw failure|worktree_path|commands|results|token@example/);
 });
 
 test('outcome finalization text exposes local reconciliation state and recovery artifact', () => {
