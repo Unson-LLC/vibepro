@@ -35,6 +35,7 @@ updated_at: 2026-07-23
 - [x] OCR-S-6: production connector smokeは、runtimeが必要capabilityを提供する場合は実commitと独立Review identityを証明し、提供しない場合はmutation前に不足capability、provider、再開条件を型付き停止として同じRunへ永続化する。available-pathのcommit/review契約はproduction-shaped E2Eで回帰保証する。
 - [x] OCR-S-7: self-dogfoodでこのStory自身または専用fixture StoryがTrusted PR-readyまたは契約どおりの型付き停止へ到達する。
 - [x] OCR-S-8: pre-PR acceptanceは、merge済みPR #372、#377、#382を先行3 Storyの正本証跡として参照し、その実装を二重化しないこと、および最終Storyと親roadmapをPR作成時点では`active`のまま保つstaged closure protocolだけを証明する。PR作成、CI import、focused closure commit、再検証、再Review、再CI import、明示的な`execute merge`は下記Post-PR Delivery Closure Recordで追跡し、pre-PR Gate条件に含めない。
+- [x] OCR-S-9: merge後のmanaged-worktree artifact同期は、schema 0.2.0のcatalogに存在しないprobe Storyを解決せず、選択済みStoryのPR route templateからstory-scoped ownershipを判定してdelivery reconciliationを完了する。
 
 ## Non Goals
 
@@ -57,6 +58,14 @@ updated_at: 2026-07-23
    - `docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md`のOCR-T-5を、利用可能runtimeでは実commitと別identity review lifecycle、利用不能runtimeではmutation前の型付きcapability停止として実証する。後者はavailable-pathのproduction-shaped E2Eとcurrent-HEAD Gateを組み合わせてpre-PR acceptanceを閉じる。
    - `docs/management/stories/active/story-vibepro-autonomous-action-dag.md`をmerge済みPR #372、Production Runtime ConnectorsをPR #377、Independent Review OrchestrationをPR #382の証跡で完了へ更新する。先行コードは二重実装しない。
    - このStoryと親roadmapはpre-PR acceptance完了時も`active`を維持し、後続処理を下記Post-PR Delivery Closure Recordへ引き渡す。
+7. `[DELIVERY RECONCILIATION]` schema 0.2.0でpost-merge authority同期を閉じる。
+   - `docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md`はdelivery reconciliationの受け入れ条件とTask surfaceを更新する。
+   - `docs/architecture/story-vibepro-one-command-pr-ready-closure.md`はschema 0.2.0 ownership境界を更新する。
+   - `docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json`は選択済みrouteだけを使うinvariantを追加する。
+   - `docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md`はmanaged/source authority同期シナリオを追加する。
+   - `src/execution-state.js`は選択済みPR routeのtemplateだけでdirectory ownershipを判定し、未登録の架空Storyを解決しない。
+   - `test/execution-state.test.js`はnamed profileとcatalog mirrorを持つmanaged/source authority間でartifactとstateが同期する回帰テストを追加する。
+   - `test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts`は同じschema 0.2.0 routeをStory E2E naming contract上で実行し、OCR-S-9をcurrent-HEADへ結合する。
 
 ## Post-PR Delivery Closure Record
 
@@ -70,3 +79,4 @@ updated_at: 2026-07-23
 - Independent preflight review: current HEADへ再bindしてから判定する。確認対象はrun-sessionからCLIへの逆依存、先行connector/reviewの二重実装、human authority越境。
 - Pre-PR PR-readyの最終権威はcurrent-HEAD `pr-prepare.json`とし、CI import以降はPost-PR Delivery Closure Recordの同じStory監査へ記録する。
 - Delivery PR: https://github.com/Unson-LLC/vibepro/pull/385。pre-closure HEADのCIはNode 20/22とも成功し、`npm test`のfull-suite coverageとしてVibeProへimport済み。
+- Post-merge reconciliation follow-up: PR #385のmerge後にschema 0.2.0 catalogで架空ownership-probe Storyが拒否される実不具合を検出した。最新`origin/main`からfocused follow-upを開始し、route template判定とnamed-profile回帰テストで修復する。

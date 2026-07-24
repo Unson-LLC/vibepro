@@ -35,6 +35,27 @@ const state = {
   execution_dag: { nodes: [] }
 };
 
+function executionArtifactProfile(prCanonical) {
+  const templates = {
+    story: 'docs/management/stories/active/{story_id}.md',
+    architecture: 'docs/architecture/{story_id}.md',
+    accepted_spec: '.vibepro/spec/{story_id}/spec.json',
+    task_plan: '.vibepro/stories/{story_id}/tasks/tasks.json',
+    graphify: '.vibepro/graphify',
+    evidence: '.vibepro/evidence/{story_id}',
+    test_plan: '.vibepro/test-plans/{story_id}.json',
+    review: '.vibepro/reviews/{story_id}',
+    gate: '.vibepro/pr/{story_id}/gate-dag.json',
+    pr: prCanonical
+  };
+  return {
+    artifacts: Object.fromEntries(Object.entries(templates).map(([kind, canonical]) => [
+      kind,
+      { canonical, ownership: kind === 'story' || kind === 'architecture' ? 'curated' : 'generated' }
+    ]))
+  };
+}
+
 test('DRS-CONTRACT-008 live story lock cannot be stolen solely because its timestamp is old', async () => {
   const repoRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-story-lock-live-'));
   const storyId = 'story-live-lock-owner';
@@ -363,6 +384,65 @@ test('DRS-CONTRACT-009 linked artifact sync and rollback honor the configured PR
   assert.deepEqual(JSON.parse(await readFile(sourceForeignVerification, 'utf8')), { revision: 'source-foreign-verification-authority' });
   for (const statePath of statePaths) {
     assert.deepEqual(JSON.parse(await readFile(statePath, 'utf8')), oldState);
+  }
+});
+
+test('DRS-CONTRACT-009 schema 0.2 linked artifact sync uses catalog routing without resolving a probe Story', async () => {
+  const currentRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-execution-schema-v2-current-'));
+  const sourceRoot = await mkdtemp(path.join(os.tmpdir(), 'vibepro-execution-schema-v2-source-'));
+  const storyId = 'story-schema-v2-linked-sync';
+  const featureSlug = 'schema-v2-linked-sync';
+  const routingConfig = {
+    brainbase: {
+      stories: [{
+        story_id: storyId,
+        artifact_profile: 'feature_packet',
+        feature_slug: featureSlug
+      }]
+    },
+    artifact_routing: {
+      schema_version: '0.2.0',
+      artifacts: {},
+      profiles: {
+        feature_packet: executionArtifactProfile('.vibepro/packets/{feature_slug}/pr-prepare.json'),
+        governance_packet: executionArtifactProfile('.vibepro/governance/{feature_slug}/pr-prepare.json')
+      }
+    }
+  };
+  for (const root of [currentRoot, sourceRoot]) {
+    await mkdir(path.join(root, '.vibepro'), { recursive: true });
+    await writeFile(path.join(root, '.vibepro', 'config.json'), `${JSON.stringify(routingConfig, null, 2)}\n`);
+    const storyPath = path.join(root, 'docs', 'management', 'stories', 'active', `${storyId}.md`);
+    await mkdir(path.dirname(storyPath), { recursive: true });
+    await writeFile(storyPath, `---\nstory_id: ${storyId}\nartifact_profile: feature_packet\nfeature_slug: ${featureSlug}\n---\n`);
+  }
+
+  const oldState = { story_id: storyId, completion_status: 'merged_reconciliation_required', revision: 'old' };
+  const nextState = {
+    ...oldState,
+    completion_status: 'merged',
+    revision: 'new',
+    managed_worktree: { mode: 'managed', path: currentRoot, source_repo: sourceRoot }
+  };
+  for (const root of [currentRoot, sourceRoot]) {
+    const statePath = path.join(root, '.vibepro', 'executions', storyId, 'state.json');
+    await mkdir(path.dirname(statePath), { recursive: true });
+    await writeFile(statePath, `${JSON.stringify(oldState, null, 2)}\n`);
+  }
+
+  const managedMerge = path.join(currentRoot, '.vibepro', 'packets', featureSlug, 'pr-merge.json');
+  const sourceMerge = path.join(sourceRoot, '.vibepro', 'packets', featureSlug, 'pr-merge.json');
+  await mkdir(path.dirname(managedMerge), { recursive: true });
+  await mkdir(path.dirname(sourceMerge), { recursive: true });
+  await writeFile(managedMerge, `${JSON.stringify({ revision: 'managed' })}\n`);
+  await writeFile(sourceMerge, `${JSON.stringify({ revision: 'source' })}\n`);
+
+  await executionStateTesting.writeExecutionStateWithLinkedCopies(currentRoot, nextState);
+
+  assert.deepEqual(JSON.parse(await readFile(sourceMerge, 'utf8')), { revision: 'managed' });
+  for (const root of [currentRoot, sourceRoot]) {
+    const statePath = path.join(root, '.vibepro', 'executions', storyId, 'state.json');
+    assert.deepEqual(JSON.parse(await readFile(statePath, 'utf8')), nextState);
   }
 });
 

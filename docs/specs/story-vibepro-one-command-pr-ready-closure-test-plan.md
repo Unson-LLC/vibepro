@@ -155,3 +155,16 @@ Gate reverification, independent rereview, and CI re-import. Finally record the
 explicit `vibepro execute merge`, `pr-merge.json`, canonical audit, and merge
 SHA. These artifacts confirm delivery closure but cannot retroactively become a
 pre-PR Gate prerequisite.
+
+## OCR-T-6 Schema 0.2.0 delivery reconciliation
+
+Targets: `test/execution-state.test.js`, `test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts`.
+
+- A managed and source authority both select the same schema 0.2.0 named
+  profile through catalog metadata and matching Story mirrors.
+- PR lifecycle artifacts use a `{feature_slug}`-scoped directory.
+- Linked artifact/state synchronization completes without resolving any
+  undeclared probe Story, copies the managed PR artifact to source authority,
+  and commits the same execution state to both authorities.
+- Existing legacy flat-route synchronization and transactional rollback tests
+  remain passing.

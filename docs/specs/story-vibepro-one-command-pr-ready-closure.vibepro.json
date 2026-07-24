@@ -208,6 +208,28 @@
           { "file": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md", "case": "OCR-T-5 Production smoke and dogfood evidence" }
         ]
       }
+    },
+    {
+      "id": "INV-OCR-7",
+      "type": "invariant",
+      "statement": "Managed-worktree post-merge artifact synchronization resolves only the selected catalog Story. It derives story-scoped PR directory ownership from the selected canonical route template and never resolves an undeclared probe Story under schema 0.2.0.",
+      "origin": {
+        "story_refs": [
+          { "kind": "acceptance_criteria", "id": "OCR-S-9" }
+        ],
+        "architecture_refs": [
+          { "file": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md", "section": "Schema 0.2.0 reconciliation ownership" }
+        ],
+        "code_refs": [
+          { "file": "src/execution-state.js", "anchor": "managedWorktreeArtifactLocations" },
+          { "file": "src/execution-state.js", "anchor": "prRouteDirectoryIsStoryScoped" }
+        ],
+        "test_refs": [
+          { "file": "test/execution-state.test.js", "case": "DRS-CONTRACT-009 schema 0.2 linked artifact sync uses catalog routing without resolving a probe Story" },
+          { "file": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts", "case": "scenario:OCR-S-9 schema 0.2 post-merge authority sync follows the selected Story PR route" },
+          { "file": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md", "case": "OCR-T-6 Schema 0.2.0 delivery reconciliation" }
+        ]
+      }
     }
   ]
 }
