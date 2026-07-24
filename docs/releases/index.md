@@ -169,3 +169,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:386:start -->
 - [PR #386](https://github.com/Unson-LLC/vibepro/pull/386) — [2026-07](/releases/2026-07): story-vibepro-one-command-pr-ready-closure - 1コマンド自律実装を実Runtime E2Eで閉じる
 <!-- vibepro-release-index-pr:386:end -->
+
+<!-- vibepro-release-index-pr:387:start -->
+- [PR #387](https://github.com/Unson-LLC/vibepro/pull/387) — [2026-07](/releases/2026-07): story-vibepro-infra-story-dependency-cut - workspace-infraからstoryへの許可外依存を削減する
+<!-- vibepro-release-index-pr:387:end -->
