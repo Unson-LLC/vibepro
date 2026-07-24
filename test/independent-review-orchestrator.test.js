@@ -269,6 +269,29 @@ test('IRO-S-3 production review runtime polls running to completed before closin
   assert.equal(events.filter((event) => event === 'record').length, 1);
 });
 
+test('IRO-S-2 production review authorization binds final risk, judgment delta, and frozen surfaces', async () => {
+  const authorizations = [];
+  const runner = guardedRuntimeRunner({
+    events: [],
+    authorizeReview: async (_repoRoot, options) => {
+      authorizations.push(options);
+      return { action: 'dispatch', authorization: { authorization_id: 'authorization' } };
+    },
+    pollRuntime: async () => completedRuntimeReview()
+  });
+  const result = await runner({
+    state: guardedRuntimeState(),
+    action: { id: 'review', node_id: 'review' }
+  });
+  assert.equal(result.verdict, 'pass');
+  assert.equal(authorizations.length, 1);
+  assert.equal(authorizations[0].reviewKind, 'final');
+  assert.deepEqual(authorizations[0].closesRisks, ['gate:runtime_contract release risk']);
+  assert.equal(authorizations[0].expectedJudgmentDelta,
+    'Confirm the frozen gate:runtime_contract review surface or identify required changes.');
+  assert.deepEqual(authorizations[0].freeze, ['source', 'spec', 'test', 'review_surface']);
+});
+
 test('IRO-S-3 interrupted active review poll resumes the same dispatch and converges', async () => {
   const events = [];
   let checkpoint = [];
@@ -404,6 +427,7 @@ function guardedRuntimeRunner({
   events,
   pollRuntime,
   dispatchRuntime,
+  authorizeReview,
   lifecycleTimeoutMs = 1000,
   now,
   waitForRuntimePoll = async () => {}
@@ -424,7 +448,7 @@ function guardedRuntimeRunner({
     }),
     agentReviewOps: {
       prepare: async () => ({}),
-      authorize: async () => ({ action: 'dispatch', authorization: { authorization_id: 'authorization' } }),
+      authorize: authorizeReview ?? (async () => ({ action: 'dispatch', authorization: { authorization_id: 'authorization' } })),
       start: async () => ({ lifecycle: { lifecycle_id: 'lifecycle', timeout_ms: lifecycleTimeoutMs } }),
       close: async () => { events.push('close'); return { status: 'closed' }; }
     },

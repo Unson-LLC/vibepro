@@ -193,6 +193,10 @@ export function createGuardedIndependentReviewRunner({
       },
       authorize: async ({ state, stage, role, operation }) => agentReviewOps.authorize(repoRoot, {
         storyId: state.story_id, stage, role, agentModel: 'codex', agentReasoningEffort: 'low', agentCostTier: 'low',
+        reviewKind: 'final',
+        closesRisks: [`${stage}:${role} release risk`],
+        expectedJudgmentDelta: `Confirm the frozen ${stage}:${role} review surface or identify required changes.`,
+        freeze: ['source', 'spec', 'test', 'review_surface'],
         operationIdempotencyKey: operation.idempotency_key
       }),
       start: async ({ state, stage, role, authorization, operation }) => agentReviewOps.start(repoRoot, {
