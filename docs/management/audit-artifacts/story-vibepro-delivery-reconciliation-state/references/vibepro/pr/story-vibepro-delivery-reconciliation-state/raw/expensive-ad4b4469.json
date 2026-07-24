@@ -1,0 +1,7 @@
+{
+  "numTotalTests": 11,
+  "numFailedTests": 0,
+  "success": true,
+  "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+  "command": "env -u NODE_TEST_CONTEXT node --test test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts"
+}

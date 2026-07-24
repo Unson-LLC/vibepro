@@ -1,0 +1,455 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-delivery-reconciliation-state",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "All changed paths form one delivery and reconciliation architecture boundary; Story-local review accounting does not expand runtime scope",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed declared high-risk boundaries and the complete changed-path union; risk_surfaces=src/execution-state.js,src/merge-manager.js,src/cli.js,test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts; current delta is config-only",
+    "evidence": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md",
+    "inputs": [
+      ".vibepro/config.json",
+      "CHANGELOG.md",
+      "design-ssot.json",
+      "docs/architecture/story-vibepro-delivery-reconciliation-state.md",
+      "docs/guide/release-and-audit.md",
+      "docs/management/stories/active/story-vibepro-delivery-reconciliation-state.md",
+      "docs/management/test-plans/story-vibepro-delivery-reconciliation-state.md",
+      "docs/specs/vibepro-cli-status-honesty.md",
+      "docs/specs/vibepro-delivery-reconciliation-state.json",
+      "docs/specs/vibepro-delivery-reconciliation-state.md",
+      "src/adjudication.js",
+      "src/agent-review.js",
+      "src/architecture-readiness.js",
+      "src/artifact-routing.js",
+      "src/canonical-audit.js",
+      "src/ci-evidence.js",
+      "src/cli.js",
+      "src/decision-records.js",
+      "src/evidence-reuse.js",
+      "src/execution-state.js",
+      "src/html-report.js",
+      "src/journey-map.js",
+      "src/managed-worktree.js",
+      "src/merge-gate-authorization.js",
+      "src/merge-manager.js",
+      "src/performance-evidence.js",
+      "src/pr-manager.js",
+      "src/pre-spec-readiness.js",
+      "src/recipe-preflight.js",
+      "src/reconciliation-action.js",
+      "src/responsibility-authority.js",
+      "src/self-dogfood-scanner.js",
+      "src/story-transaction-lock.js",
+      "src/traceability.js",
+      "src/usage-report.js",
+      "src/verification-evidence.js",
+      "src/workspace-status.js",
+      "test/artifact-routing.test.js",
+      "test/canonical-audit-self-contained.test.js",
+      "test/cli-status-honesty.test.js",
+      "test/delivery-reconciliation-state.test.js",
+      "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts",
+      "test/e2e/story-vibepro-pr-readiness-status-ssot-main.test.js",
+      "test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+      "test/execution-state.test.js",
+      "test/fixtures/delivery-reconciliation-scenario-lineage.json",
+      "test/guarded-run-session.test.js",
+      "test/managed-worktree-policy-resync.test.js",
+      "test/merge-gate-authorization.test.js",
+      "test/risk-adaptive-gate.test.js",
+      "test/story-transaction-lock.test.js",
+      "test/traceability-promotion.test.js",
+      "test/traceability-usage-report.test.js",
+      "test/vibepro-cli.test.js",
+      "test/vibepro-gate-check.test.js",
+      "test/workspace-status.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Complete changed-path inspection confirms a single bounded delivery/reconciliation contract and no unreviewed architecture surface at current HEAD"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+    "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+    "expected_root": null,
+    "expected_head_sha": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+    "current_head_sha": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+      "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+      "expected_root": null,
+      "expected_head_sha": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "current_head_sha": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-24T01:46:36.262Z",
+  "git_context": {
+    "head_sha": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+    "current_branch": "codex/story-vibepro-delivery-reconciliation-state-focused",
+    "dirty": false,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "67abdc5902af5cf0ed31a00a53b2a157b330e01a8df76baee19099bdc8fce195",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/",
+        "docs/features/delivery-reconciliation-state/08_review.md"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T01:46:36.239Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Independent reviewer directly inspected current frozen HEAD 85abd23f"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "df95f79c1ac5497c2b4f18a527081a75c81edc3d4ec1a74722c0823e4f072af0",
+        "size": 32013
+      },
+      {
+        "path": "CHANGELOG.md",
+        "sha256": "a1cc889645c346512b8939fb6696bf0c7045c34abeb344f12ad4af2dddd81a35",
+        "size": 27595
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "d22d15f57b7a898a64d7ddf4a1de1d66febe9d48c9480313002c67d09d74d8f4",
+        "size": 218808
+      },
+      {
+        "path": "docs/architecture/story-vibepro-delivery-reconciliation-state.md",
+        "sha256": "9f5fad8ac193baac71eaae4386e50cbfec5856b1a89925ef145ea3e0ecde7c4f",
+        "size": 10821
+      },
+      {
+        "path": "docs/guide/release-and-audit.md",
+        "sha256": "ebbf038be823fc8fd4c6b476fb58e46eda736c7ce97c9c9533a831a291cef320",
+        "size": 3125
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-delivery-reconciliation-state.md",
+        "sha256": "5722d2f4209746424e8a3f2c09ea634353482fd63ac8d57b63c43b00b3177a81",
+        "size": 14746
+      },
+      {
+        "path": "docs/management/test-plans/story-vibepro-delivery-reconciliation-state.md",
+        "sha256": "76abe53b41f5a551966b00d8fddfb06b61d3bf2e7db171a2989833eeab40abbd",
+        "size": 5470
+      },
+      {
+        "path": "docs/specs/vibepro-cli-status-honesty.md",
+        "sha256": "2d0c495610a7b5873939160a54ec12940810d5dd8c9ed8909a321d23704221a9",
+        "size": 5557
+      },
+      {
+        "path": "docs/specs/vibepro-delivery-reconciliation-state.json",
+        "sha256": "559634b8462115ca00a1ac2a33a7eedafef1d02b2bde7c477715c22e0e48544a",
+        "size": 27247
+      },
+      {
+        "path": "docs/specs/vibepro-delivery-reconciliation-state.md",
+        "sha256": "763fbe7db86553c5f824f3b65a490658c54ab1725848b01bbbc8568c05e01382",
+        "size": 13989
+      },
+      {
+        "path": "src/adjudication.js",
+        "sha256": "1f8aeac6cd570032db24526cd337483642255c611fcafb0df8b9c7fd5a8bfe79",
+        "size": 59283
+      },
+      {
+        "path": "src/agent-review.js",
+        "sha256": "d97bfdb8a0736e4d119114577a6d40137788080a8db6e2cbdd3aab7f2dadb672",
+        "size": 184558
+      },
+      {
+        "path": "src/architecture-readiness.js",
+        "sha256": "aa88cf8a8361df95545ce9be78429ab8024ac94616a07b1c5cf4dbc77ad708f7",
+        "size": 10553
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "0c759e6a3760bd53405487dda5281447972493c16eca4a50b713a36c9f9912c4",
+        "size": 49239
+      },
+      {
+        "path": "src/canonical-audit.js",
+        "sha256": "54217a27bfcdc7f23058bf9f1e711211af4fe45e0eec279daab8bbe68c82d5e1",
+        "size": 111914
+      },
+      {
+        "path": "src/ci-evidence.js",
+        "sha256": "337882b9a3c38d3a1ca6ce22e683272969ae87b4a5ce464975976dfb89d6c527",
+        "size": 13348
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "f80f986465b8db9584f4aa873966d7e0e6dbd2a1cc4bc496948c63a079bc87f9",
+        "size": 232946
+      },
+      {
+        "path": "src/decision-records.js",
+        "sha256": "050489ff7501154e09c64dd64ed4207383e676267e48280dbf16333f3cd0db84",
+        "size": 12017
+      },
+      {
+        "path": "src/evidence-reuse.js",
+        "sha256": "11c830a8abf5d20bccc05b8f19235330488802a9ebe4f11535da8c673f080143",
+        "size": 27821
+      },
+      {
+        "path": "src/execution-state.js",
+        "sha256": "5030e2b8388d893c92c7cda662ab5d0cbc0c68f140fa9ae2859cae0dbdc005cf",
+        "size": 78391
+      },
+      {
+        "path": "src/html-report.js",
+        "sha256": "4260d945feba5dea3d853171eace208979531295bf377f244e861a45426c3187",
+        "size": 62355
+      },
+      {
+        "path": "src/journey-map.js",
+        "sha256": "048477a397b7edc51d4b4a1ea677556f2b14836140bb309c1a983e83264b0bd8",
+        "size": 69397
+      },
+      {
+        "path": "src/managed-worktree.js",
+        "sha256": "e868796a07f5f3dedba27da8154e466fdbe7f321c36729e35c1f86726f4d2baf",
+        "size": 41122
+      },
+      {
+        "path": "src/merge-gate-authorization.js",
+        "sha256": "65d0b6e19c49ee7a4694709af43f9c5ac41af2868cd3aebcea2383209a22309e",
+        "size": 7040
+      },
+      {
+        "path": "src/merge-manager.js",
+        "sha256": "84d7508b8439f9f5cb4f774e8e4cb051a704693d664fa4703fe2785b1fd3de6c",
+        "size": 75888
+      },
+      {
+        "path": "src/performance-evidence.js",
+        "sha256": "bd2cd30a3238d6c094fc0b1a7b71682ffd1a01a01a413ed08dcfaa33cbe54b2e",
+        "size": 31384
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "d99ad89eba28cf77750edbe260843ceb46bbe782ff8bdec7a6dab274acf2ac5b",
+        "size": 702987
+      },
+      {
+        "path": "src/pre-spec-readiness.js",
+        "sha256": "9fd5c7ef80d6c97faefcebe2cb7b478200dbdae4f5c3a9c46536624d353a1739",
+        "size": 10404
+      },
+      {
+        "path": "src/recipe-preflight.js",
+        "sha256": "bbba84c2362ab8c177a723d6ad5dad415e7310d180ef62ba1fd1ffe2757ff6e5",
+        "size": 21433
+      },
+      {
+        "path": "src/reconciliation-action.js",
+        "sha256": "2c7b61353281669951eca6cb62c9d7d06705ea5c2c775ddbfd69397c0cd93ec7",
+        "size": 1921
+      },
+      {
+        "path": "src/responsibility-authority.js",
+        "sha256": "bbef3d2fdcabf5f04beaa33bc6fbfba606c0d1df5aaecd9693d716fd2ad0374f",
+        "size": 38238
+      },
+      {
+        "path": "src/self-dogfood-scanner.js",
+        "sha256": "3f684166354039dedb9fac9657259b4479ba4faa7e234a9870330b2f4c6c316d",
+        "size": 27877
+      },
+      {
+        "path": "src/story-transaction-lock.js",
+        "sha256": "e92cd1e0d9b9c9f4eb1d7f022e06d8c5d21258a6595c544b664c4edfc28fec77",
+        "size": 13481
+      },
+      {
+        "path": "src/traceability.js",
+        "sha256": "357c3cfe71c00995835a72a55be785acb2add33eec72a788f72eff3e1b232677",
+        "size": 21246
+      },
+      {
+        "path": "src/usage-report.js",
+        "sha256": "3c041b11ce1f4ef42057f7d69b5b6c2357f47026a45a42c7f4c199fe77039c12",
+        "size": 104192
+      },
+      {
+        "path": "src/verification-evidence.js",
+        "sha256": "ef699c21dd9b0a72c8383779cb0ba7e0520f566c5b0e6afa6d328c5c16afab75",
+        "size": 26473
+      },
+      {
+        "path": "src/workspace-status.js",
+        "sha256": "91fdfd0cdf176d583cf24e1b8d8b64a0dba488f406caa41458dd78cc1fb12a35",
+        "size": 9032
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "15ffbdacfa1f332f2884644e9f3cc6f15bd19b9b4f6b2847703994261e0c5030",
+        "size": 83455
+      },
+      {
+        "path": "test/canonical-audit-self-contained.test.js",
+        "sha256": "a393a119861ec8909459d36915aed8f12cadbcfb78c9beea68ff60785c6dd500",
+        "size": 43721
+      },
+      {
+        "path": "test/cli-status-honesty.test.js",
+        "sha256": "8fbf81810817fd0ce8de14c03ca5a01feed8a953776950011afa6d3c94c9bf99",
+        "size": 26243
+      },
+      {
+        "path": "test/delivery-reconciliation-state.test.js",
+        "sha256": "590bec46cfa30d9f0c696aab94891a404283da1ddb1d571f7729bd81b2bf2524",
+        "size": 5946
+      },
+      {
+        "path": "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts",
+        "sha256": "d27936db1b9a188de7fba2d30550da5a641fd6d43b16d23959df2827868e0013",
+        "size": 27641
+      },
+      {
+        "path": "test/e2e/story-vibepro-pr-readiness-status-ssot-main.test.js",
+        "sha256": "6e8f7292a14aab5948fe58a1443bd9ba8925fa45cf29512d911ce05461b211f1",
+        "size": 15013
+      },
+      {
+        "path": "test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+        "sha256": "842c996b808afc761c9e1b625bf1bd73a83a1848d8b5bfc072154e1dfefa4d2f",
+        "size": 12997
+      },
+      {
+        "path": "test/execution-state.test.js",
+        "sha256": "3ff70708d35b92c54499522843f05d33b8d8f5b0208286fcd9c969a44d3c1d6b",
+        "size": 85680
+      },
+      {
+        "path": "test/fixtures/delivery-reconciliation-scenario-lineage.json",
+        "sha256": "f0f8aaf5c44d4085042a79db086f399880fa32b60c8044ad6ff8c04582447139",
+        "size": 1200
+      },
+      {
+        "path": "test/guarded-run-session.test.js",
+        "sha256": "c3534a63c7058113e44324abe0a49a19d0f9498561645295789c2390c8d3ada1",
+        "size": 201400
+      },
+      {
+        "path": "test/managed-worktree-policy-resync.test.js",
+        "sha256": "9293d604234eda7d1f199623abb7a8127f9b5f73b4bafe0e0dcb89873a7d9d21",
+        "size": 13687
+      },
+      {
+        "path": "test/merge-gate-authorization.test.js",
+        "sha256": "85a660dd309760c79170c7755b49d19f0265d854d4501664efece1c5afa5ddfc",
+        "size": 7690
+      },
+      {
+        "path": "test/risk-adaptive-gate.test.js",
+        "sha256": "96a4460f0f2201d2c0bd888c1178b37ae3acd23b750586106bf646c8f6ff9299",
+        "size": 96765
+      },
+      {
+        "path": "test/story-transaction-lock.test.js",
+        "sha256": "4ba6221bd7d4fb2c7dd3546c8a46718c7221661ae5d34b92995e270bb5b2f20b",
+        "size": 7749
+      },
+      {
+        "path": "test/traceability-promotion.test.js",
+        "sha256": "9a48b7cab9d699e1504ff4be27de52a4225b631698916afe13e27cbec7a143ce",
+        "size": 26940
+      },
+      {
+        "path": "test/traceability-usage-report.test.js",
+        "sha256": "9d6aa31839e4b91af2c0dee058cd26d293648922c6403ef33b1f5cf18c3e830b",
+        "size": 43995
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "26e2d5ca4ad50a3f1392e23ab8f1eb5f86b6594c23ed4bc96b1efa4cac87700c",
+        "size": 1245091
+      },
+      {
+        "path": "test/vibepro-gate-check.test.js",
+        "sha256": "05d3506417f3bd645225b2d1a1058a2b9956714f280b97b187a81ba083c1f502",
+        "size": 12086
+      },
+      {
+        "path": "test/workspace-status.test.js",
+        "sha256": "7053ec9fdb2529855675cbf53533fa3d6d04f0d4aa7e45f33f40fb06e3974810",
+        "size": 8977
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "0adec18c05035d29eae0a25751ab925adf722b8d5cf71603aeb934323fa436c8"
+  },
+  "source_fingerprint": "40977b6f96a17bc2c4c9ca723a40cb1dc2d1d57043b50857e20902482d0e1f2d",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+      "implementation_session_id": "019f6d60-d0be-7c93-8223-c6065bcb5da4",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

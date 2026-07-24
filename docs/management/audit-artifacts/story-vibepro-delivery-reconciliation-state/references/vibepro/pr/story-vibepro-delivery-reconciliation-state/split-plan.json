@@ -1,0 +1,1150 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-delivery-reconciliation-state",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "automatic_recommendation": {
+    "status": "split_recommended",
+    "recommended_strategy": "split_by_lane_then_prepare"
+  },
+  "accepted_current_story_lineage": [],
+  "atomic_scope": {
+    "status": "not_requested",
+    "strategy": null,
+    "reason": null,
+    "review_facets": [],
+    "dependency_boundaries": [],
+    "missing_review_facets": [],
+    "missing_dependency_facets": [],
+    "invalid_dependency_boundaries": [],
+    "unsafe_scope_signals": [],
+    "unsafe_scope_reasons": [],
+    "source_ref": "docs/management/stories/active/story-vibepro-delivery-reconciliation-state.md"
+  },
+  "rationale": [
+    "差分が 55 files あり、レビュー可能な目安 30 files を超えている",
+    "baseからのcommitが 26 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+    "4 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 45 changed files が一致し、153 related files を影響調査候補にした"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 5312,
+    "edge_count": 11933,
+    "matched_file_count": 45,
+    "related_file_count": 153,
+    "investigation_files": [
+      "bin/vibepro.js",
+      "scripts/generate-cli-reference.mjs",
+      "scripts/npm-release-lock.mjs",
+      "scripts/post-merge-release.mjs",
+      "src/adjudication.js",
+      "src/agent-completion-inbox.js",
+      "src/agent-harness-map.js",
+      "src/agent-harness-scanner.js",
+      "src/agent-review.js",
+      "src/agent-runtime-adapter.js",
+      "src/agent-runtime-connectors.js",
+      "src/architecture-conformance.js",
+      "src/architecture-readiness.js",
+      "src/architecture-store.js",
+      "src/artifact-routing.js",
+      "src/authorization-scoring.js",
+      "src/brainbase-importer.js",
+      "src/canonical-audit.js",
+      "src/change-risk-classifier.js",
+      "src/check-packs.js",
+      "src/checkpoint-manager.js",
+      "src/ci-evidence.js",
+      "src/cli.js",
+      "src/code-topology-provider.js",
+      "src/codex-manager.js",
+      "src/codex-runtime-bridge.js",
+      "src/codex-runtime-output-contract.js",
+      "src/content-binding.js",
+      "src/decision-records.js",
+      "src/delivery-efficiency-guardrail.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "src/adjudication.js",
+        "matched_nodes": [
+          "src_adjudication_js",
+          "src_adjudication_adjudicationdir",
+          "src_adjudication_adjudicationartifactpath",
+          "src_adjudication_adjudicationrequestpath",
+          "src_adjudication_judgmentadjudicationartifactpath",
+          "src_adjudication_judgmentadjudicationrequestpath",
+          "src_adjudication_readjudgmentadjudicationifexists",
+          "src_adjudication_readadjudicationifexists"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/journey-map.js",
+          "src/pr-manager.js",
+          "src/requirement-consistency.js",
+          "src/run-context-capsule.js",
+          "src/workspace.js",
+          "test/judgment-adjudication.test.js"
+        ]
+      },
+      {
+        "file": "src/agent-review.js",
+        "matched_nodes": [
+          "src_agent_review_js",
+          "src_agent_review_localizedevidencehandlingblock",
+          "src_agent_review_localizedinvestigationguidelinesblock",
+          "src_agent_review_localizedagentskilldisciplineblock",
+          "src_agent_review_buildcoordinatorinstructions",
+          "src_agent_review_prepareagentreview",
+          "src_agent_review_recordagentreview",
+          "src_agent_review_finalizeagentreviewresult"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/checkpoint-manager.js",
+          "src/cli.js",
+          "src/content-binding.js",
+          "src/delivery-efficiency-guardrail.js",
+          "src/evidence-reuse.js",
+          "src/execution-state.js",
+          "src/git-fingerprint.js",
+          "src/language.js",
+          "src/managed-worktree-gate.js",
+          "src/pr-manager.js",
+          "src/review-inspection-inputs.js"
+        ]
+      },
+      {
+        "file": "src/architecture-readiness.js",
+        "matched_nodes": [
+          "src_architecture_readiness_js",
+          "src_architecture_readiness_recordarchitecturereadiness",
+          "src_architecture_readiness_assertarchitecturereadinessforfinal",
+          "src_architecture_readiness_renderarchitecturereadinesssummary",
+          "src_architecture_readiness_buildarchitecturereadiness",
+          "src_architecture_readiness_buildstorycheck",
+          "src_architecture_readiness_buildgraphifycheck",
+          "src_architecture_readiness_builddiagnosischeck"
+        ],
+        "related_files": [
+          "src/architecture-store.js",
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/artifact-routing.js",
+        "matched_nodes": [
+          "src_artifact_routing_js",
+          "src_artifact_routing_artifactroutingerror",
+          "src_artifact_routing_artifactroutingerror_constructor",
+          "src_artifact_routing_readartifactroutingconfig",
+          "src_artifact_routing_resolveartifactroutes",
+          "src_artifact_routing_resolveartifactroute",
+          "src_artifact_routing_resolveprartifactfile",
+          "src_artifact_routing_deriveprartifacttemplate"
+        ],
+        "related_files": [
+          "src/adjudication.js",
+          "src/agent-review.js",
+          "src/architecture-readiness.js",
+          "src/architecture-store.js",
+          "src/canonical-audit.js",
+          "src/ci-evidence.js",
+          "src/cli.js",
+          "src/decision-records.js",
+          "src/design-system.js",
+          "src/diagnostic-engine.js",
+          "src/evidence-reuse.js",
+          "src/execution-state.js"
+        ]
+      },
+      {
+        "file": "src/canonical-audit.js",
+        "matched_nodes": [
+          "src_canonical_audit_js",
+          "src_canonical_audit_getcanonicalauditdir",
+          "src_canonical_audit_projectprprepareforllm",
+          "src_canonical_audit_bindstoryplaceholders",
+          "src_canonical_audit_summarizeprprepareforllm",
+          "src_canonical_audit_summarizegatestatusforllm",
+          "src_canonical_audit_summarizegatedagforllm",
+          "src_canonical_audit_summarizegatelistforllm"
+        ],
+        "related_files": [
+          "src/agent-completion-inbox.js",
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/codex-runtime-output-contract.js",
+          "src/evidence-cost-budget.js",
+          "src/guarded-run-session.js",
+          "src/human-decision-checkpoint.js",
+          "src/merge-manager.js",
+          "src/next-best-action-controller.js",
+          "src/pr-artifact-budget.js",
+          "src/pr-manager.js",
+          "src/reconciliation-action.js"
+        ]
+      },
+      {
+        "file": "src/ci-evidence.js",
+        "matched_nodes": [
+          "src_ci_evidence_js",
+          "src_ci_evidence_importcievidence",
+          "src_ci_evidence_recordimportedciverification",
+          "src_ci_evidence_normalizecibinding",
+          "src_ci_evidence_renderciimportsummary",
+          "src_ci_evidence_writeciartifact",
+          "src_ci_evidence_parsecheckmappings",
+          "src_ci_evidence_parsecoveragemappings"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/validation-sequencing.js",
+          "src/verification-evidence.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/cli.js",
+        "matched_nodes": [
+          "src_cli_js",
+          "src_cli_runcli",
+          "src_cli_parsevalidationdisposition",
+          "src_cli_renderartifactroutes",
+          "src_cli_renderartifactmigrationplan",
+          "src_cli_buildclierrorpayload",
+          "src_cli_serializeclierror",
+          "src_cli_resolvediagnosisphaseoption"
+        ],
+        "related_files": [
+          "bin/vibepro.js",
+          "scripts/generate-cli-reference.mjs",
+          "scripts/npm-release-lock.mjs",
+          "scripts/post-merge-release.mjs",
+          "src/adjudication.js",
+          "src/agent-harness-map.js",
+          "src/agent-harness-scanner.js",
+          "src/agent-review.js",
+          "src/agent-runtime-adapter.js",
+          "src/agent-runtime-connectors.js",
+          "src/architecture-conformance.js",
+          "src/architecture-readiness.js"
+        ]
+      },
+      {
+        "file": "src/decision-records.js",
+        "matched_nodes": [
+          "src_decision_records_js",
+          "src_decision_records_recorddecision",
+          "src_decision_records_getdecisionstatus",
+          "src_decision_records_readdecisionrecordsifexists",
+          "src_decision_records_renderdecisionrecordsummary",
+          "src_decision_records_renderdecisionstatussummary",
+          "src_decision_records_summarizedecisionrecords",
+          "src_decision_records_buildverificationevidencesummary"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/managed-worktree-gate.js",
+          "src/managed-worktree.js",
+          "src/pr-manager.js",
+          "src/run-context-capsule.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/evidence-reuse.js",
+        "matched_nodes": [
+          "src_evidence_reuse_js",
+          "src_evidence_reuse_readevidencereuseifexists",
+          "src_evidence_reuse_getevidencereusepath",
+          "src_evidence_reuse_buildevidencereuse",
+          "src_evidence_reuse_summarizeevidencereuse",
+          "src_evidence_reuse_buildartifactvalueledger",
+          "src_evidence_reuse_buildsessionattributionledger",
+          "src_evidence_reuse_buildevidencereusegate"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/artifact-routing.js",
+          "src/pr-manager.js",
+          "src/run-context-capsule.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/execution-state.js",
+        "matched_nodes": [
+          "src_execution_state_js",
+          "src_execution_state_startexecution",
+          "src_execution_state_getexecutionstatus",
+          "src_execution_state_getexecutionnext",
+          "src_execution_state_reconcileexecutionstate",
+          "src_execution_state_restoremergefollowupstateorthrow",
+          "src_execution_state_consumeexecutionstatesyncfailure",
+          "src_execution_state_reconcileallmergedexecutionstates"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/guarded-run-session.js",
+          "src/managed-worktree.js",
+          "src/merge-gate-authorization.js",
+          "src/merge-manager.js",
+          "src/reconciliation-action.js",
+          "src/run-context-capsule.js",
+          "src/story-run-portfolio.js",
+          "src/workspace.js",
+          "test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js"
+        ]
+      },
+      {
+        "file": "src/html-report.js",
+        "matched_nodes": [
+          "src_html_report_js",
+          "src_html_report_renderprpreparehtml",
+          "src_html_report_rendergatedaghtml",
+          "src_html_report_rendersplitplanhtml",
+          "src_html_report_renderlineageevidence",
+          "src_html_report_renderprcreatehtml",
+          "src_html_report_renderprmergehtml",
+          "src_html_report_renderprlifecycleartifactspanel"
+        ],
+        "related_files": [
+          "src/language.js",
+          "src/merge-manager.js",
+          "src/pr-manager.js",
+          "src/reconciliation-action.js",
+          "src/scan-status.js",
+          "src/story-html.js"
+        ]
+      },
+      {
+        "file": "src/journey-map.js",
+        "matched_nodes": [
+          "src_journey_map_js",
+          "src_journey_map_derivejourneymap",
+          "src_journey_map_readlatestjourneymap",
+          "src_journey_map_readcuratedjourneymap",
+          "src_journey_map_curatejourneymap",
+          "src_journey_map_getjourneystatus",
+          "src_journey_map_summarizejourneyforpr",
+          "src_journey_map_renderjourneymap"
+        ],
+        "related_files": [
+          "src/adjudication.js",
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/design-modernize.js",
+          "src/pr-manager.js",
+          "src/run-context-capsule.js",
+          "src/story-manager.js",
+          "src/workspace.js",
+          "test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js"
+        ]
+      },
+      {
+        "file": "src/managed-worktree.js",
+        "matched_nodes": [
+          "src_managed_worktree_js",
+          "src_managed_worktree_resolvemanagedworktreemode",
+          "src_managed_worktree_ensuremanagedworktree",
+          "src_managed_worktree_buildpendingmanagedworktree",
+          "src_managed_worktree_buildunavailablemanagedworktree",
+          "src_managed_worktree_refreshmanagedworktree",
+          "src_managed_worktree_buildmanagedworktreecommands",
+          "src_managed_worktree_ismanagedworktreecommandsafe"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/decision-records.js",
+          "src/execution-state.js",
+          "src/git-fingerprint.js",
+          "src/managed-worktree-gate.js",
+          "src/pr-manager.js",
+          "src/workspace.js",
+          "test/managed-worktree-policy-resync.test.js"
+        ]
+      },
+      {
+        "file": "src/merge-gate-authorization.js",
+        "matched_nodes": [
+          "src_merge_gate_authorization_js",
+          "src_merge_gate_authorization_buildmergegateauthorization",
+          "src_merge_gate_authorization_resolvecurrentmergegatestatus",
+          "src_merge_gate_authorization_validatemergegateoverride",
+          "src_merge_gate_authorization_reconcilemergegateoverride",
+          "src_merge_gate_authorization_normalizegateids",
+          "src_merge_gate_authorization_samegateids",
+          "src_merge_gate_authorization_samegatedagauthorizationsurface"
+        ],
+        "related_files": [
+          "src/execution-state.js",
+          "src/merge-manager.js"
+        ]
+      },
+      {
+        "file": "src/merge-manager.js",
+        "matched_nodes": [
+          "src_merge_manager_js",
+          "src_merge_manager_executemerge",
+          "src_merge_manager_executemergelocked",
+          "src_merge_manager_attachexecutionstatesyncbaseline",
+          "src_merge_manager_resolvepriorobservedmerge",
+          "src_merge_manager_applyproviderobservationfailure",
+          "src_merge_manager_applypostmergeobservationfailure",
+          "src_merge_manager_collectdeliveryreconciliationreasons"
+        ],
+        "related_files": [
+          "scripts/post-merge-release.mjs",
+          "src/artifact-routing.js",
+          "src/canonical-audit.js",
+          "src/cli.js",
+          "src/evidence-cost-budget.js",
+          "src/execution-state.js",
+          "src/gate-outcome-ledger.js",
+          "src/html-report.js",
+          "src/merge-gate-authorization.js",
+          "src/reconciliation-action.js",
+          "src/run-context-capsule.js",
+          "src/session-efficiency-audit.js"
+        ]
+      },
+      {
+        "file": "src/performance-evidence.js",
+        "matched_nodes": [
+          "src_performance_evidence_js",
+          "src_performance_evidence_defineperformancemetric",
+          "src_performance_evidence_recordperformancerun",
+          "src_performance_evidence_comparestoryperformance",
+          "src_performance_evidence_summarizestoryperformanceevidence",
+          "src_performance_evidence_renderperformancedefinesummary",
+          "src_performance_evidence_renderperformancerecordsummary",
+          "src_performance_evidence_renderperformanceevidencesummary"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/diagnostic-engine.js",
+          "src/pr-manager.js",
+          "src/story-manager.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/pr-manager.js",
+        "matched_nodes": [
+          "src_pr_manager_js",
+          "src_pr_manager_createprprepareprogress",
+          "src_pr_manager_writefilewithtimeout",
+          "src_pr_manager_preparepullrequest",
+          "src_pr_manager_evaluategatereadiness",
+          "src_pr_manager_buildarchitecturereviewtemplate",
+          "src_pr_manager_buildhumanreviewtemplate",
+          "src_pr_manager_summarizereviewgate"
+        ],
+        "related_files": [
+          "src/adjudication.js",
+          "src/agent-review.js",
+          "src/architecture-readiness.js",
+          "src/artifact-routing.js",
+          "src/authorization-scoring.js",
+          "src/canonical-audit.js",
+          "src/change-risk-classifier.js",
+          "src/check-packs.js",
+          "src/checkpoint-manager.js",
+          "src/ci-evidence.js",
+          "src/cli.js",
+          "src/code-topology-provider.js"
+        ]
+      },
+      {
+        "file": "src/pre-spec-readiness.js",
+        "matched_nodes": [
+          "src_pre_spec_readiness_js",
+          "src_pre_spec_readiness_recordprespecreadiness",
+          "src_pre_spec_readiness_assertprespecreadinessforfinalspec",
+          "src_pre_spec_readiness_renderprespecreadinesssummary",
+          "src_pre_spec_readiness_buildprespecreadiness",
+          "src_pre_spec_readiness_buildstorycheck",
+          "src_pre_spec_readiness_buildgraphifycheck",
+          "src_pre_spec_readiness_builddiagnosischeck"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/pr-manager.js",
+          "src/spec-store.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/recipe-preflight.js",
+        "matched_nodes": [
+          "src_recipe_preflight_js",
+          "src_recipe_preflight_runrecipepreflight",
+          "src_recipe_preflight_runsinglerecipe",
+          "src_recipe_preflight_errormessage",
+          "src_recipe_preflight_ispassing",
+          "src_recipe_preflight_evidencecommands",
+          "src_recipe_preflight_readjsonifexists",
+          "src_recipe_preflight_readverificationevidence"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/pr-manager.js",
+          "src/spec-store.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/reconciliation-action.js",
+        "matched_nodes": [
+          "src_reconciliation_action_js",
+          "src_reconciliation_action_resolvereconciliationaction"
+        ],
+        "related_files": [
+          "src/canonical-audit.js",
+          "src/execution-state.js",
+          "src/html-report.js",
+          "src/merge-manager.js",
+          "src/usage-report.js"
+        ]
+      },
+      {
+        "file": "src/responsibility-authority.js",
+        "matched_nodes": [
+          "src_responsibility_authority_js",
+          "src_responsibility_authority_resolveresponsibilityauthority",
+          "src_responsibility_authority_buildresponsibilityauthoritygate",
+          "src_responsibility_authority_renderresponsibilityauthorityprsection",
+          "src_responsibility_authority_readresponsibilityregistryfiles",
+          "src_responsibility_authority_readdomaincontractfiles",
+          "src_responsibility_authority_readjsonfile",
+          "src_responsibility_authority_listjsonfiles"
+        ],
+        "related_files": [
+          "src/pr-manager.js",
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "src/self-dogfood-scanner.js",
+        "matched_nodes": [
+          "src_self_dogfood_scanner_js",
+          "src_self_dogfood_scanner_scanselfdogfood",
+          "src_self_dogfood_scanner_scanhumanartifactlanguage",
+          "src_self_dogfood_scanner_collecthumanartifactfiles",
+          "src_self_dogfood_scanner_scanstorygateartifacts",
+          "src_self_dogfood_scanner_scanresolvedstorygateartifacts",
+          "src_self_dogfood_scanner_hassummarydepthfinalgatecontract",
+          "src_self_dogfood_scanner_scancurrentgithubpr"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/check-packs.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/story-transaction-lock.js",
+        "matched_nodes": [
+          "src_story_transaction_lock_js",
+          "src_story_transaction_lock_withstorytransactionlocks",
+          "src_story_transaction_lock_acquiredirectorylock",
+          "src_story_transaction_lock_startlockheartbeat",
+          "src_story_transaction_lock_releasedirectorylock",
+          "src_story_transaction_lock_refreshlockheartbeat",
+          "src_story_transaction_lock_acquiremutationguard",
+          "src_story_transaction_lock_releasemutationguard"
+        ],
+        "related_files": [
+          "scripts/npm-release-lock.mjs",
+          "src/merge-manager.js",
+          "src/verification-evidence.js",
+          "test/execution-state.test.js"
+        ]
+      },
+      {
+        "file": "src/traceability.js",
+        "matched_nodes": [
+          "src_traceability_js",
+          "src_traceability_buildtraceability",
+          "src_traceability_summarizetraceabilityclausemap",
+          "src_traceability_buildtraceabilityclausemap",
+          "src_traceability_extractstoryscenarioids",
+          "src_traceability_buildclausetraceabilityitem",
+          "src_traceability_testcontentexplicitlytargetsclause",
+          "src_traceability_isstrongclauseevidence"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/merge-manager.js",
+          "src/pr-manager.js",
+          "src/story-manager.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/usage-report.js",
+        "matched_nodes": [
+          "src_usage_report_js",
+          "src_usage_report_createusagereport",
+          "src_usage_report_renderusagereport",
+          "src_usage_report_formatreconciliationaction",
+          "src_usage_report_ensurestoryusage",
+          "src_usage_report_collectprartifacts",
+          "src_usage_report_collectmanifestprartifacts",
+          "src_usage_report_filtermanifestfallbackartifacts"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/canonical-audit.js",
+          "src/cli.js",
+          "src/gate-outcome-ledger.js",
+          "src/language.js",
+          "src/reconciliation-action.js",
+          "src/review-repair.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/verification-evidence.js",
+        "matched_nodes": [
+          "src_verification_evidence_js",
+          "src_verification_evidence_recordverificationevidence",
+          "src_verification_evidence_resolverecorderlineage",
+          "src_verification_evidence_assertcommandmatchesverificationkind",
+          "src_verification_evidence_renderverificationevidencesummary",
+          "src_verification_evidence_formatmanagedworktreecontextsummary",
+          "src_verification_evidence_readevidence",
+          "src_verification_evidence_normalizewarning"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/ci-evidence.js",
+          "src/cli.js",
+          "src/content-binding.js",
+          "src/managed-worktree-gate.js",
+          "src/pr-manager.js",
+          "src/run-context-capsule.js",
+          "src/run-lineage.js",
+          "src/story-transaction-lock.js",
+          "src/uiux-prepare.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/workspace-status.js",
+        "matched_nodes": [
+          "src_workspace_status_js",
+          "src_workspace_status_git",
+          "src_workspace_status_parseworktreeporcelain",
+          "src_workspace_status_artifacthead",
+          "src_workspace_status_classifyartifact",
+          "src_workspace_status_readstorystatuses",
+          "src_workspace_status_inspectworktree",
+          "src_workspace_status_collectworkspacestatus"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/artifact-routing.test.js",
+        "matched_nodes": [
+          "test_artifact_routing_test_js",
+          "test_artifact_routing_test_completeprofile",
+          "test_artifact_routing_test_namedprofilerepo",
+          "test_artifact_routing_test_projectedpacketprofile",
+          "test_artifact_routing_test_repo",
+          "test_artifact_routing_test_routedartifact"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/canonical-audit-self-contained.test.js",
+        "matched_nodes": [
+          "test_canonical_audit_self_contained_test_js",
+          "test_canonical_audit_self_contained_test_readjson",
+          "test_canonical_audit_self_contained_test_writejson",
+          "test_canonical_audit_self_contained_test_writelargeverificationevidence",
+          "test_canonical_audit_self_contained_test_argvfromreplaycommand"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/cli-status-honesty.test.js",
+        "matched_nodes": [
+          "test_cli_status_honesty_test_js",
+          "test_cli_status_honesty_test_git",
+          "test_cli_status_honesty_test_readjson",
+          "test_cli_status_honesty_test_writejson",
+          "test_cli_status_honesty_test_runcliwithstdout",
+          "test_cli_status_honesty_test_makefakeghalreadymerged",
+          "test_cli_status_honesty_test_setupmergedprrepo"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/delivery-reconciliation-state.test.js",
+        "matched_nodes": [
+          "test_delivery_reconciliation_state_test_js",
+          "test_delivery_reconciliation_state_test_mergefixture"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_delivery_reconciliation_state_main_spec_ts",
+          "e2e_story_vibepro_delivery_reconciliation_state_main_spec_git",
+          "e2e_story_vibepro_delivery_reconciliation_state_main_spec_readjson",
+          "e2e_story_vibepro_delivery_reconciliation_state_main_spec_writejson",
+          "e2e_story_vibepro_delivery_reconciliation_state_main_spec_makealreadymergedprovider",
+          "e2e_story_vibepro_delivery_reconciliation_state_main_spec_setuppublicdeliveryfixture",
+          "e2e_story_vibepro_delivery_reconciliation_state_main_spec_runfocused"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-pr-readiness-status-ssot-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_pr_readiness_status_ssot_main_test_js",
+          "e2e_story_vibepro_pr_readiness_status_ssot_main_test_git",
+          "e2e_story_vibepro_pr_readiness_status_ssot_main_test_writejson",
+          "e2e_story_vibepro_pr_readiness_status_ssot_main_test_makestoryrepo",
+          "e2e_story_vibepro_pr_readiness_status_ssot_main_test_makefakeghmerge",
+          "e2e_story_vibepro_pr_readiness_status_ssot_main_test_gatedag"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_responsibility_authority_registry_main_test_js",
+          "e2e_story_vibepro_responsibility_authority_registry_main_test_makeworkflowrepo",
+          "e2e_story_vibepro_responsibility_authority_registry_main_test_writestorydocs",
+          "e2e_story_vibepro_responsibility_authority_registry_main_test_writeresponsibilityfixture",
+          "e2e_story_vibepro_responsibility_authority_registry_main_test_git"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/execution-state.test.js",
+        "matched_nodes": [
+          "test_execution_state_test_js",
+          "test_execution_state_test_contend"
+        ],
+        "related_files": [
+          "src/story-transaction-lock.js"
+        ]
+      },
+      {
+        "file": "test/guarded-run-session.test.js",
+        "matched_nodes": [
+          "test_guarded_run_session_test_js",
+          "test_guarded_run_session_test_stopreason",
+          "test_guarded_run_session_test_fixturehumandecision",
+          "test_guarded_run_session_test_cp",
+          "test_guarded_run_session_test_probe",
+          "test_guarded_run_session_test_spawn",
+          "test_guarded_run_session_test_status",
+          "test_guarded_run_session_test_shutdown"
+        ],
+        "related_files": [
+          "src/execution-state.js",
+          "src/merge-manager.js",
+          "src/pr-manager.js"
+        ]
+      },
+      {
+        "file": "test/managed-worktree-policy-resync.test.js",
+        "matched_nodes": [
+          "test_managed_worktree_policy_resync_test_js",
+          "test_managed_worktree_policy_resync_test_git",
+          "test_managed_worktree_policy_resync_test_readjson",
+          "test_managed_worktree_policy_resync_test_writejson",
+          "test_managed_worktree_policy_resync_test_baseconfig",
+          "test_managed_worktree_policy_resync_test_makerepofixture",
+          "test_managed_worktree_policy_resync_test_makerepowithmanagedworktree",
+          "test_managed_worktree_policy_resync_test_updateparentconfig"
+        ],
+        "related_files": [
+          "src/managed-worktree.js"
+        ]
+      },
+      {
+        "file": "test/merge-gate-authorization.test.js",
+        "matched_nodes": [
+          "test_merge_gate_authorization_test_js"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/risk-adaptive-gate.test.js",
+        "matched_nodes": [
+          "test_risk_adaptive_gate_test_js",
+          "test_risk_adaptive_gate_test_git",
+          "test_risk_adaptive_gate_test_readjson",
+          "test_risk_adaptive_gate_test_hashfingerprint",
+          "test_risk_adaptive_gate_test_cleangitfingerprinthash",
+          "test_risk_adaptive_gate_test_gitfingerprinthash",
+          "test_risk_adaptive_gate_test_collectuntrackedfingerprint",
+          "test_risk_adaptive_gate_test_makegitrepo"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "test/story-transaction-lock.test.js",
+        "matched_nodes": [
+          "test_story_transaction_lock_test_js",
+          "test_story_transaction_lock_test_lockpaths",
+          "test_story_transaction_lock_test_ownermetadata",
+          "test_story_transaction_lock_test_writeowner",
+          "test_story_transaction_lock_test_agepath"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/traceability-promotion.test.js",
+        "matched_nodes": [
+          "test_traceability_promotion_test_js",
+          "test_traceability_promotion_test_git",
+          "test_traceability_promotion_test_readjson",
+          "test_traceability_promotion_test_writejson",
+          "test_traceability_promotion_test_setuppreparerepo",
+          "test_traceability_promotion_test_traceabilitypath",
+          "test_traceability_promotion_test_evidencerefs",
+          "test_traceability_promotion_test_makefakeghmerge"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/spec-store.js"
+        ]
+      },
+      {
+        "file": "test/traceability-usage-report.test.js",
+        "matched_nodes": [
+          "test_traceability_usage_report_test_js",
+          "test_traceability_usage_report_test_storydoc",
+          "test_traceability_usage_report_test_traceabilityartifact",
+          "test_traceability_usage_report_test_setupreportrepo",
+          "test_traceability_usage_report_test_findstory",
+          "test_traceability_usage_report_test_missinggaps"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/vibepro-cli.test.js",
+        "matched_nodes": [
+          "test_vibepro_cli_test_js",
+          "test_vibepro_cli_test_runcli",
+          "test_vibepro_cli_test_ispassingreviewrecord",
+          "test_vibepro_cli_test_firstexistingreviewfixture",
+          "test_vibepro_cli_test_makerepo",
+          "test_vibepro_cli_test_readjson",
+          "test_vibepro_cli_test_writejson",
+          "test_vibepro_cli_test_writepng"
+        ],
+        "related_files": [
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "test/vibepro-gate-check.test.js",
+        "matched_nodes": [
+          "test_vibepro_gate_check_test_js",
+          "test_vibepro_gate_check_test_makerepo",
+          "test_vibepro_gate_check_test_git",
+          "test_vibepro_gate_check_test_readjson",
+          "test_vibepro_gate_check_test_makegitrepowithstory"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/workspace-status.test.js",
+        "matched_nodes": [
+          "test_workspace_status_test_js",
+          "test_workspace_status_test_git",
+          "test_workspace_status_test_writeartifact"
+        ],
+        "related_files": []
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "separate_pr",
+      "files": [
+        "docs/management/stories/active/story-vibepro-delivery-reconciliation-state.md",
+        "docs/specs/vibepro-cli-status-honesty.md",
+        "docs/specs/vibepro-delivery-reconciliation-state.json",
+        "docs/specs/vibepro-delivery-reconciliation-state.md",
+        "docs/architecture/story-vibepro-delivery-reconciliation-state.md"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 5,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-delivery-reconciliation-state-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "src/adjudication.js",
+        "src/agent-review.js",
+        "src/architecture-readiness.js",
+        "src/artifact-routing.js",
+        "src/canonical-audit.js",
+        "src/ci-evidence.js",
+        "src/cli.js",
+        "src/decision-records.js",
+        "src/evidence-reuse.js",
+        "src/execution-state.js",
+        "src/html-report.js",
+        "src/journey-map.js",
+        "src/managed-worktree.js",
+        "src/merge-gate-authorization.js",
+        "src/merge-manager.js",
+        "src/performance-evidence.js",
+        "src/pr-manager.js",
+        "src/pre-spec-readiness.js",
+        "src/recipe-preflight.js",
+        "src/reconciliation-action.js",
+        "src/responsibility-authority.js",
+        "src/self-dogfood-scanner.js",
+        "src/story-transaction-lock.js",
+        "src/traceability.js",
+        "src/usage-report.js",
+        "src/verification-evidence.js",
+        "src/workspace-status.js",
+        "test/artifact-routing.test.js",
+        "test/canonical-audit-self-contained.test.js",
+        "test/cli-status-honesty.test.js",
+        "test/delivery-reconciliation-state.test.js",
+        "test/execution-state.test.js",
+        "test/fixtures/delivery-reconciliation-scenario-lineage.json",
+        "test/guarded-run-session.test.js",
+        "test/managed-worktree-policy-resync.test.js",
+        "test/merge-gate-authorization.test.js",
+        "test/risk-adaptive-gate.test.js",
+        "test/story-transaction-lock.test.js",
+        "test/traceability-promotion.test.js",
+        "test/traceability-usage-report.test.js",
+        "test/vibepro-cli.test.js",
+        "test/vibepro-gate-check.test.js",
+        "test/workspace-status.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 43,
+      "graph_investigation_files": [
+        "bin/vibepro.js",
+        "scripts/generate-cli-reference.mjs",
+        "scripts/npm-release-lock.mjs",
+        "scripts/post-merge-release.mjs",
+        "src/agent-completion-inbox.js",
+        "src/agent-harness-map.js",
+        "src/agent-harness-scanner.js",
+        "src/agent-runtime-adapter.js",
+        "src/agent-runtime-connectors.js",
+        "src/architecture-conformance.js",
+        "src/architecture-store.js",
+        "src/authorization-scoring.js"
+      ],
+      "suggested_branch": "feat/vibepro-delivery-reconciliation-state-runtime-behavior"
+    },
+    {
+      "id": "e2e-gate",
+      "order": 30,
+      "title": "E2E and verification harness",
+      "category": "verification",
+      "recommendation": "separate_pr",
+      "files": [
+        "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts",
+        "test/e2e/story-vibepro-pr-readiness-status-ssot-main.test.js",
+        "test/e2e/story-vibepro-responsibility-authority-registry-main.test.js"
+      ],
+      "required_gates": [
+        "E2E Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "E2E harnessが失敗exit codeを握りつぶしていないか",
+        "PR Gateが変更対象のE2Eに正しくスコープされているか"
+      ],
+      "file_count": 3,
+      "graph_investigation_files": [
+        "src/cli.js"
+      ],
+      "suggested_branch": "feat/vibepro-delivery-reconciliation-state-e2e-gate"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "CHANGELOG.md",
+        "design-ssot.json",
+        "docs/guide/release-and-audit.md",
+        "docs/management/test-plans/story-vibepro-delivery-reconciliation-state.md"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 4,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-delivery-reconciliation-state-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "requirements-ssot",
+    "runtime-behavior",
+    "e2e-gate",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 4,
+      "cumulative_gate_count": 1,
+      "requires_cumulative_e2e": true,
+      "requires_atomic_head_validation": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test test/responsibility-authority.test.js test/independent-review-orchestrator.test.js test/managed-worktree-policy-resync.test.js test/recipe-preflight.test.js test/safe-action-orchestrator.test.js test/guarded-run-session.test.js test/execution-state.test.js",
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/30069124367/job/89405990424"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認し、E2Eは後続のe2e-gateまたは累積validationで確認する。"
+      },
+      {
+        "lane_id": "e2e-gate",
+        "gate_mode": "cumulative_after_dependencies",
+        "depends_on": [
+          "requirements-ssot",
+          "runtime-behavior"
+        ],
+        "isolated_checks": [
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/30069124367/job/89405990424",
+          "Playwright harness smoke if runtime dependencies are already merged"
+        ],
+        "cumulative_checks": [
+          "node --test test/responsibility-authority.test.js test/independent-review-orchestrator.test.js test/managed-worktree-policy-resync.test.js test/recipe-preflight.test.js test/safe-action-orchestrator.test.js test/guarded-run-session.test.js test/execution-state.test.js",
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/30069124367/job/89405990424",
+          "npx playwright test"
+        ],
+        "review_note": "e2e-gate は単体PRだけで完了判定せず、requirements-ssot -> runtime-behavior を取り込んだ累積状態でGateを確認する。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": true,
+      "trigger": "runtime-behavior と e2e-gate の両方がmerge対象に含まれる",
+      "commands": [
+        "node --test test/responsibility-authority.test.js test/independent-review-orchestrator.test.js test/managed-worktree-policy-resync.test.js test/recipe-preflight.test.js test/safe-action-orchestrator.test.js test/guarded-run-session.test.js test/execution-state.test.js",
+        "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/30069124367/job/89405990424",
+        "npx playwright test"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-delivery-reconciliation-state-requirements-ssot with 5 files",
+      "command": "git switch -c feat/vibepro-delivery-reconciliation-state-requirements-ssot \"<base>\" && git add docs/management/stories/active/story-vibepro-delivery-reconciliation-state.md docs/specs/vibepro-cli-status-honesty.md docs/specs/vibepro-delivery-reconciliation-state.json docs/specs/vibepro-delivery-reconciliation-state.md docs/architecture/story-vibepro-delivery-reconciliation-state.md"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-delivery-reconciliation-state-runtime-behavior with 43 files",
+      "command": "git switch -c feat/vibepro-delivery-reconciliation-state-runtime-behavior \"<base>\" && git add src/adjudication.js src/agent-review.js src/architecture-readiness.js src/artifact-routing.js src/canonical-audit.js src/ci-evidence.js src/cli.js src/decision-records.js src/evidence-reuse.js src/execution-state.js src/html-report.js src/journey-map.js src/managed-worktree.js src/merge-gate-authorization.js src/merge-manager.js src/performance-evidence.js src/pr-manager.js src/pre-spec-readiness.js src/recipe-preflight.js src/reconciliation-action.js src/responsibility-authority.js src/self-dogfood-scanner.js src/story-transaction-lock.js src/traceability.js src/usage-report.js src/verification-evidence.js src/workspace-status.js test/artifact-routing.test.js test/canonical-audit-self-contained.test.js test/cli-status-honesty.test.js test/delivery-reconciliation-state.test.js test/execution-state.test.js test/fixtures/delivery-reconciliation-scenario-lineage.json test/guarded-run-session.test.js test/managed-worktree-policy-resync.test.js test/merge-gate-authorization.test.js test/risk-adaptive-gate.test.js test/story-transaction-lock.test.js test/traceability-promotion.test.js test/traceability-usage-report.test.js test/vibepro-cli.test.js test/vibepro-gate-check.test.js test/workspace-status.test.js"
+    },
+    {
+      "lane_id": "e2e-gate",
+      "action": "Create feat/vibepro-delivery-reconciliation-state-e2e-gate with 3 files",
+      "command": "git switch -c feat/vibepro-delivery-reconciliation-state-e2e-gate \"<base>\" && git add test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts test/e2e/story-vibepro-pr-readiness-status-ssot-main.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-delivery-reconciliation-state-misc-follow-up with 4 files",
+      "command": "git switch -c feat/vibepro-delivery-reconciliation-state-misc-follow-up \"<base>\" && git add CHANGELOG.md design-ssot.json docs/guide/release-and-audit.md docs/management/test-plans/story-vibepro-delivery-reconciliation-state.md"
+    }
+  ]
+}
