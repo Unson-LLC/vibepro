@@ -25,10 +25,10 @@ NUL区切り自体は `src/content-binding.js:174` の `` `${file.path}\0${file.
 
 ## 受け入れ条件
 
-1. `src/architecture-conformance.js` に0x00バイトが存在しない（バイトスキャンで0件）。
-2. 2箇所の合成キーは `\0` エスケープシーケンスで表現され、ランタイムの文字列値は変更前とバイト単位で同一である。
-3. `node --test test/architecture-conformance.test.js` が全件パスする。
-4. `grep -c matchedPatterns src/architecture-conformance.js` がバイナリ警告なしにマッチを返す（テキストファイル性の回復）。
+- `src/architecture-conformance.js` に0x00バイトが存在しない（バイトスキャンで0件）。
+- 2箇所の合成キーは `\0` エスケープシーケンスで表現され、ランタイムの文字列値は変更前とバイト単位で同一である。
+- `node --test test/architecture-conformance.test.js` が全件パスする。
+- `grep -c matchedPatterns src/architecture-conformance.js` がバイナリ警告なしにマッチを返す（テキストファイル性の回復）。
 
 ## スコープ外
 
