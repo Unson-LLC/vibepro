@@ -360,7 +360,7 @@ test('every execute merge exit shares the lock-bound persisted CAS baseline fina
     /return attachExecutionStateSyncBaseline\(merge, artifacts\);/g
   ) ?? [];
 
-  assert.equal(baselineFinalizers.length, 13);
+  assert.equal(baselineFinalizers.length, 14);
   assert.doesNotMatch(lockedBody, /return\s+\{\s*merge\s*,\s*artifacts\s*\}/);
 });
 
