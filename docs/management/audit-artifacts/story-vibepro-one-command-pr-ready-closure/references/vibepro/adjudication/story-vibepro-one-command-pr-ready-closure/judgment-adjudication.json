@@ -2,7 +2,7 @@
   "schema_version": "0.2.0",
   "model": "vibepro-judgment-dag-adjudication-v2",
   "story_id": "story-vibepro-one-command-pr-ready-closure",
-  "updated_at": "2026-07-24T05:52:52.115Z",
+  "updated_at": "2026-07-24T14:59:30.495Z",
   "events": [
     {
       "event_id": "d1d9fd19-72ee-49bb-a74c-77a44f8d4d44",
@@ -2051,6 +2051,470 @@
       },
       "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
       "recorded_at": "2026-07-24T05:52:52.113Z"
+    },
+    {
+      "event_id": "4ecb2122-1c27-420f-91da-c7a37a303ec6",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "StoryのOCR-S-1..9、Architecture、Spec clausesを確認した。origin/main後の変更はOCR-S-9のselected-route reconciliationに限定され、意図と差分の対応は具体的である。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:12.208Z"
+    },
+    {
+      "event_id": "b6c27c45-88b8-445f-86c3-57476e8b96b5",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "現HEAD a9109350で公開execute runを実行したRun run-20260724T130916Z-7c409e4bが、実Codex dispatch ID、provider run ID、要求capability、managed worktree、mutation前のorphaned_agent停止、resume後のmax_iterations_exceededとrecovery.next_commandを永続化する。fixture E2Eだけでなく、現在のprovider接続状態をtyped-stopとして観測している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:12.344Z"
+    },
+    {
+      "event_id": "617f71ad-303d-40e9-a5fe-8a5a17d41d1c",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "INV-OCR-7はselected catalog Storyのみを解決する不変条件を明記し、managedWorktreeArtifactLocationsのtemplate判定とDRS-CONTRACT-009/S-9 E2Eがその境界を直接検査する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:12.466Z"
+    },
+    {
+      "event_id": "03b028cc-ce88-4f91-aa62-171da93ef66a",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "差分はartifact route解決とcopy対象の選択だけで、CLI、runtime connector、human checkpoint、merge ownerを変更しない。両authorityのselected templateを必要とする実装は未登録Storyへの所有権拡張を防ぐ。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:12.591Z"
+    },
+    {
+      "event_id": "141669a8-6ebe-49bc-b226-b15d73bd7564",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current-head実Runは実provider dispatchのorphaned_agentをmutation前の型付き停止として保存し、resume後も同じRunをmax_iterations_exceededとrecovery.next_commandへ収束させる。これに現HEAD focused replayのparse/schema/retry/async/timeout回帰が加わり、実provider停止を成功やPR-readyへ誤昇格しないfailure-mode境界が確認できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:12.726Z"
+    },
+    {
+      "event_id": "410b1bea-9bd1-4ff8-b2d8-6b561df6c8b9",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "公開CLI/APIを変更する差分ではなく、schema 0.2内部artifact同期の所有権判定である。current full suite、typecheck、docs buildはいずれもa9109350でpassし、legacy flat-route互換もexecution-state regressionに含まれる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:12.862Z"
+    },
+    {
+      "event_id": "414190a3-e855-4948-8ed3-12b353ca709b",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "origin/mainとの差分は8ファイル・263行で、1つのpost-merge reconciliation不具合に対するStory/Architecture/Spec/Test/implementation更新として追跡できる。5 commitの履歴確認注意は残るが、異なるStoryの混入は検出されておらず、分割必須とする実体上の根拠はない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:12.984Z"
+    },
+    {
+      "event_id": "14c31c44-8228-4635-8354-5b42216647da",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "timeoutは変更されたroute同期の新しい非同期経路ではなく、既存Guarded Run authorityで扱う。現HEAD focused replayにはtyped timeout/resume scenarioが含まれ、実装はtimeout時にartifact ownershipを拡張しない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:13.108Z"
+    },
+    {
+      "event_id": "bb1668c0-8613-4b4c-b802-76c31b66220e",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "route判定はresolveArtifactRoute後のcanonical templateだけを読む。focused replayに含まれるartifact-routing regressionはmalformed/non-canonical lineageをfail closedし、今回のcodeはsynthetic probe Storyをparse/resolveしない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:13.233Z"
+    },
+    {
+      "event_id": "cdb14cf2-9ee1-434c-9e39-e80b74d09bc3",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "schema 0.2 named profile、catalog metadata、matching Story mirrorを使う追加unit/E2Eがあり、不完全mirrorやcatalog conflictの既存fail-closed regressionもa9109350 focused replayで通っている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:13.353Z"
+    },
+    {
+      "event_id": "8311a665-d524-4ca2-b015-8e3a68096455",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Run run-20260724T130916Z-7c409e4bは現HEADに束縛された実Codex dispatchでunknown provider runをorphaned_agentとして記録し、provider run IDとworkspace_write/local_workspace_only要件をstateへ残した。resume後も同一Runはmax_iterations_exceededと具体的next_commandで停止しており、実provider failureを未確認の成功へ変換せず回復境界を保持する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:13.479Z"
+    },
+    {
+      "event_id": "623a2415-adb7-4988-b920-50305470c32a",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "今回のwriteExecutionStateWithLinkedCopies経路は既存transactional snapshot/rollbackを維持し、追加E2Eはmanaged/sourceのstate両方を実ファイルで検査する。focused replayはretry/async failure scenarioもpassし、probe resolveの新規再試行副作用は導入していない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:13.605Z"
+    },
+    {
+      "event_id": "a5955629-2055-40c8-8b9a-59bb1e0ef147",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current pr-prepareがstrict-HEAD reviewの3ba30980→a9109350不一致をstaleとしてfail closedにしており、greenへ過剰昇格していない。selected route同期のテストもmanaged artifactとsource stateを同時にassertする。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:13.726Z"
+    },
+    {
+      "event_id": "0c936ff0-4032-470e-9550-a85cab538cc4",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "DRS-CONTRACT-009とscenario:OCR-S-9はmerged_reconciliation_requiredからmanaged/source両方の同一reconciled stateへ同期する実ファイル観測を行う。未登録probe Storyをresolveしないため、別Storyを誤ってgreenにする状態遷移も避ける。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_a910",
+        "session_ref": ".vibepro/qa/adjudication-a9109350.json"
+      },
+      "head_commit": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "recorded_at": "2026-07-24T13:14:13.850Z"
+    },
+    {
+      "event_id": "6bdc07a0-a6aa-49e0-be2c-3f9583227895",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story's nine acceptance clauses and Architecture decision consistently target one guarded command that closes only to PR-ready, with merge and other high-authority actions explicitly excluded.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:26.577Z"
+    },
+    {
+      "event_id": "fd419843-0eab-481a-a52e-89d7cf959c5e",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current reality is anchored to reviewed HEAD e3c7d93b by the 2028/2028 full suite, 124/124 focused suite, current strict-head gate reviews, and equal target-conformance counts versus origin/main. The older real provider Run is used only as dogfood runtime evidence, not as current-HEAD Gate proof.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:26.806Z"
+    },
+    {
+      "event_id": "4d6e19cd-4474-4f1e-9dc4-9acb6717fa2b",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "INV-OCR-2, INV-OCR-3, and INV-OCR-7 make current-HEAD prepare readiness, human authority retention, and registered schema 0.2 route ownership explicit; exact-head E2E and artifact-routing tests exercise each invariant.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:27.062Z"
+    },
+    {
+      "event_id": "3bd9a92f-5187-4985-9500-aeb58e23b59a",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Architecture assigns orchestration to the run-session/execution-state production owner and keeps the CLI as an outer adapter. The exact-head source delta adds no CLI import or reverse dependency, and conformance remains 85 violations versus 85 on origin/main.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:27.280Z"
+    },
+    {
+      "event_id": "2f295d18-4766-44c6-868b-7cc186ab624e",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Test Plan and exact-head S-002/S-004 cases cover provider incapability, human decision, verification failure, needs_changes repair, no progress, quota, timeout, CI pending, cancellation, and resumable typed stops.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:27.615Z"
+    },
+    {
+      "event_id": "b72255d7-025f-4003-9fc9-09a1dbd1cb05",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Exact-head evidence includes 2028/2028 full tests, 124/124 focused tests, passing docs/typecheck/integration logs, current independent gate/release/architecture/runtime reviews, and unchanged conformance. Current `pr-prepare.json` is correctly not ready only because this fresh adjudication record had not yet been imported; this judgment does not claim Gate closure before that import.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:27.837Z"
+    },
+    {
+      "event_id": "38b4d659-1ced-440b-999c-8a0b6e9a334c",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "C-OCR-1 specifies the canonical command, default guarded autonomy, terminal PR-ready condition, and typed stops; public CLI E2E assertions verify the exposed description and behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:28.261Z"
+    },
+    {
+      "event_id": "ae81ec6e-2635-415d-80ea-86725de036e4",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The changed surface is one coherent Story lineage: run-session route reconciliation plus its Story, Architecture, Spec, Test Plan, and generated lifecycle artifacts. `pr prepare` flags branch-history cleanliness, but the diff contains no foreign Story or separable product intent requiring a content split.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:28.490Z"
+    },
+    {
+      "event_id": "d6923596-369c-4584-9636-3b80986d1a5c",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The S-002 exact-head matrix asserts timeout becomes a typed terminal stop with persisted recovery context rather than an unbounded or falsely successful Run.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:28.731Z"
+    },
+    {
+      "event_id": "88e21510-8789-4d67-acaa-4d81e21878a3",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The exact-head artifact-routing tests feed malformed route/catalog input and verify parsing fails closed before route ownership or artifact mutation can advance.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:29.066Z"
+    },
+    {
+      "event_id": "08056fca-08a5-4494-a961-efeee20ba7ce",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Schema 0.2 routing tests reject missing/unregistered global fallback and invalid selected-Story routes; execution-state tests verify artifact-sync schema failure cannot advance authority and rolls back.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:29.472Z"
+    },
+    {
+      "event_id": "34397c42-5fd9-4643-a9d3-bc28d202c709",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The real dogfood Run persists provider identity and the typed `orphaned_agent` provider failure without output-HEAD mutation, while exact-head incapable-provider tests verify the contractual pre-mutation stop and resume data.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:29.698Z"
+    },
+    {
+      "event_id": "1a06438b-98c5-485b-9e9b-2fbbf7935668",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The S-002/S-004 scenarios cover bounded resume, quota, CI-pending, cancellation, no-progress, and max-iteration behavior, demonstrating that asynchronous/retry conditions persist typed state instead of silently completing.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:29.966Z"
+    },
+    {
+      "event_id": "c0e66d2d-e30d-4eac-8821-7b5512b4ab1b",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "S-001 proves repair changes HEAD and therefore forces verification, independent review, and final prepare to be rebound before PR-ready. Current strict-head gate reviews and e3c7-bound test artifacts independently confirm the lifecycle at the reviewed HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:30.289Z"
+    },
+    {
+      "event_id": "ca4c89ca-8d08-43a7-b028-d967d2be9ac7",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Execution-state tests cover compare-and-swap, concurrency, rollback, artifact-sync failure, and both managed/source state updates; the OCR-S-9 scenario confirms schema 0.2 post-merge reconciliation cannot advance only one state or use an unregistered probe.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:30.494Z"
     }
   ]
 }

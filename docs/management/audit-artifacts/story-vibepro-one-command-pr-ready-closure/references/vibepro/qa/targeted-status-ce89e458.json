@@ -1,0 +1,10 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "head_sha": "ce89e4589ba8c96a418249cd2f9aa673acea646b",
+  "tests": 124,
+  "passed": 124,
+  "failed": 0,
+  "command": "node --test test/execution-state.test.js test/artifact-routing.test.js test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts test/e2e/story-vibepro-execute-merge-command-flow.spec.ts",
+  "raw_artifact": ".vibepro/qa/targeted-ce89e458.tap"
+}

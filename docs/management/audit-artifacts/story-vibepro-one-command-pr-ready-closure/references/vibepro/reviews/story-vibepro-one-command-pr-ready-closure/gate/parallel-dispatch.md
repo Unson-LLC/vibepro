@@ -4,7 +4,7 @@
 - Stage: gate
 - Mode: policy-aware parallel review dispatch
 - Required subagents: 2
-- Current head: 3ba30980c3780abeadc9945ed1d9cfec7342d646
+- Current head: e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01
 - User dirty: false
 - Raw dirty: false
 - User fingerprint excludes: .vibepro/, .worktrees/vibepro/
@@ -13,33 +13,35 @@
 ## Evidence Reuse First Input
 
 - status: stale
-- evidence_key: evk_5655c53d566671f89346bf3754008450
+- evidence_key: evk_c156ba30b385d7ed747d75661d75fbf9
 - first_input: false
 - reason: Evidence reuse artifact is not fresh for the current review context.
-- verification_summary_fingerprint: sha256:5fcb9c219897c2f8c0f0fcfb779f898ba36ec136c1d3e8f89d24b45be194c4b7
-- current_verification_summary_fingerprint: sha256:5fcb9c219897c2f8c0f0fcfb779f898ba36ec136c1d3e8f89d24b45be194c4b7
-- verification_evidence_updated_at: 2026-07-24T05:57:52.639Z
-- current_verification_evidence_updated_at: 2026-07-24T05:57:52.639Z
+- verification_summary_fingerprint: sha256:2a6ae6f5fa8dae1280d8d17c7bfc1de189ad3f8ec69f7a308c19d8a785e92aec
+- current_verification_summary_fingerprint: sha256:f82a9cfafd539fa053fe770d668ca6a4f31ed0d7f4daca0e85f6e1deed651d0c
+- verification_evidence_updated_at: 2026-07-24T14:35:16.748Z
+- current_verification_evidence_updated_at: 2026-07-24T14:41:13.684Z
 - preferred_order: -
 
 Reuse key内のverification command timestamps:
-- unit: executed_at=2026-07-24T05:57:52.639Z git_recorded_at=2026-07-24T05:57:52.625Z
-- e2e: executed_at=2026-07-24T05:54:45.758Z git_recorded_at=2026-07-24T05:54:45.752Z
-- integration: executed_at=2026-07-24T05:54:15.081Z git_recorded_at=2026-07-24T05:54:15.068Z
-- build: executed_at=2026-07-24T05:43:57.487Z git_recorded_at=2026-07-24T05:43:57.472Z
-- typecheck: executed_at=2026-07-24T05:43:55.470Z git_recorded_at=2026-07-24T05:43:55.459Z
+- unit: executed_at=2026-07-24T14:35:16.747Z git_recorded_at=2026-07-24T14:35:16.744Z
+- e2e: executed_at=2026-07-24T14:09:24.115Z git_recorded_at=2026-07-24T14:09:24.105Z
+- integration: executed_at=2026-07-24T13:56:55.036Z git_recorded_at=2026-07-24T13:56:55.026Z
+- build: executed_at=2026-07-24T13:55:48.654Z git_recorded_at=2026-07-24T13:55:48.649Z
+- typecheck: executed_at=2026-07-24T13:55:46.375Z git_recorded_at=2026-07-24T13:55:46.365Z
 
 現在のverification command timestamps:
-- unit: executed_at=2026-07-24T05:57:52.639Z git_recorded_at=2026-07-24T05:57:52.625Z
-- e2e: executed_at=2026-07-24T05:54:45.758Z git_recorded_at=2026-07-24T05:54:45.752Z
-- integration: executed_at=2026-07-24T05:54:15.081Z git_recorded_at=2026-07-24T05:54:15.068Z
-- build: executed_at=2026-07-24T05:43:57.487Z git_recorded_at=2026-07-24T05:43:57.472Z
-- typecheck: executed_at=2026-07-24T05:43:55.470Z git_recorded_at=2026-07-24T05:43:55.459Z
+- unit: executed_at=2026-07-24T14:41:13.683Z git_recorded_at=2026-07-24T14:41:13.670Z
+- e2e: executed_at=2026-07-24T14:09:24.115Z git_recorded_at=2026-07-24T14:09:24.105Z
+- integration: executed_at=2026-07-24T13:56:55.036Z git_recorded_at=2026-07-24T13:56:55.026Z
+- build: executed_at=2026-07-24T13:55:48.654Z git_recorded_at=2026-07-24T13:55:48.649Z
+- typecheck: executed_at=2026-07-24T13:55:46.375Z git_recorded_at=2026-07-24T13:55:46.365Z
 
 Stale reasons:
-- verification_summary_fingerprint: verification_summary_fingerprint changed previous=sha256:6e069cdc495a09f12db3257e9d3dbdf86b2c5a42fd2bb11bf5cef7888a6f7590 current=sha256:5fcb9c219897c2f8c0f0fcfb779f898ba36ec136c1d3e8f89d24b45be194c4b7
-- verification_evidence_updated_at: verification_evidence_updated_at changed previous=2026-07-24T05:56:53.550Z current=2026-07-24T05:57:52.639Z
-- verification_command_timestamps: verification_command_timestamps changed previous=[{"kind":"unit","executed_at":"2026-07-24T05:56:53.550Z","git_recorded_at":"2026-07-24T05:56:53.533Z"},{"kind":"e2e","executed_at":"2026-07-24T05:54:45.758Z","git_recorded_at":"2026-07-24T05:54:45.752Z"},{"kind":"integration","executed_at":"2026-07-24T05:54:15.081Z","git_recorded_at":"2026-07-24T05:54:15.068Z"},{"kind":"build","executed_at":"2026-07-24T05:43:57.487Z","git_recorded_at":"2026-07-24T05:43:57.472Z"},{"kind":"typecheck","executed_at":"2026-07-24T05:43:55.470Z","git_recorded_at":"2026-07-24T05:43:55.459Z"}] current=[{"kind":"unit","executed_at":"2026-07-24T05:57:52.639Z","git_recorded_at":"2026-07-24T05:57:52.625Z"},{"kind":"e2e","executed_at":"2026-07-24T05:54:45.758Z","git_recorded_at":"2026-07-24T05:54:45.752Z"},{"kind":"integration","executed_at":"2026-07-24T05:54:15.081Z","git_recorded_at":"2026-07-24T05:54:15.068Z"},{"kind":"build","executed_at":"2026-07-24T05:43:57.487Z","git_recorded_at":"2026-07-24T05:43:57.472Z"},{"kind":"typecheck","executed_at":"2026-07-24T05:43:55.470Z","git_recorded_at":"2026-07-24T05:43:55.459Z"}]
+- verification_summary_fingerprint: verification_summary_fingerprint changed previous=sha256:4c08a7a1f5b6f3b060de281eb8bef592861dc7c81d365005b9bc90d4a1747038 current=sha256:2a6ae6f5fa8dae1280d8d17c7bfc1de189ad3f8ec69f7a308c19d8a785e92aec
+- verification_evidence_updated_at: verification_evidence_updated_at changed previous=2026-07-24T14:04:15.490Z current=2026-07-24T14:35:16.748Z
+- verification_command_timestamps: verification_command_timestamps changed previous=[{"kind":"e2e","executed_at":"2026-07-24T14:04:15.490Z","git_recorded_at":"2026-07-24T14:04:15.481Z"},{"kind":"unit","executed_at":"2026-07-24T14:00:02.966Z","git_recorded_at":"2026-07-24T14:00:02.948Z"},{"kind":"integration","executed_at":"2026-07-24T13:56:55.036Z","git_recorded_at":"2026-07-24T13:56:55.026Z"},{"kind":"build","executed_at":"2026-07-24T13:55:48.654Z","git_recorded_at":"2026-07-24T13:55:48.649Z"},{"kind":"typecheck","executed_at":"2026-07-24T13:55:46.375Z","git_recorded_at":"2026-07-24T13:55:46.365Z"}] current=[{"kind":"unit","executed_at":"2026-07-24T14:35:16.747Z","git_recorded_at":"2026-07-24T14:35:16.744Z"},{"kind":"e2e","executed_at":"2026-07-24T14:09:24.115Z","git_recorded_at":"2026-07-24T14:09:24.105Z"},{"kind":"integration","executed_at":"2026-07-24T13:56:55.036Z","git_recorded_at":"2026-07-24T13:56:55.026Z"},{"kind":"build","executed_at":"2026-07-24T13:55:48.654Z","git_recorded_at":"2026-07-24T13:55:48.649Z"},{"kind":"typecheck","executed_at":"2026-07-24T13:55:46.375Z","git_recorded_at":"2026-07-24T13:55:46.365Z"}]
+- risk_surface_fingerprint: risk_surface_fingerprint changed previous=sha256:6716a7d7220a76438b7f9efc3dc93c66ec9a802e22a64d4039a3a98ffe454c3e current=sha256:7119a5102f25b93dc99570c5e0f66122e2861ee5ffec30a688141c8b201a5fae
+- verification_summary_fingerprint: review prepare current verification_summary_fingerprint does not match evidence key input previous=sha256:2a6ae6f5fa8dae1280d8d17c7bfc1de189ad3f8ec69f7a308c19d8a785e92aec current=sha256:f82a9cfafd539fa053fe770d668ca6a4f31ed0d7f4daca0e85f6e1deed651d0c
 
 
 ## Coordinator指示
@@ -75,7 +77,6 @@ coordinator runtimeがsubagentを使える場合は、このgate workflowの一�
 - `.vibepro/pr/story-vibepro-one-command-pr-ready-closure/design-ssot-reconciliation.summary.json`（bounded summary。まずこれを読む）。full artifact `design-ssot-reconciliation.json` は必要な深掘り時のみ開く。
 - `.vibepro/pr/story-vibepro-one-command-pr-ready-closure/senior-gap-judgment.summary.json`（bounded summary。まずこれを読む）。full artifact `senior-gap-judgment.json` は必要な深掘り時のみ開く。
 - `.vibepro/pr/story-vibepro-one-command-pr-ready-closure/ref-topology.summary.json`（bounded summary。まずこれを読む）。full artifact `ref-topology.json` は必要な深掘り時のみ開く。
-- `.vibepro/pr/story-vibepro-one-command-pr-ready-closure/split-plan.summary.json`（bounded summary。まずこれを読む）。full artifact `split-plan.json` は必要な深掘り時のみ開く。
 
 ## 必須レビューlens
 ### regression_guard: Regression / デグレ確認

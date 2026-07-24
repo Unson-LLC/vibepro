@@ -23,263 +23,68 @@
     "source_ref": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md"
   },
   "rationale": [
-    "baseからのcommitが 46 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
-    "4 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
-    "Graphifyで 17 changed files が一致し、130 related files を影響調査候補にした"
+    "baseからのcommitが 7 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+    "3 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 3 changed files が一致し、14 related files を影響調査候補にした"
   ],
   "graph_context": {
     "available": true,
     "graph_path": ".vibepro/graphify/graph.json",
     "edge_source_key": "links",
-    "node_count": 5270,
-    "edge_count": 11771,
-    "matched_file_count": 17,
-    "related_file_count": 130,
+    "node_count": 5383,
+    "edge_count": 12059,
+    "matched_file_count": 3,
+    "related_file_count": 14,
     "investigation_files": [
-      "bin/vibepro.js",
-      "scripts/generate-cli-reference.mjs",
-      "scripts/npm-release-lock.mjs",
-      "scripts/post-merge-release.mjs",
-      "src/adjudication.js",
-      "src/agent-completion-inbox.js",
-      "src/agent-harness-map.js",
-      "src/agent-harness-scanner.js",
       "src/agent-review.js",
-      "src/agent-runtime-adapter.js",
-      "src/agent-runtime-connectors.js",
-      "src/architecture-conformance.js",
-      "src/architecture-readiness.js",
-      "src/architecture-store.js",
       "src/artifact-routing.js",
-      "src/brainbase-importer.js",
-      "src/canonical-audit.js",
-      "src/check-packs.js",
-      "src/checkpoint-manager.js",
-      "src/ci-evidence.js",
       "src/cli.js",
-      "src/codex-manager.js",
-      "src/codex-runtime-bridge.js",
-      "src/codex-subagent-runtime-adapter.js",
-      "src/decision-records.js",
-      "src/design-modernize.js",
-      "src/design-ssot.js",
-      "src/design-system.js",
-      "src/diagnostic-engine.js",
-      "src/dispatch-identity.js"
+      "src/guarded-run-session.js",
+      "src/managed-worktree.js",
+      "src/merge-gate-authorization.js",
+      "src/merge-manager.js",
+      "src/reconciliation-action.js",
+      "src/run-context-capsule.js",
+      "src/story-run-portfolio.js",
+      "src/story-transaction-lock.js",
+      "src/workspace.js",
+      "test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js",
+      "test/guarded-run-session.test.js"
     ],
     "impact_by_file": [
       {
-        "file": "src/agent-runtime-adapter.js",
+        "file": "src/execution-state.js",
         "matched_nodes": [
-          "src_agent_runtime_adapter_js",
-          "src_agent_runtime_adapter_agentruntimeerror",
-          "src_agent_runtime_adapter_agentruntimeerror_constructor",
-          "src_agent_runtime_adapter_defineagentruntimeadapter",
-          "src_agent_runtime_adapter_createagentruntimecoordinator",
-          "src_agent_runtime_adapter_dispatch",
-          "src_agent_runtime_adapter_poll",
-          "src_agent_runtime_adapter_detach"
+          "src_execution_state_js",
+          "src_execution_state_startexecution",
+          "src_execution_state_getexecutionstatus",
+          "src_execution_state_getexecutionnext",
+          "src_execution_state_reconcileexecutionstate",
+          "src_execution_state_restoremergefollowupstateorthrow",
+          "src_execution_state_consumeexecutionstatesyncfailure",
+          "src_execution_state_reconcileallmergedexecutionstates"
         ],
         "related_files": [
-          "src/agent-runtime-connectors.js",
-          "src/cli.js",
-          "src/codex-runtime-bridge.js",
-          "src/dispatch-identity.js",
-          "src/guarded-run-session.js",
-          "src/public-discovery-scanner.js",
-          "src/review-finding-repair-loop.js",
-          "src/run-lineage.js",
-          "test/codex-subagent-runtime-adapter.test.js",
-          "test/guarded-run-session.test.js"
-        ]
-      },
-      {
-        "file": "src/agent-runtime-connectors.js",
-        "matched_nodes": [
-          "src_agent_runtime_connectors_js",
-          "src_agent_runtime_connectors_createproductionruntimecoordinator",
-          "src_agent_runtime_connectors_composeproductionruntimedependencies",
-          "src_agent_runtime_connectors_createproductionruntimeconnectors",
-          "src_agent_runtime_connectors_createcliruntimeconnector",
-          "src_agent_runtime_connectors_probecliruntime",
-          "src_agent_runtime_connectors_buildinvocation",
-          "src_agent_runtime_connectors_buildprompt"
-        ],
-        "related_files": [
-          "src/agent-runtime-adapter.js",
-          "src/cli.js"
-        ]
-      },
-      {
-        "file": "src/cli.js",
-        "matched_nodes": [
-          "src_cli_js",
-          "src_cli_runcli",
-          "src_cli_parsevalidationdisposition",
-          "src_cli_renderartifactroutes",
-          "src_cli_renderartifactmigrationplan",
-          "src_cli_resolvediagnosisphaseoption",
-          "src_cli_getoption",
-          "src_cli_defaultsessionid"
-        ],
-        "related_files": [
-          "bin/vibepro.js",
-          "scripts/generate-cli-reference.mjs",
-          "scripts/npm-release-lock.mjs",
-          "scripts/post-merge-release.mjs",
-          "src/adjudication.js",
-          "src/agent-harness-map.js",
-          "src/agent-harness-scanner.js",
           "src/agent-review.js",
-          "src/agent-runtime-adapter.js",
-          "src/agent-runtime-connectors.js",
-          "src/architecture-conformance.js",
-          "src/architecture-readiness.js"
-        ]
-      },
-      {
-        "file": "src/codex-runtime-bridge.js",
-        "matched_nodes": [
-          "src_codex_runtime_bridge_js",
-          "src_codex_runtime_bridge_createcodexguardedrunbridge"
-        ],
-        "related_files": [
-          "src/agent-completion-inbox.js",
-          "src/agent-runtime-adapter.js",
-          "src/cli.js",
-          "src/codex-subagent-runtime-adapter.js",
-          "src/guarded-run-session.js",
-          "test/e2e/story-vibepro-codex-detached-completion-inbox-main.spec.ts"
-        ]
-      },
-      {
-        "file": "src/guarded-run-session.js",
-        "matched_nodes": [
-          "src_guarded_run_session_js",
-          "src_guarded_run_session_guardedrunerror",
-          "src_guarded_run_session_guardedrunerror_constructor",
-          "src_guarded_run_session_guardedrunerror_tojson",
-          "src_guarded_run_session_createguardedrunsession",
-          "src_guarded_run_session_mutateruntimedispatch",
-          "src_guarded_run_session_runtimedispatchauthority",
-          "src_guarded_run_session_completeruntimerecovery"
-        ],
-        "related_files": [
-          "src/agent-runtime-adapter.js",
-          "src/canonical-audit.js",
-          "src/cli.js",
-          "src/codex-runtime-bridge.js",
-          "src/dispatch-identity.js",
-          "src/execution-state.js",
-          "src/git-identity.js",
-          "src/human-decision-checkpoint.js",
-          "src/independent-review-orchestrator.js",
-          "src/one-command-pr-ready-closure.js",
-          "src/pr-manager.js",
-          "src/run-context-capsule.js"
-        ]
-      },
-      {
-        "file": "src/independent-review-orchestrator.js",
-        "matched_nodes": [
-          "src_independent_review_orchestrator_js",
-          "src_independent_review_orchestrator_createdefaultagentreviewops",
-          "src_independent_review_orchestrator_independentrevieworchestrationerror",
-          "src_independent_review_orchestrator_independentrevieworchestrationerror_constructor",
-          "src_independent_review_orchestrator_orchestrateindependentreview",
-          "src_independent_review_orchestrator_createindependentreviewactionrunner",
-          "src_independent_review_orchestrator_createguardedindependentreviewrunner",
-          "src_independent_review_orchestrator_recordguardedruntimereview"
-        ],
-        "related_files": [
-          "src/dispatch-identity.js",
-          "src/guarded-run-session.js",
-          "src/run-lineage.js",
-          "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
-          "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
-          "test/independent-review-orchestrator.test.js"
-        ]
-      },
-      {
-        "file": "src/one-command-pr-ready-closure.js",
-        "matched_nodes": [
-          "src_one_command_pr_ready_closure_js",
-          "src_one_command_pr_ready_closure_createonecommandprreadyactionowners",
-          "src_one_command_pr_ready_closure_createonecommandprreadyrunsessionowners",
-          "src_one_command_pr_ready_closure_bindcurrentheadfinalprepare",
-          "src_one_command_pr_ready_closure_persistonecommandhumandecision",
-          "src_one_command_pr_ready_closure_runimplementationruntime",
-          "src_one_command_pr_ready_closure_runtimeactionresult",
-          "src_one_command_pr_ready_closure_runtimerecovery"
-        ],
-        "related_files": [
-          "src/guarded-run-session.js",
-          "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts"
-        ]
-      },
-      {
-        "file": "src/safe-action-orchestrator.js",
-        "matched_nodes": [
-          "src_safe_action_orchestrator_js",
-          "src_safe_action_orchestrator_buildsafeactionplan",
-          "src_safe_action_orchestrator_selectsafeactioncandidate",
-          "src_safe_action_orchestrator_buildescapecandidates",
-          "src_safe_action_orchestrator_runsafeactionplan",
-          "src_safe_action_orchestrator_isallowedcanonicalplan",
-          "src_safe_action_orchestrator_iscompletecanonicalplan",
-          "src_safe_action_orchestrator_isexactcanonicalaction"
-        ],
-        "related_files": [
-          "src/guarded-run-session.js",
-          "src/next-best-action-controller.js",
-          "src/run-context-capsule.js",
-          "src/run-lineage.js"
-        ]
-      },
-      {
-        "file": "src/task-manager.js",
-        "matched_nodes": [
-          "src_task_manager_js",
-          "src_task_manager_listtasks",
-          "src_task_manager_showtask",
-          "src_task_manager_createtasksfromplan",
-          "src_task_manager_createtaskbrief",
-          "src_task_manager_createtaskplan",
-          "src_task_manager_createtaskhandoff",
-          "src_task_manager_createtaskexecution"
-        ],
-        "related_files": [
           "src/artifact-routing.js",
-          "src/checkpoint-manager.js",
           "src/cli.js",
-          "src/language.js",
-          "src/story-manager.js",
-          "src/story-task-generator.js",
-          "src/workspace.js"
+          "src/guarded-run-session.js",
+          "src/managed-worktree.js",
+          "src/merge-gate-authorization.js",
+          "src/merge-manager.js",
+          "src/reconciliation-action.js",
+          "src/run-context-capsule.js",
+          "src/story-run-portfolio.js",
+          "src/workspace.js",
+          "test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js"
         ]
-      },
-      {
-        "file": "test/agent-runtime-adapter.test.js",
-        "matched_nodes": [
-          "test_agent_runtime_adapter_test_js",
-          "test_agent_runtime_adapter_test_fakeadapter",
-          "test_agent_runtime_adapter_test_probe"
-        ],
-        "related_files": []
-      },
-      {
-        "file": "test/agent-runtime-connectors.test.js",
-        "matched_nodes": [
-          "test_agent_runtime_connectors_test_js",
-          "test_agent_runtime_connectors_test_fakeprocess"
-        ],
-        "related_files": []
       },
       {
         "file": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
         "matched_nodes": [
           "test_e2e_story_vibepro_one_command_pr_ready_closure_runtime_spec_ts",
           "e2e_story_vibepro_one_command_pr_ready_closure_runtime_spec_normalizedmacpath",
+          "e2e_story_vibepro_one_command_pr_ready_closure_runtime_spec_schemav2executionprofile",
           "e2e_story_vibepro_one_command_pr_ready_closure_runtime_spec_currenthead",
           "e2e_story_vibepro_one_command_pr_ready_closure_runtime_spec_context",
           "e2e_story_vibepro_one_command_pr_ready_closure_runtime_spec_invoke"
@@ -289,73 +94,14 @@
         ]
       },
       {
-        "file": "test/guarded-run-session.test.js",
+        "file": "test/execution-state.test.js",
         "matched_nodes": [
-          "test_guarded_run_session_test_js",
-          "test_guarded_run_session_test_stopreason",
-          "test_guarded_run_session_test_fixturehumandecision",
-          "test_guarded_run_session_test_preparedatcurrenthead",
-          "test_guarded_run_session_test_cp",
-          "test_guarded_run_session_test_probe",
-          "test_guarded_run_session_test_start",
-          "test_guarded_run_session_test_status"
+          "test_execution_state_test_js",
+          "test_execution_state_test_executionartifactprofile",
+          "test_execution_state_test_contend"
         ],
         "related_files": [
-          "src/agent-runtime-adapter.js",
-          "src/execution-state.js",
-          "src/merge-manager.js",
-          "src/pr-manager.js"
-        ]
-      },
-      {
-        "file": "test/independent-review-orchestrator.test.js",
-        "matched_nodes": [
-          "test_independent_review_orchestrator_test_js",
-          "test_independent_review_orchestrator_test_boundaries",
-          "test_independent_review_orchestrator_test_guardedruntimerunner",
-          "test_independent_review_orchestrator_test_guardedruntimestate",
-          "test_independent_review_orchestrator_test_completedruntimereview"
-        ],
-        "related_files": [
-          "src/independent-review-orchestrator.js",
-          "test/scan-status.test.js"
-        ]
-      },
-      {
-        "file": "test/one-command-pr-ready-closure.test.js",
-        "matched_nodes": [
-          "test_one_command_pr_ready_closure_test_js",
-          "test_one_command_pr_ready_closure_test_context",
-          "test_one_command_pr_ready_closure_test_completedruntime",
-          "test_one_command_pr_ready_closure_test_boundaries"
-        ],
-        "related_files": []
-      },
-      {
-        "file": "test/safe-action-orchestrator.test.js",
-        "matched_nodes": [
-          "test_safe_action_orchestrator_test_js",
-          "test_safe_action_orchestrator_test_make",
-          "test_safe_action_orchestrator_test_run"
-        ],
-        "related_files": [
-          "src/pr-manager.js"
-        ]
-      },
-      {
-        "file": "test/scope-boundary-gate.test.js",
-        "matched_nodes": [
-          "test_scope_boundary_gate_test_js",
-          "test_scope_boundary_gate_test_git",
-          "test_scope_boundary_gate_test_readjson",
-          "test_scope_boundary_gate_test_writejson",
-          "test_scope_boundary_gate_test_makerepo",
-          "test_scope_boundary_gate_test_makegitrepowithstory",
-          "test_scope_boundary_gate_test_writetasksfixture",
-          "test_scope_boundary_gate_test_gatenode"
-        ],
-        "related_files": [
-          "src/cli.js"
+          "src/story-transaction-lock.js"
         ]
       }
     ]
@@ -368,16 +114,10 @@
       "category": "requirements",
       "recommendation": "separate_pr",
       "files": [
-        "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
-        "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
-        "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
         "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
-        "docs/management/stories/active/story-vibepro-production-runtime-connectors.md",
-        "docs/specs/story-vibepro-one-command-pr-ready-closure-execution-topology-replay.md",
         "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
         "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
-        "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
-        "docs/architecture/target-model.json"
+        "docs/architecture/story-vibepro-one-command-pr-ready-closure.md"
       ],
       "required_gates": [
         "Requirement Gate"
@@ -387,7 +127,7 @@
         "実装差分が要求の範囲を超えていないか",
         "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
       ],
-      "file_count": 10,
+      "file_count": 4,
       "graph_investigation_files": [],
       "suggested_branch": "feat/vibepro-one-command-pr-ready-closure-requirements-ssot"
     },
@@ -398,22 +138,8 @@
       "category": "implementation",
       "recommendation": "primary_pr",
       "files": [
-        "src/agent-runtime-adapter.js",
-        "src/agent-runtime-connectors.js",
-        "src/cli.js",
-        "src/codex-runtime-bridge.js",
-        "src/guarded-run-session.js",
-        "src/independent-review-orchestrator.js",
-        "src/one-command-pr-ready-closure.js",
-        "src/safe-action-orchestrator.js",
-        "src/task-manager.js",
-        "test/agent-runtime-adapter.test.js",
-        "test/agent-runtime-connectors.test.js",
-        "test/guarded-run-session.test.js",
-        "test/independent-review-orchestrator.test.js",
-        "test/one-command-pr-ready-closure.test.js",
-        "test/safe-action-orchestrator.test.js",
-        "test/scope-boundary-gate.test.js"
+        "src/execution-state.js",
+        "test/execution-state.test.js"
       ],
       "required_gates": [
         "Requirement Gate",
@@ -425,20 +151,20 @@
         "受け入れ基準と実装分岐が対応しているか",
         "Graphifyで隣接するファイルまで影響確認されているか"
       ],
-      "file_count": 16,
+      "file_count": 2,
       "graph_investigation_files": [
-        "bin/vibepro.js",
-        "scripts/generate-cli-reference.mjs",
-        "scripts/npm-release-lock.mjs",
-        "scripts/post-merge-release.mjs",
-        "src/adjudication.js",
-        "src/agent-completion-inbox.js",
-        "src/agent-harness-map.js",
-        "src/agent-harness-scanner.js",
         "src/agent-review.js",
-        "src/architecture-conformance.js",
-        "src/architecture-readiness.js",
-        "src/artifact-routing.js"
+        "src/artifact-routing.js",
+        "src/cli.js",
+        "src/guarded-run-session.js",
+        "src/managed-worktree.js",
+        "src/merge-gate-authorization.js",
+        "src/merge-manager.js",
+        "src/reconciliation-action.js",
+        "src/run-context-capsule.js",
+        "src/story-run-portfolio.js",
+        "src/story-transaction-lock.js",
+        "src/workspace.js"
       ],
       "suggested_branch": "feat/vibepro-one-command-pr-ready-closure-runtime-behavior"
     },
@@ -464,38 +190,18 @@
         "src/cli.js"
       ],
       "suggested_branch": "feat/vibepro-one-command-pr-ready-closure-e2e-gate"
-    },
-    {
-      "id": "misc-follow-up",
-      "order": 90,
-      "title": "Miscellaneous follow-up",
-      "category": "other",
-      "recommendation": "separate_pr",
-      "files": [
-        "design-ssot.json"
-      ],
-      "required_gates": [
-        "Manual Review"
-      ],
-      "review_focus": [
-        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
-      ],
-      "file_count": 1,
-      "graph_investigation_files": [],
-      "suggested_branch": "feat/vibepro-one-command-pr-ready-closure-misc-follow-up"
     }
   ],
   "merge_order": [
     "requirements-ssot",
     "runtime-behavior",
-    "e2e-gate",
-    "misc-follow-up"
+    "e2e-gate"
   ],
   "stacked_gate_plan": {
     "schema_version": "0.1.0",
     "model": "stacked-pr-gate-plan-v1",
     "summary": {
-      "lane_count": 4,
+      "lane_count": 3,
       "cumulative_gate_count": 1,
       "requires_cumulative_e2e": true,
       "requires_atomic_head_validation": false
@@ -516,8 +222,8 @@
         "gate_mode": "isolated_pr",
         "depends_on": [],
         "isolated_checks": [
-          "node --test test/agent-runtime-adapter.test.js test/guarded-run-session.test.js test/independent-review-orchestrator.test.js test/one-command-pr-ready-closure.test.js test/safe-action-orchestrator.test.js test/scope-boundary-gate.test.js test/session-efficiency-audit.test.js",
-          "node --test --test-name-pattern='integration|orchestration|session|cost|merge' test/guarded-run-session.test.js test/session-efficiency-audit.test.js test/vibepro-cli.test.js"
+          "npm test",
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/30103960608/job/89516673139"
         ],
         "cumulative_checks": [],
         "review_note": "runtime差分はUnit/Integrationを単体PRで確認し、E2Eは後続のe2e-gateまたは累積validationで確認する。"
@@ -530,57 +236,42 @@
           "runtime-behavior"
         ],
         "isolated_checks": [
-          "node --test --test-name-pattern='integration|orchestration|session|cost|merge' test/guarded-run-session.test.js test/session-efficiency-audit.test.js test/vibepro-cli.test.js",
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/30103960608/job/89516673139",
           "Playwright harness smoke if runtime dependencies are already merged"
         ],
         "cumulative_checks": [
-          "node --test test/agent-runtime-adapter.test.js test/guarded-run-session.test.js test/independent-review-orchestrator.test.js test/one-command-pr-ready-closure.test.js test/safe-action-orchestrator.test.js test/scope-boundary-gate.test.js test/session-efficiency-audit.test.js",
-          "node --test --test-name-pattern='integration|orchestration|session|cost|merge' test/guarded-run-session.test.js test/session-efficiency-audit.test.js test/vibepro-cli.test.js",
-          "node --test test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+          "npm test",
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/30103960608/job/89516673139",
+          "node --test test/execution-state.test.js test/artifact-routing.test.js test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts test/e2e/story-vibepro-execute-merge-command-flow.spec.ts"
         ],
         "review_note": "e2e-gate は単体PRだけで完了判定せず、requirements-ssot -> runtime-behavior を取り込んだ累積状態でGateを確認する。"
-      },
-      {
-        "lane_id": "misc-follow-up",
-        "gate_mode": "isolated_pr",
-        "depends_on": [],
-        "isolated_checks": [
-          "manual review"
-        ],
-        "cumulative_checks": [],
-        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
       }
     ],
     "final_validation": {
       "required": true,
       "trigger": "runtime-behavior と e2e-gate の両方がmerge対象に含まれる",
       "commands": [
-        "node --test test/agent-runtime-adapter.test.js test/guarded-run-session.test.js test/independent-review-orchestrator.test.js test/one-command-pr-ready-closure.test.js test/safe-action-orchestrator.test.js test/scope-boundary-gate.test.js test/session-efficiency-audit.test.js",
-        "node --test --test-name-pattern='integration|orchestration|session|cost|merge' test/guarded-run-session.test.js test/session-efficiency-audit.test.js test/vibepro-cli.test.js",
-        "node --test test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+        "npm test",
+        "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/30103960608/job/89516673139",
+        "node --test test/execution-state.test.js test/artifact-routing.test.js test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts test/e2e/story-vibepro-execute-merge-command-flow.spec.ts"
       ]
     }
   },
   "next_actions": [
     {
       "lane_id": "requirements-ssot",
-      "action": "Create feat/vibepro-one-command-pr-ready-closure-requirements-ssot with 10 files",
-      "command": "git switch -c feat/vibepro-one-command-pr-ready-closure-requirements-ssot \"<base>\" && git add docs/management/stories/active/story-vibepro-autonomous-action-dag.md docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md docs/management/stories/active/story-vibepro-independent-review-orchestration.md docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md docs/management/stories/active/story-vibepro-production-runtime-connectors.md docs/specs/story-vibepro-one-command-pr-ready-closure-execution-topology-replay.md docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json docs/architecture/story-vibepro-one-command-pr-ready-closure.md docs/architecture/target-model.json"
+      "action": "Create feat/vibepro-one-command-pr-ready-closure-requirements-ssot with 4 files",
+      "command": "git switch -c feat/vibepro-one-command-pr-ready-closure-requirements-ssot \"<base>\" && git add docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json docs/architecture/story-vibepro-one-command-pr-ready-closure.md"
     },
     {
       "lane_id": "runtime-behavior",
-      "action": "Create feat/vibepro-one-command-pr-ready-closure-runtime-behavior with 16 files",
-      "command": "git switch -c feat/vibepro-one-command-pr-ready-closure-runtime-behavior \"<base>\" && git add src/agent-runtime-adapter.js src/agent-runtime-connectors.js src/cli.js src/codex-runtime-bridge.js src/guarded-run-session.js src/independent-review-orchestrator.js src/one-command-pr-ready-closure.js src/safe-action-orchestrator.js src/task-manager.js test/agent-runtime-adapter.test.js test/agent-runtime-connectors.test.js test/guarded-run-session.test.js test/independent-review-orchestrator.test.js test/one-command-pr-ready-closure.test.js test/safe-action-orchestrator.test.js test/scope-boundary-gate.test.js"
+      "action": "Create feat/vibepro-one-command-pr-ready-closure-runtime-behavior with 2 files",
+      "command": "git switch -c feat/vibepro-one-command-pr-ready-closure-runtime-behavior \"<base>\" && git add src/execution-state.js test/execution-state.test.js"
     },
     {
       "lane_id": "e2e-gate",
       "action": "Create feat/vibepro-one-command-pr-ready-closure-e2e-gate with 1 files",
       "command": "git switch -c feat/vibepro-one-command-pr-ready-closure-e2e-gate \"<base>\" && git add test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
-    },
-    {
-      "lane_id": "misc-follow-up",
-      "action": "Create feat/vibepro-one-command-pr-ready-closure-misc-follow-up with 1 files",
-      "command": "git switch -c feat/vibepro-one-command-pr-ready-closure-misc-follow-up \"<base>\" && git add design-ssot.json"
     }
   ]
 }

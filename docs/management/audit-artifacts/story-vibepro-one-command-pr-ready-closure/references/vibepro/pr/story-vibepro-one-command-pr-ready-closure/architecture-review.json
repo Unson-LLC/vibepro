@@ -1,10 +1,10 @@
 {
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-one-command-pr-ready-closure",
-  "created_at": "2026-07-24T06:33:20.321Z",
+  "created_at": "2026-07-24T15:15:47.181Z",
   "status": "satisfied",
   "required": true,
-  "architecture_decision": "ADRあり (docs/architecture/story-vibepro-one-command-pr-ready-closure.md, docs/architecture/target-model.json)",
+  "architecture_decision": "ADRあり (docs/architecture/story-vibepro-one-command-pr-ready-closure.md)",
   "source_artifacts": {
     "story": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
     "review_cockpit": null,
@@ -13,7 +13,7 @@
   "gates": {
     "architecture": {
       "status": "satisfied",
-      "reason": "ADRあり (docs/architecture/story-vibepro-one-command-pr-ready-closure.md, docs/architecture/target-model.json)"
+      "reason": "ADRあり (docs/architecture/story-vibepro-one-command-pr-ready-closure.md)"
     },
     "spec": {
       "status": "present",
@@ -22,7 +22,7 @@
   },
   "toolchain": {
     "schema_version": "0.1.0",
-    "collected_at": "2026-07-24T06:33:16.332Z",
+    "collected_at": "2026-07-24T15:15:42.858Z",
     "package": {
       "name": "vibepro",
       "version": "0.2.0-beta.1",
@@ -34,10 +34,10 @@
     },
     "source_git": {
       "is_git_repo": true,
-      "commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-reconcile-routing",
       "origin_url": "https://github.com/Unson-LLC/vibepro.git",
-      "origin_main_commit": "db8f0ef3f7d3cfcb2dc0d31504e40e01025293dd",
+      "origin_main_commit": "6222d118315e7001abcbdc786aca932e48c58232",
       "origin_main_relation": "ahead",
       "dirty": false,
       "dirty_summary": []

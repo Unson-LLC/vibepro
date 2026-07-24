@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0",
+  "review_kind": "architecture_repair_rereview",
+  "reviewed_head": "42a6b66a627c7d3846cc1a33a390d2d09e926bf7",
+  "base_ref": "origin/main",
+  "base_sha": "6222d118315e7001abcbdc786aca932e48c58232",
+  "status": "pass",
+  "risk_surfaces": [
+    "core_workflow_state",
+    "gate_orchestration"
+  ],
+  "summary": "ARCH-PREFLIGHT-001 is resolved. The Architecture now binds the fetched origin/main baseline and reviewed implementation HEAD to the fresh 85/65/9/11 conformance evidence. Current repair HEAD preserves the same aggregate conformance result, introduces no new run-session-to-CLI reverse edge, and retains 124/124 current-HEAD targeted test evidence.",
+  "resolved_findings": [
+    {
+      "id": "ARCH-PREFLIGHT-001",
+      "status": "resolved",
+      "resolution": "The Architecture conformance paragraph now cites origin/main 6222d118315e7001abcbdc786aca932e48c58232 and reviewed implementation HEAD ce89e4589ba8c96a418249cd2f9aa673acea646b with identical 85 total, 65 undeclared, 9 budget, and 11 orphan findings."
+    }
+  ],
+  "findings": [],
+  "verdicts": {
+    "architecture_evidence_freshness": {
+      "status": "pass",
+      "judgment": "The obsolete db8f... and 86-finding paragraph was replaced with the requested base and reviewed-HEAD identities and the fresh 85/65/9/11 breakdown."
+    },
+    "current_head_conformance": {
+      "status": "pass",
+      "judgment": "The current repair-HEAD artifact and fetched-base artifact both report 85 total findings: 65 undeclared dependencies, 9 budget violations, and 11 orphan files. Their serialized finding sets differ only in the existing execution-state.js line-count budget observation, from 1915 base lines to 1919 current lines; no finding category or aggregate count is added."
+    },
+    "no_new_run_session_to_cli_reverse_edge": {
+      "status": "pass",
+      "judgment": "Both current and base artifacts report the same run-session-to-CLI undeclared dependency with 9 edges and the same guarded-run-session.js examples. The implementation diff adds no CLI, guarded-run-session, connector, or independent-review-orchestrator import to execution-state.js."
+    },
+    "selected_story_route_owner_boundary": {
+      "status": "pass",
+      "judgment": "The source change remains confined to execution-state reconciliation. It resolves the selected Story's PR route through artifact-routing and derives story scope from the canonical template without fabricating a probe Story or duplicating CLI, run-session, connector, merge, or independent-review ownership."
+    },
+    "bounded_repair_review_budget": {
+      "status": "pass",
+      "judgment": "The repair commit adds exactly two aggregate review slots, one architecture_boundary slot and one spec_consistency slot, with an explicit repair-review reason. It does not widen global defaults or unrelated role limits and permits no waiver."
+    },
+    "current_targeted_evidence": {
+      "status": "pass",
+      "judgment": "The targeted status artifact is explicitly bound to 42a6b66a627c7d3846cc1a33a390d2d09e926bf7 and its TAP artifact reports 124 tests passed, 0 failed, including OCR-S-9 selected-Story schema 0.2 PR-route authority and the no-probe-Story regression."
+    }
+  },
+  "verification_evidence": [
+    {
+      "artifact": ".vibepro/qa/conformance-42a6b66a-fresh.json",
+      "status": "pass",
+      "finding_counts": {
+        "total": 85,
+        "undeclared": 65,
+        "budget": 9,
+        "orphan": 11
+      },
+      "run_session_to_cli_edge_count": 9
+    },
+    {
+      "artifact": ".vibepro/qa/conformance-origin-main-6222d118-fresh.json",
+      "status": "pass",
+      "finding_counts": {
+        "total": 85,
+        "undeclared": 65,
+        "budget": 9,
+        "orphan": 11
+      },
+      "run_session_to_cli_edge_count": 9
+    },
+    {
+      "artifact": ".vibepro/qa/targeted-status-42a6b66a.json",
+      "raw_artifact": ".vibepro/qa/targeted-42a6b66a.tap",
+      "command": "node --test test/execution-state.test.js test/artifact-routing.test.js test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts test/e2e/story-vibepro-execute-merge-command-flow.spec.ts",
+      "head_sha": "42a6b66a627c7d3846cc1a33a390d2d09e926bf7",
+      "status": "pass",
+      "tests": 124,
+      "passed": 124,
+      "failed": 0
+    },
+    {
+      "command": "git diff --check 6222d118315e7001abcbdc786aca932e48c58232...HEAD",
+      "status": "pass"
+    }
+  ],
+  "boundary_note": "This pass closes the architecture repair re-review for ARCH-PREFLIGHT-001. It is not by itself overall PR Gate, merge, delivery, or runtime authorization."
+}

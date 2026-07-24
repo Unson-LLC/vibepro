@@ -2,8 +2,8 @@
   "schema_version": "0.1.0",
   "kind": "artifact_summary",
   "source_artifact": "senior-gap-judgment.json",
-  "source_bytes": 19989,
-  "source_content_hash": "sha256:17ccd279ae6ee0358b4356a6fb1f33ad93f4f3735e91884ddf8f67a0278e9c27",
+  "source_bytes": 18258,
+  "source_content_hash": "sha256:aa18a554f304fec3a68ebe9a74f8396f2a61e588e82d7a155fcfdf0a9669e4fd",
   "conclusion": {
     "status_fields": {
       "model": "vibepro-senior-gap-judgment-v1"

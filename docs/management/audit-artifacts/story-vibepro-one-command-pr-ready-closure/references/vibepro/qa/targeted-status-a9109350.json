@@ -1,0 +1,1 @@
+{"head":"a9109350819af99df22448d6ed8bd75adf611e36","command":"node --test test/execution-state.test.js test/artifact-routing.test.js test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts test/e2e/story-vibepro-execute-merge-command-flow.spec.ts","exit_code":0}

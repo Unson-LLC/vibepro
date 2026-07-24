@@ -1,0 +1,75 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-07-24T13:12:00.000Z",
+  "mode": "pre_fix_briefing",
+  "story": {
+    "story_id": "story-vibepro-one-command-pr-ready-closure",
+    "title": "1コマンド自律実装を実Runtime E2Eで閉じる",
+    "ssot": "local",
+    "status": "completed",
+    "horizon": "now",
+    "view": "dev",
+    "period": "2026-07",
+    "started_at": "2026-07-21",
+    "due_at": null,
+    "category": "quality"
+  },
+  "source_run": {
+    "run_id": "dispatch-76d744478e3f04bc",
+    "gate_status": "stale_evidence",
+    "head_sha": "a9109350819af99df22448d6ed8bd75adf611e36"
+  },
+  "task": {
+    "id": "story-vibepro-one-command-pr-ready-closure:prepare-artifacts",
+    "title": "Prepare missing planning artifacts for current-head artifact consistency recovery",
+    "priority": "medium",
+    "finding_id": "gate:artifact_consistency",
+    "source_type": "runtime_dispatch",
+    "source_id": "dispatch-76d744478e3f04bc"
+  },
+  "group": null,
+  "execution": {
+    "proposal_only": true,
+    "plan_allows_repository_changes": true,
+    "cli_mutates_repository": false,
+    "recipient_may_mutate_repository": true,
+    "allowed_change_surface": "planning_artifacts_only"
+  },
+  "target_routes": [],
+  "target_files": [
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts"
+  ],
+  "read_first_files": [
+    {
+      "file": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+      "reason": "Story acceptance and explicit Story -> Architecture -> Spec -> Task linkage"
+    },
+    {
+      "file": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "reason": "Architecture boundary for prepare_artifacts action ownership"
+    },
+    {
+      "file": "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+      "reason": "Canonical clauses and traceability anchors"
+    },
+    {
+      "file": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+      "reason": "Current gate:artifact_consistency blocker and current-head evidence state"
+    }
+  ],
+  "recommended_strategy": {
+    "id": "planning-artifact-recovery",
+    "reason": "Story, Architecture, and Spec are present; the missing artifact for this dispatch is the current-head Task projection that describes the limited recovery surface."
+  },
+  "guardrails": [
+    "Do not create or merge a PR.",
+    "Do not waive gates.",
+    "Do not deploy, publish, or perform external side effects.",
+    "Do not rerun or record independent review results from this planning-artifact task.",
+    "Do not modify product code."
+  ]
+}

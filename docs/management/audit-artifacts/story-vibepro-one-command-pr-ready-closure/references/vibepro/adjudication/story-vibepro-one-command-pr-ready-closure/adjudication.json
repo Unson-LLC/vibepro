@@ -2,103 +2,115 @@
   "schema_version": "0.1.0",
   "model": "vibepro-evidence-adjudication-v1",
   "story_id": "story-vibepro-one-command-pr-ready-closure",
-  "updated_at": "2026-07-24T05:52:49.215Z",
+  "updated_at": "2026-07-24T14:59:26.338Z",
   "verdicts": [
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "The exact-head delta in `src/execution-state.js` resolves managed and source selected-Story PR routes from the schema 0.2 canonical template and removes the synthetic ownership probe. The OCR-S-9 E2E plus artifact-routing and execution-state tests verify post-merge sync for both states, rejection of unregistered fallback/probe routes, compatibility for registered legacy routes, and fail-closed rollback.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:26.336Z"
+    },
     {
       "clause_id": "AC-8",
       "verdict": "demonstrated",
-      "reason": "Story、Spec、E2Eはmerged PR #372、#377、#382を先行ownerとして参照してcompositionし、履歴でもclosure commit直前のStoryと親roadmapがactive、その後のfocused closureでcompletedへ遷移したことを確認できる。",
+      "reason": "The Story and Architecture explicitly treat merged PRs #372, #377, and #382 as predecessors and exclude reimplementation of connectors and independent-review orchestration. Git object `926227f` shows both the selected Story and parent roadmap were active in the initial candidate; `.vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-merge.json` separately records later PR #385 merge/CI closure, preserving the pre-PR criterion.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "final-adjudication",
-        "session_ref": "/root/final_adjudication"
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
       },
-      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-      "recorded_at": "2026-07-24T05:52:49.213Z"
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:26.078Z"
     },
     {
       "clause_id": "AC-7",
       "verdict": "demonstrated",
-      "reason": "専用production-shaped fixtureはTrusted pr_readyへ到達し、同Storyの実self-dogfoodはruntime capability不足を契約どおりのwaiting_for_runtime typed stopとして証拠化している。",
+      "reason": "The dedicated production-shaped S-001 fixture reaches trusted PR-ready after implementation, verification, independent review, repair, and evidence rebind. The real dogfood Run `run-20260724T130916Z-7c409e4b` demonstrates the permitted alternative contractual typed stop (`orphaned_agent`, followed by bounded max-iterations recovery guidance) against an actual provider dispatch.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "final-adjudication",
-        "session_ref": "/root/final_adjudication"
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
       },
-      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-      "recorded_at": "2026-07-24T05:52:49.043Z"
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:25.784Z"
     },
     {
       "clause_id": "AC-6",
       "verdict": "demonstrated",
-      "reason": "available契約はproduction-shaped E2Eの実commitと実装sessionから分離されたread-only reviewer identityで保証される。実self-dogfoodはcapability不足をmutation前に止め、provider、required/missing capabilities、同一Runの再開条件を永続化している。",
+      "reason": "The available-capability S-001 path proves a production-shaped real git implementation commit and a distinct independent review/repair lifecycle. The persisted dogfood Run at `.vibepro/executions/story-vibepro-one-command-pr-ready-closure/runs/run-20260724T130916Z-7c409e4b/state.json` records the real Codex provider identity/capability and a typed `orphaned_agent` stop with resume guidance without an output-HEAD mutation; exact-head tests cover both available and incapable branches.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "final-adjudication",
-        "session_ref": "/root/final_adjudication"
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
       },
-      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-      "recorded_at": "2026-07-24T05:52:48.871Z"
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:25.556Z"
     },
     {
       "clause_id": "AC-5",
       "verdict": "demonstrated",
-      "reason": "S-001、S-002、S-004とfocused state-machine testsがsuccess、resume、human decision、verification failure、repair convergence、no progress、quota、timeout、CI pending、cancelをbehavior assertionで通している。",
+      "reason": "The exact-head targeted suite passes the S-002/S-004 matrix for success, resume, human decision, verification failure, repair convergence, no-progress, quota, timeout, CI pending, and cancellation. `.vibepro/qa/sequence-targeted-e3c7d93b.json` records 124 tests, 124 pass, 0 fail.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "final-adjudication",
-        "session_ref": "/root/final_adjudication"
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
       },
-      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-      "recorded_at": "2026-07-24T05:52:48.688Z"
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:25.313Z"
     },
     {
       "clause_id": "AC-4",
       "verdict": "demonstrated",
-      "reason": "自律DAGにPR create、merge、waiver、deploy、publish ownerはなく、実装と修正はworkspace_writeとlocal_workspace_onlyを必須化する。Codex connectorはworkspace sandbox、network_access=false、approval_policy=neverを強制できる場合だけlocal capabilityを広告する。",
+      "reason": "INV-OCR-3 and the Architecture's Action Ownership table keep merge, critical waiver, and material external side effects outside autonomous execution. The S-005 E2E verifies the explicit external-authority checkpoint, while the command stops at PR-ready and never invokes merge or waiver.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "final-adjudication",
-        "session_ref": "/root/final_adjudication"
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
       },
-      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-      "recorded_at": "2026-07-24T05:52:48.505Z"
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:25.055Z"
     },
     {
       "clause_id": "AC-3",
       "verdict": "demonstrated",
-      "reason": "final_prepareのsource guardとnegative testsにより、prepared HEADと永続current HEADが一致し、かつready_for_pr_create=trueの場合に限ってpr_readyを返す。",
+      "reason": "INV-OCR-2 and the final_prepare implementation require the current-HEAD `pr-prepare.json` readiness bit before entering `pr_ready`. The S-001 E2E asserts the persisted final prepare is bound to the resulting HEAD and has `ready_for_pr_create=true`; stale or non-ready prepare cases remain typed stops in the exact-head 124/124 suite.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "final-adjudication",
-        "session_ref": "/root/final_adjudication"
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
       },
-      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-      "recorded_at": "2026-07-24T05:52:48.302Z"
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:24.701Z"
     },
     {
       "clause_id": "AC-2",
       "verdict": "demonstrated",
-      "reason": "公開runCliが選ぶproduction action ownerを使うS-001は、実Git managed worktreeでartifact準備、実装commit、検証、独立Review、needs_changes修正commit、再検証、再Review、current-HEAD final prepareを1 Runで完走する。",
+      "reason": "The production-owner E2E scenario `S-001 public guarded Run closes an available provider path through repair to PR-ready` exercises a real managed git worktree, implementation commit, verification, independent needs_changes review, repair commit, re-verification, re-review, and final prepare. The incapable-provider and typed pre-mutation paths are covered by the same exact-head targeted suite, which passed 124/124 tests.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "final-adjudication",
-        "session_ref": "/root/final_adjudication"
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
       },
-      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-      "recorded_at": "2026-07-24T05:52:48.122Z"
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:24.396Z"
     },
     {
       "clause_id": "AC-1",
       "verdict": "demonstrated",
-      "reason": "公開CLIはguarded closure profileへ接続され、default autonomous、explicit legacy、provider override、help、JSON/human出力、status/resume/cancelをfocused testとpublic CLI E2Eが確認している。現HEAD変更はArchitecture記述のみでpublic contract実装は不変である。",
+      "reason": "The Story, Architecture, and C-OCR-1 define the public command `vibepro execute run . --story-id <id> --until pr-ready --autonomy guarded`, its guarded authority boundary, and typed stops. The exact-head targeted run in `.vibepro/qa/sequence-targeted-e3c7d93b.json` passes the public-CLI scenarios, including the help/contract assertions that reject the obsolete 'does not start agent' description.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "final-adjudication",
-        "session_ref": "/root/final_adjudication"
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
       },
-      "head_commit": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-      "recorded_at": "2026-07-24T05:52:47.944Z"
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:24.135Z"
     },
     {
       "clause_id": "OCR-S-8",

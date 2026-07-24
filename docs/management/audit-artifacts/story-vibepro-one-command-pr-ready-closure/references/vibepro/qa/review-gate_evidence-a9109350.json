@@ -1,0 +1,53 @@
+{
+  "status": "needs_changes",
+  "summary": "At frozen HEAD a9109350, the current-head verification and acceptance adjudication evidence substantiate the implementation and fail-closed typed-stop behavior, but the stored current pr-prepare still does not support PR readiness after excluding this review and the pending spine:done_evidence adjudication. During this inspection the worktree advanced to 63ba8d1d, so an a910 strict-HEAD gate review cannot be used as current-HEAD PR evidence.",
+  "inspection_summary": "Inspected the generated gate_evidence request; a910-bound verification records and status artifacts; stored and freshly generated bounded/full pr-prepare projections; prior strict-head review/lifecycle metadata; acceptance and judgment adjudication events; the real guarded Run run-20260724T130916Z-7c409e4b; a910 conformance output; and the selected route reconciliation implementation plus its unit/E2E coverage. No test suite was rerun.",
+  "inspection_evidence": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json; .vibepro/qa/targeted-status-a9109350.json; .vibepro/qa/full-suite-status-a9109350.json; .vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json; .vibepro/adjudication/story-vibepro-one-command-pr-ready-closure/adjudication.json; .vibepro/adjudication/story-vibepro-one-command-pr-ready-closure/judgment-adjudication.json; .vibepro/executions/story-vibepro-one-command-pr-ready-closure/runs/run-20260724T130916Z-7c409e4b/state.json; .vibepro/qa/conformance-a9109350-fresh.json",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-request-gate_evidence.md",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/evidence-reuse.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+    ".vibepro/qa/targeted-status-a9109350.json",
+    ".vibepro/qa/full-suite-status-a9109350.json",
+    ".vibepro/qa/reconciliation-integration-status-a9109350.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-result-gate_evidence.json",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/lifecycle.json",
+    ".vibepro/adjudication/story-vibepro-one-command-pr-ready-closure/adjudication.json",
+    ".vibepro/adjudication/story-vibepro-one-command-pr-ready-closure/judgment-adjudication.json",
+    ".vibepro/executions/story-vibepro-one-command-pr-ready-closure/runs/run-20260724T130916Z-7c409e4b/state.json",
+    ".vibepro/executions/story-vibepro-one-command-pr-ready-closure/runs/run-20260724T130916Z-7c409e4b/context-capsule.json",
+    ".vibepro/qa/conformance-a9109350-fresh.json",
+    "src/execution-state.js",
+    "src/guarded-run-session.js",
+    "src/one-command-pr-ready-closure.js",
+    "test/execution-state.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "git rev-parse HEAD; git log --oneline a9109350..HEAD; git diff --name-status a9109350..HEAD",
+    "node bin/vibepro.js pr prepare . --story-id story-vibepro-one-command-pr-ready-closure --view readiness --summary-json",
+    "node bin/vibepro.js pr prepare . --story-id story-vibepro-one-command-pr-ready-closure --view gate-evidence --summary-json"
+  ],
+  "judgment_delta": [
+    "Initial concern: historical gate reviews and adjudications could have been stale after the reconciliation change. Final assessment: all five verification records are content-surface-bound to a9109350 with clean git context; focused E2E reports 124/124 and the recorded full suite 2028/2028, while AC-1 through AC-9 each have current-head demonstrated adjudication.",
+    "Initial concern: the real Run might incorrectly be treated as successful E2E. Final assessment: it is correctly persisted as an orphaned-provider failure followed by a max_iterations_exceeded typed stop with recovery command; this supports fail-closed behavior only, not a PR-ready success claim.",
+    "Initial concern: excluding the active gate review and pending spine:done_evidence could make the PR otherwise ready. Final assessment: no. The current full pr-prepare also reports gate:common_judgment_spine missing current_reality and failure_modes and gate:responsibility_authority missing required evidence; neither is removed by excluding this review or spine:done_evidence.",
+    "Frozen-head binding change: inspection began at a9109350819af99df22448d6ed8bd75adf611e36, then HEAD advanced to 63ba8d1dc49d301ffa9ad41890c5708e7677b14d with committed prepare-artifacts projections. The prior gate_evidence role is strict-head-bound, so no a910 verdict is current-HEAD evidence."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-evidence-pr-readiness-remains-fail-closed",
+      "detail": "The a910 current pr-prepare projection has overall_status=needs_verification and ready_for_pr_create=false. Beyond the active gate/release review lifecycles and pending judgment spine:done_evidence, it reports gate:common_judgment_spine needs evidence for current_reality and failure_modes and gate:responsibility_authority needs one required evidence item. Do not claim PR readiness until a fresh pr-prepare on the final HEAD resolves or explicitly continues to report these gates. Source: .vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json."
+    },
+    {
+      "severity": "high",
+      "id": "gate-evidence-frozen-head-advanced",
+      "detail": "The worktree advanced from frozen a9109350 to 63ba8d1d during this review. The existing gate_evidence result is strict_head and bound to 3ba30980; this a910 review is likewise only a frozen-head assessment. A current-HEAD gate_evidence review must be authorized, closed, recorded, and followed by pr-prepare after the tree is finalized. Source: git log a9109350..63ba8d1d and .vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-result-gate_evidence.json."
+    },
+    {
+      "severity": "low",
+      "id": "gate-evidence-managed-worktree-locality-warning",
+      "detail": "Each a910 verification record is clean and content-surface-bound, but carries managed_worktree_locality=needs_review because the preferred managed branch name differs from the actual reconcile-routing branch. The configured mode is preferred rather than required, so this is not a bypass or pass condition; retain it as a visible warning when regenerating evidence. Source: .vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json."
+    }
+  ]
+}

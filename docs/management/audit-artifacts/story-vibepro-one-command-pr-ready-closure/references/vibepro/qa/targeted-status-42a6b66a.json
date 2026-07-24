@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head_sha": "42a6b66a627c7d3846cc1a33a390d2d09e926bf7",
+  "command": "node --test test/execution-state.test.js test/artifact-routing.test.js test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts test/e2e/story-vibepro-execute-merge-command-flow.spec.ts",
+  "artifact": ".vibepro/qa/targeted-42a6b66a.tap"
+}

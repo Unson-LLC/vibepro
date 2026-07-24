@@ -10,10 +10,10 @@
   "refs": {
     "base_ref": "origin/main",
     "head_ref": "HEAD",
-    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
-    "base_sha": "db8f0ef3f7d3cfcb2dc0d31504e40e01025293dd",
-    "head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-    "merge_base_sha": "db8f0ef3f7d3cfcb2dc0d31504e40e01025293dd"
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-reconcile-routing",
+    "base_sha": "6222d118315e7001abcbdc786aca932e48c58232",
+    "head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+    "merge_base_sha": "6222d118315e7001abcbdc786aca932e48c58232"
   },
   "base_selection": {
     "ref": "origin/main",
@@ -826,12 +826,12 @@
     },
     {
       "branch": "codex/story-vibepro-gate-decision-outcome-ledger-clean",
-      "local_sha": "40e320c88c18a723e2709161feb1ecc3c3c18966",
+      "local_sha": "28858c973042a90aeec408dd32ad6c65987f6f55",
       "remotes": {
-        "origin": "9ef32e62c779d18e2cbea48db659066a733e1a37"
+        "origin": "28858c973042a90aeec408dd32ad6c65987f6f55"
       },
       "divergence": {
-        "local_vs_remote": true,
+        "local_vs_remote": false,
         "remote_disagreement": false
       }
     },
@@ -2071,7 +2071,7 @@
       "branch": "main",
       "local_sha": "6b5af2c67a336e2921b6a362d2225c79789eefea",
       "remotes": {
-        "origin": "db8f0ef3f7d3cfcb2dc0d31504e40e01025293dd"
+        "origin": "6222d118315e7001abcbdc786aca932e48c58232"
       },
       "divergence": {
         "local_vs_remote": true,
@@ -2303,6 +2303,17 @@
       "local_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
       "remotes": {
         "origin": "3ba30980c3780abeadc9945ed1d9cfec7342d646"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-reconcile-routing",
+      "local_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "remotes": {
+        "origin": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01"
       },
       "divergence": {
         "local_vs_remote": false,

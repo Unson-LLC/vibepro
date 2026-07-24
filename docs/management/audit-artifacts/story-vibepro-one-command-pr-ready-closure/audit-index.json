@@ -2,75 +2,55 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-one-command-pr-ready-closure",
   "source": "execute_merge",
-  "generated_at": "2026-07-24T06:33:36.767Z",
+  "generated_at": "2026-07-24T15:16:06.531Z",
   "evidence_depth": "standard",
-  "budget_status": "within_budget",
+  "budget_status": "exceeded",
   "cost_summary": {
     "schema_version": "0.1.0",
     "evidence_depth": "standard",
     "risk_profile": "normal",
     "trigger_signals": [],
     "diff_stats_status": "available",
-    "diff_stats_source": "git diff --numstat origin/main...3ba30980c3780abeadc9945ed1d9cfec7342d646",
+    "diff_stats_source": "git diff --numstat origin/main...e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
     "diff_stats_refs": {
       "base_ref": "origin/main",
-      "head_ref": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-      "base_sha": "db8f0ef3f7d3cfcb2dc0d31504e40e01025293dd",
-      "head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-      "merge_commit_sha": "2617304f007c6d0ec5a7014873662d5ba3a2cff7"
+      "head_ref": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "base_sha": "6222d118315e7001abcbdc786aca932e48c58232",
+      "head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "merge_commit_sha": "904233b47bf69f755561433964d8420409da74ed"
     },
-    "diff_stats_collected_at": "2026-07-24T06:33:31.576Z",
+    "diff_stats_collected_at": "2026-07-24T15:16:02.349Z",
     "diff_stats_reason": null,
-    "artifact_lines": 4862,
+    "artifact_lines": 5398,
     "changed_lines": {
       "status": "available",
-      "total_changed_lines": 4970,
+      "total_changed_lines": 1352,
       "unknown_file_count": 0,
       "buckets": {
         "src": {
-          "files": 9,
-          "changed_lines": 1530,
+          "files": 1,
+          "changed_lines": 16,
           "unknown_files": 0,
           "paths": [
-            "src/agent-runtime-adapter.js",
-            "src/agent-runtime-connectors.js",
-            "src/cli.js",
-            "src/codex-runtime-bridge.js",
-            "src/guarded-run-session.js",
-            "src/independent-review-orchestrator.js",
-            "src/one-command-pr-ready-closure.js",
-            "src/safe-action-orchestrator.js",
-            "src/task-manager.js"
+            "src/execution-state.js"
           ]
         },
         "test": {
-          "files": 8,
-          "changed_lines": 2608,
+          "files": 2,
+          "changed_lines": 169,
           "unknown_files": 0,
           "paths": [
-            "test/agent-runtime-adapter.test.js",
-            "test/agent-runtime-connectors.test.js",
             "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
-            "test/guarded-run-session.test.js",
-            "test/independent-review-orchestrator.test.js",
-            "test/one-command-pr-ready-closure.test.js",
-            "test/safe-action-orchestrator.test.js",
-            "test/scope-boundary-gate.test.js"
+            "test/execution-state.test.js"
           ]
         },
         "story_spec_architecture_docs": {
-          "files": 10,
-          "changed_lines": 780,
+          "files": 4,
+          "changed_lines": 67,
           "unknown_files": 0,
           "paths": [
             "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
-            "docs/architecture/target-model.json",
-            "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
-            "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
-            "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
             "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
-            "docs/management/stories/active/story-vibepro-production-runtime-connectors.md",
-            "docs/specs/story-vibepro-one-command-pr-ready-closure-execution-topology-replay.md",
             "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
             "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json"
           ]
@@ -82,39 +62,51 @@
           "paths": []
         },
         "other": {
-          "files": 2,
-          "changed_lines": 52,
+          "files": 11,
+          "changed_lines": 1100,
           "unknown_files": 0,
           "paths": [
             ".vibepro/config.json",
-            "design-ssot.json"
+            ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/briefing.json",
+            ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/briefing.md",
+            ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/execution.json",
+            ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/execution.md",
+            ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/handoff.json",
+            ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/handoff.md",
+            ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/plan.json",
+            ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/plan.md",
+            ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/tasks.json",
+            ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/tasks.md"
           ]
         }
       },
-      "source": "git diff --numstat origin/main...3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "source": "git diff --numstat origin/main...e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
       "refs": {
         "base_ref": "origin/main",
-        "head_ref": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-        "base_sha": "db8f0ef3f7d3cfcb2dc0d31504e40e01025293dd",
-        "head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
-        "merge_commit_sha": "2617304f007c6d0ec5a7014873662d5ba3a2cff7"
+        "head_ref": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+        "base_sha": "6222d118315e7001abcbdc786aca932e48c58232",
+        "head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+        "merge_commit_sha": "904233b47bf69f755561433964d8420409da74ed"
       },
-      "collected_at": "2026-07-24T06:33:31.576Z",
+      "collected_at": "2026-07-24T15:16:02.349Z",
       "reason": null
     },
-    "product_changed_lines": 4970,
+    "product_changed_lines": 1352,
     "product_changed_lines_status": "available",
     "product_changed_lines_reason": null,
-    "artifact_code_ratio": 0.978,
+    "artifact_code_ratio": 3.993,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "normal",
       "canonical_artifact_lines": 500,
-      "effective_canonical_artifact_lines": 14910,
+      "effective_canonical_artifact_lines": 4056,
       "artifact_code_ratio": 3
     },
-    "budget_status": "within_budget",
-    "budget_exceeded_reasons": [],
+    "budget_status": "exceeded",
+    "budget_exceeded_reasons": [
+      "canonical_artifact_lines_exceeded",
+      "artifact_code_ratio_exceeded"
+    ],
     "token_accounting": {
       "status": "unavailable",
       "total_tokens": null,
@@ -135,18 +127,18 @@
       "reason": "elapsed-time logs were not provided to canonical audit promotion"
     },
     "replay_bundle": {
-      "compressed_bytes": 6851,
-      "expanded_bytes": 41365,
+      "compressed_bytes": 6542,
+      "expanded_bytes": 40631,
       "expanded_line_count": 1010,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 128165,
-    "raw_source_artifact_code_ratio": 25.788,
+    "raw_source_artifact_lines": 139953,
+    "raw_source_artifact_code_ratio": 103.516,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
     "present": true,
-    "created_at": "2026-07-24T06:33:20.321Z",
+    "created_at": "2026-07-24T15:15:47.181Z",
     "gate_status": {
       "ready_for_pr_create": true,
       "overall_status": "ready_for_review",
@@ -156,36 +148,36 @@
   },
   "evidence_reuse": {
     "present": true,
-    "created_at": "2026-07-24T06:33:20.321Z",
+    "created_at": "2026-07-24T15:15:47.181Z",
     "status": "hit",
-    "evidence_key": "evk_ffb8d1cfc972008846435b111c472268",
-    "verification_summary_fingerprint": "sha256:373b926d9afa3d7300ff5a6b26f55607b74ae10777cf8276361387b287acc69d",
-    "verification_evidence_updated_at": "2026-07-24T06:32:53.859Z",
+    "evidence_key": "evk_76f9ec85b7b5b175a694f7518dd84dc4",
+    "verification_summary_fingerprint": "sha256:848df9197794b27a0c97a9ec5f7274aeabd961a92c2b9485090b7940779a9f72",
+    "verification_evidence_updated_at": "2026-07-24T15:15:04.571Z",
     "verification_command_timestamps": [
       {
         "kind": "integration",
-        "executed_at": "2026-07-24T06:32:53.859Z",
-        "git_recorded_at": "2026-07-24T06:32:53.843Z"
+        "executed_at": "2026-07-24T15:15:04.571Z",
+        "git_recorded_at": "2026-07-24T15:15:04.566Z"
       },
       {
         "kind": "e2e",
-        "executed_at": "2026-07-24T06:14:23.134Z",
-        "git_recorded_at": "2026-07-24T06:14:23.128Z"
+        "executed_at": "2026-07-24T15:07:07.928Z",
+        "git_recorded_at": "2026-07-24T15:07:07.904Z"
       },
       {
         "kind": "unit",
-        "executed_at": "2026-07-24T05:57:52.639Z",
-        "git_recorded_at": "2026-07-24T05:57:52.625Z"
+        "executed_at": "2026-07-24T14:41:13.683Z",
+        "git_recorded_at": "2026-07-24T14:41:13.670Z"
       },
       {
         "kind": "build",
-        "executed_at": "2026-07-24T05:43:57.487Z",
-        "git_recorded_at": "2026-07-24T05:43:57.472Z"
+        "executed_at": "2026-07-24T13:55:48.654Z",
+        "git_recorded_at": "2026-07-24T13:55:48.649Z"
       },
       {
         "kind": "typecheck",
-        "executed_at": "2026-07-24T05:43:55.470Z",
-        "git_recorded_at": "2026-07-24T05:43:55.459Z"
+        "executed_at": "2026-07-24T13:55:46.375Z",
+        "git_recorded_at": "2026-07-24T13:55:46.365Z"
       }
     ],
     "stale_reason_count": 0,
@@ -193,13 +185,13 @@
     "full_evidence_generation_count": 1,
     "full_evidence_generation_count_scope": "same_evidence_key",
     "full_evidence_same_key_generation_count": 1,
-    "full_evidence_cumulative_generation_count": 120
+    "full_evidence_cumulative_generation_count": 143
   },
   "pr_create": {
     "present": true,
-    "created_at": "2026-07-24T06:33:20.389Z",
+    "created_at": "2026-07-24T15:15:47.293Z",
     "status": "updated_existing_pr",
-    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/385",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/386",
     "gate_override_allowed": false
   },
   "pr_merge": {
@@ -210,25 +202,25 @@
       "delivery": {
         "status": "merged",
         "source": "github_pr",
-        "pr_url": "https://github.com/Unson-LLC/vibepro/pull/385",
-        "merge_commit_sha": "2617304f007c6d0ec5a7014873662d5ba3a2cff7",
-        "merged_at": "2026-07-24T06:33:34Z",
-        "observed_at": "2026-07-24T06:33:36.760Z"
+        "pr_url": "https://github.com/Unson-LLC/vibepro/pull/386",
+        "merge_commit_sha": "904233b47bf69f755561433964d8420409da74ed",
+        "merged_at": "2026-07-24T15:16:04Z",
+        "observed_at": "2026-07-24T15:16:06.502Z"
       },
       "reconciliation": {
         "status": "reconciled",
         "reasons": [],
-        "evaluated_at": "2026-07-24T06:33:36.760Z",
-        "head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646"
+        "evaluated_at": "2026-07-24T15:16:06.502Z",
+        "head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01"
       },
       "reconciliation_action": null,
       "execution_state_sync": null,
-      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/385",
-      "merge_commit_sha": "2617304f007c6d0ec5a7014873662d5ba3a2cff7",
-      "merged_at": "2026-07-24T06:33:34Z",
-      "current_head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/386",
+      "merge_commit_sha": "904233b47bf69f755561433964d8420409da74ed",
+      "merged_at": "2026-07-24T15:16:04Z",
+      "current_head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
       "diff_stats_status": "available",
-      "diff_stats_source": "git diff --numstat origin/main...3ba30980c3780abeadc9945ed1d9cfec7342d646"
+      "diff_stats_source": "git diff --numstat origin/main...e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01"
     }
   },
   "gate_dag": {
@@ -249,10 +241,10 @@
     "present": true,
     "lifecycle": "merged",
     "coverage_summary": {
-      "clause_count": 11,
-      "acceptance_criteria_count": 8,
+      "clause_count": 12,
+      "acceptance_criteria_count": 9,
       "scenario_clause_count": 3,
-      "mapped_count": 11,
+      "mapped_count": 12,
       "weakly_mapped_count": 0,
       "unmapped_count": 0,
       "scenario_lineage": {
@@ -274,19 +266,19 @@
   "review": {
     "summary_count": 5,
     "result_count": 14,
-    "pass_count": 10,
+    "pass_count": 11,
     "block_count": 0,
-    "stale_count": 4
+    "stale_count": 3
   },
   "handoff_replay_status": "blocked",
-  "handoff_replay_unresolved_reference_count": 11,
+  "handoff_replay_unresolved_reference_count": 12,
   "missing_artifacts": [],
   "raw_artifact_count": 47,
   "automation_value_audit": {
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-one-command-pr-ready-closure",
-    "generated_at": "2026-07-24T06:33:36.767Z",
+    "generated_at": "2026-07-24T15:16:06.531Z",
     "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
@@ -298,45 +290,45 @@
       "senior_gap_judgment": true
     },
     "merge_context": {
-      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/385",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/386",
       "merge_status": "merged",
       "delivery": {
         "status": "merged",
         "source": "github_pr",
-        "pr_url": "https://github.com/Unson-LLC/vibepro/pull/385",
-        "merge_commit_sha": "2617304f007c6d0ec5a7014873662d5ba3a2cff7",
-        "merged_at": "2026-07-24T06:33:34Z",
-        "observed_at": "2026-07-24T06:33:36.760Z"
+        "pr_url": "https://github.com/Unson-LLC/vibepro/pull/386",
+        "merge_commit_sha": "904233b47bf69f755561433964d8420409da74ed",
+        "merged_at": "2026-07-24T15:16:04Z",
+        "observed_at": "2026-07-24T15:16:06.502Z"
       },
       "reconciliation": {
         "status": "reconciled",
         "reasons": [],
-        "evaluated_at": "2026-07-24T06:33:36.760Z",
-        "head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646"
+        "evaluated_at": "2026-07-24T15:16:06.502Z",
+        "head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01"
       },
-      "merge_commit_sha": "2617304f007c6d0ec5a7014873662d5ba3a2cff7",
-      "merged_at": "2026-07-24T06:33:34Z"
+      "merge_commit_sha": "904233b47bf69f755561433964d8420409da74ed",
+      "merged_at": "2026-07-24T15:16:04Z"
     },
     "allocation": {
       "changed_lines_status": "available",
-      "total_changed_lines": 4970,
-      "implementation_changed_lines": 1530,
-      "verification_and_docs_changed_lines": 3388,
-      "audit_evidence_changed_lines": 3388,
+      "total_changed_lines": 1352,
+      "implementation_changed_lines": 16,
+      "verification_and_docs_changed_lines": 236,
+      "audit_evidence_changed_lines": 236,
       "buckets": {
-        "src": 1530,
-        "test": 2608,
-        "story_spec_architecture_docs": 780,
+        "src": 16,
+        "test": 169,
+        "story_spec_architecture_docs": 67,
         "audit_artifacts": 0,
-        "other": 52
+        "other": 1100
       }
     },
     "ratios": {
-      "test_to_src": 1.705,
-      "story_spec_architecture_to_src": 0.51,
+      "test_to_src": 10.563,
+      "story_spec_architecture_to_src": 4.188,
       "audit_artifacts_to_src": 0,
-      "automation_evidence_to_src": 2.214,
-      "artifact_lines_to_product_changed_lines": 0.978
+      "automation_evidence_to_src": 14.75,
+      "artifact_lines_to_product_changed_lines": 3.993
     },
     "session_cost": {
       "token_status": "unavailable",
@@ -349,13 +341,16 @@
       "elapsed_window": null
     },
     "value_signal_inputs": {
-      "budget_status": "within_budget",
-      "budget_exceeded_reasons": [],
+      "budget_status": "exceeded",
+      "budget_exceeded_reasons": [
+        "canonical_artifact_lines_exceeded",
+        "artifact_code_ratio_exceeded"
+      ],
       "evidence_depth": "standard",
       "verification_pass_count": 5,
       "verification_fail_count": 0,
       "review_result_count": 14,
-      "review_pass_count": 10,
+      "review_pass_count": 11,
       "review_block_count": 0,
       "senior_gap_status": null,
       "senior_gap_residual_risk_count": 0,
@@ -363,24 +358,37 @@
       "evidence_reuse_stale_reason_count": 0,
       "traceability_lifecycle": "merged",
       "handoff_replay_status": "blocked",
-      "handoff_replay_unresolved_reference_count": 11,
+      "handoff_replay_unresolved_reference_count": 12,
       "missing_artifact_count": 0
     },
     "cost_controls": {
       "status": "action_required",
-      "budget_status": "within_budget",
-      "artifact_code_ratio": 0.978,
-      "automation_evidence_to_src": 2.214,
-      "budget_exceeded_reasons": [],
-      "canonical_artifact_lines": 4862,
-      "product_changed_lines": 4970,
+      "budget_status": "exceeded",
+      "artifact_code_ratio": 3.993,
+      "automation_evidence_to_src": 14.75,
+      "budget_exceeded_reasons": [
+        "canonical_artifact_lines_exceeded",
+        "artifact_code_ratio_exceeded"
+      ],
+      "canonical_artifact_lines": 5398,
+      "product_changed_lines": 1352,
       "evidence_depth": "standard",
-      "recommended_evidence_depth": "standard",
+      "recommended_evidence_depth": "summary",
       "recommendations": [
+        {
+          "id": "prefer_summary_canonical_artifacts",
+          "action": "persist summary/index/replay references instead of full raw audit copies for routine value audits",
+          "reason": "canonical audit evidence exceeded the configured line or artifact/code ratio budget"
+        },
         {
           "id": "collect_runtime_cost_before_merge",
           "action": "run execute merge with --session-id <id>|auto and --automation-memory <path>, or set VIBEPRO_SESSION_ID/CODEX_SESSION_ID and VIBEPRO_AUTOMATION_MEMORY",
           "reason": "daily automation cannot judge time/token efficiency without measured session cost"
+        },
+        {
+          "id": "split_or_shrink_evidence_heavy_story",
+          "action": "split follow-up evidence work or reduce non-product artifact churn before the next merge",
+          "reason": "test/story/audit evidence changed lines are more than 3x src changed lines"
         }
       ]
     },
@@ -393,10 +401,26 @@
         "elapsed_status": "unavailable"
       },
       {
+        "id": "artifact_budget_exceeded",
+        "severity": "cost_risk",
+        "reason": "canonical audit evidence exceeded the configured artifact budget",
+        "budget_exceeded_reasons": [
+          "canonical_artifact_lines_exceeded",
+          "artifact_code_ratio_exceeded"
+        ],
+        "artifact_code_ratio": 3.993
+      },
+      {
         "id": "canonical_handoff_replay_blocked",
         "severity": "review_needed",
         "reason": "canonical audit references cannot be fully replayed by another engineer or agent",
-        "unresolved_reference_count": 11
+        "unresolved_reference_count": 12
+      },
+      {
+        "id": "evidence_heavy_relative_to_src",
+        "severity": "cost_risk",
+        "reason": "test/story/audit evidence changed lines are more than 3x src changed lines",
+        "automation_evidence_to_src": 14.75
       }
     ]
   },
@@ -405,10 +429,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-one-command-pr-ready-closure/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:32bc35725d1ffcbe3c45d358e2fabc8082d050da86314d4f0938ca61d76ec4dd",
-    "compressed_hash": "sha256:323c21e512cd8ad7491dbbfe4eaa853c91f694e4f4208a243a11255aa3421de1",
-    "expanded_bytes": 41365,
-    "compressed_bytes": 6851,
+    "content_hash": "sha256:2f7cd0dcc1a4088b445acc6f0a6ce55b34690169efb5bdddc2657958917f58fb",
+    "compressed_hash": "sha256:1ec89794c193b4bf7101535385bcf1c317ef5bdfd5a8ff0e57031131bef41ef9",
+    "expanded_bytes": 40631,
+    "compressed_bytes": 6542,
     "expanded_line_count": 1010,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -428,8 +452,8 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-one-command-pr-ready-closure",
     "cost": {
-      "compressed_bytes": 6851,
-      "expanded_bytes": 41365,
+      "compressed_bytes": 6542,
+      "expanded_bytes": 40631,
       "expanded_line_count": 1010,
       "persisted_line_count": 1
     }

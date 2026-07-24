@@ -10,12 +10,12 @@
   "advisory_notice": "target model は未裁定(draft)。violation は参考値であり、モデル裁定後に確定する。",
   "graph": {
     "path": ".vibepro/graphify/graph.json",
-    "node_count": 5270,
-    "dependency_edge_count": 1324
+    "node_count": 5383,
+    "dependency_edge_count": 1378
   },
   "summary": {
-    "violation_count": 86,
-    "undeclared_dependency_count": 66,
+    "violation_count": 85,
+    "undeclared_dependency_count": 65,
     "budget_violation_count": 9,
     "orphan_file_count": 11,
     "stale_pattern_count": 0,
@@ -44,26 +44,26 @@
       "severity": "review",
       "from_module": "workspace-infra",
       "to_module": "story",
-      "edge_count": 44,
+      "edge_count": 46,
       "example_edges": [
         "src/managed-worktree.js -> src/decision-records.js (calls)",
         "src/managed-worktree-gate.js -> src/decision-records.js (calls)",
-        "src/workspace.js -> src/nocodb-story-sync.js (calls)"
+        "src/execution-state.js -> src/story-run-portfolio.js (calls)"
       ],
-      "summary": "workspace-infra -> story は宣言されていない依存 (44 edges)"
+      "summary": "workspace-infra -> story は宣言されていない依存 (46 edges)"
     },
     {
       "kind": "undeclared_dependency",
       "severity": "review",
       "from_module": "workspace-infra",
       "to_module": "cli",
-      "edge_count": 40,
+      "edge_count": 38,
       "example_edges": [
         "src/managed-worktree.js -> src/cli.js (calls)",
         "src/managed-worktree.js -> src/cli.js (calls)",
         "src/managed-worktree.js -> src/cli.js (calls)"
       ],
-      "summary": "workspace-infra -> cli は宣言されていない依存 (40 edges)"
+      "summary": "workspace-infra -> cli は宣言されていない依存 (38 edges)"
     },
     {
       "kind": "undeclared_dependency",
@@ -199,14 +199,27 @@
       "kind": "undeclared_dependency",
       "severity": "review",
       "from_module": "workspace-infra",
+      "to_module": "reporting",
+      "edge_count": 12,
+      "example_edges": [
+        "src/workspace.js -> src/usage-report.js (calls)",
+        "src/workspace.js -> src/usage-report.js (calls)",
+        "src/workspace.js -> src/usage-report.js (calls)"
+      ],
+      "summary": "workspace-infra -> reporting は宣言されていない依存 (12 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
       "to_module": "review",
-      "edge_count": 11,
+      "edge_count": 10,
       "example_edges": [
         "src/managed-worktree-gate.js -> src/agent-review.js (calls)",
         "src/git-fingerprint.js -> src/agent-review.js (calls)",
         "src/git-fingerprint.js -> src/agent-review.js (calls)"
       ],
-      "summary": "workspace-infra -> review は宣言されていない依存 (11 edges)"
+      "summary": "workspace-infra -> review は宣言されていない依存 (10 edges)"
     },
     {
       "kind": "undeclared_dependency",
@@ -272,19 +285,6 @@
         "src/agent-review.js -> src/validation-sequencing.js (calls)"
       ],
       "summary": "review -> gate-pr は宣言されていない依存 (8 edges)"
-    },
-    {
-      "kind": "undeclared_dependency",
-      "severity": "review",
-      "from_module": "workspace-infra",
-      "to_module": "reporting",
-      "edge_count": 8,
-      "example_edges": [
-        "src/workspace.js -> src/usage-report.js (calls)",
-        "src/workspace.js -> src/usage-report.js (calls)",
-        "src/workspace.js -> src/usage-report.js (calls)"
-      ],
-      "summary": "workspace-infra -> reporting は宣言されていない依存 (8 edges)"
     },
     {
       "kind": "undeclared_dependency",
@@ -484,19 +484,6 @@
     {
       "kind": "undeclared_dependency",
       "severity": "review",
-      "from_module": "workspace-infra",
-      "to_module": "evidence",
-      "edge_count": 3,
-      "example_edges": [
-        "src/managed-worktree-gate.js -> src/verification-evidence.js (calls)",
-        "src/workspace.js -> src/ci-evidence.js (calls)",
-        "src/workspace.js -> src/ci-evidence.js (calls)"
-      ],
-      "summary": "workspace-infra -> evidence は宣言されていない依存 (3 edges)"
-    },
-    {
-      "kind": "undeclared_dependency",
-      "severity": "review",
       "from_module": "evidence",
       "to_module": "story",
       "edge_count": 3,
@@ -620,6 +607,18 @@
         "src/run-context-capsule.js -> src/journey-map.js (calls)"
       ],
       "summary": "run-session -> uiux-design は宣言されていない依存 (2 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
+      "to_module": "evidence",
+      "edge_count": 2,
+      "example_edges": [
+        "src/managed-worktree-gate.js -> src/verification-evidence.js (calls)",
+        "src/workspace.js -> src/ci-evidence.js (calls)"
+      ],
+      "summary": "workspace-infra -> evidence は宣言されていない依存 (2 edges)"
     },
     {
       "kind": "undeclared_dependency",
@@ -808,17 +807,6 @@
     {
       "kind": "undeclared_dependency",
       "severity": "review",
-      "from_module": "evidence",
-      "to_module": "review",
-      "edge_count": 1,
-      "example_edges": [
-        "src/verification-evidence.js -> src/agent-review.js (calls)"
-      ],
-      "summary": "evidence -> review は宣言されていない依存 (1 edges)"
-    },
-    {
-      "kind": "undeclared_dependency",
-      "severity": "review",
       "from_module": "uiux-design",
       "to_module": "graph",
       "edge_count": 1,
@@ -891,10 +879,10 @@
       "kind": "budget_violation",
       "severity": "review",
       "file": "src/execution-state.js",
-      "line_count": 1915,
+      "line_count": 1919,
       "limit": 1500,
       "baseline": false,
-      "summary": "src/execution-state.js は行数予算 (1500行) を超過 (1915行)"
+      "summary": "src/execution-state.js は行数予算 (1500行) を超過 (1919行)"
     },
     {
       "kind": "budget_violation",

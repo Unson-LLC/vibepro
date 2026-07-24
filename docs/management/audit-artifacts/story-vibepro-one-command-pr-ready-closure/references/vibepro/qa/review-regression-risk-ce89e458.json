@@ -1,0 +1,96 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "final",
+  "role": "regression_risk",
+  "reviewed_head_sha": "ce89e4589ba8c96a418249cd2f9aa673acea646b",
+  "base_sha": "6222d118315e7001abcbdc786aca932e48c58232",
+  "verdict": "pass",
+  "inspection_inputs": {
+    "diff": "git diff origin/main...HEAD",
+    "implementation": [
+      "src/execution-state.js"
+    ],
+    "tests": [
+      "test/execution-state.test.js",
+      "test/artifact-routing.test.js",
+      "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+      "test/e2e/story-vibepro-execute-merge-command-flow.spec.ts"
+    ],
+    "recorded_targeted_evidence": ".vibepro/qa/targeted-status-ce89e458.json",
+    "recorded_targeted_result": {
+      "head_sha": "ce89e4589ba8c96a418249cd2f9aa673acea646b",
+      "status": "pass",
+      "tests": 124,
+      "passed": 124,
+      "failed": 0
+    },
+    "independent_targeted_command": "node --test test/execution-state.test.js test/artifact-routing.test.js test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts test/e2e/story-vibepro-execute-merge-command-flow.spec.ts",
+    "independent_targeted_result": {
+      "status": "pass",
+      "tests": 124,
+      "passed": 124,
+      "failed": 0
+    },
+    "worktree_boundary": {
+      "head_matches_requested_sha": true,
+      "base_matches_requested_sha": true,
+      "tracked_clean_at_final_inspection": true,
+      "diff_check_passed": true
+    }
+  },
+  "inspection_summary": {
+    "change_shape": "The execution-state synchronizer no longer invents an ownership-probe Story. It resolves the selected Story's managed and source PR routes and classifies directory ownership from each canonical template parent.",
+    "schema_0_2_selected_story_route": {
+      "judgment": "sound",
+      "evidence": [
+        "managedWorktreeArtifactLocations resolves both PR routes with state.story_id only",
+        "prRouteDirectoryIsStoryScoped recognizes {story_id} and {feature_slug} in the canonical parent template",
+        "DRS-CONTRACT-009 schema 0.2 linked artifact sync uses catalog routing without resolving a probe Story passes",
+        "scenario:OCR-S-9 schema 0.2 post-merge authority sync follows the selected Story PR route passes"
+      ]
+    },
+    "legacy_and_schema_0_1_compatibility": {
+      "judgment": "preserved",
+      "evidence": [
+        "Unconfigured repository legacy defaults pass",
+        "Upgraded repository legacy catalog Stories remain operable",
+        "Schema 0.1 generated projection byte-copy compatibility passes",
+        "Configured flat PR route synchronization and rollback passes"
+      ]
+    },
+    "managed_source_authority_sync": {
+      "judgment": "preserved",
+      "evidence": [
+        "Schema 0.2 named-profile pr-merge.json is copied from managed to source authority",
+        "The reconciled execution state is committed to both managed and source authorities",
+        "Existing compare-and-swap, commit-last, rollback, and concurrent replacement-writer tests pass"
+      ]
+    },
+    "synthetic_story_removal": {
+      "judgment": "sound",
+      "evidence": [
+        "The only production deletion is removal of probeStoryId and both probe route resolutions",
+        "No undeclared Story is needed to infer route scope",
+        "Catalog metadata and matching Story mirror remain fail-closed for the selected Story"
+      ]
+    },
+    "post_merge_reconciliation": {
+      "judgment": "no regression found",
+      "evidence": [
+        "Delivery reconciliation success path passes for schema 0.2",
+        "Artifact synchronization failure cannot advance execution-state authority",
+        "Final persistence failure, recovery command, merge follow-up CAS, and rollback ownership tests pass",
+        "Public guarded Run and explicit execute-merge flow tests pass"
+      ]
+    },
+    "residual_risk": "Low. Route scope is inferred from the validated canonical template rather than by comparing two resolved Stories. Existing routing validation constrains identity-preserving flat routes and catalog metadata, while the targeted suite covers both new named-profile behavior and legacy transaction/rollback behavior."
+  },
+  "judgment_delta": {
+    "previous_failure": "Schema 0.2 reconciliation attempted to resolve an undeclared synthetic ownership-probe Story, conflicting with catalog and Story-mirror authority.",
+    "current_resolution": "Ownership classification uses only the selected Story's resolved canonical PR route template for managed and source repositories.",
+    "new_blocking_findings": 0,
+    "new_nonblocking_findings": 0
+  },
+  "findings": []
+}

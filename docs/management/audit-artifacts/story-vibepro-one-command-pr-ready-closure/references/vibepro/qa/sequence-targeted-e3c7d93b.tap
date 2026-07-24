@@ -1,0 +1,756 @@
+TAP version 13
+# Subtest: upgraded repository keeps legacy catalog Stories operable while the selected Story uses a named profile
+ok 1 - upgraded repository keeps legacy catalog Stories operable while the selected Story uses a named profile
+  ---
+  duration_ms: 53.370625
+  type: 'test'
+  ...
+# Subtest: unconfigured repository preserves current artifact defaults
+ok 2 - unconfigured repository preserves current artifact defaults
+  ---
+  duration_ms: 0.619833
+  type: 'test'
+  ...
+# Subtest: named artifact-routing profile: schema 0.2 selects a complete profile from catalog authority
+ok 3 - named artifact-routing profile: schema 0.2 selects a complete profile from catalog authority
+  ---
+  duration_ms: 4.565541
+  type: 'test'
+  ...
+# Subtest: PR artifact discovery includes profile-only schema 0.2 routes
+ok 4 - PR artifact discovery includes profile-only schema 0.2 routes
+  ---
+  duration_ms: 7.289541
+  type: 'test'
+  ...
+# Subtest: named profile requires a complete matching Story mirror before writes
+ok 5 - named profile requires a complete matching Story mirror before writes
+  ---
+  duration_ms: 10.573166
+  type: 'test'
+  ...
+# Subtest: catalog metadata authority and Story frontmatter conflict fail closed
+ok 6 - catalog metadata authority and Story frontmatter conflict fail closed
+  ---
+  duration_ms: 4.132916
+  type: 'test'
+  ...
+# Subtest: task JSON remains read authority after Markdown regeneration
+ok 7 - task JSON remains read authority after Markdown regeneration
+  ---
+  duration_ms: 6.626125
+  type: 'test'
+  ...
+# Subtest: artifact resolve text and JSON expose ownership, canonical authority, profile, and renderer
+ok 8 - artifact resolve text and JSON expose ownership, canonical authority, profile, and renderer
+  ---
+  duration_ms: 334.927417
+  type: 'test'
+  ...
+# Subtest: rendered Evidence Test Plan Gate and Release projections visibly identify canonical ownership
+ok 9 - rendered Evidence Test Plan Gate and Release projections visibly identify canonical ownership
+  ---
+  duration_ms: 251.861291
+  type: 'test'
+  ...
+# Subtest: migration dry-run reports selected profile changes and human-owned overwrite risks without writes
+ok 10 - migration dry-run reports selected profile changes and human-owned overwrite risks without writes
+  ---
+  duration_ms: 35.918583
+  type: 'test'
+  ...
+# Subtest: projection lineage hashes exact routed canonical bytes and migration classifies noop then update
+ok 11 - projection lineage hashes exact routed canonical bytes and migration classifies noop then update
+  ---
+  duration_ms: 90.0265
+  type: 'test'
+  ...
+# Subtest: parse_failure schema_failure: generated projection freshness fails closed for malformed or non-canonical lineage and canonical changes
+ok 12 - parse_failure schema_failure: generated projection freshness fails closed for malformed or non-canonical lineage and canonical changes
+  ---
+  duration_ms: 320.576167
+  type: 'test'
+  ...
+# Subtest: current generated projections are excluded from the evidence user-dirty scope but manual projection edits are not
+ok 13 - current generated projections are excluded from the evidence user-dirty scope but manual projection edits are not
+  ---
+  duration_ms: 1247.459833
+  type: 'test'
+  ...
+# Subtest: named profile lifecycle consumers resolve one PR and Gate family without legacy fallback
+ok 14 - named profile lifecycle consumers resolve one PR and Gate family without legacy fallback
+  ---
+  duration_ms: 8.708917
+  type: 'test'
+  ...
+# Subtest: schema 0.1 generated projections retain legacy byte-copy overwrite compatibility
+ok 15 - schema 0.1 generated projections retain legacy byte-copy overwrite compatibility
+  ---
+  duration_ms: 21.299208
+  type: 'test'
+  ...
+# Subtest: migration classifies stale generated lineage metadata as update, not conflict
+ok 16 - migration classifies stale generated lineage metadata as update, not conflict
+  ---
+  duration_ms: 39.170708
+  type: 'test'
+  ...
+# Subtest: named profiles reject unknown renderer contracts before writing
+ok 17 - named profiles reject unknown renderer contracts before writing
+  ---
+  duration_ms: 4.195292
+  type: 'test'
+  ...
+# Subtest: schema 0.2 validates every profile is complete, including an unselected profile
+ok 18 - schema 0.2 validates every profile is complete, including an unselected profile
+  ---
+  duration_ms: 5.325083
+  type: 'test'
+  ...
+# Subtest: schema 0.2 requires a non-empty canonical for every kind in selected and unselected profiles
+    # Subtest: feature_packet
+    ok 1 - feature_packet
+      ---
+      duration_ms: 3.447083
+      type: 'test'
+      ...
+    # Subtest: governance_packet
+    ok 2 - governance_packet
+      ---
+      duration_ms: 6.287208
+      type: 'test'
+      ...
+    1..2
+ok 19 - schema 0.2 requires a non-empty canonical for every kind in selected and unselected profiles
+  ---
+  duration_ms: 10.212125
+  type: 'test'
+  ...
+# Subtest: schema 0.2 rejects repository-global legacy artifacts instead of silently falling back
+ok 20 - schema 0.2 rejects repository-global legacy artifacts instead of silently falling back
+  ---
+  duration_ms: 2.684875
+  type: 'test'
+  ...
+# Subtest: projectArtifact preflights generated projections before canonical mutation
+ok 21 - projectArtifact preflights generated projections before canonical mutation
+  ---
+  duration_ms: 7.035791
+  type: 'test'
+  ...
+# Subtest: directory canonical migration hashes the lineage source file
+ok 22 - directory canonical migration hashes the lineage source file
+  ---
+  duration_ms: 10.016125
+  type: 'test'
+  ...
+# Subtest: directory projection may advance lineage to another file in the same canonical directory only
+ok 23 - directory projection may advance lineage to another file in the same canonical directory only
+  ---
+  duration_ms: 9.522875
+  type: 'test'
+  ...
+# Subtest: directory migration refuses a lineage source symlink that escapes the repository
+ok 24 - directory migration refuses a lineage source symlink that escapes the repository
+  ---
+  duration_ms: 275.140708
+  type: 'test'
+  ...
+# Subtest: Functional Spec renderer preserves actual statement origin diagram shape in code-point order
+ok 25 - Functional Spec renderer preserves actual statement origin diagram shape in code-point order
+  ---
+  duration_ms: 74.219208
+  type: 'test'
+  ...
+# Subtest: human-owned and curated bytes are never overwritten and schema 0.2 never falls back to legacy metadata
+ok 26 - human-owned and curated bytes are never overwritten and schema 0.2 never falls back to legacy metadata
+  ---
+  duration_ms: 17.625583
+  type: 'test'
+  ...
+# Subtest: review gate and release views expose ownership and lineage to users
+ok 27 - review gate and release views expose ownership and lineage to users
+  ---
+  duration_ms: 101.652
+  type: 'test'
+  ...
+# Subtest: custom nested feature routing expands stable variables
+ok 28 - custom nested feature routing expands stable variables
+  ---
+  duration_ms: 3.015208
+  type: 'test'
+  ...
+# Subtest: tracked routing is restored and resolved in a fresh checkout
+ok 29 - tracked routing is restored and resolved in a fresh checkout
+  ---
+  duration_ms: 1000.91325
+  type: 'test'
+  ...
+# Subtest: fresh checkout resolves and renders complete feature and governance packet lifecycle surfaces
+ok 30 - fresh checkout resolves and renders complete feature and governance packet lifecycle surfaces
+  ---
+  duration_ms: 622.071208
+  type: 'test'
+  ...
+# Subtest: unconfigured fresh checkout preserves legacy artifact defaults
+ok 31 - unconfigured fresh checkout preserves legacy artifact defaults
+  ---
+  duration_ms: 1109.5095
+  type: 'test'
+  ...
+# Subtest: artifact routing guides document configuration, migration, compatibility, and rollback
+ok 32 - artifact routing guides document configuration, migration, compatibility, and rollback
+  ---
+  duration_ms: 7.746875
+  type: 'test'
+  ...
+# Subtest: routing fails closed for collisions, traversal, absolute paths, and unresolved variables
+    # Subtest: path_collision
+    ok 1 - path_collision
+      ---
+      duration_ms: 2.18475
+      type: 'test'
+      ...
+    # Subtest: repository_traversal
+    ok 2 - repository_traversal
+      ---
+      duration_ms: 2.178792
+      type: 'test'
+      ...
+    # Subtest: absolute_path
+    ok 3 - absolute_path
+      ---
+      duration_ms: 1.414875
+      type: 'test'
+      ...
+    # Subtest: unresolved_variable
+    ok 4 - unresolved_variable
+      ---
+      duration_ms: 2.263958
+      type: 'test'
+      ...
+    1..4
+ok 33 - routing fails closed for collisions, traversal, absolute paths, and unresolved variables
+  ---
+  duration_ms: 8.993042
+  type: 'test'
+  ...
+# Subtest: parse_failure schema_failure: malformed routing config fails closed before changing repository files
+ok 34 - parse_failure schema_failure: malformed routing config fails closed before changing repository files
+  ---
+  duration_ms: 3.090375
+  type: 'test'
+  ...
+# Subtest: projections must be explicitly machine generated
+ok 35 - projections must be explicitly machine generated
+  ---
+  duration_ms: 1.319041
+  type: 'test'
+  ...
+# Subtest: migration dry-run reports moves and collisions without editing files
+ok 36 - migration dry-run reports moves and collisions without editing files
+  ---
+  duration_ms: 7.705583
+  type: 'test'
+  ...
+# Subtest: migration dry-run blocks when source and destination contain different content
+ok 37 - migration dry-run blocks when source and destination contain different content
+  ---
+  duration_ms: 10.237833
+  type: 'test'
+  ...
+# Subtest: task plan migration treats a manifest-bound generated legacy mirror as noop but unknown Markdown as conflict
+ok 38 - task plan migration treats a manifest-bound generated legacy mirror as noop but unknown Markdown as conflict
+  ---
+  duration_ms: 95.3915
+  type: 'test'
+  ...
+# Subtest: migration dry-run reports invalid routing as a blocked machine-readable plan
+ok 39 - migration dry-run reports invalid routing as a blocked machine-readable plan
+  ---
+  duration_ms: 39.940208
+  type: 'test'
+  ...
+# Subtest: write containment rejects a configured path through a symlink outside the repository
+ok 40 - write containment rejects a configured path through a symlink outside the repository
+  ---
+  duration_ms: 94.189958
+  type: 'test'
+  ...
+# Subtest: PR and Gate resolvers reject canonical routes through an external symlink
+ok 41 - PR and Gate resolvers reject canonical routes through an external symlink
+  ---
+  duration_ms: 15.607834
+  type: 'test'
+  ...
+# Subtest: architecture and accepted spec read and write the same configured canonical paths
+ok 42 - architecture and accepted spec read and write the same configured canonical paths
+  ---
+  duration_ms: 54.71375
+  type: 'test'
+  ...
+# Subtest: generated projections mirror canonical writes but are never selected as read authority
+ok 43 - generated projections mirror canonical writes but are never selected as read authority
+  ---
+  duration_ms: 58.267209
+  type: 'test'
+  ...
+# Subtest: unsafe projection fails before changing the canonical artifact
+ok 44 - unsafe projection fails before changing the canonical artifact
+  ---
+  duration_ms: 5.431584
+  type: 'test'
+  ...
+# Subtest: accepted spec projection failure leaves canonical and history untouched
+ok 45 - accepted spec projection failure leaves canonical and history untouched
+  ---
+  duration_ms: 6.669375
+  type: 'test'
+  ...
+# Subtest: story task projection failure creates neither task state nor task plan
+ok 46 - story task projection failure creates neither task state nor task plan
+  ---
+  duration_ms: 10.409583
+  type: 'test'
+  ...
+# Subtest: plan task projection failure leaves tasks and manifest routing fields untouched
+ok 47 - plan task projection failure leaves tasks and manifest routing fields untouched
+  ---
+  duration_ms: 500.253875
+  type: 'test'
+  ...
+# Subtest: task plan writes its human-readable canonical to the configured feature packet
+ok 48 - task plan writes its human-readable canonical to the configured feature packet
+  ---
+  duration_ms: 57.739583
+  type: 'test'
+  ...
+# Subtest: task plan JSON writers honor a custom routed canonical instead of the legacy workspace path
+ok 49 - task plan JSON writers honor a custom routed canonical instead of the legacy workspace path
+  ---
+  duration_ms: 24.314333
+  type: 'test'
+  ...
+# Subtest: projections fail closed for artifact kinds without a centralized writer
+ok 50 - projections fail closed for artifact kinds without a centralized writer
+  ---
+  duration_ms: 4.173667
+  type: 'test'
+  ...
+# Subtest: flat PR routes preserve story identity in every lifecycle sibling filename
+ok 51 - flat PR routes preserve story identity in every lifecycle sibling filename
+  ---
+  duration_ms: 7.753292
+  type: 'test'
+  ...
+# Subtest: PR routes fail closed when sibling lifecycle files cannot preserve story identity
+ok 52 - PR routes fail closed when sibling lifecycle files cannot preserve story identity
+  ---
+  duration_ms: 2.494541
+  type: 'test'
+  ...
+# Subtest: PR routes reject feature slugs that can collide across distinct story identities
+ok 53 - PR routes reject feature slugs that can collide across distinct story identities
+  ---
+  duration_ms: 6.434792
+  type: 'test'
+  ...
+# Subtest: directory artifact routes cannot contain another artifact destination
+ok 54 - directory artifact routes cannot contain another artifact destination
+  ---
+  duration_ms: 3.022084
+  type: 'test'
+  ...
+# Subtest: file artifact routes cannot be ancestors of directory artifact routes
+ok 55 - file artifact routes cannot be ancestors of directory artifact routes
+  ---
+  duration_ms: 3.12675
+  type: 'test'
+  ...
+# Subtest: Story Architecture Spec Task Graphify Review Gate PR status migration use one profile
+ok 56 - Story Architecture Spec Task Graphify Review Gate PR status migration use one profile
+  ---
+  duration_ms: 17011.120833
+  type: 'test'
+  ...
+# Subtest: named profile Graphify review and PR producers leave the removed legacy directory absent
+ok 57 - named profile Graphify review and PR producers leave the removed legacy directory absent
+  ---
+  duration_ms: 17689.808958
+  type: 'test'
+  ...
+# Subtest: story derive binds global Graphify import to the configured current Story under schema 0.2
+ok 58 - story derive binds global Graphify import to the configured current Story under schema 0.2
+  ---
+  duration_ms: 27.695125
+  type: 'test'
+  ...
+# Subtest: design-system derive binds Graphify evidence with --story-id
+ok 59 - design-system derive binds Graphify evidence with --story-id
+  ---
+  duration_ms: 192.63925
+  type: 'test'
+  ...
+# Subtest: story-vibepro-execute-merge-command flow exposes explicit merge gating
+ok 60 - story-vibepro-execute-merge-command flow exposes explicit merge gating
+  ---
+  duration_ms: 1.091917
+  type: 'test'
+  ...
+# Subtest: story-vibepro-execute-merge-command flow requires clean checks and recorded merge result
+ok 61 - story-vibepro-execute-merge-command flow requires clean checks and recorded merge result
+  ---
+  duration_ms: 0.067083
+  type: 'test'
+  ...
+# Subtest: story-vibepro-execute-merge-command acceptance markers remain executable for workflow-heavy replay coverage
+ok 62 - story-vibepro-execute-merge-command acceptance markers remain executable for workflow-heavy replay coverage
+  ---
+  duration_ms: 0.0895
+  type: 'test'
+  ...
+# Subtest: scenario:S-001 public guarded Run composes production owners for available-provider commit, review, repair, and final prepare
+ok 63 - scenario:S-001 public guarded Run composes production owners for available-provider commit, review, repair, and final prepare
+  ---
+  duration_ms: 74249.406
+  type: 'test'
+  ...
+# Subtest: scenario:OCR-S-9 schema 0.2 post-merge authority sync follows the selected Story PR route
+ok 64 - scenario:OCR-S-9 schema 0.2 post-merge authority sync follows the selected Story PR route
+  ---
+  duration_ms: 137.267125
+  type: 'test'
+  ...
+# Subtest: scenario:S-002 typed stop and resume matrix executes independently of unit imports
+ok 65 - scenario:S-002 typed stop and resume matrix executes independently of unit imports
+  ---
+  duration_ms: 3.397042
+  type: 'test'
+  ...
+# Subtest: scenario:S-004 public guarded Run CLI persists runtime, decision, and verification stops through pr_ready
+ok 66 - scenario:S-004 public guarded Run CLI persists runtime, decision, and verification stops through pr_ready
+  ---
+  duration_ms: 9950.148958
+  type: 'test'
+  ...
+# Subtest: scenario:S-005 roadmap closure keeps external authority explicit and predecessor evidence canonical
+ok 67 - scenario:S-005 roadmap closure keeps external authority explicit and predecessor evidence canonical
+  ---
+  duration_ms: 1.177042
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 live story lock cannot be stolen solely because its timestamp is old
+ok 68 - DRS-CONTRACT-008 live story lock cannot be stolen solely because its timestamp is old
+  ---
+  duration_ms: 425.702875
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 story lock release preserves a replacement owner token
+ok 69 - DRS-CONTRACT-008 story lock release preserves a replacement owner token
+  ---
+  duration_ms: 11.610667
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 abandoned story lock is quarantined before takeover
+ok 70 - DRS-CONTRACT-008 abandoned story lock is quarantined before takeover
+  ---
+  duration_ms: 173.553208
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 concurrent stale-lock contenders serialize behind one takeover
+ok 71 - DRS-CONTRACT-008 concurrent stale-lock contenders serialize behind one takeover
+  ---
+  duration_ms: 238.765041
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 an abandoned mutation guard fails closed instead of evicting unknown ownership
+ok 72 - DRS-CONTRACT-008 an abandoned mutation guard fails closed instead of evicting unknown ownership
+  ---
+  duration_ms: 130.531583
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 execute merge participates in the shared story transaction lock
+ok 73 - DRS-CONTRACT-008 execute merge participates in the shared story transaction lock
+  ---
+  duration_ms: 212.526333
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-009 linked execution-state writes roll back every authority when commit-last fails
+ok 74 - DRS-CONTRACT-009 linked execution-state writes roll back every authority when commit-last fails
+  ---
+  duration_ms: 39.477917
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-009 real artifact sync and commit-last failure roll back state and source output authorities together
+ok 75 - DRS-CONTRACT-009 real artifact sync and commit-last failure roll back state and source output authorities together
+  ---
+  duration_ms: 478.236209
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-009 linked artifact sync and rollback honor the configured PR route without consuming legacy authority
+ok 76 - DRS-CONTRACT-009 linked artifact sync and rollback honor the configured PR route without consuming legacy authority
+  ---
+  duration_ms: 314.771417
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-009 schema 0.2 linked artifact sync uses catalog routing without resolving a probe Story
+ok 77 - DRS-CONTRACT-009 schema 0.2 linked artifact sync uses catalog routing without resolving a probe Story
+  ---
+  duration_ms: 337.740792
+  type: 'test'
+  ...
+# Subtest: ROLLBACK-OWNERSHIP-002 linked artifact rollback preserves unrelated and replacement files in shared directories
+ok 78 - ROLLBACK-OWNERSHIP-002 linked artifact rollback preserves unrelated and replacement files in shared directories
+  ---
+  duration_ms: 307.304333
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-009 artifact sync failure cannot advance any execution-state authority
+ok 79 - DRS-CONTRACT-009 artifact sync failure cannot advance any execution-state authority
+  ---
+  duration_ms: 108.11375
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 source artifact rollback preserves an interleaved writer and reports ownership conflict
+ok 80 - DRS-CONTRACT-008 source artifact rollback preserves an interleaved writer and reports ownership conflict
+  ---
+  duration_ms: 131.781458
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 rollback never clobbers a concurrent state update made before this transaction writes
+ok 81 - DRS-CONTRACT-008 rollback never clobbers a concurrent state update made before this transaction writes
+  ---
+  duration_ms: 128.792875
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 rollback reports a conflict instead of clobbering a concurrent update after a transaction write
+ok 82 - DRS-CONTRACT-008 rollback reports a conflict instead of clobbering a concurrent update after a transaction write
+  ---
+  duration_ms: 113.280166
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 rollback failure is explicit and preserves the original transaction error as cause
+ok 83 - DRS-CONTRACT-008 rollback failure is explicit and preserves the original transaction error as cause
+  ---
+  duration_ms: 22.382458
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 merge follow-up restoration failure is never swallowed
+ok 84 - DRS-CONTRACT-007 merge follow-up restoration failure is never swallowed
+  ---
+  duration_ms: 1.145791
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 reconciliation caller restores the original follow-up after final state persistence fails
+ok 85 - DRS-CONTRACT-007 reconciliation caller restores the original follow-up after final state persistence fails
+  ---
+  duration_ms: 108.863333
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 reconciliation initial write rejects a concurrent operator state
+ok 86 - DRS-CONTRACT-008 reconciliation initial write rejects a concurrent operator state
+  ---
+  duration_ms: 131.096584
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 reconciliation initial write rejects a concurrent state creation
+ok 87 - DRS-CONTRACT-008 reconciliation initial write rejects a concurrent state creation
+  ---
+  duration_ms: 17.506417
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-009 linked-only observed authority is a valid compare-and-swap baseline
+ok 88 - DRS-CONTRACT-009 linked-only observed authority is a valid compare-and-swap baseline
+  ---
+  duration_ms: 180.545125
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-009 compare-and-swap rejects a concurrent linked-authority update
+ok 89 - DRS-CONTRACT-009 compare-and-swap rejects a concurrent linked-authority update
+  ---
+  duration_ms: 24.900125
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 merge follow-up compare-and-swap refuses to restore over newer operator guidance
+ok 90 - DRS-CONTRACT-008 merge follow-up compare-and-swap refuses to restore over newer operator guidance
+  ---
+  duration_ms: 12.934125
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 local recovery persistence keeps synchronization guidance after canonical follow-up rollback
+ok 91 - DRS-CONTRACT-007 local recovery persistence keeps synchronization guidance after canonical follow-up rollback
+  ---
+  duration_ms: 10.526542
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 local recovery CAS preserves newer operator guidance
+ok 92 - DRS-CONTRACT-008 local recovery CAS preserves newer operator guidance
+  ---
+  duration_ms: 12.085334
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 merge follow-up CAS protects canonical and manifest authority surfaces
+ok 93 - DRS-CONTRACT-008 merge follow-up CAS protects canonical and manifest authority surfaces
+  ---
+  duration_ms: 365.360667
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 merge follow-up rollback restores only proven transaction-owned files
+ok 94 - DRS-CONTRACT-008 merge follow-up rollback restores only proven transaction-owned files
+  ---
+  duration_ms: 301.171
+  type: 'test'
+  ...
+# Subtest: ROLLBACK-OWNERSHIP-002 merge follow-up preserves a replacement writer after owned fingerprint capture
+ok 95 - ROLLBACK-OWNERSHIP-002 merge follow-up preserves a replacement writer after owned fingerprint capture
+  ---
+  duration_ms: 446.722
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 JSON CLI diagnostics preserve the original failure and rollback damage separately
+ok 96 - DRS-CONTRACT-007 JSON CLI diagnostics preserve the original failure and rollback damage separately
+  ---
+  duration_ms: 0.188666
+  type: 'test'
+  ...
+# Subtest: execution summaries preserve delivery reconciliation handoff state
+ok 97 - execution summaries preserve delivery reconciliation handoff state
+  ---
+  duration_ms: 0.201292
+  type: 'test'
+  ...
+# Subtest: execution DAG preserves external delivery without inventing historical merge readiness
+ok 98 - execution DAG preserves external delivery without inventing historical merge readiness
+  ---
+  duration_ms: 0.3035
+  type: 'test'
+  ...
+# Subtest: execution DAG preserves delivered fact when canonical persistence fails
+ok 99 - execution DAG preserves delivered fact when canonical persistence fails
+  ---
+  duration_ms: 0.06725
+  type: 'test'
+  ...
+# Subtest: DRS-S-2 execution DAG does not revive explicitly unverified delivery through legacy merge fields
+ok 100 - DRS-S-2 execution DAG does not revive explicitly unverified delivery through legacy merge fields
+  ---
+  duration_ms: 0.056792
+  type: 'test'
+  ...
+# Subtest: DRS-S-5 CLI merge-state update cannot overwrite canonical persistence failure with merged
+ok 101 - DRS-S-5 CLI merge-state update cannot overwrite canonical persistence failure with merged
+  ---
+  duration_ms: 1151.864416
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-008 merge-state update rejects a stale successful result after concurrent state advance
+ok 102 - DRS-CONTRACT-008 merge-state update rejects a stale successful result after concurrent state advance
+  ---
+  duration_ms: 906.728708
+  type: 'test'
+  ...
+# Subtest: DRS-S-5 final canonical persistence failure remains in the canonical persistence phase
+ok 103 - DRS-S-5 final canonical persistence failure remains in the canonical persistence phase
+  ---
+  duration_ms: 996.849
+  type: 'test'
+  ...
+# Subtest: execution status keeps canonical persistence failure actionable after delivery
+ok 104 - execution status keeps canonical persistence failure actionable after delivery
+  ---
+  duration_ms: 637.952625
+  type: 'test'
+  ...
+# Subtest: DRS-S-3 external delivery reconstruction does not invent historical merge readiness
+ok 105 - DRS-S-3 external delivery reconstruction does not invent historical merge readiness
+  ---
+  duration_ms: 1048.39775
+  type: 'test'
+  ...
+# Subtest: DRS-S-2 execution status does not revive production-shape unverified delivery through legacy merge fields
+ok 106 - DRS-S-2 execution status does not revive production-shape unverified delivery through legacy merge fields
+  ---
+  duration_ms: 1087.103042
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 current-head legacy local merge remains a compatibility fallback
+ok 107 - DRS-CONTRACT-007 current-head legacy local merge remains a compatibility fallback
+  ---
+  duration_ms: 980.427167
+  type: 'test'
+  ...
+# Subtest: DRS-S-5 canonical-only delivery without trusted PR identity fails closed
+ok 108 - DRS-S-5 canonical-only delivery without trusted PR identity fails closed
+  ---
+  duration_ms: 980.871667
+  type: 'test'
+  ...
+# Subtest: DRS-S-5 canonical delivery reconstructs state only when current PR identity matches
+ok 109 - DRS-S-5 canonical delivery reconstructs state only when current PR identity matches
+  ---
+  duration_ms: 857.64
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 delivered state without reconciliation fails closed
+ok 110 - DRS-CONTRACT-007 delivered state without reconciliation fails closed
+  ---
+  duration_ms: 1098.142709
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 execution status preserves the authoritative synchronization recovery command
+ok 111 - DRS-CONTRACT-007 execution status preserves the authoritative synchronization recovery command
+  ---
+  duration_ms: 1293.053042
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 synchronization failure without recovery command suppresses merge retry
+ok 112 - DRS-CONTRACT-007 synchronization failure without recovery command suppresses merge retry
+  ---
+  duration_ms: 1047.509708
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 current-head local delivery outranks stale canonical conflict
+ok 113 - DRS-CONTRACT-007 current-head local delivery outranks stale canonical conflict
+  ---
+  duration_ms: 1339.544667
+  type: 'test'
+  ...
+# Subtest: DRS-S-5 current provider failure cannot erase canonical observed delivery
+ok 114 - DRS-S-5 current provider failure cannot erase canonical observed delivery
+  ---
+  duration_ms: 1009.266083
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 canonical delivery fallback rejects a different PR or base identity
+ok 115 - DRS-CONTRACT-007 canonical delivery fallback rejects a different PR or base identity
+  ---
+  duration_ms: 746.396917
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-007 nested base identity preserves branch paths and normalizes explicit origin refs
+ok 116 - DRS-CONTRACT-007 nested base identity preserves branch paths and normalizes explicit origin refs
+  ---
+  duration_ms: 780.115875
+  type: 'test'
+  ...
+# Subtest: DRS-CONTRACT-003 execution status prefers same-head pr-prepare over standalone ready Gate DAG
+ok 117 - DRS-CONTRACT-003 execution status prefers same-head pr-prepare over standalone ready Gate DAG
+  ---
+  duration_ms: 1101.393666
+  type: 'test'
+  ...
+# Subtest: CAA-VERIFY-001 current created PR fails closed when its same-head pr-prepare authority is unavailable
+ok 118 - CAA-VERIFY-001 current created PR fails closed when its same-head pr-prepare authority is unavailable
+  ---
+  duration_ms: 608.720833
+  type: 'test'
+  ...
+1..118
+# tests 124
+# suites 0
+# pass 124
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 85922.371417

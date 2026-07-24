@@ -138,6 +138,68 @@
       "activation_precision_status": "active",
       "recorded_at": "2026-07-24T06:10:53.579Z",
       "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "data_state",
+      "axis": "data_state",
+      "story_id": "story-vibepro-one-command-pr-ready-closure",
+      "decision_id": "decision-1784873419248-2b4d8a16",
+      "source": "gate:judgment_axis_data_state",
+      "reason": "migration_plan: persisted Run artifacts remain additive/versioned and legacy state is normalized on read without destructive migration. rollback_plan: reverting this focused PR leaves prior readers and prior run artifacts valid because new fields and actions are additive and fail closed. idempotency_test: focused and public CLI E2E cover resume, retry, no-progress, repair convergence, duplicate-safe action progression, and current-HEAD evidence rebind. query_semantics_test: status/watch/resume select persisted runs deterministically and replay the canonical state through the run-session owner; targeted 290/290, integration 64/64, and public CLI E2E 4/4 pass on HEAD 3ba30980. No database schema, cache-key, or user-data migration is introduced.",
+      "artifact": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "activation_candidates": [],
+      "activation_precision_status": "no_signal",
+      "recorded_at": "2026-07-24T06:42:03.380Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-one-command-pr-ready-closure",
+      "decision_id": "decision-1784832849129-52dad4d9",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The Story changes one public command contract, one persisted Run state machine, and its focused tests/docs; splitting would sever the current-HEAD repair and review lifecycle proof. Runtime connectors and independent review orchestration remain prior merged dependencies and are not reimplemented.",
+      "artifact": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T06:42:03.380Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-one-command-pr-ready-closure",
+      "decision_id": "decision-1784832849129-52dad4d9",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The Story changes one public command contract, one persisted Run state machine, and its focused tests/docs; splitting would sever the current-HEAD repair and review lifecycle proof. Runtime connectors and independent review orchestration remain prior merged dependencies and are not reimplemented.",
+      "artifact": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "activation_candidates": [
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T07:23:18.803Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:988|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-one-command-pr-ready-closure",
+      "decision_id": "decision-1784832849129-52dad4d9",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The Story changes one public command contract, one persisted Run state machine, and its focused tests/docs; splitting would sever the current-HEAD repair and review lifecycle proof. Runtime connectors and independent review orchestration remain prior merged dependencies and are not reimplemented.",
+      "artifact": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:988",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T15:03:30.672Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
     }
   ]
 }
