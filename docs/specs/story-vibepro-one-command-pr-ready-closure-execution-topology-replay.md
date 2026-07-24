@@ -1,6 +1,6 @@
 ---
 story_id: story-vibepro-one-command-pr-ready-closure
-status: active
+status: completed
 artifact_kind: execution_topology_replay_plan
 gate: gate:judgment_axis_execution_topology
 ---

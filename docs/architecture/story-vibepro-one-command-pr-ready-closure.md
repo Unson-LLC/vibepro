@@ -1,6 +1,6 @@
 ---
 story_id: story-vibepro-one-command-pr-ready-closure
-status: active
+status: completed
 parent_design:
   - vibepro-autonomous-implementation-closure-roadmap
 ---
