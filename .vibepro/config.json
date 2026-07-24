@@ -290,6 +290,10 @@
       "require_known_attribution": false
     },
     "delivery_efficiency_by_story": {
+      "story-vibepro-delivery-reconciliation-state": {
+        "max_subagent_count": 7,
+        "amendment_reason": "Four bounded architecture review lifecycles were required to close three concrete current-HEAD findings. The Story also requires three distinct PR-final gate roles, so the default cap of six cannot represent the mandatory seven-role lifecycle. Raise only this Story to the exact minimum seven; reuse one already-running lightweight reviewer for the three final roles, permit no replacement spawn, and do not amend the cap again."
+      },
       "story-vibepro-surface-aware-agent-review-freshness": {
         "max_subagent_count": 22,
         "amendment_reason": "Historical repair and two CI-discovered compatibility assertions exhausted the Story-local cap before canonical current-HEAD closure. The user explicitly instructed continuation twice on 2026-07-24. Permit only four bounded lifecycles with the existing independent reviewers for the budget-changing architecture preflight, frozen runtime final review, gate evidence, and adjudication; do not spawn replacement agents or amend the budget again."
