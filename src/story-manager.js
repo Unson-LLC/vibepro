@@ -10,7 +10,7 @@ import { generateStoryCatalog, renderStoryCatalogMap } from './story-catalog-gen
 import { bindStoryTraceability } from './traceability.js';
 import { renderStoryReportHtml } from './story-html.js';
 import { getJourneyStatus } from './journey-map.js';
-import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
+import { getWorkspaceDir, initWorkspace, isArchived, normalizeActiveStories, readManifest, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
 import { readStoryTasks } from './story-task-generator.js';
 import { resolveArtifactRoute, resolveArtifactRoutes, resolveGraphifyArtifactFile } from './artifact-routing.js';
 
@@ -2205,26 +2205,6 @@ async function readRunEvidence(repoRoot, run) {
   return JSON.parse(await readFile(path.resolve(repoRoot, evidencePath), 'utf8'));
 }
 
-export function normalizeActiveStories(stories) {
-  const sourceStories = Array.isArray(stories) && stories.length > 0 ? stories : DEFAULT_BRAINBASE_STORIES;
-  const activeStories = sourceStories.filter((story) => !isArchived(story));
-  if (activeStories.length === 0) {
-    throw new Error('At least one active story is required');
-  }
-  return activeStories.map((story) => ({
-    story_id: story.story_id,
-    title: story.title,
-    ssot: story.ssot ?? 'NocoDB',
-    status: story.status ?? 'active',
-    horizon: story.horizon ?? null,
-    view: typeof story.view === 'string' ? story.view : null,
-    period: typeof story.period === 'string' ? story.period : null,
-    started_at: story.started_at ?? null,
-    due_at: story.due_at ?? null,
-    category: story.category ?? null
-  }));
-}
-
 async function readConfig(repoRoot) {
   await initWorkspace(repoRoot);
   return JSON.parse(await readFile(getConfigPath(repoRoot), 'utf8'));
@@ -2353,8 +2333,4 @@ function getOption(args, name) {
   const index = args.indexOf(name);
   if (index === -1) return null;
   return args[index + 1] ?? null;
-}
-
-function isArchived(story) {
-  return story.status === 'archived' || story.status === 'アーカイブ';
 }

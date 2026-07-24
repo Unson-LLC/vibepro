@@ -1,8 +1,7 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { normalizeActiveStories } from './story-manager.js';
-import { getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import { getWorkspaceDir, initWorkspace, normalizeActiveStories, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 
 const SCHEMA_VERSION = '0.1.0';
