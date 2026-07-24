@@ -1538,6 +1538,11 @@ test('GDL-S-9 outcome refresh reads merge authority from the configured PR artif
   });
 
   assert.equal(refreshed.status, 'already_present');
+  const refreshedLedger = JSON.parse(await readFile(path.join(prDir, 'decision-outcome-ledger.json'), 'utf8'));
+  assert.equal(
+    refreshedLedger.traces[0].delivery.source_ref,
+    `.vibepro/routed-pr/${STORY_ID}-pr-merge.json`
+  );
   assert.equal(refreshed.story_id, STORY_ID);
 });
 

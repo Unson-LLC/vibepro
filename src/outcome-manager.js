@@ -449,7 +449,7 @@ export async function tryBindDecisionOutcomeDelivery(repoRoot, storyId, delivery
   }
 }
 
-export function buildDecisionOutcomeDelivery(storyId, merge) {
+export function buildDecisionOutcomeDelivery(storyId, merge, sourceRef = null) {
   const safeStoryId = requireOutcomeStoryId(storyId, 'decision outcome delivery requires story id');
   const prNumber = merge.pr.number ?? parsePullRequestNumber(merge.pr.url);
   return {
@@ -465,7 +465,7 @@ export function buildDecisionOutcomeDelivery(storyId, merge) {
       status: merge.status,
       ...(merge.merged_at == null ? {} : { merged_at: merge.merged_at })
     },
-    source_ref: `.vibepro/pr/${safeStoryId}/pr-merge.json`
+    source_ref: sourceRef ?? merge.outcome_source_ref ?? `.vibepro/pr/${safeStoryId}/pr-merge.json`
   };
 }
 
@@ -608,7 +608,9 @@ function normalizeOutcomeSubjectKey(value) {
 async function assertMerged(root, storyId, options = {}) {
   let merge;
   try {
-    merge = JSON.parse(await readFile(await resolvePrArtifactFile(root, storyId, 'pr-merge.json'), 'utf8'));
+    const mergeArtifactPath = await resolvePrArtifactFile(root, storyId, 'pr-merge.json');
+    merge = JSON.parse(await readFile(mergeArtifactPath, 'utf8'));
+    merge.outcome_source_ref = path.relative(root, mergeArtifactPath).split(path.sep).join('/');
   } catch {
     throw new OutcomeCommandError('outcome_not_merged', 'outcome operations require a verified merge artifact');
   }

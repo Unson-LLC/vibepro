@@ -1098,7 +1098,8 @@ function normalizeDelivery(delivery, storyId, expectedDelivery = null) {
         ...(resolvedMergeSha == null ? {} : { sha: resolvedMergeSha }),
         status: delivery.merge.status ?? null,
         merged_at: delivery.merge.merged_at ?? null
-      } : null
+      } : null,
+      ...(delivery.source_ref == null ? {} : { source_ref: delivery.source_ref })
     },
     source_errors: []
   };

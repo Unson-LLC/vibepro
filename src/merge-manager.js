@@ -581,7 +581,11 @@ async function executeMergeLocked(root, options = {}) {
   merge.decision_outcome_delivery = await tryBindDecisionOutcomeDelivery(
     root,
     storyId,
-    buildDecisionOutcomeDelivery(storyId, merge)
+    buildDecisionOutcomeDelivery(
+      storyId,
+      merge,
+      path.relative(root, await resolvePrArtifactFile(root, storyId, 'pr-merge.json')).split(path.sep).join('/')
+    )
   );
   if (merge.decision_outcome_delivery.status === 'unavailable') {
     merge.warnings.push(
