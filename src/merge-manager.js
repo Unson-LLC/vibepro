@@ -6,6 +6,10 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { promoteCanonicalAuditArtifacts } from './canonical-audit.js';
+import {
+  collectCanonicalDirectoryFiles,
+  persistCanonicalArtifactsToBase
+} from './canonical-persistence.js';
 import { parseNumstat } from './evidence-cost-budget.js';
 import {
   CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH,
@@ -653,8 +657,7 @@ async function executeMergeLocked(root, options = {}) {
   }
   if (canonicalPersistence.summary.status === 'failed') {
     merge.warnings.push(`Canonical audit persistence failed: ${canonicalPersistence.summary.reason}`);
-    merge.status = 'failed';
-    merge.stop_reason = 'canonical_audit_persistence_failed';
+    merge.stop_reason = 'delivery_reconciliation_required';
   }
   artifacts = {
     ...artifacts,
@@ -676,8 +679,7 @@ async function executeMergeLocked(root, options = {}) {
     merge.canonical_audit.final_persistence = finalCanonicalPersistence.summary;
     if (finalCanonicalPersistence.summary.status === 'failed') {
       merge.warnings.push(`Canonical audit final artifact persistence failed: ${finalCanonicalPersistence.summary.reason}`);
-      merge.status = 'failed';
-      merge.stop_reason = 'canonical_audit_final_persistence_failed';
+      merge.stop_reason = 'delivery_reconciliation_required';
     }
   }
   merge.canonical_audit.bundle = toWorkspaceRelative(root, canonicalAudit.bundle_path);
@@ -1830,153 +1832,52 @@ async function writeCanonicalAuditManifest(repoRoot, storyId, canonicalAudit, me
 
 async function persistCanonicalAuditToBase(repoRoot, { storyId, canonicalAudit, baseBranch, merge, options = {}, roiLedgerPromotion = null } = {}) {
   const relativeDir = toWorkspaceRelative(repoRoot, canonicalAudit.canonical_dir);
-  const roiPromotionResult = roiLedgerPromotion
-    ? {
-        status: 'not_run',
-        reason: 'roi_promotion_not_reached',
-        promoted_count: 0,
-        duplicate_count: 0,
-        central_ledger_path: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH
+  const allowedRoots = [relativeDir];
+  if (roiLedgerPromotion) allowedRoots.push(CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH);
+  const persistence = await persistCanonicalArtifactsToBase({
+    repoRoot,
+    storyId,
+    relativeDir,
+    allowedRoots,
+    baseBranch,
+    mergeCommitSha: merge?.merge_commit_sha,
+    options,
+    prepare: async ({ worktreeRoot }) => {
+      const files = await collectCanonicalDirectoryFiles(canonicalAudit.canonical_dir, relativeDir);
+      let promotion = null;
+      if (roiLedgerPromotion) {
+        const centralPath = path.join(worktreeRoot, CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH);
+        const centralText = await readFile(centralPath, 'utf8').catch((error) => {
+          if (error.code === 'ENOENT') return null;
+          throw error;
+        });
+        promotion = computeCentralLedgerPromotion({
+          localEntries: roiLedgerPromotion.localEntries,
+          centralText
+        });
+        if (promotion.status === 'promoted' && promotion.serialized !== null) {
+          files.set(CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH, promotion.serialized);
+        }
       }
-    : null;
-  const tempWorktree = path.join(os.tmpdir(), `vibepro-canonical-audit-${storyId}-${Date.now()}`);
-  const commands = [];
-  const results = [];
-  const summary = {
-    schema_version: '0.1.0',
-    status: 'not_run',
-    base: baseBranch,
-    directory: relativeDir,
-    worktree_path: tempWorktree,
-    base_head_sha: null,
-    merge_commit_on_base: null,
-    commit_sha: null,
-    pushed: false,
-    reason: null,
-    cleanup: {
-      attempted: false,
-      removed: false,
-      exit_code: null
-    },
-    commands,
-    results
+      return { files, metadata: { roi_ledger_promotion: promotion } };
+    }
+  });
+  return {
+    summary: persistence.summary,
+    commands: persistence.summary.commands,
+    results: persistence.summary.results,
+    roi_ledger_promotion: persistence.prepared?.roi_ledger_promotion ?? (
+      roiLedgerPromotion
+        ? {
+            status: 'not_run',
+            reason: persistence.summary.reason ?? 'roi_promotion_not_reached',
+            promoted_count: 0,
+            duplicate_count: 0,
+            central_ledger_path: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH
+          }
+        : null
+    )
   };
-
-  if (!merge?.merge_commit_sha) {
-    summary.status = 'failed';
-    summary.reason = 'canonical_audit_merge_commit_missing';
-    return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-  }
-
-  const run = async (command, execution = {}) => {
-    commands.push(formatCommand(command));
-    const result = await runCommand(repoRoot, command, options, execution);
-    results.push(result);
-    return result;
-  };
-
-  const refreshBase = await run(['git', ['fetch', 'origin', baseBranch]]);
-  if (refreshBase.exit_code !== 0) {
-    summary.status = 'failed';
-    summary.reason = 'canonical_audit_post_merge_base_fetch_failed';
-    return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-  }
-  summary.base_head_sha = await gitOptional(repoRoot, ['rev-parse', `origin/${baseBranch}`]);
-  summary.merge_commit_on_base = await gitIsAncestor(repoRoot, merge.merge_commit_sha, `origin/${baseBranch}`);
-  if (!summary.merge_commit_on_base) {
-    summary.status = 'failed';
-    summary.reason = 'canonical_audit_post_merge_base_missing_merge_commit';
-    return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-  }
-
-  const addWorktree = await run(['git', ['worktree', 'add', '--detach', tempWorktree, `origin/${baseBranch}`]]);
-  if (addWorktree.exit_code !== 0) {
-    summary.status = 'failed';
-    summary.reason = 'canonical_audit_worktree_add_failed';
-    return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-  }
-
-  try {
-    const destination = path.join(tempWorktree, relativeDir);
-    await mkdir(path.dirname(destination), { recursive: true });
-    await cp(canonicalAudit.canonical_dir, destination, { recursive: true });
-
-    const stagePaths = [relativeDir];
-    if (roiLedgerPromotion) {
-      const centralPath = path.join(tempWorktree, CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH);
-      const centralText = await readFile(centralPath, 'utf8').catch((error) => {
-        if (error.code === 'ENOENT') return null;
-        throw error;
-      });
-      const promotion = computeCentralLedgerPromotion({
-        localEntries: roiLedgerPromotion.localEntries,
-        centralText
-      });
-      roiPromotionResult.status = promotion.status;
-      roiPromotionResult.reason = promotion.reason;
-      roiPromotionResult.promoted_count = promotion.promoted_count;
-      roiPromotionResult.duplicate_count = promotion.duplicate_count;
-      roiPromotionResult.central_ledger_path = promotion.central_ledger_path;
-      if (promotion.status === 'promoted' && promotion.serialized !== null) {
-        await mkdir(path.dirname(centralPath), { recursive: true });
-        await writeFile(centralPath, promotion.serialized);
-        stagePaths.push(CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH);
-      }
-      // status === 'failed' never rewrites the central ledger (RML-CONTRACT-004);
-      // status === 'no_entries' has nothing to stage.
-    }
-
-    const addResult = await run(['git', ['add', '--', ...stagePaths]], { cwd: tempWorktree });
-    if (addResult.exit_code !== 0) {
-      summary.status = 'failed';
-      summary.reason = 'canonical_audit_git_add_failed';
-      return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-    }
-
-    const diffResult = await run(['git', ['diff', '--cached', '--quiet', '--', ...stagePaths]], { cwd: tempWorktree });
-    if (diffResult.exit_code === 0) {
-      summary.status = 'already_present';
-      summary.pushed = false;
-      summary.reason = 'canonical_audit_already_present_on_base';
-      return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-    }
-    if (diffResult.exit_code !== 1) {
-      summary.status = 'failed';
-      summary.reason = 'canonical_audit_diff_check_failed';
-      return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-    }
-
-    const commitResult = await run([
-      'git',
-      ['commit', '-m', `docs: persist VibePro audit artifacts for ${storyId}`]
-    ], { cwd: tempWorktree });
-    if (commitResult.exit_code !== 0) {
-      summary.status = 'failed';
-      summary.reason = 'canonical_audit_commit_failed';
-      return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-    }
-    summary.commit_sha = await gitOptional(tempWorktree, ['rev-parse', 'HEAD']);
-
-    const pushResult = await run(['git', ['push', 'origin', `HEAD:${baseBranch}`]], { cwd: tempWorktree });
-    if (pushResult.exit_code !== 0) {
-      summary.status = 'failed';
-      summary.reason = 'canonical_audit_push_failed';
-      return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-    }
-    summary.status = 'pushed';
-    summary.pushed = true;
-    summary.reason = `canonical audit bundle persisted after merge ${merge.merge_commit_sha ?? 'unknown'}`;
-    return { summary, commands, results, roi_ledger_promotion: roiPromotionResult };
-  } finally {
-    summary.cleanup.attempted = true;
-    const removeResult = await run(['git', ['worktree', 'remove', '--force', tempWorktree]]);
-    summary.cleanup.exit_code = removeResult.exit_code;
-    summary.cleanup.removed = removeResult.exit_code === 0;
-    if (removeResult.exit_code !== 0) {
-      summary.reason = `${summary.reason ?? 'canonical_audit_persistence'}; cleanup_failed`;
-      if (summary.status !== 'failed') summary.status = 'failed';
-    }
-  }
 }
 
 const PR_VIEW_FIELDS = [

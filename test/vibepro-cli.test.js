@@ -15143,9 +15143,9 @@ exit 0
     env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
   });
 
-  assert.equal(result.exitCode, 1);
-  assert.equal(result.result.merge.status, 'failed');
-  assert.equal(result.result.merge.stop_reason, 'canonical_audit_persistence_failed');
+  assert.equal(result.exitCode, 2);
+  assert.equal(result.result.merge.status, 'merged');
+  assert.equal(result.result.merge.stop_reason, 'delivery_reconciliation_required');
   assert.equal(result.result.merge.delivery.status, 'merged');
   assert.equal(result.result.merge.merge_commit_sha, headSha);
   assert.equal(result.result.merge.canonical_audit.persistence.status, 'failed');
@@ -15154,8 +15154,8 @@ exit 0
   assert.equal(result.result.merge.decision_outcome_binding.persistence_status, 'failed');
   assert.equal(result.result.merge.decision_outcome_binding.reason, 'canonical_audit_push_failed');
   const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
-  assert.equal(artifact.status, 'failed');
-  assert.equal(artifact.stop_reason, 'canonical_audit_persistence_failed');
+  assert.equal(artifact.status, 'merged');
+  assert.equal(artifact.stop_reason, 'delivery_reconciliation_required');
   assert.equal(artifact.delivery.status, 'merged');
   assert.equal(artifact.decision_outcome_binding.status, 'failed');
   assert.equal((await git(remote, ['rev-parse', 'main'])).stdout.trim(), headSha);
