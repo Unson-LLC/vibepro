@@ -1,0 +1,93 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-07-24T13:12:00.000Z",
+  "mode": "implementation_handoff",
+  "story": {
+    "story_id": "story-vibepro-one-command-pr-ready-closure",
+    "title": "1コマンド自律実装を実Runtime E2Eで閉じる",
+    "ssot": "local",
+    "status": "completed",
+    "horizon": "now",
+    "view": "dev",
+    "period": "2026-07",
+    "started_at": "2026-07-21",
+    "due_at": null,
+    "category": "quality"
+  },
+  "source_run": {
+    "run_id": "dispatch-76d744478e3f04bc",
+    "gate_status": "stale_evidence",
+    "head_sha": "a9109350819af99df22448d6ed8bd75adf611e36"
+  },
+  "task": {
+    "id": "story-vibepro-one-command-pr-ready-closure:prepare-artifacts",
+    "title": "Prepare missing planning artifacts for current-head artifact consistency recovery",
+    "priority": "medium",
+    "finding_id": "gate:artifact_consistency",
+    "source_type": "runtime_dispatch",
+    "source_id": "dispatch-76d744478e3f04bc"
+  },
+  "group": null,
+  "execution": {
+    "vibepro_mutates_repository": false,
+    "recipient_may_mutate_repository": true,
+    "allowed_change_surface": "planning_artifacts_only",
+    "note": "This handoff is complete when the Task projection is committed; it does not replace required fresh review evidence."
+  },
+  "references": {
+    "briefing_json": ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/briefing.json",
+    "briefing_markdown": ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/briefing.md",
+    "plan_json": ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/plan.json",
+    "plan_markdown": ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/plan.md",
+    "execution_json": ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/execution.json",
+    "execution_markdown": ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts/execution.md"
+  },
+  "plan_summary": {
+    "recommended_strategy": {
+      "id": "planning-artifact-recovery",
+      "reason": "Add only the missing runtime-dispatch Task projection."
+    },
+    "target_file_count": 10,
+    "verification_command_count": 3,
+    "acceptance_criteria_count": 4
+  },
+  "target_routes": [],
+  "target_files": [
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/tasks.json",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/tasks.md",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts"
+  ],
+  "implementation_instructions": [
+    "Read the Story, Architecture, and Spec sources.",
+    "Keep the change limited to VibePro planning artifacts.",
+    "Validate JSON and rerun pr prepare summary.",
+    "Commit one focused artifact-only change."
+  ],
+  "prohibited_actions": [
+    "Do not create or merge a PR.",
+    "Do not waive gates.",
+    "Do not deploy, publish, or perform external side effects.",
+    "Do not modify product code.",
+    "Do not record stale review replacements from this task."
+  ],
+  "verification_commands": [
+    {
+      "command": "node -e \"JSON.parse(require('fs').readFileSync('.vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/tasks.json','utf8'))\"",
+      "reason": "Validate task index JSON"
+    },
+    {
+      "command": "find .vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/story-vibepro-one-command-pr-ready-closure:prepare-artifacts -type f | sort",
+      "reason": "Validate task package files exist"
+    },
+    {
+      "command": "node bin/vibepro.js pr prepare . --story-id story-vibepro-one-command-pr-ready-closure --summary-json",
+      "reason": "Refresh Gate summary after artifact creation"
+    }
+  ],
+  "completion_report_template": [
+    "changed_files",
+    "verification_commands",
+    "current_head",
+    "residual_gate_status"
+  ]
+}

@@ -120,15 +120,31 @@ re-imports CI, and then invokes explicit `vibepro execute merge`. `pr-merge.json
 the canonical audit, and the merge SHA provide post-merge confirmation. This
 record consumes pre-PR acceptance; it is not an acceptance prerequisite.
 
+### Schema 0.2.0 reconciliation ownership
+
+Post-merge synchronization runs inside the existing execution-state owner. It
+must resolve only the selected catalog Story. PR directory ownership is derived
+from the selected route's canonical template: a parent containing
+`{story_id}` or `{feature_slug}` is story-scoped; a flat parent is synchronized
+as the explicit lifecycle file set. The synchronizer must not fabricate and
+resolve a second Story merely to compare paths, because schema 0.2.0 requires
+every resolved Story to have catalog metadata and a matching Story mirror.
+
+This refinement adds no CLI dependency and does not change artifact-routing
+selection, copy/rollback ownership, or merge authority. Rollback is the prior
+flat-file synchronization behavior; compatibility is proven for legacy flat
+routes and schema 0.2.0 named-profile directories.
+
 The canonical planned cases and their public surfaces are fixed in
 `docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md`. Existing
 Autonomous Action DAG and connector tests remain regression inputs; they are not
 treated as proof of the new default or production closure.
 
 Target architecture conformance is compared to the fetched `origin/main` baseline
-`db8f0ef3f7d3cfcb2dc0d31504e40e01025293dd`: 86 violations (65 undeclared
-dependencies, 9 budget violations, 12 orphans). Current HEAD also has 86
-violations (66 undeclared dependencies, 9 budget violations, 11 orphans). New
+`6222d118315e7001abcbdc786aca932e48c58232`: 85 violations (65 undeclared
+dependencies, 9 budget violations, 11 orphans). Reviewed HEAD
+`ce89e4589ba8c96a418249cd2f9aa673acea646b` has the same 85 violations with the
+same 65/9/11 breakdown. New
 code and the previously orphaned production connector belong to `run-session`,
 add no new run-session-to-CLI reverse dependency, and do not worsen the latest
 main baseline total.

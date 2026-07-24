@@ -7,6 +7,7 @@
 // AC-6 OCR-S-6: production connector implementation runs in the managed worktree.
 // AC-7 OCR-S-7: independent review uses a separate read-only lifecycle.
 // AC-8 OCR-S-8: pre-PR closure proves all merged predecessors while the final Story and roadmap remain active.
+// AC-9 OCR-S-9: schema 0.2 delivery reconciliation uses the selected Story route without resolving a probe Story.
 // S-001: the production-shaped path commits in a managed worktree and reviews from a distinct read-only session.
 // S-003: needs_changes preserves findings through repair and re-review on the repaired HEAD.
 // S-005: roadmap closure reconciles merged predecessor evidence while keeping merge and waiver explicit.
@@ -22,12 +23,29 @@ import test from "node:test";
 import { promisify } from "node:util";
 import { createAgentRuntimeCoordinator } from "../../src/agent-runtime-adapter.js";
 import { runCli } from "../../src/cli.js";
-import { startExecution } from "../../src/execution-state.js";
+import { __testing__ as executionStateTesting, startExecution } from "../../src/execution-state.js";
 import { createOneCommandPrReadyActionOwners } from "../../src/one-command-pr-ready-closure.js";
 import { buildSafeActionPlan } from "../../src/safe-action-orchestrator.js";
 
 const execFileAsync = promisify(execFile);
 const normalizedMacPath = (value) => value.replace(/^\/private(?=\/var\/)/, "");
+const schemaV2ExecutionProfile = (prCanonical) => ({
+  artifacts: Object.fromEntries(Object.entries({
+    story: "docs/management/stories/active/{story_id}.md",
+    architecture: "docs/architecture/{story_id}.md",
+    accepted_spec: ".vibepro/spec/{story_id}/spec.json",
+    task_plan: ".vibepro/stories/{story_id}/tasks/tasks.json",
+    graphify: ".vibepro/graphify",
+    evidence: ".vibepro/evidence/{story_id}",
+    test_plan: ".vibepro/test-plans/{story_id}.json",
+    review: ".vibepro/reviews/{story_id}",
+    gate: ".vibepro/pr/{story_id}/gate-dag.json",
+    pr: prCanonical
+  }).map(([kind, canonical]) => [
+    kind,
+    { canonical, ownership: kind === "story" || kind === "architecture" ? "curated" : "generated" }
+  ]))
+});
 
 test("scenario:S-001 public guarded Run composes production owners for available-provider commit, review, repair, and final prepare", async (t) => {
   const root = await mkdtemp(path.join(os.tmpdir(), "vibepro-ocr-e2e-"));
@@ -348,6 +366,75 @@ test("scenario:S-001 public guarded Run composes production owners for available
   assert.equal(finalPrepare.status, "completed");
   assert.equal(persistedPrepare.git.head_sha, repairedHead);
   assert.equal(persistedPrepare.preparation.gate_status.ready_for_pr_create, true);
+});
+
+test("scenario:OCR-S-9 schema 0.2 post-merge authority sync follows the selected Story PR route", async (t) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "vibepro-ocr-schema-v2-e2e-"));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const managed = path.join(root, "managed");
+  const source = path.join(root, "source");
+  const storyId = "story-vibepro-one-command-pr-ready-closure-schema-v2";
+  const featureSlug = "one-command-pr-ready-closure-schema-v2";
+  const config = {
+    brainbase: {
+      stories: [{
+        story_id: storyId,
+        artifact_profile: "feature_packet",
+        feature_slug: featureSlug
+      }]
+    },
+    artifact_routing: {
+      schema_version: "0.2.0",
+      artifacts: {},
+      profiles: {
+        feature_packet: schemaV2ExecutionProfile(".vibepro/packets/{feature_slug}/pr-prepare.json"),
+        governance_packet: schemaV2ExecutionProfile(".vibepro/governance/{feature_slug}/pr-prepare.json")
+      }
+    }
+  };
+  for (const repoRoot of [managed, source]) {
+    await mkdir(path.join(repoRoot, ".vibepro"), { recursive: true });
+    await writeFile(path.join(repoRoot, ".vibepro", "config.json"), `${JSON.stringify(config, null, 2)}\n`);
+    const storyPath = path.join(
+      repoRoot,
+      "docs", "management", "stories", "active", `${storyId}.md`
+    );
+    await mkdir(path.dirname(storyPath), { recursive: true });
+    await writeFile(
+      storyPath,
+      `---\nstory_id: ${storyId}\nartifact_profile: feature_packet\nfeature_slug: ${featureSlug}\n---\n`
+    );
+    const statePath = path.join(repoRoot, ".vibepro", "executions", storyId, "state.json");
+    await mkdir(path.dirname(statePath), { recursive: true });
+    await writeFile(
+      statePath,
+      `${JSON.stringify({ story_id: storyId, completion_status: "merged_reconciliation_required" }, null, 2)}\n`
+    );
+  }
+  const managedMerge = path.join(managed, ".vibepro", "packets", featureSlug, "pr-merge.json");
+  const sourceMerge = path.join(source, ".vibepro", "packets", featureSlug, "pr-merge.json");
+  await mkdir(path.dirname(managedMerge), { recursive: true });
+  await mkdir(path.dirname(sourceMerge), { recursive: true });
+  await writeFile(managedMerge, `${JSON.stringify({ authority: "managed" })}\n`);
+  await writeFile(sourceMerge, `${JSON.stringify({ authority: "stale-source" })}\n`);
+  const reconciled = {
+    story_id: storyId,
+    completion_status: "merged",
+    reconciliation: { status: "reconciled", reasons: [] },
+    managed_worktree: { mode: "managed", path: managed, source_repo: source }
+  };
+
+  await executionStateTesting.writeExecutionStateWithLinkedCopies(managed, reconciled);
+
+  assert.deepEqual(
+    JSON.parse(await readFile(sourceMerge, "utf8")),
+    { authority: "managed" },
+    "AC-9: the selected feature_packet route synchronizes post-merge authority without a synthetic catalog Story"
+  );
+  for (const repoRoot of [managed, source]) {
+    const statePath = path.join(repoRoot, ".vibepro", "executions", storyId, "state.json");
+    assert.deepEqual(JSON.parse(await readFile(statePath, "utf8")), reconciled);
+  }
 });
 
 test("scenario:S-002 typed stop and resume matrix executes independently of unit imports", async () => {

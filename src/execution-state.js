@@ -1400,19 +1400,18 @@ async function managedWorktreeArtifactLocations(repoRoot, state) {
   const storyFlowRunIds = unique((managedManifest?.flow_verification_runs ?? [])
     .filter((run) => run?.story_id === state.story_id && typeof run?.run_id === 'string')
     .map((run) => run.run_id));
-  const probeStoryId = `${state.story_id}-ownership-probe`;
-  const [managedPrFile, sourcePrFile, managedProbePrFile, sourceProbePrFile, managedReviewRoute, sourceReviewRoute] = await Promise.all([
+  const [managedPrFile, sourcePrFile, managedPrRoute, sourcePrRoute, managedReviewRoute, sourceReviewRoute] = await Promise.all([
     resolvePrArtifactFile(currentRoot, state.story_id),
     resolvePrArtifactFile(sourceRepo, state.story_id),
-    resolvePrArtifactFile(currentRoot, probeStoryId),
-    resolvePrArtifactFile(sourceRepo, probeStoryId),
+    resolveArtifactRoute(currentRoot, 'pr', { storyId: state.story_id }),
+    resolveArtifactRoute(sourceRepo, 'pr', { storyId: state.story_id }),
     resolveArtifactRoute(currentRoot, 'review', { storyId: state.story_id }),
     resolveArtifactRoute(sourceRepo, 'review', { storyId: state.story_id })
   ]);
   const managedPrDirectory = path.dirname(managedPrFile);
   const sourcePrDirectory = path.dirname(sourcePrFile);
-  const prDirectoryIsStoryScoped = managedPrDirectory !== path.dirname(managedProbePrFile)
-    && sourcePrDirectory !== path.dirname(sourceProbePrFile);
+  const prDirectoryIsStoryScoped = prRouteDirectoryIsStoryScoped(managedPrRoute)
+    && prRouteDirectoryIsStoryScoped(sourcePrRoute);
   const prArtifactFileNames = [
     'pr-prepare.json',
     'pr-create.json',
@@ -1455,6 +1454,11 @@ async function managedWorktreeArtifactLocations(repoRoot, state) {
       manifest.target
     ]
   };
+}
+
+function prRouteDirectoryIsStoryScoped(route) {
+  const templateDirectory = path.posix.dirname(route.canonical.template);
+  return /\{(?:story_id|feature_slug)\}/.test(templateDirectory);
 }
 
 async function listRelativeFiles(root, relativePath = '') {
