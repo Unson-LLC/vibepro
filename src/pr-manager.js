@@ -3540,7 +3540,8 @@ function isRepoControlPath(filePath) {
 }
 
 function isArchitectureDocPath(filePath) {
-  return filePath.startsWith('docs/architecture/')
+  return filePath === 'design-ssot.json'
+    || filePath.startsWith('docs/architecture/')
     || filePath.startsWith('docs/management/architecture/')
     || /^docs\/.+\/ADR-[^/]+\.md$/i.test(filePath);
 }
@@ -10874,10 +10875,10 @@ function buildBugPhysicsTriage({ storySource = {}, inferredSpec = null, verifica
 }
 
 const bugPhysicsClassMatchers = {
-  timing: /\b(timing|race|async|orphaned promise|intermittent|statistical|violation[-_\s]?rate|slo|settle[-_\s]?contract)\b|タイミング|競合|非同期/,
+  timing: /\b(timing|race|async|orphaned promise|intermittent|statistical|violation[-_\s]?rate|slo|settle[-_\s]?contract)\b|タイミング|実行時.{0,12}競合|並行.{0,12}競合|データ競合|非同期/,
   'state-invariant': /\b(state[-_\s]?invariant|illegal[-_\s]?state|unrepresentable|by[-_\s]?construction|sticky[-_\s]?done|two visible surfaces|2 visible surfaces)\b|不正状態|状態不変/,
   'deterministic-byte': /\b(deterministic[-_\s]?byte|byte[-_\s]?sequence|real[-_\s]?byte|byte[-_\s]?fixture|headless replay|pty|xterm|alt[-_\s]?screen|terminal rendering|\\x1b)\b|バイト列|端末/,
-  observability: /\b(observability|authoritative[-_\s]?signal|signal[-_\s]?source|signal[-_\s]?fusion|no reliable ground|monitoring|hook killed|indicator)\b|観測|監視|信号/,
+  observability: /\b(observability|authoritative[-_\s]?signal|signal[-_\s]?source|signal[-_\s]?fusion|no reliable ground|monitoring|hook killed|indicator)\b|状態.{0,12}観測|監視|信号/,
   deployment: /\b(deployment|deploy|version[-_\s]?stamp|artifact version|running session|expected artifact|settings\.json|browser cache)\b|デプロイ|配布|実行中/
 };
 
