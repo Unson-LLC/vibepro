@@ -297,9 +297,9 @@
           "gate_evidence": 9,
           "pr_split_scope": 7,
           "release_risk": 9,
-          "preview_smoke": 2,
-          "network_runtime": 2,
-          "human_usability": 2
+          "preview_smoke": 15,
+          "network_runtime": 15,
+          "human_usability": 15
         },
         "amendment_reason": "Four hundred twenty-nine historical review lifecycles, including long-running timeout debt, predate the final corrected HEAD and exhausted the first 432-slot amendment before current-HEAD gate closure. The user explicitly authorized blocker removal and merge completion on 2026-07-24. Reserve exactly eight final accounting slots for the three current-HEAD gate roles, three stale preview-inspection replacements, and bounded evidence plus judgment adjudication, all with gpt-5.6-luna high. Add 4800000 ms for those bounded lifecycles, permit no replacement loop or unrelated role, and leave global budgets unchanged."
       },
