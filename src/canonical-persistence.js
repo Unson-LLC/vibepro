@@ -208,6 +208,24 @@ export async function persistCanonicalArtifactsToBase({
       }
       return failed('canonical_audit_push_failed', prepared.metadata, pushResult);
     }
+    const postcondition = await run(
+      ['git', ['ls-remote', 'origin', `refs/heads/${baseBranch}`]],
+      { stage: 'canonical.push_postcondition', timeoutMs: options.postconditionTimeoutMs }
+    );
+    const remoteSha = postcondition.exit_code === 0 ? postcondition.stdout.trim().split(/\s+/)[0] ?? null : null;
+    summary.push_postcondition.remote_sha = remoteSha;
+    summary.push_postcondition.status = postcondition.exit_code !== 0
+      ? 'indeterminate'
+      : remoteSha === summary.commit_sha ? 'applied' : 'not_applied';
+    if (summary.push_postcondition.status !== 'applied') {
+      return failed(
+        summary.push_postcondition.status === 'not_applied'
+          ? 'canonical_audit_push_postcondition_failed'
+          : 'canonical_audit_push_postcondition_indeterminate',
+        prepared.metadata,
+        postcondition
+      );
+    }
     summary.pushed = true;
     succeed('pushed', `canonical audit bundle persisted after merge ${mergeCommitSha}`);
     return { summary, prepared: prepared.metadata };

@@ -17,6 +17,7 @@ import {
   readPromotableGateOutcomeEntries
 } from './gate-outcome-ledger.js';
 import { renderPrMergeHtml } from './html-report.js';
+import { executeManagedCommand } from './managed-command-executor.js';
 import { resolveReconciliationAction } from './reconciliation-action.js';
 import {
   buildMergeGateAuthorization,
@@ -1622,32 +1623,22 @@ function shellQuote(value) {
 }
 
 async function runCommand(repoRoot, command, options = {}, execution = {}) {
-  const [bin, args] = command;
-  const startedAt = new Date().toISOString();
-  try {
-    const result = await execFileAsync(bin, args, {
-      cwd: execution.cwd ?? repoRoot,
-      encoding: 'utf8',
-      env: options.env
-    });
-    return {
-      command: formatCommand(command),
-      started_at: startedAt,
-      finished_at: new Date().toISOString(),
-      exit_code: 0,
-      stdout: result.stdout.trim(),
-      stderr: result.stderr.trim()
-    };
-  } catch (error) {
-    return {
-      command: formatCommand(command),
-      started_at: startedAt,
-      finished_at: new Date().toISOString(),
-      exit_code: Number.isInteger(error.code) ? error.code : 1,
-      stdout: String(error.stdout ?? '').trim(),
-      stderr: String(error.stderr ?? error.message ?? '').trim()
-    };
-  }
+  const result = await executeManagedCommand({
+    command,
+    stage: execution.stage ?? 'merge.command',
+    cwd: execution.cwd ?? repoRoot,
+    env: options.env,
+    timeoutMs: execution.timeoutMs ?? options.commandTimeoutMs,
+    terminationGraceMs: options.terminationGraceMs,
+    closeTimeoutMs: options.closeTimeoutMs,
+    maxOutputBytes: options.maxDiagnosticBytes,
+    redactValues: options.redactValues
+  });
+  return {
+    ...result,
+    stdout: result.stdout.trim(),
+    stderr: result.stderr.trim()
+  };
 }
 
 async function gitOptional(repoRoot, args) {
@@ -1917,11 +1908,12 @@ async function resolveGitHubRepositorySlug(repoRoot, context = {}) {
     context.prCreate?.toolchain?.source_git?.origin_url,
     context.prPrepare?.toolchain?.source_git?.origin_url
   ];
-  for (const candidate of candidates) {
-    const slug = githubRepositorySlug(candidate);
-    if (slug) return slug;
+  const slugs = candidates.map(githubRepositorySlug).filter(Boolean);
+  const unique = [...new Set(slugs.map((slug) => slug.toLowerCase()))];
+  if (unique.length > 1) {
+    throw new Error(`GitHub repository authority mismatch: ${unique.join(', ')}`);
   }
-  return null;
+  return slugs[0] ?? null;
 }
 
 function githubRepositorySlug(value) {

@@ -70,6 +70,8 @@ test('GDL-CONTRACT-008 persists prepared files atomically and dedupes identical 
   };
   const first = await persistCanonicalArtifactsToBase(input);
   assert.equal(first.summary.status, 'pushed');
+  assert.equal(first.summary.push_postcondition.status, 'applied');
+  assert.equal(first.summary.push_postcondition.remote_sha, first.summary.commit_sha);
   assert.deepEqual(first.prepared, { revision: 1 });
   const second = await persistCanonicalArtifactsToBase(input);
   assert.equal(second.summary.status, 'already_present');
@@ -83,6 +85,7 @@ test('GDL-CONTRACT-008 persists prepared files atomically and dedupes identical 
     })
   });
   assert.equal(changed.summary.status, 'pushed');
+  assert.equal(changed.summary.push_postcondition.status, 'applied');
   assert.deepEqual(changed.prepared, { revision: 2 });
 });
 

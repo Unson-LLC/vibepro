@@ -4123,8 +4123,8 @@ function renderOutcomeHelp(subcommand = null, language = null) {
   }
   if (subcommand === 'refresh') {
     return english
-      ? `VibePro outcome refresh\n\nUsage:\n  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]\n`
-      : `VibePro outcome refresh\n\n使い方:\n  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]\n`;
+      ? `VibePro outcome refresh\n\nUsage:\n  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]\n\nEffect:\n  Rebuilds the decision outcome ledger and persists a canonical revision after verified merge authority.\n\nResults:\n  promoted: a new canonical revision was pushed.\n  already_present: the canonical revision was already present.\n  reconciliation_required: verify the canonical revision and rerun this command.\n\nRecovery and rollback:\n  Follow the bounded recovery field on failure. Verify the remote postcondition before retrying; restore the reported recovery snapshot when rollback is incomplete.\n`
+      : `VibePro outcome refresh\n\n使い方:\n  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]\n\n作用:\n  検証済みmerge authorityに基づきdecision outcome ledgerを再構築し、canonical revisionを永続化します。\n\n結果:\n  promoted: 新しいcanonical revisionをpushしました。\n  already_present: canonical revisionは既に存在します。\n  reconciliation_required: canonical revisionを確認して、このコマンドを再実行してください。\n\n復旧とrollback:\n  失敗時はboundedなrecovery欄に従います。再実行前にremote postconditionを確認し、rollback未完了時は表示されたrecovery snapshotから復元してください。\n`;
   }
   return english
     ? `VibePro Outcome\n\nCommands:\n  vibepro outcome record   Record a downstream outcome observation.\n  vibepro outcome refresh  Rebuild and persist the canonical outcome revision.\n\nRun a command with --help for its exact options.\n`

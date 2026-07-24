@@ -24,12 +24,24 @@ export class OutcomeCommandError extends Error {
     super(message);
     this.name = 'OutcomeCommandError';
     this.error_id = errorId;
-    this.details = details;
+    this.details = details.recovery
+      ? details
+      : { ...details, recovery: defaultOutcomeRecovery(errorId) };
   }
 
   toJSON() {
     return { error_id: this.error_id, message: this.message, ...this.details };
   }
+}
+
+function defaultOutcomeRecovery(errorId) {
+  if (errorId === 'outcome_ledger_missing') {
+    return 'Run vibepro pr prepare . --story-id <story-id> to generate the decision outcome ledger, then retry.';
+  }
+  if (errorId === 'outcome_not_merged') {
+    return 'Complete the VibePro PR create and execute merge lifecycle, verify pr-create.json and pr-merge.json, then retry.';
+  }
+  return 'Inspect the bounded error details, repair the reported precondition, and retry the same outcome command.';
 }
 
 export async function recordOutcome(repoRoot, options = {}) {
@@ -336,7 +348,7 @@ export async function refreshOutcome(repoRoot, options = {}) {
     ledger_digest: revised.artifact_digest,
     observation_count: observations.length,
     canonical_bundle: toWorkspaceRelative(root, canonical.bundle_path),
-    persistence: persistence.summary
+    persistence: projectPublicOutcomePersistence(persistence.summary)
   };
 }
 
@@ -369,6 +381,28 @@ function projectOutcomePersistence(summary = {}) {
     push_postcondition: summary.push_postcondition ?? null,
     cleanup: summary.cleanup ?? null,
     primary: summary.primary ?? null
+  };
+}
+
+function projectPublicOutcomePersistence(summary = {}) {
+  return {
+    status: summary.status ?? 'unknown',
+    reason: summary.reason ?? null,
+    commit_sha: summary.commit_sha ?? null,
+    pushed: summary.pushed === true,
+    push_postcondition: summary.push_postcondition
+      ? {
+          status: summary.push_postcondition.status ?? 'not_checked',
+          remote_sha: summary.push_postcondition.remote_sha ?? null
+        }
+      : null,
+    cleanup: summary.cleanup
+      ? {
+          attempted: summary.cleanup.attempted === true,
+          removed: summary.cleanup.removed === true,
+          status: summary.cleanup.status ?? 'unknown'
+        }
+      : null
   };
 }
 

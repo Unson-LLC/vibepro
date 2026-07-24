@@ -455,6 +455,12 @@ test(`${STORY_ID} runs the public outcome CLI from record through canonical refr
   assert.equal(refreshed.status, 'promoted');
   assert.equal(refreshed.observation_count, 1);
   assert.match(refreshed.ledger_digest, /^[a-f0-9]{64}$/);
+  assert.equal(refreshed.persistence.push_postcondition.status, 'applied');
+  assert.equal('commands' in refreshed.persistence, false);
+  assert.equal('results' in refreshed.persistence, false);
+  assert.equal('worktree_path' in refreshed.persistence, false);
+  assert.equal(JSON.stringify(refreshed).includes('stdout'), false);
+  assert.equal(JSON.stringify(refreshed).includes('stderr'), false);
 
   const usageText = await execFileAsync(process.execPath, [CLI_PATH, 'usage', 'report', fixture.root], { encoding: 'utf8' });
   assert.match(usageText.stdout, /sources=1\/1\/0\/false\[verification_evidence:/);
@@ -466,6 +472,11 @@ test(`${STORY_ID} runs the public outcome CLI from record through canonical refr
   assert.match(recordHelp.stdout, /observed には --value-json <json> が必要です/);
   assert.match(recordHelp.stdout, /not_applicable には --reason <text> が必要です/);
   assert.match(recordHelp.stdout, /usage report \. --json -> trace\/collision、parent revision、eligible sourceを1つ選択 -> vibepro outcome record -> vibepro outcome refresh/);
+  const refreshHelp = await execFileAsync(process.execPath, [CLI_PATH, 'outcome', 'refresh', '--help'], { encoding: 'utf8' });
+  assert.match(refreshHelp.stdout, /promoted:/);
+  assert.match(refreshHelp.stdout, /already_present:/);
+  assert.match(refreshHelp.stdout, /reconciliation_required:/);
+  assert.match(refreshHelp.stdout, /recovery snapshot/);
   assert.match(help.stdout, /Zero sources require current trace-specific verification evidence or an accepted waiver/);
   assert.match(help.stdout, /multiple sources require an explicit --source from the bounded report/);
 });
