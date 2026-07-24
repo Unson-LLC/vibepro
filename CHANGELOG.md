@@ -828,3 +828,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-autonomous-i
 なし
 
 <!-- vibepro-release-pr:388:end -->
+
+<!-- vibepro-release-pr:365:start -->
+## [#365](https://github.com/Unson-LLC/vibepro/pull/365) story-vibepro-gate-decision-outcome-ledger - 実欠陥を捕捉したgate findingが実装修正・PR・mergeへ接続した価値を監査から再構成しにくい
+
+- Author: @sintariran
+- Merged: 2026-07-24T23:37:28Z
+- Commit: `c15241fab63df07f0c8088954ce4f2190acbac32`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-gate-decision-outcome-ledger.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-gate-decision-outcome-ledger.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:365:end -->

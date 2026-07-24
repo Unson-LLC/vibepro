@@ -177,3 +177,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:388:start -->
 - [PR #388](https://github.com/Unson-LLC/vibepro/pull/388) — [2026-07](/ja/releases/2026-07): story-vibepro-autonomous-roadmap-catalog-closure - 自律実装ロードマップのStory catalogを完了状態へ整合する
 <!-- vibepro-release-index-pr:388:end -->
+
+<!-- vibepro-release-index-pr:365:start -->
+- [PR #365](https://github.com/Unson-LLC/vibepro/pull/365) — [2026-07](/ja/releases/2026-07): story-vibepro-gate-decision-outcome-ledger - 実欠陥を捕捉したgate findingが実装修正・PR・mergeへ接続した価値を監査から再構成しにくい
+<!-- vibepro-release-index-pr:365:end -->
