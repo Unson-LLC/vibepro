@@ -1646,12 +1646,8 @@ async function runCommand(repoRoot, command, options = {}, execution = {}) {
 }
 
 async function gitOptional(repoRoot, args) {
-  try {
-    const result = await execFileAsync('git', args, { cwd: repoRoot, encoding: 'utf8' });
-    return result.stdout.trim() || null;
-  } catch {
-    return null;
-  }
+  const result = await runCommand(repoRoot, ['git', args], {}, { stage: 'merge.git_optional' });
+  return result.exit_code === 0 ? result.stdout || null : null;
 }
 
 async function collectMergeDiffLineStats(repoRoot, { baseBranch, currentHeadSha, pr } = {}) {
@@ -1701,44 +1697,31 @@ async function collectMergeDiffLineStats(repoRoot, { baseBranch, currentHeadSha,
 }
 
 async function runGitForOutput(repoRoot, command) {
-  const [bin, args] = command;
-  try {
-    const result = await execFileAsync(bin, args, { cwd: repoRoot, encoding: 'utf8' });
-    return {
-      command: formatCommand(command),
-      exit_code: 0,
-      stdout: result.stdout.trim(),
-      stderr: result.stderr.trim()
-    };
-  } catch (error) {
-    return {
-      command: formatCommand(command),
-      exit_code: Number.isInteger(error.code) ? error.code : 1,
-      stdout: String(error.stdout ?? '').trim(),
-      stderr: String(error.stderr ?? error.message ?? '').trim()
-    };
-  }
+  const result = await runCommand(repoRoot, command, {}, { stage: 'merge.git_output' });
+  return { ...result, command: formatCommand(command) };
 }
 
 async function gitIsAncestor(repoRoot, ancestor, descendant) {
   if (!ancestor || !descendant) return false;
   if (ancestor === descendant) return true;
-  try {
-    await execFileAsync('git', ['merge-base', '--is-ancestor', ancestor, descendant], { cwd: repoRoot, encoding: 'utf8' });
-    return true;
-  } catch {
-    return false;
-  }
+  const result = await runCommand(
+    repoRoot,
+    ['git', ['merge-base', '--is-ancestor', ancestor, descendant]],
+    {},
+    { stage: 'merge.git_is_ancestor' }
+  );
+  return result.exit_code === 0;
 }
 
 async function gitTreesEqual(repoRoot, left, right) {
   if (!left || !right || left === right) return false;
-  try {
-    await execFileAsync('git', ['diff', '--quiet', left, right, '--'], { cwd: repoRoot, encoding: 'utf8' });
-    return true;
-  } catch {
-    return false;
-  }
+  const result = await runCommand(
+    repoRoot,
+    ['git', ['diff', '--quiet', left, right, '--']],
+    {},
+    { stage: 'merge.git_trees_equal' }
+  );
+  return result.exit_code === 0;
 }
 
 async function readJsonIfExists(filePath) {
@@ -1905,24 +1888,28 @@ const PR_VIEW_FIELDS = [
 ].join(',');
 
 async function resolveGitHubRepositorySlug(repoRoot, context = {}) {
-  const candidates = [
-    await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']),
-    context.prCreate?.pr_url,
-    context.executionState?.pr_url
-  ];
-  const slugs = candidates.map(githubRepositorySlug).filter(Boolean);
-  const unique = [...new Set(slugs.map((slug) => slug.toLowerCase()))];
+  const originUrl = await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']);
+  const candidates = [originUrl, context.prCreate?.pr_url, context.executionState?.pr_url].filter(Boolean);
+  const identities = candidates.map(githubRepositoryIdentity);
+  if (identities.some((identity) => identity == null)) {
+    throw new Error('GitHub repository authority is unparseable');
+  }
+  const unique = [...new Set(identities.map(({ host, slug }) => `${host}/${slug}`.toLowerCase()))];
   if (unique.length > 1) {
     throw new Error(`GitHub repository authority mismatch: ${unique.join(', ')}`);
   }
-  return slugs[0] ?? null;
+  return identities[0]?.slug ?? null;
 }
 
 function githubRepositorySlug(value) {
+  return githubRepositoryIdentity(value)?.slug ?? null;
+}
+
+function githubRepositoryIdentity(value) {
   if (typeof value !== 'string' || value.length === 0) return null;
-  const sshMatch = value.match(/github\.com[:/]([^/]+\/[^/.]+?)(?:\.git)?$/i);
-  if (sshMatch) return sshMatch[1];
-  const httpMatch = value.match(/^https?:\/\/github\.com\/([^/]+\/[^/.]+?)(?:\.git)?(?:\/pull\/\d+)?\/?$/i);
-  if (httpMatch) return httpMatch[1];
+  const sshMatch = value.match(/^(?:ssh:\/\/)?git@([^/:]+)(?::\d+)?[:/]([^/]+\/[^/.]+?)(?:\.git)?$/i);
+  if (sshMatch) return { host: sshMatch[1].toLowerCase(), slug: sshMatch[2] };
+  const httpMatch = value.match(/^https?:\/\/([^/]+)\/([^/]+\/[^/.]+?)(?:\.git)?(?:\/pull\/\d+)?\/?$/i);
+  if (httpMatch) return { host: httpMatch[1].toLowerCase(), slug: httpMatch[2] };
   return null;
 }
