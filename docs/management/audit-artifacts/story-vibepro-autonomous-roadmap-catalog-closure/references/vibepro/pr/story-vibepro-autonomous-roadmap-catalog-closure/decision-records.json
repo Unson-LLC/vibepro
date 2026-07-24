@@ -1,0 +1,689 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+  "updated_at": "2026-07-24T16:23:27.429Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784910207428-c4d81625",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Accept current HEAD as one reviewable metadata closure surface",
+      "reason": "All eight tracked paths at HEAD [REDACTED:a1e54e5c78bb] were independently reviewed as one bounded metadata closure. There is no separately releasable subset: splitting registration, completion state, Design SSOT lineage, contracts, or regression coverage would create a temporarily inconsistent canonical catalog. No runtime source or external side effect is included.",
+      "reviewer": "/root/roadmap_closure_review",
+      "artifact": "docs/management/stories/completed/story-vibepro-autonomous-roadmap-catalog-closure.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T16:23:27.419Z"
+      },
+      "recorded_at": "2026-07-24T16:23:27.429Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784910205716-eedfafa4",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Keep the canonical catalog closure as one atomic metadata PR",
+      "reason": "The eight tracked paths are one indivisible catalog consistency unit: Story registration, parent roadmap completion, Design SSOT linkage, Architecture, Spec, test plan, and the regression test must land together. Any intermediate subset would make the canonical roadmap contradictory. Independent current-HEAD review covered the complete surface and found no runtime or release-risk change.",
+      "reviewer": "/root/roadmap_closure_review",
+      "artifact": "docs/management/stories/completed/story-vibepro-autonomous-roadmap-catalog-closure.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T16:23:25.710Z"
+      },
+      "recorded_at": "2026-07-24T16:23:25.717Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784909924886-059cb331",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_review",
+      "summary": "Accept one atomic metadata closure PR after independent current-head owner review",
+      "reason": "The four connected lanes—repo control, requirements SSOT, runtime-state declaration, and focused follow-up assertion—jointly establish one lifecycle transition. Splitting them would create an intermediate disagreement between canonical authorities; the independent current-HEAD owner review verified all eight paths and found no safe independently releasable subset.",
+      "reviewer": "/root/roadmap_closure_review",
+      "artifact": "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T16:18:44.882Z"
+      },
+      "recorded_at": "2026-07-24T16:18:44.886Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784908219114-3b7cd85a",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "noise",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": "needs_evidence",
+      "summary": "Catalog metadata was misclassified as a changed public runtime contract",
+      "reason": "The current-head diff contains no src, bin, test, CLI, API, or output schema change. The only config change is canonical Story lifecycle metadata, and existing Story discovery/Spec output checks pass; adding a test-file diff would violate the Story's explicit metadata-only boundary.",
+      "reviewer": "/root/roadmap_closure_review",
+      "artifact": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/gate-dag.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T15:50:19.111Z"
+      },
+      "recorded_at": "2026-07-24T15:50:19.114Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784907844017-0261ed75",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "noise",
+      "status": "accepted",
+      "source": "VP-ARCH-001",
+      "source_status": "needs_review",
+      "summary": "Existing session-efficiency-audit architecture finding is unrelated to this metadata-only closure.",
+      "reason": "No src, bin, or test implementation changed; current conformance counts exactly match main baseline.",
+      "reviewer": "codex-root",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T15:44:04.014Z"
+      },
+      "recorded_at": "2026-07-24T15:44:04.017Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784907842649-1a238a8f",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Design SSOT links are registered and reconciliation passes with zero action items.",
+      "reason": "The Story, Architecture, and test plan are linked to the roadmap design root.",
+      "reviewer": "codex-root",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T15:44:02.646Z"
+      },
+      "recorded_at": "2026-07-24T15:44:02.649Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784907841334-c2ab281e",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "Only tracked .vibepro/config.json catalog SSOT is committed; generated VibePro artifacts remain untracked.",
+      "reason": "The config catalog is product SSOT, while runtime evidence artifacts are intentionally excluded.",
+      "reviewer": "codex-root",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T15:44:01.332Z"
+      },
+      "recorded_at": "2026-07-24T15:44:01.334Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784907839968-09eb6ee8",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_review",
+      "summary": "The parent roadmap update is inseparable from the catalog closure and is bound through vibepro_story_id.",
+      "reason": "The parent and closure Story must change atomically to preserve status and evidence lineage.",
+      "reviewer": "codex-root",
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T15:43:59.963Z"
+      },
+      "recorded_at": "2026-07-24T15:43:59.968Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784907106265-15a3972a",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "closure docsを親Design SSOTへ正式にlinkしreconcile passed",
+      "reason": "VibePro design-ssot linkでArchitecture/Story/test-planを親rootへ登録し、parent_designを付与。reconcileはgap 0/action 0。",
+      "reviewer": "codex-root",
+      "artifact": "design-ssot.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/architecture/conformance/conformance.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T15:31:46.262Z"
+      },
+      "recorded_at": "2026-07-24T15:31:46.265Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784907104898-bee61c37",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "tracked .vibepro/config.jsonはStory catalog正本としてcommitする",
+      "reason": "commit対象の.vibepro pathは既存tracked config.jsonのみで、診断・review・Gateの生成artifactはcommitしない。catalog整合はARC-S-1そのもの。",
+      "reviewer": "codex-root",
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/architecture/conformance/conformance.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T15:31:44.896Z"
+      },
+      "recorded_at": "2026-07-24T15:31:44.898Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784907103428-190ea9ee",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "親roadmap正本更新はclosure Storyの不可分な完了条件",
+      "reason": "新Storyは親文書とcatalogのstatus/merge lineageを同時に整合するためのもの。親docはvibepro_story_idで本Storyへ束縛済みで、分割するとARC-S-1/2を原子的に満たせない。",
+      "reviewer": "codex-root",
+      "artifact": "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/architecture/conformance/conformance.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T15:31:43.425Z"
+      },
+      "recorded_at": "2026-07-24T15:31:43.429Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784907041365-2ce341cc",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "noise",
+      "status": "accepted",
+      "source": "VP-ARCH-001",
+      "source_status": "implementation_gap",
+      "summary": "既存runtime責務分割候補は本Storyのcatalog/document metadata変更外",
+      "reason": "origin/mainとの差分はStory catalog、Design SSOT、Story/Architecture/Spec文書だけで、src/session-efficiency-audit.jsを変更しない。既存baseline findingは別Storyで扱う。",
+      "reviewer": "codex-root",
+      "artifact": ".vibepro/diagnostics/2026-07-24T153035Z/evidence.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/architecture/conformance/conformance.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T15:30:41.362Z"
+      },
+      "recorded_at": "2026-07-24T15:30:41.365Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784906750333-28338219",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "noise",
+      "status": "accepted",
+      "source": "VP-ARCH-001",
+      "source_status": "implementation_gap",
+      "summary": "既存runtime責務分割候補は本Storyのcatalog/document metadata変更外",
+      "reason": "origin/mainとの差分は.vibepro/config.jsonとStory/Architecture/Spec文書だけで、src/session-efficiency-audit.jsを変更しない。既存baseline findingをこのclosure Storyへ混入させず別Storyで扱う。",
+      "reviewer": "codex-root",
+      "artifact": ".vibepro/diagnostics/2026-07-24T152459Z/evidence.json",
+      "verification_evidence_summary": {
+        "count": 0,
+        "entries": []
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "f396bda9db8090055788e0d8d582cafb42092660",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": true,
+        "status_fingerprint": " M docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md\n?? docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md\n?? docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md\n?? docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md\n?? docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json\nM .vibepro/config.json",
+        "recorded_at": "2026-07-24T15:25:50.328Z"
+      },
+      "recorded_at": "2026-07-24T15:25:50.333Z"
+    }
+  ],
+  "summary": {
+    "total": 13,
+    "open": 0,
+    "by_type": {
+      "needs_review": 9,
+      "noise": 4
+    },
+    "by_status": {
+      "accepted": 13
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784910207428-c4d81625",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Accept current HEAD as one reviewable metadata closure surface",
+      "reason": "All eight tracked paths at HEAD [REDACTED:a1e54e5c78bb] were independently reviewed as one bounded metadata closure. There is no separately releasable subset: splitting registration, completion state, Design SSOT lineage, contracts, or regression coverage would create a temporarily inconsistent canonical catalog. No runtime source or external side effect is included.",
+      "reviewer": "/root/roadmap_closure_review",
+      "artifact": "docs/management/stories/completed/story-vibepro-autonomous-roadmap-catalog-closure.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+        "current_branch": "vibepro/story-vibepro-autonomous-roadmap-catalog-closure",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T16:23:27.419Z"
+      },
+      "recorded_at": "2026-07-24T16:23:27.429Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/decision-records.json"
+}

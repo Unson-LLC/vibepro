@@ -1,0 +1,73 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "decision_id": "decision-1784908219114-3b7cd85a",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "The current-head diff contains no src, bin, test, CLI, API, or output schema change. The only config change is canonical Story lifecycle metadata, and existing Story discovery/Spec output checks pass; adding a test-file diff would violate the Story's explicit metadata-only boundary.",
+      "artifact": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/gate-dag.json",
+      "activation_candidates": [
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T15:50:27.514Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|pr_route:test_only|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "decision_id": "decision-1784908219114-3b7cd85a",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "The current-head diff contains no src, bin, test, CLI, API, or output schema change. The only config change is canonical Story lifecycle metadata, and existing Story discovery/Spec output checks pass; adding a test-file diff would violate the Story's explicit metadata-only boundary.",
+      "artifact": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/gate-dag.json",
+      "activation_candidates": [
+        "pr_route:test_only",
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T15:57:43.943Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|pr_route:config_or_agent_policy|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "decision_id": "decision-1784908219114-3b7cd85a",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "The current-head diff contains no src, bin, test, CLI, API, or output schema change. The only config change is canonical Story lifecycle metadata, and existing Story discovery/Spec output checks pass; adding a test-file diff would violate the Story's explicit metadata-only boundary.",
+      "artifact": ".vibepro/pr/story-vibepro-autonomous-roadmap-catalog-closure/gate-dag.json",
+      "activation_candidates": [
+        "pr_route:config_or_agent_policy",
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T16:13:10.846Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "decision_id": "decision-1784910207428-c4d81625",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "All eight tracked paths at HEAD [REDACTED:a1e54e5c78bb] were independently reviewed as one bounded metadata closure. There is no separately releasable subset: splitting registration, completion state, Design SSOT lineage, contracts, or regression coverage would create a temporarily inconsistent canonical catalog. No runtime source or external side effect is included.",
+      "artifact": "docs/management/stories/completed/story-vibepro-autonomous-roadmap-catalog-closure.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T16:23:38.385Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

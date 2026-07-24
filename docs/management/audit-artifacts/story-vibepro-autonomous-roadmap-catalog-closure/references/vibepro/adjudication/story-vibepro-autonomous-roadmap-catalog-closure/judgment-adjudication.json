@@ -1,0 +1,1090 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+  "updated_at": "2026-07-24T17:05:20.329Z",
+  "events": [
+    {
+      "event_id": "cb10abb4-00f4-435f-b802-e0a7605e29e3",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The three bounded outcomes match the metadata-only diff.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+      "recorded_at": "2026-07-24T15:40:42.211Z"
+    },
+    {
+      "event_id": "62aaf0ce-8bb8-4d2e-9154-999396f249eb",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The prior document/catalog mismatch and both merge commits were directly verified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+      "recorded_at": "2026-07-24T15:40:42.413Z"
+    },
+    {
+      "event_id": "150c444f-e64f-4c12-9b9e-bb23378a5e8e",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Status parity, delivery lineage, and metadata-only boundaries are fixed by the Spec and diff.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+      "recorded_at": "2026-07-24T15:40:42.612Z"
+    },
+    {
+      "event_id": "13a0e390-a349-44b0-a243-d81504febdf5",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Only catalog, Design SSOT, and closure documents change; merged implementation is not duplicated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+      "recorded_at": "2026-07-24T15:40:42.805Z"
+    },
+    {
+      "event_id": "50e7ed2d-d608-49ad-9cfb-fd84bdd8e45b",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "JSON, parity, lineage, surface, and reconciliation failure modes each have direct checks.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+      "recorded_at": "2026-07-24T15:40:43.093Z"
+    },
+    {
+      "event_id": "ada53c7f-274d-41df-8923-f438b35d8d77",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head verification, focused tests, typecheck, docs build, reconciliation, conformance, and ancestry are sufficient.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+      "recorded_at": "2026-07-24T15:40:43.323Z"
+    },
+    {
+      "event_id": "ce21a100-b8ae-4783-9723-1cd83ccbb582",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No external CLI, API, or output schema changes; config remains within the existing schema.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+      "recorded_at": "2026-07-24T15:40:43.505Z"
+    },
+    {
+      "event_id": "f80e48f5-bb64-4cab-a8cb-aaec6f6e0ea1",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Changed JSON parses and the spec pipeline, typecheck, and docs build pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+      "recorded_at": "2026-07-24T15:40:43.702Z"
+    },
+    {
+      "event_id": "2d26839b-01ea-45e6-9709-25bf40765a3b",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Review and evidence implementation is unchanged and current-head content-bound evidence was inspected directly.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+      "recorded_at": "2026-07-24T15:40:43.896Z"
+    },
+    {
+      "event_id": "c56c9073-4f3f-4d10-8047-36bbaebc6d56",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "All roadmap Stories are completed and current_story_id names an existing non-archived Story.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+      "recorded_at": "2026-07-24T15:40:44.141Z"
+    },
+    {
+      "event_id": "5fbe3539-04ce-41cb-a0da-2c53612a0ba3",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story states one explicit intent: close the already-delivered autonomous implementation roadmap in the canonical catalog.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+      "recorded_at": "2026-07-24T15:46:34.085Z"
+    },
+    {
+      "event_id": "92fff545-cf03-4779-b8ad-abb19f5964f7",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current reality is evidenced by merged PR #385, reconciled PR #386, and matching completed states in the parent roadmap and catalog.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+      "recorded_at": "2026-07-24T15:46:34.270Z"
+    },
+    {
+      "event_id": "7ac90e1b-b169-488a-b306-4f397b4ccd99",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The documents preserve guarded autonomy invariants and keep merge, waiver, and major external side effects human-controlled.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+      "recorded_at": "2026-07-24T15:46:34.458Z"
+    },
+    {
+      "event_id": "c1234bce-196c-4d83-ae34-7e3cfe077d13",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The boundary is metadata and traceability only; runtime, CLI, run-session, connectors, and review orchestration are explicitly excluded.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+      "recorded_at": "2026-07-24T15:46:34.645Z"
+    },
+    {
+      "event_id": "f3e0b136-8a3f-4b84-a8d8-1452bec68ed7",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Spec identifies parse, evidence lifecycle, and workflow state regressions with concrete verification coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+      "recorded_at": "2026-07-24T15:46:34.834Z"
+    },
+    {
+      "event_id": "b8562a5a-e1d2-404e-aaf6-dd05ea698d64",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence names exact merge lineage, focused validation, Design SSOT reconciliation, and conformance parity.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+      "recorded_at": "2026-07-24T15:46:35.026Z"
+    },
+    {
+      "event_id": "39a40b83-78fc-44b6-ac96-baae7a7c34eb",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The only public contract affected is the repository roadmap and Story catalog status, which are updated together and JSON-validated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+      "recorded_at": "2026-07-24T15:46:35.213Z"
+    },
+    {
+      "event_id": "b2a357ed-1d86-4c95-aead-fc4d999d895d",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "JSON parse and Story/spec pipeline tests demonstrate the edited catalog and Design SSOT remain machine-readable.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+      "recorded_at": "2026-07-24T15:46:35.405Z"
+    },
+    {
+      "event_id": "d2aec0d5-534b-4bca-bb4d-d6ac0ce23811",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review and PR lineage inspection show closure evidence remains bound to the delivered and reconciled merges.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+      "recorded_at": "2026-07-24T15:46:35.599Z"
+    },
+    {
+      "event_id": "a83ef8f5-e9ff-406e-aa7f-156d994119fd",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Status parity checks and Story discovery tests show the parent and closure Story lifecycle states are consistent.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+      "recorded_at": "2026-07-24T15:46:35.788Z"
+    },
+    {
+      "event_id": "f9fcc0fb-95b7-47cb-9185-02c494f6f2bb",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story states one explicit intent: close the already-delivered autonomous implementation roadmap in the canonical catalog.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "4108412c9d112d2df3c3a510122c9a4dc63981c9",
+      "recorded_at": "2026-07-24T15:52:33.138Z"
+    },
+    {
+      "event_id": "fc727507-6692-4529-b873-e06e9162445d",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current reality is evidenced by merged PR #385, reconciled PR #386, and matching completed states.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "4108412c9d112d2df3c3a510122c9a4dc63981c9",
+      "recorded_at": "2026-07-24T15:52:33.324Z"
+    },
+    {
+      "event_id": "0df855c4-9f3a-47da-9b20-700e80176ed8",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The documents preserve guarded autonomy invariants and keep merge, waiver, and major external side effects human-controlled.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "4108412c9d112d2df3c3a510122c9a4dc63981c9",
+      "recorded_at": "2026-07-24T15:52:33.512Z"
+    },
+    {
+      "event_id": "f06e2778-ac7e-401c-8262-8f6b8e2e4a0a",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The boundary is metadata and traceability only; runtime, CLI, run-session, connectors, and review orchestration are excluded.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "4108412c9d112d2df3c3a510122c9a4dc63981c9",
+      "recorded_at": "2026-07-24T15:52:33.695Z"
+    },
+    {
+      "event_id": "be600940-63f3-4c5e-af76-f0f2df11e8dc",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Spec identifies parse, evidence lifecycle, and workflow state regressions with concrete verification coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "4108412c9d112d2df3c3a510122c9a4dc63981c9",
+      "recorded_at": "2026-07-24T15:52:33.881Z"
+    },
+    {
+      "event_id": "57ffd621-8d81-45fc-9f89-bed3b724ce16",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence names exact merge lineage, focused validation, Design SSOT reconciliation, and conformance parity.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "4108412c9d112d2df3c3a510122c9a4dc63981c9",
+      "recorded_at": "2026-07-24T15:52:34.064Z"
+    },
+    {
+      "event_id": "4d50ca0e-2235-49dc-88c9-32d5dfa30722",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The classifier premise is unsound: internal Story lifecycle metadata is not an external CLI, API, configuration-schema, or output-contract change. Existing Story discovery and Spec output tests are the applicable compatibility evidence; adding a test-file diff would violate AC-3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "4108412c9d112d2df3c3a510122c9a4dc63981c9",
+      "recorded_at": "2026-07-24T15:52:34.247Z"
+    },
+    {
+      "event_id": "7674f56b-031f-4124-9bec-1555d3999231",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "JSON parse and Story/spec pipeline tests demonstrate the edited catalog and Design SSOT remain machine-readable.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "4108412c9d112d2df3c3a510122c9a4dc63981c9",
+      "recorded_at": "2026-07-24T15:52:34.432Z"
+    },
+    {
+      "event_id": "273737e9-6083-4c4c-bd2b-767ba05f79d6",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review and PR lineage inspection show closure evidence remains bound to delivered and reconciled merges.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "4108412c9d112d2df3c3a510122c9a4dc63981c9",
+      "recorded_at": "2026-07-24T15:52:34.617Z"
+    },
+    {
+      "event_id": "45f2d709-b1f2-47f8-9685-76158be24f9b",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Status parity checks and Story discovery tests show the parent and closure Story lifecycle states are consistent.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "4108412c9d112d2df3c3a510122c9a4dc63981c9",
+      "recorded_at": "2026-07-24T15:52:34.798Z"
+    },
+    {
+      "event_id": "f6bbd5bc-0dcc-432f-b9d0-af03ec770cfa",
+      "type": "premise_correction",
+      "item_id": "axis:public_contract",
+      "corrects_verdict_id": "4d50ca0e-2235-49dc-88c9-32d5dfa30722",
+      "wrong_premise": "Any .vibepro/config.json Story status update is an external public contract change that requires a new compatibility test file in the diff.",
+      "corrected_premise": "This Story changes an existing catalog entry's lifecycle value within the existing schema and adds documentation only; it does not alter external CLI/API/output contracts, and existing current-HEAD discovery/Spec tests cover the applicable compatibility behavior.",
+      "reason": "The seven-file diff has no src, bin, or test paths; Architecture explicitly records the boundary and 39 focused plus 29 integration-compatible checks pass.",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "sha256": "e179d17f21b3cb588338d37753bb3cea647d1eb43007a1202d99c54cfb102364"
+        },
+        {
+          "artifact": "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "sha256": "f119d16da03dd1010904ec29ff10ed5de5d032adc10eff0b9e051caefd583cf8"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "codex-root",
+        "session_ref": "codex-root"
+      },
+      "head_commit": "4108412c9d112d2df3c3a510122c9a4dc63981c9",
+      "recorded_at": "2026-07-24T15:52:56.579Z"
+    },
+    {
+      "event_id": "4b1e7ccb-6b0d-48d4-8e7f-a3029dfe414b",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "f6bbd5bc-0dcc-432f-b9d0-af03ec770cfa",
+      "reason": "A different independent judge confirmed the corrected premise matches current HEAD: the seven-file change is existing-schema lifecycle metadata and documentation only, with no src/bin/test or external CLI/API/output contract change; current-head Story discovery, Spec integration, unit, typecheck, and docs-build evidence is sufficient.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/public_contract_rejudge",
+        "session_ref": "/root/public_contract_rejudge"
+      },
+      "head_commit": "4108412c9d112d2df3c3a510122c9a4dc63981c9",
+      "recorded_at": "2026-07-24T15:54:17.497Z"
+    },
+    {
+      "event_id": "a48523ea-dd4b-49f7-8366-d1c72b975e1b",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head review found the catalog closure, focused contract assertion, bounded Story-only lifecycle budget, threat-model evidence, and no-runtime boundary sound with no findings.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "0943ea303d310079962848dfb6f0d53df1835ab6",
+      "recorded_at": "2026-07-24T16:08:36.139Z"
+    },
+    {
+      "event_id": "687bf1a3-be40-43a9-b747-1191699bc57e",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head review found the catalog closure, focused contract assertion, bounded Story-only lifecycle budget, threat-model evidence, and no-runtime boundary sound with no findings.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "0943ea303d310079962848dfb6f0d53df1835ab6",
+      "recorded_at": "2026-07-24T16:08:36.277Z"
+    },
+    {
+      "event_id": "b93819d7-dc9a-4d93-921f-7261fa17f03b",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head review found the catalog closure, focused contract assertion, bounded Story-only lifecycle budget, threat-model evidence, and no-runtime boundary sound with no findings.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "0943ea303d310079962848dfb6f0d53df1835ab6",
+      "recorded_at": "2026-07-24T16:08:36.404Z"
+    },
+    {
+      "event_id": "e1cd1c33-23ef-4742-b01a-9efa376a9108",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head review found the catalog closure, focused contract assertion, bounded Story-only lifecycle budget, threat-model evidence, and no-runtime boundary sound with no findings.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "0943ea303d310079962848dfb6f0d53df1835ab6",
+      "recorded_at": "2026-07-24T16:08:36.528Z"
+    },
+    {
+      "event_id": "7975a278-7f75-4cf7-8658-735dbc8c1b71",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head review found the catalog closure, focused contract assertion, bounded Story-only lifecycle budget, threat-model evidence, and no-runtime boundary sound with no findings.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "0943ea303d310079962848dfb6f0d53df1835ab6",
+      "recorded_at": "2026-07-24T16:08:36.649Z"
+    },
+    {
+      "event_id": "1843abaa-ec76-4cf6-907e-f7f338e5b60d",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head review found the catalog closure, focused contract assertion, bounded Story-only lifecycle budget, threat-model evidence, and no-runtime boundary sound with no findings.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "0943ea303d310079962848dfb6f0d53df1835ab6",
+      "recorded_at": "2026-07-24T16:08:36.775Z"
+    },
+    {
+      "event_id": "be2cb68c-2353-4522-9db9-434f2b76683b",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head review found the catalog closure, focused contract assertion, bounded Story-only lifecycle budget, threat-model evidence, and no-runtime boundary sound with no findings.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "0943ea303d310079962848dfb6f0d53df1835ab6",
+      "recorded_at": "2026-07-24T16:08:36.903Z"
+    },
+    {
+      "event_id": "dbb24ced-5f97-431d-9b45-319dc80bb4ec",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head review found the catalog closure, focused contract assertion, bounded Story-only lifecycle budget, threat-model evidence, and no-runtime boundary sound with no findings.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "0943ea303d310079962848dfb6f0d53df1835ab6",
+      "recorded_at": "2026-07-24T16:08:37.024Z"
+    },
+    {
+      "event_id": "3383924f-c9ea-40ae-b7a1-1f55809a2a84",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head review found the catalog closure, focused contract assertion, bounded Story-only lifecycle budget, threat-model evidence, and no-runtime boundary sound with no findings.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "0943ea303d310079962848dfb6f0d53df1835ab6",
+      "recorded_at": "2026-07-24T16:08:37.147Z"
+    },
+    {
+      "event_id": "389b1c42-9ce1-4d9a-95b9-59e1a276024c",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head review found the catalog closure, focused contract assertion, bounded Story-only lifecycle budget, threat-model evidence, and no-runtime boundary sound with no findings.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "0943ea303d310079962848dfb6f0d53df1835ab6",
+      "recorded_at": "2026-07-24T16:08:37.272Z"
+    },
+    {
+      "event_id": "13d1ace6-9cd2-4e60-b64d-233fc82cf2a4",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head review found the catalog closure, focused contract assertion, bounded Story-only lifecycle budget, threat-model evidence, and no-runtime boundary sound with no findings.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "/root/roadmap_closure_review"
+      },
+      "head_commit": "0943ea303d310079962848dfb6f0d53df1835ab6",
+      "recorded_at": "2026-07-24T16:08:37.395Z"
+    },
+    {
+      "event_id": "cfbfe990-0156-42f9-93b6-f3e66ce2741a",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story states the single intent precisely: close the canonical execution-plane roadmap catalog after the already-merged implementation and reconciliation PRs.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-final-969aa9fb"
+      },
+      "head_commit": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+      "recorded_at": "2026-07-24T16:18:42.114Z"
+    },
+    {
+      "event_id": "8af21bb7-7de8-46dd-88f9-f4146a01bfbf",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story accurately distinguishes current merged reality in PR #385 and PR #386 from the remaining metadata closure.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-final-969aa9fb"
+      },
+      "head_commit": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+      "recorded_at": "2026-07-24T16:18:42.327Z"
+    },
+    {
+      "event_id": "7917991c-99b2-4287-a8c3-30b3a91564f8",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story preserves runtime, CLI, run-session, connector, and independent-review implementation as explicit non-change invariants.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-final-969aa9fb"
+      },
+      "head_commit": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+      "recorded_at": "2026-07-24T16:18:42.550Z"
+    },
+    {
+      "event_id": "d7f19d5e-b15f-4d0c-afc4-8e510cee27bd",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The eight-file review surface and declared facets bound the change to repository-control and requirements metadata plus its focused regression assertion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-final-969aa9fb"
+      },
+      "head_commit": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+      "recorded_at": "2026-07-24T16:18:42.775Z"
+    },
+    {
+      "event_id": "4999e06d-ea33-4c34-bfc9-18569b4ecc36",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Parse, schema, evidence-lifecycle, and workflow-state regressions are explicitly modeled and covered by recorded current-HEAD evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-final-969aa9fb"
+      },
+      "head_commit": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+      "recorded_at": "2026-07-24T16:18:42.969Z"
+    },
+    {
+      "event_id": "5b310eab-0eac-4bc0-aece-809357ae486c",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence is objective: matching completed authorities, distinct PR ancestry, focused tests, conformance parity, and current-HEAD independent review.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-final-969aa9fb"
+      },
+      "head_commit": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+      "recorded_at": "2026-07-24T16:18:43.140Z"
+    },
+    {
+      "event_id": "55a71933-b7e3-4eb1-b95e-db84be7a8808",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No public runtime contract changes; the only contract change is the canonical roadmap lifecycle state, asserted in the focused test.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-final-969aa9fb"
+      },
+      "head_commit": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+      "recorded_at": "2026-07-24T16:18:43.343Z"
+    },
+    {
+      "event_id": "49a691f5-907f-490d-8a1d-8fa89a5238c9",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "All eight changed paths form one reviewable metadata closure with a verified owner map and no independent deployable subset.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-final-969aa9fb"
+      },
+      "head_commit": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+      "recorded_at": "2026-07-24T16:18:43.523Z"
+    },
+    {
+      "event_id": "159b56a3-3797-4223-bd8b-5dfab28f262f",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-HEAD unit evidence parses the modified catalog, Story, Architecture, Spec, test-plan, Design SSOT, and roadmap authorities successfully.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-final-969aa9fb"
+      },
+      "head_commit": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+      "recorded_at": "2026-07-24T16:18:43.693Z"
+    },
+    {
+      "event_id": "b2f33a93-d702-4f42-b151-d30d4f31dfb2",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-HEAD spec and story discovery tests validate the modified canonical metadata against repository schemas.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-final-969aa9fb"
+      },
+      "head_commit": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+      "recorded_at": "2026-07-24T16:18:43.847Z"
+    },
+    {
+      "event_id": "caec14a6-0757-45b4-b790-7de33d81f2b7",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-HEAD integration evidence exercises the gate outcome ledger promotion lifecycle and reports no warnings.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-final-969aa9fb"
+      },
+      "head_commit": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+      "recorded_at": "2026-07-24T16:18:43.982Z"
+    },
+    {
+      "event_id": "8d61ac99-5289-46bf-bbb5-743c6d460b00",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The regression assertion and independent review confirm completed workflow state is synchronized across the parent roadmap and catalog.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-final-969aa9fb"
+      },
+      "head_commit": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+      "recorded_at": "2026-07-24T16:18:44.135Z"
+    },
+    {
+      "event_id": "4ab1fa18-4539-44b6-b340-a0f12007ec79",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story keeps one precise intent: close the canonical catalog after already merged implementation and reconciliation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:18.970Z"
+    },
+    {
+      "event_id": "8060b0a6-e8de-41bf-84db-b9a4a3fb1e57",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current reality is accurate: PR #385 and PR #386 are distinct origin/main ancestors and the remaining delta is catalog closure.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:19.092Z"
+    },
+    {
+      "event_id": "9869f82c-1963-4787-b611-61024ea8d1bf",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Guarded-autonomy invariants remain explicit and runtime, CLI, run-session, connector, and review implementation are unchanged.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:19.216Z"
+    },
+    {
+      "event_id": "513755c1-608a-43a1-90a0-115fa2658dcd",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The eight-path surface is bounded to repository control, requirements metadata, Design SSOT, and one focused regression assertion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:19.339Z"
+    },
+    {
+      "event_id": "674c68da-caff-48b2-ba99-0c542f3e0b44",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Parse, schema, evidence-lifecycle, and workflow-state regressions are explicitly modeled and current-head verified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:19.462Z"
+    },
+    {
+      "event_id": "470ce402-b748-4b40-bbea-d6d4afc58878",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence includes status parity, merge ancestry, 40/40 focused tests, 2/2 integration, 2029/2029 full suite, builds, review, and conformance.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:19.584Z"
+    },
+    {
+      "event_id": "41e40a2b-3fd7-4867-9525-bf0334b3ca2b",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No external CLI, API, or output contract changed; the canonical roadmap lifecycle contract is updated atomically and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:19.707Z"
+    },
+    {
+      "event_id": "65eba294-82da-43fd-a061-3f3116a60b9d",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "All eight paths form one coherent closure contract with no independently deployable subset and no reviewer finding.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:19.831Z"
+    },
+    {
+      "event_id": "d31f4107-5839-477f-a777-6cb28ee4b6ad",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head focused tests parse and validate the changed JSON, Story, Architecture, Spec, test plan, and Design SSOT.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:19.956Z"
+    },
+    {
+      "event_id": "a8cf8bc8-6a49-496e-b40b-0fb014f7dd60",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head Story discovery and Spec pipeline coverage reject malformed metadata and pass for this schema-valid change.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:20.081Z"
+    },
+    {
+      "event_id": "11aa3643-450b-4820-be2d-6d082572bd57",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head integration evidence passes 2/2 and all three independent reviews are strict-head rebound without warnings.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:20.204Z"
+    },
+    {
+      "event_id": "b163cc9d-df41-485a-9392-dd50522a3171",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The regression assertion and independent review confirm completed state across the parent roadmap and canonical catalog.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_closure_review",
+        "session_ref": "roadmap-closure-review-rebind-2cdfed79"
+      },
+      "head_commit": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+      "recorded_at": "2026-07-24T17:05:20.328Z"
+    }
+  ]
+}
