@@ -292,7 +292,8 @@
     "delivery_efficiency_by_story": {
       "story-vibepro-delivery-reconciliation-state": {
         "max_subagent_count": 16,
-        "amendment_reason": "Eleven closed lifecycles completed architecture and gate review, after which risk-adaptive validation sequencing first exposed the mandatory implementation:runtime_contract final review and correctly stopped at the Story budget. This budget-only commit invalidates strict-HEAD evidence, so reserve exactly five final current-HEAD lifecycles: architecture_boundary, gate_evidence, pr_split_scope, release_risk, and runtime_contract. Reuse the same independent lightweight reviewer, spawn no replacement agent, and permit no unrelated role or global budget expansion."
+        "max_agent_consumption_ms": 4522425,
+        "amendment_reason": "Eleven closed lifecycles consumed 1522425 ms while completing architecture and gate review, after which risk-adaptive validation sequencing first exposed the mandatory implementation:runtime_contract final review and correctly stopped at the Story budget. This budget-only commit invalidates strict-HEAD evidence, so reserve exactly five final current-HEAD lifecycles and their bounded 600000 ms authorization allowances: architecture_boundary, gate_evidence, pr_split_scope, release_risk, and runtime_contract. Collect all five decisions in one run of the same independent lightweight reviewer, spawn no replacement agent, and permit no unrelated role or global budget expansion."
       },
       "story-vibepro-surface-aware-agent-review-freshness": {
         "max_subagent_count": 22,
