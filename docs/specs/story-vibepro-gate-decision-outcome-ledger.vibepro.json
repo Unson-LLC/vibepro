@@ -188,6 +188,13 @@
       "statement": "Session-backed evidence reuse remains conditional on at least one explicitly attributed session.",
       "origin": { "code_refs": [{ "file": "src/evidence-reuse.js", "anchor": "sessions.length > 0" }] },
       "inherited_behavior": { "condition": "sessions.length > 0", "classification": "unchanged", "files": ["src/evidence-reuse.js"] }
+    },
+    {
+      "id": "GDO-INHERITED-4",
+      "type": "contract",
+      "statement": "When delivery-efficiency policy is enabled, an agent review result remains recordable only for a lifecycle started through a consumed dispatch authorization.",
+      "origin": { "code_refs": [{ "file": "src/agent-review.js", "anchor": "dispatch_authorization_id" }] },
+      "inherited_behavior": { "condition": "!startedEntry?.dispatch_authorization_id", "classification": "unchanged", "files": ["src/agent-review.js"] }
     }
   ]
 }
