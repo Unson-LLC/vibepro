@@ -868,6 +868,18 @@
         "started_at": "2026-07-22",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-conformance-nul-escape",
+        "title": "architecture-conformance.jsの生NULバイトを\\0エスケープに置換しテキストファイル性を回復する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-25",
+        "due_at": null,
+        "category": "quality"
       }
     ],
     "current_story_id": "story-vibepro-gate-decision-outcome-ledger"
