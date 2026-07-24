@@ -1,4 +1,5 @@
 import { localizedText } from './language.js';
+import { projectPublicMergeWarnings } from './merge-public-projection.js';
 import { resolveReconciliationAction } from './reconciliation-action.js';
 import { describeScanStatus } from './scan-status.js';
 
@@ -288,6 +289,10 @@ export function renderPrCreateHtml(execution, options = {}) {
 }
 
 export function renderPrMergeHtml(merge, options = {}) {
+  merge = {
+    ...merge,
+    warnings: projectPublicMergeWarnings(merge.warnings)
+  };
   const language = options.language ?? merge.output?.language ?? 'ja';
   const reconciliationAction = resolveReconciliationAction(merge);
   const persistenceDetails = merge.execution_state_sync?.persistence_error_details ?? null;

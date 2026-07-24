@@ -140,3 +140,21 @@ test('human and HTML projections distinguish persistence conflict and incomplete
     assert.doesNotMatch(projection, /\/tmp\/pr-merge\.json/);
   }
 });
+
+test('public JSON, text, and HTML replace raw merge warnings with one bounded warning', () => {
+  const fixture = mergeFixture();
+  fixture.warnings = [
+    'Provider JSON response could not be parsed for gh pr view --json secret: Unexpected token',
+    'Post-merge base fetch failed: git fetch https://token@example.test/repo.git'
+  ];
+
+  const summary = renderPrMergeSummary(fixture);
+  const html = renderPrMergeHtml(fixture);
+  for (const projection of [summary, html]) {
+    assert.match(projection, /Merge processing produced a warning/);
+    assert.doesNotMatch(projection, /gh pr view/);
+    assert.doesNotMatch(projection, /Unexpected token/);
+    assert.doesNotMatch(projection, /token@example/);
+    assert.doesNotMatch(projection, /git fetch/);
+  }
+});

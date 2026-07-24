@@ -17,6 +17,7 @@ import {
   readPromotableGateOutcomeEntries
 } from './gate-outcome-ledger.js';
 import { renderPrMergeHtml } from './html-report.js';
+import { projectPublicMergeWarnings } from './merge-public-projection.js';
 import { executeManagedCommand } from './managed-command-executor.js';
 import { resolveReconciliationAction } from './reconciliation-action.js';
 import {
@@ -1572,7 +1573,9 @@ function projectPublicMergeValue(value, keyPath) {
       ))
       .map(([key, item]) => [
         key,
-        key === 'reason' && keyPath.at(-1) === 'execution_state_sync'
+        key === 'warnings'
+          ? projectPublicMergeWarnings(item)
+          : key === 'reason' && keyPath.at(-1) === 'execution_state_sync'
           ? 'Execution-state synchronization failed after merge processing.'
           : projectPublicMergeValue(item, [...keyPath, key])
       ])
