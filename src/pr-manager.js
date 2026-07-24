@@ -26,7 +26,6 @@ import {
   readValidationSequence,
   writeValidationSequence
 } from './validation-sequencing.js';
-import { normalizeActiveStories } from './story-manager.js';
 import { readNarrative } from './report-store.js';
 import { collectRuntimeInfo } from './runtime-info.js';
 import { localizedText, resolveOutputLanguage } from './language.js';
@@ -39,7 +38,7 @@ import { buildEvidenceAdjudicationGate, buildJudgmentDagAdjudicationGate, collec
 import { evaluateDesignDiagramsGate } from './spec-validator.js';
 import { resolveRequiredDiagrams } from './diagram-requirement-resolver.js';
 import { runRecipePreflight } from './recipe-preflight.js';
-import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
+import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, normalizeActiveStories, readManifest, toWorkspaceRelative, writeManifest } from './workspace.js';
 import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js';
 import {
   renderPerformancePrSection,

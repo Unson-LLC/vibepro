@@ -4,8 +4,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { evaluateGateReadiness } from './pr-manager.js';
-import { normalizeActiveStories } from './story-manager.js';
-import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { getWorkspaceDir, normalizeActiveStories, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
 

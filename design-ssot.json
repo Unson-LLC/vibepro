@@ -6766,7 +6766,46 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-infra-story-dependency-cut",
+      "title": "workspace-infraからstoryへの許可外依存を削減する",
+      "root_doc": "docs/management/stories/active/story-vibepro-infra-story-dependency-cut.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-infra-story-dependency-cut.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-infra-story-dependency-cut.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-24T03:11:40.298Z"
+  "updated_at": "2026-07-24T15:15:01.267Z"
 }

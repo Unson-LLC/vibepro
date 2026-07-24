@@ -38,7 +38,8 @@
         "src/merge-manager.js",
         "src/codex-manager.js",
         "src/run-lineage.js",
-        "src/language.js"
+        "src/language.js",
+        "src/decision-records.js"
       ]
     },
     {
@@ -60,8 +61,7 @@
         "src/story-candidate-generator.js",
         "src/story-run-portfolio.js",
         "src/nocodb-story-sync.js",
-        "src/brainbase-importer.js",
-        "src/decision-records.js"
+        "src/brainbase-importer.js"
       ]
     },
     {

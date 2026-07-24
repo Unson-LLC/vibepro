@@ -75,6 +75,35 @@ export function getWorkspaceDir(repoRoot) {
   return path.join(path.resolve(repoRoot), WORKSPACE_DIR);
 }
 
+// Story-list normalization lives here (not in story-manager.js) because it is
+// a pure, side-effect-free transform over plain brainbase.stories config data
+// that workspace-infra-level callers (guard.js's release-surface classifier,
+// performance-evidence.js, pr-manager.js) need without depending on the story
+// module's SSOT/catalog machinery.
+export function isArchived(story) {
+  return story.status === 'archived' || story.status === 'アーカイブ';
+}
+
+export function normalizeActiveStories(stories) {
+  const sourceStories = Array.isArray(stories) && stories.length > 0 ? stories : DEFAULT_BRAINBASE_STORIES;
+  const activeStories = sourceStories.filter((story) => !isArchived(story));
+  if (activeStories.length === 0) {
+    throw new Error('At least one active story is required');
+  }
+  return activeStories.map((story) => ({
+    story_id: story.story_id,
+    title: story.title,
+    ssot: story.ssot ?? 'NocoDB',
+    status: story.status ?? 'active',
+    horizon: story.horizon ?? null,
+    view: typeof story.view === 'string' ? story.view : null,
+    period: typeof story.period === 'string' ? story.period : null,
+    started_at: story.started_at ?? null,
+    due_at: story.due_at ?? null,
+    category: story.category ?? null
+  }));
+}
+
 export function toWorkspaceRelative(repoRoot, filePath) {
   return path.relative(path.resolve(repoRoot), filePath).split(path.sep).join('/');
 }
