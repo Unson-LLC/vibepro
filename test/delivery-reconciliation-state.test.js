@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import { renderPrMergeHtml } from '../src/html-report.js';
 import { renderPrMergeSummary } from '../src/merge-manager.js';
+import { projectPublicPrMergeResult } from '../src/merge-public-projection.js';
 
 function mergeFixture() {
   return {
@@ -162,7 +163,14 @@ test('public JSON, text, and HTML replace raw merge warnings with one bounded wa
 test('public JSON, text, and HTML strip URL credentials and bound reconciliation reasons', () => {
   const fixture = mergeFixture();
   fixture.pr.url = 'https://operator:secret@example.test/pr/1';
-  fixture.reconciliation.reasons = ['gate_not_ready', 'raw parser error: secret output'];
+  fixture.delivery.pr_url = 'https://delivery:secret@example.test/pr/1';
+  fixture.pr_url = 'https://top:secret@example.test/pr/1';
+  fixture.reconciliation.reasons = [
+    'gate_not_ready',
+    'provider_token',
+    'internal:secret',
+    'raw parser error: secret output'
+  ];
 
   const summary = renderPrMergeSummary(fixture);
   const html = renderPrMergeHtml(fixture);
@@ -170,6 +178,48 @@ test('public JSON, text, and HTML strip URL credentials and bound reconciliation
     assert.match(projection, /https:\/\/example\.test\/pr\/1/);
     assert.match(projection, /gate_not_ready/);
     assert.match(projection, /merge_reconciliation_required/);
-    assert.doesNotMatch(projection, /operator|secret|raw parser error/);
+    assert.doesNotMatch(projection, /operator:secret|delivery:secret|top:secret|provider_token|internal:secret|raw parser error/);
   }
+});
+
+test('public projection allows only bounded recovery commands and execution-state fields', () => {
+  const fixture = mergeFixture();
+  fixture.execution_state_sync = {
+    status: 'failed',
+    reason: 'state write leaked a provider token',
+    recovery_command: 'vibepro execute reconcile . --story-id story-delivery --pr https://operator:secret@example.test/pr/1',
+    message: 'provider_token=secret',
+    details: { stderr: 'secret' }
+  };
+  fixture.reconciliation_action = {
+    status: 'required',
+    reason: 'execution_state_sync_failed',
+    commands: [
+      'vibepro pr prepare . --story-id story-delivery',
+      'vibepro execute merge . --story-id story-delivery --pr https://operator:secret@example.test/pr/1',
+      'git push https://operator:secret@example.test/repo.git'
+    ]
+  };
+
+  const projected = projectPublicPrMergeResult(fixture);
+  assert.deepEqual(projected.reconciliation_action.commands, [
+    'vibepro pr prepare . --story-id story-delivery',
+    'vibepro execute merge . --story-id story-delivery --pr https://example.test/pr/1'
+  ]);
+  assert.equal(
+    projected.execution_state_sync.recovery_command,
+    'vibepro execute reconcile . --story-id story-delivery --pr https://example.test/pr/1'
+  );
+  assert.equal(projected.execution_state_sync.reason, 'Execution-state synchronization failed after merge processing.');
+  assert.equal(Object.hasOwn(projected.execution_state_sync, 'message'), false);
+  assert.equal(Object.hasOwn(projected.execution_state_sync, 'details'), false);
+  assert.doesNotMatch(JSON.stringify(projected), /operator|secret|git push|provider_token/);
+});
+
+test('public projection does not unwrap a domain merge field from a merge result', () => {
+  const fixture = mergeFixture();
+  fixture.merge = { internal: 'nested domain state' };
+  const projected = projectPublicPrMergeResult(fixture);
+  assert.equal(projected.status, 'merged_externally');
+  assert.deepEqual(projected.merge, { internal: 'nested domain state' });
 });
