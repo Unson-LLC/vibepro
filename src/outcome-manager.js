@@ -18,6 +18,7 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { executeManagedCommand, executeManagedOperation, sanitizeDiagnostic } from './managed-command-executor.js';
 import { isSafeStoryId } from './story-id.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 
 export class OutcomeCommandError extends Error {
   constructor(errorId, message, details = {}) {
@@ -372,16 +373,7 @@ async function inspectOutcomeLedgerPostcondition(ledgerPath, expectedBytes) {
 }
 
 function projectOutcomePersistence(summary = {}) {
-  return {
-    status: summary.status ?? 'unknown',
-    reason: summary.reason ?? null,
-    commit_sha: summary.commit_sha ?? null,
-    pushed: summary.pushed === true,
-    worktree_path: summary.worktree_path ?? null,
-    push_postcondition: summary.push_postcondition ?? null,
-    cleanup: summary.cleanup ?? null,
-    primary: summary.primary ?? null
-  };
+  return projectPublicOutcomePersistence(summary);
 }
 
 function projectPublicOutcomePersistence(summary = {}) {
@@ -616,7 +608,7 @@ function normalizeOutcomeSubjectKey(value) {
 async function assertMerged(root, storyId, options = {}) {
   let merge;
   try {
-    merge = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-merge.json'), 'utf8'));
+    merge = JSON.parse(await readFile(await resolvePrArtifactFile(root, storyId, 'pr-merge.json'), 'utf8'));
   } catch {
     throw new OutcomeCommandError('outcome_not_merged', 'outcome operations require a verified merge artifact');
   }
@@ -628,7 +620,7 @@ async function assertMerged(root, storyId, options = {}) {
   }
   let created;
   try {
-    created = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-create.json'), 'utf8'));
+    created = JSON.parse(await readFile(await resolvePrArtifactFile(root, storyId, 'pr-create.json'), 'utf8'));
   } catch {
     throw new OutcomeCommandError('outcome_not_merged', 'merge authority requires its bound PR creation artifact');
   }

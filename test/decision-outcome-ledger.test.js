@@ -1499,6 +1499,48 @@ test('GDL-S-9 outcome record resolves one eligible managed source and refreshes 
   assert.match(rendered, /defect_recurred/);
 });
 
+test('GDL-S-9 outcome refresh reads merge authority from the configured PR artifact route', async () => {
+  const fixture = await createOutcomeRepository('vibepro-outcome-routed-authority-');
+  const { root, head } = fixture;
+  const workspace = path.join(root, '.vibepro');
+  const prDir = path.join(workspace, 'pr', STORY_ID);
+  const routedDir = path.join(workspace, 'routed-pr');
+  await mkdir(prDir, { recursive: true });
+  await mkdir(routedDir, { recursive: true });
+  await writeFile(path.join(workspace, 'config.json'), `${JSON.stringify({
+    artifact_routing: {
+      artifacts: {
+        pr: { canonical: '.vibepro/routed-pr/{story_id}-pr-prepare.json' }
+      }
+    }
+  }, null, 2)}\n`);
+  const ledger = buildDecisionOutcomeLedger({
+    storyId: STORY_ID,
+    sources: [finding('routed-authority')]
+  });
+  await writeFile(path.join(prDir, 'decision-outcome-ledger.json'), `${JSON.stringify(ledger, null, 2)}\n`);
+  await execFileAsync('git', ['push', '--force', 'origin', `${head}:refs/pull/1/head`], { cwd: root });
+  const prUrl = 'https://github.test/vibepro/outcome-fixture/pull/1';
+  await writeFile(path.join(routedDir, `${STORY_ID}-pr-create.json`), `${JSON.stringify({
+    story: { story_id: STORY_ID }, pr_url: prUrl, base: 'main', current_head_sha: head
+  })}\n`);
+  await writeFile(path.join(routedDir, `${STORY_ID}-pr-merge.json`), `${JSON.stringify({
+    story: { story_id: STORY_ID }, status: 'merged', merge_commit_sha: head,
+    current_head_sha: head, strategy: 'merge', base: 'main',
+    git: { base_branch: 'main', base_ref: 'origin/main' },
+    pr: { number: 1, url: prUrl, state: 'MERGED', head_ref_oid: head }
+  })}\n`);
+
+  const refreshed = await refreshOutcome(root, {
+    storyId: STORY_ID,
+    githubPrView: authoritativePr(head),
+    persistenceService: async () => ({ summary: { status: 'already_present', commit_sha: head } })
+  });
+
+  assert.equal(refreshed.status, 'already_present');
+  assert.equal(refreshed.story_id, STORY_ID);
+});
+
 test('GDL-S-9 outcome record validates producer reason and JSON-safe values before mutation', async () => {
   const fixture = await createBoundOutcomeFixture('strict_head');
   const cases = [{
@@ -1721,10 +1763,10 @@ test('GDL-S-9 permanent canonical rollback failure preserves bounded push diagno
   }), (error) => {
     assert.equal(error.error_id, 'outcome_canonical_restore_failed');
     assert.equal(error.details.original_error.code, 'outcome_promotion_failed');
-    assert.equal(error.details.original_error.persistence.worktree_path, '/tmp/vibepro-canonical-recovery');
+    assert.equal('worktree_path' in error.details.original_error.persistence, false);
+    assert.equal('primary' in error.details.original_error.persistence, false);
     assert.equal(error.details.original_error.persistence.push_postcondition.status, 'indeterminate');
     assert.equal(error.details.original_error.persistence.cleanup.status, 'failed');
-    assert.equal(error.details.original_error.persistence.primary.failure.stage, 'canonical.push');
     return true;
   });
 });

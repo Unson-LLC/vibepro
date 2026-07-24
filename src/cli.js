@@ -4006,7 +4006,10 @@ function sanitizeOutcomeErrorValue(value) {
   if (typeof value === 'string') return sanitizeDiagnostic(value, { maxBytes: 4096 });
   if (!value || typeof value !== 'object') return value;
   return Object.fromEntries(Object.entries(value)
-    .filter(([key]) => !['stdout', 'stderr', 'output', 'command', 'args', 'env'].includes(key))
+    .filter(([key]) => ![
+      'stdout', 'stderr', 'output', 'command', 'commands', 'args', 'env',
+      'results', 'worktree_path', 'primary'
+    ].includes(key))
     .map(([key, child]) => [key, sanitizeOutcomeErrorValue(child)]));
 }
 
@@ -4088,15 +4091,15 @@ function renderPersistenceFailure(persistence) {
   const postcondition = persistence.push_postcondition ?? {};
   const cleanup = persistence.cleanup ?? {};
   const lines = [
-    `persistence: status=${persistence.status ?? 'unknown'} reason=${persistence.reason ?? 'unknown'} pushed=${persistence.pushed === true}`,
-    `primary failure: status=${primary.status ?? 'unknown'} reason=${primary.reason ?? 'unknown'} stage=${failure.stage ?? 'unknown'} command-status=${failure.status ?? 'unknown'} kind=${failure.failure_kind ?? 'unknown'}`,
+    `persistence: status=${persistence.status ?? 'unknown'} reason=${persistence.reason ?? 'unknown'} pushed=${persistence.pushed === true}`
+  ];
+  if (persistence.primary) {
+    lines.push(`primary failure: status=${primary.status ?? 'unknown'} reason=${primary.reason ?? 'unknown'} stage=${failure.stage ?? 'unknown'} command-status=${failure.status ?? 'unknown'} kind=${failure.failure_kind ?? 'unknown'}`);
+  }
+  lines.push(
     `push postcondition: status=${postcondition.status ?? 'not_checked'} remote-sha=${postcondition.remote_sha ?? 'unknown'}`,
     `cleanup: status=${cleanup.status ?? 'unknown'} attempted=${cleanup.attempted === true} removed=${cleanup.removed === true}`
-  ];
-  if (persistence.worktree_path) {
-    const residual = cleanup.removed === true ? 'no' : cleanup.attempted === true ? 'possible' : 'unknown';
-    lines.push(`temporary worktree: path=${persistence.worktree_path} residual=${residual}`);
-  }
+  );
   lines.push(`recovery: ${persistenceRecoveryGuidance(persistence)}`);
   return lines;
 }
@@ -4123,8 +4126,8 @@ function renderOutcomeHelp(subcommand = null, language = null) {
   }
   if (subcommand === 'refresh') {
     return english
-      ? `VibePro outcome refresh\n\nUsage:\n  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]\n\nEffect:\n  Rebuilds the decision outcome ledger and persists a canonical revision after verified merge authority.\n\nResults:\n  promoted: a new canonical revision was pushed.\n  already_present: the canonical revision was already present.\n  reconciliation_required: verify the canonical revision and rerun this command.\n\nRecovery and rollback:\n  Follow the bounded recovery field on failure. Verify the remote postcondition before retrying; restore the reported recovery snapshot when rollback is incomplete.\n`
-      : `VibePro outcome refresh\n\n使い方:\n  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]\n\n作用:\n  検証済みmerge authorityに基づきdecision outcome ledgerを再構築し、canonical revisionを永続化します。\n\n結果:\n  promoted: 新しいcanonical revisionをpushしました。\n  already_present: canonical revisionは既に存在します。\n  reconciliation_required: canonical revisionを確認して、このコマンドを再実行してください。\n\n復旧とrollback:\n  失敗時はboundedなrecovery欄に従います。再実行前にremote postconditionを確認し、rollback未完了時は表示されたrecovery snapshotから復元してください。\n`;
+      ? `VibePro outcome refresh\n\nUsage:\n  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]\n\nEffect:\n  Rebuilds the decision outcome ledger and persists a canonical revision after verified merge authority.\n\nOperator flow:\n  Inspect bounded selectors and the ledger digest with vibepro usage report . --json or vibepro pr prepare . --story-id <story-id> --view gate-evidence. Record an observation with vibepro outcome record, then run outcome refresh. Verify the routed pr-create.json, pr-merge.json, and decision-outcome-ledger.json artifacts when merge authority is rejected.\n\nResults:\n  promoted: a new canonical revision was pushed.\n  already_present: the canonical revision was already present.\n  reconciliation_required: verify the canonical revision and rerun this command.\n\nRecovery and rollback:\n  Follow the bounded recovery field on failure. Verify the remote postcondition before retrying; restore the reported recovery snapshot when rollback is incomplete.\n`
+      : `VibePro outcome refresh\n\n使い方:\n  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]\n\n作用:\n  検証済みmerge authorityに基づきdecision outcome ledgerを再構築し、canonical revisionを永続化します。\n\n操作フロー:\n  vibepro usage report . --json または vibepro pr prepare . --story-id <story-id> --view gate-evidence でbounded selectorとledger digestを確認し、vibepro outcome recordで観測を記録してからoutcome refreshを実行します。merge authorityが拒否された場合はrouted pr-create.json、pr-merge.json、decision-outcome-ledger.jsonを確認します。\n\n結果:\n  promoted: 新しいcanonical revisionをpushしました。\n  already_present: canonical revisionは既に存在します。\n  reconciliation_required: canonical revisionを確認して、このコマンドを再実行してください。\n\n復旧とrollback:\n  失敗時はboundedなrecovery欄に従います。再実行前にremote postconditionを確認し、rollback未完了時は表示されたrecovery snapshotから復元してください。\n`;
   }
   return english
     ? `VibePro Outcome\n\nCommands:\n  vibepro outcome record   Record a downstream outcome observation.\n  vibepro outcome refresh  Rebuild and persist the canonical outcome revision.\n\nRun a command with --help for its exact options.\n`

@@ -439,11 +439,17 @@ test(`${STORY_ID} runs the public outcome CLI from record through canonical refr
       const payload = JSON.parse(output);
       assert.equal(payload.error_id, 'outcome_promotion_failed');
       assert.ok(payload.persistence);
+      assert.equal('commands' in payload.persistence, false);
+      assert.equal('results' in payload.persistence, false);
+      assert.equal('worktree_path' in payload.persistence, false);
+      assert.equal('primary' in payload.persistence, false);
+      assert.equal(JSON.stringify(payload).includes('stdout'), false);
+      assert.equal(JSON.stringify(payload).includes('stderr'), false);
     } else {
       assert.match(output, /outcome_promotion_failed/);
       assert.match(output, /persistence:/);
-      assert.match(output, /primary failure:/);
       assert.match(output, /recovery:/);
+      assert.doesNotMatch(output, /primary failure:|temporary worktree:/);
     }
   }
   await unlink(rejectingHook);

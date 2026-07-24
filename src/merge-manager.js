@@ -1904,9 +1904,7 @@ async function resolveGitHubRepositorySlug(repoRoot, context = {}) {
   const candidates = [
     await gitOptional(repoRoot, ['config', '--get', 'remote.origin.url']),
     context.prCreate?.pr_url,
-    context.executionState?.pr_url,
-    context.prCreate?.toolchain?.source_git?.origin_url,
-    context.prPrepare?.toolchain?.source_git?.origin_url
+    context.executionState?.pr_url
   ];
   const slugs = candidates.map(githubRepositorySlug).filter(Boolean);
   const unique = [...new Set(slugs.map((slug) => slug.toLowerCase()))];

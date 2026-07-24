@@ -154,17 +154,17 @@ test('outcome promotion text exposes bounded recovery diagnostics without raw co
 
   const rendered = renderOutcomeCommandError(error);
   assert.match(rendered, /persistence: status=failed reason=canonical_audit_push_indeterminate; cleanup_failed pushed=false/);
-  assert.match(rendered, /primary failure: status=failed reason=canonical_audit_push_indeterminate stage=canonical\.push command-status=timed_out kind=timeout/);
   assert.match(rendered, /push postcondition: status=indeterminate remote-sha=unknown/);
   assert.match(rendered, /cleanup: status=failed attempted=true removed=false/);
-  assert.match(rendered, /temporary worktree: path=\/tmp\/vibepro-canonical-audit-story-x-1 residual=possible/);
   assert.match(rendered, /recovery: verify the remote branch before retrying; inspect and remove the temporary worktree if it remains/);
   assert.doesNotMatch(rendered, /SECRET_SHOULD_NOT_RENDER/);
+  assert.doesNotMatch(rendered, /vibepro-canonical-audit-story-x-1|primary failure/);
 
   const json = JSON.stringify(serializeOutcomeCommandError(error));
   assert.match(json, /outcome_promotion_failed/);
   assert.match(json, /canonical_audit_push_indeterminate/);
   assert.doesNotMatch(json, /SECRET_SHOULD_NOT_RENDER/);
+  assert.doesNotMatch(json, /worktree_path|primary|commands|results/);
 });
 
 test('outcome finalization text exposes local reconciliation state and recovery artifact', () => {
@@ -230,11 +230,11 @@ test('outcome restore failure diagnostics redact credential-like values in text 
   assert.doesNotMatch(json, /super-secret-token/);
   assert.match(rendered, /\[REDACTED\]/);
   assert.match(json, /\[REDACTED\]/);
-  assert.match(rendered, /original primary failure: status=failed reason=canonical_audit_push_indeterminate stage=canonical\.push command-status=timed_out kind=timeout/);
   assert.match(rendered, /original push postcondition: status=indeterminate remote-sha=unknown/);
   assert.match(rendered, /original cleanup: status=failed attempted=true removed=false/);
-  assert.match(rendered, /original temporary worktree: path=\/tmp\/vibepro-canonical-recovery residual=possible/);
   assert.match(rendered, /original ledger postcondition: status=not_applied expected-digest=expected observed-digest=observed/);
+  assert.doesNotMatch(rendered, /vibepro-canonical-recovery|primary failure/);
+  assert.doesNotMatch(json, /worktree_path|primary|commands|results/);
 });
 
 test('outcome success text exposes the bounded record contract while JSON preserves the public result', () => {
