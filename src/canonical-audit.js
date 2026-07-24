@@ -13,6 +13,7 @@ import { findBudgetSummaryPath } from './pr-artifact-budget.js';
 import { resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
 import { resolveReconciliationAction } from './reconciliation-action.js';
 import { validateDecisionOutcomeLedger } from './decision-outcome-ledger.js';
+import { projectPublicPrMergeResult } from './merge-public-projection.js';
 
 export const CANONICAL_AUDIT_ROOT = path.join('docs', 'management', 'audit-artifacts');
 
@@ -691,11 +692,11 @@ async function writeCanonicalAuditArtifacts(root, {
       status: merge.status ?? null,
       base: merge.base ?? null,
       delivery: merge.delivery ?? null,
-      reconciliation: merge.reconciliation ?? null,
-      reconciliation_action: resolveReconciliationAction(merge),
-      execution_state_sync: merge.execution_state_sync ?? null,
+      reconciliation: publicMergeField(merge, 'reconciliation'),
+      reconciliation_action: resolvePublicReconciliationAction(merge),
+      execution_state_sync: publicMergeField(merge, 'execution_state_sync'),
       decision_outcome_binding: merge.decision_outcome_binding ?? null,
-      pr_url: merge.pr?.url ?? merge.pr?.selector ?? null,
+      pr_url: publicMergeUrl(merge),
       merge_commit_sha: merge.merge_commit_sha ?? null,
       merged_at: merge.merged_at ?? null,
       current_head_sha: merge.current_head_sha ?? null,
@@ -1124,11 +1125,11 @@ async function writeCompressedReplayBundle(root, {
       status: merge.status ?? null,
       base: merge.base ?? null,
       delivery: merge.delivery ?? null,
-      reconciliation: merge.reconciliation ?? null,
-      reconciliation_action: resolveReconciliationAction(merge),
-      execution_state_sync: merge.execution_state_sync ?? null,
+      reconciliation: publicMergeField(merge, 'reconciliation'),
+      reconciliation_action: resolvePublicReconciliationAction(merge),
+      execution_state_sync: publicMergeField(merge, 'execution_state_sync'),
       decision_outcome_binding: merge.decision_outcome_binding ?? null,
-      pr_url: merge.pr?.url ?? merge.pr?.selector ?? merge.pr_url ?? null,
+      pr_url: publicMergeUrl(merge),
       merge_commit_sha: merge.merge_commit_sha ?? null,
       merged_at: merge.merged_at ?? null,
       current_head_sha: merge.current_head_sha ?? null
@@ -1190,6 +1191,23 @@ function buildReplayArtifactManifest(root, artifact) {
   };
 }
 
+function projectCanonicalPublicMerge(data) {
+  return projectPublicPrMergeResult(data ?? {});
+}
+
+function publicMergeField(data, key) {
+  return projectCanonicalPublicMerge(data)?.[key] ?? null;
+}
+
+function resolvePublicReconciliationAction(data) {
+  return resolveReconciliationAction(projectCanonicalPublicMerge(data));
+}
+
+function publicMergeUrl(data) {
+  const projected = projectCanonicalPublicMerge(data);
+  return projected?.pr?.url ?? projected?.pr?.selector ?? projected?.pr_url ?? null;
+}
+
 function summarizeReplayArtifact(artifact) {
   const data = artifact.data;
   if (artifact.kind === 'pr_prepare') {
@@ -1215,10 +1233,10 @@ function summarizeReplayArtifact(artifact) {
       status: data?.status,
       base: data?.base,
       delivery: data?.delivery,
-      reconciliation: data?.reconciliation,
-      reconciliation_action: resolveReconciliationAction(data),
-      execution_state_sync: data?.execution_state_sync,
-      pr_url: data?.pr?.url ?? data?.pr_url,
+      reconciliation: publicMergeField(data, 'reconciliation'),
+      reconciliation_action: resolvePublicReconciliationAction(data),
+      execution_state_sync: publicMergeField(data, 'execution_state_sync'),
+      pr_url: publicMergeUrl(data),
       merge_commit_sha: data?.merge_commit_sha,
       merged_at: data?.merged_at,
       current_head_sha: data?.current_head_sha,
@@ -1634,11 +1652,11 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
         status: prMerge.status ?? null,
         base: prMerge.base ?? null,
         delivery: prMerge.delivery ?? null,
-        reconciliation: prMerge.reconciliation ?? null,
-        reconciliation_action: resolveReconciliationAction(prMerge),
-        execution_state_sync: prMerge.execution_state_sync ?? null,
+        reconciliation: publicMergeField(prMerge, 'reconciliation'),
+        reconciliation_action: resolvePublicReconciliationAction(prMerge),
+        execution_state_sync: publicMergeField(prMerge, 'execution_state_sync'),
         decision_outcome_binding: prMerge.decision_outcome_binding ?? null,
-        pr_url: prMerge.pr?.url ?? prMerge.pr?.selector ?? prMerge.pr_url ?? null,
+        pr_url: publicMergeUrl(prMerge),
         merge_commit_sha: prMerge.merge_commit_sha ?? null,
         merged_at: prMerge.merged_at ?? null,
         current_head_sha: prMerge.current_head_sha ?? null,
@@ -2043,9 +2061,9 @@ function scopedPrLifecycle(data, artifactKind, excluded) {
     repository_slug: data?.repository_slug,
     strategy: data?.strategy,
     delivery: data?.delivery,
-    reconciliation: data?.reconciliation,
-    reconciliation_action: resolveReconciliationAction(data),
-    execution_state_sync: data?.execution_state_sync,
+    reconciliation: publicMergeField(data, 'reconciliation'),
+    reconciliation_action: resolvePublicReconciliationAction(data),
+    execution_state_sync: publicMergeField(data, 'execution_state_sync'),
     decision_outcome_binding: data?.decision_outcome_binding,
     branch_cleanup: data?.branch_cleanup,
     delete_branch: data?.delete_branch,

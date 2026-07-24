@@ -16,6 +16,7 @@ import { discoverPrArtifactStoryIds, resolveArtifactRoute, resolveGateArtifactFi
 import { getWorkspaceDir, MANIFEST_FILE, toWorkspaceRelative } from './workspace.js';
 import { resolveReconciliationAction } from './reconciliation-action.js';
 import { projectDecisionOutcomeSummary } from './decision-outcome-ledger.js';
+import { projectPublicPrMergeResult } from './merge-public-projection.js';
 
 const execFileAsync = promisify(execFile);
 const ROI_AGENT_SYSTEMS = new Set(['codex', 'claude_code']);
@@ -85,12 +86,13 @@ export async function createUsageReport(repoRoot, options = {}) {
       story.latest_pr_url = artifact.data?.pr_url ?? story.latest_pr_url;
     }
     if (artifact.kind === 'pr_merge') {
+      const publicMerge = projectPublicPrMergeResult(artifact.data);
       story.pr_merge_count += 1;
-      story.latest_merge_status = artifact.data?.status ?? story.latest_merge_status;
-      story.latest_delivery_status = artifact.data?.delivery?.status ?? story.latest_delivery_status;
-      story.latest_reconciliation_status = artifact.data?.reconciliation?.status ?? story.latest_reconciliation_status;
-      story.latest_reconciliation_reasons = artifact.data?.reconciliation?.reasons ?? story.latest_reconciliation_reasons;
-      const reconciliationAction = resolveReconciliationAction(artifact.data);
+      story.latest_merge_status = publicMerge.status ?? story.latest_merge_status;
+      story.latest_delivery_status = publicMerge.delivery?.status ?? story.latest_delivery_status;
+      story.latest_reconciliation_status = publicMerge.reconciliation?.status ?? story.latest_reconciliation_status;
+      story.latest_reconciliation_reasons = publicMerge.reconciliation?.reasons ?? story.latest_reconciliation_reasons;
+      const reconciliationAction = resolveReconciliationAction(publicMerge);
       if (reconciliationAction?.status === 'blocked' && reconciliationAction.reason) {
         story.latest_reconciliation_reasons = [
           ...new Set([...(story.latest_reconciliation_reasons ?? []), reconciliationAction.reason])
@@ -100,13 +102,13 @@ export async function createUsageReport(repoRoot, options = {}) {
       story.latest_reconciliation_action = reconciliationAction?.commands?.length
         ? reconciliationAction.commands.join(' && ')
         : story.latest_reconciliation_action;
-      story.latest_pr_url = artifact.data?.pr?.url ?? artifact.data?.pr_url ?? story.latest_pr_url;
-      story.latest_base_branch = artifact.data?.base
-        ?? artifact.data?.git?.base_branch
-        ?? artifact.data?.pr?.base_ref_name
+      story.latest_pr_url = publicMerge.pr?.url ?? publicMerge.pr_url ?? story.latest_pr_url;
+      story.latest_base_branch = publicMerge.base
+        ?? publicMerge.git?.base_branch
+        ?? publicMerge.pr?.base_ref_name
         ?? story.latest_base_branch;
-      const contradictoryDeliveryState = artifact.data?.delivery?.status === 'unverified'
-        && artifact.data?.reconciliation?.status === 'reconciled';
+      const contradictoryDeliveryState = publicMerge.delivery?.status === 'unverified'
+        && publicMerge.reconciliation?.status === 'reconciled';
       if (contradictoryDeliveryState) {
         story.latest_reconciliation_status = 'blocked';
         story.latest_reconciliation_reasons = [
@@ -114,9 +116,9 @@ export async function createUsageReport(repoRoot, options = {}) {
         ];
       }
       story.blocked ||= contradictoryDeliveryState
-        || (Boolean(artifact.data?.delivery?.status)
-          && artifact.data?.reconciliation?.status !== 'reconciled');
-      story.latest_merged_at = artifact.data?.merged_at ?? story.latest_merged_at;
+        || (Boolean(publicMerge.delivery?.status)
+          && publicMerge.reconciliation?.status !== 'reconciled');
+      story.latest_merged_at = publicMerge.merged_at ?? story.latest_merged_at;
     }
     if (artifact.kind === 'gate_dag') collectGateMetrics(artifact.data, artifact.story_id, storyMap);
     if (artifact.kind === 'traceability') {

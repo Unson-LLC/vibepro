@@ -193,11 +193,16 @@ test('public projection allows only bounded recovery commands and execution-stat
   };
   fixture.reconciliation_action = {
     status: 'required',
-    reason: 'execution_state_sync_failed',
+    reason: 'provider_token=secret',
+    message: 'raw provider response',
+    details: { stderr: 'secret' },
     commands: [
       'vibepro pr prepare . --story-id story-delivery',
       'vibepro execute merge . --story-id story-delivery --pr https://operator:secret@example.test/pr/1',
-      'git push https://operator:secret@example.test/repo.git'
+      'git push https://operator:secret@example.test/repo.git',
+      'vibepro execute reconcile . --story-id story-delivery; curl https://example.test/leak',
+      'vibepro execute merge . --story-id story-delivery && git push origin main',
+      'vibepro pr prepare . --story-id "$(cat /tmp/secret)"'
     ]
   };
 
@@ -206,6 +211,9 @@ test('public projection allows only bounded recovery commands and execution-stat
     'vibepro pr prepare . --story-id story-delivery',
     'vibepro execute merge . --story-id story-delivery --pr https://example.test/pr/1'
   ]);
+  assert.equal(projected.reconciliation_action.reason, 'merge_reconciliation_required');
+  assert.equal(Object.hasOwn(projected.reconciliation_action, 'message'), false);
+  assert.equal(Object.hasOwn(projected.reconciliation_action, 'details'), false);
   assert.equal(
     projected.execution_state_sync.recovery_command,
     'vibepro execute reconcile . --story-id story-delivery --pr https://example.test/pr/1'
@@ -213,7 +221,7 @@ test('public projection allows only bounded recovery commands and execution-stat
   assert.equal(projected.execution_state_sync.reason, 'Execution-state synchronization failed after merge processing.');
   assert.equal(Object.hasOwn(projected.execution_state_sync, 'message'), false);
   assert.equal(Object.hasOwn(projected.execution_state_sync, 'details'), false);
-  assert.doesNotMatch(JSON.stringify(projected), /operator|secret|git push|provider_token/);
+  assert.doesNotMatch(JSON.stringify(projected), /operator|secret|git push|provider_token|curl|cat/);
 });
 
 test('public projection does not unwrap a domain merge field from a merge result', () => {

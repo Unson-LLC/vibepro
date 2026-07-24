@@ -507,6 +507,45 @@ test('local pr-merge wins over manifest merge record without double counting', a
   assert.equal(report.artifact_counts.pr, 1);
 });
 
+test('usage report projects untrusted merge diagnostics through the public boundary', async () => {
+  const root = await setupReportRepo([{ story_id: 'story-public-merge-boundary' }]);
+  const localDir = path.join(root, '.vibepro', 'pr', 'story-public-merge-boundary');
+  await mkdir(localDir, { recursive: true });
+  await writeFile(path.join(localDir, 'pr-merge.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-public-merge-boundary',
+    status: 'merged_externally',
+    base: 'develop',
+    delivery: { status: 'merged_externally', observed: true },
+    reconciliation: {
+      status: 'reconciliation_required',
+      reasons: ['gate_not_ready', 'provider_token=secret']
+    },
+    reconciliation_action: {
+      status: 'required',
+      reason: 'provider_token=secret',
+      commands: [
+        'vibepro pr prepare . --story-id story-public-merge-boundary --base develop',
+        'vibepro execute reconcile . --story-id story-public-merge-boundary; curl https://example.test/leak'
+      ],
+      message: 'raw provider response'
+    },
+    pr: { url: 'https://operator:secret@example.test/pr/365' }
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-public-merge-boundary');
+  const rendered = renderUsageReport(report);
+  assert.deepEqual(story.latest_reconciliation_reasons, ['gate_not_ready', 'merge_reconciliation_required']);
+  assert.equal(
+    story.latest_reconciliation_action,
+    'vibepro pr prepare . --story-id story-public-merge-boundary --base develop'
+  );
+  assert.equal(story.latest_pr_url, 'https://example.test/pr/365');
+  assert.doesNotMatch(JSON.stringify(story), /operator|secret|provider_token|curl|raw provider response/);
+  assert.doesNotMatch(rendered, /operator|secret|provider_token|curl|raw provider response/);
+});
+
 test('DRS-S-5 canonical recovery equivalence keeps execution-state sync recovery authoritative', async () => {
   const root = await setupReportRepo([
     { story_id: 'story-sync-recovery' }
