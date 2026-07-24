@@ -161,3 +161,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:356:start -->
 - [PR #356](https://github.com/Unson-LLC/vibepro/pull/356) — [2026-07](/releases/2026-07): story-vibepro-delivery-reconciliation-state - 外部マージ済みPRの再読込が、現在HEADのgate driftを隠して成功終了し得る
 <!-- vibepro-release-index-pr:356:end -->
+
+<!-- vibepro-release-index-pr:385:start -->
+- [PR #385](https://github.com/Unson-LLC/vibepro/pull/385) — [2026-07](/releases/2026-07): story-vibepro-one-command-pr-ready-closure - 1コマンド自律実装を実Runtime E2Eで閉じる
+<!-- vibepro-release-index-pr:385:end -->
