@@ -85,3 +85,4 @@ VibeProのgateが実欠陥を捕捉しても、finding、判断、修正、PR、
 - 修正で HEAD が変わるため、同じ `architecture_boundary` role による独立再確認を1回だけ許可する。waiver、無関係な role、反復 replacement loop には使わない。
 - その再確認で、内部診断の一律除外が公開 recovery command まで削除する契約破壊を検出した。`343e54c8` の文脈依存 projection 修正だけを再確認する最終 `architecture_boundary` dispatch を1回追加し、追加ループには使わない。
 - その修正確認では実装契約は解消済みだったが、実 `runCli --json` stdout 経路の恒常テスト不足が残った。依存注入した実 CLI 経路テストの確認に限り、最終 dispatch を1回追加する。
+- frozen candidate の通過後、`origin/main` 前進により PR freshness が正しく rebase を要求した。rebase 後の current-head sequence、最終 gate、adjudication の再束縛に限って5 accounting unit と1 architecture preflight を追加し、実装変更には使わない。
