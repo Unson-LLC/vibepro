@@ -17,7 +17,11 @@ const implementationRequest = {
   task_id: 'implement',
   role: 'implementation',
   input_head_sha: 'a'.repeat(40),
-  requirements: { managed_worktree: '/managed', capabilities: ['workspace_write'], timeout_ms: 1000 }
+  requirements: {
+    managed_worktree: '/managed',
+    capabilities: ['workspace_write', 'local_workspace_only'],
+    timeout_ms: 1000
+  }
 };
 
 function fakeProcess() {
@@ -38,12 +42,22 @@ test('PRC-S-1 Codex connector conforms to probe/start/status/result/cancel', asy
     spawnProcess(command, args, options) { invocation = { command, args, options }; child = fakeProcess(); return child; }
   });
   assert.deepEqual(await connector.probe({ role: 'implementation' }), {
-    available: true, capabilities: ['workspace_write'], sandbox: 'workspace-write', approval_policy: 'managed', reason: null
+    available: true,
+    capabilities: ['workspace_write', 'local_workspace_only'],
+    sandbox: 'workspace-write',
+    approval_policy: 'never',
+    reason: null
   });
   const started = await connector.start(implementationRequest);
   assert.equal(started.provider_run_id, 'codex-provider-1');
   assert.equal(invocation.options.cwd, '/managed');
-  assert.deepEqual(invocation.args.slice(0, 7), ['exec', '--json', '--color', 'never', '--sandbox', 'workspace-write', '-C']);
+  assert.deepEqual(invocation.args.slice(0, 12), [
+    'exec', '--json', '--color', 'never',
+    '--ignore-user-config',
+    '-c', 'approval_policy="never"',
+    '-c', 'sandbox_workspace_write.network_access=false',
+    '--sandbox', 'workspace-write', '-C'
+  ]);
   assert.equal((await connector.status({ provider_run_id: started.provider_run_id })).status, 'running');
   child.stdout.end(JSON.stringify({ completion_status: 'completed', changed_files: ['src/a.js'], head_sha: 'b'.repeat(40), test_suggestions: ['node --test'], summary: 'done' }) + '\n');
   child.emit('close', 0, null);
@@ -64,6 +78,13 @@ test('PRC-S-2 Claude Code is explicit opt-in and shares the connector contract',
     spawnProcess(command, args) { invocation = { command, args }; return fakeProcess(); }
   });
   const claude = enabled.find((adapter) => adapter.id === 'claude-code');
+  assert.deepEqual(await claude.probe({ role: 'implementation' }), {
+    available: true,
+    capabilities: ['workspace_write'],
+    sandbox: 'workspace-write',
+    approval_policy: 'managed',
+    reason: null
+  });
   assert.equal((await claude.probe({ role: 'review' })).sandbox, 'read-only');
   await claude.start({ ...implementationRequest, role: 'review', reviewer_identity: 'reviewer-1' });
   assert.deepEqual(invocation.args.slice(0, 6), ['--print', '--output-format', 'stream-json', '--verbose', '--permission-mode', 'plan']);

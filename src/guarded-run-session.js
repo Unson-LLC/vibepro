@@ -14,6 +14,7 @@ import {
 } from './pr-manager.js';
 import { buildSafeActionPlan, runSafeActionPlan, selectSafeActionCandidate } from './safe-action-orchestrator.js';
 import { createDefaultAgentReviewOps, createGuardedIndependentReviewRunner, createReviewCheckpointPersister, recordGuardedRuntimeReview } from './independent-review-orchestrator.js';
+import { bindCurrentHeadFinalPrepare, createOneCommandPrReadyRunSessionOwners, persistOneCommandHumanDecision } from './one-command-pr-ready-closure.js';
 import { assertProviderIdentityUniqueness } from './run-lineage.js';
 import { refreshContextCapsuleForRun as defaultRefreshContextCapsule } from './run-context-capsule.js';
 import { getWorkspaceDir } from './workspace.js';
@@ -39,6 +40,7 @@ const RECOVERABLE_STATUSES = new Set([
   'blocked',
   'failed'
 ]);
+const ACTIVE_RUNTIME_DISPATCH_STATUSES = new Set(['queued', 'running', 'permission_wait']);
 const AUTHORITY_KINDS = new Set(['managed', 'repository', 'source_fallback']);
 const DEPENDENCY_KEYS = new Set([
   'now',
@@ -174,6 +176,36 @@ async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
   let result = operation === 'dispatch'
     ? await dispatchRuntimeWithFallbacks(deps.agentRuntimeCoordinator, runtimeState, options.request, { providerIdentityRecords })
     : await deps.agentRuntimeCoordinator[operation](loaded.state, options.dispatchId, { providerIdentityRecords });
+  const latest = await loadSelectedRun(deps, repoRoot, options);
+  if (operation !== 'cancel' && latest.state.status === 'cancelled' && loaded.state.status !== 'cancelled') {
+    let contained = result;
+    const latestDispatch = (latest.state.runtime_dispatches ?? [])
+      .find((item) => item.dispatch_id === result.dispatch?.dispatch_id);
+    if (latestDispatch && !ACTIVE_RUNTIME_DISPATCH_STATUSES.has(latestDispatch.status)) {
+      contained = { ...result, state: latest.state, dispatch: latestDispatch };
+    } else if (ACTIVE_RUNTIME_DISPATCH_STATUSES.has(result.dispatch?.status)) {
+      contained = await deps.agentRuntimeCoordinator.cancel(
+        operation === 'dispatch' ? result.state : latest.state,
+        result.dispatch.dispatch_id,
+        { providerIdentityRecords }
+      );
+    }
+    const terminalDispatch = contained.dispatch ?? result.dispatch ?? null;
+    const terminalState = terminalDispatch
+      ? {
+          ...latest.state,
+          runtime_dispatches: upsertRuntimeDispatch(latest.state.runtime_dispatches, terminalDispatch)
+        }
+      : latest.state;
+    await persistAuthorityThenMirror(
+      deps,
+      terminalState,
+      latest.authorityFile,
+      latest.mirrorFile,
+      `agent_runtime_${operation}_cancelled_run`
+    );
+    return { ...contained, state: terminalState, dispatch: terminalDispatch };
+  }
   if (result.state.status !== loaded.state.status) {
     const nextStatus = result.state.status;
     result = {
@@ -261,6 +293,50 @@ const FALLBACK_RUNTIME_STOP_CODES = new Set([
   'review_readonly_unavailable'
 ]);
 
+const COMPLETE_RECOVERY_STOP_CODES = new Set([
+  ...FALLBACK_RUNTIME_STOP_CODES,
+  'permission_wait',
+  'runtime_required'
+]);
+
+function completeRuntimeRecovery(state, stopReason) {
+  if (!stopReason || !COMPLETE_RECOVERY_STOP_CODES.has(stopReason.code)) return stopReason;
+  const details = stopReason.details ?? {};
+  const recovery = details.recovery ?? {};
+  const requiredCapabilities = [...(recovery.required_capabilities ?? details.required_capabilities ?? [])];
+  const missingCapabilities = [...(recovery.missing_capabilities ?? details.missing_capabilities ?? [])];
+  const provider = recovery.provider
+    ?? details.provider
+    ?? state.provider_fallbacks?.[0]
+    ?? 'unresolved';
+  const nextCommand = `vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${state.story_id} --run-id ${state.run_id} --until pr-ready`;
+  return {
+    ...stopReason,
+    details: {
+      ...details,
+      provider,
+      required_capabilities: requiredCapabilities,
+      missing_capabilities: missingCapabilities,
+      recovery: {
+        ...recovery,
+        action: 'resume_run',
+        story_id: state.story_id,
+        run_id: state.run_id,
+        provider,
+        required_capabilities: requiredCapabilities,
+        missing_capabilities: missingCapabilities,
+        condition: {
+          kind: 'runtime_available',
+          provider,
+          required_capabilities: requiredCapabilities,
+          missing_capabilities: missingCapabilities
+        },
+        next_command: nextCommand
+      }
+    }
+  };
+}
+
 async function dispatchRuntimeWithFallbacks(coordinator, state, request, options = {}) {
   const adapterIds = [...new Set([request?.adapter_id, ...(state.provider_fallbacks ?? [])])]
     .filter((adapterId) => typeof adapterId === 'string' && adapterId.length > 0);
@@ -296,6 +372,7 @@ async function orchestrateRun(deps, repoRoot, options) {
   if (options.dryRun) {
     const identity = await resolveIdentity(deps, repoRoot, 'worktree_mismatch');
     const profileResolution = resolveActionProfileDecision(options);
+    const previewPolicy = buildGuardedPolicy(options, toIso(deps.now()));
     const preview = {
       run_id: 'dry-run',
       story_id: requireStoryId(options.storyId),
@@ -303,6 +380,7 @@ async function orchestrateRun(deps, repoRoot, options) {
       status: 'running',
       attempt: 1,
       action_profile: profileResolution.effective,
+      provider_fallbacks: previewPolicy.provider_fallbacks,
       ...(profileResolution.requested === 'autonomous' ? { action_profile_resolution: profileResolution } : {}),
       action_journal: [],
       next_best_action_decisions: []
@@ -345,48 +423,68 @@ async function orchestrateRun(deps, repoRoot, options) {
   const selectedPlan = resumePlan ?? (!controllerEnabled
     ? undefined
     : buildSelectedSafeActionPlan(decisionState, decision.selected_action_id));
-  const result = await runSafeActionPlan(decisionState, {
-    profile: decisionState.action_profile ?? 'legacy',
-    policyDeniedActionIds: options.policyDeniedActionIds,
-    plan: selectedPlan,
-    resolveCurrentHead: async () => (await resolveIdentity(
-      deps,
-      loaded.state.execution_context.root_realpath,
-      'worktree_mismatch'
-    )).head_sha,
-    onProgress: async (progress) => {
-      const persisted = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
-        storyId: loaded.state.story_id,
-        runId: loaded.state.run_id
-      });
-      const checkpoint = {
-        ...persisted.state,
-        current_head_sha: progress.current_head_sha,
-        action_journal: progress.action_journal,
-        ...resumeCursorPatch(progress, decisionState)
-      };
-      await persistAuthorityThenMirror(
+  let result;
+  try {
+    result = await runSafeActionPlan(decisionState, {
+      profile: decisionState.action_profile ?? 'legacy',
+      policyDeniedActionIds: options.policyDeniedActionIds,
+      plan: selectedPlan,
+      resolveCurrentHead: async () => (await resolveIdentity(
         deps,
-        checkpoint,
-        loaded.authorityFile,
-        loaded.mirrorFile,
-        'safe_action_checkpoint'
-      );
-    },
-    onCheckpoint: createReviewCheckpointPersister({
-      loadRun: (state) => loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
-        storyId: state.story_id, runId: state.run_id
+        loaded.state.execution_context.root_realpath,
+        'worktree_mismatch'
+      )).head_sha,
+      onProgress: async (progress) => {
+        const persisted = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+          storyId: loaded.state.story_id,
+          runId: loaded.state.run_id
+        });
+        assertRunNotCancelled(persisted.state);
+        const checkpoint = {
+          ...persisted.state,
+          current_head_sha: progress.current_head_sha,
+          action_journal: progress.action_journal,
+          ...resumeCursorPatch(progress, decisionState)
+        };
+        await persistAuthorityThenMirror(
+          deps,
+          checkpoint,
+          loaded.authorityFile,
+          loaded.mirrorFile,
+          'safe_action_checkpoint'
+        );
+      },
+      onCheckpoint: createReviewCheckpointPersister({
+        loadRun: (state) => loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+          storyId: state.story_id, runId: state.run_id
+        }),
+        persist: async (selected, state) => {
+          const persisted = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+            storyId: state.story_id, runId: state.run_id
+          });
+          assertRunNotCancelled(persisted.state);
+          return persistAuthorityThenMirror(deps, state, selected.authorityFile,
+            selected.mirrorFile, 'safe_action_operation_checkpoint');
+        },
+        now: () => toIso(deps.now())
       }),
-      persist: (selected, state) => persistAuthorityThenMirror(deps, state, selected.authorityFile,
-        selected.mirrorFile, 'safe_action_operation_checkpoint'),
-      now: () => toIso(deps.now())
-    }),
-    runners: buildActionRunners(deps, { ...loaded, state: governedState }, options)
-  });
+      runners: buildActionRunners(deps, { ...loaded, state: governedState }, options)
+    });
+  } catch (error) {
+    if (error?.code !== 'run_cancelled') throw error;
+    const cancelled = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+      storyId: loaded.state.story_id,
+      runId: loaded.state.run_id
+    });
+    return { plan: [], state: cancelled.state };
+  }
   const persistedAfterOwners = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
     storyId: loaded.state.story_id,
     runId: loaded.state.run_id
   });
+  if (persistedAfterOwners.state.status === 'cancelled') {
+    return { plan: result.plan, state: persistedAfterOwners.state };
+  }
   let next = {
     ...persistedAfterOwners.state,
     current_head_sha: result.state.current_head_sha,
@@ -395,6 +493,13 @@ async function orchestrateRun(deps, repoRoot, options) {
   };
   let outcomeStatus = result.state.status;
   let outcomeStopReason = result.state.stop_reason;
+  if (outcomeStatus === 'waiting_for_human') {
+    const decision = await persistOneCommandHumanDecision({ repoRoot: loaded.state.execution_context.root_realpath, state: next, request: result.state.pending_decision_request,
+      now: deps.now, createDecision: createHumanDecision, isDecisionError: (error) => error instanceof HumanDecisionError
+    });
+    [next, outcomeStatus, outcomeStopReason] = [decision.state, decision.status, decision.stopReason];
+  }
+  outcomeStopReason = completeRuntimeRecovery(next, outcomeStopReason);
   const currentIdentity = await resolveIdentity(deps, loaded.state.execution_context.root_realpath, 'worktree_mismatch');
   if (currentIdentity.head_sha !== loaded.state.current_head_sha) {
     const reboundAt = toIso(deps.now());
@@ -469,8 +574,10 @@ async function orchestrateRun(deps, repoRoot, options) {
       };
     }
   }
-  if (outcomeStatus !== loaded.state.status) {
+  if (outcomeStatus !== next.status) {
     next = applyTransition(next, outcomeStatus, 'safe_action_orchestrator', toIso(deps.now()), { stop_reason: outcomeStopReason });
+  } else {
+    next = { ...next, stop_reason: outcomeStopReason };
   }
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'safe_action_orchestrator');
   return { plan: result.plan, state: next };
@@ -486,28 +593,23 @@ function buildActionRunners(deps, loaded, options) {
     summary: `${actionId} action owner is not connected`,
     recovery: { missing_action_runner: actionId }
   });
-  const autonomous = Object.fromEntries([...ACTION_RUNNER_KEYS].map((id) => [id, injected[id] ?? unavailable(id)]));
-  // An explicitly supplied review owner remains the escape hatch for tests and
-  // alternative runtimes. The production default is composed only when the
-  // Guarded Run has its provider-neutral runtime coordinator.
+  const defaults = createOneCommandPrReadyRunSessionOwners({
+    repoRoot, storyId, baseRef: options.baseRef, providerFallbacks: loaded.state.provider_fallbacks,
+    agentRuntimeCoordinator: deps.agentRuntimeCoordinator, readGateReadiness: deps.readGateReadiness, preparePullRequest: deps.preparePullRequest,
+    mutateRuntimeDispatch: (request, operation) => mutateRuntimeDispatch(deps, repoRoot, request, operation)
+  });
+  const autonomous = Object.fromEntries([...ACTION_RUNNER_KEYS].map((id) => [id, injected[id] ?? defaults[id] ?? unavailable(id)]));
   if (!injected.review && deps.agentRuntimeCoordinator) {
     autonomous.review = buildIndependentReviewRunner(deps, loaded, options);
   }
   if (injected.final_prepare) {
-    autonomous.final_prepare = async (context) => {
-      const ownerResult = await injected.final_prepare(context);
-      if (ownerResult.status !== 'pr_ready') return ownerResult;
-      const prepared = await deps.preparePullRequest(repoRoot, { storyId, baseRef: options.baseRef });
-      if (prepared.preparation?.gate_status?.ready_for_pr_create === true) {
-        return { ...ownerResult, artifact: ownerResult.artifact ?? prepared.artifacts?.json ?? null };
-      }
-      return {
-        status: 'blocked',
-        stop_reason: 'gate_recheck_required',
-        artifact: ownerResult.artifact ?? prepared.artifacts?.json ?? null,
-        recovery: { required_actions: prepared.preparation?.gate_status?.next_required_actions ?? [] }
-      };
-    };
+    autonomous.final_prepare = bindCurrentHeadFinalPrepare({
+      owner: autonomous.final_prepare,
+      preparePullRequest: deps.preparePullRequest,
+      repoRoot,
+      storyId,
+      baseRef: options.baseRef
+    });
   }
   if ((loaded.state.action_profile ?? 'legacy') === 'autonomous') return autonomous;
   return {
@@ -519,18 +621,35 @@ function buildActionRunners(deps, loaded, options) {
   };
 }
 function buildIndependentReviewRunner(deps, loaded, options) {
-  const repoRoot = loaded.state.execution_context.root_realpath;
-  return createGuardedIndependentReviewRunner({
-    repoRoot, baseRef: options.baseRef, preparePullRequest: deps.preparePullRequest,
-    agentReviewOps: deps.agentReviewOps,
-    dispatchRuntime: (state, request) => mutateRuntimeDispatch(deps, repoRoot,
-      { storyId: state.story_id, runId: state.run_id, request }, 'dispatch'),
-    pollRuntime: (state, dispatchId) => mutateRuntimeDispatch(deps, repoRoot,
-      { storyId: state.story_id, runId: state.run_id, dispatchId }, 'poll'),
-    recordRuntimeReview: (state, dispatchId, review) => recordRuntimeReview(deps, repoRoot,
-      { storyId: state.story_id, runId: state.run_id, dispatchId, review }),
-    createError: (code, message) => new GuardedRunError(code, message)
-  });
+  return async (context) => {
+    const selected = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+      storyId: context.state.story_id,
+      runId: context.state.run_id
+    });
+    const repoRoot = selected.state.managed_worktree?.path
+      ?? selected.state.execution_context.root_realpath;
+    const runReview = createGuardedIndependentReviewRunner({
+      repoRoot, baseRef: options.baseRef, preparePullRequest: deps.preparePullRequest,
+      agentReviewOps: deps.agentReviewOps,
+      dispatchRuntime: (state, request) => mutateRuntimeDispatch(deps, repoRoot,
+        { storyId: state.story_id, runId: state.run_id, request }, 'dispatch'),
+      pollRuntime: (state, dispatchId) => mutateRuntimeDispatch(deps, repoRoot,
+        { storyId: state.story_id, runId: state.run_id, dispatchId }, 'poll'),
+      cancelRuntime: (state, dispatchId) => mutateRuntimeDispatch(deps, repoRoot,
+        { storyId: state.story_id, runId: state.run_id, dispatchId }, 'cancel'),
+      recordRuntimeReview: (state, dispatchId, review) => recordRuntimeReview(deps, repoRoot,
+        { storyId: state.story_id, runId: state.run_id, dispatchId, review }),
+      createError: (code, message) => new GuardedRunError(code, message)
+    });
+    return runReview({
+      ...context,
+      state: {
+        ...selected.state,
+        current_head_sha: context.state.current_head_sha,
+        action_journal: context.state.action_journal
+      }
+    });
+  };
 }
 function hasCompletedResumeCheckpoint(state, resumeNodeId) {
   if (resumeNodeId == null) return false;
@@ -575,6 +694,10 @@ function buildSelectedSafeActionPlan(state, actionId) {
   return selectedIndex >= 0 ? plan.slice(selectedIndex) : plan;
 }
 
+function controllerEscapeResumeNode(state) {
+  return state.action_profile === 'autonomous' ? 'diagnose' : 'pr_prepare';
+}
+
 async function applyControllerEscape(deps, repoRoot, state, decision, timestamp) {
   const actionId = decision.selected_action_id;
   let humanDecision;
@@ -606,7 +729,7 @@ async function applyControllerEscape(deps, repoRoot, state, decision, timestamp)
       decision_id: humanDecision.decision_id,
       type: humanDecision.type,
       artifact: path.join('.vibepro', 'executions', state.story_id, 'runs', state.run_id, 'decisions', `${humanDecision.decision_id}.json`),
-      stop_node_id: 'pr_prepare'
+      stop_node_id: controllerEscapeResumeNode(state)
     }
   });
 }
@@ -706,12 +829,26 @@ export function renderGuardedRunSummary(value) {
     : 'Inspect the persisted Guarded Run state before taking another action.';
   const recoveryDetailLines = recovery
     ? [
+        state.stop_reason?.details?.provider
+          ? `- provider: ${state.stop_reason.details.provider}`
+          : null,
+        ...(state.stop_reason?.details?.missing_capabilities?.length
+          ? [`- missing_capabilities: ${state.stop_reason.details.missing_capabilities.join(', ')}`]
+          : []),
+        recovery.action ? `- recovery_action: ${recovery.action}` : null,
+        ...(recovery.required_capabilities?.length
+          ? [`- required_capabilities: ${recovery.required_capabilities.join(', ')}`]
+          : []),
         ...(recovery.missing_kinds?.length ? [`- missing: ${recovery.missing_kinds.join(', ')}`] : []),
         ...(recovery.failed_kinds?.length ? [`- failed: ${recovery.failed_kinds.join(', ')}`] : []),
         ...(recovery.judgments?.length ? recovery.judgments.map((item) => `- judgment: ${item.kind ?? item.id ?? 'decision'} - ${item.reason ?? item.prompt ?? 'human decision required'}`) : []),
         ...(recovery.required_actions?.length ? recovery.required_actions.map((item) => `- required_action: ${item}`) : []),
         recovery.failure ? `- failure: ${recovery.failure}` : null,
-        recovery.next_command ? `- next_command: ${recovery.next_command}` : null
+        recovery.next_command
+          ? `- next_command: ${recovery.next_command}`
+          : recovery.action === 'resume_run' && state.execution_context?.root_realpath
+            ? `- next_command: vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${recovery.story_id ?? state.story_id} --run-id ${recovery.run_id ?? state.run_id} --until pr-ready`
+            : null
       ].filter(Boolean)
     : [];
   const recoveryLines = recoveryDetailLines.length > 0
@@ -723,7 +860,11 @@ export function renderGuardedRunSummary(value) {
     ? [
         `- decision_id: ${pendingDecision.decision_id ?? pendingDecision.id ?? 'unknown'}`,
         `- question: ${pendingDecision.question ?? pendingDecision.prompt ?? 'human decision required'}`,
-        `- material_reason: ${pendingDecision.material_reason ?? 'not provided'}`
+        `- choices: ${Array.isArray(pendingDecision.choices) && pendingDecision.choices.length > 0 ? pendingDecision.choices.join(', ') : 'not provided'}`,
+        `- material_reason: ${pendingDecision.material_reason ?? 'not provided'}`,
+        `- impact_scope: ${Array.isArray(pendingDecision.impact_scope) && pendingDecision.impact_scope.length > 0 ? pendingDecision.impact_scope.join(', ') : 'not provided'}`,
+        `- source_refs: ${Array.isArray(pendingDecision.source_refs) && pendingDecision.source_refs.length > 0 ? pendingDecision.source_refs.join(', ') : 'not provided'}`,
+        `- resume_command: ${pendingDecision.resume_command ?? recovery?.next_command ?? fallbackNextCommand}`
       ].join('\n')
     : 'none';
   const profileResolution = state.action_profile_resolution;
@@ -1121,7 +1262,19 @@ async function cancelRun(deps, repoRoot, options) {
     pending_decision: null
   });
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'terminal_transition');
-  return next;
+  let contained = next;
+  if (deps.agentRuntimeCoordinator) {
+    for (const dispatch of (loaded.state.runtime_dispatches ?? [])
+      .filter((item) => ACTIVE_RUNTIME_DISPATCH_STATUSES.has(item.status))) {
+      const result = await mutateRuntimeDispatch(deps, repoRoot, {
+        storyId: loaded.state.story_id,
+        runId: loaded.state.run_id,
+        dispatchId: dispatch.dispatch_id
+      }, 'cancel');
+      contained = result.state;
+    }
+  }
+  return contained;
 }
 
 async function transitionRun(deps, repoRoot, options) {
@@ -1508,7 +1661,7 @@ function buildGuardedPolicy(options, createdAt) {
     ...RECOVERABLE_RUNTIME_STOP_CODES,
     'ci_pending', 'review_timeout', 'action_failed'
   ];
-  const providerFallbacks = options.providerFallbacks ?? [];
+  const providerFallbacks = options.providerFallbacks ?? (isCanonicalAutonomousRequest(options) ? ['codex', 'claude-code'] : []);
   if (retryableStopCodes.some((value) => typeof value !== 'string' || value.length === 0)
       || providerFallbacks.some((value) => typeof value !== 'string' || value.length === 0)) {
     throw contractError('invalid_policy', 'Retry codes and provider fallbacks must be non-empty strings.', {});
@@ -1670,6 +1823,21 @@ function isAllowedTransition(from, to, reason) {
       || to === 'pr_ready';
   }
   return false;
+}
+
+function assertRunNotCancelled(state) {
+  if (state.status !== 'cancelled') return;
+  throw new GuardedRunError(
+    'run_cancelled',
+    'The guarded Run was cancelled while autonomous orchestration was active.',
+    { run_id: state.run_id }
+  );
+}
+
+function upsertRuntimeDispatch(dispatches = [], dispatch) {
+  const index = dispatches.findIndex((item) => item.dispatch_id === dispatch.dispatch_id);
+  if (index < 0) return [...dispatches, dispatch];
+  return dispatches.map((item, itemIndex) => itemIndex === index ? dispatch : item);
 }
 
 async function persistAuthorityThenMirror(deps, state, authorityFile, mirrorFile, capsuleReason) {
@@ -2286,7 +2454,7 @@ function resolveRequestedActionProfile(options = {}) {
 }
 
 function resolveActionProfileDecision(options = {}) {
-  const requested = requireActionProfile(options.actionProfile ?? 'legacy');
+  const requested = requireActionProfile(options.actionProfile ?? (isCanonicalAutonomousRequest(options) ? 'autonomous' : 'legacy'));
   const disabled = requested === 'autonomous' && options.autonomousEnabled === false;
   return {
     requested,
@@ -2294,6 +2462,8 @@ function resolveActionProfileDecision(options = {}) {
     fallback_reason: disabled ? 'autonomous_feature_disabled' : null
   };
 }
+
+function isCanonicalAutonomousRequest(options = {}) { return options.until === 'pr-ready' && (options.autonomy == null || options.autonomy === 'guarded'); }
 
 function applyAutonomousFeaturePolicy(state, options = {}) {
   if ((state.action_profile ?? 'legacy') !== 'autonomous' || options.autonomousEnabled !== false) return state;

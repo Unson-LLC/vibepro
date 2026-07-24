@@ -16,6 +16,22 @@ const AUTONOMOUS_REGISTRY = Object.freeze([
   Object.freeze({ id: 'final_prepare', classification: 'repo_local_safe', depends_on: ['repair'] })
 ]);
 const ACTION_PROFILES = Object.freeze({ legacy: LEGACY_REGISTRY, autonomous: AUTONOMOUS_REGISTRY });
+const HUMAN_DECISION_FIELDS = Object.freeze([
+  'type',
+  'question',
+  'choices',
+  'material_reason',
+  'impact_scope',
+  'source_refs',
+  'stop_node_id'
+]);
+const HUMAN_DECISION_TYPES = new Set([
+  'clarification',
+  'scope_split',
+  'waiver_request',
+  'external_side_effect',
+  'security_boundary'
+]);
 const ESCAPE_REGISTRY = Object.freeze([
   Object.freeze({ id: 'ask', classification: 'approval_required' }),
   Object.freeze({ id: 'split', classification: 'approval_required' }),
@@ -104,20 +120,24 @@ export async function runSafeActionPlan(state, options = {}) {
   let current = executionState;
   const seenActionIds = new Set();
   let activePlan = plan;
+  let replayDependencyBypass = null;
+  const replayRequiredActionIds = new Set();
+  let replayCount = 0;
   for (let index = 0; index < activePlan.length; index += 1) {
     const action = activePlan[index];
     const key = actionKey(current, action.id, profile);
     const policyDenied = new Set(options.policyDeniedActionIds ?? []).has(action.id);
     if (!isCanonicalAction(action, current, key, profile)
       || seenActionIds.has(action.id)
-      || !dependenciesCompleted(current, action, current, profile)
+      || (replayDependencyBypass !== action.id && !dependenciesCompleted(current, action, current, profile))
       || policyDenied
       || typeof options.runners?.[action.id] !== 'function') {
       current = stop(current, action, key, 'blocked', 'action_forbidden', 'forbidden');
       break;
     }
     seenActionIds.add(action.id);
-    const completed = hasCompletedCheckpoint(current, action.id, current, profile);
+    const replayRequired = replayRequiredActionIds.delete(action.id);
+    const completed = !replayRequired && hasCompletedCheckpoint(current, action.id, current, profile);
     if (completed) continue;
     try {
       const persistCheckpoint = async (checkpoint) => {
@@ -133,6 +153,10 @@ export async function runSafeActionPlan(state, options = {}) {
         ? { ...(rawResult ?? {}), status: 'continue' }
         : rawResult;
       assertActionResult(result);
+      const humanDecision = profile === 'autonomous'
+        ? validateHumanDecisionResult(result, action)
+        : null;
+      const replayFrom = validateReplayRequest(result, action, profile);
       // Runner output is untrusted: always bind action evidence and any suffix
       // rebinding to the repository HEAD resolved after the runner completes.
       const resolvedHead = await options.resolveCurrentHead?.({ state: current, action, result })
@@ -158,6 +182,23 @@ export async function runSafeActionPlan(state, options = {}) {
         const actionPosition = canonical.findIndex((entry) => entry.id === action.id);
         activePlan = [...activePlan.slice(0, index + 1), ...canonical.slice(actionPosition + 1)];
       }
+      if (replayFrom) {
+        replayCount += 1;
+        if (replayCount > (options.maxRepairReplays ?? 3)) {
+          throw new Error('Autonomous repair replay limit exceeded');
+        }
+        const canonical = buildSafeActionPlan(journal, { profile });
+        const replayPosition = canonical.findIndex((entry) => entry.id === replayFrom);
+        const replaySuffix = canonical.slice(replayPosition);
+        for (const entry of replaySuffix) {
+          seenActionIds.delete(entry.id);
+          replayRequiredActionIds.add(entry.id);
+        }
+        activePlan = [...activePlan.slice(0, index + 1), ...replaySuffix];
+        replayDependencyBypass = replayFrom;
+      } else if (replayDependencyBypass === action.id) {
+        replayDependencyBypass = null;
+      }
       if (result?.status === 'pr_ready') {
         current = transition(journal, 'pr_ready', null);
         break;
@@ -165,6 +206,7 @@ export async function runSafeActionPlan(state, options = {}) {
       if (['blocked', 'waiting_for_human', 'waiting_for_runtime', 'failed'].includes(result?.status)) {
         const recovery = buildRecovery(current, result.recovery);
         current = transition(journal, result.status, result.stop_reason ?? 'action_failed', { recovery });
+        if (humanDecision) current = { ...current, pending_decision_request: humanDecision };
         break;
       }
       current = journal;
@@ -244,6 +286,49 @@ function resolveActionProfile(state, requestedProfile, options = {}) {
 function assertActionResult(result) {
   const statuses = new Set(['continue', 'pr_ready', 'waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed']);
   if (!result || !statuses.has(result.status)) throw new Error(`Invalid safe action result status: ${result?.status ?? 'missing'}`);
+}
+
+function validateHumanDecisionResult(result, action) {
+  if (result.status !== 'waiting_for_human') {
+    if (result.human_decision !== undefined) {
+      throw new Error('human_decision is allowed only with waiting_for_human');
+    }
+    return null;
+  }
+  const decision = result.human_decision;
+  if (!decision || typeof decision !== 'object' || Array.isArray(decision)) {
+    throw new Error('waiting_for_human requires a seven-field human_decision descriptor');
+  }
+  const keys = Object.keys(decision).sort();
+  const expected = [...HUMAN_DECISION_FIELDS].sort();
+  if (keys.length !== expected.length || keys.some((key, index) => key !== expected[index])) {
+    throw new Error('human_decision must contain exactly the seven bounded fields');
+  }
+  if (!HUMAN_DECISION_TYPES.has(decision.type)
+      || typeof decision.question !== 'string' || !decision.question.trim()
+      || !Array.isArray(decision.choices)
+      || decision.choices.length < 2
+      || decision.choices.some((choice) => typeof choice !== 'string' || !choice.trim())
+      || typeof decision.material_reason !== 'string' || !decision.material_reason.trim()
+      || !Array.isArray(decision.impact_scope) || decision.impact_scope.length === 0
+      || decision.impact_scope.some((scope) => typeof scope !== 'string' || !scope.trim())
+      || !Array.isArray(decision.source_refs) || decision.source_refs.length === 0
+      || decision.source_refs.some((ref) => typeof ref !== 'string' || !ref.trim())
+      || decision.stop_node_id !== action.id) {
+    throw new Error('human_decision contains invalid bounded field values');
+  }
+  return { ...decision };
+}
+
+function validateReplayRequest(result, action, profile) {
+  if (result.replay_from_action_id === undefined) return null;
+  if (profile !== 'autonomous'
+      || action.id !== 'repair'
+      || result.status !== 'continue'
+      || result.replay_from_action_id !== 'verify') {
+    throw new Error('Only a successful autonomous repair may replay from verify');
+  }
+  return result.replay_from_action_id;
 }
 
 function append(state, action, key, status, result = {}) {

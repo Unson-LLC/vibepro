@@ -64,6 +64,16 @@ test('ARA-S-2 auth denial remains a typed resumable stop', async () => {
   const result = await coordinator.dispatch(state, request);
   assert.equal(result.state.status, 'waiting_for_runtime');
   assert.equal(result.dispatch.stop_reason.code, 'auth_denied');
+  assert.deepEqual(result.dispatch.stop_reason.details, {
+    provider: 'fake',
+    missing_capabilities: [],
+    recovery: {
+      action: 'resume_run',
+      story_id: state.story_id,
+      run_id: state.run_id,
+      required_capabilities: ['workspace_write']
+    }
+  });
 });
 
 test('PRC-S-3 typed provider failure survives status normalization', async () => {
@@ -84,6 +94,49 @@ test('ARA-S-3 successful implementation result is structured and HEAD-bearing', 
   assert.equal(result.dispatch.result.head_sha, 'def456');
   assert.deepEqual(result.dispatch.result.changed_files, ['src/a.js']);
   assert.deepEqual(result.dispatch.result.test_suggestions, ['node --test']);
+});
+
+test('ARA-S-3 unit_regression runtime cost telemetry is normalized and invalid usage fails closed', async () => {
+  const accountedAdapter = fakeAdapter({
+    async collect_result() {
+      return {
+        completion_status: 'completed',
+        changed_files: ['src/a.js'],
+        head_sha: 'def456',
+        test_suggestions: ['node --test'],
+        summary: 'done',
+        usage_accounting: { total_tokens: 321, cost_usd: 0.0123, source: 'provider_meter' }
+      };
+    }
+  });
+  const accountedCoordinator = createAgentRuntimeCoordinator({ adapters: [accountedAdapter] });
+  const accountedStart = await accountedCoordinator.dispatch(state, request);
+  accountedAdapter.complete();
+  const accounted = await accountedCoordinator.poll(accountedStart.state, accountedStart.dispatch.dispatch_id);
+  assert.deepEqual(accounted.dispatch.result.usage_accounting, {
+    total_tokens: 321,
+    cost_usd: 0.0123,
+    source: 'provider_meter'
+  });
+
+  const invalidAdapter = fakeAdapter({
+    async status() { return { status: 'completed' }; },
+    async collect_result() {
+      return {
+        completion_status: 'completed',
+        changed_files: [],
+        head_sha: 'def456',
+        test_suggestions: [],
+        summary: 'invalid telemetry',
+        usage_accounting: { total_tokens: -1, cost_usd: -0.1 }
+      };
+    }
+  });
+  const invalidCoordinator = createAgentRuntimeCoordinator({ adapters: [invalidAdapter] });
+  const invalidStart = await invalidCoordinator.dispatch(state, request);
+  const invalid = await invalidCoordinator.poll(invalidStart.state, invalidStart.dispatch.dispatch_id);
+  assert.equal(invalid.state.status, 'failed');
+  assert.equal(invalid.dispatch.stop_reason.code, 'invalid_runtime_result');
 });
 
 test('ARA-S-4 review requires separate identity and closed parallel provenance', async () => {
@@ -218,6 +271,9 @@ test('ARA-S-4 review rejects a mutable provider sandbox before start', async () 
   const result = await coordinator.dispatch(state, { ...request, role: 'review', requirements: { ...request.requirements, capabilities: ['review'] }, implementation_identity: 'implementer-1', implementation_session_id: 'implementation-session', reviewer_identity: 'reviewer-2' });
   assert.equal(result.state.status, 'waiting_for_runtime');
   assert.equal(result.dispatch.stop_reason.code, 'review_readonly_unavailable');
+  assert.equal(result.dispatch.stop_reason.details.sandbox, 'workspace-write');
+  assert.equal(result.dispatch.stop_reason.details.provider, 'fake');
+  assert.equal(result.dispatch.stop_reason.details.recovery.run_id, state.run_id);
   assert.equal(adapter.starts(), 0);
 });
 
@@ -244,6 +300,16 @@ test('ARA-S-2 permission wait during polling becomes a typed Run stop', async ()
   assert.equal(result.state.status, 'waiting_for_runtime');
   assert.equal(result.state.stop_reason.code, 'permission_wait');
   assert.equal(result.dispatch.status, 'permission_wait');
+  assert.deepEqual(result.dispatch.stop_reason.details, {
+    provider: 'fake',
+    missing_capabilities: [],
+    recovery: {
+      action: 'resume_run',
+      story_id: state.story_id,
+      run_id: state.run_id,
+      required_capabilities: ['workspace_write']
+    }
+  });
 });
 
 test('ARA-S-2 permission wait clears stale Run stop after provider resumes', async () => {

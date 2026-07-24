@@ -6471,12 +6471,33 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "adr",
+            "path": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "spec": [
           {
             "kind": "spec",
             "path": "docs/specs/story-vibepro-autonomous-action-dag.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-one-command-pr-ready-closure-execution-topology-replay.md",
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
@@ -6529,8 +6550,29 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "adr",
+          "path": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "spec",
           "path": "docs/specs/story-vibepro-autonomous-action-dag.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-one-command-pr-ready-closure-execution-topology-replay.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
@@ -6726,5 +6768,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-23T17:32:51.642Z"
+  "updated_at": "2026-07-24T03:11:40.298Z"
 }

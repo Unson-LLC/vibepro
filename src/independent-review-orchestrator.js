@@ -23,6 +23,10 @@ const TERMINAL_STOP_CODES = new Set([
   'review_identity_not_separate', 'review_session_not_separate', 'review_readonly_unavailable'
 ]);
 const VERDICTS = new Set(['pass', 'needs_changes', 'block']);
+const ACTIVE_RUNTIME_STATUSES = new Set(['queued', 'running', 'permission_wait']);
+const RETRYABLE_RUNTIME_STOP_CODES = new Set([
+  'runtime_unavailable', 'auth_denied', 'permission_wait', 'review_readonly_unavailable'
+]);
 
 export class IndependentReviewOrchestrationError extends Error {
   constructor(code, message, details = {}) {
@@ -115,7 +119,10 @@ export function createIndependentReviewActionRunner({ resolveStages, boundaries 
     throw new IndependentReviewOrchestrationError('review_boundary_unavailable', 'missing independent review stage resolver');
   }
   return async ({ state, action, persistCheckpoint }) => {
-    const previous = state.action_journal.findLast((entry) => entry.action_id === action.id && Array.isArray(entry.checkpoint));
+    const previous = state.action_journal.findLast((entry) =>
+      entry.action_id === action.id
+      && entry.output_head_sha === state.current_head_sha
+      && Array.isArray(entry.checkpoint));
     let journal = previous?.checkpoint ?? [];
     let stages;
     try {
@@ -161,7 +168,10 @@ export function createIndependentReviewActionRunner({ resolveStages, boundaries 
 
 export function createGuardedIndependentReviewRunner({
   repoRoot, baseRef, preparePullRequest, agentReviewOps, dispatchRuntime, pollRuntime,
-  recordRuntimeReview, createError
+  cancelRuntime, recordRuntimeReview, createError,
+  runtimePollIntervalMs = 250,
+  waitForRuntimePoll = (delayMs) => new Promise((resolve) => setTimeout(resolve, delayMs)),
+  now = () => Date.now()
 }) {
   let stagesByName = new Map();
   let implementationProvenance = null;
@@ -183,6 +193,10 @@ export function createGuardedIndependentReviewRunner({
       },
       authorize: async ({ state, stage, role, operation }) => agentReviewOps.authorize(repoRoot, {
         storyId: state.story_id, stage, role, agentModel: 'codex', agentReasoningEffort: 'low', agentCostTier: 'low',
+        reviewKind: 'final',
+        closesRisks: [`${stage}:${role} release risk`],
+        expectedJudgmentDelta: `Confirm the frozen ${stage}:${role} review surface or identify required changes.`,
+        freeze: ['source', 'spec', 'test', 'review_surface'],
         operationIdempotencyKey: operation.idempotency_key
       }),
       start: async ({ state, stage, role, authorization, operation }) => agentReviewOps.start(repoRoot, {
@@ -191,21 +205,30 @@ export function createGuardedIndependentReviewRunner({
         dispatchAuthorization: authorization.authorization?.authorization_id,
         operationIdempotencyKey: operation.idempotency_key
       }),
-      dispatch: async ({ state, stage, role, lifecycle }) => dispatchRuntime(state, {
+      dispatch: async ({ state, stage, role, lifecycle, operation }) => dispatchRuntime(state, {
         adapter_id: 'codex', task_id: `independent-review:${stage}:${role}`, role: 'review',
         reviewer_identity: reviewerIdentity(state, stage, role),
         implementation_identity: implementationProvenance.agent_identity,
         implementation_session_id: implementationProvenance.session_id,
         requirements: { capabilities: ['review'], timeout_ms: lifecycle.lifecycle?.timeout_ms ?? 600000, managed_worktree: repoRoot }
+      }, operation),
+      poll: async ({ state, lifecycle, dispatch }) => pollReviewRuntimeUntilTerminal({
+        state,
+        lifecycle,
+        dispatch,
+        pollRuntime,
+        cancelRuntime,
+        runtimePollIntervalMs,
+        waitForRuntimePoll,
+        now
       }),
-      poll: async ({ state, dispatch }) => normalizePoll(await pollRuntime(state, dispatch.dispatch?.dispatch_id)),
       close: async ({ state, stage, role, lifecycle, dispatch, poll, closeReason, operation }) => {
         const runtimeDispatch = poll?.dispatch ?? dispatch?.dispatch;
         return agentReviewOps.close(repoRoot, {
-        storyId: state.story_id, stage, role, lifecycleId: lifecycle.lifecycle?.lifecycle_id,
-        agentThreadId: runtimeDispatch?.thread_id, agentSessionId: runtimeDispatch?.session_id,
-        closeReason: closeReason ?? 'completed', closeEvidence: closeReason ? 'guarded_run_runtime_stopped' : 'guarded_run_runtime_completed',
-        operationIdempotencyKey: operation.idempotency_key
+          storyId: state.story_id, stage, role, lifecycleId: lifecycle.lifecycle?.lifecycle_id,
+          agentThreadId: runtimeDispatch?.thread_id, agentSessionId: runtimeDispatch?.session_id,
+          closeReason: closeReason ?? 'completed', closeEvidence: closeReason ? 'guarded_run_runtime_stopped' : 'guarded_run_runtime_completed',
+          operationIdempotencyKey: operation.idempotency_key
         });
       },
       record: async ({ state, stage, role, poll, operation }) => {
@@ -320,6 +343,76 @@ function normalizePoll(result) {
   };
 }
 
+function normalizeRuntimeDispatch(result) {
+  if (isStop(result)) return result;
+  const stopReason = result?.dispatch?.stop_reason ?? result?.state?.stop_reason;
+  const runtimeStatus = result?.dispatch?.status ?? result?.state?.status;
+  if (!stopReason?.code || !['waiting_for_runtime', 'blocked', 'failed', 'waiting_for_human'].includes(runtimeStatus)) {
+    return result;
+  }
+  return {
+    status: runtimeStatus === 'failed' ? 'failed' : runtimeStatus === 'waiting_for_human' ? 'waiting_for_human' : 'waiting_for_runtime',
+    stop_reason: {
+      code: stopReason.code,
+      message: stopReason.message ?? 'review runtime dispatch stopped before provider execution',
+      details: stopReason.details ?? {}
+    }
+  };
+}
+
+async function pollReviewRuntimeUntilTerminal({
+  state,
+  lifecycle,
+  dispatch,
+  pollRuntime,
+  cancelRuntime,
+  runtimePollIntervalMs,
+  waitForRuntimePoll,
+  now
+}) {
+  const dispatchId = dispatch.dispatch?.dispatch_id;
+  const timeoutMs = positiveTimeout(lifecycle.lifecycle?.timeout_ms ?? 600000);
+  const deadline = now() + timeoutMs;
+  let observed = await pollRuntime(state, dispatchId);
+  while (isActiveRuntimeObservation(observed) && now() < deadline) {
+    await waitForRuntimePoll(runtimePollIntervalMs);
+    observed = await pollRuntime(state, dispatchId);
+  }
+  if (!isActiveRuntimeObservation(observed)) return normalizePoll(observed);
+
+  let cancellation = null;
+  if (typeof cancelRuntime === 'function') {
+    try {
+      cancellation = await cancelRuntime(state, dispatchId);
+    } catch (error) {
+      cancellation = { status: 'failed', code: error?.code ?? 'runtime_cancel_failed', message: error?.message ?? String(error) };
+    }
+  }
+  return {
+    status: 'waiting_for_runtime',
+    stop_reason: {
+      code: 'runtime_timeout',
+      message: `review runtime remained active for ${timeoutMs}ms`,
+      details: {
+        dispatch_id: dispatchId ?? null,
+        cancellation
+      }
+    }
+  };
+}
+
+function isActiveRuntimeObservation(value) {
+  const dispatchStatus = value?.dispatch?.status;
+  if (typeof dispatchStatus === 'string') {
+    return ACTIVE_RUNTIME_STATUSES.has(dispatchStatus);
+  }
+  return ACTIVE_RUNTIME_STATUSES.has(value?.state?.status);
+}
+
+function positiveTimeout(value) {
+  return Number.isSafeInteger(value) && value > 0 ? value : 600000;
+}
+
 async function runRole({ boundaries, context, journal, stage, role, persistCheckpoint }) {
   if (hasRecorded(journal, stage, role)) return recordedResult(journal, stage, role);
   const base = { ...context, stage: stage.stage, role: role.role };
@@ -330,14 +423,32 @@ async function runRole({ boundaries, context, journal, stage, role, persistCheck
   }
   const lifecycle = await once(journal, stage, role, 'start', (operation) => boundaries.start({ ...base, authorization, operation }), persistCheckpoint);
   if (isStop(lifecycle)) return lifecycle;
-  const dispatched = await once(journal, stage, role, 'dispatch', (operation) => boundaries.dispatch({ ...base, authorization, lifecycle, operation }), persistCheckpoint);
+  const dispatched = await once(
+    journal,
+    stage,
+    role,
+    'dispatch',
+    async (operation) => normalizeRuntimeDispatch(await boundaries.dispatch({ ...base, authorization, lifecycle, operation })),
+    persistCheckpoint,
+    { retryableRuntimeStop: true }
+  );
   if (isStop(dispatched)) {
+    if (isRetryableRuntimeStop(dispatched)) return dispatched;
     const cleanup = await closeStoppedLifecycle({ boundaries, base, lifecycle, dispatch: dispatched, stop: dispatched, journal, stage, role, persistCheckpoint });
     if (isStop(cleanup)) return cleanup;
     return dispatched;
   }
-  const polled = await once(journal, stage, role, 'poll', (operation) => boundaries.poll({ ...base, lifecycle, dispatch: dispatched, operation }), persistCheckpoint);
+  const polled = await once(
+    journal,
+    stage,
+    role,
+    'poll',
+    (operation) => boundaries.poll({ ...base, lifecycle, dispatch: dispatched, operation }),
+    persistCheckpoint,
+    { retryableRuntimeStop: true }
+  );
   if (isStop(polled)) {
+    if (isRetryableRuntimeStop(polled)) return polled;
     const cleanup = await closeStoppedLifecycle({ boundaries, base, lifecycle, dispatch: dispatched, stop: polled, journal, stage, role, persistCheckpoint });
     if (isStop(cleanup)) return cleanup;
     return polled;
@@ -357,7 +468,7 @@ async function closeStoppedLifecycle({ boundaries, base, lifecycle, dispatch, st
   }), persistCheckpoint);
 }
 
-async function once(journal, stage, role, operation, invoke, persistCheckpoint) {
+async function once(journal, stage, role, operation, invoke, persistCheckpoint, options = {}) {
   const existing = journal.find((entry) => entry.stage === stage.stage && entry.role === roleName(role) && entry.operation === operation);
   if (existing?.state === 'completed' || (existing && !existing.state)) return existing.result;
   const entry = existing ?? {
@@ -378,11 +489,11 @@ async function once(journal, stage, role, operation, invoke, persistCheckpoint) 
     if (error?.code) result = typedStop(error.code, error.message, error.details);
     else throw error;
   }
-  entry.state = 'completed';
+  entry.state = options.retryableRuntimeStop && isRetryableRuntimeStop(result) ? 'reserved' : 'completed';
   entry.result = result;
-  // Successful and stopped attempts are both durable. This makes the journal
-  // a complete exactly-once operation ledger and prevents a restart from
-  // silently retrying a terminal poll or lifecycle transition.
+  // Terminal results remain exactly-once. Provider-readiness stops retain the
+  // reservation so resume reconciles the same idempotency key after the
+  // operator fixes auth, permission, capability, or read-only isolation.
   await persistCheckpoint?.(journal.map((entry) => ({ ...entry })));
   return result;
 }
@@ -413,6 +524,7 @@ function hasRecorded(journal, stage, role) {
 function recordedResult(journal, stage, role) { const entry = journal.find((item) => item.stage === stage.stage && item.role === roleName(role) && item.operation === 'record'); return { status: 'completed', verdict: entry.result.verdict ?? entry.result.status, record: entry.result }; }
 function roleName(role) { return typeof role === 'string' ? role : role.role; }
 function isStop(value) { return value?.status === 'waiting_for_runtime' || value?.status === 'blocked' || value?.status === 'failed' || value?.status === 'waiting_for_human'; }
+function isRetryableRuntimeStop(value) { return isStop(value) && RETRYABLE_RUNTIME_STOP_CODES.has(value?.stop_reason?.code); }
 function typedStop(code, message, details = {}) { return { status: terminalStatus(code), stop_reason: { code, message, details } }; }
 function terminalStatus(code) { return TERMINAL_STOP_CODES.has(code) ? 'waiting_for_runtime' : 'blocked'; }
 function stopResult(value, journal, stage) { return { status: value.status, verdict: 'block', journal, stage, stop_reason: value.stop_reason ?? { code: 'review_orchestration_stopped', message: 'review orchestration stopped' } }; }
