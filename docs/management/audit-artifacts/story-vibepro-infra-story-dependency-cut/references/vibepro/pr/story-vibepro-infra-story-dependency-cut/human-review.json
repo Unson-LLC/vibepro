@@ -1,0 +1,159 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-infra-story-dependency-cut",
+  "created_at": "2026-07-24T16:31:21.359Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is needs_verification with 2 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-infra-story-dependency-cut/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-infra-story-dependency-cut/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-infra-story-dependency-cut/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-infra-story-dependency-cut/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/target-model.json)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-infra-story-dependency-cut.md)"
+    },
+    "decision_records": {
+      "total": 5,
+      "open": 0,
+      "by_type": {
+        "needs_review": 5
+      },
+      "by_status": {
+        "accepted": 5
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-infra-story-dependency-cut",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-infra-story-dependency-cut",
+          "expected_root": null,
+          "expected_head_sha": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+          "current_head_sha": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784909827654-46904f6f",
+        "story_id": "story-vibepro-infra-story-dependency-cut",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": null,
+        "summary": "Changed-file set is small and single-intent: 5 src files (3 one-line import retargets, 1 pure function relocation, 1 file receiving it) plus registration scaffolding.",
+        "reason": "Independently adjudicated judged_sound (event 4192b2c7-5520-4154-8f7f-7a4679d19cbd): a single reviewer can read this whole diff in one sitting as one coherent decision; review_owner_map/decision_record evidence is satisfied by this very decision record plus the gate_evidence Agent Review pass.",
+        "reviewer": null,
+        "artifact": ".vibepro/adjudication/story-vibepro-infra-story-dependency-cut/judgment-adjudication.json",
+        "verification_evidence_summary": {
+          "count": 2,
+          "entries": [
+            {
+              "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/scratchpad/status-artifacts/full-cli-suite-status.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/scratchpad/status-artifacts/e2e-managed-worktree-gate-status.json",
+              "type": "e2e",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-infra-story-dependency-cut",
+            "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-infra-story-dependency-cut",
+            "expected_root": null,
+            "expected_head_sha": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+            "current_head_sha": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+          "current_branch": "claude/story-vibepro-infra-story-dependency-cut",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-24T16:17:07.648Z"
+        },
+        "recorded_at": "2026-07-24T16:17:07.655Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "needs_quality_closure",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 1
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-24T16:31:18.803Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-infra-story-dependency-cut"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-infra-story-dependency-cut/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-infra-story-dependency-cut/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "branch": "claude/story-vibepro-infra-story-dependency-cut",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "f396bda9db8090055788e0d8d582cafb42092660",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}
