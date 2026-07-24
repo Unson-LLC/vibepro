@@ -28,7 +28,7 @@ sourceが欠損・unreadableでもentryを捨てず、`trace_status`、`missing_
 
 ## Downstream Observation Contract
 
-`story_id`は`.vibepro/pr/<story-id>`、`.vibepro/observations/<story-id>`、canonical audit pathの境界キーである。公開CLIはmanaged-worktree stateを読む前、manager APIはledger/observation pathを組み立てる前に、`^story-[a-z0-9][a-z0-9._-]*$`かつ`..`・slash・backslash・percent/encoded formを含まないことを同じvalidatorで検証する。無効IDは`outcome_story_invalid`として非zeroで拒否し、story-scoped stateを読まず変更しない。
+`story_id`は`.vibepro/pr/<story-id>`、`.vibepro/observations/<story-id>`、`.vibepro/executions/<story-id>`、`.vibepro/reviews/<story-id>`、canonical audit pathの境界キーである。公開CLIとmanaged-worktree/review lifecycleはstateやartifactを読む前、manager APIはledger/observation/temp-worktree pathを組み立てる前に、単一の共有validatorで単一path segment、`story-*`契約、`..`・slash・backslash・percent/encoded form不在を検証する。artifact routingが受け入れてきた大文字混在の安全なlegacy入力は検証後に従来どおりslug化し、opaque tracker IDは既存形式を維持する。無効IDは各surfaceのtyped errorとして非zeroで拒否し、story-scoped stateを読まず変更しない。
 
 公開`trace_source_ref`からmultiplicityを除く安定化以前に保存されたobservationは、旧式selectorと旧parent revisionを決定的read aliasとして解決する。新規出力・新規recordは現行selectorだけを生成し、aliasは過去値をsilentに`not_observed`へ落とさないupgrade互換境界に限定する。また、decision-ledger文脈の「claimの競合」「downstream outcomeの観測」をruntime bug-physicsへ誤分類しないが、「データ競合」「状態を観測できない」は引き続きtiming/observability gateを選ぶ正負回帰を契約とする。`design-ssot.json`は本StoryのStory/Spec/Architecture lineageなのでrequirements SSOT laneへ含める。
 

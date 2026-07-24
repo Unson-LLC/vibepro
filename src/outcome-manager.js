@@ -17,8 +17,7 @@ import { collectCanonicalDirectoryFiles, persistCanonicalArtifactsToBase } from 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { executeManagedCommand, executeManagedOperation } from './managed-command-executor.js';
-
-const OUTCOME_STORY_ID_PATTERN = /^story-[a-z0-9][a-z0-9._-]*$/;
+import { isSafeStoryId } from './story-id.js';
 
 export class OutcomeCommandError extends Error {
   constructor(errorId, message, details = {}) {
@@ -142,7 +141,7 @@ export async function refreshOutcome(repoRoot, options = {}) {
   }
   const observations = await readObservations(root, storyId, ledger);
   const revised = reviseDecisionOutcomeLedger(ledger, {
-    delivery: deliveryFromMerge(storyId, merge),
+    delivery: buildDecisionOutcomeDelivery(storyId, merge),
     observations,
     currentHeadSha: merge.current_head_sha
   });
@@ -379,6 +378,26 @@ export async function tryBindDecisionOutcomeDelivery(repoRoot, storyId, delivery
   }
 }
 
+export function buildDecisionOutcomeDelivery(storyId, merge) {
+  const safeStoryId = requireOutcomeStoryId(storyId, 'decision outcome delivery requires story id');
+  const prNumber = merge.pr.number ?? parsePullRequestNumber(merge.pr.url);
+  return {
+    story_id: safeStoryId,
+    status: 'merged',
+    pr: {
+      ...(prNumber == null ? {} : { number: prNumber }),
+      url: merge.pr.url,
+      state: merge.pr.state ?? 'MERGED'
+    },
+    merge: {
+      sha: merge.merge_commit_sha,
+      status: merge.status,
+      ...(merge.merged_at == null ? {} : { merged_at: merge.merged_at })
+    },
+    source_ref: `.vibepro/pr/${safeStoryId}/pr-merge.json`
+  };
+}
+
 function required(value, errorId, message) {
   if (value == null || String(value).trim() === '') throw new OutcomeCommandError(errorId, message);
   return String(value).trim();
@@ -408,21 +427,10 @@ function isJsonSafeOutcomeValue(value, ancestors = new WeakSet(), depth = 0) {
 
 export function requireOutcomeStoryId(value, missingMessage = 'outcome requires --id <story-id>') {
   const storyId = required(value, 'outcome_story_required', missingMessage);
-  if (!OUTCOME_STORY_ID_PATTERN.test(storyId)
-      || storyId.includes('..')
-      || /[\\/%]/.test(storyId)
-      || decodeSafely(storyId) !== storyId) {
+  if (!isSafeStoryId(storyId)) {
     throw new OutcomeCommandError('outcome_story_invalid', 'outcome requires a valid story id');
   }
   return storyId;
-}
-
-function decodeSafely(value) {
-  try {
-    return decodeURIComponent(value);
-  } catch {
-    return '';
-  }
 }
 
 function parseSelector(options) {
@@ -923,25 +931,6 @@ async function restoreDirectory(target, snapshot) {
     await mkdir(path.dirname(target), { recursive: true });
     await cp(snapshot.backup, target, { recursive: true });
   }
-}
-
-function deliveryFromMerge(storyId, merge) {
-  const prNumber = merge.pr.number ?? parsePullRequestNumber(merge.pr.url);
-  return {
-    story_id: storyId,
-    status: 'merged',
-    pr: {
-      ...(prNumber == null ? {} : { number: prNumber }),
-      url: merge.pr.url,
-      state: merge.pr.state ?? 'MERGED'
-    },
-    merge: {
-      sha: merge.merge_commit_sha,
-      status: merge.status,
-      ...(merge.merged_at == null ? {} : { merged_at: merge.merged_at })
-    },
-    source_ref: `.vibepro/pr/${storyId}/pr-merge.json`
-  };
 }
 
 function boundedError(errorId, message, ledger, candidates) {

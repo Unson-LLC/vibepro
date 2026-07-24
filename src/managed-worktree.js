@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 import { readDecisionRecordsIfExists } from './decision-records.js';
 import { MANIFEST_FILE, getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { collectGitStatusFingerprints } from './git-fingerprint.js';
+import { assertSafeStoryPathSegment } from './story-id.js';
 
 const execFileAsync = promisify(execFile);
 const VALID_MODES = new Set(['required', 'preferred', 'disabled']);
@@ -330,6 +331,7 @@ export async function evaluateManagedWorktreeCommandContext(repoRoot, options = 
 }
 
 export async function readManagedExecutionState(repoRoot, storyId) {
+  assertSafeStoryPathSegment(storyId, 'managed execution requires a valid story id');
   const root = path.resolve(repoRoot);
   const localState = await readExecutionState(root, storyId);
   if (localState?.managed_worktree) return localState;
@@ -669,6 +671,7 @@ async function readConfig(repoRoot) {
 }
 
 async function readExecutionState(repoRoot, storyId) {
+  assertSafeStoryPathSegment(storyId, 'managed execution requires a valid story id');
   const filePath = path.join(getWorkspaceDir(repoRoot), 'executions', storyId, 'state.json');
   try {
     return JSON.parse(await readFile(filePath, 'utf8'));
@@ -684,6 +687,7 @@ async function readExecutionState(repoRoot, storyId) {
 }
 
 async function findLinkedExecutionState(repoRoot, storyId) {
+  assertSafeStoryPathSegment(storyId, 'managed execution requires a valid story id');
   const root = path.resolve(repoRoot);
   const rootRealpath = await canonicalPath(root);
   const output = await gitOptional(root, ['worktree', 'list', '--porcelain']);

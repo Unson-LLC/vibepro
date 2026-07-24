@@ -332,6 +332,7 @@ test('DRS-STORY-S-002 story-vibepro-delivery-reconciliation-state:S-004 DRS-SCEN
   assert.equal(merge.merged_at, '2026-07-10T01:23:45Z');
   assert.equal(merge.delivery.status, 'merged_externally');
   assert.equal(merge.delivery.merge_commit_sha, mergeCommitSha);
+  assert.equal(merge.decision_outcome_delivery.status, 'not_available');
   assert.equal(merge.reconciliation.status, 'reconciled');
   assert.deepEqual(merge.reconciliation.reasons, []);
   assert.equal(merge.warnings.some((w) => /merged externally|already merged/i.test(w)), true);
@@ -339,6 +340,7 @@ test('DRS-STORY-S-002 story-vibepro-delivery-reconciliation-state:S-004 DRS-SCEN
   const artifact = await readJson(path.join(root, '.vibepro', 'pr', 'story-status-honesty', 'pr-merge.json'));
   assert.equal(artifact.status, 'merged_externally');
   assert.equal(artifact.merge_commit_sha, mergeCommitSha);
+  assert.equal(artifact.decision_outcome_delivery.status, 'not_available');
 
   const traceability = await readJson(path.join(root, '.vibepro', 'pr', 'story-status-honesty', 'traceability.json'));
   assert.equal(traceability.lifecycle, 'merged');

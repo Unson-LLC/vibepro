@@ -2,6 +2,7 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { executeManagedCommand, sanitizeDiagnostic } from './managed-command-executor.js';
+import { isSafeStoryId } from './story-id.js';
 
 /**
  * Persist a prepared canonical artifact set onto the verified post-merge base.
@@ -20,7 +21,7 @@ export async function persistCanonicalArtifactsToBase({
   prepare = null
 } = {}) {
   const root = path.resolve(repoRoot);
-  const validStoryId = isSafeCanonicalStoryId(storyId);
+  const validStoryId = isSafeStoryId(storyId);
   const tempWorktree = validStoryId
     ? path.join(os.tmpdir(), `vibepro-canonical-audit-${storyId}-${Date.now()}`)
     : null;
@@ -241,22 +242,6 @@ export async function persistCanonicalArtifactsToBase({
     summary.reason = reason;
     summary.failure = null;
     summary.primary = { status, reason, failure: null };
-  }
-}
-
-function isSafeCanonicalStoryId(value) {
-  return typeof value === 'string'
-    && /^story-[a-z0-9][a-z0-9._-]*$/.test(value)
-    && !value.includes('..')
-    && !/[\\/%]/.test(value)
-    && decodeSafely(value) === value;
-}
-
-function decodeSafely(value) {
-  try {
-    return decodeURIComponent(value);
-  } catch {
-    return '';
   }
 }
 

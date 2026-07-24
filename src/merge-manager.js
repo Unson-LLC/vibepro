@@ -23,6 +23,10 @@ import {
   resolveCurrentMergeGateStatus
 } from './merge-gate-authorization.js';
 import { collectSessionEfficiencyAudit } from './session-efficiency-audit.js';
+import {
+  buildDecisionOutcomeDelivery,
+  tryBindDecisionOutcomeDelivery
+} from './outcome-manager.js';
 import { withStoryTransactionLocks } from './story-transaction-lock.js';
 import { bindStoryTraceability } from './traceability.js';
 import { resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
@@ -571,6 +575,16 @@ async function executeMergeLocked(root, options = {}) {
   }
   merge.status = externallyMerged ? 'merged_externally' : 'merged';
   merge.stop_reason = reconciliationReasons.length > 0 ? 'delivery_reconciliation_required' : null;
+  merge.decision_outcome_delivery = await tryBindDecisionOutcomeDelivery(
+    root,
+    storyId,
+    buildDecisionOutcomeDelivery(storyId, merge)
+  );
+  if (merge.decision_outcome_delivery.status === 'unavailable') {
+    merge.warnings.push(
+      'Decision outcome delivery projection is unavailable; repair the local decision outcome ledger and rerun outcome refresh.'
+    );
+  }
   const roiLedgerSource = await readPromotableGateOutcomeEntries(root, storyId);
   const roiLedgerLocalEntries = roiLedgerSource.entries;
   const centralLedgerAtMerge = await gitOptional(root, [

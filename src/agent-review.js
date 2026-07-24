@@ -23,6 +23,7 @@ import {
   selectRiskAdaptiveReviewCoverage
 } from './delivery-efficiency-guardrail.js';
 import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js';
+import { assertSafeStoryPathSegment } from './story-id.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -3391,7 +3392,7 @@ function normalizeArtifact(repoRoot, artifact) {
 
 function requireStoryId(storyId, commandName) {
   if (!storyId) throw new Error(`${commandName} requires --id <story-id>`);
-  return storyId;
+  return assertSafeStoryPathSegment(storyId, `${commandName} requires a valid story id`);
 }
 
 function requireStage(stage, commandName) {
