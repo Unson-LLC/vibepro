@@ -1540,7 +1540,7 @@ ${(merge.warnings ?? []).map((warning) => `- ${warning}`).join('\n') || '- none'
 
 export function projectPublicPrMergeResult(result) {
   const merge = result?.merge ?? result ?? {};
-  return projectPublicMergeValue(merge);
+  return projectPublicMergeValue(merge, []);
 }
 
 const PRIVATE_MERGE_DIAGNOSTIC_KEYS = new Set([
@@ -1552,13 +1552,18 @@ const PRIVATE_MERGE_DIAGNOSTIC_KEYS = new Set([
   'primary'
 ]);
 
-function projectPublicMergeValue(value) {
-  if (Array.isArray(value)) return value.map(projectPublicMergeValue);
+function projectPublicMergeValue(value, keyPath) {
+  if (Array.isArray(value)) {
+    return value.map((item) => projectPublicMergeValue(item, keyPath));
+  }
   if (!value || typeof value !== 'object') return value;
   return Object.fromEntries(
     Object.entries(value)
-      .filter(([key]) => !PRIVATE_MERGE_DIAGNOSTIC_KEYS.has(key))
-      .map(([key, item]) => [key, projectPublicMergeValue(item)])
+      .filter(([key]) => (
+        !PRIVATE_MERGE_DIAGNOSTIC_KEYS.has(key)
+        || (key === 'commands' && keyPath.at(-1) === 'reconciliation_action')
+      ))
+      .map(([key, item]) => [key, projectPublicMergeValue(item, [...keyPath, key])])
   );
 }
 

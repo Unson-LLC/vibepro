@@ -186,6 +186,16 @@ test('execute merge JSON projects bounded persistence diagnostics without intern
           cleanup: { attempted: true, removed: false, status: 'failed' },
           recovery: 'verify remote state before retrying'
         }
+      },
+      execution_state_sync: {
+        status: 'failed',
+        reason: 'primary sync failure',
+        recovery_command: 'vibepro execute reconcile . --story-id story-x --base main'
+      },
+      reconciliation_action: {
+        status: 'required',
+        reason: 'execution_state_sync_failed',
+        commands: ['vibepro execute reconcile . --story-id story-x --base main']
       }
     }
   });
@@ -202,8 +212,12 @@ test('execute merge JSON projects bounded persistence diagnostics without intern
     status: 'failed'
   });
   assert.equal(projected.canonical_audit.persistence.recovery, 'verify remote state before retrying');
+  assert.equal(projected.execution_state_sync.reason, 'primary sync failure');
+  assert.deepEqual(projected.reconciliation_action.commands, [
+    'vibepro execute reconcile . --story-id story-x --base main'
+  ]);
   const json = JSON.stringify(projected);
-  assert.doesNotMatch(json, /SECRET_SHOULD_NOT_RENDER|raw failure|worktree_path|commands|results|token@example/);
+  assert.doesNotMatch(json, /SECRET_SHOULD_NOT_RENDER|raw failure|worktree_path|git push|results|token@example/);
 });
 
 test('outcome finalization text exposes local reconciliation state and recovery artifact', () => {
