@@ -1,12 +1,16 @@
 export function resolveReconciliationAction(merge = {}) {
-  const recoveryCommand = merge.execution_state_sync?.status === 'failed'
-    ? merge.execution_state_sync.recovery_command
-    : null;
-  if (recoveryCommand) {
+  const executionStateSyncFailed = merge.execution_state_sync?.status === 'failed';
+  const recoveryCommand = executionStateSyncFailed
+    && typeof merge.execution_state_sync.recovery_command === 'string'
+    ? merge.execution_state_sync.recovery_command.trim()
+    : '';
+  if (executionStateSyncFailed) {
     return {
-      status: 'required',
-      reason: 'execution_state_sync_failed',
-      commands: [recoveryCommand]
+      status: recoveryCommand ? 'required' : 'blocked',
+      reason: recoveryCommand
+        ? 'execution_state_sync_failed'
+        : 'execution_state_sync_recovery_command_missing',
+      commands: recoveryCommand ? [recoveryCommand] : []
     };
   }
 

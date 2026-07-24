@@ -588,6 +588,65 @@ test('DRS-S-5 canonical recovery equivalence keeps execution-state sync recovery
   assert.equal(canonicalStory.latest_reconciliation_action, story.latest_reconciliation_action);
 });
 
+test('DRS-S-5 execution-state sync failure without a recovery command fails closed', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-sync-recovery-missing' }
+  ]);
+  const localDir = path.join(root, '.vibepro', 'pr', 'story-sync-recovery-missing');
+  await mkdir(localDir, { recursive: true });
+  await writeFile(path.join(localDir, 'pr-merge.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-sync-recovery-missing',
+    story: { story_id: 'story-sync-recovery-missing' },
+    status: 'merged_externally',
+    base: 'main',
+    delivery: { status: 'merged_externally', observed: true },
+    reconciliation: { status: 'reconciliation_required', reasons: ['execution_state_sync_failed'] },
+    execution_state_sync: {
+      status: 'failed',
+      recovery_command: null
+    },
+    reconciliation_action: {
+      status: 'required',
+      commands: [
+        'vibepro pr prepare . --story-id story-sync-recovery-missing --base main',
+        'vibepro execute merge . --story-id story-sync-recovery-missing --base main'
+      ]
+    },
+    merged_at: '2026-07-18T00:20:00.000Z'
+  }, null, 2));
+
+  const story = findStory(await createUsageReport(root), 'story-sync-recovery-missing');
+  assert.equal(story.blocked, true);
+  assert.equal(story.latest_reconciliation_action, null);
+  assert.equal(story.latest_reconciliation_reasons.includes('execution_state_sync_recovery_command_missing'), true);
+});
+
+test('DRS-S-2 contradictory unverified delivery and reconciled state fails closed', async () => {
+  const root = await setupReportRepo([
+    { story_id: 'story-contradictory-delivery' }
+  ]);
+  const localDir = path.join(root, '.vibepro', 'pr', 'story-contradictory-delivery');
+  await mkdir(localDir, { recursive: true });
+  await writeFile(path.join(localDir, 'pr-merge.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: 'story-contradictory-delivery',
+    story: { story_id: 'story-contradictory-delivery' },
+    status: 'failed',
+    base: 'main',
+    delivery: { status: 'unverified', observed: false },
+    reconciliation: { status: 'reconciled', reasons: [] },
+    merged_at: '2026-07-18T00:20:00.000Z'
+  }, null, 2));
+
+  const report = await createUsageReport(root);
+  const story = findStory(report, 'story-contradictory-delivery');
+  assert.equal(story.blocked, true);
+  assert.equal(story.latest_reconciliation_status, 'blocked');
+  assert.equal(story.latest_reconciliation_reasons.includes('delivery_unverified_reconciliation_reconciled'), true);
+  assert.match(renderUsageReport(report), /delivery=unverified reconciliation=blocked reconciliation_reasons=delivery_unverified_reconciliation_reconciled/);
+});
+
 test('merged_externally delivery resolves traceability for active and completed stories', async () => {
   const stories = [
     { story_id: 'story-external-active', status: 'active' },

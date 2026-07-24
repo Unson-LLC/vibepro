@@ -86,6 +86,12 @@ export async function createUsageReport(repoRoot, options = {}) {
       story.latest_reconciliation_status = artifact.data?.reconciliation?.status ?? story.latest_reconciliation_status;
       story.latest_reconciliation_reasons = artifact.data?.reconciliation?.reasons ?? story.latest_reconciliation_reasons;
       const reconciliationAction = resolveReconciliationAction(artifact.data);
+      if (reconciliationAction?.status === 'blocked' && reconciliationAction.reason) {
+        story.latest_reconciliation_reasons = [
+          ...new Set([...(story.latest_reconciliation_reasons ?? []), reconciliationAction.reason])
+        ];
+        story.blocked = true;
+      }
       story.latest_reconciliation_action = reconciliationAction?.commands?.length
         ? reconciliationAction.commands.join(' && ')
         : story.latest_reconciliation_action;
@@ -94,8 +100,17 @@ export async function createUsageReport(repoRoot, options = {}) {
         ?? artifact.data?.git?.base_branch
         ?? artifact.data?.pr?.base_ref_name
         ?? story.latest_base_branch;
-      story.blocked ||= Boolean(artifact.data?.delivery?.status)
-        && artifact.data?.reconciliation?.status !== 'reconciled';
+      const contradictoryDeliveryState = artifact.data?.delivery?.status === 'unverified'
+        && artifact.data?.reconciliation?.status === 'reconciled';
+      if (contradictoryDeliveryState) {
+        story.latest_reconciliation_status = 'blocked';
+        story.latest_reconciliation_reasons = [
+          ...new Set([...(story.latest_reconciliation_reasons ?? []), 'delivery_unverified_reconciliation_reconciled'])
+        ];
+      }
+      story.blocked ||= contradictoryDeliveryState
+        || (Boolean(artifact.data?.delivery?.status)
+          && artifact.data?.reconciliation?.status !== 'reconciled');
       story.latest_merged_at = artifact.data?.merged_at ?? story.latest_merged_at;
     }
     if (artifact.kind === 'gate_dag') collectGateMetrics(artifact.data, artifact.story_id, storyMap);
