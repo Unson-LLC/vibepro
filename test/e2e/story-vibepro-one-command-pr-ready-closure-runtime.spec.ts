@@ -609,21 +609,32 @@ test("scenario:S-005 roadmap closure keeps external authority explicit and prede
     action_journal: []
   }, { profile: "autonomous" });
 
-  // AC-8 / S-005: pre-PR executable SSOT assertions prove the staged closure
-  // boundary without treating the Story's own acceptance prose as evidence.
+  // AC-8 / S-005: executable SSOT assertions prove either side of the staged
+  // closure boundary without treating the Story's own acceptance prose alone
+  // as evidence.
   assert.match(entries.actionDag, /status: completed[\s\S]*PR #372: `https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/372`/);
   assert.match(entries.connectors, /status: completed[\s\S]*PR: https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/377/);
   assert.match(entries.review, /status: completed[\s\S]*PR: https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/382/);
-  assert.match(
-    entries.closure,
-    /^status: active$/m,
-    "AC-8: the final Story stays active at the pre-PR boundary"
-  );
-  assert.match(
-    entries.roadmap,
-    /^status: active$/m,
-    "AC-8: the parent roadmap stays active at the pre-PR boundary"
-  );
+  if (/^status: completed$/m.test(entries.closure)) {
+    assert.match(entries.roadmap, /^status: completed$/m);
+    assert.match(entries.roadmap, /- \[x\] AIC-S-2:/);
+    assert.match(entries.roadmap, /- \[x\] AIC-S-3:/);
+    assert.match(entries.roadmap, /One-command PR-ready Closure: PR #385/);
+    assert.match(entries.closure, /Delivery PR: https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/385/);
+    assert.match(entries.closure, /pre-closure HEAD `926227f945878299770448a03966c17dfa70158d`/);
+    assert.match(entries.closure, /Node 20\/22 CI成功を`verify import-ci`で取り込んだ/);
+  } else {
+    assert.match(
+      entries.closure,
+      /^status: active$/m,
+      "AC-8: the final Story stays active at the pre-PR boundary"
+    );
+    assert.match(
+      entries.roadmap,
+      /^status: active$/m,
+      "AC-8: the parent roadmap stays active at the pre-PR boundary"
+    );
+  }
   assert.deepEqual(plan.map(({ id }) => id), [
     "diagnose",
     "prepare_artifacts",
