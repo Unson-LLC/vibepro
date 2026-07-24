@@ -291,9 +291,9 @@
     },
     "delivery_efficiency_by_story": {
       "story-vibepro-delivery-reconciliation-state": {
-        "max_subagent_count": 21,
+        "max_subagent_count": 22,
         "max_agent_consumption_ms": 4522425,
-        "amendment_reason": "Sixteen historical closed lifecycles exhausted the numeric Story cap even though the prior amendment explicitly reserved five final current-HEAD lifecycles. The user explicitly authorized blocker removal and merge completion on 2026-07-24. Correct the cap to include exactly those five already-authorized lifecycles: architecture_boundary, gate_evidence, pr_split_scope, release_risk, and runtime_contract. Collect the decisions with the same independent Luna high reviewer where possible, spawn no replacement loop, and permit no unrelated role or global budget expansion."
+        "amendment_reason": "Sixteen historical closed lifecycles exhausted the numeric Story cap even though the prior amendment explicitly reserved five final current-HEAD lifecycles. The user explicitly authorized blocker removal and merge completion on 2026-07-24. Reserve those five roles plus exactly one accounting slot consumed by a fail-closed surface-digest authorization that never started an agent lifecycle: architecture_boundary, gate_evidence, pr_split_scope, release_risk, and runtime_contract. Collect the remaining decisions with one independent Luna high reviewer, spawn no replacement loop, and permit no unrelated role or global budget expansion."
       },
       "story-vibepro-surface-aware-agent-review-freshness": {
         "max_subagent_count": 22,
