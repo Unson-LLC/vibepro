@@ -83,6 +83,11 @@ import {
   summarizeEvidenceReuse
 } from './evidence-reuse.js';
 import {
+  collectDecisionOutcomeSources,
+  projectDecisionOutcomeSummary,
+  writeDecisionOutcomeLedger
+} from './decision-outcome-ledger.js';
+import {
   buildResponsibilityAuthorityGate,
   renderResponsibilityAuthorityPrSection,
   resolveResponsibilityAuthority
@@ -570,6 +575,25 @@ export async function preparePullRequest(repoRoot, options = {}) {
       overrideOutcome: options.gateOutcome ?? null
     }))
     : null;
+  const decisionOutcomeLedger = workspace.initialized
+    ? await progress.stage('write_decision_outcome_ledger', async () => {
+      const result = await writeDecisionOutcomeLedger(root, story.story_id, {
+        sources: collectDecisionOutcomeSources({
+          storyId: story.story_id,
+          agentReviews: prContext.agent_reviews,
+          decisionRecords,
+          gateOutcomeLedger
+        }),
+        verificationEvidence,
+        currentHeadSha: reviewGit.head_sha,
+        createdAt
+      });
+      return result.ledger;
+    })
+    : null;
+  const decisionOutcomeSummary = projectDecisionOutcomeSummary(decisionOutcomeLedger);
+  evidenceReuse.decision_outcome_summary = decisionOutcomeSummary;
+  evidenceReuseSummary.decision_outcome_summary = decisionOutcomeSummary;
   const traceabilityEvidence = buildTraceabilityEvidence({
     root,
     bodyPath,
@@ -652,6 +676,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     evidence_plan: evidencePlan,
     decision_index: decisionIndex,
     evidence_reuse: evidenceReuse,
+    decision_outcome_summary: decisionOutcomeSummary,
     artifact_budget: artifactBudgetReport,
     gate_status: gateStatus,
     session_boundary: buildSessionBoundaryAdvisory({
