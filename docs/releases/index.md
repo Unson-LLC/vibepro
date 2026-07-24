@@ -157,3 +157,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:384:start -->
 - [PR #384](https://github.com/Unson-LLC/vibepro/pull/384) — [2026-07](/releases/2026-07): Agent Review freshnessを検査surfaceとrelease-impactに束縛する
 <!-- vibepro-release-index-pr:384:end -->
+
+<!-- vibepro-release-index-pr:356:start -->
+- [PR #356](https://github.com/Unson-LLC/vibepro/pull/356) — [2026-07](/releases/2026-07): story-vibepro-delivery-reconciliation-state - 外部マージ済みPRの再読込が、現在HEADのgate driftを隠して成功終了し得る
+<!-- vibepro-release-index-pr:356:end -->
