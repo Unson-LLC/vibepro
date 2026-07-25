@@ -409,9 +409,16 @@ export async function recordResolvedGateOutcomes(repoRoot, options = {}) {
   };
 }
 
+// Reporting the story-level backlog must never turn `pr prepare` into a hard
+// crash: an unreadable local ledger yields an empty story view, not a throw.
 async function buildLedgerClassificationReport(repoRoot, storyId, entries) {
-  const ledger = await readGateOutcomeLedger(repoRoot);
-  return buildLedgerClassificationReportFrom(ledger.entries, storyId, entries);
+  let ledgerEntries = [];
+  try {
+    ledgerEntries = (await readGateOutcomeLedger(repoRoot)).entries;
+  } catch (error) {
+    if (!(error instanceof SyntaxError)) throw error;
+  }
+  return buildLedgerClassificationReportFrom(ledgerEntries, storyId, entries);
 }
 
 // Combines "what this run left unclassified" (the backlog to answer now) with
@@ -725,11 +732,14 @@ export async function applyGateOutcomeClassifications(repoRoot, options = {}) {
   const note = options.note ?? null;
   const ledgerPath = getGateOutcomeLedgerPath(repoRoot);
   const artifact = toWorkspaceRelative(repoRoot, ledgerPath);
-  const ledger = await readGateOutcomeLedger(repoRoot);
-  // readGateOutcomeLedger reduces a foreign-model ledger to an empty one, which
-  // would otherwise make "your ledger was discarded" indistinguishable from
-  // "nothing left to classify".
+  // readGateOutcomeLedger reduces a foreign-model ledger to an empty one and
+  // throws on an unparseable one, either of which would otherwise be reported
+  // as "nothing left to classify". Read the model status first so both cases
+  // come back as a typed refusal instead.
   const ledgerModelStatus = await readGateOutcomeLedgerModelStatus(ledgerPath);
+  const ledger = ledgerModelStatus.status === 'unparseable'
+    ? { entries: [] }
+    : await readGateOutcomeLedger(repoRoot);
 
   const scoped = ledger.entries.filter((entry) => !storyId || entry?.story_id === storyId);
   const pending = scoped.filter((entry) => entry?.outcome === 'unclassified' && entry?.overridden !== true);
@@ -778,7 +788,9 @@ export async function applyGateOutcomeClassifications(repoRoot, options = {}) {
     schema_version: LEDGER_SCHEMA_VERSION,
     status: updated.length > 0
       ? 'classified'
-      : ledgerModelStatus.status === 'foreign_model' ? 'ledger_model_not_readable' : 'no_matching_entries',
+      : ['foreign_model', 'unparseable'].includes(ledgerModelStatus.status)
+        ? 'ledger_model_not_readable'
+        : 'no_matching_entries',
     story_id: storyId,
     artifact,
     ledger_model_status: ledgerModelStatus,
@@ -890,10 +902,28 @@ function collectGateNodeEvidenceDelta(previousGate = null, currentGate = null) {
     .map((ref) => ({ kind: 'gate_node_evidence', gate_evidence: ref.kind, ref: ref.label }));
 }
 
-// Deliberately excludes judgment-axis `matched_evidence`: src/pr-manager.js
-// derives those entries from the diff shape itself (story/spec docs in diff,
-// changed test files), so counting them would let a documentation-only
-// resolution masquerade as evidence_added and deflate rewording_only_rate.
+// Judgment-axis `matched_evidence` mixes two kinds of item: some are derived
+// from the diff shape itself (story/spec docs in diff, changed test files) and
+// counting those would let a documentation-only resolution masquerade as
+// evidence_added; the rest are backed by a real artifact, and judgment-axis
+// nodes expose no other evidence surface, so dropping them wholesale would
+// misreport a genuinely evidence-closed axis as rewording_only and over-count
+// the rewording_only_rate that feeds demotion candidates. Only the diff-shape
+// items are excluded, identified by the marker src/pr-manager.js stamps on them.
+const DIFF_SHAPE_EVIDENCE_QUALITIES = new Set([
+  'story_doc',
+  'contract_doc',
+  'architecture_doc',
+  'changed_test_files'
+]);
+
+function isDiffShapeDerivedEvidence(value) {
+  return Boolean(value)
+    && typeof value === 'object'
+    && value.binding_status === 'n/a'
+    && DIFF_SHAPE_EVIDENCE_QUALITIES.has(value.artifact_quality);
+}
+
 function collectGateNodeEvidenceRefs(gate = null) {
   if (!gate || typeof gate !== 'object') return [];
   const refs = [];
@@ -903,6 +933,10 @@ function collectGateNodeEvidenceRefs(gate = null) {
     refs.push({ kind, label, key: `${kind}|${label}` });
   };
   for (const evidence of asArray(gate.evidence)) push('evidence', evidence);
+  for (const evidence of asArray(gate.matched_evidence)) {
+    if (isDiffShapeDerivedEvidence(evidence)) continue;
+    push('matched_evidence', evidence);
+  }
   for (const evidence of asArray(gate.evidence_refs)) push('evidence_ref', evidence);
   for (const item of asArray(gate.definition_items)) {
     for (const evidence of asArray(item?.evidence)) push('definition_item_evidence', evidence);

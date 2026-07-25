@@ -17,6 +17,8 @@ import {
 } from '../src/gate-outcome-ledger.js';
 import { createUsageReport, renderUsageReport } from '../src/usage-report.js';
 import { runCli } from '../src/cli.js';
+import { projectPrPrepareForLlm } from '../src/canonical-audit.js';
+import { renderPrPrepareSummary } from '../src/pr-manager.js';
 
 async function runCliCapturingStdout(args) {
   let stdout = '';
@@ -115,12 +117,45 @@ test('GOC-S-1 diff-shape-derived judgment axis evidence never turns a doc-only r
     gate: {
       id: 'gate:judgment_axis_release_ops',
       status: 'passed',
-      matched_evidence: [{ kind: 'story_spec_traceability', ref: 'story/spec docs in diff' }]
+      matched_evidence: [{
+        kind: 'story_spec_traceability',
+        ref: 'story/spec docs in diff',
+        binding_status: 'n/a',
+        artifact_quality: 'story_doc'
+      }]
     },
     git: { changed_files: [{ path: 'docs/management/stories/active/story-a.md' }] }
   });
   assert.equal(result.outcome, 'rewording_only');
   assert.equal(result.reason, 'resolving_diff_contains_only_documentation_or_story_text');
+});
+
+// Review finding (round 2): dropping the whole matched_evidence surface
+// over-corrected. Judgment-axis nodes expose no other evidence surface, so an
+// axis genuinely closed by an artifact-backed record was being reported as
+// rewording_only, over-counting the rate that feeds demotion candidates.
+test('GOC-S-1 artifact-backed judgment axis evidence still yields evidence_added', () => {
+  const result = classifyGateOutcome({
+    previousGate: { id: 'gate:judgment_axis_failure_modes', status: 'needs_evidence', matched_evidence: [] },
+    gate: {
+      id: 'gate:judgment_axis_failure_modes',
+      status: 'passed',
+      matched_evidence: [
+        // Diff-shape derived: must not count.
+        { kind: 'story_spec_traceability', ref: 'story/spec docs in diff', binding_status: 'n/a', artifact_quality: 'story_doc' },
+        // Artifact backed: must count.
+        { kind: 'current_verification', artifact: '.vibepro/verify-artifacts/x.xml', binding_status: 'current', artifact_quality: 'status_artifact' }
+      ]
+    },
+    git: { changed_files: [{ path: 'docs/management/stories/active/story-a.md' }] }
+  });
+  assert.equal(result.outcome, 'evidence_added');
+  assert.equal(result.reason, 'gate_node_evidence_surface_expanded');
+  assert.deepEqual(result.evidence_refs, [{
+    kind: 'gate_node_evidence',
+    gate_evidence: 'matched_evidence',
+    ref: '.vibepro/verify-artifacts/x.xml'
+  }]);
 });
 
 // Review finding: excluding build-output directories downgraded a genuine
@@ -292,6 +327,52 @@ test('GOC-S-2 pr classify applies operator input to pending ledger entries only'
   assert.equal(rerun.updated_count, 0);
 });
 
+// Review finding (round 2): the reader-facing pr prepare surfaces named by the
+// Spec scenario clause — the preparation field, its markdown summary row and
+// the bounded LLM projection — carried no test, so the backlog could silently
+// become invisible again.
+test('GOC-S-2 the classification backlog reaches the pr prepare reader surfaces', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-goc-surface-'));
+  const recorded = await recordResolvedGateOutcomes(repo, {
+    storyId: 'story-goc',
+    previousGateDag: dagWith({ id: 'gate:senior_gap_judgment', status: 'needs_evidence', required: true }),
+    currentGateDag: dagWith({ id: 'gate:senior_gap_judgment', status: 'passed', required: true }),
+    createdAt: '2026-07-25T00:00:00.000Z',
+    git: { changed_files: [{ path: 'src/app.js' }] },
+    fileGroups: { source: { count: 1 } }
+  });
+
+  const preparation = {
+    schema_version: '0.1.0',
+    story: { story_id: 'story-goc' },
+    gate_status: { overall_status: 'needs_verification' },
+    git: { base_ref: 'main', head_ref: 'HEAD', current_branch: 'topic', changed_files: [], commits: [] },
+    scope: { status: 'reviewable', recommended_strategy: 'current_branch_pr', reasons: [] },
+    workspace: { initialized: true },
+    pr_context: {},
+    gate_outcome_classification: recorded.classification,
+    next_commands: [recorded.classification.next_command]
+  };
+
+  // Markdown summary row.
+  assert.match(
+    renderPrPrepareSummary({ preparation, artifacts: {} }),
+    /\| Gate outcome classification \| classification_input_required new_unclassified=1\/1 story_unclassified=1\/1 \|/
+  );
+
+  // Bounded LLM projections must carry the backlog, not drop it.
+  for (const view of ['canonical-summary', 'readiness']) {
+    const projected = projectPrPrepareForLlm(preparation, view);
+    const classification = view === 'readiness'
+      ? projected.gate_outcome_classification
+      : projected.data.gate_outcome_classification;
+    assert.equal(classification.status, 'classification_input_required');
+    assert.equal(classification.newly_unclassified_count, 1);
+    assert.deepEqual(classification.pending.map((item) => item.gate_id), ['gate:senior_gap_judgment']);
+    assert.match(classification.next_command, /vibepro pr classify \./);
+  }
+});
+
 // Review finding: the pr classify CLI surface is the only closure path for
 // GOC-S-2 and had no automated cover.
 test('GOC-S-2 the pr classify CLI closes pending entries and fails closed on a repo-wide outcome', async () => {
@@ -308,6 +389,12 @@ test('GOC-S-2 the pr classify CLI closes pending entries and fails closed on a r
   // A repo-wide outcome would stamp every pending entry at once and is refused.
   await assertCliRejects(
     ['pr', 'classify', repo, '--story-id', 'story-goc', '--outcome', 'source_fix'],
+    /requires gate-scoped outcomes/
+  );
+  // Review finding (round 2): an empty gate id also resolves to the repo-wide
+  // fallback, so the guard must run on the parsed overrides, not the raw token.
+  await assertCliRejects(
+    ['pr', 'classify', repo, '--story-id', 'story-goc', '--outcome', '=source_fix'],
     /requires gate-scoped outcomes/
   );
   await assertCliRejects(
@@ -358,6 +445,30 @@ test('GOC-S-2 a foreign-model ledger is reported as unreadable rather than as no
   const after = JSON.parse(await readFile(ledgerPath, 'utf8'));
   assert.equal(after.model, 'vibepro-gate-outcome-ledger-v1');
   assert.equal(after.entries.length, 1);
+});
+
+// Review finding (round 2): reporting the story backlog must not turn an
+// unreadable local ledger into a hard crash in `pr prepare`, and an unparseable
+// ledger must be a typed refusal rather than a thrown SyntaxError.
+test('GOC-S-2 an unreadable ledger degrades to a typed refusal instead of crashing', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-goc-corrupt-'));
+  const ledgerPath = getGateOutcomeLedgerPath(repo);
+  await mkdir(path.dirname(ledgerPath), { recursive: true });
+  await writeFile(ledgerPath, '{ corrupt');
+
+  // The no_resolved_gates path runs on almost every pr prepare.
+  const recorded = await recordResolvedGateOutcomes(repo, { storyId: 'story-goc' });
+  assert.equal(recorded.status, 'no_resolved_gates');
+  assert.equal(recorded.classification.story_unclassified_count, 0);
+
+  const applied = await applyGateOutcomeClassifications(repo, {
+    storyId: 'story-goc',
+    outcomes: ['gate:unit=source_fix']
+  });
+  assert.equal(applied.status, 'ledger_model_not_readable');
+  assert.equal(applied.ledger_model_status.status, 'unparseable');
+  assert.equal(applied.updated_count, 0);
+  assert.equal(await readFile(ledgerPath, 'utf8'), '{ corrupt');
 });
 
 // Review finding: an out-of-range threshold silently disabled the GOC-S-3

@@ -242,7 +242,7 @@ import {
   writeNarrative
 } from './report-store.js';
 import { createUsageReport, renderUsageReport } from './usage-report.js';
-import { applyGateOutcomeClassifications, CLASSIFIABLE_GATE_OUTCOMES } from './gate-outcome-ledger.js';
+import { applyGateOutcomeClassifications, CLASSIFIABLE_GATE_OUTCOMES, parseGateOutcomeOverrides } from './gate-outcome-ledger.js';
 import {
   projectPrPrepareForLlm,
   renderCanonicalAuditReplay,
@@ -3441,13 +3441,15 @@ export async function runCli(argv, io = {}) {
         // The repo-wide fallback form stays valid for `pr prepare`, but here it
         // would stamp every pending entry as operator-supplied in one go and
         // those entries are never re-asked. Classification must name its gate.
-        const unscopedOutcomes = outcomes.filter((value) => !String(value).includes('='));
-        if (unscopedOutcomes.length > 0) {
-          throw new Error(`pr classify requires gate-scoped outcomes; got a repo-wide value (${unscopedOutcomes.join(', ')}). Use --outcome <gate-id>=<outcome> so each classification names the gate it answers.`);
+        // Checked on the PARSED overrides, not the raw token: an empty gate id
+        // (`--outcome =source_fix`) also resolves to the repo-wide fallback.
+        const classifyOverrides = parseGateOutcomeOverrides(outcomes);
+        if (classifyOverrides.global) {
+          throw new Error(`pr classify requires gate-scoped outcomes; got a repo-wide value (${classifyOverrides.global}). Use --outcome <gate-id>=<outcome> so each classification names the gate it answers.`);
         }
         const result = await applyGateOutcomeClassifications(repoRoot, {
           storyId,
-          outcomes,
+          overrides: classifyOverrides,
           note: getOption(rest, '--note')
         });
         write(stdout, jsonOutput
