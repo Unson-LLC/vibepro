@@ -411,6 +411,94 @@ test('GOC-S-2 the classification backlog reaches the pr prepare reader surfaces'
   }
 });
 
+// Review finding (round 4): the unreadable-ledger branch of the reader surfaces
+// was untested, so reverting it to `?? 0` would have failed nothing.
+test('GOC-S-2 the reader surfaces report unknown debt rather than zero on an unreadable ledger', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-goc-unreadable-surface-'));
+  const ledgerPath = getGateOutcomeLedgerPath(repo);
+  await mkdir(path.dirname(ledgerPath), { recursive: true });
+  await writeFile(ledgerPath, '{ corrupt');
+
+  const recorded = await recordResolvedGateOutcomes(repo, { storyId: 'story-goc' });
+  const preparation = {
+    schema_version: '0.1.0',
+    story: { story_id: 'story-goc' },
+    gate_status: { overall_status: 'needs_verification' },
+    git: { base_ref: 'main', head_ref: 'HEAD', current_branch: 'topic', changed_files: [], commits: [] },
+    scope: { status: 'reviewable', recommended_strategy: 'current_branch_pr', reasons: [] },
+    workspace: { initialized: true },
+    pr_context: {},
+    gate_outcome_classification: recorded.classification,
+    next_commands: []
+  };
+  assert.match(
+    renderPrPrepareSummary({ preparation, artifacts: {} }),
+    /story_unclassified=unknown \(unparseable ledger\)/
+  );
+  const projected = projectPrPrepareForLlm(preparation, 'readiness');
+  assert.equal(projected.gate_outcome_classification.ledger_status, 'unparseable');
+  assert.equal(projected.gate_outcome_classification.story_unclassified_count, undefined);
+});
+
+// Review finding (round 4): the write path hardcoded a readable ledger status
+// and would overwrite a foreign-model ledger, destroying prior entries while
+// reporting zero debt on top of the loss.
+test('GOC-S-4 recording refuses to overwrite a ledger it cannot read', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-goc-write-refusal-'));
+  const ledgerPath = getGateOutcomeLedgerPath(repo);
+  await mkdir(path.dirname(ledgerPath), { recursive: true });
+  const legacy = `${JSON.stringify({
+    schema_version: '0.1.0',
+    model: 'vibepro-gate-outcome-ledger-v2',
+    entries: [{ entry_key: 'legacy|1', story_id: 'story-goc', gate_id: 'gate:unit', outcome: 'unclassified', resolved_at: '2026-07-01T00:00:00.000Z' }]
+  }, null, 2)}\n`;
+  await writeFile(ledgerPath, legacy);
+
+  const recorded = await recordResolvedGateOutcomes(repo, {
+    storyId: 'story-goc',
+    previousGateDag: dagWith({ id: 'gate:unit', status: 'needs_evidence', required: true }),
+    currentGateDag: dagWith({ id: 'gate:unit', status: 'passed', required: true }),
+    createdAt: '2026-07-25T00:00:00.000Z',
+    git: { changed_files: [{ path: 'src/app.js' }] },
+    fileGroups: { source: { count: 1 } }
+  });
+  assert.equal(recorded.status, 'ledger_not_readable');
+  assert.equal(recorded.classification.ledger_status.status, 'foreign_model');
+  assert.equal(recorded.classification.story_unclassified_count, null);
+  assert.equal(await readFile(ledgerPath, 'utf8'), legacy, 'the unreadable ledger is left byte-identical');
+});
+
+// Review finding (round 4): `unrecognized` only means the artifact could not be
+// cross-parsed; the file exists, so it still demonstrates evidence was added.
+test('GOC-S-1 an artifact whose format is unrecognized still counts as evidence', () => {
+  const result = classifyGateOutcome({
+    previousGate: { id: 'gate:judgment_axis_public_contract', status: 'needs_evidence', matched_evidence: [] },
+    gate: {
+      id: 'gate:judgment_axis_public_contract',
+      status: 'passed',
+      matched_evidence: [{
+        kind: 'focused_test',
+        artifact: '.vibepro/verify-artifacts/targeted.log',
+        binding_status: 'current',
+        artifact_quality: 'unrecognized'
+      }]
+    },
+    git: { changed_files: [{ path: 'docs/a.md' }] }
+  });
+  assert.equal(result.outcome, 'evidence_added');
+
+  // A named-but-absent artifact is still not evidence.
+  assert.equal(classifyGateOutcome({
+    previousGate: { id: 'gate:judgment_axis_public_contract', status: 'needs_evidence', matched_evidence: [] },
+    gate: {
+      id: 'gate:judgment_axis_public_contract',
+      status: 'passed',
+      matched_evidence: [{ kind: 'focused_test', binding_status: 'current', artifact_quality: 'missing_artifact' }]
+    },
+    git: { changed_files: [{ path: 'docs/a.md' }] }
+  }).outcome, 'rewording_only');
+});
+
 // Review finding: the pr classify CLI surface is the only closure path for
 // GOC-S-2 and had no automated cover.
 test('GOC-S-2 the pr classify CLI closes pending entries and fails closed on a repo-wide outcome', async () => {

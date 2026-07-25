@@ -384,6 +384,20 @@ export async function recordResolvedGateOutcomes(repoRoot, options = {}) {
   }
 
   const ledgerPath = getGateOutcomeLedgerPath(repoRoot);
+  // The write path must respect the same typed refusal as the classify path:
+  // readGateOutcomeLedger reduces a foreign-model ledger to empty and throws on
+  // an unparseable one, so writing blind would silently destroy prior entries
+  // and report a fabricated zero backlog on top of the loss.
+  const ledgerStatus = await readGateOutcomeLedgerModelStatus(ledgerPath);
+  if (!['ok', 'absent'].includes(ledgerStatus.status)) {
+    return {
+      schema_version: LEDGER_SCHEMA_VERSION,
+      status: 'ledger_not_readable',
+      artifact: toWorkspaceRelative(repoRoot, ledgerPath),
+      entries: [],
+      classification: buildLedgerClassificationReportFrom([], storyId, [], ledgerStatus)
+    };
+  }
   const existing = await readGateOutcomeLedger(repoRoot);
   const seen = new Set(existing.entries.map((entry) => entry.entry_key));
   const nextEntries = [...existing.entries];
@@ -405,7 +419,7 @@ export async function recordResolvedGateOutcomes(repoRoot, options = {}) {
     status: entries.length === 0 ? 'no_resolved_gates' : 'recorded',
     artifact: toWorkspaceRelative(repoRoot, ledgerPath),
     entries,
-    classification: buildLedgerClassificationReportFrom(nextEntries, storyId, entries, { status: 'ok', model: LEDGER_MODEL, expected_model: LEDGER_MODEL })
+    classification: buildLedgerClassificationReportFrom(nextEntries, storyId, entries, ledgerStatus)
   };
 }
 
@@ -926,13 +940,20 @@ function collectGateNodeEvidenceDelta(previousGate = null, currentGate = null) {
 // classification, graph and code-topology context); neither demonstrates that
 // evidence was added. Only a positively bound item with a usable artifact does.
 const DERIVED_EVIDENCE_BINDING_STATUSES = new Set(['n/a', 'derived']);
-const NON_DEMONSTRATING_EVIDENCE_QUALITIES = new Set(['missing_artifact', 'unrecognized', 'unknown']);
+// `unrecognized` only means the artifact could not be cross-parsed as a known
+// report format; verification-evidence.js throws at record time when the path
+// does not exist, so the file is real. Only a genuinely absent or unnamed
+// artifact fails to demonstrate that evidence was added.
+const NON_DEMONSTRATING_EVIDENCE_QUALITIES = new Set(['missing_artifact', 'unknown']);
 
 function isArtifactBackedEvidence(value) {
   if (!value || typeof value !== 'object') return false;
   if (DERIVED_EVIDENCE_BINDING_STATUSES.has(value.binding_status)) return false;
+  // A concrete artifact path is the strongest signal and outranks the quality
+  // classification, which only describes how well the file could be parsed.
+  if (typeof value.artifact === 'string' && value.artifact.trim() !== '') return true;
   if (NON_DEMONSTRATING_EVIDENCE_QUALITIES.has(value.artifact_quality)) return false;
-  return value.binding_status === 'current' || typeof value.artifact === 'string';
+  return value.binding_status === 'current';
 }
 
 function collectGateNodeEvidenceRefs(gate = null) {

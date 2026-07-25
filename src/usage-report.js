@@ -1638,8 +1638,22 @@ function buildValueSignals(stories, { gateRoi = null } = {}) {
 // entirely rather than reporting a fabricated zero.
 function buildGateRoiValueSignals(gateRoi) {
   if (!gateRoi) return {};
+  // A central ledger that could not be read carries unknown debt. Emitting 0
+  // here would be the fabricated zero C-002 exists to forbid, so the counts are
+  // withheld and only the status is reported.
+  if (!['ok', 'absent'].includes(gateRoi.central_ledger_status)) {
+    return {
+      gate_roi_central_ledger_status: gateRoi.central_ledger_status,
+      gate_roi_entry_count: null,
+      gate_roi_unclassified_count: null,
+      gate_roi_unclassified_rate: null,
+      gate_roi_unclassified_breach_count: null,
+      gate_roi_unclassified_breaches: []
+    };
+  }
   const breaches = gateRoi.unclassified_threshold_breaches ?? [];
   return {
+    gate_roi_central_ledger_status: gateRoi.central_ledger_status,
     gate_roi_entry_count: gateRoi.entry_count ?? 0,
     gate_roi_unclassified_count: gateRoi.unclassified_count ?? 0,
     gate_roi_unclassified_rate: gateRoi.unclassified_rate ?? 0,
