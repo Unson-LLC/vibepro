@@ -3,9 +3,9 @@
 - story: story-vibepro-docs-only-evidence-profile
 - evidence_depth: standard
 - budget_status: within_budget
-- artifact_lines: 1309
+- artifact_lines: 1337
 - product_changed_lines: 2471
-- artifact_code_ratio: 0.53
+- artifact_code_ratio: 0.541
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
