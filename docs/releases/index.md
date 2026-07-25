@@ -201,3 +201,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:391:start -->
 - [PR #391](https://github.com/Unson-LLC/vibepro/pull/391) — [2026-07](/releases/2026-07): story-vibepro-ideal-state-inversion - senior-gap judgmentのideal_stateがStoryではなく裁定済みtarget architectureを参照するようにする
 <!-- vibepro-release-index-pr:391:end -->
+
+<!-- vibepro-release-index-pr:392:start -->
+- [PR #392](https://github.com/Unson-LLC/vibepro/pull/392) — [2026-07](/releases/2026-07): story-vibepro-docs-only-evidence-profile - budget exceeded 19/71の大半が製品変更0行のdocs/roadmap Storyで、bundleが3,700〜5,000行に膨らみ、計測上もdiff base喪失でratioが壊れている
+<!-- vibepro-release-index-pr:392:end -->
