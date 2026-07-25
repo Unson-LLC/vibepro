@@ -193,3 +193,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:361:start -->
 - [PR #361](https://github.com/Unson-LLC/vibepro/pull/361) — [2026-07](/ja/releases/2026-07): story-vibepro-symlinked-bin-entrypoint - symlink経由でもVibePro CLIを実行する
 <!-- vibepro-release-index-pr:361:end -->
+
+<!-- vibepro-release-index-pr:217:start -->
+- [PR #217](https://github.com/Unson-LLC/vibepro/pull/217) — [2026-07](/ja/releases/2026-07): chore(deps): bump actions/checkout from 6 to 7
+<!-- vibepro-release-index-pr:217:end -->

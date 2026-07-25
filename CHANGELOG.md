@@ -912,3 +912,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-symlinked-bi
 なし
 
 <!-- vibepro-release-pr:361:end -->
+
+<!-- vibepro-release-pr:217:start -->
+## [#217](https://github.com/Unson-LLC/vibepro/pull/217) chore(deps): bump actions/checkout from 6 to 7
+
+- Author: @dependabot[bot]
+- Merged: 2026-07-25T10:39:18Z
+- Commit: `c9136927c1af0eb3c6d532dc21df677d478ca9cd`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:217:end -->
