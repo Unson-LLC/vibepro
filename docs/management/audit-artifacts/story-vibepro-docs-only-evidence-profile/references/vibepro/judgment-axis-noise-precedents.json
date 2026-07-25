@@ -35,6 +35,22 @@
       "activation_precision_status": "active",
       "recorded_at": "2026-07-25T14:03:30.928Z",
       "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:51|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-docs-only-evidence-profile",
+      "decision_id": "decision-1784984616928-e25af22e",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: the branch was cut fresh from origin/main and carries only this Story (the two sibling Stories registered in the same upstream commit were deliberately excluded). review_owner_map: src/docs-only-change.js + src/evidence-cost-budget.js + src/evidence-depth-planner.js are the evidence-weight surface, src/merge-manager.js is the measurement surface, src/usage-report.js is the read-side projection; all five are owned by the same VibePro evidence-cost responsibility and reviewed together by the gate_evidence role. Splitting would require shipping a docs-only profile that consumes unmeasured change sets, which is the defect being removed.",
+      "artifact": "docs/architecture/story-vibepro-docs-only-evidence-profile.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:51"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-25T14:49:15.599Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
     }
   ]
 }

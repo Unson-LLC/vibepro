@@ -2,8 +2,8 @@
   "schema_version": "0.1.0",
   "kind": "artifact_summary",
   "source_artifact": "evidence-plan.json",
-  "source_bytes": 17553,
-  "source_content_hash": "sha256:c92008f58473c310830faa30cb1912339d67e23b086558dd93e55f7dc30460e1",
+  "source_bytes": 19950,
+  "source_content_hash": "sha256:aad07aa512dde3009492bd18a938f537648f722f096fe7d392374c915cdbdcaf",
   "conclusion": {
     "status_fields": {
       "evidence_depth": "summary",
@@ -11,9 +11,9 @@
       "default_depth_reason": "summary_first_default"
     },
     "top_level_counts": {
-      "risk_signals_count": 3,
-      "targeted_full_surfaces_count": 3,
-      "escalation_reasons_count": 3,
+      "risk_signals_count": 1,
+      "targeted_full_surfaces_count": 4,
+      "escalation_reasons_count": 4,
       "generated_artifacts_count": 13,
       "skipped_artifacts_count": 5,
       "consumers_count": 13

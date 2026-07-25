@@ -11,9 +11,9 @@
     "base_ref": "origin/main",
     "head_ref": "HEAD",
     "current_branch": "claude/story-vibepro-docs-only-evidence-profile-scoped",
-    "base_sha": "458f5bfdeed99ab202f1edd9a257f17aacc7acc7",
+    "base_sha": "bcbb9b27230879c47a0f3154944bb9100b324b0a",
     "head_sha": "9443767173f2a1faf9d318931f5a1109009f3723",
-    "merge_base_sha": "458f5bfdeed99ab202f1edd9a257f17aacc7acc7"
+    "merge_base_sha": "9443767173f2a1faf9d318931f5a1109009f3723"
   },
   "base_selection": {
     "ref": "origin/main",
@@ -210,12 +210,12 @@
     },
     {
       "branch": "claude/story-goc-classification-coverage",
-      "local_sha": "3ff3c45cac5fb0cf8d4f60bc78dffe32cfc48cab",
+      "local_sha": "63a9e2682e925d07f932a890d15bebde5b1a18b3",
       "remotes": {
         "origin": "3ff3c45cac5fb0cf8d4f60bc78dffe32cfc48cab"
       },
       "divergence": {
-        "local_vs_remote": false,
+        "local_vs_remote": true,
         "remote_disagreement": false
       }
     },
@@ -2137,7 +2137,7 @@
       "branch": "main",
       "local_sha": "6b5af2c67a336e2921b6a362d2225c79789eefea",
       "remotes": {
-        "origin": "458f5bfdeed99ab202f1edd9a257f17aacc7acc7"
+        "origin": "bcbb9b27230879c47a0f3154944bb9100b324b0a"
       },
       "divergence": {
         "local_vs_remote": true,
@@ -2476,7 +2476,7 @@
     }
   ],
   "divergence_flags": {
-    "head_contains_base": true,
+    "head_contains_base": false,
     "branch_divergence_detected": true
   }
 }

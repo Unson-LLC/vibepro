@@ -1,9 +1,9 @@
 {
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-docs-only-evidence-profile",
-  "created_at": "2026-07-25T14:47:36.146Z",
+  "created_at": "2026-07-25T14:49:15.711Z",
   "recommended_decision": "split_pr",
-  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 11 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "recommendation_reason": "Gate DAG is needs_verification with 6 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: 差分が 51 files あり、レビュー可能な目安 30 files を超えている; 未コミット差分が 45 files 残っている",
   "accepted_current_story_lineage": [],
   "source_artifacts": {
     "review_cockpit": null,
@@ -18,12 +18,12 @@
     "architecture": {
       "status": "satisfied",
       "required": true,
-      "reason": "ADRあり (docs/architecture/story-vibepro-docs-only-evidence-profile.md)"
+      "reason": "ADR不要: alternatives considered: exempt docs-only stories from canonical audit entirely (loses the audit trail), raise the global budget so docs stories stop exceeding (hides real regressions), or add a docs-only detection input to the existing evidence depth planner with a dedicated lightweight profile and docs-scoped budget; selected the planner input plus dedicated profile. compatibility impact: evidence depth vocabulary (summary/standard/full) and the depth planner contract are unchanged; docs-only detection is a new input, and stories may still explicitly escalate depth. rollback plan: revert the docs-only detection, the profile default, and the budget split in one commit; existing bundles remain valid. boundary and scope: depth selection, budget definition, and diff-stats base preservation only; gate semantics and review requirements for docs changes are not weakened beyond depth."
     },
     "spec": {
       "status": "present",
       "required": true,
-      "reason": "explicit Spec docs are present (docs/specs/vibepro-docs-only-evidence-profile.md, docs/specs/story-vibepro-docs-only-evidence-profile.vibepro.json)"
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-docs-only-evidence-profile.md, docs/specs/story-vibepro-docs-only-evidence-profile.vibepro.json, docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/spec-drift.md)"
     },
     "decision_records": {
       "total": 4,
@@ -117,16 +117,16 @@
     },
     "visual_qa": null,
     "completion_quality": {
-      "status": "ready_for_human_acceptance",
-      "e2e_experience_reach_rate": 1,
-      "final_20_auto_closure_rate": 1,
+      "status": "needs_quality_closure",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
       "visual_qa_pass_rate": null,
-      "required_evidence_count": 0
+      "required_evidence_count": 4
     }
   },
   "toolchain": {
     "schema_version": "0.1.0",
-    "collected_at": "2026-07-25T14:47:30.409Z",
+    "collected_at": "2026-07-25T14:49:11.920Z",
     "package": {
       "name": "vibepro",
       "version": "0.2.0-beta.1",
@@ -141,10 +141,12 @@
       "commit": "9443767173f2a1faf9d318931f5a1109009f3723",
       "branch": "claude/story-vibepro-docs-only-evidence-profile-scoped",
       "origin_url": "https://github.com/Unson-LLC/vibepro.git",
-      "origin_main_commit": "458f5bfdeed99ab202f1edd9a257f17aacc7acc7",
-      "origin_main_relation": "ahead",
-      "dirty": false,
-      "dirty_summary": []
+      "origin_main_commit": "bcbb9b27230879c47a0f3154944bb9100b324b0a",
+      "origin_main_relation": "behind",
+      "dirty": true,
+      "dirty_summary": [
+        "?? docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/"
+      ]
     }
   },
   "decision_options": [

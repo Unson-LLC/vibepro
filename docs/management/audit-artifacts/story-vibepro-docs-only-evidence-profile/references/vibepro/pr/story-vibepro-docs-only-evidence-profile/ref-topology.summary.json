@@ -3,7 +3,7 @@
   "kind": "artifact_summary",
   "source_artifact": "ref-topology.json",
   "source_bytes": 72904,
-  "source_content_hash": "sha256:07cb853e7445e8aa3bfed1ad8d18e437cba095648e1b9f182705e35bbe226b5d",
+  "source_content_hash": "sha256:a5aa8d03de8c85bfa18fe36c616106929b7f513a163ac7dc515208e5ae54eed1",
   "conclusion": {
     "status_fields": {},
     "top_level_counts": {

@@ -23,9 +23,10 @@
     "source_ref": "docs/management/stories/active/story-vibepro-docs-only-evidence-profile.md"
   },
   "rationale": [
-    "baseからのcommitが 11 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
-    "4 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
-    "Graphifyで 8 changed files が一致し、40 related files を影響調査候補にした"
+    "差分が 51 files あり、レビュー可能な目安 30 files を超えている",
+    "未コミット差分が 45 files 残っている",
+    "2 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 0 changed files が一致し、0 related files を影響調査候補にした"
   ],
   "graph_context": {
     "available": true,
@@ -33,195 +34,10 @@
     "edge_source_key": "links",
     "node_count": 5625,
     "edge_count": 12627,
-    "matched_file_count": 8,
-    "related_file_count": 40,
-    "investigation_files": [
-      "scripts/check-public-manual-build.mjs",
-      "scripts/post-merge-release.mjs",
-      "src/agent-completion-inbox.js",
-      "src/artifact-routing.js",
-      "src/canonical-audit.js",
-      "src/canonical-persistence.js",
-      "src/cli.js",
-      "src/codex-runtime-output-contract.js",
-      "src/decision-outcome-ledger.js",
-      "src/docs-only-change.js",
-      "src/evidence-cost-budget.js",
-      "src/evidence-depth-planner.js",
-      "src/execution-state.js",
-      "src/gate-outcome-ledger.js",
-      "src/guarded-run-session.js",
-      "src/html-report.js",
-      "src/human-decision-checkpoint.js",
-      "src/language.js",
-      "src/managed-command-executor.js",
-      "src/merge-gate-authorization.js",
-      "src/merge-manager.js",
-      "src/merge-public-projection.js",
-      "src/next-best-action-controller.js",
-      "src/outcome-manager.js",
-      "src/pr-artifact-budget.js",
-      "src/pr-manager.js",
-      "src/reconciliation-action.js",
-      "src/review-repair.js",
-      "src/run-context-capsule.js",
-      "src/senior-gap-judgment.js"
-    ],
-    "impact_by_file": [
-      {
-        "file": "src/canonical-audit.js",
-        "matched_nodes": [
-          "src_canonical_audit_js",
-          "src_canonical_audit_getcanonicalauditdir",
-          "src_canonical_audit_projectprprepareforllm",
-          "src_canonical_audit_bindstoryplaceholders",
-          "src_canonical_audit_summarizeprprepareforllm",
-          "src_canonical_audit_summarizegatestatusforllm",
-          "src_canonical_audit_summarizegatedagforllm",
-          "src_canonical_audit_summarizegatelistforllm"
-        ],
-        "related_files": [
-          "scripts/check-public-manual-build.mjs",
-          "src/agent-completion-inbox.js",
-          "src/artifact-routing.js",
-          "src/cli.js",
-          "src/codex-runtime-output-contract.js",
-          "src/decision-outcome-ledger.js",
-          "src/evidence-cost-budget.js",
-          "src/guarded-run-session.js",
-          "src/human-decision-checkpoint.js",
-          "src/managed-command-executor.js",
-          "src/merge-manager.js",
-          "src/merge-public-projection.js"
-        ]
-      },
-      {
-        "file": "src/docs-only-change.js",
-        "matched_nodes": [
-          "src_docs_only_change_js",
-          "src_docs_only_change_normalizechangedpath",
-          "src_docs_only_change_classifyevidencechangesurface",
-          "src_docs_only_change_detectdocsonlychange",
-          "src_docs_only_change_isdocsonlychange",
-          "src_docs_only_change_docsonlyresult",
-          "src_docs_only_change_collectobservedpaths",
-          "src_docs_only_change_normalizechangedfilelist"
-        ],
-        "related_files": [
-          "src/evidence-cost-budget.js",
-          "src/evidence-depth-planner.js"
-        ]
-      },
-      {
-        "file": "src/evidence-cost-budget.js",
-        "matched_nodes": [
-          "src_evidence_cost_budget_js",
-          "src_evidence_cost_budget_normalizeevidencedepth",
-          "src_evidence_cost_budget_parsenumstat",
-          "src_evidence_cost_budget_classifychangedpath",
-          "src_evidence_cost_budget_summarizedifflinestats",
-          "src_evidence_cost_budget_buildcanonicalevidencecostsummary",
-          "src_evidence_cost_budget_applycanonicalevidencebudgetstatus",
-          "src_evidence_cost_budget_shouldusecompactcanonicalevidence"
-        ],
-        "related_files": [
-          "src/canonical-audit.js",
-          "src/docs-only-change.js",
-          "src/evidence-depth-planner.js",
-          "src/merge-manager.js",
-          "src/senior-gap-judgment.js",
-          "src/session-efficiency-audit.js"
-        ]
-      },
-      {
-        "file": "src/evidence-depth-planner.js",
-        "matched_nodes": [
-          "src_evidence_depth_planner_js",
-          "src_evidence_depth_planner_buildevidenceplan",
-          "src_evidence_depth_planner_buildevidencedrilldownentry",
-          "src_evidence_depth_planner_appendevidencedrilldownentry",
-          "src_evidence_depth_planner_buildevidencedecisionindex",
-          "src_evidence_depth_planner_buildartifactpolicy",
-          "src_evidence_depth_planner_resolverequestedartifacts",
-          "src_evidence_depth_planner_collectrisksignals"
-        ],
-        "related_files": [
-          "src/docs-only-change.js",
-          "src/evidence-cost-budget.js",
-          "src/pr-manager.js"
-        ]
-      },
-      {
-        "file": "src/merge-manager.js",
-        "matched_nodes": [
-          "src_merge_manager_js",
-          "src_merge_manager_executemerge",
-          "src_merge_manager_executemergelocked",
-          "src_merge_manager_attachexecutionstatesyncbaseline",
-          "src_merge_manager_resolvepriorobservedmerge",
-          "src_merge_manager_applyproviderobservationfailure",
-          "src_merge_manager_applypostmergeobservationfailure",
-          "src_merge_manager_collectdeliveryreconciliationreasons"
-        ],
-        "related_files": [
-          "src/artifact-routing.js",
-          "src/canonical-audit.js",
-          "src/canonical-persistence.js",
-          "src/cli.js",
-          "src/evidence-cost-budget.js",
-          "src/execution-state.js",
-          "src/gate-outcome-ledger.js",
-          "src/html-report.js",
-          "src/managed-command-executor.js",
-          "src/merge-gate-authorization.js",
-          "src/merge-public-projection.js",
-          "src/outcome-manager.js"
-        ]
-      },
-      {
-        "file": "src/usage-report.js",
-        "matched_nodes": [
-          "src_usage_report_js",
-          "src_usage_report_createusagereport",
-          "src_usage_report_renderusagereport",
-          "src_usage_report_mergeprartifactspreferlocal",
-          "src_usage_report_formatreconciliationaction",
-          "src_usage_report_renderdecisionoutcomerows",
-          "src_usage_report_ensurestoryusage",
-          "src_usage_report_collectprartifacts"
-        ],
-        "related_files": [
-          "src/artifact-routing.js",
-          "src/canonical-audit.js",
-          "src/cli.js",
-          "src/decision-outcome-ledger.js",
-          "src/gate-outcome-ledger.js",
-          "src/language.js",
-          "src/merge-public-projection.js",
-          "src/reconciliation-action.js",
-          "src/review-repair.js",
-          "src/workspace.js"
-        ]
-      },
-      {
-        "file": "test/docs-only-evidence-profile.test.js",
-        "matched_nodes": [
-          "test_docs_only_evidence_profile_test_js"
-        ],
-        "related_files": []
-      },
-      {
-        "file": "test/merge-diff-base-preservation.test.js",
-        "matched_nodes": [
-          "test_merge_diff_base_preservation_test_js",
-          "test_merge_diff_base_preservation_test_git",
-          "test_merge_diff_base_preservation_test_buildmergedrepo"
-        ],
-        "related_files": [
-          "scripts/post-merge-release.mjs"
-        ]
-      }
-    ]
+    "matched_file_count": 0,
+    "related_file_count": 0,
+    "investigation_files": [],
+    "impact_by_file": []
   },
   "lanes": [
     {
@@ -231,10 +47,9 @@
       "category": "requirements",
       "recommendation": "separate_pr",
       "files": [
-        "docs/management/stories/active/story-vibepro-docs-only-evidence-profile.md",
-        "docs/specs/story-vibepro-docs-only-evidence-profile.vibepro.json",
-        "docs/specs/vibepro-docs-only-evidence-profile.md",
-        "docs/architecture/story-vibepro-docs-only-evidence-profile.md"
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/stories/story-vibepro-docs-only-evidence-profile/tasks/tasks.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/stories/story-vibepro-docs-only-evidence-profile/tasks/tasks.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/spec-drift.md"
       ],
       "required_gates": [
         "Requirement Gate"
@@ -244,74 +59,9 @@
         "実装差分が要求の範囲を超えていないか",
         "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
       ],
-      "file_count": 4,
+      "file_count": 3,
       "graph_investigation_files": [],
       "suggested_branch": "feat/vibepro-docs-only-evidence-profile-requirements-ssot"
-    },
-    {
-      "id": "runtime-behavior",
-      "order": 20,
-      "title": "Runtime behavior and unit coverage",
-      "category": "implementation",
-      "recommendation": "primary_pr",
-      "files": [
-        "src/canonical-audit.js",
-        "src/docs-only-change.js",
-        "src/evidence-cost-budget.js",
-        "src/evidence-depth-planner.js",
-        "src/merge-manager.js",
-        "src/usage-report.js",
-        "test/docs-only-evidence-profile-integration.test.js",
-        "test/docs-only-evidence-profile.test.js",
-        "test/merge-diff-base-preservation.test.js"
-      ],
-      "required_gates": [
-        "Requirement Gate",
-        "Unit Gate",
-        "Integration Gate",
-        "E2E Gate"
-      ],
-      "review_focus": [
-        "受け入れ基準と実装分岐が対応しているか",
-        "Graphifyで隣接するファイルまで影響確認されているか"
-      ],
-      "file_count": 9,
-      "graph_investigation_files": [
-        "scripts/check-public-manual-build.mjs",
-        "scripts/post-merge-release.mjs",
-        "src/agent-completion-inbox.js",
-        "src/artifact-routing.js",
-        "src/canonical-persistence.js",
-        "src/cli.js",
-        "src/codex-runtime-output-contract.js",
-        "src/decision-outcome-ledger.js",
-        "src/execution-state.js",
-        "src/gate-outcome-ledger.js",
-        "src/guarded-run-session.js",
-        "src/html-report.js"
-      ],
-      "suggested_branch": "feat/vibepro-docs-only-evidence-profile-runtime-behavior"
-    },
-    {
-      "id": "e2e-gate",
-      "order": 30,
-      "title": "E2E and verification harness",
-      "category": "verification",
-      "recommendation": "separate_pr",
-      "files": [
-        "test/e2e/story-vibepro-docs-only-evidence-profile-acceptance.spec.js"
-      ],
-      "required_gates": [
-        "E2E Gate",
-        "Integration Gate"
-      ],
-      "review_focus": [
-        "E2E harnessが失敗exit codeを握りつぶしていないか",
-        "PR Gateが変更対象のE2Eに正しくスコープされているか"
-      ],
-      "file_count": 1,
-      "graph_investigation_files": [],
-      "suggested_branch": "feat/vibepro-docs-only-evidence-profile-e2e-gate"
     },
     {
       "id": "misc-follow-up",
@@ -320,7 +70,54 @@
       "category": "other",
       "recommendation": "separate_pr",
       "files": [
-        "design-ssot.json"
+        "CHANGELOG.md",
+        "docs/ja/releases/2026-07.md",
+        "docs/ja/releases/index.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/audit-bundle.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/audit-index.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/audit-replay-bundle.json.gz",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/decision-outcomes/trace-dt_0e757e2b0d5c196a3c94b9222d80f57bc03eab28bf3b62dcbc97c695d927b4c5/888ab96ad680e430b2376186cc68649aa4668e307caecf8a267f1faf009423fe.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/decision-outcomes/trace-dt_8d95917a2ec957132a8a1aa26bc42355a6c5e03ac7ee0df8592fdf0f8a804e6d/eb2fecd2ed37dcdf41e5a8fc0a63175c12a9aa4a41cf9fd9f1d47c0be9088eac.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/decision-outcomes/trace-dt_c525697b306a3c858482dadf51291110c01a1bc5d7168e6cceb0e81ff8f27cfa/2954506e91582e06409b68ded6e51248fe86e66fa0cfbd8ca82d59a030748f71.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/decision-outcomes/trace-dt_e45ab45ea0d3e42ba9d3d836a8bf9e5eb8b0f6c5f1f8615a40cc861f383f3a8a/2436fd1e4073141ff51630f7d5c82a276b672f29ece893992fe8ca962dcd62b8.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/decision-summary.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/adjudication/story-vibepro-docs-only-evidence-profile/adjudication.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/config.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/architecture-profile.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/component-style-check-result.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/finding-review.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/flow-design-check-result.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/gesture-interaction-check-result.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/refactoring-delta.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/requirement-consistency.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/risk-register.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/summary.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/terminal-link-check-result.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/gate-outcomes/ledger.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/judgment-axis-noise-precedents.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/architecture-review.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/decision-index.summary.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/decision-records.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/decision-records.summary.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/design-ssot-reconciliation.summary.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/evidence-plan.summary.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/evidence-reuse.summary.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/human-review.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/pr-body.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/pr-create.html",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/pr-merge.html",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/ref-topology.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/ref-topology.summary.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/senior-gap-judgment.summary.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/split-plan.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/split-plan.summary.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/reviews/story-vibepro-docs-only-evidence-profile/gate/history/review-result-gate_evidence-2026-07-25T13-18-22.660Z.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/reviews/story-vibepro-docs-only-evidence-profile/gate/history/review-result-gate_evidence-2026-07-25T13-56-18.225Z.json",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/reviews/story-vibepro-docs-only-evidence-profile/gate/parallel-dispatch.md",
+        "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/validation-sequencing/story-vibepro-docs-only-evidence-profile/state.json",
+        "docs/management/roi-ledger/ledger.json",
+        "docs/releases/2026-07.md",
+        "docs/releases/index.md"
       ],
       "required_gates": [
         "Manual Review"
@@ -328,24 +125,22 @@
       "review_focus": [
         "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
       ],
-      "file_count": 1,
+      "file_count": 48,
       "graph_investigation_files": [],
       "suggested_branch": "feat/vibepro-docs-only-evidence-profile-misc-follow-up"
     }
   ],
   "merge_order": [
     "requirements-ssot",
-    "runtime-behavior",
-    "e2e-gate",
     "misc-follow-up"
   ],
   "stacked_gate_plan": {
     "schema_version": "0.1.0",
     "model": "stacked-pr-gate-plan-v1",
     "summary": {
-      "lane_count": 4,
-      "cumulative_gate_count": 1,
-      "requires_cumulative_e2e": true,
+      "lane_count": 2,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false,
       "requires_atomic_head_validation": false
     },
     "lane_plans": [
@@ -360,35 +155,6 @@
         "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
       },
       {
-        "lane_id": "runtime-behavior",
-        "gate_mode": "isolated_pr",
-        "depends_on": [],
-        "isolated_checks": [
-          "node --test test/docs-only-evidence-profile.test.js test/merge-diff-base-preservation.test.js",
-          "node --test test/docs-only-evidence-profile-integration.test.js"
-        ],
-        "cumulative_checks": [],
-        "review_note": "runtime差分はUnit/Integrationを単体PRで確認し、E2Eは後続のe2e-gateまたは累積validationで確認する。"
-      },
-      {
-        "lane_id": "e2e-gate",
-        "gate_mode": "cumulative_after_dependencies",
-        "depends_on": [
-          "requirements-ssot",
-          "runtime-behavior"
-        ],
-        "isolated_checks": [
-          "node --test test/docs-only-evidence-profile-integration.test.js",
-          "Playwright harness smoke if runtime dependencies are already merged"
-        ],
-        "cumulative_checks": [
-          "node --test test/docs-only-evidence-profile.test.js test/merge-diff-base-preservation.test.js",
-          "node --test test/docs-only-evidence-profile-integration.test.js",
-          "node --test test/e2e/story-vibepro-docs-only-evidence-profile-acceptance.spec.js"
-        ],
-        "review_note": "e2e-gate は単体PRだけで完了判定せず、requirements-ssot -> runtime-behavior を取り込んだ累積状態でGateを確認する。"
-      },
-      {
         "lane_id": "misc-follow-up",
         "gate_mode": "isolated_pr",
         "depends_on": [],
@@ -400,35 +166,24 @@
       }
     ],
     "final_validation": {
-      "required": true,
-      "trigger": "runtime-behavior と e2e-gate の両方がmerge対象に含まれる",
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
       "commands": [
         "node --test test/docs-only-evidence-profile.test.js test/merge-diff-base-preservation.test.js",
-        "node --test test/docs-only-evidence-profile-integration.test.js",
-        "node --test test/e2e/story-vibepro-docs-only-evidence-profile-acceptance.spec.js"
+        "node --test test/docs-only-evidence-profile-integration.test.js"
       ]
     }
   },
   "next_actions": [
     {
       "lane_id": "requirements-ssot",
-      "action": "Create feat/vibepro-docs-only-evidence-profile-requirements-ssot with 4 files",
-      "command": "git switch -c feat/vibepro-docs-only-evidence-profile-requirements-ssot \"<base>\" && git add docs/management/stories/active/story-vibepro-docs-only-evidence-profile.md docs/specs/story-vibepro-docs-only-evidence-profile.vibepro.json docs/specs/vibepro-docs-only-evidence-profile.md docs/architecture/story-vibepro-docs-only-evidence-profile.md"
-    },
-    {
-      "lane_id": "runtime-behavior",
-      "action": "Create feat/vibepro-docs-only-evidence-profile-runtime-behavior with 9 files",
-      "command": "git switch -c feat/vibepro-docs-only-evidence-profile-runtime-behavior \"<base>\" && git add src/canonical-audit.js src/docs-only-change.js src/evidence-cost-budget.js src/evidence-depth-planner.js src/merge-manager.js src/usage-report.js test/docs-only-evidence-profile-integration.test.js test/docs-only-evidence-profile.test.js test/merge-diff-base-preservation.test.js"
-    },
-    {
-      "lane_id": "e2e-gate",
-      "action": "Create feat/vibepro-docs-only-evidence-profile-e2e-gate with 1 files",
-      "command": "git switch -c feat/vibepro-docs-only-evidence-profile-e2e-gate \"<base>\" && git add test/e2e/story-vibepro-docs-only-evidence-profile-acceptance.spec.js"
+      "action": "Create feat/vibepro-docs-only-evidence-profile-requirements-ssot with 3 files",
+      "command": "git switch -c feat/vibepro-docs-only-evidence-profile-requirements-ssot \"<base>\" && git add docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/stories/story-vibepro-docs-only-evidence-profile/tasks/tasks.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/stories/story-vibepro-docs-only-evidence-profile/tasks/tasks.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/spec-drift.md"
     },
     {
       "lane_id": "misc-follow-up",
-      "action": "Create feat/vibepro-docs-only-evidence-profile-misc-follow-up with 1 files",
-      "command": "git switch -c feat/vibepro-docs-only-evidence-profile-misc-follow-up \"<base>\" && git add design-ssot.json"
+      "action": "Create feat/vibepro-docs-only-evidence-profile-misc-follow-up with 48 files",
+      "command": "git switch -c feat/vibepro-docs-only-evidence-profile-misc-follow-up \"<base>\" && git add CHANGELOG.md docs/ja/releases/2026-07.md docs/ja/releases/index.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/audit-bundle.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/audit-index.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/audit-replay-bundle.json.gz docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/decision-outcomes/trace-dt_0e757e2b0d5c196a3c94b9222d80f57bc03eab28bf3b62dcbc97c695d927b4c5/888ab96ad680e430b2376186cc68649aa4668e307caecf8a267f1faf009423fe.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/decision-outcomes/trace-dt_8d95917a2ec957132a8a1aa26bc42355a6c5e03ac7ee0df8592fdf0f8a804e6d/eb2fecd2ed37dcdf41e5a8fc0a63175c12a9aa4a41cf9fd9f1d47c0be9088eac.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/decision-outcomes/trace-dt_c525697b306a3c858482dadf51291110c01a1bc5d7168e6cceb0e81ff8f27cfa/2954506e91582e06409b68ded6e51248fe86e66fa0cfbd8ca82d59a030748f71.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/decision-outcomes/trace-dt_e45ab45ea0d3e42ba9d3d836a8bf9e5eb8b0f6c5f1f8615a40cc861f383f3a8a/2436fd1e4073141ff51630f7d5c82a276b672f29ece893992fe8ca962dcd62b8.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/decision-summary.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/adjudication/story-vibepro-docs-only-evidence-profile/adjudication.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/config.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/architecture-profile.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/component-style-check-result.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/finding-review.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/flow-design-check-result.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/gesture-interaction-check-result.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/refactoring-delta.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/requirement-consistency.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/risk-register.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/summary.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/diagnostics/2026-07-25T124745Z/terminal-link-check-result.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/gate-outcomes/ledger.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/judgment-axis-noise-precedents.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/architecture-review.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/decision-index.summary.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/decision-records.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/decision-records.summary.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/design-ssot-reconciliation.summary.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/evidence-plan.summary.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/evidence-reuse.summary.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/human-review.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/pr-body.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/pr-create.html docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/pr-merge.html docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/ref-topology.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/ref-topology.summary.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/senior-gap-judgment.summary.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/split-plan.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/pr/story-vibepro-docs-only-evidence-profile/split-plan.summary.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/reviews/story-vibepro-docs-only-evidence-profile/gate/history/review-result-gate_evidence-2026-07-25T13-18-22.660Z.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/reviews/story-vibepro-docs-only-evidence-profile/gate/history/review-result-gate_evidence-2026-07-25T13-56-18.225Z.json docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/reviews/story-vibepro-docs-only-evidence-profile/gate/parallel-dispatch.md docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/references/vibepro/validation-sequencing/story-vibepro-docs-only-evidence-profile/state.json docs/management/roi-ledger/ledger.json docs/releases/2026-07.md docs/releases/index.md"
     }
   ]
 }
