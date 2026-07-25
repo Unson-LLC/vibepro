@@ -534,6 +534,10 @@ export async function preparePullRequest(repoRoot, options = {}) {
   reconcileGateDagOutcomeSummary(prContext.gate_dag);
   prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
   gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
+  const targetArchitecture = await progress.stage(
+    'load_target_architecture_context',
+    () => loadTargetArchitectureContext(root)
+  );
   const seniorGapJudgment = buildSeniorGapJudgment({
     story,
     git: reviewGit,
@@ -543,6 +547,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     gateStatus,
     evidencePlan,
     evidenceReuse: evidenceReuseSummary,
+    targetArchitecture,
     createdAt
   });
   prContext.senior_gap_judgment = seniorGapJudgment;
@@ -6238,6 +6243,52 @@ async function readJsonIfExists(filePath) {
   } catch (error) {
     if (error.code === 'ENOENT') return null;
     throw error;
+  }
+}
+
+const TARGET_ARCHITECTURE_MODEL_PATH = path.join('docs', 'architecture', 'target-model.json');
+const TARGET_ARCHITECTURE_CONFORMANCE_PATH = path.join('.vibepro', 'architecture', 'conformance', 'conformance.json');
+
+// Loads the human-adjudicated "to-be" architecture (docs/architecture/target-model.json) and the
+// latest conformance dry-run summary (if any) so senior gap judgment's ideal_state can be judged
+// against a Story-independent norm, not only the Story's own acceptance criteria. Read directly
+// here (rather than importing src/architecture-conformance.js) so gate-pr does not pick up an
+// undeclared dependency on the architecture module per target-model.json rule R-004.
+//
+// This call is unconditional in preparePullRequest for every Story, not just architecture-related
+// ones, so it must never turn a transient authoring problem in a hand-edited singleton file (per
+// its own governance note, target-model.json is revised only by human decision, not generated) into
+// a repo-wide `pr prepare` outage. Missing and malformed both degrade to "unavailable" (null) here,
+// mirroring the graph.json optional-context precedent in loadGraphContext
+// (src/architecture-conformance.js): "graph.json is optional context only ... its absence must not
+// fail the run." Do not switch this back to readJsonIfExists' fail-loud behavior; that helper is for
+// this Story's own generated artifacts, not for a human-authored file this path merely observes.
+async function loadTargetArchitectureContext(root) {
+  const model = await readJsonSilently(path.join(root, TARGET_ARCHITECTURE_MODEL_PATH));
+  if (!model) return null;
+  const conformance = await readJsonSilently(path.join(root, TARGET_ARCHITECTURE_CONFORMANCE_PATH));
+  const adjudicatedRules = Array.isArray(model.rules)
+    ? model.rules
+        .filter((rule) => rule && rule.status === 'adjudicated')
+        .map((rule) => ({ id: rule.id, statement: rule.statement }))
+    : [];
+  return {
+    model_path: TARGET_ARCHITECTURE_MODEL_PATH.split(path.sep).join('/'),
+    status: model.status ?? null,
+    adjudicated_rules: adjudicatedRules,
+    conformance_summary: conformance?.summary ?? null
+  };
+}
+
+// Like readJsonIfExists, but a malformed/unreadable file degrades to null instead of throwing.
+// Reserved for optional-context reads (see loadTargetArchitectureContext above) where the file is
+// outside this Story's own review/write boundary; do not reuse for artifacts this Story generates
+// or is responsible for validating.
+async function readJsonSilently(filePath) {
+  try {
+    return JSON.parse(await readFile(filePath, 'utf8'));
+  } catch {
+    return null;
   }
 }
 

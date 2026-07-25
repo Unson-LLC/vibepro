@@ -50,12 +50,14 @@ export async function runArchitectureConformance(repoRoot, options = {}) {
   const orphanFindings = assignments.orphans.map((file) => ({
     kind: 'orphan_file',
     severity: 'review',
+    rule_id: null,
     file,
     summary: `${file} はtarget modelのどのモジュールにも属していない`
   }));
   const stalePatternFindings = assignments.stalePatterns.map((entry) => ({
     kind: 'stale_pattern',
     severity: 'review',
+    rule_id: null,
     module: entry.module,
     pattern: entry.pattern,
     summary: `モジュール ${entry.module} のパターン ${entry.pattern} に一致するファイルが存在しない`
@@ -365,12 +367,19 @@ function findDependencyViolations({ importEdges, model, assignments }) {
     .map((entry) => ({
       kind: 'undeclared_dependency',
       severity: 'review',
+      rule_id: deriveUndeclaredDependencyRuleId(entry),
       from_module: entry.from_module,
       to_module: entry.to_module,
       edge_count: entry.edge_count,
       example_edges: entry.example_edges,
       summary: `${entry.from_module} -> ${entry.to_module} は宣言されていない依存 (${entry.edge_count} edges, import scan)`
     }));
+}
+
+function deriveUndeclaredDependencyRuleId(entry) {
+  if (entry.from_module === 'workspace-infra') return 'R-001';
+  if (entry.to_module === 'cli') return 'R-002';
+  return 'R-004';
 }
 
 function findBudgetViolations({ scopeFiles, model, assignments }) {
@@ -384,6 +393,7 @@ function findBudgetViolations({ scopeFiles, model, assignments }) {
       findings.push({
         kind: 'budget_violation',
         severity: 'review',
+        rule_id: 'R-003',
         file,
         line_count: lineCount,
         limit,
@@ -401,6 +411,7 @@ function findBudgetViolations({ scopeFiles, model, assignments }) {
       findings.push({
         kind: 'budget_violation',
         severity: 'review',
+        rule_id: 'R-003',
         module: module.name,
         file_count: count,
         limit: module.max_files,

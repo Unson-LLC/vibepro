@@ -38,9 +38,10 @@ export function buildSeniorGapJudgment({
   gateStatus = null,
   evidencePlan = null,
   evidenceReuse = null,
+  targetArchitecture = null,
   createdAt = new Date().toISOString()
 } = {}) {
-  const idealState = buildIdealState({ story, prContext });
+  const idealState = buildIdealState({ story, prContext, targetArchitecture });
   const currentState = buildCurrentState({ git, fileGroups, scope, prContext, gateStatus, evidencePlan, evidenceReuse });
   const costContext = buildCostContext({ prContext, evidencePlan, evidenceReuse });
   const gaps = buildGaps({ prContext, gateStatus, evidenceReuse, costContext });
@@ -117,7 +118,7 @@ export function renderSeniorGapJudgmentSummary(judgment) {
   return `${lines.join('\n')}\n`;
 }
 
-function buildIdealState({ story, prContext }) {
+function buildIdealState({ story, prContext, targetArchitecture = null }) {
   const axes = (prContext?.engineering_judgment?.judgment_axes ?? [])
     .filter((axis) => axis.status !== 'inactive')
     .map((axis) => ({
@@ -141,7 +142,11 @@ function buildIdealState({ story, prContext }) {
     acceptance_criteria_count: prContext?.story_source?.acceptance_criteria?.length ?? 0,
     engineering_route: prContext?.engineering_judgment?.route_type ?? null,
     active_judgment_axes: axes,
-    required_gates: requiredGates
+    required_gates: requiredGates,
+    // Ideal state is no longer self-referential: alongside the Story's own acceptance
+    // criteria/gates above, this surfaces the human-adjudicated target architecture (if any)
+    // so senior judgment can weigh Story-independent norms, not just "does this Story break".
+    target_architecture: targetArchitecture ?? null
   };
 }
 
