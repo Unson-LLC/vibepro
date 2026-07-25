@@ -141,7 +141,8 @@ async function executeMergeLocked(root, options = {}) {
           head_ref: currentHeadSha ?? null,
           base_sha: null,
           head_sha: currentHeadSha ?? null,
-          merge_commit_sha: null
+          merge_commit_sha: null,
+          base_authority: null
         },
         collected_at: null,
         reason: 'diff statistics are collected after PR metadata is resolved'
@@ -493,6 +494,20 @@ async function executeMergeLocked(root, options = {}) {
   merge.pr.state = mergedView.state ?? merge.pr.state;
   merge.merge_commit_sha = mergedView.mergeCommit?.oid ?? null;
   merge.merged_at = mergedView.mergedAt ?? null;
+  // When the pre-merge collection could not resolve a usable base — the PR was
+  // already merged before `execute merge` ran, so `origin/<base>` contained the
+  // head — the merge commit's first parent recovers the authoritative base
+  // (DOE-S-3). Without this the bundle records `product_changed_lines: 0`.
+  if (merge.git?.diff_stats?.status !== 'available' && merge.merge_commit_sha) {
+    const recoveredDiffStats = await collectMergeDiffLineStats(root, {
+      baseBranch,
+      currentHeadSha,
+      pr: merge.pr,
+      mergeCommitSha: merge.merge_commit_sha
+    });
+    merge.git.diff_stats = recoveredDiffStats.diff_stats;
+    merge.git.diff_line_stats = recoveredDiffStats.diff_line_stats;
+  }
   if (merge.git?.diff_stats?.refs) {
     merge.git.diff_stats.refs.merge_commit_sha = merge.merge_commit_sha ?? null;
   }
@@ -1650,38 +1665,70 @@ async function gitOptional(repoRoot, args) {
   return result.exit_code === 0 ? result.stdout || null : null;
 }
 
-async function collectMergeDiffLineStats(repoRoot, { baseBranch, currentHeadSha, pr } = {}) {
+// Collects the PR's per-file diff statistics against a base that still predates
+// the merge.
+//
+// Once the PR has landed, `origin/<base>` contains the branch head, so
+// `git diff origin/<base>...<head>` is empty and records a factual-looking
+// `product_changed_lines: 0` for a Story that changed hundreds of lines
+// (story-vibepro-docs-only-evidence-profile, DOE-S-3). Every candidate base is
+// therefore checked for containment first, and a base that already contains the
+// head is rejected rather than measured. When the merge commit is known its
+// first parent is the authoritative pre-merge base, so it is preferred.
+export async function collectMergeDiffLineStats(repoRoot, { baseBranch, currentHeadSha, pr, mergeCommitSha = null } = {}) {
   const collectedAt = new Date().toISOString();
-  const baseRef = `origin/${stripRemote(pr?.base_ref_name ?? baseBranch ?? 'main')}`;
+  const baseBranchRef = `origin/${stripRemote(pr?.base_ref_name ?? baseBranch ?? 'main')}`;
   const headRef = currentHeadSha ?? pr?.head_ref_oid ?? 'HEAD';
-  const refs = {
+  const candidates = [];
+  if (mergeCommitSha) {
+    candidates.push({ ref: `${mergeCommitSha}^1`, authority: 'merge_commit_first_parent' });
+  }
+  candidates.push({ ref: baseBranchRef, authority: 'base_branch' });
+
+  const buildRefs = (baseRef, baseSha, authority) => ({
     base_ref: baseRef,
     head_ref: headRef,
-    base_sha: await gitOptional(repoRoot, ['rev-parse', baseRef]),
+    base_sha: baseSha ?? null,
     head_sha: currentHeadSha ?? pr?.head_ref_oid ?? null,
-    merge_commit_sha: null
-  };
-  const attempts = [
-    ['git', ['diff', '--numstat', `${baseRef}...${headRef}`]],
-    ['git', ['diff', '--numstat', baseRef, headRef]]
-  ];
+    merge_commit_sha: mergeCommitSha ?? null,
+    base_authority: authority
+  });
 
   let lastFailure = null;
-  for (const command of attempts) {
-    const result = await runGitForOutput(repoRoot, command);
-    if (result.exit_code === 0) {
-      return {
-        diff_line_stats: parseNumstat(result.stdout),
-        diff_stats: {
-          status: 'available',
-          source: formatCommand(command),
-          refs,
-          collected_at: collectedAt,
-          reason: null
-        }
-      };
+  let rejectedBase = null;
+  for (const candidate of candidates) {
+    const baseSha = await gitOptional(repoRoot, ['rev-parse', candidate.ref]);
+    if (!baseSha) {
+      rejectedBase = rejectedBase ?? { ref: candidate.ref, reason: 'diff_base_unresolvable' };
+      continue;
     }
-    lastFailure = result;
+    if (await gitIsAncestor(repoRoot, headRef, baseSha)) {
+      // The candidate already contains the head: the three-dot range collapses
+      // to nothing, which is loss of the base, not an empty change set.
+      rejectedBase = { ref: candidate.ref, reason: 'diff_base_contains_head' };
+      continue;
+    }
+    const refs = buildRefs(candidate.ref, baseSha, candidate.authority);
+    const attempts = [
+      ['git', ['diff', '--numstat', `${candidate.ref}...${headRef}`]],
+      ['git', ['diff', '--numstat', candidate.ref, headRef]]
+    ];
+    for (const command of attempts) {
+      const result = await runGitForOutput(repoRoot, command);
+      if (result.exit_code === 0) {
+        return {
+          diff_line_stats: parseNumstat(result.stdout),
+          diff_stats: {
+            status: 'available',
+            source: formatCommand(command),
+            refs,
+            collected_at: collectedAt,
+            reason: null
+          }
+        };
+      }
+      lastFailure = result;
+    }
   }
 
   return {
@@ -1689,9 +1736,15 @@ async function collectMergeDiffLineStats(repoRoot, { baseBranch, currentHeadSha,
     diff_stats: {
       status: 'unavailable',
       source: lastFailure?.command ?? null,
-      refs,
+      refs: buildRefs(rejectedBase?.ref ?? baseBranchRef, null, 'unresolved'),
       collected_at: collectedAt,
-      reason: lastFailure?.stderr || lastFailure?.stdout || 'git diff --numstat failed'
+      reason: lastFailure?.stderr
+        || lastFailure?.stdout
+        || (rejectedBase?.reason === 'diff_base_contains_head'
+          ? `pre-merge diff base is unrecoverable: ${rejectedBase.ref} already contains ${headRef}`
+          : rejectedBase?.reason
+            ? `pre-merge diff base is unresolvable: ${rejectedBase.ref}`
+            : 'git diff --numstat failed')
     }
   };
 }

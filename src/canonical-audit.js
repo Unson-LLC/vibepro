@@ -4,8 +4,8 @@ import path from 'node:path';
 import { gunzipSync, gzipSync } from 'node:zlib';
 
 import {
+  applyCanonicalEvidenceBudgetStatus,
   buildCanonicalEvidenceCostSummary,
-  resolveEffectiveCanonicalArtifactLineBudget,
   shouldUseCompactCanonicalEvidence
 } from './evidence-cost-budget.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
@@ -1031,24 +1031,18 @@ function applyCompactCanonicalLineAccounting(costSummary, {
       + (replayBundle.persisted_line_count ?? COMPRESSED_REPLAY_BUNDLE_PERSISTED_LINE_COUNT)
     );
     const persistedRatio = ratioOrNull(persistedLines, costSummary.product_changed_lines);
-    const effectiveCanonicalArtifactLines = resolveEffectiveCanonicalArtifactLineBudget(
-      costSummary.budget,
-      costSummary.product_changed_lines
-    );
-    const lineBudgetExceeded = persistedLines > effectiveCanonicalArtifactLines;
-    const ratioBudgetExceeded = persistedRatio !== null
-      && persistedRatio > (costSummary.budget?.artifact_code_ratio ?? Number.POSITIVE_INFINITY);
     costSummary.artifact_lines = persistedLines;
     costSummary.artifact_code_ratio = persistedRatio;
     costSummary.artifact_code_ratio_reason = persistedRatio === null
       ? (costSummary.product_changed_lines_status === 'available' ? 'product_changed_lines_zero' : 'diff_stats_unavailable')
       : null;
-    costSummary.budget_status = lineBudgetExceeded || ratioBudgetExceeded ? 'exceeded' : 'within_budget';
-    costSummary.budget_exceeded_reasons = [
-      lineBudgetExceeded ? 'canonical_artifact_lines_exceeded' : null,
-      ratioBudgetExceeded ? 'artifact_code_ratio_exceeded' : null
-    ].filter(Boolean);
-    costSummary.budget.effective_canonical_artifact_lines = effectiveCanonicalArtifactLines;
+    // Re-measuring the persisted compact output must reuse the same
+    // scope-separated verdict logic as the first pass, so a docs-only bundle
+    // keeps `implementation_budget_status: not_applicable`.
+    applyCanonicalEvidenceBudgetStatus(costSummary, {
+      artifactLineCount: persistedLines,
+      ratio: persistedRatio
+    });
     decisionIndex.budget_status = costSummary.budget_status;
     decisionIndex.automation_value_audit = buildAutomationValueAuditContract(decisionIndex);
     bundle.artifact_policy.why_compacted = costSummary.budget_exceeded_reasons;

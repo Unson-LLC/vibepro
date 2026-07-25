@@ -1,3 +1,5 @@
+import { detectDocsOnlyChange, isDocsOnlyChange } from './docs-only-change.js';
+
 export const EVIDENCE_DEPTHS = new Set(['summary', 'standard', 'full']);
 
 export const DEFAULT_EVIDENCE_COST_BUDGET = {
@@ -8,6 +10,16 @@ export const DEFAULT_EVIDENCE_COST_BUDGET = {
   high: {
     canonical_artifact_lines: 1500,
     artifact_code_ratio: 3
+  },
+  // docs-only changes are budgeted separately (DOE-S-2). The absolute line
+  // budget is deliberately *not* raised above the normal profile — the
+  // artifact/code ratio is simply not applied, because there is no product code
+  // to form a meaningful denominator. The resulting verdict is reported under
+  // `budget_scope: docs_only` so it cannot be mistaken for an implementation
+  // Story overspending its evidence budget.
+  docs_only: {
+    canonical_artifact_lines: 500,
+    artifact_code_ratio: null
   }
 };
 
@@ -94,6 +106,7 @@ export function buildCanonicalEvidenceCostSummary({
   artifactLineCount = 0,
   diffStats = null,
   diffStatsProvenance = null,
+  docsOnlyChange = null,
   tokenAccounting = null,
   elapsedTimeAccounting = null,
   riskProfile = null,
@@ -117,18 +130,33 @@ export function buildCanonicalEvidenceCostSummary({
         + changed_lines.buckets.other.changed_lines
       )
     : null;
+  // Canonical promotion only ever observes the change surface through the
+  // merge's per-file diff statistics, so an unavailable diff base yields an
+  // `unknown` verdict rather than a confident docs-only one.
+  const changeSurface = docsOnlyChange ?? detectDocsOnlyChange({
+    diffStats: diffStatsAvailable ? diffStats : null,
+    diffStatsStatus: diffStatsStatus.status
+  });
+  const docsOnly = isDocsOnlyChange(changeSurface);
   const highRisk = isHighRiskProfile(riskProfile) || triggerSignals.length > 0;
-  const thresholds = highRisk ? budget.high : budget.normal;
+  const budgetProfile = docsOnly ? 'docs_only' : (highRisk ? 'high' : 'normal');
+  const thresholds = resolveBudgetThresholds(budget, budgetProfile);
   const ratio = Number.isFinite(productChangedLines) && productChangedLines > 0 ? artifactLineCount / productChangedLines : null;
-  const effectiveCanonicalArtifactLines = resolveEffectiveCanonicalArtifactLineBudget(thresholds, productChangedLines);
-  const lineBudgetExceeded = artifactLineCount > effectiveCanonicalArtifactLines;
-  const ratioBudgetExceeded = ratio !== null && ratio > thresholds.artifact_code_ratio;
   const explicitDepth = normalizeEvidenceDepth(requestedDepth);
-  const budgetExceeded = lineBudgetExceeded || ratioBudgetExceeded;
+  // A docs-only change defaults to the lightest persistence depth (DOE-S-1).
+  // An explicit `--evidence-depth` request still wins, so an operator can
+  // escalate a documentation change that genuinely needs full evidence.
   const persistenceDepth = explicitDepth
-    ?? (budgetExceeded ? 'standard' : (highRisk ? 'full' : 'standard'));
+    ?? (docsOnly ? 'summary' : null)
+    ?? resolveImplementationPersistenceDepth({
+      artifactLineCount,
+      productChangedLines,
+      ratio,
+      thresholds,
+      highRisk
+    });
 
-  return {
+  const summary = {
     schema_version: '0.1.0',
     evidence_depth: persistenceDepth,
     risk_profile: riskProfile ?? (highRisk ? 'high' : 'normal'),
@@ -140,27 +168,70 @@ export function buildCanonicalEvidenceCostSummary({
     diff_stats_reason: diffStatsStatus.reason,
     artifact_lines: artifactLineCount,
     changed_lines,
+    change_surface: changeSurface,
     product_changed_lines: productChangedLines,
     product_changed_lines_status: diffStatsAvailable ? 'available' : 'unavailable',
     product_changed_lines_reason: diffStatsAvailable ? null : diffStatsStatus.reason,
+    product_code_changed_lines: changeSurface.product_code_changed_lines,
+    product_code_changed_lines_status: changeSurface.product_code_changed_lines === null
+      ? 'unavailable'
+      : 'available',
+    // A docs-only change legitimately has zero product-code lines. Naming that
+    // reason `docs_only` keeps it distinguishable from a lost diff base, which
+    // is the misrecording DOE-S-3 removes.
+    product_code_changed_lines_reason: resolveProductCodeLineReason(changeSurface, diffStatsStatus),
     artifact_code_ratio: ratio === null ? null : Number(ratio.toFixed(3)),
     artifact_code_ratio_reason: ratio === null
       ? (diffStatsAvailable ? 'product_changed_lines_zero' : 'diff_stats_unavailable')
       : null,
     budget: {
-      profile: highRisk ? 'high' : 'normal',
+      profile: budgetProfile,
       canonical_artifact_lines: thresholds.canonical_artifact_lines,
-      effective_canonical_artifact_lines: effectiveCanonicalArtifactLines,
+      effective_canonical_artifact_lines: null,
       artifact_code_ratio: thresholds.artifact_code_ratio
     },
-    budget_status: budgetExceeded ? 'exceeded' : 'within_budget',
-    budget_exceeded_reasons: [
-      lineBudgetExceeded ? 'canonical_artifact_lines_exceeded' : null,
-      ratioBudgetExceeded ? 'artifact_code_ratio_exceeded' : null
-    ].filter(Boolean),
+    budget_scope: docsOnly ? 'docs_only' : 'implementation',
     token_accounting: normalizeTokenAccounting(tokenAccounting),
     elapsed_time_accounting: normalizeElapsedTimeAccounting(elapsedTimeAccounting)
   };
+  applyCanonicalEvidenceBudgetStatus(summary, { artifactLineCount, ratio });
+  return summary;
+}
+
+/**
+ * Recomputes the budget verdict of an already-built cost summary against new
+ * artifact-line accounting, keeping every scope-separated field consistent.
+ * The compact canonical writer re-measures its own persisted output, so both
+ * call sites must agree on how a verdict is derived (DOE-S-2).
+ */
+export function applyCanonicalEvidenceBudgetStatus(costSummary, { artifactLineCount, ratio } = {}) {
+  const thresholds = costSummary.budget ?? {};
+  const effectiveCanonicalArtifactLines = resolveEffectiveCanonicalArtifactLineBudget(
+    thresholds,
+    costSummary.product_changed_lines
+  );
+  const ratioLimit = normalizePositiveNumber(thresholds.artifact_code_ratio);
+  const lineBudgetExceeded = artifactLineCount > effectiveCanonicalArtifactLines;
+  const ratioBudgetExceeded = ratio !== null && ratio !== undefined && ratioLimit !== null && ratio > ratioLimit;
+  const budgetExceeded = lineBudgetExceeded || ratioBudgetExceeded;
+  const docsOnly = costSummary.budget_scope === 'docs_only';
+
+  costSummary.budget.effective_canonical_artifact_lines = effectiveCanonicalArtifactLines;
+  costSummary.budget_status = budgetExceeded ? 'exceeded' : 'within_budget';
+  costSummary.budget_exceeded_reasons = [
+    lineBudgetExceeded ? 'canonical_artifact_lines_exceeded' : null,
+    ratioBudgetExceeded ? 'artifact_code_ratio_exceeded' : null
+  ].filter(Boolean);
+  // Scope-separated verdicts: consumers that watch implementation evidence
+  // waste read `implementation_budget_status` and are never perturbed by a
+  // documentation Story.
+  costSummary.implementation_budget_status = docsOnly
+    ? 'not_applicable'
+    : costSummary.budget_status;
+  costSummary.docs_only_budget_status = docsOnly
+    ? costSummary.budget_status
+    : 'not_applicable';
+  return costSummary;
 }
 
 export function shouldUseCompactCanonicalEvidence(costSummary) {
@@ -238,6 +309,36 @@ export function normalizeElapsedTimeAccounting(input = null) {
     window: input?.window ?? null,
     reason: input?.reason ?? 'elapsed-time logs were not provided to canonical audit promotion'
   };
+}
+
+function resolveBudgetThresholds(budget, profile) {
+  const configured = budget?.[profile];
+  if (configured && typeof configured === 'object') return configured;
+  // A caller-supplied budget predating the docs-only profile falls back to the
+  // normal profile rather than silently becoming unbounded.
+  return budget?.normal ?? DEFAULT_EVIDENCE_COST_BUDGET.normal;
+}
+
+function resolveImplementationPersistenceDepth({
+  artifactLineCount,
+  productChangedLines,
+  ratio,
+  thresholds,
+  highRisk
+}) {
+  const effectiveCanonicalArtifactLines = resolveEffectiveCanonicalArtifactLineBudget(thresholds, productChangedLines);
+  const ratioLimit = normalizePositiveNumber(thresholds?.artifact_code_ratio);
+  const budgetExceeded = artifactLineCount > effectiveCanonicalArtifactLines
+    || (ratio !== null && ratioLimit !== null && ratio > ratioLimit);
+  return budgetExceeded ? 'standard' : (highRisk ? 'full' : 'standard');
+}
+
+function resolveProductCodeLineReason(changeSurface, diffStatsStatus) {
+  if (changeSurface?.product_code_changed_lines === null) {
+    return changeSurface?.reason ?? diffStatsStatus?.reason ?? 'change_surface_unavailable';
+  }
+  if (changeSurface.product_code_changed_lines > 0) return null;
+  return changeSurface.status === 'docs_only' ? 'docs_only' : changeSurface.reason;
 }
 
 function changedLineCount(stats) {
