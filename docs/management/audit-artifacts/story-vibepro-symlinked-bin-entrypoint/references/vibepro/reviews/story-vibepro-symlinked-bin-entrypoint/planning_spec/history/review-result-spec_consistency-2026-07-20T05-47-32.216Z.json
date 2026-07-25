@@ -1,0 +1,145 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-symlinked-bin-entrypoint",
+  "stage": "planning_spec",
+  "role": "spec_consistency",
+  "status": "pass",
+  "summary": "Latest HEAD satisfies spec_consistency planning review.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected current Story, Architecture, Spec, source, tests, and current-head verification; seven tests and typecheck pass.",
+    "evidence": "test/bin-entrypoint.test.js",
+    "inputs": [
+      "bin/vibepro.js",
+      "test/bin-entrypoint.test.js",
+      "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+      "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+      "docs/specs/story-vibepro-symlinked-bin-entrypoint.md"
+    ]
+  },
+  "judgment_delta": [
+    "Stale-after-rebase concern -> pass after independent current-HEAD inspection and verification."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+    "expected_root": null,
+    "expected_head_sha": "f7402303ea02efb02f6e70b3216bfe8c91279867",
+    "current_head_sha": "f7402303ea02efb02f6e70b3216bfe8c91279867",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+      "expected_root": null,
+      "expected_head_sha": "f7402303ea02efb02f6e70b3216bfe8c91279867",
+      "current_head_sha": "f7402303ea02efb02f6e70b3216bfe8c91279867",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-20T05:47:32.216Z",
+  "git_context": {
+    "head_sha": "f7402303ea02efb02f6e70b3216bfe8c91279867",
+    "current_branch": "codex/cli-symlink-entrypoint",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-20T05:47:32.209Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "f7402303ea02efb02f6e70b3216bfe8c91279867",
+    "surface_files": [
+      {
+        "path": "bin/vibepro.js",
+        "sha256": "0c364787a843a8985a0ccecee0f0278a717e69d8fb92d81a4e5d3e69b3f1e5a4",
+        "size": 789
+      },
+      {
+        "path": "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+        "sha256": "9bd6d33d4dc2f53f2575f7d8b83a1a9a73293ff91fc04c5cd22a098289d1c6c7",
+        "size": 1386
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+        "sha256": "5ada0f1d9900f87b25f26fabaf943f0addad3b26e9d00420358f179b522ae3cc",
+        "size": 1989
+      },
+      {
+        "path": "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+        "sha256": "2b14600fdff1d73f3592f663362862c831bcb734b7968c6390a0eccb0c71ceb8",
+        "size": 954
+      },
+      {
+        "path": "test/bin-entrypoint.test.js",
+        "sha256": "dce3e52a3827656e9d536a7f0bb0c55c3e50d5c0e2cde66f5a0c47fb7a1d14bc",
+        "size": 4234
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "a9eb78c3b0c038dad1c37c15bf4aa388ec404739fd88d63eaae9627cbcbb50ef"
+  },
+  "source_fingerprint": "f43e44f69620cdbae020d97ae28052af492f65e5a4e34bf7db55c5cfe3eb3dac",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/planning_spec",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-symlinked-bin-entrypoint/planning_spec/transcript-spec_consistency.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-symlinked-bin-entrypoint/planning_spec/review-request-spec_consistency.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-symlinked-bin-entrypoint/planning_spec/lifecycle.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

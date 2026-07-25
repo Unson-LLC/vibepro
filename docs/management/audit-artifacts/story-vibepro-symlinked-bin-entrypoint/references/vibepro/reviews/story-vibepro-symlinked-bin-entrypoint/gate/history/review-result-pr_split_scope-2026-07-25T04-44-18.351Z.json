@@ -1,0 +1,126 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-symlinked-bin-entrypoint",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "Checked split-plan.json's automatic 3-lane heuristic against the actual 2-commit diff; design-ssot.json's addition is part of dac459d7 itself (the fix commit) and is explicitly accounted for in the pr_scope_judgment waiver reason; the waiver's claim that all files exist only to describe/prove this one fix, and that the budget commit only exists to unblock this Story's own review dispatch, checks out against the actual file contents inspected.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read split-plan.json lanes, decision-records.json waiver entries for gate:pr_scope_judgment and gate:split_resolution, and verified file membership in each suggested lane against the real 2-commit diff.",
+    "evidence": null,
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+      ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/decision-records.json"
+    ]
+  },
+  "judgment_delta": [
+    "Independently verified the waiver reasoning against the real diffs rather than rubber-stamping it -> the heuristic's per-file lane split is an artifact of automatic categorization, not evidence of bundled unrelated work; single-PR scope is justified."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+    "expected_root": null,
+    "expected_head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+    "current_head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+      "expected_root": null,
+      "expected_head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+      "current_head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-25T04:44:18.351Z",
+  "git_context": {
+    "head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+    "current_branch": "codex/cli-symlink-entrypoint",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-25T04:44:18.339Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 1 file(s)",
+    "recorded_head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+        "sha256": "5ada0f1d9900f87b25f26fabaf943f0addad3b26e9d00420358f179b522ae3cc",
+        "size": 1989
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "9d9005ff6202b761120f7d60ae15ed90d6f68df90852d47de43e047c50ec769d"
+  },
+  "source_fingerprint": "41df76853636c4a5cac1bd6b54294bd94d850dcb0b89d1e2b782c9ef210bae9a",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "81bb73b8-6821-44ef-946f-798782aceb3d",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": "high",
+    "cost_tier": "low",
+    "thread_id": "81bb73b8-6821-44ef-946f-798782aceb3d",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-symlinked-bin-entrypoint/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "independent-review-subagent-verdict:agent-id=81bb73b8-6821-44ef-946f-798782aceb3d:round2-diff-confirmation",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "81bb73b8-6821-44ef-946f-798782aceb3d",
+      "implementation_session_id": "story-vibepro-symlinked-bin-entrypoint-revival-coordinator",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

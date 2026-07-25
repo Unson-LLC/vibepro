@@ -1,0 +1,165 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-symlinked-bin-entrypoint",
+  "created_at": "2026-07-25T05:11:28.892Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 2 件あり、別work item story-local のlineageが含まれている",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-symlinked-bin-entrypoint.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-symlinked-bin-entrypoint.md)"
+    },
+    "decision_records": {
+      "total": 4,
+      "open": 0,
+      "by_type": {
+        "waiver": 2,
+        "needs_review": 2
+      },
+      "by_status": {
+        "accepted": 4
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+          "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+          "expected_root": null,
+          "expected_head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+          "current_head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784953819877-91bc9540",
+        "story_id": "story-vibepro-symlinked-bin-entrypoint",
+        "type": "waiver",
+        "status": "accepted",
+        "source": "gate:split_resolution",
+        "source_status": "needs_review",
+        "summary": "Resolve Split Resolution Gate as clean single-PR scope; no split needed",
+        "reason": "Same rationale as the pr_scope_judgment waiver: the Story/Spec/Architecture SSOT lane, the runtime-behavior lane, and the review-budget commit are all constituent parts of one bounded fix (symlink direct-execution detection in bin/vibepro.js) with no independently reviewable or independently shippable boundary between them.",
+        "reviewer": null,
+        "artifact": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/verification-evidence.json",
+              "type": "integration",
+              "result": "needs_setup"
+            },
+            {
+              "path": "../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/scratchpad/status-artifacts/bin-entrypoint-tests-status.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": "../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/scratchpad/status-artifacts/typecheck-status.json",
+              "type": "typecheck",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+            "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+            "expected_root": null,
+            "expected_head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+            "current_head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+          "current_branch": "codex/cli-symlink-entrypoint",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-25T04:30:19.869Z"
+        },
+        "recorded_at": "2026-07-25T04:30:19.877Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-25T05:11:26.027Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+      "branch": "codex/cli-symlink-entrypoint",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "e36b73973d4e8730dcb48c8423ce2a64e08f79f7",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

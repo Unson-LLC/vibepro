@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1.0",
   "model": "vibepro-gate-outcome-ledger-v3",
-  "updated_at": "2026-07-25T00:12:01.424Z",
+  "updated_at": "2026-07-25T05:00:13.261Z",
   "entries": [
     {
       "schema_version": "0.1.0",
@@ -105205,6 +105205,332 @@
           "test/content-scoped-evidence-freshness.test.js",
           "test/e2e/story-vibepro-content-scoped-evidence-freshness-main.test.js",
           "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-symlinked-bin-entrypoint|gate:artifact_consistency|stale_evidence|passed|2026-07-25T04:45:18.863Z|2026-07-25T04:57:25.461Z",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-25T04:45:18.863Z",
+      "resolved_at": "2026-07-25T04:57:25.461Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+        "changed_files": [
+          "bin/vibepro.js",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+          "test/bin-entrypoint.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-symlinked-bin-entrypoint|gate:definition_of_done|needs_evidence|passed|2026-07-25T04:06:08.990Z|2026-07-25T04:10:52.758Z",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-25T04:06:08.990Z",
+      "resolved_at": "2026-07-25T04:10:52.758Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "dac459d7192bd31f7cb5754a7d0f0b7dd7f6e31a",
+        "changed_files": [
+          "bin/vibepro.js",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+          "test/bin-entrypoint.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-symlinked-bin-entrypoint|gate:definition_of_done|needs_evidence|passed|2026-07-25T04:27:30.090Z|2026-07-25T04:28:46.695Z",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-25T04:27:30.090Z",
+      "resolved_at": "2026-07-25T04:28:46.695Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+        "changed_files": [
+          "bin/vibepro.js",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+          "test/bin-entrypoint.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-symlinked-bin-entrypoint|gate:evidence_adjudication|needs_evidence|passed|2026-07-25T04:57:25.461Z|2026-07-25T05:00:13.261Z",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-25T04:57:25.461Z",
+      "resolved_at": "2026-07-25T05:00:13.261Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+        "changed_files": [
+          "bin/vibepro.js",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+          "test/bin-entrypoint.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-symlinked-bin-entrypoint|gate:judgment_axis_public_contract|needs_evidence|passed|2026-07-25T04:06:08.990Z|2026-07-25T04:10:52.758Z",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-25T04:06:08.990Z",
+      "resolved_at": "2026-07-25T04:10:52.758Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "dac459d7192bd31f7cb5754a7d0f0b7dd7f6e31a",
+        "changed_files": [
+          "bin/vibepro.js",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+          "test/bin-entrypoint.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-symlinked-bin-entrypoint|gate:judgment_axis_public_contract|needs_evidence|passed|2026-07-25T04:27:30.090Z|2026-07-25T04:28:46.695Z",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-25T04:27:30.090Z",
+      "resolved_at": "2026-07-25T04:28:46.695Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+        "changed_files": [
+          "bin/vibepro.js",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+          "test/bin-entrypoint.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-symlinked-bin-entrypoint|gate:senior_gap_judgment|needs_review|passed|2026-07-25T04:57:25.461Z|2026-07-25T05:00:13.261Z",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-25T04:57:25.461Z",
+      "resolved_at": "2026-07-25T05:00:13.261Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+        "changed_files": [
+          "bin/vibepro.js",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+          "test/bin-entrypoint.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-symlinked-bin-entrypoint|gate:split_resolution|needs_review|passed|2026-07-25T04:28:46.695Z|2026-07-25T04:30:39.432Z",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "gate_id": "gate:split_resolution",
+      "gate_type": "split_resolution_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "waiver",
+      "classification": "accepted_waiver_decision_record",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [
+        {
+          "decision_id": "decision-1784953819877-91bc9540",
+          "source": "gate:split_resolution",
+          "artifact": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+          "recorded_at": "2026-07-25T04:30:19.877Z"
+        }
+      ],
+      "previous_prepare_created_at": "2026-07-25T04:28:46.695Z",
+      "resolved_at": "2026-07-25T04:30:39.432Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+        "changed_files": [
+          "bin/vibepro.js",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+          "test/bin-entrypoint.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-symlinked-bin-entrypoint|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-25T04:06:08.990Z|2026-07-25T04:10:52.758Z",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-25T04:06:08.990Z",
+      "resolved_at": "2026-07-25T04:10:52.758Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "dac459d7192bd31f7cb5754a7d0f0b7dd7f6e31a",
+        "changed_files": [
+          "bin/vibepro.js",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+          "test/bin-entrypoint.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-symlinked-bin-entrypoint|gate:unit|needs_evidence|passed|2026-07-25T04:06:08.990Z|2026-07-25T04:10:52.758Z",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "gate_id": "gate:unit",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-25T04:06:08.990Z",
+      "resolved_at": "2026-07-25T04:10:52.758Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "dac459d7192bd31f7cb5754a7d0f0b7dd7f6e31a",
+        "changed_files": [
+          "bin/vibepro.js",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+          "test/bin-entrypoint.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-symlinked-bin-entrypoint|gate:unit|needs_evidence|passed|2026-07-25T04:27:30.090Z|2026-07-25T04:28:46.695Z",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "gate_id": "gate:unit",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-25T04:27:30.090Z",
+      "resolved_at": "2026-07-25T04:28:46.695Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+        "changed_files": [
+          "bin/vibepro.js",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+          "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+          "test/bin-entrypoint.test.js"
         ]
       }
     },
