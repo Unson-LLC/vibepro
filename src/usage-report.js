@@ -930,19 +930,21 @@ function renderGateRoiRows(report) {
   const roi = report.gate_roi;
   if (!roi) return null;
   const english = report.output?.language === 'en';
+  const unreadable = !['ok', 'absent'].includes(roi.central_ledger_status);
+  const unknownRow = `- unknown (central ledger ${roi.central_ledger_status})`;
   const gates = roi.gates ?? [];
-  const gateRows = gates.length
+  const gateRows = unreadable ? unknownRow : gates.length
     ? gates.map((gate) => (
         `- ${gate.gate_id}: count=${gate.count} source_fix=${gate.classifications?.source_fix ?? 0} evidence_added=${gate.classifications?.evidence_added ?? 0} rewording_only=${gate.classifications?.rewording_only ?? 0} waiver=${gate.classifications?.waiver ?? 0} unclassified=${gate.unclassified_count ?? 0} (${formatRate(gate.unclassified_rate)})`
       )).join('\n')
     : '- none';
-  const storyRows = (roi.stories ?? []).length
+  const storyRows = unreadable ? unknownRow : (roi.stories ?? []).length
     ? roi.stories.map((story) => (
         `- ${story.story_id}: count=${story.count} unclassified=${story.unclassified_count ?? 0} (${formatRate(story.unclassified_rate)})`
       )).join('\n')
     : '- none';
   const breaches = roi.unclassified_threshold_breaches ?? [];
-  const breachRows = breaches.length
+  const breachRows = unreadable ? unknownRow : breaches.length
     ? breaches.map((breach) => (
         `- ${breach.scope}:${breach.id}: unclassified=${breach.unclassified_count}/${breach.count} (${formatRate(breach.unclassified_rate)})`
       )).join('\n')

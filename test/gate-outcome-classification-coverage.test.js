@@ -449,7 +449,7 @@ test('GOC-S-4 recording refuses to overwrite a ledger it cannot read', async () 
   await mkdir(path.dirname(ledgerPath), { recursive: true });
   const legacy = `${JSON.stringify({
     schema_version: '0.1.0',
-    model: 'vibepro-gate-outcome-ledger-v2',
+    model: 'some-other-tool-ledger-v9',
     entries: [{ entry_key: 'legacy|1', story_id: 'story-goc', gate_id: 'gate:unit', outcome: 'unclassified', resolved_at: '2026-07-01T00:00:00.000Z' }]
   }, null, 2)}\n`;
   await writeFile(ledgerPath, legacy);
@@ -554,7 +554,7 @@ test('GOC-S-2 a foreign-model ledger is reported as unreadable rather than as no
   await mkdir(path.dirname(ledgerPath), { recursive: true });
   await writeFile(ledgerPath, `${JSON.stringify({
     schema_version: '0.1.0',
-    model: 'vibepro-gate-outcome-ledger-v1',
+    model: 'some-other-tool-ledger-v9',
     entries: [{ entry_key: 'legacy', story_id: 'story-goc', gate_id: 'gate:unit', outcome: 'unclassified', resolved_at: '2026-07-01T00:00:00.000Z' }]
   }, null, 2)}\n`);
 
@@ -564,12 +564,12 @@ test('GOC-S-2 a foreign-model ledger is reported as unreadable rather than as no
   });
   assert.equal(applied.status, 'ledger_model_not_readable');
   assert.equal(applied.ledger_model_status.status, 'foreign_model');
-  assert.equal(applied.ledger_model_status.model, 'vibepro-gate-outcome-ledger-v1');
+  assert.equal(applied.ledger_model_status.model, 'some-other-tool-ledger-v9');
   assert.equal(applied.updated_count, 0);
 
   // The unreadable ledger must be left byte-identical, not overwritten.
   const after = JSON.parse(await readFile(ledgerPath, 'utf8'));
-  assert.equal(after.model, 'vibepro-gate-outcome-ledger-v1');
+  assert.equal(after.model, 'some-other-tool-ledger-v9');
   assert.equal(after.entries.length, 1);
 });
 
@@ -609,7 +609,9 @@ test('GOC-S-2 an unreadable ledger degrades to a typed refusal instead of crashi
 test('GOC-S-3 an unreadable central ledger reports unknown residue on every surface', async () => {
   for (const [label, body] of [
     ['unparseable', '{ corrupt'],
-    ['foreign_model', `${JSON.stringify({ schema_version: '0.1.0', model: 'vibepro-gate-outcome-ledger-v1', entries: [{ entry_key: 'legacy|1', story_id: 's', gate_id: 'gate:unit', outcome: 'unclassified', resolved_at: '2026-07-01T00:00:00.000Z' }] }, null, 2)}\n`]
+    ['foreign_model', `${JSON.stringify({ schema_version: '0.1.0', model: 'some-other-tool-ledger-v9', entries: [] }, null, 2)}\n`],
+    ['shape_invalid', `${JSON.stringify({ schema_version: '0.1.0', model: 'vibepro-gate-outcome-ledger-v3', entries: {} }, null, 2)}\n`],
+    ['schema_invalid', `${JSON.stringify({ schema_version: '9.9.9', model: 'vibepro-gate-outcome-ledger-v3', entries: [] }, null, 2)}\n`]
   ]) {
     const repo = await mkdtemp(path.join(os.tmpdir(), `vibepro-goc-central-${label}-`));
     const centralPath = getCentralGateOutcomeLedgerPath(repo);
@@ -629,6 +631,32 @@ test('GOC-S-3 an unreadable central ledger reports unknown residue on every surf
     assert.doesNotMatch(rendered, /gate_roi_unclassified_breaches: null/);
     assert.doesNotMatch(rendered, /unclassified_count: 0 \(0%\)/);
   }
+});
+
+// Review finding (round 6): refusing every non-v3 model halted recording
+// forever on the supported legacy v1/v2 ledgers, with no migration path.
+// readPromotableGateOutcomeEntries already treats those as benignly empty.
+test('GOC-S-4 a known legacy ledger keeps recording instead of halting forever', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-goc-legacy-model-'));
+  const ledgerPath = getGateOutcomeLedgerPath(repo);
+  await mkdir(path.dirname(ledgerPath), { recursive: true });
+  await writeFile(ledgerPath, `${JSON.stringify({
+    schema_version: '0.1.0',
+    model: 'vibepro-gate-outcome-ledger-v2',
+    entries: [{ entry_key: 'legacy|1', story_id: 'story-goc', gate_id: 'gate:old', outcome: 'unclassified', resolved_at: '2026-07-01T00:00:00.000Z' }]
+  }, null, 2)}\n`);
+
+  const recorded = await recordResolvedGateOutcomes(repo, {
+    storyId: 'story-goc',
+    previousGateDag: dagWith({ id: 'gate:unit', status: 'needs_evidence', required: true }),
+    currentGateDag: dagWith({ id: 'gate:unit', status: 'passed', required: true }),
+    createdAt: '2026-07-25T00:00:00.000Z',
+    git: { changed_files: [{ path: 'src/app.js' }] },
+    fileGroups: { source: { count: 1 } }
+  });
+  assert.equal(recorded.status, 'recorded');
+  assert.equal(recorded.classification.ledger_status.status, 'legacy_model');
+  assert.equal(recorded.entries[0].outcome, 'source_fix');
 });
 
 // Review finding (round 5): the write refusal discarded the resolutions it had

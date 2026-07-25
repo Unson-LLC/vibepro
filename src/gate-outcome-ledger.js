@@ -266,8 +266,14 @@ export async function readCentralGateOutcomeLedger(repoRoot) {
     // "we could not read your ledger" indistinguishable from "your ledger is
     // clean" on every ROI surface. computeCentralLedgerPromotion already
     // refuses the same file, so the two readers must agree.
-    if (data?.model && data.model !== LEDGER_MODEL) {
-      return { status: 'foreign_model', ledger: emptyLedger() };
+    if (!data || typeof data !== 'object' || Array.isArray(data) || !Array.isArray(data.entries)) {
+      return { status: 'shape_invalid', ledger: emptyLedger() };
+    }
+    if (data.schema_version !== LEDGER_SCHEMA_VERSION) {
+      return { status: 'schema_invalid', ledger: emptyLedger() };
+    }
+    if (data.model !== LEDGER_MODEL) {
+      return { status: LEGACY_LEDGER_MODELS.has(data.model) ? 'legacy_model' : 'foreign_model', ledger: emptyLedger() };
     }
     return { status: 'ok', ledger: normalizeLedger(data) };
   } catch (error) {
@@ -396,7 +402,7 @@ export async function recordResolvedGateOutcomes(repoRoot, options = {}) {
   // an unparseable one, so writing blind would silently destroy prior entries
   // and report a fabricated zero backlog on top of the loss.
   const ledgerStatus = await readGateOutcomeLedgerModelStatus(ledgerPath);
-  if (!['ok', 'absent'].includes(ledgerStatus.status)) {
+  if (!['ok', 'absent', 'legacy_model'].includes(ledgerStatus.status)) {
     const droppedGateIds = [...new Set(entries.map((entry) => entry.gate_id).filter(Boolean))];
     return {
       schema_version: LEDGER_SCHEMA_VERSION,
@@ -441,7 +447,7 @@ export async function recordResolvedGateOutcomes(repoRoot, options = {}) {
 async function buildLedgerClassificationReport(repoRoot, storyId, entries) {
   const ledgerStatus = await readGateOutcomeLedgerModelStatus(getGateOutcomeLedgerPath(repoRoot));
   let ledgerEntries = [];
-  if (['ok', 'absent'].includes(ledgerStatus.status)) {
+  if (['ok', 'absent', 'legacy_model'].includes(ledgerStatus.status)) {
     ledgerEntries = (await readGateOutcomeLedger(repoRoot)).entries;
   }
   return buildLedgerClassificationReportFrom(ledgerEntries, storyId, entries, ledgerStatus);
@@ -456,7 +462,7 @@ function buildLedgerClassificationReportFrom(ledgerEntries, storyId, recordedEnt
   // A ledger that could not be read carries unknown debt. Reporting 0 here
   // would fabricate a zero on the very surface that exists to make the
   // accumulating backlog visible, so the counts are withheld instead.
-  const ledgerReadable = !ledgerStatus || ['ok', 'absent'].includes(ledgerStatus.status);
+  const ledgerReadable = !ledgerStatus || ['ok', 'absent', 'legacy_model'].includes(ledgerStatus.status);
   return {
     ...backlog,
     status: ledgerReadable ? backlog.status : 'ledger_not_readable',
@@ -855,6 +861,13 @@ async function readGateOutcomeLedgerModelStatus(ledgerPath) {
     throw error;
   }
   const model = raw?.model ?? null;
+  // Known legacy models are superseded, not unreadable: readPromotableGateOutcomeEntries
+  // already treats them as an empty, non-promotable source. Refusing them would
+  // halt recording permanently with no migration path, so they stay writable and
+  // the supersession is disclosed instead.
+  if (LEGACY_LEDGER_MODELS.has(model)) {
+    return { status: 'legacy_model', model, expected_model: LEDGER_MODEL };
+  }
   if (model && model !== LEDGER_MODEL) {
     return { status: 'foreign_model', model, expected_model: LEDGER_MODEL };
   }

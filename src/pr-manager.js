@@ -624,6 +624,11 @@ export async function preparePullRequest(repoRoot, options = {}) {
   if (gateOutcomeClassification?.next_command) {
     nextCommands.push(gateOutcomeClassification.next_command);
   }
+  // A refused ledger write drops resolutions it already derived; the recovery
+  // command has to reach the surface an operator actually reads.
+  if (gateOutcomeLedger?.recovery_command) {
+    nextCommands.push(gateOutcomeLedger.recovery_command);
+  }
   // Per-artifact size budget pass: serialize the emitted content artifacts once,
   // reuse the exact strings when writing so the measured bytes match the files,
   // and route LLM handoff surfaces through bounded summaries for over-budget ones.
@@ -2501,8 +2506,11 @@ function buildShipPrCreateCommand(preparation, options = {}) {
   return args.join(' ');
 }
 
-function formatGateOutcomeClassification(classification) {
+function formatGateOutcomeClassification(classification, ledger = null) {
   if (!classification) return '-';
+  if (ledger?.dropped_count) {
+    return `${classification.status ?? '-'} dropped=${ledger.dropped_count} (${(ledger.dropped_gate_ids ?? []).join(', ')}) — see next_commands for recovery`;
+  }
   return [
     classification.status ?? '-',
     `new_unclassified=${classification.newly_unclassified_count ?? 0}/${classification.recorded_count ?? 0}`,
@@ -2535,7 +2543,7 @@ ${firstLook}
 | Evidence planner | ${preparation.evidence_plan?.planner_version ?? '-'} |
 | Evidence reuse | ${preparation.evidence_reuse?.status ?? '-'} |
 | Evidence key | ${preparation.evidence_reuse?.evidence_key ?? '-'} |
-| Gate outcome classification | ${formatGateOutcomeClassification(preparation.gate_outcome_classification)} |
+| Gate outcome classification | ${formatGateOutcomeClassification(preparation.gate_outcome_classification, preparation.gate_outcome_ledger)} |
 | UI/UX IA flow map | ${preparation.pr_context?.uiux_ia_flow_map?.status ?? '-'} (${preparation.pr_context?.uiux_ia_flow_map?.artifact ?? '-'}) |
 | UI/UX responsive/a11y matrix | ${preparation.pr_context?.uiux_responsive_a11y_matrix?.status ?? '-'} missing=${preparation.pr_context?.uiux_responsive_a11y_matrix?.missing_evidence_count ?? '-'} (${preparation.pr_context?.uiux_responsive_a11y_matrix?.artifact ?? '-'}) |
 | Base | ${preparation.git.base_ref} |
