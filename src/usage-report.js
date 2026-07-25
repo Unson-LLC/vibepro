@@ -1434,11 +1434,22 @@ function buildEvidenceCostMetrics(stories, bundleArtifacts) {
     .filter((value) => Number.isFinite(value));
   const totalProductChangedLines = productChangedValues.length > 0 ? sumNumbers(productChangedValues) : null;
   const budgetExceededCount = summaries.filter((summary) => summary.budget_status === 'exceeded').length;
+  // docs-only evidence spend is reported on its own axis so a documentation
+  // Story can never inflate the implementation-evidence waste signal (DOE-S-2).
+  // Bundles promoted before the docs-only profile carry no `budget_scope` and
+  // stay on the implementation axis.
+  const docsOnlySummaries = summaries.filter((summary) => summary.budget_scope === 'docs_only');
+  const implementationSummaries = summaries.filter((summary) => summary.budget_scope !== 'docs_only');
   return {
     schema_version: '0.1.0',
     canonical_bundle_count: bundleArtifacts.length,
     observed_cost_summary_count: summaries.length,
     budget_exceeded_count: budgetExceededCount,
+    docs_only_bundle_count: docsOnlySummaries.length,
+    docs_only_budget_exceeded_count: docsOnlySummaries
+      .filter((summary) => summary.budget_status === 'exceeded').length,
+    implementation_budget_exceeded_count: implementationSummaries
+      .filter((summary) => summary.budget_status === 'exceeded').length,
     total_artifact_lines: totalArtifactLines,
     total_product_changed_lines: totalProductChangedLines,
     artifact_code_ratio: totalProductChangedLines > 0 ? Number((totalArtifactLines / totalProductChangedLines).toFixed(3)) : null,
@@ -1455,6 +1466,10 @@ function buildEvidenceCostMetrics(stories, bundleArtifacts) {
         story_id: story.story_id,
         evidence_depth: story.evidence_cost.evidence_depth,
         budget_status: story.evidence_cost.budget_status,
+        budget_scope: story.evidence_cost.canonical_audit.budget_scope ?? 'implementation',
+        implementation_budget_status: story.evidence_cost.canonical_audit.implementation_budget_status
+          ?? story.evidence_cost.budget_status
+          ?? null,
         artifact_lines: story.evidence_cost.canonical_audit.artifact_lines,
         product_changed_lines: story.evidence_cost.canonical_audit.product_changed_lines,
         artifact_code_ratio: story.evidence_cost.canonical_audit.artifact_code_ratio,
@@ -1487,6 +1502,8 @@ function renderEvidenceCostRows(report) {
     `- canonical_bundles: ${cost.canonical_bundle_count ?? 0}`,
     `- observed_cost_summaries: ${cost.observed_cost_summary_count ?? 0}`,
     `- budget_exceeded: ${cost.budget_exceeded_count ?? 0}`,
+    `- implementation_budget_exceeded: ${cost.implementation_budget_exceeded_count ?? 0}`,
+    `- docs_only_budget_exceeded: ${cost.docs_only_budget_exceeded_count ?? 0} (docs_only_bundles: ${cost.docs_only_bundle_count ?? 0})`,
     `- artifact_lines: ${cost.total_artifact_lines ?? 0}`,
     `- product_changed_lines: ${cost.total_product_changed_lines ?? unknown}`,
     `- artifact_code_ratio: ${cost.artifact_code_ratio ?? unknown}`,
@@ -1496,7 +1513,7 @@ function renderEvidenceCostRows(report) {
   ];
   const storyRows = cost.by_story?.length
     ? cost.by_story.map((story) => (
-        `- ${story.story_id}: depth=${story.evidence_depth ?? '-'} budget=${story.budget_status ?? '-'} artifact_lines=${story.artifact_lines ?? 0} product_lines=${story.product_changed_lines ?? unknown} ratio=${story.artifact_code_ratio ?? unknown} diff=${story.diff_stats_status ?? unknown} ${renderChangedLineBuckets(story.changed_lines, unknown)} ${renderAutomationValueAudit(story.automation_value_audit, unknown)} ${renderReplayBundleCost(story.replay_bundle, unknown)} tokens=${story.tokens ?? unknown} elapsed_ms=${story.elapsed_ms ?? unknown}`
+        `- ${story.story_id}: depth=${story.evidence_depth ?? '-'} budget=${story.budget_status ?? '-'} budget_scope=${story.budget_scope ?? '-'} artifact_lines=${story.artifact_lines ?? 0} product_lines=${story.product_changed_lines ?? unknown} ratio=${story.artifact_code_ratio ?? unknown} diff=${story.diff_stats_status ?? unknown} ${renderChangedLineBuckets(story.changed_lines, unknown)} ${renderAutomationValueAudit(story.automation_value_audit, unknown)} ${renderReplayBundleCost(story.replay_bundle, unknown)} tokens=${story.tokens ?? unknown} elapsed_ms=${story.elapsed_ms ?? unknown}`
       ))
     : ['- none'];
   return [...summaryRows, '', ...storyRows].join('\n');

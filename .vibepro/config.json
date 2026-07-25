@@ -950,8 +950,20 @@
         "started_at": "2026-07-24",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-docs-only-evidence-profile",
+        "title": "docs-only Storyの証跡depthを軽量プロファイルに落とし偽のbudget超過を除去する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-25",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-ideal-state-inversion"
+    "current_story_id": "story-vibepro-docs-only-evidence-profile"
   }
 }
