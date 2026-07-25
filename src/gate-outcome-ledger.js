@@ -262,6 +262,13 @@ export async function readCentralGateOutcomeLedger(repoRoot) {
   const ledgerPath = getCentralGateOutcomeLedgerPath(repoRoot);
   try {
     const data = JSON.parse(await readFile(ledgerPath, 'utf8'));
+    // normalizeLedger silently empties a foreign-model ledger, which would make
+    // "we could not read your ledger" indistinguishable from "your ledger is
+    // clean" on every ROI surface. computeCentralLedgerPromotion already
+    // refuses the same file, so the two readers must agree.
+    if (data?.model && data.model !== LEDGER_MODEL) {
+      return { status: 'foreign_model', ledger: emptyLedger() };
+    }
     return { status: 'ok', ledger: normalizeLedger(data) };
   } catch (error) {
     if (error.code === 'ENOENT') return { status: 'absent', ledger: emptyLedger() };
@@ -390,11 +397,17 @@ export async function recordResolvedGateOutcomes(repoRoot, options = {}) {
   // and report a fabricated zero backlog on top of the loss.
   const ledgerStatus = await readGateOutcomeLedgerModelStatus(ledgerPath);
   if (!['ok', 'absent'].includes(ledgerStatus.status)) {
+    const droppedGateIds = [...new Set(entries.map((entry) => entry.gate_id).filter(Boolean))];
     return {
       schema_version: LEDGER_SCHEMA_VERSION,
       status: 'ledger_not_readable',
       artifact: toWorkspaceRelative(repoRoot, ledgerPath),
       entries: [],
+      // Naming what was dropped keeps the refusal auditable: the resolutions
+      // were derived, then discarded because the ledger could not be read.
+      dropped_gate_ids: droppedGateIds,
+      dropped_count: entries.length,
+      recovery_command: `# repair or remove ${toWorkspaceRelative(repoRoot, ledgerPath)} (${ledgerStatus.status}, expected model ${ledgerStatus.expected_model}), then rerun: npx vibepro pr prepare . --story-id ${storyId ?? '<story-id>'}`,
       classification: buildLedgerClassificationReportFrom([], storyId, [], ledgerStatus)
     };
   }
@@ -945,12 +958,16 @@ const DERIVED_EVIDENCE_BINDING_STATUSES = new Set(['n/a', 'derived']);
 // does not exist, so the file is real. Only a genuinely absent or unnamed
 // artifact fails to demonstrate that evidence was added.
 const NON_DEMONSTRATING_EVIDENCE_QUALITIES = new Set(['missing_artifact', 'unknown']);
+// An artifact whose recorded outcome contradicts the claimed pass is the one
+// case a concrete path must not vouch for.
+const CONTRADICTED_EVIDENCE_QUALITY = 'contradicted';
 
 function isArtifactBackedEvidence(value) {
   if (!value || typeof value !== 'object') return false;
   if (DERIVED_EVIDENCE_BINDING_STATUSES.has(value.binding_status)) return false;
-  // A concrete artifact path is the strongest signal and outranks the quality
-  // classification, which only describes how well the file could be parsed.
+  if (value.artifact_quality === CONTRADICTED_EVIDENCE_QUALITY) return false;
+  // A concrete artifact path is otherwise the strongest signal and outranks the
+  // quality classification, which only describes how well the file parsed.
   if (typeof value.artifact === 'string' && value.artifact.trim() !== '') return true;
   if (NON_DEMONSTRATING_EVIDENCE_QUALITIES.has(value.artifact_quality)) return false;
   return value.binding_status === 'current';

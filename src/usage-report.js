@@ -286,10 +286,14 @@ export function renderUsageReport(report) {
     `- fast_lane: ${valueSignals.fast_lane_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- merged_without_vibepro_evidence: ${valueSignals.merged_without_vibepro_evidence_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- evidence_in_other_worktree: ${valueSignals.evidence_in_other_worktree_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
-    ...(valueSignals.gate_roi_unclassified_breach_count === undefined ? [] : [
-      `- gate_roi_unclassified: ${valueSignals.gate_roi_unclassified_count ?? 0}/${valueSignals.gate_roi_entry_count ?? 0} (${formatRate(valueSignals.gate_roi_unclassified_rate)})`,
-      `- gate_roi_unclassified_breaches: ${valueSignals.gate_roi_unclassified_breach_count} (gate=${valueSignals.gate_roi_unclassified_breached_gate_count ?? 0} story=${valueSignals.gate_roi_unclassified_breached_story_count ?? 0})`
-    ])
+    ...(valueSignals.gate_roi_unclassified_breach_count === undefined ? [] : (
+      valueSignals.gate_roi_unclassified_breach_count === null
+        ? [`- gate_roi_unclassified: unknown (central ledger ${valueSignals.gate_roi_central_ledger_status ?? 'unreadable'})`]
+        : [
+          `- gate_roi_unclassified: ${valueSignals.gate_roi_unclassified_count ?? 0}/${valueSignals.gate_roi_entry_count ?? 0} (${formatRate(valueSignals.gate_roi_unclassified_rate)})`,
+          `- gate_roi_unclassified_breaches: ${valueSignals.gate_roi_unclassified_breach_count} (gate=${valueSignals.gate_roi_unclassified_breached_gate_count ?? 0} story=${valueSignals.gate_roi_unclassified_breached_story_count ?? 0})`
+        ]
+    ))
   ].join('\n');
   const traceabilityRows = renderTraceabilityGaps(report);
   const alternateSourceRows = renderAlternateSourceResolved(report);
@@ -904,8 +908,19 @@ ${rows}`;
 async function buildGateRoiReport(root, { since = null, unclassifiedRateThreshold, unclassifiedMinSample } = {}) {
   const central = await readCentralGateOutcomeLedger(root);
   const summary = summarizeGateRoi(central.ledger, { since, unclassifiedRateThreshold, unclassifiedMinSample });
+  const readable = ['ok', 'absent'].includes(central.status);
   return {
     ...summary,
+    // An unreadable central ledger carries unknown residue; emitting the
+    // zero-valued summary would be the fabricated zero C-002 forbids.
+    ...(readable ? {} : {
+      entry_count: null,
+      unclassified_count: null,
+      unclassified_rate: null,
+      gates: [],
+      stories: [],
+      unclassified_threshold_breaches: []
+    }),
     central_ledger_status: central.status,
     central_ledger_path: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH
   };
@@ -934,8 +949,12 @@ function renderGateRoiRows(report) {
     : '- none';
   return [
     `- central_ledger: ${roi.central_ledger_path} (${roi.central_ledger_status})`,
-    `- entries: ${roi.entry_count ?? 0}`,
-    `- unclassified_count: ${roi.unclassified_count ?? 0} (${formatRate(roi.unclassified_rate)})`,
+    roi.entry_count === null
+      ? `- entries: unknown (central ledger ${roi.central_ledger_status})`
+      : `- entries: ${roi.entry_count}`,
+    roi.unclassified_count === null
+      ? `- unclassified_count: unknown (central ledger ${roi.central_ledger_status})`
+      : `- unclassified_count: ${roi.unclassified_count} (${formatRate(roi.unclassified_rate)})`,
     `- unclassified_threshold: rate>${formatRate(roi.thresholds?.unclassified_rate)} min_sample=${roi.thresholds?.min_sample ?? 0}`,
     '',
     english ? 'Per-gate:' : 'Gate別:',

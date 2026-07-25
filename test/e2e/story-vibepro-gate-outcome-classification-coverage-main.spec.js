@@ -33,19 +33,20 @@ test('story-vibepro-gate-outcome-classification-coverage GOC-S-1 through GOC-S-4
   // operator input, while a judgment gate on the same diff stays undecidable.
   const recorded = await recordResolvedGateOutcomes(repo, {
     storyId: 'story-goc-e2e',
-    // Real production node shapes, taken from a live gate-dag.json: gate:unit
-    // carries type verification_gate, which isSourceResolutionCandidate
-    // excludes, while gate:artifact_consistency has no evidence-shaped tokens
-    // and is genuinely source-sensitive.
+    // Node shapes copied verbatim from live gate-dag.json artifacts, INCLUDING
+    // the `reason` field, because isSourceResolutionCandidate reads it: dropping
+    // it would make a gate look source-sensitive that production never does.
+    // gate:change_classification is genuinely source-sensitive; gate:unit
+    // carries type verification_gate and is deliberately excluded.
     previousGateDag: dagWith([
-      { id: 'gate:artifact_consistency', type: 'artifact_consistency_gate', label: 'Artifact Consistency Gate', status: 'needs_evidence', required: true },
-      { id: 'gate:unit', type: 'verification_gate', label: 'Unit Gate', status: 'needs_evidence', required: true },
-      { id: 'gate:senior_gap_judgment', type: 'senior_gap_judgment_gate', label: 'Senior Gap Judgment Gate', status: 'needs_review', required: true }
+      { id: 'gate:change_classification', type: 'change_classification_gate', label: 'Change Classification Gate', reason: 'PR/gate orchestration source changed; Story or diff contains workflow/state transition keywords', status: 'needs_evidence', required: true },
+      { id: 'gate:unit', type: 'verification_gate', label: 'Unit Gate', reason: '変更に対応する対象テスト', status: 'needs_evidence', required: true },
+      { id: 'gate:senior_gap_judgment', type: 'senior_gap_judgment_gate', label: 'Senior Gap Judgment Gate', reason: '2 critical gap(s) must be resolved before PR creation or merge.', status: 'needs_review', required: true }
     ]),
     currentGateDag: dagWith([
-      { id: 'gate:artifact_consistency', type: 'artifact_consistency_gate', label: 'Artifact Consistency Gate', status: 'passed', required: true },
-      { id: 'gate:unit', type: 'verification_gate', label: 'Unit Gate', status: 'passed', required: true },
-      { id: 'gate:senior_gap_judgment', type: 'senior_gap_judgment_gate', label: 'Senior Gap Judgment Gate', status: 'passed', required: true }
+      { id: 'gate:change_classification', type: 'change_classification_gate', label: 'Change Classification Gate', reason: 'PR/gate orchestration source changed; Story or diff contains workflow/state transition keywords', status: 'passed', required: true },
+      { id: 'gate:unit', type: 'verification_gate', label: 'Unit Gate', reason: '変更に対応する対象テスト', status: 'passed', required: true },
+      { id: 'gate:senior_gap_judgment', type: 'senior_gap_judgment_gate', label: 'Senior Gap Judgment Gate', reason: '2 critical gap(s) must be resolved before PR creation or merge.', status: 'passed', required: true }
     ]),
     createdAt: '2026-07-25T00:00:00.000Z',
     git: { changed_files: [{ path: 'src/app.js' }] },
@@ -53,7 +54,7 @@ test('story-vibepro-gate-outcome-classification-coverage GOC-S-1 through GOC-S-4
   });
   assert.equal(recorded.status, 'recorded');
   assert.equal(
-    recorded.entries.find((entry) => entry.gate_id === 'gate:artifact_consistency').outcome,
+    recorded.entries.find((entry) => entry.gate_id === 'gate:change_classification').outcome,
     'source_fix',
     'GOC-S-1 a source-sensitive gate resolved by a source diff is derived automatically'
   );

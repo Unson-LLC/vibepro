@@ -602,6 +602,77 @@ test('GOC-S-2 an unreadable ledger degrades to a typed refusal instead of crashi
   assert.equal(await readFile(ledgerPath, 'utf8'), '{ corrupt');
 });
 
+// Review finding (round 5): the withholding branch was applied to the JSON
+// value_signals but not to the rendered surface, which still printed a concrete
+// zero and then a raw null; and a foreign-model central ledger was reported as
+// status 'ok' with a zero count.
+test('GOC-S-3 an unreadable central ledger reports unknown residue on every surface', async () => {
+  for (const [label, body] of [
+    ['unparseable', '{ corrupt'],
+    ['foreign_model', `${JSON.stringify({ schema_version: '0.1.0', model: 'vibepro-gate-outcome-ledger-v1', entries: [{ entry_key: 'legacy|1', story_id: 's', gate_id: 'gate:unit', outcome: 'unclassified', resolved_at: '2026-07-01T00:00:00.000Z' }] }, null, 2)}\n`]
+  ]) {
+    const repo = await mkdtemp(path.join(os.tmpdir(), `vibepro-goc-central-${label}-`));
+    const centralPath = getCentralGateOutcomeLedgerPath(repo);
+    await mkdir(path.dirname(centralPath), { recursive: true });
+    await writeFile(centralPath, body);
+
+    const report = await createUsageReport(repo, { gateRoi: true, language: 'en' });
+    assert.equal(report.gate_roi.central_ledger_status, label, `${label}: the reader must not claim ok`);
+    assert.equal(report.gate_roi.entry_count, null, `${label}: counts are withheld, not zeroed`);
+    assert.equal(report.gate_roi.unclassified_count, null);
+    assert.equal(report.value_signals.gate_roi_unclassified_count, null);
+    assert.equal(report.value_signals.gate_roi_unclassified_breach_count, null);
+
+    const rendered = renderUsageReport(report);
+    assert.match(rendered, new RegExp(`gate_roi_unclassified: unknown \\(central ledger ${label}\\)`));
+    assert.match(rendered, new RegExp(`entries: unknown \\(central ledger ${label}\\)`));
+    assert.doesNotMatch(rendered, /gate_roi_unclassified_breaches: null/);
+    assert.doesNotMatch(rendered, /unclassified_count: 0 \(0%\)/);
+  }
+});
+
+// Review finding (round 5): the write refusal discarded the resolutions it had
+// already derived without naming them or offering a way out.
+test('GOC-S-2 a refused write names the dropped gates and offers a recovery command', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-goc-drop-'));
+  const ledgerPath = getGateOutcomeLedgerPath(repo);
+  await mkdir(path.dirname(ledgerPath), { recursive: true });
+  await writeFile(ledgerPath, '{ corrupt');
+
+  const recorded = await recordResolvedGateOutcomes(repo, {
+    storyId: 'story-goc',
+    previousGateDag: dagWith({ id: 'gate:unit', status: 'needs_evidence', required: true }),
+    currentGateDag: dagWith({ id: 'gate:unit', status: 'passed', required: true }),
+    createdAt: '2026-07-25T00:00:00.000Z',
+    git: { changed_files: [{ path: 'src/app.js' }] },
+    fileGroups: { source: { count: 1 } }
+  });
+  assert.equal(recorded.status, 'ledger_not_readable');
+  assert.deepEqual(recorded.dropped_gate_ids, ['gate:unit']);
+  assert.equal(recorded.dropped_count, 1);
+  assert.match(recorded.recovery_command, /repair or remove/);
+  assert.match(recorded.recovery_command, /vibepro pr prepare/);
+});
+
+// Review finding (round 5): an artifact whose recorded outcome contradicts the
+// claimed pass must not be vouched for by the concrete-artifact shortcut.
+test('GOC-S-1 a contradicted artifact is not counted as evidence', () => {
+  assert.equal(classifyGateOutcome({
+    previousGate: { id: 'gate:judgment_axis_public_contract', status: 'needs_evidence', matched_evidence: [] },
+    gate: {
+      id: 'gate:judgment_axis_public_contract',
+      status: 'passed',
+      matched_evidence: [{
+        kind: 'focused_test',
+        artifact: '.vibepro/verify-artifacts/failing.xml',
+        binding_status: 'current',
+        artifact_quality: 'contradicted'
+      }]
+    },
+    git: { changed_files: [{ path: 'docs/a.md' }] }
+  }).outcome, 'rewording_only');
+});
+
 // Review finding: an out-of-range threshold silently disabled the GOC-S-3
 // breach signal, and both options no-oped without --gate-roi.
 test('GOC-S-3 gate ROI threshold options fail closed instead of silently disabling the signal', async () => {
