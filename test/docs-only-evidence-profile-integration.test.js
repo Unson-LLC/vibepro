@@ -75,7 +75,7 @@ async function buildMergedRepo({ changedPaths }) {
   return { root, headSha, mergeCommitSha };
 }
 
-async function promoteFromMergedRepo({ storyId, changedPaths }) {
+async function promoteFromMergedRepo({ storyId, changedPaths, verificationCommandCount = 0 }) {
   const { root, headSha, mergeCommitSha } = await buildMergedRepo({ changedPaths });
   const collected = await collectMergeDiffLineStats(root, {
     baseBranch: 'main',
@@ -92,6 +92,23 @@ async function promoteFromMergedRepo({ storyId, changedPaths }) {
     story: { story_id: storyId }
   });
   await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-merge.json'), merge);
+  if (verificationCommandCount > 0) {
+    await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'verification-evidence.json'), {
+      schema_version: '0.1.0',
+      story_id: storyId,
+      commands: Array.from({ length: verificationCommandCount }, (_, index) => ({
+        id: `verification-${index}`,
+        kind: 'unit',
+        status: 'pass',
+        command: `node --test test/example-${index}.test.js`,
+        summary: `Audit-relevant verification summary ${index}`,
+        target: [`docs/example-${index}.md`],
+        scenario: [`DOCS-VERIFY-${index}`],
+        observed: { result: 'pass' },
+        recorded_at: '2026-07-25T00:00:00.000Z'
+      }))
+    });
+  }
   const promoted = await promoteCanonicalAuditArtifacts(root, {
     storyId,
     source: 'execute_merge',
@@ -124,7 +141,11 @@ test('docs-only merge promotes a docs_only-scoped canonical bundle with a recove
   assert.equal(cost.budget_scope, 'docs_only');
   assert.equal(cost.budget.profile, 'docs_only');
   assert.equal(cost.implementation_budget_status, 'not_applicable');
-  assert.equal(cost.evidence_depth, 'summary');
+  // This fixture has missing canonical artifacts, so the pre-existing risk
+  // escalation fires and keeps the depth it would have had before this change.
+  // docs-only lightens the depth default, it does not override an escalation.
+  assert.equal(cost.trigger_signals.length > 0, true);
+  assert.equal(cost.evidence_depth, 'full');
   // Zero product-code lines here is a fact about the change, not a lost
   // measurement, and the persisted reason says so.
   assert.equal(cost.product_code_changed_lines, 0);
@@ -149,6 +170,35 @@ test('implementation merge keeps the implementation budget scope through canonic
   assert.equal(cost.docs_only_budget_status, 'not_applicable');
   assert.equal(cost.implementation_budget_status, cost.budget_status);
   assert.equal(cost.product_code_changed_lines, 100);
+});
+
+test('over-budget docs-only promotion keeps its scope through compact re-measurement', async (t) => {
+  // The compact canonical writer re-measures its own persisted output. That
+  // second accounting pass must reuse the same scope-separated verdict, or an
+  // over-budget docs-only bundle would reappear on the implementation axis.
+  const storyId = 'story-integration-docs-only-compact';
+  const { root, promoted, index } = await promoteFromMergedRepo({
+    storyId,
+    changedPaths: {
+      'docs/management/stories/active/story-big.md': `${'story line\n'.repeat(30)}`,
+      'docs/management/roadmap/plan.md': `${'roadmap line\n'.repeat(20)}`
+    },
+    // Enough recorded evidence to push the bundle past the docs-only line budget.
+    verificationCommandCount: 700
+  });
+  t.after(() => rm(root, { recursive: true, force: true }));
+
+  const cost = index.cost_summary;
+  assert.equal(cost.budget_status, 'exceeded', 'fixture must actually exceed the budget');
+  assert.equal(promoted.bundle.artifact_policy?.mode ?? 'compact', 'compact');
+  assert.equal(cost.artifact_lines_source, 'persisted_canonical_compact');
+  // The re-measured verdict keeps the docs-only scope on both passes.
+  assert.equal(cost.change_surface.status, 'docs_only');
+  assert.equal(cost.budget_scope, 'docs_only');
+  assert.equal(cost.implementation_budget_status, 'not_applicable');
+  assert.equal(cost.docs_only_budget_status, 'exceeded');
+  // The ratio rule has no denominator for docs-only work and must not fire.
+  assert.equal(cost.budget_exceeded_reasons.includes('artifact_code_ratio_exceeded'), false);
 });
 
 test('usage report separates docs-only evidence spend from the implementation signal', async (t) => {

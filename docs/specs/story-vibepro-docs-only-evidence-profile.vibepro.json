@@ -7,9 +7,9 @@
   },
   "clauses": [
     {
-      "id": "C-001",
+      "id": "C-005",
       "type": "contract",
-      "statement": "Evidence change-surface resolution classifies every changed path as product_code, docs, evidence_artifacts, or unknown, and reports docs_only only when at least one docs path changed and no product_code path changed. An unclassified path, a VibePro-record-only change, an empty observed change set, and an unavailable diff-stats status each resolve to unknown rather than docs_only, so a lost measurement never lightens evidence.",
+      "statement": "Evidence change-surface resolution classifies every changed path as product_code, docs, evidence_artifacts, or unknown, and reports docs_only only when at least one docs path changed and no product_code path changed. An unclassified path, a VibePro-record-only change, an empty observed change set, and an unavailable diff-stats status each resolve to unknown rather than docs_only, so a lost measurement never lightens evidence. Under docs/, the deployed manual surface (docs/.vitepress/, docs/public/) and machine-read responsibility contracts (docs/contracts/) classify as product_code, while the requirement trees (docs/management/, docs/specs/, docs/architecture/, docs/adr/) classify as docs whatever their file extension. A docs_only verdict names the VibePro-managed records it tolerated so the accepted exclusion is never silent.",
       "origin": {
         "story_refs": [
           {
@@ -43,16 +43,24 @@
           {
             "file": "test/docs-only-evidence-profile.test.js",
             "case": "DOE-S-1 refuses to call an unclassified or empty change set docs-only"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-1 classifies the deployed manual surface under docs/ as product code"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-1 names the VibePro-managed records a docs-only verdict tolerated"
           }
         ]
       },
-      "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:08:54.098Z"
+      "first_seen_at": "2026-07-25T13:23:23.667Z",
+      "last_revised_at": "2026-07-25T13:23:23.667Z"
     },
     {
-      "id": "INV-001",
+      "id": "INV-003",
       "type": "invariant",
-      "statement": "A docs-only change defaults to the summary persistence depth, and an explicit requested evidence depth remains authoritative over that default so a documentation change can still be escalated. A change that touches product code keeps the pre-existing implementation depth resolution unchanged.",
+      "statement": "A docs-only change defaults to the summary persistence depth, and an explicit requested evidence depth remains authoritative over that default so a documentation change can still be escalated. A change that touches product code keeps the pre-existing implementation depth resolution unchanged. The docs-only default does not override the pre-existing risk escalation: a docs-only change with a high-risk profile or an active trigger signal keeps the depth it resolved to before this change, and keeps its recorded risk_profile and trigger_signals.",
       "origin": {
         "story_refs": [
           {
@@ -82,6 +90,10 @@
           {
             "file": "test/docs-only-evidence-profile.test.js",
             "case": "DOE-S-1 does not lighten an implementation change that touches docs too"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-1 keeps the pre-existing risk escalation above the docs-only default"
           }
         ]
       },
@@ -93,8 +105,8 @@
           "src/evidence-depth-planner.js"
         ]
       },
-      "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:08:54.098Z"
+      "first_seen_at": "2026-07-25T13:23:23.667Z",
+      "last_revised_at": "2026-07-25T13:23:23.667Z"
     },
     {
       "id": "C-002",
@@ -145,11 +157,15 @@
           {
             "file": "test/docs-only-evidence-profile-integration.test.js",
             "case": "implementation merge keeps the implementation budget scope through canonical promotion"
+          },
+          {
+            "file": "test/docs-only-evidence-profile-integration.test.js",
+            "case": "over-budget docs-only promotion keeps its scope through compact re-measurement"
           }
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:08:54.098Z"
+      "last_revised_at": "2026-07-25T13:23:23.667Z"
     },
     {
       "id": "S-001",
@@ -203,7 +219,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:08:54.098Z"
+      "last_revised_at": "2026-07-25T13:23:23.667Z"
     },
     {
       "id": "C-003",
@@ -246,7 +262,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:08:54.098Z"
+      "last_revised_at": "2026-07-25T13:23:23.667Z"
     },
     {
       "id": "INV-002",
@@ -289,7 +305,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:08:54.098Z"
+      "last_revised_at": "2026-07-25T13:23:23.667Z"
     },
     {
       "id": "C-004",
@@ -335,7 +351,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:08:54.098Z"
+      "last_revised_at": "2026-07-25T13:23:23.667Z"
     }
   ],
   "diagrams": [
@@ -348,6 +364,6 @@
   "parent_design": [
     "story-vibepro-docs-only-evidence-profile"
   ],
-  "generated_at": "2026-07-25T13:08:54.096Z",
-  "previous_spec_id": "2026-07-25T13:06:16.327Z"
+  "generated_at": "2026-07-25T13:23:23.663Z",
+  "previous_spec_id": "2026-07-25T13:08:54.096Z"
 }

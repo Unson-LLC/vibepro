@@ -143,11 +143,18 @@ export function buildCanonicalEvidenceCostSummary({
   const thresholds = resolveBudgetThresholds(budget, budgetProfile);
   const ratio = Number.isFinite(productChangedLines) && productChangedLines > 0 ? artifactLineCount / productChangedLines : null;
   const explicitDepth = normalizeEvidenceDepth(requestedDepth);
-  // A docs-only change defaults to the lightest persistence depth (DOE-S-1).
-  // An explicit `--evidence-depth` request still wins, so an operator can
-  // escalate a documentation change that genuinely needs full evidence.
+  // A docs-only change defaults to the lightest persistence depth (DOE-S-1),
+  // but only when nothing else already escalated it. Precedence, highest first:
+  //   1. an explicit `--evidence-depth` request (an operator may always escalate)
+  //   2. the pre-existing risk escalation — a high-risk profile or an active
+  //      trigger signal (missing artifact, merge warning, waived/blocked gate)
+  //      keeps its `full` depth even when only documentation changed, because
+  //      weakening evidence for documentation changes is an explicit non-goal
+  //   3. the docs-only default
+  // Ordering docs-only above the risk escalation would silently downgrade
+  // exactly the cases that need evidence most.
   const persistenceDepth = explicitDepth
-    ?? (docsOnly ? 'summary' : null)
+    ?? (docsOnly && !highRisk ? 'summary' : null)
     ?? resolveImplementationPersistenceDepth({
       artifactLineCount,
       productChangedLines,

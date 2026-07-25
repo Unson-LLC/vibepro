@@ -179,7 +179,12 @@ test('story-vibepro-docs-only-evidence-profile AC-3 canonical artifact replay ke
 
   assert.equal(first.change_surface.status, 'docs_only');
   assert.equal(first.budget_scope, 'docs_only');
-  assert.equal(first.evidence_depth, 'summary');
+  // The fixture has missing canonical artifacts, so the pre-existing risk
+  // escalation fires; docs-only lowers the depth *default*, it never overrides
+  // an escalation. What must replay identically is the verdict, not a
+  // hard-coded depth.
+  assert.equal(first.trigger_signals.length > 0, true);
+  assert.equal(first.evidence_depth, 'full');
   assert.equal(first.implementation_budget_status, 'not_applicable');
   assert.equal(first.product_code_changed_lines_reason, 'docs_only');
   assert.equal(first.diff_stats_refs.base_authority, 'merge_commit_first_parent');

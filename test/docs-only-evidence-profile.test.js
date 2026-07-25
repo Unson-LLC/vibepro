@@ -146,6 +146,79 @@ test('DOE-S-1 keeps an explicit depth escalation authoritative over the docs-onl
   assert.equal(cost.evidence_depth, 'full');
 });
 
+test('DOE-S-1 keeps the pre-existing risk escalation above the docs-only default', () => {
+  // Non Goal: docs changes must not get weaker evidence requirements. A
+  // docs-only change that already escalated for risk keeps its full depth;
+  // ordering docs-only above the escalation would silently downgrade exactly
+  // the missing-artifact / waived-gate / security-profile cases.
+  const highRiskProfile = buildCanonicalEvidenceCostSummary({
+    artifactLineCount: 100,
+    diffStats: DOCS_ONLY_NUMSTAT,
+    riskProfile: 'security'
+  });
+  assert.equal(highRiskProfile.change_surface.status, 'docs_only');
+  assert.equal(highRiskProfile.budget_scope, 'docs_only');
+  assert.equal(highRiskProfile.evidence_depth, 'full');
+
+  const triggerSignal = buildCanonicalEvidenceCostSummary({
+    artifactLineCount: 100,
+    diffStats: DOCS_ONLY_NUMSTAT,
+    triggerSignals: ['missing_artifact']
+  });
+  assert.equal(triggerSignal.change_surface.status, 'docs_only');
+  assert.equal(triggerSignal.evidence_depth, 'full');
+
+  // An operator may still escalate or de-escalate explicitly.
+  const explicit = buildCanonicalEvidenceCostSummary({
+    artifactLineCount: 100,
+    diffStats: DOCS_ONLY_NUMSTAT,
+    riskProfile: 'security',
+    requestedDepth: 'summary'
+  });
+  assert.equal(explicit.evidence_depth, 'summary');
+
+  // Without a risk signal the docs-only default still applies.
+  const lowRisk = buildCanonicalEvidenceCostSummary({
+    artifactLineCount: 100,
+    diffStats: DOCS_ONLY_NUMSTAT
+  });
+  assert.equal(lowRisk.evidence_depth, 'summary');
+});
+
+test('DOE-S-1 classifies the deployed manual surface under docs/ as product code', () => {
+  // `docs/` also holds the site generator config and the deployed static
+  // surface; changing what ships is not a documentation change.
+  assert.equal(classifyEvidenceChangeSurface('docs/.vitepress/config.mjs'), 'product_code');
+  assert.equal(classifyEvidenceChangeSurface('docs/public/_headers'), 'product_code');
+  assert.equal(classifyEvidenceChangeSurface('docs/public/_redirects'), 'product_code');
+  assert.equal(classifyEvidenceChangeSurface('docs/contracts/vibepro-core-responsibilities.json'), 'product_code');
+  assert.equal(classifyEvidenceChangeSurface('docs/build.mjs'), 'product_code');
+  // Requirement surfaces stay documentation whatever their extension.
+  assert.equal(classifyEvidenceChangeSurface('docs/specs/story-x.vibepro.json'), 'docs');
+  assert.equal(classifyEvidenceChangeSurface('docs/management/stories/active/story-x.md'), 'docs');
+  assert.equal(classifyEvidenceChangeSurface('docs/architecture/story-x.md'), 'docs');
+
+  const deployedSurface = detectDocsOnlyChange({
+    diffStats: parseNumstat([
+      '20\t0\tdocs/management/stories/active/story-x.md',
+      '4\t1\tdocs/public/_headers'
+    ].join('\n'))
+  });
+  assert.equal(deployedSurface.status, 'product_change');
+  assert.deepEqual(deployedSurface.sample_product_code_paths, ['docs/public/_headers']);
+});
+
+test('DOE-S-1 names the VibePro-managed records a docs-only verdict tolerated', () => {
+  // `.vibepro/config.json` carries review-role policy and evidence budgets
+  // alongside the Story catalog, so a docs-only verdict must say which records
+  // it accepted rather than absorbing them silently.
+  const detection = detectDocsOnlyChange({ diffStats: DOCS_ONLY_NUMSTAT });
+
+  assert.equal(detection.status, 'docs_only');
+  assert.equal(detection.evidence_artifact_path_count, 2);
+  assert.deepEqual(detection.sample_evidence_artifact_paths, ['.vibepro/config.json', 'design-ssot.json']);
+});
+
 test('DOE-S-1 does not lighten an implementation change that touches docs too', () => {
   const cost = buildCanonicalEvidenceCostSummary({
     artifactLineCount: 1400,

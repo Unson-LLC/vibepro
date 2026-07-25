@@ -57,6 +57,27 @@ const PRODUCT_CODE_FILES = new Set([
 
 const DOCS_PREFIXES = ['docs/'];
 
+// Not everything under `docs/` is documentation. This repository builds and
+// deploys a public manual from `docs/`, so the site generator config and the
+// deployed static surface (including security headers and redirects) are
+// product code that happens to live in the documentation tree. Machine-read
+// responsibility contracts drive gate behaviour and are treated the same way.
+const DOCS_TREE_PRODUCT_PREFIXES = [
+  'docs/.vitepress/',
+  'docs/public/',
+  'docs/contracts/'
+];
+
+// Documentation trees whose contents are documentation regardless of file
+// extension: a Story, an Architecture note, and a Spec are all requirement
+// surfaces, and a Spec is routinely serialized as JSON.
+const DOCS_TREE_DOCUMENT_PREFIXES = [
+  'docs/management/',
+  'docs/specs/',
+  'docs/architecture/',
+  'docs/adr/'
+];
+
 const DOCS_EXTENSIONS = new Set(['.md', '.mdx', '.markdown', '.rst', '.txt', '.adoc']);
 
 const DOCS_FILES = new Set([
@@ -85,7 +106,14 @@ export function classifyEvidenceChangeSurface(filePath) {
   // `docs/` outranks the product prefixes so documentation is never mistaken
   // for code, but it is checked after the evidence prefixes because promoted
   // audit bundles also live under `docs/`.
-  if (DOCS_PREFIXES.some((prefix) => normalized.startsWith(prefix))) return 'docs';
+  if (DOCS_PREFIXES.some((prefix) => normalized.startsWith(prefix))) {
+    if (DOCS_TREE_PRODUCT_PREFIXES.some((prefix) => normalized.startsWith(prefix))) return 'product_code';
+    if (DOCS_TREE_DOCUMENT_PREFIXES.some((prefix) => normalized.startsWith(prefix))) return 'docs';
+    // Elsewhere under `docs/`, only documentation file types are documentation.
+    // A build script, config, or shipped asset changes what deploys, so it
+    // keeps the change on the implementation profile.
+    return DOCS_EXTENSIONS.has(extensionOf(normalized)) ? 'docs' : 'product_code';
+  }
 
   if (PRODUCT_CODE_FILES.has(normalized)) return 'product_code';
   if (PRODUCT_CODE_PREFIXES.some((prefix) => normalized.startsWith(prefix))) return 'product_code';
@@ -128,7 +156,7 @@ export function detectDocsOnlyChange({
     evidence_artifacts: 0,
     unknown: 0
   };
-  const samples = { product_code: [], unknown: [] };
+  const samples = { product_code: [], unknown: [], evidence_artifacts: [] };
   let lineDataAvailable = observation.source === 'diff_line_stats';
 
   for (const entry of observation.paths) {
@@ -145,6 +173,12 @@ export function detectDocsOnlyChange({
     if (surface === 'unknown' && samples.unknown.length < SAMPLE_PATH_LIMIT) {
       samples.unknown.push(entry.path);
     }
+    // A docs_only verdict tolerates VibePro-managed records silently otherwise.
+    // `.vibepro/config.json` in particular carries review-role policy and
+    // evidence budgets alongside the Story catalog, so name what was tolerated.
+    if (surface === 'evidence_artifacts' && samples.evidence_artifacts.length < SAMPLE_PATH_LIMIT) {
+      samples.evidence_artifacts.push(entry.path);
+    }
   }
 
   const shared = {
@@ -157,7 +191,8 @@ export function detectDocsOnlyChange({
     product_code_changed_lines: lineDataAvailable ? lines.product_code : null,
     docs_changed_lines: lineDataAvailable ? lines.docs : null,
     sample_product_code_paths: samples.product_code,
-    sample_unknown_paths: samples.unknown
+    sample_unknown_paths: samples.unknown,
+    sample_evidence_artifact_paths: samples.evidence_artifacts
   };
 
   if (counts.product_code > 0) {
@@ -194,7 +229,8 @@ function docsOnlyResult({
   product_code_changed_lines = null,
   docs_changed_lines = null,
   sample_product_code_paths = [],
-  sample_unknown_paths = []
+  sample_unknown_paths = [],
+  sample_evidence_artifact_paths = []
 }) {
   return {
     schema_version: DOCS_ONLY_CHANGE_SCHEMA_VERSION,
@@ -209,7 +245,8 @@ function docsOnlyResult({
     product_code_changed_lines,
     docs_changed_lines,
     sample_product_code_paths,
-    sample_unknown_paths
+    sample_unknown_paths,
+    sample_evidence_artifact_paths
   };
 }
 
