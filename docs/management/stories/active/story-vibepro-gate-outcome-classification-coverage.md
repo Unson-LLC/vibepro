@@ -16,10 +16,14 @@ related_stories:
 pr_scope_strategy: atomic_single_pr
 pr_scope_reason: "The four surfaces form one indivisible loop: derive the outcome at record time, prompt for the undecidable remainder, let the operator answer it, then measure the residue. Shipping any half leaves the loop inert, because a classifier with no input path still accumulates unclassified entries and an input path with no classifier has nothing to answer. The misc-follow-up lane is the generated CLI reference, which scripts/generate-cli-reference.mjs emits from src/cli.js and test/cli-reference-docs.test.js enforces as non-stale, so splitting it out would make the runtime-behavior lane fail its own suite."
 pr_scope_review_facets:
+  - requirements-ssot
   - runtime-behavior
   - misc-follow-up
+  - repo-control
 pr_scope_dependency_boundaries:
+  - "requirements-ssot -> runtime-behavior"
   - "runtime-behavior -> misc-follow-up"
+  - "runtime-behavior -> repo-control"
 reason: "alternatives considered: leave --outcome as an optional manual override (status quo keeps 94.5% unclassified), classify everything manually at monthly tuning (does not scale and loses context), or derive the classification deterministically at resolution time from diff/evidence/waiver records and demand explicit input only for genuinely ambiguous cases; selected deterministic-first classification. compatibility impact: ledger schema and the existing outcome vocabulary (source_fix/evidence_added/rewording_only/waiver) are unchanged; unclassified remains a valid legacy value. rollback plan: revert the classifier and the pr prepare prompt path in one commit; ledger entries written with classifications remain valid. boundary and scope: classification at recording time only; central-ledger promotion stays owned by roi-measurement-loop-closure and gate tuning decisions stay human."
 created_at: 2026-07-25
 updated_at: 2026-07-25
