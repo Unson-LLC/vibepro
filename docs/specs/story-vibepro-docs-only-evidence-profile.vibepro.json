@@ -47,7 +47,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:06:16.330Z"
+      "last_revised_at": "2026-07-25T13:08:54.098Z"
     },
     {
       "id": "INV-001",
@@ -94,7 +94,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:06:16.330Z"
+      "last_revised_at": "2026-07-25T13:08:54.098Z"
     },
     {
       "id": "C-002",
@@ -149,7 +149,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:06:16.330Z"
+      "last_revised_at": "2026-07-25T13:08:54.098Z"
     },
     {
       "id": "S-001",
@@ -196,14 +196,14 @@
         ]
       },
       "inherited_behavior": {
-        "condition": "head is not yet contained in origin/<base>",
+        "condition": "!gateAuthorization.allowed",
         "classification": "existing",
         "files": [
           "src/merge-manager.js"
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:06:16.330Z"
+      "last_revised_at": "2026-07-25T13:08:54.098Z"
     },
     {
       "id": "C-003",
@@ -246,7 +246,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:06:16.330Z"
+      "last_revised_at": "2026-07-25T13:08:54.098Z"
     },
     {
       "id": "INV-002",
@@ -289,7 +289,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:06:16.330Z"
+      "last_revised_at": "2026-07-25T13:08:54.098Z"
     },
     {
       "id": "C-004",
@@ -335,7 +335,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:06:16.330Z"
+      "last_revised_at": "2026-07-25T13:08:54.098Z"
     }
   ],
   "diagrams": [
@@ -348,6 +348,6 @@
   "parent_design": [
     "story-vibepro-docs-only-evidence-profile"
   ],
-  "generated_at": "2026-07-25T13:06:16.327Z",
-  "previous_spec_id": "2026-07-25T13:02:53.824Z"
+  "generated_at": "2026-07-25T13:08:54.096Z",
+  "previous_spec_id": "2026-07-25T13:06:16.327Z"
 }

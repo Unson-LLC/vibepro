@@ -26,6 +26,7 @@ Machine-readable clauses are the authority: `docs/specs/story-vibepro-docs-only-
 
 ## Inherited behavior
 
+- The merge gate-authorization branch `!gateAuthorization.allowed` in `src/merge-manager.js` is unchanged and existing; diff-base collection was added alongside it without altering when a merge is authorized.
 - When a change touches product code, evidence depth resolution, budget profile selection, and pre-merge diff-base collection are unchanged and existing (`src/evidence-cost-budget.js`, `src/evidence-depth-planner.js`, `src/merge-manager.js`).
 - When a canonical bundle carries no `budget_scope`, its place in the implementation budget signal is unchanged and existing (`src/usage-report.js`).
 - The evidence depth vocabulary `summary` / `standard` / `full` and `product_changed_lines` semantics are unchanged and existing (`src/evidence-cost-budget.js`).
