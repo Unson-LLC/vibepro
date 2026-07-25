@@ -1,4 +1,5 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
@@ -417,6 +418,15 @@ export async function recordResolvedGateOutcomes(repoRoot, options = {}) {
       classification: buildLedgerClassificationReportFrom([], storyId, [], ledgerStatus)
     };
   }
+  // A legacy-model ledger reads as empty, so writing it blind would destroy its
+  // entries in a git-excluded file. The Story keeps legacy rows as-is, so the
+  // original is preserved beside the ledger before the v3 file is written.
+  let legacyBackupPath = null;
+  if (ledgerStatus.status === 'legacy_model') {
+    const backupPath = `${ledgerPath}.${ledgerStatus.model}.bak`;
+    if (!existsSync(backupPath)) await copyFile(ledgerPath, backupPath);
+    legacyBackupPath = toWorkspaceRelative(repoRoot, backupPath);
+  }
   const existing = await readGateOutcomeLedger(repoRoot);
   const seen = new Set(existing.entries.map((entry) => entry.entry_key));
   const nextEntries = [...existing.entries];
@@ -438,6 +448,10 @@ export async function recordResolvedGateOutcomes(repoRoot, options = {}) {
     status: entries.length === 0 ? 'no_resolved_gates' : 'recorded',
     artifact: toWorkspaceRelative(repoRoot, ledgerPath),
     entries,
+    ...(legacyBackupPath ? {
+      legacy_backup_path: legacyBackupPath,
+      legacy_superseded_model: ledgerStatus.model
+    } : {}),
     classification: buildLedgerClassificationReportFrom(nextEntries, storyId, entries, ledgerStatus)
   };
 }

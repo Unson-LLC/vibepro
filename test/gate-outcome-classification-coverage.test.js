@@ -657,6 +657,45 @@ test('GOC-S-4 a known legacy ledger keeps recording instead of halting forever',
   assert.equal(recorded.status, 'recorded');
   assert.equal(recorded.classification.ledger_status.status, 'legacy_model');
   assert.equal(recorded.entries[0].outcome, 'source_fix');
+  // The v3 rewrite must never destroy the legacy rows: .vibepro is git-excluded,
+  // so an overwrite would be unrecoverable. Story Non Goals keep them as-is.
+  assert.ok(recorded.legacy_backup_path, 'the superseded ledger is preserved');
+  assert.equal(recorded.legacy_superseded_model, 'vibepro-gate-outcome-ledger-v2');
+  const preserved = JSON.parse(await readFile(`${ledgerPath}.vibepro-gate-outcome-ledger-v2.bak`, 'utf8'));
+  assert.equal(preserved.model, 'vibepro-gate-outcome-ledger-v2');
+  assert.deepEqual(preserved.entries.map((entry) => entry.entry_key), ['legacy|1']);
+});
+
+// Round-7 finding: the refusal and supersession disclosures reached no read
+// surface and no test, so reverting the pushes would have failed nothing.
+test('GOC-S-2 refusal and supersession reach the pr prepare read surfaces', async () => {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-goc-disclose-'));
+  const ledgerPath = getGateOutcomeLedgerPath(repo);
+  await mkdir(path.dirname(ledgerPath), { recursive: true });
+  await writeFile(ledgerPath, '{ corrupt');
+  const recorded = await recordResolvedGateOutcomes(repo, {
+    storyId: 'story-goc',
+    previousGateDag: dagWith({ id: 'gate:unit', status: 'needs_evidence', required: true }),
+    currentGateDag: dagWith({ id: 'gate:unit', status: 'passed', required: true }),
+    createdAt: '2026-07-25T00:00:00.000Z',
+    git: { changed_files: [{ path: 'src/app.js' }] },
+    fileGroups: { source: { count: 1 } }
+  });
+  const preparation = {
+    schema_version: '0.1.0',
+    story: { story_id: 'story-goc' },
+    gate_status: { overall_status: 'needs_verification' },
+    git: { base_ref: 'main', head_ref: 'HEAD', current_branch: 'topic', changed_files: [], commits: [] },
+    scope: { status: 'reviewable', recommended_strategy: 'current_branch_pr', reasons: [] },
+    workspace: { initialized: true },
+    pr_context: {},
+    gate_outcome_ledger: recorded,
+    gate_outcome_classification: recorded.classification,
+    next_commands: []
+  };
+  const rendered = renderPrPrepareSummary({ preparation, artifacts: {} });
+  assert.match(rendered, /dropped=1 \(gate:unit\)/);
+  assert.match(rendered, /see next_commands for recovery/);
 });
 
 // Review finding (round 5): the write refusal discarded the resolutions it had
@@ -769,8 +808,11 @@ test('GOC-S-3 usage report --gate-roi carries unclassified breaches into value_s
     schema_version: '0.1.0',
     model: 'vibepro-gate-outcome-ledger-v3',
     entries: Array.from({ length: 6 }, (unused, index) => ({
+      schema_version: '0.1.0',
+      entry_key: `noisy|${index}`,
       story_id: 'story-noisy',
       gate_id: 'gate:senior_gap_judgment',
+      classification: 'ambiguous_resolution_surface',
       outcome: 'unclassified',
       resolved_at: `2026-07-0${index + 1}T00:00:00.000Z`
     }))

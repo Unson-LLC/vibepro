@@ -2508,6 +2508,9 @@ function buildShipPrCreateCommand(preparation, options = {}) {
 
 function formatGateOutcomeClassification(classification, ledger = null) {
   if (!classification) return '-';
+  if (ledger?.legacy_backup_path) {
+    return `${classification.status ?? '-'} legacy ledger ${ledger.legacy_superseded_model} superseded; original preserved at ${ledger.legacy_backup_path}`;
+  }
   if (ledger?.dropped_count) {
     return `${classification.status ?? '-'} dropped=${ledger.dropped_count} (${(ledger.dropped_gate_ids ?? []).join(', ')}) — see next_commands for recovery`;
   }

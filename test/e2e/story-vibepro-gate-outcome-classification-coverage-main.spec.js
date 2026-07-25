@@ -122,16 +122,20 @@ test('story-vibepro-gate-outcome-classification-coverage GOC-S-1 through GOC-S-4
     model: 'vibepro-gate-outcome-ledger-v3',
     entries: [
       ...Array.from({ length: 6 }, (unused, index) => ({
+        schema_version: '0.1.0',
         entry_key: `noisy|${index}`,
         story_id: 'story-goc-noisy',
         gate_id: 'gate:senior_gap_judgment',
+        classification: 'ambiguous_resolution_surface',
         outcome: 'unclassified',
         resolved_at: `2026-07-0${index + 1}T00:00:00.000Z`
       })),
       ...Array.from({ length: 6 }, (unused, index) => ({
+        schema_version: '0.1.0',
         entry_key: `clean|${index}`,
         story_id: 'story-goc-clean',
         gate_id: 'gate:unit',
+        classification: 'resolving_diff_contains_source_changes_for_source_sensitive_gate',
         outcome: 'source_fix',
         resolved_at: `2026-07-0${index + 1}T01:00:00.000Z`
       }))
