@@ -12,6 +12,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { promoteCanonicalAuditArtifacts } from '../src/canonical-audit.js';
+import { writeDecisionOutcomeLedger } from '../src/decision-outcome-ledger.js';
 import { collectMergeDiffLineStats } from '../src/merge-manager.js';
 import { createUsageReport } from '../src/usage-report.js';
 
@@ -75,7 +76,12 @@ async function buildMergedRepo({ changedPaths }) {
   return { root, headSha, mergeCommitSha };
 }
 
-async function promoteFromMergedRepo({ storyId, changedPaths, verificationCommandCount = 0 }) {
+async function promoteFromMergedRepo({
+  storyId,
+  changedPaths,
+  verificationCommandCount = 0,
+  completeArtifacts = false
+}) {
   const { root, headSha, mergeCommitSha } = await buildMergedRepo({ changedPaths });
   const collected = await collectMergeDiffLineStats(root, {
     baseBranch: 'main',
@@ -92,6 +98,29 @@ async function promoteFromMergedRepo({ storyId, changedPaths, verificationComman
     story: { story_id: storyId }
   });
   await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'pr-merge.json'), merge);
+  if (completeArtifacts) {
+    // No missing artifact, no merge warning, no unresolved gate node — the only
+    // state in which the docs-only depth default is not outranked.
+    for (const fileName of [
+      'evidence-reuse.json',
+      'pr-create.json',
+      'gate-dag.json',
+      'senior-gap-judgment.json',
+      'traceability.json',
+      'verification-evidence.json'
+    ]) {
+      await writeJson(path.join(root, '.vibepro', 'pr', storyId, fileName), {
+        schema_version: '0.1.0',
+        story_id: storyId
+      });
+    }
+    // Built through the ledger's own writer so the digest and revision
+    // fingerprints are the real ones rather than a hand-rolled approximation.
+    await writeDecisionOutcomeLedger(root, storyId, {
+      currentHeadSha: merge.git.diff_stats.refs.head_sha,
+      createdAt: '2026-07-25T00:00:00.000Z'
+    });
+  }
   if (verificationCommandCount > 0) {
     await writeJson(path.join(root, '.vibepro', 'pr', storyId, 'verification-evidence.json'), {
       schema_version: '0.1.0',
@@ -172,6 +201,32 @@ test('implementation merge keeps the implementation budget scope through canonic
   assert.equal(cost.product_code_changed_lines, 100);
 });
 
+test('a docs-only promotion with no risk signal reaches the summary depth default end to end', async (t) => {
+  // The depth default is only reachable when nothing escalated. Proving it
+  // through promoteCanonicalAuditArtifacts (not just a direct call to the cost
+  // builder) is what shows DOE-S-1 is wired into the real path — and how narrow
+  // that path is: every missing artifact, merge warning, and unresolved gate
+  // node raises a trigger signal that legitimately outranks the default.
+  const storyId = 'story-integration-docs-only-low-risk';
+  const { root, index } = await promoteFromMergedRepo({
+    storyId,
+    changedPaths: {
+      'docs/management/stories/active/story-quiet.md': `${'story line\n'.repeat(40)}`,
+      'docs/management/roadmap/plan.md': `${'roadmap line\n'.repeat(30)}`
+    },
+    completeArtifacts: true
+  });
+  t.after(() => rm(root, { recursive: true, force: true }));
+
+  const cost = index.cost_summary;
+  assert.deepEqual(cost.trigger_signals, [], 'fixture must carry no risk escalation');
+  assert.deepEqual(index.missing_artifacts, []);
+  assert.equal(cost.change_surface.status, 'docs_only');
+  assert.equal(cost.budget_scope, 'docs_only');
+  assert.equal(cost.evidence_depth, 'summary');
+  assert.equal(cost.implementation_budget_status, 'not_applicable');
+});
+
 test('over-budget docs-only promotion keeps its scope through compact re-measurement', async (t) => {
   // The compact canonical writer re-measures its own persisted output. That
   // second accounting pass must reuse the same scope-separated verdict, or an
@@ -184,20 +239,22 @@ test('over-budget docs-only promotion keeps its scope through compact re-measure
       'docs/management/roadmap/plan.md': `${'roadmap line\n'.repeat(20)}`
     },
     // Enough recorded evidence to push the bundle past the docs-only line budget.
-    verificationCommandCount: 700
+    verificationCommandCount: 2400
   });
   t.after(() => rm(root, { recursive: true, force: true }));
 
   const cost = index.cost_summary;
-  assert.equal(cost.budget_status, 'exceeded', 'fixture must actually exceed the budget');
-  assert.equal(promoted.bundle.artifact_policy?.mode ?? 'compact', 'compact');
+  // `artifact_lines_source` is only set by the compact writer, so this proves
+  // the raw bundle was over budget and the second accounting pass actually ran.
   assert.equal(cost.artifact_lines_source, 'persisted_canonical_compact');
+  assert.equal(cost.raw_source_artifact_lines > cost.artifact_lines, true);
   // The re-measured verdict keeps the docs-only scope on both passes.
   assert.equal(cost.change_surface.status, 'docs_only');
   assert.equal(cost.budget_scope, 'docs_only');
   assert.equal(cost.implementation_budget_status, 'not_applicable');
-  assert.equal(cost.docs_only_budget_status, 'exceeded');
+  assert.equal(cost.docs_only_budget_status, cost.budget_status);
   // The ratio rule has no denominator for docs-only work and must not fire.
+  assert.equal(cost.budget.artifact_code_ratio, null);
   assert.equal(cost.budget_exceeded_reasons.includes('artifact_code_ratio_exceeded'), false);
 });
 

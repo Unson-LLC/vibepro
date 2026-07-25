@@ -9,7 +9,7 @@
     {
       "id": "C-005",
       "type": "contract",
-      "statement": "Evidence change-surface resolution classifies every changed path as product_code, docs, evidence_artifacts, or unknown, and reports docs_only only when at least one docs path changed and no product_code path changed. An unclassified path, a VibePro-record-only change, an empty observed change set, and an unavailable diff-stats status each resolve to unknown rather than docs_only, so a lost measurement never lightens evidence. Under docs/, the deployed manual surface (docs/.vitepress/, docs/public/) and machine-read responsibility contracts (docs/contracts/) classify as product_code, while the requirement trees (docs/management/, docs/specs/, docs/architecture/, docs/adr/) classify as docs whatever their file extension. A docs_only verdict names the VibePro-managed records it tolerated so the accepted exclusion is never silent.",
+      "statement": "Evidence change-surface resolution classifies every changed path as product_code, docs, evidence_artifacts, or unknown, and reports docs_only only when at least one docs path changed and no product_code path changed. An unclassified path, a VibePro-record-only change, an empty observed change set, and an unavailable diff-stats status each resolve to unknown rather than docs_only, so a lost measurement never lightens evidence. Under docs/, the deployed manual surface (docs/.vitepress/, docs/public/) and machine-read responsibility contracts (docs/contracts/) classify as product_code, while the requirement trees (docs/management/, docs/specs/, docs/architecture/, docs/adr/) classify as docs whatever their file extension. A docs_only verdict names the VibePro-managed records it tolerated so the accepted exclusion is never silent. Machine-read registries inside the documentation trees (docs/architecture/target-model.json, docs/management/roi-ledger/, docs/management/responsibility-authority/) also classify as product_code because VibePro reads them at runtime to drive verdicts.",
       "origin": {
         "story_refs": [
           {
@@ -51,11 +51,15 @@
           {
             "file": "test/docs-only-evidence-profile.test.js",
             "case": "DOE-S-1 names the VibePro-managed records a docs-only verdict tolerated"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-1 classifies machine-read registries under the documentation trees as product code"
           }
         ]
       },
       "first_seen_at": "2026-07-25T13:23:23.667Z",
-      "last_revised_at": "2026-07-25T13:23:23.667Z"
+      "last_revised_at": "2026-07-25T13:44:01.181Z"
     },
     {
       "id": "INV-003",
@@ -94,6 +98,10 @@
           {
             "file": "test/docs-only-evidence-profile.test.js",
             "case": "DOE-S-1 keeps the pre-existing risk escalation above the docs-only default"
+          },
+          {
+            "file": "test/docs-only-evidence-profile-integration.test.js",
+            "case": "a docs-only promotion with no risk signal reaches the summary depth default end to end"
           }
         ]
       },
@@ -106,12 +114,12 @@
         ]
       },
       "first_seen_at": "2026-07-25T13:23:23.667Z",
-      "last_revised_at": "2026-07-25T13:23:23.667Z"
+      "last_revised_at": "2026-07-25T13:44:01.181Z"
     },
     {
       "id": "C-002",
       "type": "contract",
-      "statement": "The canonical evidence cost budget defines a docs_only profile separate from the normal and high implementation profiles. The docs_only profile keeps the same absolute canonical artifact line threshold as the normal profile and does not apply the artifact-to-code ratio rule, because a docs-only change has no product-code denominator. Budget verdicts are reported on separated axes: budget_scope names which axis applies, implementation_budget_status is not_applicable for a docs-only change, and docs_only_budget_status is not_applicable for an implementation change. A caller-supplied budget that predates the docs_only profile falls back to the normal profile rather than becoming unbounded.",
+      "statement": "The canonical evidence cost budget defines a docs_only profile separate from the normal and high implementation profiles. The docs_only profile keeps the same absolute canonical artifact line threshold as the normal profile and does not apply the artifact-to-code ratio rule, because a docs-only change has no product-code denominator. Budget verdicts are reported on separated axes: budget_scope names which axis applies, implementation_budget_status is not_applicable for a docs-only change, and docs_only_budget_status is not_applicable for an implementation change. A caller-supplied budget that predates the docs_only profile falls back to the normal profile rather than becoming unbounded. The docs_only profile is never stricter than the risk-based profile the same change would otherwise use: it preserves the ratio-derived effective line floor through line_budget_ratio and takes the more permissive of both line budgets and both floors, recording the relaxed-over risk profile in budget.risk_profile_basis.",
       "origin": {
         "story_refs": [
           {
@@ -161,11 +169,15 @@
           {
             "file": "test/docs-only-evidence-profile-integration.test.js",
             "case": "over-budget docs-only promotion keeps its scope through compact re-measurement"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-2 never gives a docs-only change a tighter budget than it would otherwise get"
           }
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:23:23.667Z"
+      "last_revised_at": "2026-07-25T13:44:01.181Z"
     },
     {
       "id": "S-001",
@@ -219,7 +231,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:23:23.667Z"
+      "last_revised_at": "2026-07-25T13:44:01.181Z"
     },
     {
       "id": "C-003",
@@ -262,7 +274,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:23:23.667Z"
+      "last_revised_at": "2026-07-25T13:44:01.181Z"
     },
     {
       "id": "INV-002",
@@ -305,7 +317,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:23:23.667Z"
+      "last_revised_at": "2026-07-25T13:44:01.181Z"
     },
     {
       "id": "C-004",
@@ -351,7 +363,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:23:23.667Z"
+      "last_revised_at": "2026-07-25T13:44:01.181Z"
     }
   ],
   "diagrams": [
@@ -364,6 +376,6 @@
   "parent_design": [
     "story-vibepro-docs-only-evidence-profile"
   ],
-  "generated_at": "2026-07-25T13:23:23.663Z",
-  "previous_spec_id": "2026-07-25T13:08:54.096Z"
+  "generated_at": "2026-07-25T13:44:01.180Z",
+  "previous_spec_id": "2026-07-25T13:23:23.663Z"
 }

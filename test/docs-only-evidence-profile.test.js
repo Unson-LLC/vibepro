@@ -9,7 +9,9 @@ import {
 import {
   DEFAULT_EVIDENCE_COST_BUDGET,
   buildCanonicalEvidenceCostSummary,
-  parseNumstat
+  parseNumstat,
+  resolveEffectiveCanonicalArtifactLineBudget,
+  shouldUseCompactCanonicalEvidence
 } from '../src/evidence-cost-budget.js';
 import { buildEvidencePlan } from '../src/evidence-depth-planner.js';
 
@@ -185,6 +187,71 @@ test('DOE-S-1 keeps the pre-existing risk escalation above the docs-only default
   assert.equal(lowRisk.evidence_depth, 'summary');
 });
 
+test('DOE-S-2 never gives a docs-only change a tighter budget than it would otherwise get', () => {
+  // Switching the ratio verdict off must not also drop the ratio-derived line
+  // floor. Losing that floor collapses a documentation Story's effective budget
+  // and makes it exceed *more* often, which inverts this Story's own goal.
+  const bigDocsChange = parseNumstat('500\t500\tdocs/management/stories/active/story-x.md');
+  const productChangedLines = 1000;
+  const normalFloor = resolveEffectiveCanonicalArtifactLineBudget(
+    DEFAULT_EVIDENCE_COST_BUDGET.normal,
+    productChangedLines
+  );
+
+  for (const [label, options] of [
+    ['low risk', {}],
+    ['high-risk profile', { riskProfile: 'security' }],
+    ['active trigger signal', { triggerSignals: ['missing_artifact'] }]
+  ]) {
+    const cost = buildCanonicalEvidenceCostSummary({
+      artifactLineCount: 800,
+      diffStats: bigDocsChange,
+      ...options
+    });
+    assert.equal(cost.change_surface.status, 'docs_only', label);
+    assert.equal(cost.budget_scope, 'docs_only', label);
+    // Never tighter than the risk-based profile the change would otherwise use.
+    assert.equal(cost.budget.effective_canonical_artifact_lines >= normalFloor, true, label);
+    assert.equal(cost.budget_status, 'within_budget', label);
+    assert.equal(shouldUseCompactCanonicalEvidence(cost), false, label);
+  }
+
+  // The escalation basis stays visible rather than being replaced by the scope.
+  const escalated = buildCanonicalEvidenceCostSummary({
+    artifactLineCount: 800,
+    diffStats: bigDocsChange,
+    riskProfile: 'security'
+  });
+  assert.equal(escalated.budget.profile, 'docs_only');
+  assert.equal(escalated.budget.risk_profile_basis, 'high');
+  assert.equal(
+    escalated.budget.canonical_artifact_lines,
+    DEFAULT_EVIDENCE_COST_BUDGET.high.canonical_artifact_lines
+  );
+  // The ratio is still measured, just not judged.
+  assert.equal(escalated.budget.artifact_code_ratio, null);
+  assert.equal(typeof escalated.artifact_code_ratio, 'number');
+});
+
+test('DOE-S-1 classifies machine-read registries under the documentation trees as product code', () => {
+  // These live under docs/ but VibePro reads them at runtime to drive
+  // conformance, senior-gap, ROI and responsibility verdicts.
+  assert.equal(classifyEvidenceChangeSurface('docs/architecture/target-model.json'), 'product_code');
+  assert.equal(classifyEvidenceChangeSurface('docs/management/roi-ledger/ledger.json'), 'product_code');
+  assert.equal(classifyEvidenceChangeSurface('docs/management/responsibility-authority/registry.json'), 'product_code');
+  // Sibling requirement documents in the same trees stay documentation.
+  assert.equal(classifyEvidenceChangeSurface('docs/architecture/story-x.md'), 'docs');
+  assert.equal(classifyEvidenceChangeSurface('docs/management/stories/active/story-x.md'), 'docs');
+
+  const ledgerChange = detectDocsOnlyChange({
+    diffStats: parseNumstat([
+      '20\t0\tdocs/management/stories/active/story-x.md',
+      '6\t2\tdocs/management/roi-ledger/ledger.json'
+    ].join('\n'))
+  });
+  assert.equal(ledgerChange.status, 'product_change');
+});
+
 test('DOE-S-1 classifies the deployed manual surface under docs/ as product code', () => {
   // `docs/` also holds the site generator config and the deployed static
   // surface; changing what ships is not a documentation change.
@@ -284,12 +351,15 @@ test('DOE-S-2 falls back to the normal profile when a caller budget predates doc
     }
   });
 
-  // Thresholds come from `normal`, so the ratio rule applies again — the
-  // fallback is conservative, never unbounded.
+  // Line thresholds fall back to `normal` — the fallback is bounded, never
+  // unbounded — while the docs-only decision to drop the ratio verdict still
+  // applies, and the ratio-derived floor from `normal` is preserved.
   assert.equal(cost.budget.canonical_artifact_lines, 100);
-  assert.equal(cost.budget.artifact_code_ratio, 3);
+  assert.equal(cost.budget.artifact_code_ratio, null);
+  assert.equal(cost.budget.line_budget_ratio, 3);
+  assert.equal(cost.budget.effective_canonical_artifact_lines, 372);
   assert.equal(cost.budget_status, 'exceeded');
-  assert.equal(cost.budget_exceeded_reasons.includes('artifact_code_ratio_exceeded'), true);
+  assert.deepEqual(cost.budget_exceeded_reasons, ['canonical_artifact_lines_exceeded']);
   // The scope separation still holds: this is a documentation change.
   assert.equal(cost.budget_scope, 'docs_only');
   assert.equal(cost.implementation_budget_status, 'not_applicable');

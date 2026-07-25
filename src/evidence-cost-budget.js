@@ -11,15 +11,20 @@ export const DEFAULT_EVIDENCE_COST_BUDGET = {
     canonical_artifact_lines: 1500,
     artifact_code_ratio: 3
   },
-  // docs-only changes are budgeted separately (DOE-S-2). The absolute line
-  // budget is deliberately *not* raised above the normal profile — the
-  // artifact/code ratio is simply not applied, because there is no product code
-  // to form a meaningful denominator. The resulting verdict is reported under
-  // `budget_scope: docs_only` so it cannot be mistaken for an implementation
-  // Story overspending its evidence budget.
+  // docs-only changes are budgeted separately (DOE-S-2). The docs-only profile
+  // must never be *tighter* than what the same change would get otherwise: it
+  // only stops applying the artifact/code ratio as a verdict, because there is
+  // no product code to form a meaningful denominator.
+  //
+  // `artifact_code_ratio: null` switches the ratio rule off. `line_budget_ratio`
+  // keeps the ratio-derived floor that `normal` and `high` already grant
+  // (`max(configured_lines, changed_lines * ratio)`) — dropping that floor would
+  // collapse a documentation Story's effective budget and make it exceed more
+  // often, which is the opposite of what this profile is for.
   docs_only: {
     canonical_artifact_lines: 500,
-    artifact_code_ratio: null
+    artifact_code_ratio: null,
+    line_budget_ratio: 3
   }
 };
 
@@ -139,8 +144,15 @@ export function buildCanonicalEvidenceCostSummary({
   });
   const docsOnly = isDocsOnlyChange(changeSurface);
   const highRisk = isHighRiskProfile(riskProfile) || triggerSignals.length > 0;
-  const budgetProfile = docsOnly ? 'docs_only' : (highRisk ? 'high' : 'normal');
-  const thresholds = resolveBudgetThresholds(budget, budgetProfile);
+  // The risk-based profile is resolved first and stays the floor. The docs-only
+  // profile then only *relaxes* the ratio verdict on top of it; it never takes
+  // budget headroom away from a change that already escalated for risk.
+  const riskProfileBasis = highRisk ? 'high' : 'normal';
+  const riskThresholds = resolveBudgetThresholds(budget, riskProfileBasis);
+  const budgetProfile = docsOnly ? 'docs_only' : riskProfileBasis;
+  const thresholds = docsOnly
+    ? relaxDocsOnlyThresholds(resolveBudgetThresholds(budget, 'docs_only'), riskThresholds)
+    : riskThresholds;
   const ratio = Number.isFinite(productChangedLines) && productChangedLines > 0 ? artifactLineCount / productChangedLines : null;
   const explicitDepth = normalizeEvidenceDepth(requestedDepth);
   // A docs-only change defaults to the lightest persistence depth (DOE-S-1),
@@ -193,9 +205,13 @@ export function buildCanonicalEvidenceCostSummary({
       : null,
     budget: {
       profile: budgetProfile,
+      // The risk-based profile the docs-only budget was relaxed on top of, so a
+      // reader can see that escalation was not silently discarded.
+      risk_profile_basis: riskProfileBasis,
       canonical_artifact_lines: thresholds.canonical_artifact_lines,
       effective_canonical_artifact_lines: null,
-      artifact_code_ratio: thresholds.artifact_code_ratio
+      artifact_code_ratio: thresholds.artifact_code_ratio,
+      line_budget_ratio: thresholds.line_budget_ratio ?? thresholds.artifact_code_ratio ?? null
     },
     budget_scope: docsOnly ? 'docs_only' : 'implementation',
     token_accounting: normalizeTokenAccounting(tokenAccounting),
@@ -212,7 +228,10 @@ export function buildCanonicalEvidenceCostSummary({
  * call sites must agree on how a verdict is derived (DOE-S-2).
  */
 export function applyCanonicalEvidenceBudgetStatus(costSummary, { artifactLineCount, ratio } = {}) {
-  const thresholds = costSummary.budget ?? {};
+  // A cost summary without a budget block cannot be judged; keep the writer
+  // total rather than throwing halfway through the second accounting pass.
+  costSummary.budget = costSummary.budget ?? {};
+  const thresholds = costSummary.budget;
   const effectiveCanonicalArtifactLines = resolveEffectiveCanonicalArtifactLineBudget(
     thresholds,
     costSummary.product_changed_lines
@@ -247,7 +266,10 @@ export function shouldUseCompactCanonicalEvidence(costSummary) {
 
 export function resolveEffectiveCanonicalArtifactLineBudget(thresholds = {}, productChangedLines = null) {
   const configuredLines = normalizePositiveNumber(thresholds?.canonical_artifact_lines);
-  const ratioLimit = normalizePositiveNumber(thresholds?.artifact_code_ratio);
+  // `line_budget_ratio` lets a profile keep the ratio-derived floor while
+  // switching the ratio *verdict* off (the docs-only profile does exactly that).
+  const ratioLimit = normalizePositiveNumber(thresholds?.line_budget_ratio)
+    ?? normalizePositiveNumber(thresholds?.artifact_code_ratio);
   if (Number.isFinite(productChangedLines) && productChangedLines > 0 && ratioLimit !== null) {
     return Math.max(configuredLines ?? 0, Math.ceil(productChangedLines * ratioLimit));
   }
@@ -315,6 +337,28 @@ export function normalizeElapsedTimeAccounting(input = null) {
     source: input?.source ?? null,
     window: input?.window ?? null,
     reason: input?.reason ?? 'elapsed-time logs were not provided to canonical audit promotion'
+  };
+}
+
+// Guarantees the docs-only profile is never stricter than the risk-based
+// profile the same change would otherwise be held to. It keeps the docs-only
+// decision to drop the ratio verdict, and takes the more permissive of the two
+// line budgets and ratio-derived floors.
+function relaxDocsOnlyThresholds(docsOnlyThresholds, riskThresholds) {
+  const docsOnlyLines = normalizePositiveNumber(docsOnlyThresholds?.canonical_artifact_lines) ?? 0;
+  const riskLines = normalizePositiveNumber(riskThresholds?.canonical_artifact_lines) ?? 0;
+  const docsOnlyFloorRatio = normalizePositiveNumber(docsOnlyThresholds?.line_budget_ratio)
+    ?? normalizePositiveNumber(docsOnlyThresholds?.artifact_code_ratio);
+  const riskFloorRatio = normalizePositiveNumber(riskThresholds?.line_budget_ratio)
+    ?? normalizePositiveNumber(riskThresholds?.artifact_code_ratio);
+  const floorRatio = docsOnlyFloorRatio === null && riskFloorRatio === null
+    ? null
+    : Math.max(docsOnlyFloorRatio ?? 0, riskFloorRatio ?? 0);
+  return {
+    canonical_artifact_lines: Math.max(docsOnlyLines, riskLines),
+    // The ratio is measured but never judged for a docs-only change.
+    artifact_code_ratio: null,
+    line_budget_ratio: floorRatio
   };
 }
 

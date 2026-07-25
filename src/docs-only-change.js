@@ -78,6 +78,19 @@ const DOCS_TREE_DOCUMENT_PREFIXES = [
   'docs/adr/'
 ];
 
+// Machine-read registries that happen to live inside those documentation
+// trees. These are read by VibePro at runtime to drive conformance, senior-gap,
+// ROI and responsibility verdicts, so changing one changes behaviour and must
+// keep the change on the implementation profile.
+const DOCS_TREE_MACHINE_READ_PREFIXES = [
+  'docs/management/roi-ledger/',
+  'docs/management/responsibility-authority/'
+];
+
+const DOCS_TREE_MACHINE_READ_FILES = new Set([
+  'docs/architecture/target-model.json'
+]);
+
 const DOCS_EXTENSIONS = new Set(['.md', '.mdx', '.markdown', '.rst', '.txt', '.adoc']);
 
 const DOCS_FILES = new Set([
@@ -108,6 +121,8 @@ export function classifyEvidenceChangeSurface(filePath) {
   // audit bundles also live under `docs/`.
   if (DOCS_PREFIXES.some((prefix) => normalized.startsWith(prefix))) {
     if (DOCS_TREE_PRODUCT_PREFIXES.some((prefix) => normalized.startsWith(prefix))) return 'product_code';
+    if (DOCS_TREE_MACHINE_READ_FILES.has(normalized)) return 'product_code';
+    if (DOCS_TREE_MACHINE_READ_PREFIXES.some((prefix) => normalized.startsWith(prefix))) return 'product_code';
     if (DOCS_TREE_DOCUMENT_PREFIXES.some((prefix) => normalized.startsWith(prefix))) return 'docs';
     // Elsewhere under `docs/`, only documentation file types are documentation.
     // A build script, config, or shipped asset changes what deploys, so it
