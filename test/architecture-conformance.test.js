@@ -96,6 +96,79 @@ test('undeclared module dependency is reported with edge evidence from real impo
   assert.equal(violation.to_module, 'gate');
   assert.equal(violation.edge_count, 2);
   assert.ok(violation.example_edges[0].includes('src/story.js -> src/gate.js'));
+  assert.equal(violation.rule_id, 'R-004');
+});
+
+test('undeclared dependency from workspace-infra is attributed to rule R-001', async () => {
+  const root = await makeConformanceRepo({
+    model: defaultModel({
+      modules: [
+        { name: 'story', responsibility: 'story', paths: ['src/story.js'] },
+        { name: 'gate', responsibility: 'gate', paths: ['src/gate.js'] },
+        { name: 'workspace-infra', responsibility: 'shared kernel', paths: ['src/infra.js'] }
+      ],
+      allowed_dependencies: { story: ['workspace-infra'], gate: ['story', 'workspace-infra'], 'workspace-infra': [] }
+    }),
+    files: {
+      ...defaultFiles(),
+      // workspace-infra (src/infra.js) must depend on nothing; a real import
+      // back into story.js is the violation this test proves gets R-001.
+      'src/infra.js': "import { story } from './story.js';\nexport const infra = story + 1;\n"
+    }
+  });
+  const result = await runArchitectureConformance(root, { write: false });
+  const violation = result.violations.find((entry) => entry.kind === 'undeclared_dependency');
+  assert.equal(violation.from_module, 'workspace-infra');
+  assert.equal(violation.to_module, 'story');
+  assert.equal(violation.rule_id, 'R-001');
+});
+
+test('undeclared dependency into cli is attributed to rule R-002', async () => {
+  const root = await makeConformanceRepo({
+    model: defaultModel({
+      modules: [
+        { name: 'story', responsibility: 'story', paths: ['src/story.js'] },
+        { name: 'cli', responsibility: 'cli', paths: ['src/gate.js'] },
+        { name: 'infra', responsibility: 'infra', paths: ['src/infra.js'] }
+      ],
+      allowed_dependencies: { story: ['infra'], cli: ['*'], infra: [] }
+    }),
+    files: {
+      ...defaultFiles(),
+      // story is only allowed to depend on infra; a real import into the cli
+      // module (src/gate.js) is the violation this test proves gets R-002.
+      'src/story.js': "import { gate } from './gate.js';\nexport const story = 1;\n"
+    }
+  });
+  const result = await runArchitectureConformance(root, { write: false });
+  const violation = result.violations.find((entry) => entry.kind === 'undeclared_dependency');
+  assert.equal(violation.from_module, 'story');
+  assert.equal(violation.to_module, 'cli');
+  assert.equal(violation.rule_id, 'R-002');
+});
+
+test('undeclared dependency both from workspace-infra and into cli still prefers R-001', async () => {
+  const root = await makeConformanceRepo({
+    model: defaultModel({
+      modules: [
+        { name: 'workspace-infra', responsibility: 'shared kernel', paths: ['src/infra.js'] },
+        { name: 'cli', responsibility: 'cli', paths: ['src/gate.js'] },
+        { name: 'story', responsibility: 'story', paths: ['src/story.js'] }
+      ],
+      allowed_dependencies: { 'workspace-infra': [], cli: ['*'], story: ['workspace-infra'] }
+    }),
+    files: {
+      ...defaultFiles(),
+      // Real import from workspace-infra (src/infra.js) into the cli module
+      // (src/gate.js): both derivation branches match, R-001 must win.
+      'src/infra.js': "import { gate } from './gate.js';\nexport const infra = 1;\n"
+    }
+  });
+  const result = await runArchitectureConformance(root, { write: false });
+  const violation = result.violations.find((entry) => entry.kind === 'undeclared_dependency');
+  assert.equal(violation.from_module, 'workspace-infra');
+  assert.equal(violation.to_module, 'cli');
+  assert.equal(violation.rule_id, 'R-001');
 });
 
 test('wildcard allowed dependency suppresses violations', async () => {
@@ -153,6 +226,7 @@ test('file over default line budget is a violation, baseline freezes existing gi
   assert.equal(budgetViolations.length, 1);
   assert.equal(budgetViolations[0].file, 'src/story.js');
   assert.equal(budgetViolations[0].baseline, false);
+  assert.equal(budgetViolations[0].rule_id, 'R-003');
 });
 
 test('growth beyond frozen baseline is a violation', async () => {
@@ -174,6 +248,7 @@ test('growth beyond frozen baseline is a violation', async () => {
   assert.equal(violation.file, 'src/gate.js');
   assert.equal(violation.baseline, true);
   assert.ok(violation.summary.includes('baseline'));
+  assert.equal(violation.rule_id, 'R-003');
 });
 
 test('module max_files budget is enforced', async () => {
@@ -190,6 +265,7 @@ test('module max_files budget is enforced', async () => {
   const violation = result.violations.find((entry) => entry.kind === 'budget_violation' && entry.module === 'story');
   assert.ok(violation);
   assert.equal(violation.file_count, 2);
+  assert.equal(violation.rule_id, 'R-003');
 });
 
 test('files outside every module are orphans and unmatched patterns are stale', async () => {
@@ -205,8 +281,10 @@ test('files outside every module are orphans and unmatched patterns are stale', 
   const result = await runArchitectureConformance(root, { write: false });
   const orphan = result.violations.find((entry) => entry.kind === 'orphan_file');
   assert.equal(orphan.file, 'src/gate.js');
+  assert.equal(orphan.rule_id, null);
   const stale = result.violations.find((entry) => entry.kind === 'stale_pattern');
   assert.equal(stale.pattern, 'src/removed-file.js');
+  assert.equal(stale.rule_id, null);
 });
 
 test('draft model carries advisory notice, adjudicated model does not', async () => {

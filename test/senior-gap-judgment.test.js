@@ -248,6 +248,58 @@ test('SGJ-S-002 senior gap judgment turns unresolved gates into non-deferrable g
   assert.equal(buildSeniorGapJudgmentGate(judgment).status, 'block');
 });
 
+test('SGJ-IDEAL-001 ideal_state.target_architecture is null when no target model was supplied', () => {
+  const judgment = buildSeniorGapJudgment({
+    story: { story_id: 'story-sgj-no-target-model', title: 'No target model' },
+    prContext: {
+      story_source: { story_id: 'story-sgj-no-target-model', acceptance_criteria: [] },
+      engineering_judgment: { judgment_axes: [] },
+      gate_dag: { nodes: [] }
+    },
+    gateStatus: {
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    }
+  });
+
+  assert.equal(judgment.ideal_state.target_architecture, null);
+});
+
+test('SGJ-IDEAL-002 ideal_state.target_architecture surfaces the adjudicated target model, not just the Story ACs', () => {
+  const targetArchitecture = {
+    model_path: 'docs/architecture/target-model.json',
+    status: 'adjudicated',
+    adjudicated_rules: [
+      { id: 'R-001', statement: 'workspace-infra は他のどのモジュールにも依存しない' },
+      { id: 'R-002', statement: 'cli 以外のモジュールは cli に依存しない' },
+      { id: 'R-003', statement: 'budgets.file_line_baseline の13ファイルは凍結行数を超えて成長しない(default 1500行)' },
+      { id: 'R-004', statement: 'モジュール間の新規依存は target-model への宣言(人間の承認)を先に必要とする' }
+    ],
+    conformance_summary: { violation_count: 68, undeclared_dependency_count: 66 }
+  };
+  const judgment = buildSeniorGapJudgment({
+    story: { story_id: 'story-sgj-target-model', title: 'Target model backed' },
+    prContext: {
+      story_source: { story_id: 'story-sgj-target-model', acceptance_criteria: ['AC-1 does not violate the target architecture'] },
+      engineering_judgment: { judgment_axes: [] },
+      gate_dag: { nodes: [] }
+    },
+    gateStatus: {
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    },
+    targetArchitecture
+  });
+
+  assert.deepEqual(judgment.ideal_state.target_architecture, targetArchitecture);
+  // Ideal state is not purely self-referential anymore: the Story's own AC count is still
+  // present alongside (not replaced by) the independently adjudicated architecture norm.
+  assert.equal(judgment.ideal_state.acceptance_criteria_count, 1);
+  assert.equal(judgment.ideal_state.target_architecture.adjudicated_rules.length, 4);
+});
+
 test('SGJ-S-003 senior gap judgment keeps accepted followups as residual gaps', () => {
   const judgment = buildSeniorGapJudgment({
     story: { story_id: 'story-sgj-followup', title: 'Accepted followup senior gap judgment' },
@@ -357,6 +409,97 @@ test('SGJ-S-004 pr prepare writes senior gap judgment artifact and gate', async 
   assert.equal(artifact.gaps.some((gap) => gap.kind === 'unresolved_required_gate'), true);
   assert.equal(result.preparation.pr_context.gate_dag.summary.senior_gap_judgment.status, artifact.decision.status);
   assert.equal(result.preparation.pr_context.senior_gap_judgment.model, 'vibepro-senior-gap-judgment-v1');
+  // This fixture repo has no docs/architecture/target-model.json: the wiring must not throw
+  // and must report the absence explicitly rather than fabricating a target architecture.
+  assert.equal(artifact.ideal_state.target_architecture, null);
+});
+
+test('SGJ-S-005 pr prepare wires the adjudicated target model and conformance summary into ideal_state', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['add', '-A']);
+  await git(repo, ['commit', '-m', 'chore: baseline']);
+  await git(repo, ['switch', '-c', 'feature/senior-gap-target-model']);
+  await writeSeniorGapFixture(repo);
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await writeFile(
+    path.join(repo, 'docs', 'architecture', 'target-model.json'),
+    `${JSON.stringify({
+      schema_version: '0.1.0',
+      status: 'adjudicated',
+      adjudicated_by: 'sato_keigo',
+      adjudicated_at: '2026-07-22',
+      rules: [
+        { id: 'R-001', statement: 'workspace-infra は他のどのモジュールにも依存しない', status: 'adjudicated' },
+        { id: 'R-002', statement: 'cli 以外のモジュールは cli に依存しない', status: 'adjudicated' }
+      ],
+      scope_roots: ['src'],
+      modules: [{ name: 'story', responsibility: 'story', paths: ['src/story.js'] }],
+      allowed_dependencies: { story: [] },
+      budgets: { default_max_file_lines: 1500, file_line_baseline: {} }
+    }, null, 2)}\n`
+  );
+  await mkdir(path.join(repo, '.vibepro', 'architecture', 'conformance'), { recursive: true });
+  await writeFile(
+    path.join(repo, '.vibepro', 'architecture', 'conformance', 'conformance.json'),
+    `${JSON.stringify({
+      schema_version: '0.1.0',
+      mode: 'dry_run',
+      summary: { violation_count: 3, undeclared_dependency_count: 2, budget_violation_count: 1 }
+    }, null, 2)}\n`
+  );
+  await git(repo, ['add', '-A']);
+  await git(repo, ['commit', '-m', 'docs: add senior gap judgment story with adjudicated target model']);
+
+  const result = await preparePullRequest(repo, {
+    storyId: 'story-senior-gap',
+    baseRef: 'main',
+    branchName: 'feature/senior-gap-target-model',
+    evidenceDepth: 'summary'
+  });
+
+  const artifactPath = result.artifacts.senior_gap_judgment;
+  const artifact = JSON.parse(await readFile(artifactPath, 'utf8'));
+  const targetArchitecture = artifact.ideal_state.target_architecture;
+  assert.ok(targetArchitecture);
+  assert.equal(targetArchitecture.model_path, 'docs/architecture/target-model.json');
+  assert.equal(targetArchitecture.status, 'adjudicated');
+  assert.equal(targetArchitecture.adjudicated_rules.length, 2);
+  assert.equal(targetArchitecture.adjudicated_rules[0].id, 'R-001');
+  assert.equal(targetArchitecture.conformance_summary.violation_count, 3);
+  // The dry-run conformance check must stay non-blocking: adding target_architecture context
+  // must not by itself turn the senior gap judgment gate into a block.
+  assert.notEqual(result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:senior_gap_judgment').status, 'block');
+});
+
+test('SGJ-S-006 pr prepare degrades a malformed target-model.json to target_architecture=null instead of crashing', async () => {
+  // docs/architecture/target-model.json is unconditionally read by every Story's pr prepare, not
+  // just architecture-related ones, and is a hand-edited singleton file outside this Story's own
+  // review/write boundary. A transient authoring mistake there must not turn into a repo-wide
+  // pr prepare outage: this must degrade the same way a missing file does (SGJ-S-004), not throw.
+  const repo = await makeRepo();
+  await git(repo, ['add', '-A']);
+  await git(repo, ['commit', '-m', 'chore: baseline']);
+  await git(repo, ['switch', '-c', 'feature/senior-gap-malformed-target-model']);
+  await writeSeniorGapFixture(repo);
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await writeFile(
+    path.join(repo, 'docs', 'architecture', 'target-model.json'),
+    '{ "schema_version": "0.1.0", "status": "adjudicated", not valid json'
+  );
+  await git(repo, ['add', '-A']);
+  await git(repo, ['commit', '-m', 'docs: add senior gap judgment story with a malformed target model']);
+
+  const result = await preparePullRequest(repo, {
+    storyId: 'story-senior-gap',
+    baseRef: 'main',
+    branchName: 'feature/senior-gap-malformed-target-model',
+    evidenceDepth: 'summary'
+  });
+
+  const artifactPath = result.artifacts.senior_gap_judgment;
+  const artifact = JSON.parse(await readFile(artifactPath, 'utf8'));
+  assert.equal(artifact.ideal_state.target_architecture, null);
+  assert.notEqual(result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:senior_gap_judgment').status, 'block');
 });
 
 async function makeRepo() {

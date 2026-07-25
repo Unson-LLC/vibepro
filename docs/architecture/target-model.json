@@ -1,9 +1,39 @@
 {
   "schema_version": "0.1.0",
-  "status": "draft",
-  "adjudicated_by": null,
-  "adjudicated_at": null,
-  "note": "to-beモデルの正本。改訂は人間の裁定(ADR/Story)でのみ行う。自動生成・自動改訂を禁止する。",
+  "status": "adjudicated",
+  "adjudicated_by": "sato_keigo",
+  "adjudicated_at": "2026-07-22",
+  "note": "to-beモデルの正本。改訂は人間の裁定(ADR/Story)でのみ行う。自動生成・自動改訂を禁止する。rules[]は佐藤裁定済み(2026-07-22)の規範であり、これのみ人間裁定の対象。modules/allowed_dependenciesの具体的な分割詳細はrulesの範囲内での機械保守(hotspot優先順位付けによる漸進的な違反解消等)の対象。",
+  "rules": [
+    {
+      "id": "R-001",
+      "statement": "workspace-infra は他のどのモジュールにも依存しない",
+      "status": "adjudicated",
+      "adjudicated_by": "sato_keigo",
+      "adjudicated_at": "2026-07-22"
+    },
+    {
+      "id": "R-002",
+      "statement": "cli 以外のモジュールは cli に依存しない",
+      "status": "adjudicated",
+      "adjudicated_by": "sato_keigo",
+      "adjudicated_at": "2026-07-22"
+    },
+    {
+      "id": "R-003",
+      "statement": "budgets.file_line_baseline の13ファイルは凍結行数を超えて成長しない(default 1500行)",
+      "status": "adjudicated",
+      "adjudicated_by": "sato_keigo",
+      "adjudicated_at": "2026-07-22"
+    },
+    {
+      "id": "R-004",
+      "statement": "モジュール間の新規依存は target-model への宣言(人間の承認)を先に必要とする",
+      "status": "adjudicated",
+      "adjudicated_by": "sato_keigo",
+      "adjudicated_at": "2026-07-22"
+    }
+  ],
   "scope_roots": [
     "src",
     "bin"
