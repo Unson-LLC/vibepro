@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-symlinked-bin-entrypoint",
   "source": "execute_merge",
-  "promoted_at": "2026-07-25T05:13:52.602Z",
+  "promoted_at": "2026-07-25T05:13:59.585Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-symlinked-bin-entrypoint",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-symlinked-bin-entrypoint/audit-index.json",
@@ -41,10 +41,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-symlinked-bin-entrypoint/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:0b24de76b1a4104834d21d90e78cc132eb073bfb5b78cae094584c524e2de5c5",
-    "compressed_hash": "sha256:bfc6df877b4318600e23a061a1c78f751a284688a0e357b5b0888fa236098be7",
-    "expanded_bytes": 46572,
-    "compressed_bytes": 8066,
+    "content_hash": "sha256:f6d51e227f978ebdac4a9af04b5b39507147299a80a1e900e97bb1184898a6e5",
+    "compressed_hash": "sha256:a9639fa4ce885499e7db5305066071b537bf3ddbe0550bda4891eeecd486c73e",
+    "expanded_bytes": 46624,
+    "compressed_bytes": 8081,
     "expanded_line_count": 1092,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -65,8 +65,8 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-symlinked-bin-entrypoint",
     "cost": {
-      "compressed_bytes": 8066,
-      "expanded_bytes": 46572,
+      "compressed_bytes": 8081,
+      "expanded_bytes": 46624,
       "expanded_line_count": 1092,
       "persisted_line_count": 1
     }
@@ -98,10 +98,10 @@
       ]
     },
     "decision_outcome_binding": {
-      "status": "failed",
-      "reason": "central_ledger_parse_failed",
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
       "expected_entry_count": 11,
-      "promoted_count": 0,
+      "promoted_count": 11,
       "duplicate_count": 0,
       "persistence_status": null
     },
@@ -117,7 +117,7 @@
     "status": "blocked",
     "resolved_reference_count": 133,
     "copied_reference_count": 93,
-    "unresolved_reference_count": 8,
+    "unresolved_reference_count": 14,
     "replay_bundle": "docs/management/audit-artifacts/story-vibepro-symlinked-bin-entrypoint/audit-replay-bundle.json.gz",
     "replay_command": "vibepro audit replay . --story-id story-vibepro-symlinked-bin-entrypoint"
   },
@@ -134,7 +134,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-symlinked-bin-entrypoint/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:0b24de76b1a4104834d21d90e78cc132eb073bfb5b78cae094584c524e2de5c5"
+      "content_hash": "sha256:f6d51e227f978ebdac4a9af04b5b39507147299a80a1e900e97bb1184898a6e5"
     }
   ],
   "raw_artifact_manifest": [
@@ -224,8 +224,8 @@
       "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-symlinked-bin-entrypoint/audit-replay-bundle.json.gz",
-      "digest": "sha256:9c0b557064cd9bcf9da86c1bc3adfbe942778471b13cf5ace2638e2b35611d12",
-      "audit_digest": "sha256:a11ed196353fd4d63ba295774a313fea8e765f3c9fe1449aec1b05db3994ccc2",
+      "digest": "sha256:12ffd9093971b4ed3b56d48712b09697f9517998a4e50e5d25685e5335dbc8a9",
+      "audit_digest": "sha256:ac1c1ae9417b0cb2d34873d185544dc47e335f11a5d83bac503de8409c706804",
       "line_count": 1858,
       "raw_line_count": 4169,
       "audit_scope": "judgment_evidence_v1",
@@ -1919,14 +1919,38 @@
       "size_bytes": 982959
     },
     {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/graphify/graph.json",
       "reason": "source_too_large",
       "size_bytes": 7110567
     },
     {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/design-ssot-reconciliation.json",
       "reason": "source_too_large",
       "size_bytes": 562616
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
     },
     {
       "source": ".vibepro/uiux/story-vibepro-symlinked-bin-entrypoint/ia-flow-map.json",
