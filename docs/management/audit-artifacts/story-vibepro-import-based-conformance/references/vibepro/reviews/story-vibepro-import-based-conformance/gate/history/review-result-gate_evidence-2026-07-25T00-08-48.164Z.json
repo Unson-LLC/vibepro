@@ -1,0 +1,148 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-import-based-conformance",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Round-4 reviewed HEAD (1ec347b9) to current HEAD (3337d470): src/architecture-conformance.js and test/architecture-conformance.test.js are byte-identical; the two ledger files (.vibepro/config.json, design-ssot.json) changed additively only. 19/19 tests pass, real CLI run confirms edge_source=import_scan.",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "commit-message-stale-figure",
+      "detail": "tip commit message states 61 violations from the pre-rebase measurement; post-rebase real count is 68 (41 undeclared/9 budget/18 orphan, growth from PR #365's new src files absorbed by main, undeclared_dependency_count itself unchanged at 41); informational only, PR body carries the current figure"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Diffed 1ec347b9..3337d470 for src/architecture-conformance.js and test/architecture-conformance.test.js (empty diffs), diffed .vibepro/config.json and design-ssot.json (additive ledger merges only), confirmed 0 NUL bytes, ran node --test test/architecture-conformance.test.js (19/19) and node bin/vibepro.js architecture conformance . for real.",
+    "evidence": "node --test test/architecture-conformance.test.js: 19/19 pass; git diff 1ec347b9 3337d470 -- src/architecture-conformance.js test/architecture-conformance.test.js is empty",
+    "inputs": [
+      "src/architecture-conformance.js",
+      "test/architecture-conformance.test.js",
+      ".vibepro/config.json",
+      "design-ssot.json"
+    ]
+  },
+  "judgment_delta": [
+    "concern: rebase onto origin/main (PR #365, #389) could have silently altered behavior -> byte-identical diff on the two content files rules this out; only ledger bookkeeping changed"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+    "expected_root": null,
+    "expected_head_sha": "3337d4708f578575bc6cec14fa8c43e654281719",
+    "current_head_sha": "3337d4708f578575bc6cec14fa8c43e654281719",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+      "expected_root": null,
+      "expected_head_sha": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "current_head_sha": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-25T00:08:48.164Z",
+  "git_context": {
+    "head_sha": "3337d4708f578575bc6cec14fa8c43e654281719",
+    "current_branch": "claude/story-vibepro-import-based-conformance",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-25T00:08:48.128Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "3337d4708f578575bc6cec14fa8c43e654281719",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "8c415635b6dc6d7f2239fd4959e00f85705edf68f6df8f1b21597d3808853226",
+        "size": 44143
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "d225dda0dd4f1ddf9f24aaea165eb7887ce4163288a68de5d8268d597eabaa75",
+        "size": 227404
+      },
+      {
+        "path": "src/architecture-conformance.js",
+        "sha256": "a4c95b222d45d2333faa00f920af996f6a35d50f24e3e2279e5e1888ce5fbf4a",
+        "size": 18474
+      },
+      {
+        "path": "test/architecture-conformance.test.js",
+        "sha256": "363b411efade3a46dcd41016b1c12222127277efdd933cba0cf3092c7ba0956b",
+        "size": 14696
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "503c33f89a922cc6d18f9110fe6e93fd9d9f68a40adf89a37bc08f67aadaf0a6"
+  },
+  "source_fingerprint": "0f0cad915fdd04c995ae742afdf53bfc906d47aa8722ca00cfd859caffea1a64",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-subagent-gate-evidence-ibc-r5",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "84de584a-1bf6-48d1-9ddf-09a1d488e303",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-import-based-conformance/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "84de584a-1bf6-48d1-9ddf-09a1d488e303",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

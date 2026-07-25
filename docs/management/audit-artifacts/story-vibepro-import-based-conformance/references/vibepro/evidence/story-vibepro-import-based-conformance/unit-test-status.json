@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/architecture-conformance.test.js",
+  "tests": 19,
+  "pass": 19,
+  "fail": 0,
+  "generated_from_log": "/tmp/g5-unit.log",
+  "generated_at": "2026-07-25T00:03:01.645Z"
+}

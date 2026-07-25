@@ -1,0 +1,130 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-import-based-conformance",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "Round-4 delta confirmed as exactly the .vibepro/config.json budget bookkeeping entry (delivery_efficiency_by_story override + stories[] registration + current_story_id pointer), matching the format of existing sibling entries for other Stories in the same file. Same single-commit, same 7 files, single coherent intent maintained. 19/19 tests pass.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Diffed round-3 HEAD to round-4 HEAD (1ec347b9), confirmed only .vibepro/config.json changed, cross-checked its format against pre-existing sibling story budget-override entries in the same file, re-ran the full test file.",
+    "evidence": "node --test test/architecture-conformance.test.js: 19/19 pass",
+    "inputs": [
+      ".vibepro/config.json",
+      "test/architecture-conformance.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "concern: repeated config.json edits across rounds could indicate scope drift -> confirmed each edit is purely budget-bookkeeping in the same schema shape as pre-existing sibling entries, with zero effect on application code, tests, or docs"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+    "expected_root": null,
+    "expected_head_sha": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+    "current_head_sha": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+      "expected_root": null,
+      "expected_head_sha": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+      "current_head_sha": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-24T23:38:15.479Z",
+  "git_context": {
+    "head_sha": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+    "current_branch": "claude/story-vibepro-import-based-conformance",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T23:38:15.443Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "d8e47180d3babb822136d19ecae9e9c17a8bba47489a099d03e8514f78542ed9",
+        "size": 37582
+      },
+      {
+        "path": "test/architecture-conformance.test.js",
+        "sha256": "363b411efade3a46dcd41016b1c12222127277efdd933cba0cf3092c7ba0956b",
+        "size": 14696
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "4310ee18499bd95bc5326c8d0a41415300532ac74f80d38129da2014f1c56bd8"
+  },
+  "source_fingerprint": "449eee0135dfbfcca82abc77ed184890687e6970d7a660cbd074cdf9eeece818",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-subagent-pr-split-scope-ibc-r4",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "e5ce870f-5a6f-4ff7-a6ef-1afc2e160c27",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-import-based-conformance/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "e5ce870f-5a6f-4ff7-a6ef-1afc2e160c27",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

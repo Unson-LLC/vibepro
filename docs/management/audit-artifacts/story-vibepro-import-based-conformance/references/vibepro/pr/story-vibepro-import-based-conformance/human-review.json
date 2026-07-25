@@ -1,0 +1,164 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-import-based-conformance",
+  "created_at": "2026-07-25T00:22:28.912Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is reviewable; recommended strategy is current_branch_pr.",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-import-based-conformance/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-import-based-conformance/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-import-based-conformance/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-import-based-conformance/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-import-based-conformance.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-import-based-conformance.md)"
+    },
+    "decision_records": {
+      "total": 4,
+      "open": 0,
+      "by_type": {
+        "waiver": 4
+      },
+      "by_status": {
+        "accepted": 4
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+          "expected_root": null,
+          "expected_head_sha": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+          "current_head_sha": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784935849436-387225ea",
+        "story_id": "story-vibepro-import-based-conformance",
+        "type": "waiver",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": null,
+        "summary": "Accept this PR as one reviewable unit without a separate review_owner_map artifact; 3 Agent Review roles (gate_evidence, pr_split_scope, release_risk) already independently passed across 3 rounds on the current HEAD, functionally covering ownership of evidence/scope/release-risk concerns.",
+        "reason": "review_owner_map evidence requires strict_head-bound, separate-session-identity-declared Agent Review roles across ALL configured stages (including planning_spec and preview stages not applicable to this measurement-only CLI change with no UI/preview surface). This Story's content_surface-bound gate-stage reviews (gate_evidence/pr_split_scope/release_risk) already independently and adversarially reviewed this diff across 3 rounds -- including catching and requiring a fix for a real defect (an undocumented new fail-loud path) -- which is materially stronger scope-reviewability evidence than a mechanical ownership-map artifact would provide. The diff remains one coherent, single-intent PR (7 files, all serving the one Story) per the already-accepted pr_scope_judgment/split_resolution waivers.",
+        "reviewer": "sato_keigo",
+        "artifact": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": ".vibepro/evidence/story-vibepro-import-based-conformance/e2e-test-status.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/story-vibepro-import-based-conformance/integration-test-status.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/story-vibepro-import-based-conformance/unit-test-status.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+            "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+            "expected_root": null,
+            "expected_head_sha": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+            "current_head_sha": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+          "current_branch": "claude/story-vibepro-import-based-conformance",
+          "dirty": true,
+          "status_fingerprint": "M .vibepro/config.json",
+          "recorded_at": "2026-07-24T23:30:49.429Z"
+        },
+        "recorded_at": "2026-07-24T23:30:49.437Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-25T00:22:26.370Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "branch": "claude/story-vibepro-import-based-conformance",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "c186dbd9325f25cd92730ef21d5adb07c0c67a65",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

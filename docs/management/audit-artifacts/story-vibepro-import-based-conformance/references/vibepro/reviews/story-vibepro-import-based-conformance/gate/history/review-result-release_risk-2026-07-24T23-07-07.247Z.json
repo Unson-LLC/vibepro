@@ -1,0 +1,149 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-import-based-conformance",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "New fail-loud path (empty scope_roots) and breaking JSON shape change (graph -> import_scan/graph_context) are accurately scoped, tested, and low-risk: dry-run-only command, unwired to any Gate/CI, exactly one in-repo caller (src/cli.js) updated in the same commit.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read the full diff, ran the targeted suite (19/19 pass), ran the live CLI 3x confirming violation_count=61 deterministically and --strict exit-code behavior, grepped the full repo for callers/consumers of the old shape, checked .github workflows/package.json/.vibepro gate config for wiring (none found), verified target-model.json's scope_roots are real populated directories.",
+    "evidence": "node --test test/architecture-conformance.test.js: 19/19 pass; 3x live runs of node bin/vibepro.js architecture conformance . --json all produced violation_count=61, undeclared_dependency_count=41",
+    "inputs": [
+      "src/architecture-conformance.js",
+      "src/cli.js",
+      "docs/architecture/story-vibepro-import-based-conformance.md",
+      "test/architecture-conformance.test.js",
+      "docs/architecture/target-model.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern: new throw on empty scope_roots could break an unknown automated consumer -> no such consumer exists (grep found only src/cli.js, no CI/gate/package.json wiring); trigger condition cannot occur with the current target-model.json since src/ and bin/ are populated",
+    "initial concern: removing the top-level graph field could silently break an external parser -> the only in-repo consumer (src/cli.js) has no dependency on the old shape; other .graph.* hits in the codebase belong to the unrelated Graphify diagnose result shape"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+    "expected_root": null,
+    "expected_head_sha": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+    "current_head_sha": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+      "expected_root": null,
+      "expected_head_sha": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "current_head_sha": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-24T23:07:07.247Z",
+  "git_context": {
+    "head_sha": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+    "current_branch": "claude/story-vibepro-import-based-conformance",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T23:07:07.225Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-import-based-conformance.md",
+        "sha256": "2adc835df5d3c5c203dc6e718e2008aeca065e3eb7f940e830f6e05be0960df6",
+        "size": 5671
+      },
+      {
+        "path": "docs/architecture/target-model.json",
+        "sha256": "55fc10da8110d92b097825855e1e918ec8843903682ff39b0de8bbc4bfae7b06",
+        "size": 8282
+      },
+      {
+        "path": "src/architecture-conformance.js",
+        "sha256": "a4c95b222d45d2333faa00f920af996f6a35d50f24e3e2279e5e1888ce5fbf4a",
+        "size": 18474
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "dcc7b16d338220a719641851923177873700fc9878ec988f8e4e056cb70345fd",
+        "size": 233235
+      },
+      {
+        "path": "test/architecture-conformance.test.js",
+        "sha256": "e1399f3f381c306180823f53764fb5b361ee48c83d508acadbf13812a5d141c4",
+        "size": 14688
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "bc564282a40b29930c59fbd57f185091c46bfee0dbfb28c9a2d108431c8d2d27"
+  },
+  "source_fingerprint": "753580e0f4e9c2ed8cce7717425c216467fba94e9c500f22d26156aa07cd2410",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-subagent-release-risk-ibc-r2",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "999fbb9a-fc11-4ba0-8076-7539802837e7",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-import-based-conformance/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "999fbb9a-fc11-4ba0-8076-7539802837e7",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,910 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-import-based-conformance",
+  "updated_at": "2026-07-25T00:11:54.211Z",
+  "events": [
+    {
+      "event_id": "b953e478-7725-4313-a3a1-06beac003986",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc states a specific, falsifiable intent: replace Graphify calls-edge undeclared_dependency measurement with a deterministic import/export/require scan, citing PR #387's audit (46 edges claimed, only 3 real). Diff matches: architecture-conformance.js adds extractImportSpecifiers/resolveRelativeImport/buildImportDependencyEdges and switches findDependencyViolations to consume importEdges instead of graph.json calls edges. I independently reran 'node bin/vibepro.js architecture conformance .' 3x against this live repo and reproduced the exact counts claimed in the commit message (61 violations, 41 undeclared_dependency, byte-identical output each run), confirming the stated intent was actually realized, not just described.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc",
+        "session_ref": null
+      },
+      "head_commit": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "recorded_at": "2026-07-24T22:58:34.283Z"
+    },
+    {
+      "event_id": "8ffb6091-f67f-4ee6-ab41-8415109b22e4",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently ran 'node bin/vibepro.js architecture conformance . --json' three times against the live repo (not just unit fixtures); output is byte-identical (md5 match) each time, violation_count=61, undeclared_dependency_count=41, matching the commit message's claim exactly. This directly confirms the current_reality claim (deterministic import-scan measurement replacing noisy calls-based measurement) against the actual current codebase state.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc",
+        "session_ref": null
+      },
+      "head_commit": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "recorded_at": "2026-07-24T22:58:41.486Z"
+    },
+    {
+      "event_id": "62e00e07-942d-44bf-9b9e-20890bad916d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "spec.json INV-001 (only '.'-prefixed relative specifiers tracked; node:/npm packages excluded by construction) is directly covered by the passing test 'buildImportDependencyEdges excludes node builtins and npm packages'. INV-002 (budget_violation/orphan_file/stale_pattern/dry-run exit-code contract unchanged) is covered by the unmodified-behavior tests (module max_files, baseline budget growth, orphan/stale, CLI --strict exit code), all of which still pass. Ran the full targeted suite: 18/18 tests pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc",
+        "session_ref": null
+      },
+      "head_commit": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "recorded_at": "2026-07-24T22:58:52.985Z"
+    },
+    {
+      "event_id": "8a5b523d-375e-48bd-b8dd-cab2ce8d7dce",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story frontmatter 'reason:' and the Architecture doc explicitly scope the change to architecture-conformance.js's dependency-judgment logic plus tests, asserting target-model.json's allowed_dependencies/budgets declarations and gate coupling are untouched. Verified independently: 'git show HEAD --stat' confirms no target-model.json or gate/review file changed; grep for runArchitectureConformance across src/bin shows it is only wired from src/cli.js's standalone 'architecture conformance' subcommand, never from gate logic. Note: the mechanically-matched decision_record (decision-1784932836716-9f258f76) is actually an unrelated artifact-policy waiver about committing .vibepro/config.json's story-catalog entry, not a boundary decision -- a citation mismatch -- but the boundary claim itself holds up independently via the diff and code-reference check above, so the underlying judgment is sound even though that particular cited evidence item is wrong.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc",
+        "session_ref": null
+      },
+      "head_commit": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "recorded_at": "2026-07-24T22:59:03.361Z"
+    },
+    {
+      "event_id": "b3ab654b-f8d6-4a63-941a-8129a4a41df8",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "IBC-AC-004 claims the 'scope_roots has zero source files -> fail loud' behavior is a continuation of an existing contract ('従来通り...S-005 契約の継続'). Diffing against HEAD~1 (git diff -a HEAD~1 HEAD -- src/architecture-conformance.js) disproves this: the 'if (jsFiles.length === 0) throw' guard is entirely new code. The prior collectScopeFiles/findDependencyViolations path silently produced 0 violations for an empty scope and never threw for that condition (its only throws were target-model-missing/invalid and graph.json-missing/invalid). So this diff introduces a genuinely new failure mode, mischaracterizes it in the Story doc as a pre-existing contract's continuation, and ships it with zero test coverage in test/architecture-conformance.test.js -- no test constructs a target-model whose scope_roots resolve to zero .js/.mjs/.cjs files. The mechanically-matched evidence (flow_replay/artifact_replay = full/integration test runs) does not exercise this path, so 'needs_evidence' was the right mechanical signal, but the Story's own consequence-of-change claim does not hold up against the diff.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc",
+        "session_ref": null
+      },
+      "head_commit": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "recorded_at": "2026-07-24T22:59:14.636Z"
+    },
+    {
+      "event_id": "e401d38a-f461-438c-881a-a4a7d171d4d2",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Of the 5 acceptance criteria: AC-001/002 are directly verified by the import-scan unit tests plus the dedicated graphify-noise regression test; AC-003 (edge_source/edge_source_note) is verified both by test assertion (result.edge_source === 'import_scan') and by my own manual CLI run against this repo, which showed a correctly populated edge_source_note field; AC-005 is verified by the untouched budget/orphan/stale/exit-code tests still passing unmodified. AC-004's primary clause (graph.json optional, target-model required) is tested; only its narrow 'zero source files under scope_roots' sub-clause is untested (see spine:failure_modes finding, recorded judged_unsound for that specific gap) -- a low-probability edge case for this repo (134 files currently scanned), not central to the Story's purpose. The Story's central done-claim -- deterministic import-scan measurement replacing noisy calls-based measurement -- is independently reproduced by me running the tool 3x against the live repo with byte-identical output matching the commit message's counts, which is strong done-evidence for the actual intent of this change.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc",
+        "session_ref": null
+      },
+      "head_commit": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "recorded_at": "2026-07-24T22:59:23.126Z"
+    },
+    {
+      "event_id": "9ca5b60f-de35-4bf7-a35f-4dde0d888110",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "conformance.json's top-level schema is broken, not just extended: the old graph:{path,node_count,dependency_edge_count} key is removed entirely and replaced by two new keys, import_scan and graph_context, with different field names and no aliasing/deprecation path (confirmed via git diff -a HEAD~1 HEAD -- src/architecture-conformance.js). This directly falls under this axis question's explicit '出力形式' (output format) criterion. Neither the Story, Architecture, nor Spec doc considers or acknowledges this as a compatibility break for anyone parsing conformance.json's prior schema -- the discussion is entirely about semantics of what changed and why, not about output-contract stability. In-repo blast radius is low (grep confirms no other module in src/bin reads result.graph.* from architecture-conformance's output), but the mechanically-cited evidence (compat_or_output_test/semantic_invariant_test = 'test files in diff') does not actually establish that output-format compatibility was verified or consciously waived; it only reflects that test files were touched, which happens for any behavior change. CLI flags/exit codes (the other half of the public contract) are unaffected and covered by a passing test.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc",
+        "session_ref": null
+      },
+      "head_commit": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "recorded_at": "2026-07-24T22:59:34.474Z"
+    },
+    {
+      "event_id": "39c8ab07-c979-4777-ae45-e3fc8ad9e136",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "git show HEAD --stat shows 7 files / +283/-40 lines, concentrated in one core logic file (src/architecture-conformance.js), its matching test file, and the standard Story/Architecture/Spec triad plus two small additive registration files (.vibepro/config.json, design-ssot.json), both verified by diff to be purely additive story-catalog/design-lineage registrations. This is a single, cohesive intent (swap the dependency-measurement evidence source from Graphify calls edges to a deterministic import scan) with extensive in-code rationale comments referencing the PR #387 audit. A single reviewer can read the ~280-line core diff plus the well-organized doc triad in one sitting and evaluate it as one coherent decision; no unrelated concern is bundled in. No basis found to require a split.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc",
+        "session_ref": null
+      },
+      "head_commit": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "recorded_at": "2026-07-24T22:59:42.402Z"
+    },
+    {
+      "event_id": "d5bb7bc9-6474-4788-8aa2-87dd020cb646",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Despite the mechanical 'not_required' classification, this failure mode is directly relevant here (two JSON.parse calls: target-model.json and graph.json) and is explicitly tested: 'invalid graph or model json fails loud' asserts both malformed-JSON cases throw descriptive errors rather than silently succeeding. The regex-based import extraction (a different kind of parsing) is documented in-code as best-effort and tested for its common cases (multi-line static import, export-from, dynamic import, require, comment-stripping); I independently probed the STATIC_IMPORT_RE regex against a multi-line import block outside the test suite and confirmed it extracts correctly. Given the tool is advisory/dry-run-only and never gate-blocking, the disclosed best-effort scope of the regex scanner is an appropriate, examined risk rather than an unexamined one.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc",
+        "session_ref": null
+      },
+      "head_commit": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "recorded_at": "2026-07-24T22:59:50.087Z"
+    },
+    {
+      "event_id": "551643f1-8e17-4abd-b9c8-cacdf1c9c78c",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Confirmed via 'git show HEAD --stat' that this diff touches no gate/review/evidence-lifecycle source (no src/gate*.js, src/review*.js, src/evidence*.js, and no .vibepro/pr|reviews artifacts beyond this story's own PR-prep bookkeeping). The conformance command remains dry-run-only and is not consumed by any gate: grep for runArchitectureConformance across src/bin shows only src/cli.js's standalone subcommand wiring, no gate integration. Since this tool's output is never used to gate a merge decision, a stale or misleading 'green' conformance.json cannot itself produce a misleading gate outcome or unreconstructable handoff; this failure mode genuinely does not apply to this diff, matching the 'not_required' classification.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc",
+        "session_ref": null
+      },
+      "head_commit": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "recorded_at": "2026-07-24T22:59:58.276Z"
+    },
+    {
+      "event_id": "1bc6a6e3-5b5c-4ee4-9330-0aa5489be07f",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story frontmatter reason: + Background section state a specific falsifiable intent: replace Graphify calls-edge undeclared_dependency measurement with a deterministic import/export/require scan, citing PR #387's audit (46 edges, only 3 real). Verified independently against the actual e6ac4bf1 diff: architecture-conformance.js adds extractImportSpecifiers/resolveRelativeImport/buildImportDependencyEdges and findDependencyViolations now consumes importEdges instead of graph.json calls edges (confirmed by reading src/architecture-conformance.js lines 25-29, 323-374). I independently ran node bin/vibepro.js architecture conformance . --json 3x against this live repo: byte-identical output (md5 f8c1cc0b...), edge_source=import_scan, 61 violations/41 undeclared_dependency, no top-level graph key. The stated intent is actually realized in running code, not just described in prose.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r2",
+        "session_ref": null
+      },
+      "head_commit": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "recorded_at": "2026-07-24T23:08:00.822Z"
+    },
+    {
+      "event_id": "3b8ecbc4-3e7e-45a5-8ed9-29e2edbb1a7b",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently ran node bin/vibepro.js architecture conformance . --json three times against the live current-HEAD repo (not fixtures): output byte-identical across all 3 runs (md5 f8c1cc0b98bd76a1bb45517147e9f2d3 every time), edge_source=import_scan, import_scan.scanned_file_count=134, edge_count=400, unresolved_reference_count=0, violation_count=61, undeclared_dependency_count=41, and the top-level graph key is absent (replaced by import_scan/graph_context). This matches the commit message's claimed counts exactly and directly confirms the current-reality claim (deterministic import-scan measurement now governs the tool's output) against the actual running codebase, not just docs.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r2",
+        "session_ref": null
+      },
+      "head_commit": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "recorded_at": "2026-07-24T23:08:08.501Z"
+    },
+    {
+      "event_id": "86691b8c-226e-412c-b286-72932a73df57",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "INV-001 (only '.'-prefixed relative specifiers tracked; node:/npm packages excluded by construction, src/architecture-conformance.js line 329 'if (!specifier.startsWith(.)) continue') is directly covered by the passing unit test 'buildImportDependencyEdges excludes node builtins and npm packages, includes only resolvable relative imports'. INV-002 (budget_violation/orphan_file/stale_pattern judgment and dry-run-only exit-code contract unchanged) is covered by unmodified-behavior tests: 'module max_files budget is enforced', 'growth beyond frozen baseline is a violation', 'files outside every module are orphans and unmatched patterns are stale', and the CLI integration test asserting --strict exit code 2 vs dry-run exit code 0. I ran the full targeted suite myself: node --test test/architecture-conformance.test.js -> 19/19 pass, 0 fail.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r2",
+        "session_ref": null
+      },
+      "head_commit": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "recorded_at": "2026-07-24T23:08:15.732Z"
+    },
+    {
+      "event_id": "e1f6b8be-b96d-4e44-a367-b52ec55c0030",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story reason: and Architecture doc explicitly scope the change to architecture-conformance.js's dependency-judgment logic plus its test, asserting target-model.json declarations and gate coupling are untouched. Independently verified: git diff 2d255f25..e6ac4bf1 --stat confirms only src/architecture-conformance.js, test/architecture-conformance.test.js, 3 SSOT docs, .vibepro/config.json (+14/-2, pure story-catalog registration), and design-ssot.json (+57/-2, pure lineage registration) changed -- no docs/architecture/target-model.json, no gate/review source touched. grep -rn runArchitectureConformance src bin shows exactly 2 hits: the definition and its sole caller in src/cli.js's standalone architecture-conformance subcommand, never from gate logic. Note: the mechanically-matched decision_record (decision-1784932836716-9f258f76) is actually an artifact-policy waiver about committing .vibepro/config.json's story-catalog entry, not a boundary-scoping decision per se -- a citation mismatch already flagged in round 1 -- but the boundary claim itself is independently verified via the diff/grep evidence above, so the judgment holds regardless of that particular evidence citation.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r2",
+        "session_ref": null
+      },
+      "head_commit": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "recorded_at": "2026-07-24T23:08:25.475Z"
+    },
+    {
+      "event_id": "5d4fa6ff-4096-4da6-b8ea-e3f6b40583de",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Round-1 finding (recorded at HEAD 2cd1d8bf) was that IBC-AC-004 falsely claimed the scope_roots-empty fail-loud guard was a continuation of an existing S-005 contract, when git diff -a HEAD~1 HEAD proved it was genuinely new code with zero test coverage. I independently re-verified this is now fixed at e6ac4bf1: (1) read Story AC-4, Architecture doc's Decision + new Failure Modes section, and Spec S-002 in full -- all three now explicitly state 'これは既存契約の継続ではなく本Storyで新規に追加した保護' / '新規追加のfail loud' / 'これは既存契約の継続ではない', correctly describing it as new, not continued. (2) I independently diffed the pre-story baseline (git show 2d255f25:src/architecture-conformance.js) against current: the old collectScopeFiles path had no jsFiles-empty check at all -- confirming the guard truly is new, matching the corrected doc language. (3) The named regression test 'scope_roots resolving to zero .js/.mjs/.cjs files fails loud instead of a silent zero-violation success' exists at test/architecture-conformance.test.js:239-250 and asserts assert.rejects(...) on an empty-files fixture; I ran node --test test/architecture-conformance.test.js myself and it passes (19/19 total, this test included). The doc/test mismatch that made round 1's judgment unsound no longer exists.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r2",
+        "session_ref": null
+      },
+      "head_commit": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "recorded_at": "2026-07-24T23:08:37.892Z"
+    },
+    {
+      "event_id": "8e4ff0b8-b96e-4149-adfd-43383342fb2b",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Checked all 5 acceptance criteria against the diff and my own test run: AC-001/AC-002 (import-scan-only measurement, node:/npm exclusion) verified by extractImportSpecifiers/buildImportDependencyEdges unit tests plus the dedicated 'graphify calls noise does not create a violation without a real import (regression)' test. AC-003 (edge_source/edge_source_note, documented breaking change) verified by test assertion result.edge_source === 'import_scan' and by my own live CLI run showing edge_source_note populated with the PR #387 rationale. AC-004 (graph.json optional, target-model required, scope_roots-empty fail-loud) is now FULLY covered including the previously-missing sub-clause: I confirmed the 'scope_roots resolving to zero .js/.mjs/.cjs files fails loud' regression test exists and passes, closing the gap that made round-1's done_evidence review flag this AC as partially untested. AC-005 (budget/orphan/stale/exit-code unchanged) verified by the untouched-behavior tests still passing unmodified. Additionally independently reproduced the central done-claim by running the tool 3x live against this repo: byte-identical output matching commit-message counts (61 violations, 41 undeclared_dependency).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r2",
+        "session_ref": null
+      },
+      "head_commit": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "recorded_at": "2026-07-24T23:08:47.079Z"
+    },
+    {
+      "event_id": "13068042-ad5a-405a-bab0-6266f36644b8",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Round-1 finding was that conformance.json's top-level graph key was silently removed with zero compatibility discussion. I independently verified this is now fixed at e6ac4bf1: (1) read the Architecture doc's new 'Public Contract / Compatibility' section in full -- it explicitly states the breaking change (old graph{path,node_count,dependency_edge_count} removed, replaced by import_scan{scanned_file_count,edge_count,unresolved_reference_count} and graph_context{available,node_count,calls_edge_count,note}), states impact scope, and states compatibility rationale (dry-run diagnostic artifact, not a versioned public API, no deprecation period). Story AC-3 and Spec C-002 carry matching '互換性への影響'/'破壊的変更' language. (2) I independently ran grep -rn runArchitectureConformance src bin myself (not trusting the doc's claim) and confirmed exactly one caller: src/cli.js:3568. (3) I independently verified no other file depends on the old shape: grep for conformance.json and result.graph.path/node_count/dependency_edge_count across the repo (excluding artifact dirs) found no external consumer; the only other 'result.graph' hits in test/vibepro-cli.test.js and test/artifact-routing.test.js are an unrelated field (story-diagnose's graphifyExecuted/graphifyDir), not conformance's graph key -- false positive ruled out by reading those lines directly. (4) One minor imprecision: the doc says the --json output and renderConformanceMarkdown were both updated 'in the same commit,' implying src/cli.js was edited -- but git diff 2d255f25..e6ac4bf1 -- src/cli.js is empty (0 lines); cli.js needed no edit because it only does JSON.stringify(result) and calls renderConformanceMarkdown(result), both shape-agnostic passthroughs, and renderConformanceMarkdown itself (which was updated) lives inside the changed architecture-conformance.js. This makes the compatibility story stronger than claimed (zero caller-side risk, not just a caller-side update), not weaker, so it does not undermine the judgment.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r2",
+        "session_ref": null
+      },
+      "head_commit": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "recorded_at": "2026-07-24T23:09:00.229Z"
+    },
+    {
+      "event_id": "58169e84-03b6-4302-91d6-e2983e8cd043",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "git diff 2d255f25..e6ac4bf1 --shortstat: 7 files, +312/-40. Independently broke this down: src/architecture-conformance.js (the sole logic change) + test/architecture-conformance.test.js (its matching test, rewritten to encode dependencies as real imports) form one inseparable pair; the 3 SSOT docs (Story/Architecture/Spec) describe exactly that one change including its now-documented breaking-change and new-fail-loud-path consequences; .vibepro/config.json (+14/-2) and design-ssot.json (+57/-2) are purely additive Story-catalog/design-lineage registrations required by this repo's own self-dogfood process (verified by reading both diffs -- no unrelated edits mixed in). This is a single coherent intent (swap the dependency-measurement evidence source) that a reviewer can read end-to-end: doc claim -> code implementing it -> test proving it -> registration bookkeeping. No unrelated refactors or drive-by changes found in the diff. Reviewable as one PR.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r2",
+        "session_ref": null
+      },
+      "head_commit": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "recorded_at": "2026-07-24T23:09:09.838Z"
+    },
+    {
+      "event_id": "127d674d-d940-4c73-823f-f689f56ef0db",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Two JSON.parse call sites in the changed code: loadTargetModel (unchanged logic) and loadGraphContext (rewritten in this diff to make graph.json optional). Both malformed-input paths are tested: the 'invalid graph or model json fails loud' test constructs a badGraphRoot with graph: '{not json' and a badModelRoot with model: '{not json', asserting both throw descriptive errors (/parseに失敗/ and /JSONが不正/) rather than silently succeeding -- I ran this test myself and it passes. The new regex-based import-specifier extraction (extractImportSpecifiers, a different kind of 'parsing') is documented in-code as best-effort and is tested for its actual failure-adjacent edge cases: comment-stripping (single-line, block, and the https:// false-positive guard), unresolved relative references (counted via unresolvedReferenceCount, not thrown -- verified this is an intentional design choice, not a swallowed error, since it's surfaced in the artifact's import_scan.unresolved_reference_count field, and my live run showed unresolved_reference_count:0 for this repo). No parse-failure path was found that is silently swallowed or produces a misleading empty-success result.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r2",
+        "session_ref": null
+      },
+      "head_commit": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "recorded_at": "2026-07-24T23:09:21.607Z"
+    },
+    {
+      "event_id": "ddf26eff-1f98-48b1-849f-03b921f81a72",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently confirmed via git diff 2d255f25..e6ac4bf1 --stat that this diff touches no gate/review/evidence-lifecycle source: only src/architecture-conformance.js (a standalone dry-run diagnostic tool), its test, 3 SSOT docs, and 2 pure-registration bookkeeping files (.vibepro/config.json, design-ssot.json) changed -- no src/gate*.js, src/review*.js, src/evidence*.js, or gate-dag/review-lifecycle logic anywhere in the diff. grep -rn runArchitectureConformance src bin confirms exactly 2 references (definition + its sole caller, src/cli.js's standalone 'architecture conformance' subcommand); it is never invoked from gate evaluation code. The tool remains dry-run-only per AC-005 (verified unchanged by the passing 'integration: cli conformance is dry-run by default and strict only via --strict' test, exit 0 vs exit 2, no gate wiring involved). Since this artifact's output is never consumed to gate a merge/review decision, changing its internal shape cannot produce a misleading green gate artifact or an unreconstructable handoff -- there is no lifecycle to regress.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r2",
+        "session_ref": null
+      },
+      "head_commit": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "recorded_at": "2026-07-24T23:09:32.309Z"
+    },
+    {
+      "event_id": "9623c698-18ab-4703-ba1a-ba621c56ab0d",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "src/architecture-conformance.js を全文精読した。依存はnode:fs/promises(mkdir/readFile/readdir/writeFile)とnode:pathのみで、HTTP/ネットワーク呼び出し・外部API・サードパーティproviderへの依存は一切ない(import scanもtarget-model.json/graph.jsonのローカルファイル読み込みとregexベースのテキスト処理のみ)。failure_mode:provider_failureをトリガーしたdocs/architecture/story-vibepro-import-based-conformance.mdの該当文は「Public Contract / Compatibility」節の『この artifact はdry-run専用の診断出力であり、gateに未結合・バージョン管理された公開APIでもないため』であり、これはconformance.jsonというローカル診断artifactのJSON形状が外部providerのバージョン管理されたAPIではないと明言している文で、外部provider/ネットワーク依存の存在を主張していない。'API'という文字列へのキーワードマッチが誤ってprovider_failureを提起しており、判定器が置いた『この差分には外部provider/API/ネットワーク依存が存在する』という前提そのものが事実として誤っている。実装や証拠を直す話ではなく前提訂正が必要なケースであるためclassifier_premise_unsoundとする。",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-provider-failure-ibc",
+        "session_ref": null
+      },
+      "head_commit": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "recorded_at": "2026-07-24T23:11:36.534Z"
+    },
+    {
+      "event_id": "784c7208-c52c-40dd-9d6a-c6c6c45a51c0",
+      "type": "premise_correction",
+      "item_id": "failure_mode:provider_failure",
+      "corrects_verdict_id": "9623c698-18ab-4703-ba1a-ba621c56ab0d",
+      "wrong_premise": "diffに外部provider/API/network依存が存在する",
+      "corrected_premise": "本diffはnode:fs/promisesとnode:pathのみに依存し、network/外部API呼び出しは存在しない(docの'公開APIでもない'という否定文へのキーワード誤マッチ)",
+      "reason": "architecture-conformance.jsのimportはnode:fs/promises・node:path・./workspace.jsのみ(grep/読み取りで確認)。HTTP/fetch/axios/net./dns./child_process/exec/spawn等のネットワーク・外部プロセス起動トークンは全文検索でゼロ件。トリガはPublic Contract節の「バージョン管理された公開APIではないため」という否定文中の'API'へのキーワード一致であり、実際の外部provider依存を示すものではない。",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/evidence/story-vibepro-import-based-conformance/provider-failure-premise-check.json",
+          "sha256": "5d9616a981eb1e48261ae7365fdfc2845402da1f575b00c63af15e42d9c6e766"
+        }
+      ],
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudication-correction-operator-ibc",
+        "session_ref": null
+      },
+      "head_commit": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "recorded_at": "2026-07-24T23:12:30.778Z"
+    },
+    {
+      "event_id": "13abbe45-997a-4d27-8ee7-a7ad14fb3d82",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "784c7208-c52c-40dd-9d6a-c6c6c45a51c0",
+      "reason": "独立に src/architecture-conformance.js を全文読み、node:fs/promises・node:path・./workspace.js以外のimportがないことを確認した。さらにfetch|axios|http|https|child_process|exec|spawn|net\\.|dns\\.|request\\(|XMLHttpRequest|websocketの正規表現でファイル全文を独自にgrepし、ヒットは(1)274行目のコメント内『https://』という文字列パターンの説明、(2)289/292行目のRegExp.prototype.exec()呼び出し(child_process.execとは無関係)の2種のみで、いずれも実際のネットワーク/外部API呼び出しではないfalse positiveであると確認した。replacement-evidence(.vibepro/evidence/.../provider-failure-premise-check.json)のconclusionと一致する(ただし同ファイルのcontains_network_or_provider_tokens:trueフィールドは素朴なトークンヒットをそのまま反映しており紛らわしいが、conclusionテキスト自体は正しい)。トリガーとなったdocs/architecture/story-vibepro-import-based-conformance.md 28行目『この artifact はdry-run専用の診断出力であり、gateに未結合・バージョン管理された公開APIでもないため』を読み、これはconformance.json自体が外部の公開APIではないと述べる否定文であり、外部provider/API依存の存在を主張するものではないことを確認した。前提訂正(該当diffはnode:fs/promisesとnode:pathのみに依存し外部provider/network依存は存在しない)は妥当であり、failure_mode:provider_failureはこの差分に対して本当に起きないと証拠から推論の飛躍なく結論できるためjudged_soundとする。",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-provider-failure-recheck-ibc",
+        "session_ref": null
+      },
+      "head_commit": "e6ac4bf11a595a92bb7c65c3d358ea89a26e0e22",
+      "recorded_at": "2026-07-24T23:13:55.262Z"
+    },
+    {
+      "event_id": "7da92257-2a1f-48bd-a05f-3cff5458bb37",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc (docs/management/stories/active/story-vibepro-import-based-conformance.md) frontmatter carries a full reason: covering alternatives/compat/rollback/boundary, plus User Value, Background/Evidence (PR #378, PR #387 audit finding 43/46 noisy edges), 5 acceptance criteria (IBC-AC-001..005), Non Goals, and Rollback. Read the full doc directly: intent is concretely and specifically stated (swap dependency-violation measurement from Graphify calls-graph to deterministic import-scan), not boilerplate. Independently verified the 5 ACs map 1:1 onto the actual code change I read in src/architecture-conformance.js (edge_source field, node:/npm exclusion, graph_context demotion, new scope-empty fail-loud path, unchanged budget/orphan/stale-pattern/exit-code contract).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r3",
+        "session_ref": null
+      },
+      "head_commit": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+      "recorded_at": "2026-07-24T23:26:16.744Z"
+    },
+    {
+      "event_id": "11eb8651-b124-40ac-9b6b-6bc051a7508d",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently ran 'node --test test/architecture-conformance.test.js' from this exact worktree: 19/19 pass. Also independently ran both cited flow_replay commands verbatim ('node --test --test-name-pattern e2e ...' and '--test-name-pattern integration ...'); both match the same 2 renamed integration tests (title now contains literal 'e2e'), both pass (2/2). This is real, current-HEAD-executed replay evidence of actual runtime behavior, not just a token match against a stale test title. Confirmed via git diff e6ac4bf1..6af036e0 that the only change since the prior round is exactly these 2 test-title renames (zero logic diff), so current_reality evidence genuinely reflects the present code.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r3",
+        "session_ref": null
+      },
+      "head_commit": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+      "recorded_at": "2026-07-24T23:26:25.133Z"
+    },
+    {
+      "event_id": "e8d34116-9da9-4ff5-9786-4632954e67a7",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture doc's Consequences section and Spec's INV-001/INV-002 clauses explicitly state which invariants are preserved (budget_violation/orphan_file/stale_pattern detection, dry-run-only exit-code contract) versus which change (edge_source basis). Independently verified against src/architecture-conformance.js: findBudgetViolations, assignFilesToModules (orphans/stalePatterns) are untouched in logic, and the CLI exit-code branch (strict && violation_count>0 ? 2 : 0) is unchanged. Test suite still exercises budget/orphan/stale-pattern cases (all pass, verified by direct test run) alongside new import-scan-specific tests, so invariant preservation is backed by actual passing tests, not just doc assertion. The mechanical 'spec_clause: 5 inferred' undercounts the doc's actual 6 clauses (C-001/INV-001/C-002/S-001/INV-002/S-002) but this is a citation-count quirk, not a soundness gap -- the substantive invariant claims themselves check out against code and tests I read and ran directly.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r3",
+        "session_ref": null
+      },
+      "head_commit": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+      "recorded_at": "2026-07-24T23:26:34.770Z"
+    },
+    {
+      "event_id": "53ab8156-a56a-4153-88e0-f87e50242b66",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently verified the boundary claim (change scoped to architecture-conformance.js dependency-judgment logic + its test only, no target-model.json or gate/review coupling change) via: (1) 'git show 6af036e0 --stat' -- no docs/architecture/target-model.json and no gate/review source file in the changed-file list; (2) 'grep -rn runArchitectureConformance src bin' -- exactly 2 hits, the definition and its sole caller in src/cli.js's standalone 'architecture conformance' subcommand, never from gate logic. Flagging one citation defect I found independently: the mechanically-matched decision_record (decision-1784932836716-9f258f76) is actually an unrelated .vibepro/config.json artifact-policy waiver about committing the story-catalog entry (confirmed by reading .vibepro/pr/.../decision-records.json directly), not a boundary-scoping decision -- a citation mismatch. Despite that specific evidence item being off-target, the underlying boundary question is independently answered by the diff-stat and grep evidence above, so the item's judgment holds.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r3",
+        "session_ref": null
+      },
+      "head_commit": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+      "recorded_at": "2026-07-24T23:26:43.574Z"
+    },
+    {
+      "event_id": "9b9c2511-a023-4db9-9cbd-5ee146116ae8",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture doc's explicit 'Failure Modes' section enumerates 3 modes (target model missing/invalid -> unchanged fail-loud; graph.json missing -> newly relaxed to optional context; scope_roots with zero source files -> newly-added fail-loud) and each has a dedicated regression test I read and ran: 'missing target model fails loud', 'invalid graph or model json fails loud', 'missing graph.json is optional context and does not fail the run', 'scope_roots resolving to zero .js/.mjs/.cjs files fails loud instead of a silent zero-violation success' -- all pass in my direct 19/19 run. Note this item was judged_unsound (implementation_unsound) in a prior round because the empty-scope-roots fail-loud guard was then undocumented/untested; at this HEAD it is explicitly called out in Story/Architecture/Spec as new-not-continued behavior and has its own regression test, so the earlier defect is fixed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r3",
+        "session_ref": null
+      },
+      "head_commit": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+      "recorded_at": "2026-07-24T23:26:52.020Z"
+    },
+    {
+      "event_id": "576d1eee-5040-4786-8e09-70c2042d7216",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done-evidence requires flow_replay/artifact_replay/scenario_clause_e2e matching commands, cited as the same e2e/integration-pattern test runs. Independently ran them: 'integration e2e: cli conformance is dry-run by default and strict only via --strict' and 'integration e2e: cli conformance writes json and markdown artifacts' both pass, and directly assert done-state artifacts (result.artifacts.json === '.vibepro/architecture/conformance/conformance.json', .md path, exitCode 0 dry-run / 2 strict-with-violations). This is concrete replay evidence that the described end-state (writes json+markdown, dry-run by default) actually happens at current HEAD, not a token match against an unrun test name.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r3",
+        "session_ref": null
+      },
+      "head_commit": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+      "recorded_at": "2026-07-24T23:27:00.733Z"
+    },
+    {
+      "event_id": "6a8f8726-d98b-454f-98a6-de97157ecb86",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This change IS a breaking output-shape change (conformance.json's top-level 'graph' field removed, replaced by 'import_scan'/'graph_context'/'edge_source'), and it is honestly documented as such (IBC-AC-003, Architecture 'Public Contract / Compatibility' section, Spec C-002 all explicitly say '破壊的変更'). Independently verified the compatibility rationale rather than trusting the doc's assertion: grepped for any consumer of the old shape ('grep -rln conformance.json|\\.graph\\.dependency_edge_count|\\.graph\\.node_count' across src/bin/test) -- only architecture-conformance.js and its own test reference these; read src/cli.js's 'conformance' subcommand directly -- it just JSON.stringifies the whole result object with no field-specific access, so it required no compat shim. Tests directly assert the new shape (result.edge_source==='import_scan', result.graph_context.available/calls_edge_count). The axis question was genuinely engaged with (breaking change acknowledged) and the acceptable-because-single-already-updated-consumer claim holds up under my own grep, not just the doc's say-so.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r3",
+        "session_ref": null
+      },
+      "head_commit": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+      "recorded_at": "2026-07-24T23:27:09.714Z"
+    },
+    {
+      "event_id": "891f136a-4aa5-4b31-bddb-2bda160c81fd",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently checked diff shape ('git show 6af036e0 --stat'): 7 files changed, all serving one intent (swap dependency-violation measurement basis) -- 1 source file, 1 test file, 3 SSOT docs (Story/Architecture/Spec) for that same code change, plus config.json/design-ssot.json for standard story registration/lineage. No unrelated refactors, no drive-by changes, no second concern mixed in. This is a single-file logic change with commensurate test and doc updates -- exactly the grain one reviewer can read start to finish as one coherent judgment (verify the measurement swap is correct and the compat break is justified). No basis found for requiring a split.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r3",
+        "session_ref": null
+      },
+      "head_commit": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+      "recorded_at": "2026-07-24T23:27:17.954Z"
+    },
+    {
+      "event_id": "3182447a-505b-4c1d-9f5e-cb774737bc37",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff genuinely touches JSON-parsing surfaces (target-model.json, graph.json) via loadTargetModel/loadGraphContext in src/architecture-conformance.js, and both malformed-input paths are covered by the 'invalid graph or model json fails loud' test (asserts /parseに失敗/ and /JSONが不正/ rejection messages), which I ran and confirmed passes. Even though the mechanical classifier marked this not_required (likely scoped to a different kind of parser, e.g. LLM-output extraction), the actual question -- can malformed input reach this code path, and is failure handled safely -- is answered affirmatively by real, passing regression tests I verified myself.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r3",
+        "session_ref": null
+      },
+      "head_commit": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+      "recorded_at": "2026-07-24T23:27:25.363Z"
+    },
+    {
+      "event_id": "20805ec5-74de-4dd5-8102-6ab83f2c5efe",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently confirmed this is a classifier false-positive: grepped the 3 SSOT docs for 'API'/'external'/'network'/'provider' -- the only hits are 'バージョン管理された公開APIでもないため' (Architecture) and '...公開APIではない' (Spec/Story), i.e. sentences stating the artifact is explicitly NOT a versioned public API -- a negative-polarity match on the bare keyword 'API', unrelated to any external provider/network dependency. I additionally read the full src/architecture-conformance.js top to bottom: the entire implementation uses only node:fs/promises (readFile/readdir/mkdir/writeFile) and regex-based text scanning -- there is no fetch, no HTTP client, no external API/provider call anywhere in the diff or the surrounding function. The failure mode genuinely does not apply to this change; the not_required/no-evidence mechanical state is correct, and treating the keyword hit as evidence of an actual provider dependency would be the unsound move.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r3",
+        "session_ref": null
+      },
+      "head_commit": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+      "recorded_at": "2026-07-24T23:27:33.658Z"
+    },
+    {
+      "event_id": "fec0a4f7-91a7-453d-bd2c-7eaf9597a9b9",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently checked whether this diff touches gate/review/evidence-lifecycle source: the changed-file list (design-ssot.json, 3 SSOT docs, src/architecture-conformance.js, test/architecture-conformance.test.js) contains no gate/review lifecycle logic. Read the design-ssot.json diff directly -- it is a standard root-doc + story/spec children lineage registration block, mechanical and unrelated to gate evidence semantics. The uncommitted .vibepro/config.json change present in this worktree is a delivery_efficiency_by_story subagent-budget amendment for this Story's own review rounds (not evidence-lifecycle code). No misleading-green-artifact or unreconstructable-handoff risk is introduced by this diff; the not_required mechanical state matches reality.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r3",
+        "session_ref": null
+      },
+      "head_commit": "6af036e0857f6982870c940e7a3552d7cd9258e8",
+      "recorded_at": "2026-07-24T23:27:41.773Z"
+    },
+    {
+      "event_id": "f0b81034-835b-457d-bfa0-c1e367fa1555",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc has clear User Value, Background/Evidence citing PR#378/#387 audit findings (46 edges, only 3 real), and 5 concrete ACs (IBC-AC-001..005) that map 1:1 to spec clauses C-001/C-002/INV-001/INV-002/S-001/S-002. Only content-surface change since last round is unrelated .vibepro/config.json budget bookkeeping; intent text unchanged.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r4",
+        "session_ref": null
+      },
+      "head_commit": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+      "recorded_at": "2026-07-24T23:39:19.446Z"
+    },
+    {
+      "event_id": "ed0b70e0-f37d-4fd1-9c68-07d3adc101c6",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Ran node --test test/architecture-conformance.test.js myself: 19/19 pass, including the e2e/integration-tagged tests cited as evidence (cli dry-run default, cli writes json/markdown artifacts). Workflow current reality (import-scan-based conformance actually runs end to end via bin dispatch) is genuinely demonstrated, not just token-matched.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r4",
+        "session_ref": null
+      },
+      "head_commit": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+      "recorded_at": "2026-07-24T23:39:19.924Z"
+    },
+    {
+      "event_id": "87b5a129-e694-4dab-b1de-bdef67681940",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture doc's Public Contract/Compatibility section and spec clauses INV-001/INV-002/C-002 explicitly state the invariants (relative-specifier-only edges, unchanged budget/orphan/stale-pattern logic and exit-code contract) and the breaking artifact-shape change with its single-caller migration proof (grep -rn confirmed, src/cli.js updated same commit). Verified src/architecture-conformance.js:39-84 matches these claims exactly.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r4",
+        "session_ref": null
+      },
+      "head_commit": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+      "recorded_at": "2026-07-24T23:39:20.417Z"
+    },
+    {
+      "event_id": "207001db-33fd-4808-9551-86f69ac541a1",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc frontmatter reason and Non Goals section explicitly scope this to src/architecture-conformance.js + its test only, leaving target-model.json declarations, gate binding, and rule_id attribution untouched. Rollback section confirms revert-only recovery. decision_record and current_verification evidence are genuine, not placeholder.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r4",
+        "session_ref": null
+      },
+      "head_commit": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+      "recorded_at": "2026-07-24T23:39:20.939Z"
+    },
+    {
+      "event_id": "db67a502-105b-41f4-bbcc-d3b55785f45c",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture doc Failure Modes section enumerates target-model-missing (fail loud, unchanged), graph.json-missing (relaxed to optional context), and scope_roots-empty (new fail-loud, regression-tested). Confirmed matching throw sites at src/architecture-conformance.js:41-42,119,127,130,134,138,174 and the exact regression test name exists and passes in the 19/19 run.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r4",
+        "session_ref": null
+      },
+      "head_commit": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+      "recorded_at": "2026-07-24T23:39:21.518Z"
+    },
+    {
+      "event_id": "1747dadc-8a93-4ea0-b0f2-74c72c64bd6e",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Same flow_replay/artifact_replay test commands re-run by me: 19/19 pass, covering unit (extractImportSpecifiers/resolveRelativeImport/buildImportDependencyEdges), integration (cli dry-run/artifact-writing), and regression (comment-stripping noise, frozen baseline, invalid JSON, empty scope) cases named in the Story/Architecture docs. Done evidence is concrete and current.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r4",
+        "session_ref": null
+      },
+      "head_commit": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+      "recorded_at": "2026-07-24T23:39:22.017Z"
+    },
+    {
+      "event_id": "8c84b112-9fda-4eec-8acd-b04298509fcc",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change DOES break the conformance.json top-level shape (graph field removed, replaced by import_scan/graph_context) -- this is not glossed over. Architecture doc Public Contract section states it plainly, proves the single internal consumer (src/cli.js) was updated in the same commit via grep, and justifies no-deprecation-period because the artifact is dry-run-only, ungated, unversioned. This is genuine risk analysis with a defensible conclusion, not a rubber-stamped token match.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r4",
+        "session_ref": null
+      },
+      "head_commit": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+      "recorded_at": "2026-07-24T23:39:22.668Z"
+    },
+    {
+      "event_id": "fa337e6f-eef6-4ec7-9e07-b4bd843a2bfa",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Diff is a cohesive single-purpose refactor: one 455-line src file + matching test file + the standard Story/Architecture/Spec/design-ssot doc triad, all describing the same one behavior swap (Graphify calls -> import scan). No unrelated concerns are mixed in (the only other repo-level diff, .vibepro/config.json budget bookkeeping, is not part of this Story's content surface). A single reviewer can read this as one coherent unit.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r4",
+        "session_ref": null
+      },
+      "head_commit": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+      "recorded_at": "2026-07-24T23:39:23.182Z"
+    },
+    {
+      "event_id": "cc1ba5bb-691f-4ed1-8fac-65cf27d1c532",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Two distinct parse surfaces exist: (1) target-model.json/graph.json JSON.parse, which throws and is caught to fail loud, covered by the passing 'invalid graph or model json fails loud' test; (2) extractImportSpecifiers' regex-based scan of arbitrary source text, which by construction cannot throw on malformed input (worst case: a specifier fails to match or fails to resolve, incrementing unresolvedReferenceCount, never a crash). 'not_required' classification is defensible: the malformed-input hazard this failure mode names is structurally absent from the regex path and explicitly handled+tested on the JSON path.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r4",
+        "session_ref": null
+      },
+      "head_commit": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+      "recorded_at": "2026-07-24T23:39:23.672Z"
+    },
+    {
+      "event_id": "4c2a0d25-d35a-4f8c-835f-ebd417a9eade",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No external provider/API/network dependency exists in this diff (pure filesystem read + regex scan + JSON parse, no network calls). Consistent with the prior round's premise correction that the original trigger was a false-positive keyword match on 'API' inside a negative sentence, unrelated to any real change. Confirmed current diff (src/architecture-conformance.js, test file) still contains no provider/network code.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r4",
+        "session_ref": null
+      },
+      "head_commit": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+      "recorded_at": "2026-07-24T23:39:24.152Z"
+    },
+    {
+      "event_id": "c9f23ae0-796e-417b-843d-d0b430915722",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This Story's code/test/doc changes do not touch gate, review, or evidence-recording machinery -- they change conformance's dependency-measurement logic only. The .vibepro/config.json diff since last round is a budget-limit bookkeeping entry (max_subagent_count/max_agent_consumption_ms), not a change to evidence-lifecycle semantics, verification logic, or artifact-freshness rules, so it cannot itself produce misleading green artifacts. 'not_required' is defensible.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r4",
+        "session_ref": null
+      },
+      "head_commit": "1ec347b95138d5f1ab39994e5e8935e0e37ddb84",
+      "recorded_at": "2026-07-24T23:39:24.778Z"
+    },
+    {
+      "event_id": "ae69fded-7eb3-480d-a53b-ed0284a528f6",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Read the Story doc (docs/management/stories/active/story-vibepro-import-based-conformance.md) frontmatter reason and Acceptance Criteria in full. The stated intent -- replace Graphify calls-edge-based undeclared_dependency measurement with a deterministic import/export/require scan because PR #387 found the calls edges were mostly noise (3 real deps out of 46) and violation counts were non-reproducible run-to-run -- is not just present as text but is exactly what the diff implements: buildImportDependencyEdges/extractImportSpecifiers/resolveRelativeImport were added and findDependencyViolations now takes only importEdges (graph is no longer passed in). This is a direct, verified intent-to-implementation correspondence, not a mechanical keyword match.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:10:16.281Z"
+    },
+    {
+      "event_id": "fa23f9dd-eb3a-43f0-8a0e-a4995f2b4ea1",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Personally re-ran node --test test/architecture-conformance.test.js (19/19 pass) and separately ran node bin/vibepro.js architecture conformance . --json against the real repo tree at current HEAD (not a mock), producing a real conformance.json (edge_source=import_scan, undeclared_dependency_count=41, scanned_file_count=141). The e2e/integration tests referenced as flow_replay evidence (runCli(['architecture','conformance',...]) through real bin dispatch against tmp fixture repos, dry-run vs --strict exit codes, --json artifact writing) genuinely exercise the CLI-boundary current behavior end to end rather than mocking it -- I inspected the test bodies directly (lines 265-287 of the test file) and confirmed they call runCli and assert on real exitCode/artifact paths, not stubbed return values.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:10:26.718Z"
+    },
+    {
+      "event_id": "b984b962-f004-4b90-b3fa-771422c4b632",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The invariants at risk in a measurement-layer swap are: (1) budget_violation/orphan_file/stale_pattern judgments stay correct, (2) the CLI dry-run/--strict exit-code contract stays correct, (3) node:/npm exclusion holds. I verified these directly, not via the matched spec_clause/test_contract labels alone: git diff 7fbdf98c 3337d470 -- src/cli.js is empty (zero lines changed), so the exit-code contract is untouched by construction; findBudgetViolations is untouched in the same diff; orphan/stale_pattern logic is untouched except an internal Set-key separator changed from an embedded NUL char to a space (same on both write and read sides, so no behavioral effect), confirmed by the passing 'files outside every module are orphans and unmatched patterns are stale' test. All budget/orphan/stale tests plus the exit-code integration test pass in the fresh 19/19 run.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:10:36.152Z"
+    },
+    {
+      "event_id": "b1de8764-d499-466c-b906-c9fce66a680f",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Boundary in question: demoting graph.json from a required fail-loud dependency to optional context, and the corresponding TAC-AC-005 contract override. I read docs/architecture/story-vibepro-import-based-conformance.md in full: it has explicit 'Public Contract / Compatibility' and 'Failure Modes' sections that name the exact breaking change (top-level 'graph' field removed, replaced by import_scan/graph_context), state the single consumer (src/cli.js, grep-verified), justify no deprecation period (dry-run-only diagnostic, not a versioned public API, not gate-bound), and explicitly flag the TAC-AC-005 override as a replacement not a continuation. This is substantive boundary reasoning grounded in the actual diff, independently confirmed by my own grep and by the empty git diff on src/cli.js. Caveat noted: the specific decision_record cited by the mechanical matcher (decision-1784932836716-9f258f76) is actually about an unrelated .vibepro/config.json commit-policy waiver, not about this boundary -- but the architecture doc and Story frontmatter reason field independently and substantively carry the boundary judgment, so the overall axis conclusion still holds.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:10:46.449Z"
+    },
+    {
+      "event_id": "ddd0c162-cb61-4719-92c6-8b825770718f",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Failure modes named in docs/architecture/story-vibepro-import-based-conformance.md's 'Failure Modes' section (target model missing/invalid, graph.json missing [mitigated to non-fail], graph.json invalid JSON [still fails loud], scope_roots empty [new fail-loud path]) each have a corresponding, currently-passing regression test I ran myself: 'missing target model fails loud', 'invalid graph or model json fails loud', 'missing graph.json is optional context and does not fail the run', and 'scope_roots resolving to zero .js/.mjs/.cjs files fails loud instead of a silent zero-violation success'. Each test asserts the specific exception message or specific non-throwing field value, not a generic pass/fail, so the failure-mode enumeration in the doc genuinely matches tested behavior in the code.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:10:54.172Z"
+    },
+    {
+      "event_id": "e00e665f-8cc3-4833-91a9-1ab5d790cd2f",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence requires flow_replay/artifact_replay/scenario_clause_e2e, not merely a claim of completion. I independently reran the full test/architecture-conformance.test.js suite (19/19 pass, matching the 19-test file I read in full) and separately ran the real CLI against this actual repository (not a fixture) producing a genuine .vibepro/architecture/conformance/conformance.json artifact with edge_source=import_scan and consistent counts across the run. Each Acceptance Criterion (AC-1..AC-5) maps to a specific named test in the file (verified by reading test bodies), so 'done' is grounded in real, reproducible artifact output rather than self-report.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:11:11.230Z"
+    },
+    {
+      "event_id": "0d9d5b82-1f33-4222-8f83-6c0c972987ed",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The public-contract-breaking risk here is real (conformance.json top-level shape change: 'graph' field removed, 'import_scan'/'graph_context' added) and the Story does not hide it -- AC-3's body and the architecture doc's 'Public Contract / Compatibility' section both call it out explicitly as a breaking change and justify why no back-compat shim is warranted (dry-run-only diagnostic output, not gate-bound, not a versioned API). I independently grepped src/ and bin/ for consumers of runArchitectureConformance/its result and confirmed src/cli.js is the sole consumer and does not read the removed 'graph' field, and I ran the real CLI to confirm the new shape is what actually gets written (no top-level 'graph' key present). The 'compat_or_output_test'/'semantic_invariant_test' matched evidence (the artifact-writing and CLI dry-run/--strict tests) genuinely exercises this contract at the CLI boundary, not just at the unit level.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:11:19.844Z"
+    },
+    {
+      "event_id": "caa53a6c-f314-4424-8f98-622da8f0d18a",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanical status was 'needs_evidence' (unlike the other passed spine items), resolved via decision-1784935849436-387225ea, a waiver reasoning that this is one coherent single-intent PR (7 files: design-ssot.json, 3 docs, src/architecture-conformance.js, its test, plus .vibepro/config.json registration) already reviewed across 3 Agent Review rounds including one that caught a real defect (an undocumented fail-loud path). I independently confirmed the diff is in fact small and single-purpose: the substantive code diff (git diff 7fbdf98c 3337d470 -- src/architecture-conformance.js) is ~230 lines in one file plus its test, implementing exactly one coherent change (calls-edges -> import-scan). This is genuinely reviewable by one person in one sitting. Note: the waiver's recorded git_context.head_sha (6af036e0...) predates the final two rebases, but per this repo's content-surface-bound review policy (CLAUDE.md non-negotiable #3) and the Story background (only .vibepro/config.json and design-ssot.json ledger entries changed across the rebases, src/architecture-conformance.js and its test are byte-identical per git diff 1ec347b9 HEAD), the substantive content surface this waiver reasons about is unchanged, so the reasoning still holds at current HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:11:30.741Z"
+    },
+    {
+      "event_id": "61b4bbfb-ed67-4138-a974-2cda2fc9a3dc",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Two parsers exist in this file: JSON.parse (loadTargetModel, loadGraphContext) and the new regex-based extractImportSpecifiers. JSON.parse failure is pre-existing behavior not newly introduced by this Story (loadTargetModel is untouched by this commit) and is explicitly regression-tested ('invalid graph or model json fails loud', which I confirmed passes and asserts the specific /JSONが不正/ and /parseに失敗/ messages). The new regex-based import extraction is, by construction, non-throwing: extractImportSpecifiers/stripComments never throw on malformed/unusual source (worst case is an under- or over-extraction, which surfaces as unresolvedReferenceCount, not an exception), so it is not a 'parse failure' (crash) risk in the sense this candidate describes -- it's a data-accuracy concern already covered under spine:invariants/failure_modes via the unresolved_reference_count field and its dedicated test. 'not_required' as a separate item is therefore a defensible classification, not a dodge.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:11:39.944Z"
+    },
+    {
+      "event_id": "79726442-ef3b-4606-8d84-de47a3db9c5d",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Read src/architecture-conformance.js in full: it only performs local filesystem reads (readFile/readdir/mkdir/writeFile from node:fs/promises) and pure in-memory regex/string processing. There is no network call, external API, or third-party service dependency anywhere in this file or its test file. 'not_required' is trivially and obviously correct for this diff; marking it otherwise would be manufacturing a risk that does not exist in the actual code.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:11:45.967Z"
+    },
+    {
+      "event_id": "3552a01b-248c-4173-a39b-6096e8712901",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The changed-files list for this Story (design-ssot.json, docs/architecture, docs/management/stories, docs/specs, src/architecture-conformance.js, test/architecture-conformance.test.js) contains no gate/review/evidence lifecycle machinery -- confirmed by reading the diff: none of src/gate-outcome-ledger.js, src/decision-outcome-ledger.js, src/agent-review.js, src/pr-manager.js, or any evidence-recording/review-recording code path is touched. The conformance.json artifact this Story changes is itself a dry-run diagnostic output that is not consumed by any gate/review lifecycle machinery (confirmed: its only consumer is the CLI subcommand rendering it to stdout/file, not any gate evaluator). 'not_required' is correct -- this Story cannot produce a misleading green gate artifact or an unreconstructable handoff because it does not touch that machinery at all.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-judgment-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:11:54.209Z"
+    }
+  ]
+}

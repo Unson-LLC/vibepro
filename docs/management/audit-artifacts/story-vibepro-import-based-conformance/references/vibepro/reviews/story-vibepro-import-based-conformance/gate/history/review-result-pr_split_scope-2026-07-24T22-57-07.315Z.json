@@ -1,0 +1,150 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-import-based-conformance",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "Single-commit PR is 7 files, all genuinely serving the one Story intent (import-scan-based conformance measurement). No unrelated files. One tiny undocumented behavior-adjacent edit inside the in-scope implementation file (matchedPatterns Set-key delimiter changed from a pre-existing stray NUL byte to a plain space) is low-risk and covered by a passing pre-existing test, not a scope violation.",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "undocumented-delimiter-change",
+      "detail": "src/architecture-conformance.js assignFilesToModules() Set-key delimiter changed from a pre-existing stray NUL byte to a plain space (2 call sites), not mentioned in the commit message/docs; functionally safe for realistic inputs and the pre-existing orphan/stale-pattern test still passes"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected git show HEAD --stat/--name-status for the full file list, read both waiver decision records (gate:pr_scope_judgment, gate:split_resolution) in decision-records.json, diffed .vibepro/config.json and design-ssot.json directly, forced a text diff of src/architecture-conformance.js (git reported it binary due to 2 pre-existing NUL bytes in the parent blob), confirmed the new blob has 0 NUL bytes, checked line counts on the 3 new docs, and ran the focused test suite.",
+    "evidence": "node --test test/architecture-conformance.test.js: 18/18 pass, including 'files outside every module are orphans and unmatched patterns are stale' which exercises the changed matchedPatterns code path",
+    "inputs": [
+      "src/architecture-conformance.js",
+      "test/architecture-conformance.test.js",
+      ".vibepro/pr/story-vibepro-import-based-conformance/decision-records.json",
+      ".vibepro/config.json",
+      "design-ssot.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern: automated split-plan recommended 3 lanes and a bundled single-commit PR warrants scrutiny for scope creep -> every file is directly load-bearing for this one Story (2 required registration diffs, 3 new SSOT docs describing exactly this change, 1 implementation file, 1 matching test file); waiver rationale holds up against the actual diff content",
+    "secondary concern: git reported src/architecture-conformance.js as binary, which could hide scope-creep from a shallow stat-only review -> forced a text diff and confirmed the NUL-byte artifact was pre-existing in the parent blob only; found one small undocumented delimiter change (NUL to space in a Set-key template literal), verified functionally inert for realistic module names/patterns and covered by a passing pre-existing test"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+    "expected_root": null,
+    "expected_head_sha": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+    "current_head_sha": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+      "expected_root": null,
+      "expected_head_sha": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "current_head_sha": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-24T22:57:07.315Z",
+  "git_context": {
+    "head_sha": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+    "current_branch": "claude/story-vibepro-import-based-conformance",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T22:57:07.271Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "09a3d99ad303c541e4d247d6b9fe90a9b71b0017d652a8161f96c59cbcdcb22e",
+        "size": 36058
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "905faf3d230a74ca3b00fa20f9fac55bafe9b8df42e1e2e15395b5b4ceb3ef7f",
+        "size": 225044
+      },
+      {
+        "path": "src/architecture-conformance.js",
+        "sha256": "a4c95b222d45d2333faa00f920af996f6a35d50f24e3e2279e5e1888ce5fbf4a",
+        "size": 18474
+      },
+      {
+        "path": "test/architecture-conformance.test.js",
+        "sha256": "092890b2afec9d09c56b518157d148dcb33bbb527249e56393919d38f846ef07",
+        "size": 13996
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "4a79500236a3664b115bf70d257bfb8e0ae5006d1e2eb4ff8a9ccff91caf13a5"
+  },
+  "source_fingerprint": "5a7d6c88226860d85aa75a2e70ab4c51219160c610c421e4d4e004a4f8a11a13",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-subagent-pr-split-scope-ibc",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "b2c08476-7cd0-4f6c-a41b-66fc9a113a7e",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-import-based-conformance/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "b2c08476-7cd0-4f6c-a41b-66fc9a113a7e",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

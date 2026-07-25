@@ -1,0 +1,125 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-import-based-conformance",
+  "ledger_path": ".vibepro/pr/story-vibepro-import-based-conformance/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_1e54c510a528bf5ea83c562474889d418a225aefab279869af4ce03f6fc42850"
+  },
+  "parent_revision_fingerprint": "f77e4ce10ca09b52ce315858f9fddaf840920e0dd40b33a00d78e657e5329195",
+  "revision_fingerprint": "f163e2230fcc13f9a2064bc28b65510805f77e59f7e7964c85785833ee48e9d4",
+  "trace": {
+    "decision_trace_id": "dt_1e54c510a528bf5ea83c562474889d418a225aefab279869af4ce03f6fc42850",
+    "collision_group": null,
+    "trace_source_ref": "tsr_d55c292c56fc72974bcc6176c1669353d86c29c56a39d3fd376d43a06fa2cdea",
+    "normalized_subject_key": "finding:commit-message-stale-figure",
+    "source_identity": {
+      "source_kind": "review_finding",
+      "source_ref": ".vibepro/reviews/story-vibepro-import-based-conformance/gate/review-result-gate_evidence.json",
+      "native_id": "commit-message-stale-figure",
+      "digest": "751f468e3bec17d4eedc465572333aab5cb8462b22579daf6c297f250f044336",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "3337d4708f578575bc6cec14fa8c43e654281719",
+    "parent_revision_fingerprint": "f77e4ce10ca09b52ce315858f9fddaf840920e0dd40b33a00d78e657e5329195",
+    "revision_fingerprint": "f163e2230fcc13f9a2064bc28b65510805f77e59f7e7964c85785833ee48e9d4",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_1e54c510a528bf5ea83c562474889d418a225aefab279869af4ce03f6fc42850"
+        },
+        "parent_revision_fingerprint": "0bf46415e935bba136afa7140a50dc1f1ac04c2a5dfcfb4c82cf3acee2744261"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "observed",
+      "value": {
+        "severity": "low",
+        "id": "commit-message-stale-figure",
+        "detail": "tip commit message states 61 violations from the pre-rebase measurement; post-rebase real count is 68 (41 undeclared/9 budget/18 orphan, growth from PR #365's new src files absorbed by main, undeclared_dependency_count itself unchanged at 41); informational only, PR body carries the current figure"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-import-based-conformance/gate/review-result-gate_evidence.json",
+          "source_head_sha": "3337d4708f578575bc6cec14fa8c43e654281719",
+          "source_digest": "751f468e3bec17d4eedc465572333aab5cb8462b22579daf6c297f250f044336",
+          "native_id": "commit-message-stale-figure"
+        }
+      ]
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "observed",
+      "value": {
+        "detected_by": "gate_evidence",
+        "stage": "gate",
+        "detected_head_sha": "3337d4708f578575bc6cec14fa8c43e654281719"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-import-based-conformance/gate/review-result-gate_evidence.json",
+          "source_head_sha": "3337d4708f578575bc6cec14fa8c43e654281719",
+          "source_digest": "751f468e3bec17d4eedc465572333aab5cb8462b22579daf6c297f250f044336",
+          "native_id": "commit-message-stale-figure"
+        }
+      ]
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 390,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/390",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "6a652c9866cc796a3bd3e5666e9827ac66c4f4fa",
+        "status": "merged",
+        "merged_at": "2026-07-25T00:22:47Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-import-based-conformance/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

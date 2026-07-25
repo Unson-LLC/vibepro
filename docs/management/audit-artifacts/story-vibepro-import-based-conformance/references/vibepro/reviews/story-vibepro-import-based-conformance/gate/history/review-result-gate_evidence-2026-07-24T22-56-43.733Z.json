@@ -1,0 +1,151 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-import-based-conformance",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Import-based conformance replaces Graphify calls-edges as the sole undeclared_dependency evidence; budget/orphan/stale_pattern logic and the dry-run/--strict exit-code contract are verified byte-identical to the prior implementation, all 18 tests pass, and an independent read-only re-run reproduces the commit's claimed 61 violations (41 undeclared_dependency) deterministically across 3 runs.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read src/architecture-conformance.js and test/architecture-conformance.test.js in full; forced a text diff of HEAD~1 vs HEAD (git reported binary due to a pre-existing stray NUL byte in the old file, now incidentally normalized to a space); ran the targeted test file; independently invoked runArchitectureConformance against this repo 3x via a scratch script; grepped src/ and bin/ for other callers of the old result.graph shape or removed internals.",
+    "evidence": "node --test test/architecture-conformance.test.js: 18/18 pass; scratch verification script computed violation_count=61 (undeclared=41, budget=9, orphan=11, stale=0) identically on 3 consecutive runs",
+    "inputs": [
+      "src/architecture-conformance.js",
+      "test/architecture-conformance.test.js",
+      "src/cli.js",
+      "docs/management/stories/active/story-vibepro-import-based-conformance.md",
+      "docs/architecture/story-vibepro-import-based-conformance.md",
+      ".vibepro/spec/story-vibepro-import-based-conformance/spec.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern: hand-rolled regex import scanner could silently misclassify edges -> verified regex definitions do not self-match, multi-line static imports captured correctly, reproduced 61/41 deterministically across 3 runs; bin/vibepro.js's runtime import(moduleUrl) plugin-loader hook is correctly out of scope",
+    "initial concern: renaming result.graph to import_scan/graph_context could be a breaking API change -> repo-wide grep found the only caller of runArchitectureConformance is src/cli.js (updated in the same commit), no other consumer of the old shape",
+    "initial concern: budget/orphan/stale_pattern-unchanged and dry-run/--strict-contract-unchanged are commit-message assertions, not verified fact -> forced text diff confirmed findBudgetViolations, matchModule, matchPattern, assignFilesToModules have zero logic diff hunks; cli.js's strict exit-code line is unchanged"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+    "expected_root": null,
+    "expected_head_sha": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+    "current_head_sha": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-import-based-conformance",
+      "expected_root": null,
+      "expected_head_sha": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "current_head_sha": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-24T22:56:43.733Z",
+  "git_context": {
+    "head_sha": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+    "current_branch": "claude/story-vibepro-import-based-conformance",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T22:56:43.700Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "2cd1d8bf1e2f5e1f0bc7992746436c78c3ccefe1",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-import-based-conformance.md",
+        "sha256": "57c3644b74d505819845d53b3c060b97191ed21d98fa9f7f5779457f8795cfce",
+        "size": 3173
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-import-based-conformance.md",
+        "sha256": "c620c8e3864d3562dbb072b208fbe15dea8f478bde0bcca2c8258d45a6ec372c",
+        "size": 5083
+      },
+      {
+        "path": "src/architecture-conformance.js",
+        "sha256": "a4c95b222d45d2333faa00f920af996f6a35d50f24e3e2279e5e1888ce5fbf4a",
+        "size": 18474
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "dcc7b16d338220a719641851923177873700fc9878ec988f8e4e056cb70345fd",
+        "size": 233235
+      },
+      {
+        "path": "test/architecture-conformance.test.js",
+        "sha256": "092890b2afec9d09c56b518157d148dcb33bbb527249e56393919d38f846ef07",
+        "size": 13996
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "14752e01501558190a639aa93f5098b1cfa6edfcbf42b40dd8535c33af06c28d"
+  },
+  "source_fingerprint": "1bfb17d22b46fd0df562acb0e1e3bb3a1d88ae6adc6c18e1f6f12445689903ce",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-subagent-gate-evidence-ibc",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a4186c83-8668-47c8-9dc3-c939b35ea333",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-import-based-conformance/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "a4186c83-8668-47c8-9dc3-c939b35ea333",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}
