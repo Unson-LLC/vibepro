@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-docs-only-evidence-profile",
   "source": "execute_merge",
-  "promoted_at": "2026-07-25T14:49:20.252Z",
+  "promoted_at": "2026-07-25T14:49:27.254Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/audit-index.json",
@@ -38,10 +38,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:878839aee91dd69b47e4b0764d8c086632bbd538cd50e079c859e57400b42f5c",
-    "compressed_hash": "sha256:34c52887ebd339432f628e1cc4d3a11feb5956fb2e084bff4e2c63d3a902ce57",
-    "expanded_bytes": 54328,
-    "compressed_bytes": 7175,
+    "content_hash": "sha256:2e549271cfd2b301059748a623aae1a26c7fa9cf501564337d489203f8ca39ab",
+    "compressed_hash": "sha256:41cbd0d0ac66948a708a4b2114cc4e99516288f8448a43f00de4079ab3436941",
+    "expanded_bytes": 54380,
+    "compressed_bytes": 7199,
     "expanded_line_count": 870,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -62,8 +62,8 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-docs-only-evidence-profile",
     "cost": {
-      "compressed_bytes": 7175,
-      "expanded_bytes": 54328,
+      "compressed_bytes": 7199,
+      "expanded_bytes": 54380,
       "expanded_line_count": 870,
       "persisted_line_count": 1
     }
@@ -96,11 +96,11 @@
       ]
     },
     "decision_outcome_binding": {
-      "status": "failed",
-      "reason": "central_ledger_parse_failed",
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
       "expected_entry_count": 40,
       "promoted_count": 0,
-      "duplicate_count": 0,
+      "duplicate_count": 40,
       "persistence_status": null
     },
     "pr_url": "https://github.com/Unson-LLC/vibepro/pull/392",
@@ -115,7 +115,7 @@
     "status": "blocked",
     "resolved_reference_count": 49,
     "copied_reference_count": 37,
-    "unresolved_reference_count": 7,
+    "unresolved_reference_count": 14,
     "replay_bundle": "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/audit-replay-bundle.json.gz",
     "replay_command": "vibepro audit replay . --story-id story-vibepro-docs-only-evidence-profile"
   },
@@ -132,7 +132,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:878839aee91dd69b47e4b0764d8c086632bbd538cd50e079c859e57400b42f5c"
+      "content_hash": "sha256:2e549271cfd2b301059748a623aae1a26c7fa9cf501564337d489203f8ca39ab"
     }
   ],
   "raw_artifact_manifest": [
@@ -222,8 +222,8 @@
       "source": ".vibepro/pr/story-vibepro-docs-only-evidence-profile/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-docs-only-evidence-profile/audit-replay-bundle.json.gz",
-      "digest": "sha256:cf5a43eda5bcb9385afd300f3450c02b9cc203d62e9c577467381693d811ad7a",
-      "audit_digest": "sha256:0db3b68f77cbde6f38212a6c0c46eb805e6f6bf3150a58ab05b0d075a1efb39a",
+      "digest": "sha256:a89563a5ebeced163e1018fa09102f853499b42d18945a556303e2e938ac3b76",
+      "audit_digest": "sha256:97416bd47442b4edf0da30133c7ee13330c128862ee52f184346803a6b05dcc3",
       "line_count": 1883,
       "raw_line_count": 4374,
       "audit_scope": "judgment_evidence_v1",
@@ -785,14 +785,42 @@
       "size_bytes": 983066
     },
     {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/graphify/graph.json",
       "reason": "source_too_large",
       "size_bytes": 7135581
     },
     {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/pr/story-vibepro-docs-only-evidence-profile/design-ssot-reconciliation.json",
       "reason": "source_too_large",
       "size_bytes": 580428
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
     },
     {
       "source": ".vibepro/uiux/story-vibepro-docs-only-evidence-profile/ia-flow-map.json",
