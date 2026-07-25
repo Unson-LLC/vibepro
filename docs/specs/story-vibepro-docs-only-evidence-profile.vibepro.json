@@ -1,0 +1,332 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-docs-only-evidence-profile",
+  "generated_by": {
+    "caller": "claude_code",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "Evidence change-surface resolution classifies every changed path as product_code, docs, evidence_artifacts, or unknown, and reports docs_only only when at least one docs path changed and no product_code path changed. An unclassified path, a VibePro-record-only change, an empty observed change set, and an unavailable diff-stats status each resolve to unknown rather than docs_only, so a lost measurement never lightens evidence.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/docs-only-change.js",
+            "anchor": "classifyEvidenceChangeSurface"
+          },
+          {
+            "file": "src/docs-only-change.js",
+            "anchor": "detectDocsOnlyChange"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-1 classifies each changed path into a single evidence change surface"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-1 detects a docs/roadmap change with no src or test diff as docs-only"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-1 keeps any src or test diff on the implementation path"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-1 refuses to call an unclassified or empty change set docs-only"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-25T12:45:10.862Z",
+      "last_revised_at": "2026-07-25T12:52:51.257Z"
+    },
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "A docs-only change defaults to the summary persistence depth, and an explicit requested evidence depth remains authoritative over that default so a documentation change can still be escalated. A change that touches product code keeps the pre-existing implementation depth resolution unchanged.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/evidence-cost-budget.js",
+            "anchor": "buildCanonicalEvidenceCostSummary"
+          },
+          {
+            "file": "src/evidence-cost-budget.js",
+            "anchor": "resolveImplementationPersistenceDepth"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-1 defaults a docs-only change to the lightest persistence depth"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-1 keeps an explicit depth escalation authoritative over the docs-only default"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-1 does not lighten an implementation change that touches docs too"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-25T12:45:10.862Z",
+      "last_revised_at": "2026-07-25T12:52:51.257Z"
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "The canonical evidence cost budget defines a docs_only profile separate from the normal and high implementation profiles. The docs_only profile keeps the same absolute canonical artifact line threshold as the normal profile and does not apply the artifact-to-code ratio rule, because a docs-only change has no product-code denominator. Budget verdicts are reported on separated axes: budget_scope names which axis applies, implementation_budget_status is not_applicable for a docs-only change, and docs_only_budget_status is not_applicable for an implementation change. A caller-supplied budget that predates the docs_only profile falls back to the normal profile rather than becoming unbounded.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/evidence-cost-budget.js",
+            "anchor": "DEFAULT_EVIDENCE_COST_BUDGET"
+          },
+          {
+            "file": "src/evidence-cost-budget.js",
+            "anchor": "applyCanonicalEvidenceBudgetStatus"
+          },
+          {
+            "file": "src/evidence-cost-budget.js",
+            "anchor": "resolveBudgetThresholds"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-2 defines a docs-only budget profile distinct from the implementation profiles"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-2 routes a docs-only overspend away from the implementation budget signal"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-2 keeps implementation overspend on the implementation budget signal"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-2 falls back to the normal profile when a caller budget predates docs_only"
+          },
+          {
+            "file": "test/docs-only-evidence-profile-integration.test.js",
+            "case": "docs-only merge promotes a docs_only-scoped canonical bundle with a recovered diff base"
+          },
+          {
+            "file": "test/docs-only-evidence-profile-integration.test.js",
+            "case": "implementation merge keeps the implementation budget scope through canonical promotion"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-25T12:45:10.862Z",
+      "last_revised_at": "2026-07-25T12:52:51.257Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "scenario_clause_e2e: given a repository whose pull request has already been merged so that origin/<base> contains the branch head, when merge diff-line statistics are collected, then the base branch is rejected as a diff base and the pre-merge base is recovered from the merge commit first parent for both a merge commit and a squash merge; when no usable pre-merge base exists, then diff statistics are recorded as unavailable with the containment reason instead of an available zero-line change set, so canonical evidence cost keeps product_changed_lines null rather than zero. Before the merge lands, the base branch remains the diff base.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/merge-manager.js",
+            "anchor": "collectMergeDiffLineStats"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/merge-diff-base-preservation.test.js",
+            "case": "DOE-S-3 refuses to report a post-merge base as an available zero-line diff"
+          },
+          {
+            "file": "test/merge-diff-base-preservation.test.js",
+            "case": "DOE-S-3 recovers the pre-merge base from the merge commit first parent"
+          },
+          {
+            "file": "test/merge-diff-base-preservation.test.js",
+            "case": "DOE-S-3 recovers the pre-merge base after a squash merge"
+          },
+          {
+            "file": "test/merge-diff-base-preservation.test.js",
+            "case": "DOE-S-3 still measures against the base branch before the merge lands"
+          },
+          {
+            "file": "test/merge-diff-base-preservation.test.js",
+            "case": "DOE-S-3 an unrecoverable diff base never becomes product_changed_lines: 0"
+          },
+          {
+            "file": "test/docs-only-evidence-profile-integration.test.js",
+            "case": "docs-only merge promotes a docs_only-scoped canonical bundle with a recovered diff base"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-25T12:45:10.862Z",
+      "last_revised_at": "2026-07-25T12:52:51.257Z"
+    },
+    {
+      "id": "C-003",
+      "type": "contract",
+      "statement": "Canonical evidence cost distinguishes a docs-only zero from an unmeasured zero: product_code_changed_lines is zero with reason docs_only for a docs-only change, and null with status unavailable and reason diff_stats_unavailable when the diff base could not be resolved. An unmeasured change surface is never classified as docs_only and stays on the implementation budget scope.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/evidence-cost-budget.js",
+            "anchor": "resolveProductCodeLineReason"
+          },
+          {
+            "file": "src/merge-manager.js",
+            "anchor": "recoveredDiffStats"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-3 marks a docs-only zero as docs_only, not as a missing measurement"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-3 records an unavailable diff base instead of a zero-line change set"
+          },
+          {
+            "file": "test/docs-only-evidence-profile-integration.test.js",
+            "case": "docs-only merge promotes a docs_only-scoped canonical bundle with a recovered diff base"
+          },
+          {
+            "file": "test/docs-only-evidence-profile-integration.test.js",
+            "case": "implementation merge keeps the implementation budget scope through canonical promotion"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-25T12:45:10.862Z",
+      "last_revised_at": "2026-07-25T12:52:51.257Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "The existing evidence depth planner contract is not re-implemented: docs-only detection enters as a planner input. The planner keeps its schema version, its summary-first default depth, its artifact policy vocabulary, and its risk escalation behaviour, and additionally records the docs-only verdict, its reason, and the resolved default_depth_reason. An externally resolved docs-only verdict supplied by the caller is used as the planner input.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/evidence-depth-planner.js",
+            "anchor": "buildEvidencePlan"
+          },
+          {
+            "file": "src/evidence-depth-planner.js",
+            "anchor": "defaultDepthReason"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-4 records docs-only detection as a planner input without changing the depth contract"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-4 attributes the summary default to the pre-existing rule for product changes"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-4 keeps risk escalation intact for a docs-only change"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-4 accepts an externally resolved docs-only verdict as the planner input"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-25T12:45:10.862Z",
+      "last_revised_at": "2026-07-25T12:52:51.257Z"
+    },
+    {
+      "id": "C-004",
+      "type": "contract",
+      "statement": "The usage report separates evidence-spend signals by scope: implementation_budget_exceeded_count counts only bundles on the implementation budget scope, docs_only_budget_exceeded_count and docs_only_bundle_count report the documentation axis, and per-story rows carry budget_scope. A canonical bundle promoted before the docs-only profile carries no budget_scope and stays on the implementation axis, so historical counts are unchanged.",
+      "inherited_behavior": {
+        "condition": "budget_scope is unchanged for canonical bundles promoted before the docs-only profile",
+        "classification": "existing"
+      },
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/usage-report.js",
+            "anchor": "buildEvidenceCostMetrics"
+          },
+          {
+            "file": "src/usage-report.js",
+            "anchor": "implementation_budget_exceeded_count"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-2 routes a docs-only overspend away from the implementation budget signal"
+          },
+          {
+            "file": "test/docs-only-evidence-profile.test.js",
+            "case": "DOE-S-2 keeps implementation overspend on the implementation budget signal"
+          },
+          {
+            "file": "test/docs-only-evidence-profile-integration.test.js",
+            "case": "usage report separates docs-only evidence spend from the implementation signal"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-25T12:45:10.862Z",
+      "last_revised_at": "2026-07-25T12:52:51.257Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "Evidence measurement trust boundary for docs-only profiling",
+      "mermaid": "flowchart LR\n  Merge[execute merge] --> Base[Diff base resolution]\n  Threat[Lost pre-merge base: origin/base already contains head] --> Base\n  Base --> Control[Containment check rejects a base that contains head]\n  Control --> Recover[Recover pre-merge base from merge commit first parent]\n  Control --> FailClosed[Unresolvable base records diff_stats unavailable]\n  Recover --> Surface[Change surface classification]\n  FailClosed --> Surface\n  ThreatB[Unmeasured change set read as docs-only] --> Surface\n  Surface --> ControlB[Unknown and empty observations stay on implementation profile]\n  ControlB --> Asset[Evidence depth and budget verdict integrity]\n  Recover --> Asset"
+    }
+  ],
+  "generated_at": "2026-07-25T12:52:51.254Z",
+  "previous_spec_id": "2026-07-25T12:48:46.256Z"
+}

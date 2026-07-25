@@ -14,6 +14,10 @@ related_stories:
   - story-vibepro-audit-bundle-budget
   - story-vibepro-canonical-audit-diff-stats
 reason: "alternatives considered: exempt docs-only stories from canonical audit entirely (loses the audit trail), raise the global budget so docs stories stop exceeding (hides real regressions), or add a docs-only detection input to the existing evidence depth planner with a dedicated lightweight profile and docs-scoped budget; selected the planner input plus dedicated profile. compatibility impact: evidence depth vocabulary (summary/standard/full) and the depth planner contract are unchanged; docs-only detection is a new input, and stories may still explicitly escalate depth. rollback plan: revert the docs-only detection, the profile default, and the budget split in one commit; existing bundles remain valid. boundary and scope: depth selection, budget definition, and diff-stats base preservation only; gate semantics and review requirements for docs changes are not weakened beyond depth."
+architecture_docs:
+  - docs/architecture/story-vibepro-docs-only-evidence-profile.md
+spec_docs:
+  - docs/specs/story-vibepro-docs-only-evidence-profile.vibepro.json
 created_at: 2026-07-25
 updated_at: 2026-07-25
 ---
@@ -28,6 +32,30 @@ updated_at: 2026-07-25
 証跡作成トークンの最大の無駄の集中点になっている。
 さらにpost-merge persist経路ではdiff baseが失われ `product_changed_lines=0` と
 誤記録されるため、`artifact_code_ratio` と budget判定自体がノイズ化している。
+
+## Measured baseline (2026-07-25)
+
+2026-07-01以降のcanonical audit bundle 89件のうち27件が `budget_status: exceeded`。
+内訳は2種類に分かれる。
+
+1. **diff base喪失**: 超過上位5件(4,996 / 3,773 / 3,606 / 2,158 / 1,502行)は
+   すべて `src=0 test=0 docs=0 other=0` かつ `merge_commit_sha == base_sha` で、
+   merge後に `origin/<base>` がheadを含むため差分が空になった実装Storyだった。
+   docs-only Storyではない。
+2. **docs向けratioの無意味化**: 文書・roadmap Storyは製品コードが無いため、
+   docs行だけを分母にした `artifact_code_ratio` で判定されていた。
+
+両者が同じ `budget_exceeded` カウンタに混ざっており、
+重い実装Storyを指すはずのシグナルが読めなくなっていた。
+
+## Inherited behavior
+
+When a change touches product code, evidence depth resolution, budget profile selection,
+and diff-base collection before the merge lands are unchanged and existing.
+When a canonical bundle carries no `budget_scope`, its place in the implementation budget
+signal is unchanged and existing.
+The evidence depth vocabulary (summary / standard / full) and the evidence depth planner
+contract are unchanged and existing.
 
 ## User Story
 
