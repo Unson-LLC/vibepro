@@ -93,6 +93,7 @@ export function projectPrPrepareForLlm(preparation, view = 'canonical-summary') 
     return finalize({
       ...base,
       gate_status: summarizeGateStatusForLlm(preparation?.gate_status),
+      gate_outcome_classification: summarizeGateOutcomeClassificationForLlm(preparation?.gate_outcome_classification),
       git: scopedGit(preparation?.git),
       scope: summarizeScopeForLlm(preparation?.scope),
       lifecycle_artifacts: preparation?.lifecycle_artifacts,
@@ -172,6 +173,7 @@ function summarizePrPrepareForLlm(preparation, context) {
     story: preparation?.story,
     output: preparation?.output,
     gate_status: summarizeGateStatusForLlm(preparation?.gate_status),
+    gate_outcome_classification: summarizeGateOutcomeClassificationForLlm(preparation?.gate_outcome_classification),
     git: scopedGit(preparation?.git),
     scope: summarizeScopeForLlm(preparation?.scope),
     pr_context: compactObject({
@@ -198,6 +200,30 @@ function summarizePrPrepareForLlm(preparation, context) {
     targeted_views: PR_PREPARE_LLM_VIEWS
       .filter((name) => name !== 'canonical-summary')
       .map((name) => `pr prepare --view ${name}`)
+  });
+}
+
+// Bounded projection of the gate-outcome classification backlog: counts plus a
+// capped list of pending gates, never the whole ledger.
+function summarizeGateOutcomeClassificationForLlm(classification, maxPending = 8) {
+  if (!classification || typeof classification !== 'object') return null;
+  const pending = Array.isArray(classification.pending) ? classification.pending : [];
+  return compactObject({
+    status: classification.status,
+    recorded_count: classification.recorded_count,
+    classified_count: classification.classified_count,
+    newly_unclassified_count: classification.newly_unclassified_count,
+    story_unclassified_count: classification.story_unclassified_count,
+    story_unclassified_rate: classification.story_unclassified_rate,
+    classification_outcomes: classification.classification_outcomes,
+    pending: pending.slice(0, maxPending).map((item) => compactObject({
+      gate_id: item.gate_id,
+      previous_status: item.previous_status,
+      resolved_status: item.resolved_status,
+      undecidable_reason: item.undecidable_reason
+    })),
+    pending_truncated_count: Math.max(0, pending.length - maxPending),
+    next_command: classification.next_command
   });
 }
 

@@ -242,6 +242,7 @@ import {
   writeNarrative
 } from './report-store.js';
 import { createUsageReport, renderUsageReport } from './usage-report.js';
+import { applyGateOutcomeClassifications, CLASSIFIABLE_GATE_OUTCOMES } from './gate-outcome-ledger.js';
 import {
   projectPrPrepareForLlm,
   renderCanonicalAuditReplay,
@@ -448,7 +449,7 @@ Usage:
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
   vibepro workspace status [repo] [--json]
-  vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--gate-roi] [--language ja|en] [--json]
+  vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--gate-roi] [--unclassified-threshold <0-1>] [--unclassified-min-sample <n>] [--language ja|en] [--json]
   vibepro audit replay [repo] --story-id <id> [--json]
   vibepro audit memory preflight [repo] --memory <path> [--fallback-last-run <iso>|--fallback-hours <n>] [--now <iso>] [--json]
   vibepro audit memory commit [repo] --memory <path> --last-run <iso> --window-start <iso> --window-end <iso> [--note <text>] [--now <iso>] [--json]
@@ -558,8 +559,9 @@ Usage:
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task execute [repo] --task <task-id> [--group <group-id>] [--id <story-id>] [--base <ref>] [--dry-run-pr] [--json]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--evidence-depth-target <path-or-gate>] [--evidence-decision-usage <json>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--evidence-depth-target <path-or-gate>] [--evidence-decision-usage <json>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--outcome <gate-id>=<outcome>]... [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
   vibepro pr autopilot [repo] [--story-id <id>] [--base <ref>] [--verify <kind=command>]... [--pr <number>] [--import-ci] [--check <name=kind>]... [--dry-run] [--stage-timeout-ms <ms>] [--progress] [--language ja|en] [--json]
+  vibepro pr classify [repo] [--story-id <id>] --outcome <gate-id>=<source_fix|evidence_added|rewording_only|waiver> [--outcome ...] [--note <text>] [--json]
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
@@ -724,7 +726,7 @@ Usage:
   vibepro config language [repo] --language ja|en
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
-  vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--gate-roi] [--language ja|en] [--json]
+  vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--gate-roi] [--unclassified-threshold <0-1>] [--unclassified-min-sample <n>] [--language ja|en] [--json]
   vibepro audit replay [repo] --story-id <id> [--json]
   vibepro audit memory preflight [repo] --memory <path> [--fallback-last-run <iso>|--fallback-hours <n>] [--now <iso>] [--json]
   vibepro audit memory commit [repo] --memory <path> --last-run <iso> --window-start <iso> --window-end <iso> [--note <text>] [--now <iso>] [--json]
@@ -821,7 +823,8 @@ Usage:
   vibepro task brief [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task plan [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
   vibepro task handoff [repo] --task <task-id> [--group <group-id>] [--id <story-id>]
-  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--evidence-depth-target <path-or-gate>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
+  vibepro pr prepare [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <ref>] [--branch <name>] [--max-files <n>] [--evidence-depth summary|standard|full] [--evidence-depth-reason <text>] [--evidence-depth-consumer <name>] [--evidence-depth-target <path-or-gate>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--outcome <gate-id>=<outcome>]... [--summary-json] [--view canonical-summary|readiness|blocking-gates|gate-evidence|traceability|design-ssot|senior-gap] [--json]
+  vibepro pr classify [repo] [--story-id <id>] --outcome <gate-id>=<source_fix|evidence_added|rewording_only|waiver> [--outcome ...] [--note <text>] [--json]
   vibepro pr ship [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
@@ -1093,6 +1096,8 @@ export async function runCli(argv, io = {}) {
           claudeLogs: getOptions(rest, '--claude-log'),
           subagentRoi: hasFlag(rest, '--subagent-roi'),
           gateRoi: hasFlag(rest, '--gate-roi'),
+          gateRoiUnclassifiedThreshold: parseNumberOption(rest, '--unclassified-threshold'),
+          gateRoiUnclassifiedMinSample: parseNumberOption(rest, '--unclassified-min-sample'),
           language: getOption(rest, '--language')
         });
         write(stdout, hasFlag(rest, '--json')
@@ -3412,7 +3417,7 @@ export async function runCli(argv, io = {}) {
           strict: hasFlag(rest, '--strict'),
           allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
           language: getOption(rest, '--language'),
-          gateOutcome: getOption(rest, '--outcome'),
+          gateOutcomes: getOptions(rest, '--outcome'),
           env: io.env ?? process.env
         });
         write(stdout, viewOutput
@@ -3424,6 +3429,23 @@ export async function runCli(argv, io = {}) {
           target: 'pr_create',
           baseRef: getOption(rest, '--base')
         }).catch(() => null);
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'classify') {
+        const jsonOutput = hasFlag(rest, '--json');
+        const storyId = getOption(rest, '--story-id') ?? await resolveSelectedStoryId(repoRoot, 'pr classify');
+        const outcomes = getOptions(rest, '--outcome');
+        if (outcomes.length === 0) {
+          throw new Error('pr classify requires at least one --outcome <gate-id>=<source_fix|evidence_added|rewording_only|waiver>');
+        }
+        const result = await applyGateOutcomeClassifications(repoRoot, {
+          storyId,
+          outcomes,
+          note: getOption(rest, '--note')
+        });
+        write(stdout, jsonOutput
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderGateOutcomeClassifySummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'autopilot') {
@@ -4328,6 +4350,39 @@ function parseViewportOptions(args) {
     ...parseCsvOption(args, '--viewports'),
     ...getOptions(args, '--viewport')
   ].filter(Boolean);
+}
+
+function renderGateOutcomeClassifySummary(result) {
+  const updated = result.updated?.length
+    ? result.updated.map((item) => `- ${item.gate_id}: unclassified -> ${item.outcome}`).join('\n')
+    : '- none';
+  const remaining = result.remaining_gate_ids?.length
+    ? result.remaining_gate_ids.map((gateId) => `- ${gateId}`).join('\n')
+    : '- none';
+  const unmatched = result.unmatched_gate_ids?.length
+    ? `\n## Unmatched gate ids\n\n${result.unmatched_gate_ids.map((gateId) => `- ${gateId}`).join('\n')}\n`
+    : '';
+  return `# Gate Outcome Classification
+
+| 項目 | 内容 |
+|------|------|
+| Story | ${result.story_id ?? '-'} |
+| Status | ${result.status} |
+| Updated | ${result.updated_count ?? 0} |
+| Remaining unclassified | ${result.remaining_unclassified_count ?? 0} |
+| Ledger | ${result.artifact} |
+
+## Classified
+
+${updated}
+${unmatched}
+## Remaining unclassified gates
+
+${remaining}
+
+- Allowed outcomes: ${CLASSIFIABLE_GATE_OUTCOMES.join(' | ')}
+- Classify before \`vibepro execute merge\`: promotion into the central ledger dedupes by entry_key, so entries promoted while unclassified stay unclassified centrally.
+`;
 }
 
 function parseNumberOption(args, name) {

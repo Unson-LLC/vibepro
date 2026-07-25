@@ -577,7 +577,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
       verificationEvidence,
       agentReviews: prContext.agent_reviews,
       decisionRecords,
-      overrideOutcome: options.gateOutcome ?? null
+      overrideOutcome: options.gateOutcome ?? null,
+      gateOutcomes: options.gateOutcomes ?? null
     }))
     : null;
   const decisionOutcomeLedger = workspace.initialized
@@ -617,6 +618,12 @@ export async function preparePullRequest(repoRoot, options = {}) {
     groupId: taskContext?.group?.id ?? options.groupId ?? null,
     gateStatus
   });
+  // GOC-S-2: an unanswered classification is invisible debt, so the command that
+  // closes it is offered here rather than left to the full ledger artifact.
+  const gateOutcomeClassification = gateOutcomeLedger?.classification ?? null;
+  if (gateOutcomeClassification?.next_command) {
+    nextCommands.push(gateOutcomeClassification.next_command);
+  }
   // Per-artifact size budget pass: serialize the emitted content artifacts once,
   // reuse the exact strings when writing so the measured bytes match the files,
   // and route LLM handoff surfaces through bounded summaries for over-budget ones.
@@ -703,6 +710,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     task_context: taskContext,
     latest_story_run: latestStoryRun,
     gate_outcome_ledger: gateOutcomeLedger,
+    gate_outcome_classification: gateOutcomeClassification,
     suggested_branch: suggestedBranch,
     next_commands: nextCommands,
     diagnostics: {
@@ -2493,6 +2501,15 @@ function buildShipPrCreateCommand(preparation, options = {}) {
   return args.join(' ');
 }
 
+function formatGateOutcomeClassification(classification) {
+  if (!classification) return '-';
+  return [
+    classification.status ?? '-',
+    `new_unclassified=${classification.newly_unclassified_count ?? 0}/${classification.recorded_count ?? 0}`,
+    `story_unclassified=${classification.story_unclassified_count ?? 0}/${classification.story_entry_count ?? 0}`
+  ].join(' ');
+}
+
 export function renderPrPrepareSummary(result) {
   const { preparation } = result;
   const language = preparation.output?.language ?? 'ja';
@@ -2516,6 +2533,7 @@ ${firstLook}
 | Evidence planner | ${preparation.evidence_plan?.planner_version ?? '-'} |
 | Evidence reuse | ${preparation.evidence_reuse?.status ?? '-'} |
 | Evidence key | ${preparation.evidence_reuse?.evidence_key ?? '-'} |
+| Gate outcome classification | ${formatGateOutcomeClassification(preparation.gate_outcome_classification)} |
 | UI/UX IA flow map | ${preparation.pr_context?.uiux_ia_flow_map?.status ?? '-'} (${preparation.pr_context?.uiux_ia_flow_map?.artifact ?? '-'}) |
 | UI/UX responsive/a11y matrix | ${preparation.pr_context?.uiux_responsive_a11y_matrix?.status ?? '-'} missing=${preparation.pr_context?.uiux_responsive_a11y_matrix?.missing_evidence_count ?? '-'} (${preparation.pr_context?.uiux_responsive_a11y_matrix?.artifact ?? '-'}) |
 | Base | ${preparation.git.base_ref} |

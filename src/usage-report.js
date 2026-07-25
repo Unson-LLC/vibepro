@@ -44,7 +44,13 @@ export async function createUsageReport(repoRoot, options = {}) {
   const logs = await collectUsageLogs(root, options);
   const gateOutcomeLedger = await readGateOutcomeLedger(root);
   const gate_outcomes = summarizeGateOutcomeLedger(gateOutcomeLedger, { since });
-  const gate_roi = options.gateRoi ? await buildGateRoiReport(root, { since }) : null;
+  const gate_roi = options.gateRoi
+    ? await buildGateRoiReport(root, {
+      since,
+      unclassifiedRateThreshold: options.gateRoiUnclassifiedThreshold,
+      unclassifiedMinSample: options.gateRoiUnclassifiedMinSample
+    })
+    : null;
   const storyMap = new Map();
   for (const doc of storyDocs) {
     const story = ensureStoryUsage(storyMap, doc.story_id);
@@ -204,7 +210,7 @@ export async function createUsageReport(repoRoot, options = {}) {
   const gate_metrics = buildGateMetrics(prArtifacts);
   const agent_review = buildAgentReviewMetrics(stories);
   const subagent_roi = options.subagentRoi ? buildSubagentRoiMetrics(reviewArtifacts) : null;
-  const value_signals = buildValueSignals(stories);
+  const value_signals = buildValueSignals(stories, { gateRoi: gate_roi });
   const artifactCounts = {
     pr: countRealPrArtifacts(prArtifacts),
     traceability: prArtifacts.length - countRealPrArtifacts(prArtifacts),
@@ -279,7 +285,11 @@ export function renderUsageReport(report) {
     `- verification_observation_missing: ${valueSignals.verification_observation_missing_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- fast_lane: ${valueSignals.fast_lane_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
     `- merged_without_vibepro_evidence: ${valueSignals.merged_without_vibepro_evidence_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
-    `- evidence_in_other_worktree: ${valueSignals.evidence_in_other_worktree_story_count ?? 0}/${valueSignals.story_count ?? 0}`
+    `- evidence_in_other_worktree: ${valueSignals.evidence_in_other_worktree_story_count ?? 0}/${valueSignals.story_count ?? 0}`,
+    ...(valueSignals.gate_roi_unclassified_breach_count === undefined ? [] : [
+      `- gate_roi_unclassified: ${valueSignals.gate_roi_unclassified_count ?? 0}/${valueSignals.gate_roi_entry_count ?? 0} (${formatRate(valueSignals.gate_roi_unclassified_rate)})`,
+      `- gate_roi_unclassified_breaches: ${valueSignals.gate_roi_unclassified_breach_count} (gate=${valueSignals.gate_roi_unclassified_breached_gate_count ?? 0} story=${valueSignals.gate_roi_unclassified_breached_story_count ?? 0})`
+    ])
   ].join('\n');
   const traceabilityRows = renderTraceabilityGaps(report);
   const alternateSourceRows = renderAlternateSourceResolved(report);
@@ -891,9 +901,9 @@ ${rows}`;
 ${rows}`;
 }
 
-async function buildGateRoiReport(root, { since = null } = {}) {
+async function buildGateRoiReport(root, { since = null, unclassifiedRateThreshold, unclassifiedMinSample } = {}) {
   const central = await readCentralGateOutcomeLedger(root);
-  const summary = summarizeGateRoi(central.ledger, { since });
+  const summary = summarizeGateRoi(central.ledger, { since, unclassifiedRateThreshold, unclassifiedMinSample });
   return {
     ...summary,
     central_ledger_status: central.status,
@@ -904,19 +914,38 @@ async function buildGateRoiReport(root, { since = null } = {}) {
 function renderGateRoiRows(report) {
   const roi = report.gate_roi;
   if (!roi) return null;
+  const english = report.output?.language === 'en';
   const gates = roi.gates ?? [];
   const gateRows = gates.length
     ? gates.map((gate) => (
-        `- ${gate.gate_id}: count=${gate.count} source_fix=${gate.classifications?.source_fix ?? 0} evidence_added=${gate.classifications?.evidence_added ?? 0} rewording_only=${gate.classifications?.rewording_only ?? 0} waiver=${gate.classifications?.waiver ?? 0} unclassified=${gate.unclassified_count ?? 0}`
+        `- ${gate.gate_id}: count=${gate.count} source_fix=${gate.classifications?.source_fix ?? 0} evidence_added=${gate.classifications?.evidence_added ?? 0} rewording_only=${gate.classifications?.rewording_only ?? 0} waiver=${gate.classifications?.waiver ?? 0} unclassified=${gate.unclassified_count ?? 0} (${formatRate(gate.unclassified_rate)})`
+      )).join('\n')
+    : '- none';
+  const storyRows = (roi.stories ?? []).length
+    ? roi.stories.map((story) => (
+        `- ${story.story_id}: count=${story.count} unclassified=${story.unclassified_count ?? 0} (${formatRate(story.unclassified_rate)})`
+      )).join('\n')
+    : '- none';
+  const breaches = roi.unclassified_threshold_breaches ?? [];
+  const breachRows = breaches.length
+    ? breaches.map((breach) => (
+        `- ${breach.scope}:${breach.id}: unclassified=${breach.unclassified_count}/${breach.count} (${formatRate(breach.unclassified_rate)})`
       )).join('\n')
     : '- none';
   return [
     `- central_ledger: ${roi.central_ledger_path} (${roi.central_ledger_status})`,
     `- entries: ${roi.entry_count ?? 0}`,
-    `- unclassified_count: ${roi.unclassified_count ?? 0}`,
+    `- unclassified_count: ${roi.unclassified_count ?? 0} (${formatRate(roi.unclassified_rate)})`,
+    `- unclassified_threshold: rate>${formatRate(roi.thresholds?.unclassified_rate)} min_sample=${roi.thresholds?.min_sample ?? 0}`,
     '',
-    report.output?.language === 'en' ? 'Per-gate:' : 'Gate別:',
-    gateRows
+    english ? 'Per-gate:' : 'Gate別:',
+    gateRows,
+    '',
+    english ? 'Per-story:' : 'Story別:',
+    storyRows,
+    '',
+    english ? 'Threshold breaches:' : '閾値超過:',
+    breachRows
   ].join('\n');
 }
 
@@ -1552,7 +1581,7 @@ function renderChangedLineBuckets(changedLines, unknown) {
   ].join(' ');
 }
 
-function buildValueSignals(stories) {
+function buildValueSignals(stories, { gateRoi = null } = {}) {
   const storyCount = stories.length;
   const waiverRequiredCount = stories.filter((story) => story.waiver_required).length;
   const staleEvidenceCount = stories.filter((story) => story.stale_evidence).length;
@@ -1595,11 +1624,30 @@ function buildValueSignals(stories) {
     senior_gap_residual_risk_story_count: seniorGapResidualRiskStoryCount,
     traceability_clause_mapping_incomplete_count: traceabilityClauseMappingIncompleteCount,
     traceability_gaps: traceabilityGaps,
+    ...buildGateRoiValueSignals(gateRoi),
     waiver_required_rate: calculateRate(waiverRequiredCount, storyCount),
     stale_evidence_rate: calculateRate(staleEvidenceCount, storyCount),
     story_source_mismatch_rate: calculateRate(storySourceMismatchCount, storyCount),
     traceability_gap_rate: calculateRate(traceabilityGapStoryCount, storyCount),
     senior_gap_judgment_rate: calculateRate(seniorGapJudgmentStoryCount, storyCount)
+  };
+}
+
+// GOC-S-3: an unclassified backlog is only actionable if it shows up next to the
+// other value signals. Absent gate_roi (no --gate-roi) leaves the keys out
+// entirely rather than reporting a fabricated zero.
+function buildGateRoiValueSignals(gateRoi) {
+  if (!gateRoi) return {};
+  const breaches = gateRoi.unclassified_threshold_breaches ?? [];
+  return {
+    gate_roi_entry_count: gateRoi.entry_count ?? 0,
+    gate_roi_unclassified_count: gateRoi.unclassified_count ?? 0,
+    gate_roi_unclassified_rate: gateRoi.unclassified_rate ?? 0,
+    gate_roi_unclassified_threshold: gateRoi.thresholds?.unclassified_rate ?? null,
+    gate_roi_unclassified_breach_count: breaches.length,
+    gate_roi_unclassified_breached_gate_count: breaches.filter((breach) => breach.scope === 'gate').length,
+    gate_roi_unclassified_breached_story_count: breaches.filter((breach) => breach.scope === 'story').length,
+    gate_roi_unclassified_breaches: breaches
   };
 }
 
