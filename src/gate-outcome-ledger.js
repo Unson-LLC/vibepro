@@ -405,36 +405,45 @@ export async function recordResolvedGateOutcomes(repoRoot, options = {}) {
     status: entries.length === 0 ? 'no_resolved_gates' : 'recorded',
     artifact: toWorkspaceRelative(repoRoot, ledgerPath),
     entries,
-    classification: buildLedgerClassificationReportFrom(nextEntries, storyId, entries)
+    classification: buildLedgerClassificationReportFrom(nextEntries, storyId, entries, { status: 'ok', model: LEDGER_MODEL, expected_model: LEDGER_MODEL })
   };
 }
 
 // Reporting the story-level backlog must never turn `pr prepare` into a hard
 // crash: an unreadable local ledger yields an empty story view, not a throw.
 async function buildLedgerClassificationReport(repoRoot, storyId, entries) {
+  const ledgerStatus = await readGateOutcomeLedgerModelStatus(getGateOutcomeLedgerPath(repoRoot));
   let ledgerEntries = [];
-  try {
+  if (['ok', 'absent'].includes(ledgerStatus.status)) {
     ledgerEntries = (await readGateOutcomeLedger(repoRoot)).entries;
-  } catch (error) {
-    if (!(error instanceof SyntaxError)) throw error;
   }
-  return buildLedgerClassificationReportFrom(ledgerEntries, storyId, entries);
+  return buildLedgerClassificationReportFrom(ledgerEntries, storyId, entries, ledgerStatus);
 }
 
 // Combines "what this run left unclassified" (the backlog to answer now) with
 // "what is still unclassified for this story" (the debt that would be promoted).
-function buildLedgerClassificationReportFrom(ledgerEntries, storyId, recordedEntries) {
+function buildLedgerClassificationReportFrom(ledgerEntries, storyId, recordedEntries, ledgerStatus = null) {
   const backlog = buildGateOutcomeClassificationBacklog(recordedEntries, { storyId });
   const storyEntries = (ledgerEntries ?? []).filter((entry) => !storyId || entry?.story_id === storyId);
   const storyPending = storyEntries.filter((entry) => entry?.outcome === 'unclassified' && entry?.overridden !== true);
+  // A ledger that could not be read carries unknown debt. Reporting 0 here
+  // would fabricate a zero on the very surface that exists to make the
+  // accumulating backlog visible, so the counts are withheld instead.
+  const ledgerReadable = !ledgerStatus || ['ok', 'absent'].includes(ledgerStatus.status);
   return {
     ...backlog,
-    story_entry_count: storyEntries.length,
-    story_unclassified_count: storyPending.length,
-    story_unclassified_rate: storyEntries.length > 0 ? storyPending.length / storyEntries.length : 0,
-    story_unclassified_gate_ids: [...new Set(storyPending.map((entry) => entry.gate_id).filter(Boolean))],
+    status: ledgerReadable ? backlog.status : 'ledger_not_readable',
+    ledger_status: ledgerStatus ?? { status: 'ok', model: LEDGER_MODEL, expected_model: LEDGER_MODEL },
+    story_entry_count: ledgerReadable ? storyEntries.length : null,
+    story_unclassified_count: ledgerReadable ? storyPending.length : null,
+    story_unclassified_rate: ledgerReadable
+      ? (storyEntries.length > 0 ? storyPending.length / storyEntries.length : 0)
+      : null,
+    story_unclassified_gate_ids: ledgerReadable
+      ? [...new Set(storyPending.map((entry) => entry.gate_id).filter(Boolean))]
+      : [],
     next_command: backlog.next_command
-      ?? (storyPending.length > 0 ? buildClassificationCommand(storyId, storyPending) : null)
+      ?? (ledgerReadable && storyPending.length > 0 ? buildClassificationCommand(storyId, storyPending) : null)
   };
 }
 
@@ -910,18 +919,20 @@ function collectGateNodeEvidenceDelta(previousGate = null, currentGate = null) {
 // misreport a genuinely evidence-closed axis as rewording_only and over-count
 // the rewording_only_rate that feeds demotion candidates. Only the diff-shape
 // items are excluded, identified by the marker src/pr-manager.js stamps on them.
-const DIFF_SHAPE_EVIDENCE_QUALITIES = new Set([
-  'story_doc',
-  'contract_doc',
-  'architecture_doc',
-  'changed_test_files'
-]);
+// An allowlist, not a denylist: src/pr-manager.js keeps adding evidence kinds,
+// and a denylist silently readmits every new diff-shape-derived one. `n/a` marks
+// items read straight off the diff (story/contract/architecture docs, changed
+// test files) and `derived` marks items recomputed from it (scope
+// classification, graph and code-topology context); neither demonstrates that
+// evidence was added. Only a positively bound item with a usable artifact does.
+const DERIVED_EVIDENCE_BINDING_STATUSES = new Set(['n/a', 'derived']);
+const NON_DEMONSTRATING_EVIDENCE_QUALITIES = new Set(['missing_artifact', 'unrecognized', 'unknown']);
 
-function isDiffShapeDerivedEvidence(value) {
-  return Boolean(value)
-    && typeof value === 'object'
-    && value.binding_status === 'n/a'
-    && DIFF_SHAPE_EVIDENCE_QUALITIES.has(value.artifact_quality);
+function isArtifactBackedEvidence(value) {
+  if (!value || typeof value !== 'object') return false;
+  if (DERIVED_EVIDENCE_BINDING_STATUSES.has(value.binding_status)) return false;
+  if (NON_DEMONSTRATING_EVIDENCE_QUALITIES.has(value.artifact_quality)) return false;
+  return value.binding_status === 'current' || typeof value.artifact === 'string';
 }
 
 function collectGateNodeEvidenceRefs(gate = null) {
@@ -934,7 +945,7 @@ function collectGateNodeEvidenceRefs(gate = null) {
   };
   for (const evidence of asArray(gate.evidence)) push('evidence', evidence);
   for (const evidence of asArray(gate.matched_evidence)) {
-    if (isDiffShapeDerivedEvidence(evidence)) continue;
+    if (!isArtifactBackedEvidence(evidence)) continue;
     push('matched_evidence', evidence);
   }
   for (const evidence of asArray(gate.evidence_refs)) push('evidence_ref', evidence);

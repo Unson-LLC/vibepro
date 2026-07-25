@@ -210,6 +210,7 @@ function summarizeGateOutcomeClassificationForLlm(classification, maxPending = 8
   const pending = Array.isArray(classification.pending) ? classification.pending : [];
   return compactObject({
     status: classification.status,
+    ledger_status: classification.ledger_status?.status,
     recorded_count: classification.recorded_count,
     classified_count: classification.classified_count,
     newly_unclassified_count: classification.newly_unclassified_count,

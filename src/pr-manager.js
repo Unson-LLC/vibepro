@@ -2506,7 +2506,9 @@ function formatGateOutcomeClassification(classification) {
   return [
     classification.status ?? '-',
     `new_unclassified=${classification.newly_unclassified_count ?? 0}/${classification.recorded_count ?? 0}`,
-    `story_unclassified=${classification.story_unclassified_count ?? 0}/${classification.story_entry_count ?? 0}`
+    classification.story_unclassified_count === null
+      ? `story_unclassified=unknown (${classification.ledger_status?.status ?? 'unreadable'} ledger)`
+      : `story_unclassified=${classification.story_unclassified_count}/${classification.story_entry_count}`
   ].join(' ');
 }
 

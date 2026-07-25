@@ -158,6 +158,44 @@ test('GOC-S-1 artifact-backed judgment axis evidence still yields evidence_added
   }]);
 });
 
+// Review finding (round 3): `derived` items (scope classification, graph and
+// code-topology context) are recomputed from the diff on every run and are just
+// as diff-shape-derived as the `n/a` ones, so a denylist keyed on `n/a` alone
+// still let a documentation-only resolution be recorded as evidence_added.
+test('GOC-S-1 recomputed judgment axis context never fakes evidence_added', () => {
+  const derivedOnly = classifyGateOutcome({
+    previousGate: {
+      id: 'gate:judgment_axis_scope_reviewability',
+      status: 'needs_evidence',
+      matched_evidence: [{ kind: 'split_plan', ref: 'split_by_facet', binding_status: 'derived', artifact_quality: 'scope_classification' }]
+    },
+    gate: {
+      id: 'gate:judgment_axis_scope_reviewability',
+      status: 'passed',
+      matched_evidence: [
+        { kind: 'scope_reviewed', ref: 'scope.status=reviewable', binding_status: 'derived', artifact_quality: 'scope_classification' },
+        { kind: 'graph_impact_scope', ref: '.vibepro/graphify/graph.json (3 changed / 40 related)', binding_status: 'derived', artifact_quality: 'graph_context' },
+        // No markers at all: not a demonstration that evidence was added.
+        { kind: 'story_intent' }
+      ]
+    },
+    git: { changed_files: [{ path: 'docs/management/stories/active/story-a.md' }, { path: 'README.md' }] }
+  });
+  assert.equal(derivedOnly.outcome, 'rewording_only');
+
+  // An item claiming current binding but no usable artifact is not evidence either.
+  const missingArtifact = classifyGateOutcome({
+    previousGate: { id: 'gate:judgment_axis_release_ops', status: 'needs_evidence', matched_evidence: [] },
+    gate: {
+      id: 'gate:judgment_axis_release_ops',
+      status: 'passed',
+      matched_evidence: [{ kind: 'current_verification', binding_status: 'current', artifact_quality: 'missing_artifact' }]
+    },
+    git: { changed_files: [{ path: 'docs/a.md' }] }
+  });
+  assert.equal(missingArtifact.outcome, 'rewording_only');
+});
+
 // Review finding: excluding build-output directories downgraded a genuine
 // source_fix in repositories that track dist/ or coverage/.
 test('GOC-S-1 tracked build output still counts as a source change', () => {
@@ -459,7 +497,12 @@ test('GOC-S-2 an unreadable ledger degrades to a typed refusal instead of crashi
   // The no_resolved_gates path runs on almost every pr prepare.
   const recorded = await recordResolvedGateOutcomes(repo, { storyId: 'story-goc' });
   assert.equal(recorded.status, 'no_resolved_gates');
-  assert.equal(recorded.classification.story_unclassified_count, 0);
+  // Unknown debt must be reported as unknown, never as a fabricated zero.
+  assert.equal(recorded.classification.status, 'ledger_not_readable');
+  assert.equal(recorded.classification.ledger_status.status, 'unparseable');
+  assert.equal(recorded.classification.story_unclassified_count, null);
+  assert.equal(recorded.classification.story_entry_count, null);
+  assert.equal(recorded.classification.next_command, null);
 
   const applied = await applyGateOutcomeClassifications(repo, {
     storyId: 'story-goc',
