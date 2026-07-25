@@ -18,6 +18,7 @@ parent_design: story-vibepro-docs-only-evidence-profile
 architecture_docs:
   - docs/architecture/story-vibepro-docs-only-evidence-profile.md
 spec_docs:
+  - docs/specs/vibepro-docs-only-evidence-profile.md
   - docs/specs/story-vibepro-docs-only-evidence-profile.vibepro.json
 created_at: 2026-07-25
 updated_at: 2026-07-25

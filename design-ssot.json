@@ -7090,7 +7090,7 @@
         "spec": [
           {
             "kind": "spec",
-            "path": "docs/specs/story-vibepro-docs-only-evidence-profile.vibepro.json",
+            "path": "docs/specs/vibepro-docs-only-evidence-profile.md",
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
@@ -7107,7 +7107,7 @@
         },
         {
           "kind": "spec",
-          "path": "docs/specs/story-vibepro-docs-only-evidence-profile.vibepro.json",
+          "path": "docs/specs/vibepro-docs-only-evidence-profile.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null

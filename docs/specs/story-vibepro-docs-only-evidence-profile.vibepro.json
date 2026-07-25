@@ -47,7 +47,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:02:53.826Z"
+      "last_revised_at": "2026-07-25T13:06:16.330Z"
     },
     {
       "id": "INV-001",
@@ -85,8 +85,16 @@
           }
         ]
       },
+      "inherited_behavior": {
+        "condition": "change_surface.status !== docs_only",
+        "classification": "unchanged",
+        "files": [
+          "src/evidence-cost-budget.js",
+          "src/evidence-depth-planner.js"
+        ]
+      },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:02:53.826Z"
+      "last_revised_at": "2026-07-25T13:06:16.330Z"
     },
     {
       "id": "C-002",
@@ -141,7 +149,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:02:53.826Z"
+      "last_revised_at": "2026-07-25T13:06:16.330Z"
     },
     {
       "id": "S-001",
@@ -187,8 +195,15 @@
           }
         ]
       },
+      "inherited_behavior": {
+        "condition": "head is not yet contained in origin/<base>",
+        "classification": "existing",
+        "files": [
+          "src/merge-manager.js"
+        ]
+      },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:02:53.826Z"
+      "last_revised_at": "2026-07-25T13:06:16.330Z"
     },
     {
       "id": "C-003",
@@ -231,7 +246,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:02:53.826Z"
+      "last_revised_at": "2026-07-25T13:06:16.330Z"
     },
     {
       "id": "INV-002",
@@ -274,15 +289,18 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:02:53.826Z"
+      "last_revised_at": "2026-07-25T13:06:16.330Z"
     },
     {
       "id": "C-004",
       "type": "contract",
       "statement": "The usage report separates evidence-spend signals by scope: implementation_budget_exceeded_count counts only bundles on the implementation budget scope, docs_only_budget_exceeded_count and docs_only_bundle_count report the documentation axis, and per-story rows carry budget_scope. A canonical bundle promoted before the docs-only profile carries no budget_scope and stays on the implementation axis, so historical counts are unchanged.",
       "inherited_behavior": {
-        "condition": "budget_scope is unchanged for canonical bundles promoted before the docs-only profile",
-        "classification": "existing"
+        "condition": "budget_scope is absent on canonical bundles promoted before the docs-only profile",
+        "classification": "existing",
+        "files": [
+          "src/usage-report.js"
+        ]
       },
       "origin": {
         "story_refs": [
@@ -317,7 +335,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T13:02:53.826Z"
+      "last_revised_at": "2026-07-25T13:06:16.330Z"
     }
   ],
   "diagrams": [
@@ -330,6 +348,6 @@
   "parent_design": [
     "story-vibepro-docs-only-evidence-profile"
   ],
-  "generated_at": "2026-07-25T13:02:53.824Z",
-  "previous_spec_id": "2026-07-25T12:52:51.254Z"
+  "generated_at": "2026-07-25T13:06:16.327Z",
+  "previous_spec_id": "2026-07-25T13:02:53.824Z"
 }
