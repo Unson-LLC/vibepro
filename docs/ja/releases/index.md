@@ -197,3 +197,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:217:start -->
 - [PR #217](https://github.com/Unson-LLC/vibepro/pull/217) — [2026-07](/ja/releases/2026-07): chore(deps): bump actions/checkout from 6 to 7
 <!-- vibepro-release-index-pr:217:end -->
+
+<!-- vibepro-release-index-pr:391:start -->
+- [PR #391](https://github.com/Unson-LLC/vibepro/pull/391) — [2026-07](/ja/releases/2026-07): story-vibepro-ideal-state-inversion - senior-gap judgmentのideal_stateがStoryではなく裁定済みtarget architectureを参照するようにする
+<!-- vibepro-release-index-pr:391:end -->
