@@ -3,9 +3,9 @@
 - story: story-vibepro-import-based-conformance
 - evidence_depth: standard
 - budget_status: within_budget
-- artifact_lines: 1504
+- artifact_lines: 1524
 - product_changed_lines: 547
-- artifact_code_ratio: 2.75
+- artifact_code_ratio: 2.786
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
