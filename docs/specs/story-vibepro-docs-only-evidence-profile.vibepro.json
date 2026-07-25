@@ -47,7 +47,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T12:52:51.257Z"
+      "last_revised_at": "2026-07-25T13:02:53.826Z"
     },
     {
       "id": "INV-001",
@@ -86,7 +86,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T12:52:51.257Z"
+      "last_revised_at": "2026-07-25T13:02:53.826Z"
     },
     {
       "id": "C-002",
@@ -141,7 +141,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T12:52:51.257Z"
+      "last_revised_at": "2026-07-25T13:02:53.826Z"
     },
     {
       "id": "S-001",
@@ -188,7 +188,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T12:52:51.257Z"
+      "last_revised_at": "2026-07-25T13:02:53.826Z"
     },
     {
       "id": "C-003",
@@ -231,7 +231,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T12:52:51.257Z"
+      "last_revised_at": "2026-07-25T13:02:53.826Z"
     },
     {
       "id": "INV-002",
@@ -274,7 +274,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T12:52:51.257Z"
+      "last_revised_at": "2026-07-25T13:02:53.826Z"
     },
     {
       "id": "C-004",
@@ -317,7 +317,7 @@
         ]
       },
       "first_seen_at": "2026-07-25T12:45:10.862Z",
-      "last_revised_at": "2026-07-25T12:52:51.257Z"
+      "last_revised_at": "2026-07-25T13:02:53.826Z"
     }
   ],
   "diagrams": [
@@ -327,6 +327,9 @@
       "mermaid": "flowchart LR\n  Merge[execute merge] --> Base[Diff base resolution]\n  Threat[Lost pre-merge base: origin/base already contains head] --> Base\n  Base --> Control[Containment check rejects a base that contains head]\n  Control --> Recover[Recover pre-merge base from merge commit first parent]\n  Control --> FailClosed[Unresolvable base records diff_stats unavailable]\n  Recover --> Surface[Change surface classification]\n  FailClosed --> Surface\n  ThreatB[Unmeasured change set read as docs-only] --> Surface\n  Surface --> ControlB[Unknown and empty observations stay on implementation profile]\n  ControlB --> Asset[Evidence depth and budget verdict integrity]\n  Recover --> Asset"
     }
   ],
-  "generated_at": "2026-07-25T12:52:51.254Z",
-  "previous_spec_id": "2026-07-25T12:48:46.256Z"
+  "parent_design": [
+    "story-vibepro-docs-only-evidence-profile"
+  ],
+  "generated_at": "2026-07-25T13:02:53.824Z",
+  "previous_spec_id": "2026-07-25T12:52:51.254Z"
 }

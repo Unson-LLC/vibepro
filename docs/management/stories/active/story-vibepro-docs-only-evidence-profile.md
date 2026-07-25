@@ -14,6 +14,7 @@ related_stories:
   - story-vibepro-audit-bundle-budget
   - story-vibepro-canonical-audit-diff-stats
 reason: "alternatives considered: exempt docs-only stories from canonical audit entirely (loses the audit trail), raise the global budget so docs stories stop exceeding (hides real regressions), or add a docs-only detection input to the existing evidence depth planner with a dedicated lightweight profile and docs-scoped budget; selected the planner input plus dedicated profile. compatibility impact: evidence depth vocabulary (summary/standard/full) and the depth planner contract are unchanged; docs-only detection is a new input, and stories may still explicitly escalate depth. rollback plan: revert the docs-only detection, the profile default, and the budget split in one commit; existing bundles remain valid. boundary and scope: depth selection, budget definition, and diff-stats base preservation only; gate semantics and review requirements for docs changes are not weakened beyond depth."
+parent_design: story-vibepro-docs-only-evidence-profile
 architecture_docs:
   - docs/architecture/story-vibepro-docs-only-evidence-profile.md
 spec_docs:
