@@ -1,0 +1,164 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-docs-only-evidence-profile",
+  "created_at": "2026-07-25T14:47:36.146Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 11 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-docs-only-evidence-profile/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-docs-only-evidence-profile/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-docs-only-evidence-profile/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-docs-only-evidence-profile/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-docs-only-evidence-profile.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-docs-only-evidence-profile.md, docs/specs/story-vibepro-docs-only-evidence-profile.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 4,
+      "open": 0,
+      "by_type": {
+        "needs_review": 4
+      },
+      "by_status": {
+        "accepted": 4
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb",
+          "expected_root": null,
+          "expected_head_sha": "11e8393fb58b43ba8dc90888e7c9e0308fa62b4c",
+          "current_head_sha": "11e8393fb58b43ba8dc90888e7c9e0308fa62b4c",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784984628336-bf732d42",
+        "story_id": "story-vibepro-docs-only-evidence-profile",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:vibepro_artifact_policy",
+        "source_status": null,
+        "summary": ".vibepro artifact policy: only the tracked Story catalog and current_story_id pointer are committed",
+        "reason": "The branch commits exactly two .vibepro paths, both of which are the repository's tracked configuration rather than diagnostic evidence: .vibepro/config.json brainbase.stories[] Story catalog registration (required by the self-dogfood flow because story derive does not pick up hand-written Stories) and .vibepro/config.json current_story_id. Everything else VibePro generated for this Story — diagnostics, evidence-plan, decision-index, spec, reviews, adjudication, pr-prepare — remains untracked under the .vibepro/* gitignore rule and is not part of the diff. The confirmed diff is 12 added lines in .vibepro/config.json plus the pointer change.",
+        "reviewer": "sato_keigo",
+        "artifact": ".vibepro/config.json",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-charming-hermann-8fd1cb/6b8ab19a-0859-4231-be55-6517b2b232c4/scratchpad/e2e-status.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-charming-hermann-8fd1cb/6b8ab19a-0859-4231-be55-6517b2b232c4/scratchpad/integration-status.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-charming-hermann-8fd1cb/6b8ab19a-0859-4231-be55-6517b2b232c4/scratchpad/unit-status.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb",
+            "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb",
+            "expected_root": null,
+            "expected_head_sha": "11e8393fb58b43ba8dc90888e7c9e0308fa62b4c",
+            "current_head_sha": "11e8393fb58b43ba8dc90888e7c9e0308fa62b4c",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "11e8393fb58b43ba8dc90888e7c9e0308fa62b4c",
+          "current_branch": "claude/story-vibepro-docs-only-evidence-profile-scoped",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-25T13:03:48.326Z"
+        },
+        "recorded_at": "2026-07-25T13:03:48.337Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-25T14:47:30.409Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "9443767173f2a1faf9d318931f5a1109009f3723",
+      "branch": "claude/story-vibepro-docs-only-evidence-profile-scoped",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "458f5bfdeed99ab202f1edd9a257f17aacc7acc7",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-docs-only-evidence-profile",
+  "updated_at": "2026-07-25T14:02:26.552Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Evidence goes beyond confirming a new field exists. The unit test pins each axis DOE-CONTRACT-012 enumerates (schema_version 0.1.0, default_depth summary, evidence_depth summary, artifact_policy.write_html_reports false) while showing the verdict entering as input. A companion test proves risk escalation is untouched for a docs-only change (targeted_full_surfaces non-empty, risk_signals still carries the auth surface under a security profile), and another proves the input is genuinely a parameter by passing an externally resolved verdict that overrides what the planner would derive. The adjudicator verified the structural claim directly: git diff origin/main...HEAD on src/evidence-depth-planner.js is strictly additive, with const defaultDepth = summary and evidenceDepth = overrideDepth ?? defaultDepth unchanged and the artifact-policy and drilldown-assertion logic untouched. Recorded observation: docs-only has no effect on the depth the planner itself resolves since summary was already unconditional there; the clause requires only that it be added as an input, and the depth outcome of AC-1 lives in the cost-budget resolver",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a86fc55068f2240dc",
+        "session_ref": "a86fc55068f2240dc"
+      },
+      "head_commit": "9443767173f2a1faf9d318931f5a1109009f3723",
+      "recorded_at": "2026-07-25T14:02:26.550Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Evidence comes from real git repositories, not hand-built fixtures: merge-diff-base-preservation.test.js runs git init, real commits, a real --no-ff merge, a real --squash merge, and a real update-ref of refs/remotes/origin/main, then asserts base_authority=unresolved with a containment reason when the base branch already contains the head, base_authority=merge_commit_first_parent with base_sha equal to the true fork point on both merge and squash, and base_authority=base_branch before the merge lands. The non-misrecording guarantee is directly observed: an unrecoverable base yields product_changed_lines=null with status unavailable and an explicit assert.notEqual(...,0), while a docs-only merge yields product_code_changed_lines=0 with reason docs_only, both surviving into audit-index.json after a real merged-repo promotion. Residual gap recorded: the executeMerge re-collection branch is not exercised by a recorded observation, but the unit test shows that absent recovery the result is unavailable, so a zero is never written either way",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a86fc55068f2240dc",
+        "session_ref": "a86fc55068f2240dc"
+      },
+      "head_commit": "9443767173f2a1faf9d318931f5a1109009f3723",
+      "recorded_at": "2026-07-25T14:02:26.097Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Separation shown past the in-process boundary: the e2e observation runs the real CLI as a child process (node bin/vibepro.js usage report <root> --json) over a git fixture holding one docs-only and one implementation bundle and observes docs_only_budget_exceeded_count=1 with implementation_budget_exceeded_count=1, plus budget_scope=docs_only and implementation_budget_status=not_applicable on the per-story row. The integration observation adds the legacy case (a bundle with no budget_scope stays on the implementation axis) and the compact re-measurement case (artifact_lines_source=persisted_canonical_compact with scope preserved). One fixture-shape seam existed (usage-report fixtures carry an inline cost_summary while real promotion writes cost_summary_ref plus audit-index.json); the adjudicator closed it independently by promoting a docs-only bundle from a real merged repo and running createUsageReport, which resolved via decision_index.cost_summary and reported docs_only_bundle_count=1, implementation_budget_exceeded_count=0",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a86fc55068f2240dc",
+        "session_ref": "a86fc55068f2240dc"
+      },
+      "head_commit": "9443767173f2a1faf9d318931f5a1109009f3723",
+      "recorded_at": "2026-07-25T14:02:25.606Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Determinism pinned by unit tests covering the positive case plus five refusal paths (unclassified path, VibePro-record-only, empty numstat, unavailable diff-stats status, no observation) each resolving to unknown. The lightweight default is observed end to end: the integration test drives the real promoteCanonicalAuditArtifacts over a real git repo, asserts trigger_signals and missing_artifacts are empty, and observes evidence_depth=summary. Adjudicator confirmed the counterfactual independently: an identical change set plus one src/ line yields standard at artifact-line counts 100/400/900/3814 while the docs-only set yields summary, so the docs-only verdict is the cause. Explicit escalation covered both directions. Being outranked by risk escalation is what makes it a default rather than an override, and the narrowed reach is documented in the architecture doc rather than concealed",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a86fc55068f2240dc",
+        "session_ref": "a86fc55068f2240dc"
+      },
+      "head_commit": "9443767173f2a1faf9d318931f5a1109009f3723",
+      "recorded_at": "2026-07-25T14:02:03.144Z"
+    }
+  ]
+}
