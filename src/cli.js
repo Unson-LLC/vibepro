@@ -1096,8 +1096,8 @@ export async function runCli(argv, io = {}) {
           claudeLogs: getOptions(rest, '--claude-log'),
           subagentRoi: hasFlag(rest, '--subagent-roi'),
           gateRoi: hasFlag(rest, '--gate-roi'),
-          gateRoiUnclassifiedThreshold: parseNumberOption(rest, '--unclassified-threshold'),
-          gateRoiUnclassifiedMinSample: parseNumberOption(rest, '--unclassified-min-sample'),
+          gateRoiUnclassifiedThreshold: parseGateRoiThresholdOption(rest),
+          gateRoiUnclassifiedMinSample: parseGateRoiMinSampleOption(rest),
           language: getOption(rest, '--language')
         });
         write(stdout, hasFlag(rest, '--json')
@@ -3438,6 +3438,13 @@ export async function runCli(argv, io = {}) {
         if (outcomes.length === 0) {
           throw new Error('pr classify requires at least one --outcome <gate-id>=<source_fix|evidence_added|rewording_only|waiver>');
         }
+        // The repo-wide fallback form stays valid for `pr prepare`, but here it
+        // would stamp every pending entry as operator-supplied in one go and
+        // those entries are never re-asked. Classification must name its gate.
+        const unscopedOutcomes = outcomes.filter((value) => !String(value).includes('='));
+        if (unscopedOutcomes.length > 0) {
+          throw new Error(`pr classify requires gate-scoped outcomes; got a repo-wide value (${unscopedOutcomes.join(', ')}). Use --outcome <gate-id>=<outcome> so each classification names the gate it answers.`);
+        }
         const result = await applyGateOutcomeClassifications(repoRoot, {
           storyId,
           outcomes,
@@ -4352,6 +4359,35 @@ function parseViewportOptions(args) {
   ].filter(Boolean);
 }
 
+// An out-of-range threshold silently disables (or permanently trips) the whole
+// GOC-S-3 breach signal, so it fails closed instead of being clamped quietly.
+// Both options are only read when --gate-roi is set; say so rather than no-op.
+function parseGateRoiThresholdOption(args) {
+  const value = parseNumberOption(args, '--unclassified-threshold');
+  if (value === null) return null;
+  if (value < 0 || value > 1) {
+    throw new Error('--unclassified-threshold must be between 0 and 1');
+  }
+  assertGateRoiOptionUsable(args, '--unclassified-threshold');
+  return value;
+}
+
+function parseGateRoiMinSampleOption(args) {
+  const value = parseNumberOption(args, '--unclassified-min-sample');
+  if (value === null) return null;
+  if (!Number.isInteger(value) || value < 1) {
+    throw new Error('--unclassified-min-sample must be an integer of at least 1');
+  }
+  assertGateRoiOptionUsable(args, '--unclassified-min-sample');
+  return value;
+}
+
+function assertGateRoiOptionUsable(args, name) {
+  if (!hasFlag(args, '--gate-roi')) {
+    throw new Error(`${name} only applies to the gate ROI report; add --gate-roi or drop ${name}`);
+  }
+}
+
 function renderGateOutcomeClassifySummary(result) {
   const updated = result.updated?.length
     ? result.updated.map((item) => `- ${item.gate_id}: unclassified -> ${item.outcome}`).join('\n')
@@ -4371,6 +4407,7 @@ function renderGateOutcomeClassifySummary(result) {
 | Updated | ${result.updated_count ?? 0} |
 | Remaining unclassified | ${result.remaining_unclassified_count ?? 0} |
 | Ledger | ${result.artifact} |
+| Ledger model | ${result.ledger_model_status?.status ?? '-'}${result.ledger_model_status?.status === 'foreign_model' ? ` (found ${result.ledger_model_status.model}, expected ${result.ledger_model_status.expected_model}; its entries are not readable and were not modified)` : ''} |
 
 ## Classified
 

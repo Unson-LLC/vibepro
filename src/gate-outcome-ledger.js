@@ -45,7 +45,11 @@ const DOC_FILE_RE = /(?:^|\/)(?:docs|README|CHANGELOG|NOTICE|LICENSE|agent-instr
 // Paths that describe the workspace/tooling rather than the change under review.
 // Leaving them in the diff shape made doc-only resolutions look "mixed" and fall
 // through to unclassified, which is the bulk of the legacy ledger backlog.
-const WORKSPACE_INTERNAL_PATH_RE = /^(?:\.vibepro|\.worktrees|\.git|node_modules|dist|coverage)(?:\/|$)/;
+// Deliberately limited to VibePro/VCS workspace paths: build output directories
+// such as dist/ or coverage/ are tracked source in some target repositories, and
+// excluding them would silently downgrade a real source_fix to rewording_only,
+// which in turn feeds gate demotion candidates.
+const WORKSPACE_INTERNAL_PATH_RE = /^(?:\.vibepro|\.worktrees|\.git|node_modules)(?:\/|$)/;
 // A gate closed by an accepted blocker waiver (see buildJudgmentAxisGates) is a
 // waiver by construction, not a fix.
 const ACCEPTED_FOLLOWUP_STATUSES = new Set(['accepted_followup', 'active_accepted_followup']);
@@ -722,6 +726,10 @@ export async function applyGateOutcomeClassifications(repoRoot, options = {}) {
   const ledgerPath = getGateOutcomeLedgerPath(repoRoot);
   const artifact = toWorkspaceRelative(repoRoot, ledgerPath);
   const ledger = await readGateOutcomeLedger(repoRoot);
+  // readGateOutcomeLedger reduces a foreign-model ledger to an empty one, which
+  // would otherwise make "your ledger was discarded" indistinguishable from
+  // "nothing left to classify".
+  const ledgerModelStatus = await readGateOutcomeLedgerModelStatus(ledgerPath);
 
   const scoped = ledger.entries.filter((entry) => !storyId || entry?.story_id === storyId);
   const pending = scoped.filter((entry) => entry?.outcome === 'unclassified' && entry?.overridden !== true);
@@ -768,15 +776,41 @@ export async function applyGateOutcomeClassifications(repoRoot, options = {}) {
 
   return {
     schema_version: LEDGER_SCHEMA_VERSION,
-    status: updated.length > 0 ? 'classified' : 'no_matching_entries',
+    status: updated.length > 0
+      ? 'classified'
+      : ledgerModelStatus.status === 'foreign_model' ? 'ledger_model_not_readable' : 'no_matching_entries',
     story_id: storyId,
     artifact,
+    ledger_model_status: ledgerModelStatus,
+    // Promotion into the central ledger dedupes by entry_key, so classifying
+    // after `execute merge` can never reach an already-promoted entry.
+    promotion_scope: {
+      scope: 'local_ledger_only',
+      central_ledger_path: CENTRAL_GATE_OUTCOME_LEDGER_RELATIVE_PATH,
+      note: 'Classify before `vibepro execute merge`: entries promoted while unclassified stay unclassified centrally.'
+    },
     updated_count: updated.length,
     updated,
     unmatched_gate_ids: unmatched,
     remaining_unclassified_count: remaining.length,
     remaining_gate_ids: [...new Set(remaining.map((entry) => entry.gate_id).filter(Boolean))]
   };
+}
+
+async function readGateOutcomeLedgerModelStatus(ledgerPath) {
+  let raw;
+  try {
+    raw = JSON.parse(await readFile(ledgerPath, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return { status: 'absent', model: null, expected_model: LEDGER_MODEL };
+    if (error instanceof SyntaxError) return { status: 'unparseable', model: null, expected_model: LEDGER_MODEL };
+    throw error;
+  }
+  const model = raw?.model ?? null;
+  if (model && model !== LEDGER_MODEL) {
+    return { status: 'foreign_model', model, expected_model: LEDGER_MODEL };
+  }
+  return { status: 'ok', model: model ?? LEDGER_MODEL, expected_model: LEDGER_MODEL };
 }
 
 export function normalizeOutcome(value) {
@@ -856,6 +890,10 @@ function collectGateNodeEvidenceDelta(previousGate = null, currentGate = null) {
     .map((ref) => ({ kind: 'gate_node_evidence', gate_evidence: ref.kind, ref: ref.label }));
 }
 
+// Deliberately excludes judgment-axis `matched_evidence`: src/pr-manager.js
+// derives those entries from the diff shape itself (story/spec docs in diff,
+// changed test files), so counting them would let a documentation-only
+// resolution masquerade as evidence_added and deflate rewording_only_rate.
 function collectGateNodeEvidenceRefs(gate = null) {
   if (!gate || typeof gate !== 'object') return [];
   const refs = [];
@@ -865,7 +903,6 @@ function collectGateNodeEvidenceRefs(gate = null) {
     refs.push({ kind, label, key: `${kind}|${label}` });
   };
   for (const evidence of asArray(gate.evidence)) push('evidence', evidence);
-  for (const evidence of asArray(gate.matched_evidence)) push('matched_evidence', evidence);
   for (const evidence of asArray(gate.evidence_refs)) push('evidence_ref', evidence);
   for (const item of asArray(gate.definition_items)) {
     for (const evidence of asArray(item?.evidence)) push('definition_item_evidence', evidence);
