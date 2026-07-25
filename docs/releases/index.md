@@ -185,3 +185,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:389:start -->
 - [PR #389](https://github.com/Unson-LLC/vibepro/pull/389) — [2026-07](/releases/2026-07): story-vibepro-conformance-nul-escape - architecture-conformance.jsの生NULバイトを\0エスケープに置換しテキストファイル性を回復する
 <!-- vibepro-release-index-pr:389:end -->
+
+<!-- vibepro-release-index-pr:390:start -->
+- [PR #390](https://github.com/Unson-LLC/vibepro/pull/390) — [2026-07](/releases/2026-07): story-vibepro-import-based-conformance - モジュール間依存の測定をGraphify callsから実import文スキャンへ切り替える
+<!-- vibepro-release-index-pr:390:end -->

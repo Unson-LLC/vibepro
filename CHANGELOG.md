@@ -870,3 +870,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-conformance-
 なし
 
 <!-- vibepro-release-pr:389:end -->
+
+<!-- vibepro-release-pr:390:start -->
+## [#390](https://github.com/Unson-LLC/vibepro/pull/390) story-vibepro-import-based-conformance - モジュール間依存の測定をGraphify callsから実import文スキャンへ切り替える
+
+- Author: @sintariran
+- Merged: 2026-07-25T00:22:47Z
+- Commit: `6a652c9866cc796a3bd3e5666e9827ac66c4f4fa`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-import-based-conformance.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-import-based-conformance.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:390:end -->
