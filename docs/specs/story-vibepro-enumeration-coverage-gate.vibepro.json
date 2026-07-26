@@ -185,6 +185,43 @@
           }
         ]
       }
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "The enumeration coverage workflow moves through explicit states and transitions: a change introducing no cross-file identifier resolves not_applicable; an introduced identifier with no claim transitions to needs_evidence; a recorded claim failing grammar, count partition or recount transitions to failed; an unresolvable base ref transitions to inconclusive; and the process reaches passed only when every introduced identifier carries a claim whose count the gate recounted. Rollback of the whole flow is a single revert leaving recorded evidence intact.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/enumeration-evidence.js",
+            "anchor": "collectEnumerationCoverage"
+          },
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "buildEnumerationCoverageGate"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-4 resolves not_applicable for a change with no new cross-file identifier"
+          },
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-5 reports needs_evidence when a required identifier has no claim"
+          },
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-4 reports inconclusive, not pass, when the base tree cannot be read"
+          }
+        ]
+      }
     }
   ],
   "diagrams": [
