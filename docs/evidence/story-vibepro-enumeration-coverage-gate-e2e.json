@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/e2e/story-vibepro-enumeration-coverage-gate-main.test.js",
+  "tests": 3,
+  "pass": 3,
+  "fail": 0,
+  "recorded_at": "2026-07-26"
+}
