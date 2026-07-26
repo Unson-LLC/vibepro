@@ -15,15 +15,30 @@
       "statement": "An enumeration scenario is accepted only in the form 'enumeration: grepped <identifier> across <paths>; <N> sites found, <M> updated, <K> unchanged because <reason>'; count-free narration, a missing searchable path, and a non-identifier subject are rejected with a typed reason, and scenarios that do not declare themselves as enumeration claims pass through unchanged.",
       "origin": {
         "story_refs": [
-          { "kind": "acceptance_criteria", "index": 0 }
+          {
+            "kind": "acceptance_criteria",
+            "index": 0
+          }
         ],
         "code_refs": [
-          { "file": "src/enumeration-evidence.js", "anchor": "parseEnumerationScenario" }
+          {
+            "file": "src/enumeration-evidence.js",
+            "anchor": "parseEnumerationScenario"
+          }
         ],
         "test_refs": [
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-1 parses a well formed enumeration scenario into structured parts" },
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-1 rejects count-free narration that announces itself as enumeration" },
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-1 leaves non-enumeration scenarios untouched" }
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-1 parses a well formed enumeration scenario into structured parts"
+          },
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-1 rejects count-free narration that announces itself as enumeration"
+          },
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-1 leaves non-enumeration scenarios untouched"
+          }
         ]
       }
     },
@@ -33,16 +48,34 @@
       "statement": "Enumeration counts must partition the discovered sites: N equals M plus K, N is at least 1, and any K greater than zero requires an explicit because clause; a claim violating any of these is rejected at verify record time rather than stored.",
       "origin": {
         "story_refs": [
-          { "kind": "acceptance_criteria", "index": 1 }
+          {
+            "kind": "acceptance_criteria",
+            "index": 1
+          }
         ],
         "code_refs": [
-          { "file": "src/enumeration-evidence.js", "anchor": "validateEnumerationClaim" },
-          { "file": "src/verification-evidence.js", "anchor": "assertEnumerationScenariosWellFormed" }
+          {
+            "file": "src/enumeration-evidence.js",
+            "anchor": "validateEnumerationClaim"
+          },
+          {
+            "file": "src/verification-evidence.js",
+            "anchor": "assertEnumerationScenariosWellFormed"
+          }
         ],
         "test_refs": [
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-2 rejects counts that do not partition the discovered sites" },
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-2 rejects a zero-site sweep as a discovery failure, not coverage" },
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-2 requires a reason whenever sites are deliberately left unchanged" }
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-2 rejects counts that do not partition the discovered sites"
+          },
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-2 rejects a zero-site sweep as a discovery failure, not coverage"
+          },
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-2 requires a reason whenever sites are deliberately left unchanged"
+          }
         ]
       }
     },
@@ -52,16 +85,34 @@
       "statement": "scenario_clause_e2e: the claimed site count is recounted against the tree over the same declared range with whole-token matching, and a claim whose number does not match the observed number, or whose declared path does not exist or escapes the repository, fails closed; writing the token alone never satisfies the gate.",
       "origin": {
         "story_refs": [
-          { "kind": "acceptance_criteria", "index": 2 }
+          {
+            "kind": "acceptance_criteria",
+            "index": 2
+          }
         ],
         "code_refs": [
-          { "file": "src/enumeration-evidence.js", "anchor": "verifyObservedCount" },
-          { "file": "src/enumeration-evidence.js", "anchor": "countSitesOnDisk" }
+          {
+            "file": "src/enumeration-evidence.js",
+            "anchor": "verifyObservedCount"
+          },
+          {
+            "file": "src/enumeration-evidence.js",
+            "anchor": "countSitesOnDisk"
+          }
         ],
         "test_refs": [
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-3 fails closed when the claimed count does not match the recount" },
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-3 fails closed when a declared path does not exist" },
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-3 passes only when the claimed count survives the recount" }
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-3 fails closed when the claimed count does not match the recount"
+          },
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-3 fails closed when a declared path does not exist"
+          },
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-3 passes only when the claimed count survives the recount"
+          }
         ]
       }
     },
@@ -71,16 +122,34 @@
       "statement": "Enumeration is required only for identifiers introduced by the change and present in two or more product source files at head; pre-existing vocabulary and single-file constants are skipped with a recorded reason, a change with no such identifier resolves as not_applicable, and an unreadable base tree resolves as inconclusive rather than a pass.",
       "origin": {
         "story_refs": [
-          { "kind": "acceptance_criteria", "index": 3 }
+          {
+            "kind": "acceptance_criteria",
+            "index": 3
+          }
         ],
         "code_refs": [
-          { "file": "src/enumeration-evidence.js", "anchor": "selectRequiredIdentifiers" },
-          { "file": "src/enumeration-evidence.js", "anchor": "collectEnumerationCoverage" }
+          {
+            "file": "src/enumeration-evidence.js",
+            "anchor": "selectRequiredIdentifiers"
+          },
+          {
+            "file": "src/enumeration-evidence.js",
+            "anchor": "collectEnumerationCoverage"
+          }
         ],
         "test_refs": [
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-4 requires enumeration only for new identifiers spanning 2+ source files" },
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-4 treats a docs-only change (no product source diff) as not_applicable" },
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-4 reports inconclusive, not pass, when the base tree cannot be read" }
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-4 requires enumeration only for new identifiers spanning 2+ source files"
+          },
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-4 treats a docs-only change (no product source diff) as not_applicable"
+          },
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-4 reports inconclusive, not pass, when the base tree cannot be read"
+          }
         ]
       }
     },
@@ -90,17 +159,46 @@
       "statement": "gate:enumeration_coverage is a required node on the gate DAG between failure_mode_coverage and decision_record, blocks PR creation and managed execution in every status other than passed and not_applicable, and publishes the reproduction grep and the verify record template for each identifier still missing a claim.",
       "origin": {
         "story_refs": [
-          { "kind": "acceptance_criteria", "index": 4 }
+          {
+            "kind": "acceptance_criteria",
+            "index": 4
+          }
         ],
         "code_refs": [
-          { "file": "src/pr-manager.js", "anchor": "buildEnumerationCoverageGate" },
-          { "file": "src/execution-state.js", "anchor": "gate:enumeration_coverage" }
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "buildEnumerationCoverageGate"
+          },
+          {
+            "file": "src/execution-state.js",
+            "anchor": "gate:enumeration_coverage"
+          }
         ],
         "test_refs": [
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-5 reports needs_evidence when a required identifier has no claim" },
-          { "file": "test/enumeration-coverage-gate.test.js", "case": "ENUM-S-5 a claim for a different identifier does not close the required one" }
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-5 reports needs_evidence when a required identifier has no claim"
+          },
+          {
+            "file": "test/enumeration-coverage-gate.test.js",
+            "case": "ENUM-S-5 a claim for a different identifier does not close the required one"
+          }
         ]
       }
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart TD\n  A[verify record --scenario] -->|untrusted claim text| B{grammar check}\n  B -->|malformed| R1[reject: enumeration_scenario_malformed]\n  B -->|well formed| C{count partition N = M + K}\n  C -->|unbalanced| R2[reject: enumeration_counts_unbalanced]\n  C -->|balanced| D[(evidence artifact)]\n  D --> E{gate recount over declared paths}\n  E -->|path escapes repo or absent| R3[fail: enumeration_path_missing]\n  E -->|claimed count != observed| R4[fail: enumeration_count_mismatch]\n  E -->|stale binding| R5[claim ignored]\n  E -->|match| P[gate:enumeration_coverage passed]",
+      "entities": [
+        "verify record",
+        "grammar check",
+        "count partition",
+        "evidence artifact",
+        "gate recount"
+      ],
+      "rationale": "Spec clause C-003 and Story AC ENUM-S-3. The scenario string is operator-supplied text that asserts a fact about the tree, so the trust boundary is between the claim and the tree. Threats are a fabricated count, a path outside the repository used to inflate or redirect the scan, and a claim recorded against a tree that has since changed; each is closed by recount, containment check and binding respectively."
     }
   ]
 }

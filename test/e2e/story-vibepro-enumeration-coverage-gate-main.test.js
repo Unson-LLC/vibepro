@@ -40,7 +40,7 @@ async function withInitializedRepo(body) {
   }
 }
 
-test('flow_replay: the real CLI rejects a malformed enumeration claim at record time and stores a well formed one', async () => {
+test('AC-1 AC-2 flow_replay: the real CLI rejects a malformed enumeration claim at record time and stores a well formed one', async () => {
   await withInitializedRepo(async (dir) => {
     const malformed = await run([
       cli, 'verify', 'record', '.', '--id', 'story-enumeration-e2e', '--kind', 'unit', '--status', 'pass',
@@ -68,7 +68,7 @@ test('flow_replay: the real CLI rejects a malformed enumeration claim at record 
   });
 });
 
-test('scenario_clause_e2e: the enumeration report over this repository recounts claims against the real tree', async () => {
+test('AC-3 S-001 scenario_clause_e2e: the enumeration report over this repository recounts claims against the real tree', async () => {
   const { collectEnumerationCoverage } = await import('../../src/enumeration-evidence.js');
 
   const truthful = await collectEnumerationCoverage({
@@ -114,7 +114,7 @@ test('scenario_clause_e2e: the enumeration report over this repository recounts 
   assert.equal(inflated.rejections[0].id, 'enumeration_count_mismatch');
 });
 
-test('evidence_lifecycle_regression: the unit suite for the enumeration contract passes through the real runner', async () => {
+test('AC-4 AC-5 evidence_lifecycle_regression: the unit suite for the enumeration contract passes through the real runner', async () => {
   const result = await run([
     '--test',
     'test/enumeration-coverage-gate.test.js'
