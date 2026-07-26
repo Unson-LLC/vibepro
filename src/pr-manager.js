@@ -15458,7 +15458,7 @@ export function buildGateOverride(gateDag, options, context = {}) {
   };
 }
 
-function isCriticalUnresolvedGate(gate) {
+export function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'story' && gate.status === 'transient') return true;
   if (gate.id === 'gate:story_source_integrity' && gate.status !== 'passed') return true;
   if (gate.id === 'architecture' && gate.status === 'needs_review') return true;

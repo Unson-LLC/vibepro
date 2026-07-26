@@ -957,7 +957,7 @@ async function summarizeVerificationEvidence(root, evidence) {
   };
 }
 
-function collectUnresolvedRequiredGates(gateDag) {
+export function collectUnresolvedRequiredGates(gateDag) {
   const nodes = Array.isArray(gateDag?.nodes) ? gateDag.nodes : [];
   const unresolved = nodes
     .filter((node) => [
@@ -987,6 +987,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'requirement_gate',
       'responsibility_authority_gate',
       'failure_mode_coverage_gate',
+      'enumeration_coverage_gate',
       'path_surface_matrix_gate',
       'review_inspection_required_gate',
       'visual_qa_gate',
@@ -1073,6 +1074,9 @@ function isUnresolvedStatus(status) {
     'needs_rebase',
     'needs_changes',
     'contradicted',
+    // A scanner that resolved no scope has not passed; kept aligned with
+    // isUnresolvedGateStatus in pr-manager.js.
+    'inconclusive',
     'stale',
     'block',
     'failed'
@@ -1094,7 +1098,7 @@ function pickBlockingGate(gates) {
   };
 }
 
-function isCriticalUnresolvedGate(gate) {
+export function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'story' && gate.status === 'transient') return true;
   if (gate.id === 'architecture' && gate.status === 'needs_review') return true;
   if (gate.id === 'spec' && ['implicit', 'inferred_empty', 'needs_review'].includes(gate.status)) return true;

@@ -47,7 +47,7 @@ function stubProvider({ added = [], base = [], headFiles = new Map(), counts = n
     },
     async countSites(identifier, paths) {
       const key = `${identifier}::${paths.join(',')}`;
-      return counts.get(key) ?? { lines: 0, files: 0, missing_paths: [] };
+      return counts.get(key) ?? { lines: 0, files: 0, missing_paths: [], unscannable_paths: [] };
     }
   };
 }
@@ -136,7 +136,7 @@ test('ENUM-S-3 fails closed when the claimed count does not match the recount', 
         ['src/b.js', "if (v === 'cost_missing') {}"]
       ]),
       // The tree really contains 3 sites; the claim said 7.
-      counts: new Map([['cost_missing::src', { lines: 3, files: 2, missing_paths: [] }]])
+      counts: new Map([['cost_missing::src', { lines: 3, files: 2, missing_paths: [], unscannable_paths: [] }]])
     })
   });
   assert.equal(report.status, 'failed');
@@ -155,7 +155,7 @@ test('ENUM-S-3 fails closed when a declared path does not exist', async () => {
         ['src/a.js', "const x = 'cost_missing';"],
         ['src/b.js', "if (v === 'cost_missing') {}"]
       ]),
-      counts: new Map([['cost_missing::src,ghost', { lines: 3, files: 2, missing_paths: ['ghost'] }]])
+      counts: new Map([['cost_missing::src,ghost', { lines: 3, files: 2, missing_paths: ['ghost'], unscannable_paths: [] }]])
     })
   });
   assert.equal(report.status, 'failed');
@@ -172,7 +172,7 @@ test('ENUM-S-3 passes only when the claimed count survives the recount', async (
         ['src/a.js', "const x = 'cost_missing';"],
         ['src/b.js', "if (v === 'cost_missing') {}"]
       ]),
-      counts: new Map([['cost_missing::src', { lines: 3, files: 2, missing_paths: [] }]])
+      counts: new Map([['cost_missing::src', { lines: 3, files: 2, missing_paths: [], unscannable_paths: [] }]])
     })
   });
   assert.equal(report.status, 'passed');
@@ -193,12 +193,13 @@ test('ENUM-S-4 requires enumeration only for new identifiers spanning 2+ source 
   const { required, skipped } = selectRequiredIdentifiers({
     addedLiterals: new Set(['cost_missing', 'local_only', 'already_known']),
     baseLiterals: new Set(['already_known']),
-    headFileCounts: new Map([['cost_missing', 3], ['local_only', 1], ['already_known', 9]])
+    headFileCounts: new Map([['cost_missing', 3], ['local_only', 1], ['already_known', 9]]),
+    headSiteCounts: new Map([['cost_missing', 5], ['local_only', 1], ['already_known', 20]])
   });
   assert.deepEqual(required.map((item) => item.identifier), ['cost_missing']);
   assert.deepEqual(
     skipped.map((item) => [item.identifier, item.reason]).sort(),
-    [['already_known', 'pre_existing_in_base'], ['local_only', 'single_product_source_file']]
+    [['already_known', 'pre_existing_in_base'], ['local_only', 'single_product_source_site']]
   );
 });
 
@@ -259,11 +260,78 @@ test('ENUM-S-5 a claim for a different identifier does not close the required on
         ['src/a.js', "const x = 'cost_missing';"],
         ['src/b.js', "if (v === 'cost_missing') {}"]
       ]),
-      counts: new Map([['other_thing::src', { lines: 2, files: 1, missing_paths: [] }]])
+      counts: new Map([['other_thing::src', { lines: 2, files: 1, missing_paths: [], unscannable_paths: [] }]])
     })
   });
   assert.equal(report.status, 'needs_evidence');
   assert.deepEqual(report.missing, ['cost_missing']);
+});
+
+// --- ENUM-S-5: the gate actually blocks, in BOTH predicates ----------------
+//
+// These assertions exist because a review found the execution-state predicate
+// was dead code: the gate node's type was absent from that file's collector
+// allowlist, so the predicate could never see the node. Nothing in the suite
+// asserted either predicate, which is why it survived.
+
+test('ENUM-S-5 the pr-manager blocking predicate treats every non-resolved status as critical', async () => {
+  const { isCriticalUnresolvedGate } = await import('../src/pr-manager.js');
+  for (const status of ['needs_evidence', 'failed', 'inconclusive']) {
+    assert.equal(
+      isCriticalUnresolvedGate({ id: 'gate:enumeration_coverage', type: 'enumeration_coverage_gate', status }),
+      true,
+      `${status} must block PR creation`
+    );
+  }
+  for (const status of ['passed', 'not_applicable']) {
+    assert.equal(
+      isCriticalUnresolvedGate({ id: 'gate:enumeration_coverage', type: 'enumeration_coverage_gate', status }),
+      false,
+      `${status} must not block`
+    );
+  }
+});
+
+test('ENUM-S-5 the execution-state blocking predicate agrees with its pr-manager twin', async () => {
+  const executionState = await import('../src/execution-state.js');
+  for (const status of ['needs_evidence', 'failed', 'inconclusive']) {
+    assert.equal(
+      executionState.isCriticalUnresolvedGate({ id: 'gate:enumeration_coverage', type: 'enumeration_coverage_gate', status }),
+      true,
+      `${status} must block managed execution`
+    );
+  }
+  for (const status of ['passed', 'not_applicable']) {
+    assert.equal(
+      executionState.isCriticalUnresolvedGate({ id: 'gate:enumeration_coverage', type: 'enumeration_coverage_gate', status }),
+      false,
+      `${status} must not block managed execution`
+    );
+  }
+});
+
+test('ENUM-S-5 the execution-state collector admits the gate node type so its predicate is reachable', async () => {
+  const { collectUnresolvedRequiredGates } = await import('../src/execution-state.js');
+  const unresolved = collectUnresolvedRequiredGates({
+    nodes: [{
+      id: 'gate:enumeration_coverage',
+      type: 'enumeration_coverage_gate',
+      label: 'Enumeration Coverage Gate',
+      status: 'needs_evidence',
+      required: true
+    }]
+  });
+  const ids = unresolved.map((gate) => gate.id);
+  assert.ok(
+    ids.includes('gate:enumeration_coverage'),
+    'the gate type must be in the collector allowlist, otherwise the blocking predicate is unreachable'
+  );
+});
+
+test('ENUM-S-5 the gate node sits on the DAG between failure mode coverage and decision record', async () => {
+  const source = await readFile(new URL('../src/pr-manager.js', import.meta.url), 'utf8');
+  assert.match(source, /\{ from: 'gate:failure_mode_coverage', to: 'gate:enumeration_coverage' \}/);
+  assert.match(source, /\{ from: 'gate:enumeration_coverage', to: 'gate:decision_record' \}/);
 });
 
 // --- regression guards on the gate's own failure modes ---------------------
@@ -286,7 +354,7 @@ test('a false claim fails the gate even when this change required no enumeration
       added: [],
       base: [],
       headFiles: new Map(),
-      counts: new Map([['ghost_state::src', { lines: 0, files: 0, missing_paths: [] }]])
+      counts: new Map([['ghost_state::src', { lines: 0, files: 0, missing_paths: [], unscannable_paths: [] }]])
     })
   });
   assert.equal(report.status, 'failed');
@@ -315,11 +383,96 @@ test('a stale-bound enumeration claim does not close the gate', async () => {
         ['src/a.js', "const x = 'cost_missing';"],
         ['src/b.js', "if (v === 'cost_missing') {}"]
       ]),
-      counts: new Map([['cost_missing::src', { lines: 3, files: 2, missing_paths: [] }]])
+      counts: new Map([['cost_missing::src', { lines: 3, files: 2, missing_paths: [], unscannable_paths: [] }]])
     })
   });
   assert.equal(report.status, 'needs_evidence');
   assert.deepEqual(report.missing, ['cost_missing']);
+});
+
+test('a trivially narrow declared range cannot close a required identifier', async () => {
+  // A review demonstrated a passing gate over 1 of 16 sites by declaring a
+  // single file: the recount only ever validated the range the claimant chose.
+  const report = await collectEnumerationCoverage({
+    verificationEvidence: evidenceWithScenarios('enumeration: grepped cost_missing across src/a.js; 1 sites found, 1 updated, 0 unchanged'),
+    provider: stubProvider({
+      added: ['cost_missing'],
+      base: [],
+      headFiles: new Map([
+        ['src/a.js', "const x = 'cost_missing';"],
+        ['src/b.js', "if (v === 'cost_missing') {}"],
+        ['src/c.js', "log('cost_missing');"]
+      ]),
+      counts: new Map([['cost_missing::src/a.js', { lines: 1, files: 1, missing_paths: [], unscannable_paths: [] }]])
+    })
+  });
+  assert.equal(report.status, 'failed');
+  assert.equal(report.rejections[0].id, 'enumeration_range_too_narrow');
+  assert.match(report.rejections[0].reason, /spans 3 product source file/);
+});
+
+test('a range containing a file the recount cannot read fails closed instead of undercounting', async () => {
+  // grep -I has no size cap, so silently skipping a large file would make the
+  // recount disagree with the command the gate tells operators to run.
+  const report = await collectEnumerationCoverage({
+    verificationEvidence: evidenceWithScenarios('enumeration: grepped cost_missing across docs; 3 sites found, 3 updated, 0 unchanged'),
+    provider: stubProvider({
+      added: ['cost_missing'],
+      base: [],
+      headFiles: new Map([
+        ['src/a.js', "const x = 'cost_missing';"],
+        ['src/b.js', "if (v === 'cost_missing') {}"]
+      ]),
+      counts: new Map([['cost_missing::docs', { lines: 3, files: 2, missing_paths: [], unscannable_paths: ['docs/huge-ledger.json'] }]])
+    })
+  });
+  assert.equal(report.status, 'failed');
+  assert.equal(report.rejections[0].id, 'enumeration_range_unscannable');
+  assert.match(report.rejections[0].reason, /docs\/huge-ledger\.json/);
+});
+
+test('an identifier registered twice inside one file still requires enumeration', () => {
+  // The file-only threshold was blind to the registration class: a gate id
+  // written as a node type plus a collector allowlist entry lives in one file.
+  const { required, skipped } = selectRequiredIdentifiers({
+    addedLiterals: new Set(['enumeration_coverage_gate', 'truly_single_use']),
+    baseLiterals: new Set(),
+    headFileCounts: new Map([['enumeration_coverage_gate', 1], ['truly_single_use', 1]]),
+    headSiteCounts: new Map([['enumeration_coverage_gate', 2], ['truly_single_use', 1]])
+  });
+  assert.deepEqual(required.map((item) => item.identifier), ['enumeration_coverage_gate']);
+  assert.deepEqual(skipped.map((item) => item.reason), ['single_product_source_site']);
+});
+
+test('ordinary prose beginning with the enumeration prefix still records', () => {
+  // Claiming every "enumeration:"-prefixed scenario made verify record throw
+  // for text that recorded fine before this contract existed.
+  const parsed = parseEnumerationScenario('enumeration: covered all statuses');
+  assert.equal(parsed.matched, false);
+  assert.equal(parsed.rejection, null);
+});
+
+test('count-free sweep narration is still claimed and rejected', () => {
+  const parsed = parseEnumerationScenario('enumeration: swept src, skills, docs, scripts, bin and .github');
+  assert.equal(parsed.matched, true);
+  assert.equal(parsed.ok, false);
+  assert.equal(parsed.rejection.id, 'enumeration_scenario_malformed');
+});
+
+test('an unreadable diff is inconclusive, not a silent not_applicable', async () => {
+  const report = await collectEnumerationCoverage({
+    baseRef: 'origin/main',
+    verificationEvidence: { commands: [] },
+    provider: {
+      async addedLiterals() { return null; },
+      async baseLiterals() { return new Set(); },
+      async productSourceFiles() { return []; },
+      async readTextFile() { return null; },
+      async countSites() { return { lines: 0, files: 0, missing_paths: [], unscannable_paths: [] }; }
+    }
+  });
+  assert.equal(report.status, 'inconclusive');
+  assert.match(report.reason, /diff/);
 });
 
 test('a declared path escaping the repository is treated as missing', async () => {

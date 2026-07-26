@@ -88,7 +88,13 @@ A review finding names an instance; the work item is its class. This is enforced
 2. the counts must partition: `N === M + K`, `N >= 1`, and any `K > 0` needs a `because` clause. These are enforced at `verify record` time, so a malformed claim never reaches the evidence artifact;
 3. **the gate recounts.** It re-scans the declared paths for the identifier with whole-token matching and rejects a claim whose number differs from what it observes. Take the number from the command the gate prints: `grep -rIn --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.vibepro -w -- <identifier> <paths> | wc -l`.
 
-Because the count is recounted, the scenario cannot be satisfied by writing the token — only by having actually swept the range it names. Record it after the tree is final: editing a declared path changes the count and the claim stops matching. `inconclusive` (base ref unresolvable) is not a pass, and a claim on stale-bound evidence does not count.
+Because the count is recounted, the scenario cannot be satisfied by writing the token — only by having actually swept the range it names. Record it after the tree is final: editing a declared path changes the count and the claim stops matching. `inconclusive` (base ref or diff unresolvable) is not a pass, and a claim on stale-bound evidence does not count.
+
+Three further rejections exist because a claimant otherwise controls the range:
+
+- `enumeration_range_too_narrow` — the declared range must reach at least as many files as the identifier spans in product source. Declaring one file to close a class of ten does not work.
+- `enumeration_range_unscannable` — the recount skips files above its size cap while `grep -I` does not, so a range containing one would make the two numbers disagree invisibly. The gate names the file; narrow the range to exclude it (e.g. prefer `docs/specs` over all of `docs`).
+- An identifier appearing twice inside a *single* file still requires a claim. A gate id written as a node type plus a collector allowlist entry lives in one file, and that is precisely the registration class that gets half closed.
 
 Classes worth enumerating whenever a new field, state, or predicate appears:
 

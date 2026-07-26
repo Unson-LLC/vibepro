@@ -26,6 +26,9 @@ export const UNRESOLVED_STATUSES = new Set([
   'needs_verification',
   'missing',
   'pending',
+  // Kept aligned with isUnresolvedGateStatus in pr-manager.js so an
+  // inconclusive -> passed transition is still recorded as a resolved outcome.
+  'inconclusive',
   'stale_evidence',
   'story_source_mismatch'
 ]);

@@ -79,6 +79,11 @@ const ENUMERATION_SCENARIO_GRAMMAR = new RegExp(
 
 const IDENTIFIER_SHAPE = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
 
+// Marks text as an attempted sweep claim rather than incidental prose that
+// happens to begin with the prefix. "swept" is included deliberately so
+// count-free sweep narration is still rejected rather than quietly ignored.
+const ENUMERATION_CLAIM_SIGNAL = /\b(grepped|swept|sweep|sites?\s+found)\b|\b\d+\s+sites?\b/i;
+
 /**
  * Parse one `--scenario` string as an enumeration claim.
  *
@@ -91,6 +96,12 @@ const IDENTIFIER_SHAPE = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
 export function parseEnumerationScenario(text) {
   const raw = typeof text === 'string' ? text.trim() : '';
   if (!raw.toLowerCase().startsWith(ENUMERATION_SCENARIO_PREFIX)) {
+    return { matched: false, ok: false, claim: null, rejection: null };
+  }
+  // The prefix alone is not enough to claim a scenario. Ordinary prose such as
+  // "enumeration: covered all statuses" predates this contract and must keep
+  // recording; only text that also announces a sweep is held to the grammar.
+  if (!ENUMERATION_CLAIM_SIGNAL.test(raw)) {
     return { matched: false, ok: false, claim: null, rejection: null };
   }
   const match = ENUMERATION_SCENARIO_GRAMMAR.exec(raw);
@@ -248,21 +259,27 @@ export function buildWholeTokenMatcher(identifier) {
 export function selectRequiredIdentifiers({
   addedLiterals = new Set(),
   baseLiterals = new Set(),
-  headFileCounts = new Map()
+  headFileCounts = new Map(),
+  headSiteCounts = new Map()
 } = {}) {
   const required = [];
   const skipped = [];
   for (const literal of [...addedLiterals].sort()) {
     const fileCount = headFileCounts.get(literal) ?? 0;
+    const siteCount = headSiteCounts.get(literal) ?? 0;
     if (baseLiterals.has(literal)) {
-      skipped.push({ identifier: literal, reason: 'pre_existing_in_base', product_source_files: fileCount });
+      skipped.push({ identifier: literal, reason: 'pre_existing_in_base', product_source_files: fileCount, product_source_sites: siteCount });
       continue;
     }
-    if (fileCount < CROSS_FILE_THRESHOLD) {
-      skipped.push({ identifier: literal, reason: 'single_product_source_file', product_source_files: fileCount });
+    // Spread is measured by sites, not only by files. A gate id registered
+    // twice inside one module (a node type plus a collector allowlist) is
+    // exactly the registration class that gets half closed, and a file-only
+    // threshold is blind to it by construction.
+    if (fileCount < CROSS_FILE_THRESHOLD && siteCount < CROSS_FILE_THRESHOLD) {
+      skipped.push({ identifier: literal, reason: 'single_product_source_site', product_source_files: fileCount, product_source_sites: siteCount });
       continue;
     }
-    required.push({ identifier: literal, product_source_files: fileCount });
+    required.push({ identifier: literal, product_source_files: fileCount, product_source_sites: siteCount });
   }
   return { required, skipped };
 }
@@ -309,12 +326,19 @@ function shellQuote(value) {
 export function createGitTreeProvider({ repoRoot, baseRef, headRef }) {
   return {
     async addedLiterals() {
-      const diff = await gitOptional(repoRoot, [
+      // Returns null when the diff itself could not be produced, so an
+      // unreadable change set fails closed rather than looking like "no new
+      // identifiers". git diff exits 0 with empty output for an empty diff.
+      let result = await gitResult(repoRoot, [
         'diff', '-U0', `${baseRef}...${headRef}`, '--', ...PRODUCT_SOURCE_PREFIXES
-      ]) || await gitOptional(repoRoot, [
-        'diff', '-U0', baseRef, headRef, '--', ...PRODUCT_SOURCE_PREFIXES
       ]);
-      const added = diff
+      if (!result.ok) {
+        result = await gitResult(repoRoot, [
+          'diff', '-U0', baseRef, headRef, '--', ...PRODUCT_SOURCE_PREFIXES
+        ]);
+      }
+      if (!result.ok) return null;
+      const added = result.stdout
         .split('\n')
         .filter((line) => line.startsWith('+') && !line.startsWith('+++'))
         .join('\n');
@@ -370,10 +394,17 @@ async function gitResult(repoRoot, args) {
   }
 }
 
-async function readTextFileIfSmall(fullPath) {
+async function readTextFileIfSmall(fullPath, skipped = null) {
   try {
     const stats = await stat(fullPath);
-    if (!stats.isFile() || stats.size > MAX_SCANNED_FILE_BYTES) return null;
+    if (!stats.isFile()) return null;
+    if (stats.size > MAX_SCANNED_FILE_BYTES) {
+      // `grep -I` has no size cap, so a file we decline to read would make the
+      // recount disagree with the command this gate tells operators to run.
+      // Record it instead of dropping it silently.
+      skipped?.push(fullPath);
+      return null;
+    }
     const content = await readFile(fullPath, 'utf8');
     return NUL_BYTE.test(content) ? null : content;
   } catch {
@@ -416,6 +447,7 @@ async function listFilesUnder(repoRoot, prefixes, filter) {
 async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
   const matcher = buildWholeTokenMatcher(identifier);
   const missingPaths = [];
+  const skippedAbsolute = [];
   let lines = 0;
   let files = 0;
   const root = path.resolve(repoRoot);
@@ -439,7 +471,7 @@ async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
       ? await listFilesUnder(repoRoot, [`${normalized}/`], null)
       : [normalized];
     for (const candidate of candidates) {
-      const content = await readTextFileIfSmall(path.join(repoRoot, candidate));
+      const content = await readTextFileIfSmall(path.join(repoRoot, candidate), skippedAbsolute);
       if (content === null) continue;
       let fileHit = false;
       for (const line of content.split('\n')) {
@@ -451,7 +483,12 @@ async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
       if (fileHit) files += 1;
     }
   }
-  return { lines, files, missing_paths: missingPaths };
+  return {
+    lines,
+    files,
+    missing_paths: missingPaths,
+    unscannable_paths: skippedAbsolute.map((absolute) => path.relative(root, absolute))
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -493,9 +530,30 @@ export async function collectEnumerationCoverage({
     };
   }
 
-  const addedLiterals = await tree.addedLiterals();
-  const headFileCounts = await countHeadFiles(tree, addedLiterals);
-  const { required, skipped } = selectRequiredIdentifiers({ addedLiterals, baseLiterals, headFileCounts });
+  const added = await tree.addedLiterals();
+  // A diff that could not be read must not fall through to a silent
+  // not_applicable: an unknown change set is unknown scope, same as an
+  // unreadable base tree.
+  if (added === null) {
+    return {
+      schema_version: ENUMERATION_EVIDENCE_SCHEMA_VERSION,
+      status: 'inconclusive',
+      reason: `the diff between ${baseRef} and ${headRef} could not be read, so the introduced-identifier scope is unknown`,
+      required: [],
+      missing: [],
+      skipped: [],
+      claims: scenarios.map(describeScenario),
+      rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection)
+    };
+  }
+  const addedLiterals = added;
+  const { fileCounts, siteCounts } = await countHeadFiles(tree, addedLiterals);
+  const { required, skipped } = selectRequiredIdentifiers({
+    addedLiterals,
+    baseLiterals,
+    headFileCounts: fileCounts,
+    headSiteCounts: siteCounts
+  });
 
   const rejections = scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection);
   const verifiedByIdentifier = new Map();
@@ -506,7 +564,8 @@ export async function collectEnumerationCoverage({
       continue;
     }
     const observed = await tree.countSites(entry.claim.identifier, entry.claim.paths);
-    const verification = verifyObservedCount(entry.claim, observed);
+    const requirement = required.find((item) => item.identifier === entry.claim.identifier) ?? null;
+    const verification = verifyObservedCount(entry.claim, observed, requirement);
     claims.push({ ...describeScenario(entry), observed, verified: verification.ok, verification_reason: verification.reason });
     if (verification.ok) {
       verifiedByIdentifier.set(entry.claim.identifier, entry.claim);
@@ -543,12 +602,34 @@ export async function collectEnumerationCoverage({
   };
 }
 
-function verifyObservedCount(claim, observed) {
+function verifyObservedCount(claim, observed, requirement = null) {
   if (observed.missing_paths.length > 0) {
     return {
       ok: false,
       id: 'enumeration_path_missing',
       reason: `enumeration of ${claim.identifier} declares path(s) that do not exist: ${observed.missing_paths.join(', ')}`
+    };
+  }
+  // The published grep has no size cap. If the declared range contains a file
+  // this scan cannot read, the two counts would disagree for a reason the
+  // operator cannot see, so say so instead of returning a number that silently
+  // omits it.
+  if ((observed.unscannable_paths ?? []).length > 0) {
+    return {
+      ok: false,
+      id: 'enumeration_range_unscannable',
+      reason: `enumeration of ${claim.identifier} declares a range containing file(s) this recount cannot read, so the recount and the published grep would disagree: ${observed.unscannable_paths.join(', ')}; narrow the declared range to exclude them`
+    };
+  }
+  // A claimant choosing a trivially narrow range would otherwise close the gate
+  // over a fraction of the class. The range must reach at least as many files
+  // as the identifier is known to span in product source.
+  const expectedFiles = requirement?.product_source_files ?? 0;
+  if (expectedFiles > 0 && observed.files < expectedFiles) {
+    return {
+      ok: false,
+      id: 'enumeration_range_too_narrow',
+      reason: `enumeration of ${claim.identifier} declares a range covering ${observed.files} file(s), but the identifier spans ${expectedFiles} product source file(s); declare a range that reaches the whole class`
     };
   }
   if (observed.lines !== claim.found) {
@@ -563,18 +644,23 @@ function verifyObservedCount(claim, observed) {
 }
 
 async function countHeadFiles(tree, literals) {
-  const counts = new Map();
-  if (literals.size === 0) return counts;
+  const fileCounts = new Map();
+  const siteCounts = new Map();
+  if (literals.size === 0) return { fileCounts, siteCounts };
   const files = await tree.productSourceFiles();
   const matchers = new Map([...literals].map((literal) => [literal, buildWholeTokenMatcher(literal)]));
   for (const file of files) {
     const content = await tree.readTextFile(file);
     if (content === null) continue;
+    const lines = content.split('\n');
     for (const [literal, matcher] of matchers) {
-      if (matcher.test(content)) counts.set(literal, (counts.get(literal) ?? 0) + 1);
+      if (!matcher.test(content)) continue;
+      fileCounts.set(literal, (fileCounts.get(literal) ?? 0) + 1);
+      const hits = lines.reduce((total, line) => (matcher.test(line) ? total + 1 : total), 0);
+      siteCounts.set(literal, (siteCounts.get(literal) ?? 0) + hits);
     }
   }
-  return counts;
+  return { fileCounts, siteCounts };
 }
 
 function describeScenario(entry) {

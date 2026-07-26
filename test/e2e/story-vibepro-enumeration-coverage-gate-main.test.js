@@ -81,10 +81,10 @@ test('AC-3 S-001 S-002 scenario_clause_e2e: the enumeration report over this rep
         binding: { status: 'current' },
         observation: {
           targets: ['src'],
-          // enumeration_coverage_gate genuinely appears twice under src/ (the
-          // gate node's type and the gate type allowlist), so an honest claim
-          // over that range must survive the recount.
-          scenarios: ['enumeration: grepped enumeration_coverage_gate across src; 2 sites found, 2 updated, 0 unchanged'],
+          // enumeration_coverage_gate genuinely appears three times under src/
+          // (the gate node's type and both collector allowlists), so an honest
+          // claim over that range must survive the recount.
+          scenarios: ['enumeration: grepped enumeration_coverage_gate across src; 3 sites found, 3 updated, 0 unchanged'],
           values: {}
         }
       }]
