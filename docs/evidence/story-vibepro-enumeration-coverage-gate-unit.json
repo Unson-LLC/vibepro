@@ -1,9 +1,9 @@
 {
   "status": "pass",
   "exit_code": 0,
-  "command": "node --test test/enumeration-coverage-gate.test.js test/e2e/story-vibepro-enumeration-coverage-gate-main.test.js",
-  "tests": 43,
-  "pass": 43,
+  "command": "node --test test/enumeration-coverage-gate.test.js",
+  "tests": 40,
+  "pass": 40,
   "fail": 0,
   "recorded_at": "2026-07-27"
 }
