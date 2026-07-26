@@ -92,8 +92,8 @@ Because the count is recounted, the scenario cannot be satisfied by writing the 
 
 Three further rejections exist because a claimant otherwise controls the range:
 
-- `enumeration_range_too_narrow` — the declared range must reach at least as many files as the identifier spans in product source. Declaring one file to close a class of ten does not work.
-- `enumeration_range_unscannable` — the recount skips files above its size cap while `grep -I` does not, so a range containing one would make the two numbers disagree invisibly. The gate names the file; narrow the range to exclude it (e.g. prefer `docs/specs` over all of `docs`).
+- `enumeration_range_too_narrow` — the declared range must reach at least as many **product source** files and sites as the identifier spans there. Declaring one file, or a range containing no product source at all, does not close the class.
+- `enumeration_range_unscannable` — a file in the range could not be read at all, so the recount and the published grep would disagree invisibly. The gate names the file; make it readable or narrow the range. (There is no size cap: large files are streamed, so the recount matches `grep -I` exactly.)
 - An identifier appearing twice inside a *single* file still requires a claim. A gate id written as a node type plus a collector allowlist entry lives in one file, and that is precisely the registration class that gets half closed.
 
 Classes worth enumerating whenever a new field, state, or predicate appears:

@@ -20,7 +20,9 @@
 // token, only by having actually swept the range it names.
 
 import { execFile } from 'node:child_process';
-import { readdir, readFile, stat } from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
+import { open, readdir, stat } from 'node:fs/promises';
+import readline from 'node:readline';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -43,7 +45,12 @@ const PRODUCT_SOURCE_EXTENSIONS = new Set(['.js', '.mjs', '.cjs', '.ts', '.tsx',
 // mentioning the identifier inside `.vibepro/`.
 export const EXCLUDED_SCAN_DIRS = ['.git', 'node_modules', '.vibepro'];
 
-const MAX_SCANNED_FILE_BYTES = 2_000_000;
+// No size cap. A cap made this scan silently disagree with the `grep -rIn -w`
+// command the gate publishes: the recount dropped large files while grep counts
+// them, so a class could be certified closed over an incomplete range. Files are
+// streamed line by line instead, and only genuinely unreadable files are
+// reported. Binary files are skipped, matching `grep -I`.
+const BINARY_PROBE_BYTES = 8192;
 
 // Mirror `grep -I`: a file containing a NUL byte is treated as binary and skipped.
 const NUL_BYTE = /\u0000/;
@@ -308,7 +315,7 @@ export function reproductionCommand(identifier, paths) {
   return `grep -rIn ${excludes} -w -- ${shellQuote(identifier)} ${paths.map(shellQuote).join(' ')} | wc -l`;
 }
 
-export function scenarioTemplate(identifier, paths = ['src', 'test', 'docs']) {
+export function scenarioTemplate(identifier, paths = ['src', 'bin', 'lib', 'scripts', 'test']) {
   return `enumeration: grepped ${identifier} across ${paths.join(', ')}; `
     + '<N> sites found, <M> updated, <K> unchanged because <reason>';
 }
@@ -367,17 +374,13 @@ export function createGitTreeProvider({ repoRoot, baseRef, headRef }) {
     async productSourceFiles() {
       return listFilesUnder(repoRoot, PRODUCT_SOURCE_PREFIXES, isProductSourcePath);
     },
-    async readTextFile(relativePath) {
-      return readTextFileIfSmall(path.join(repoRoot, relativePath));
+    async scanFile(relativePath, onLine) {
+      return scanFileLines(path.join(repoRoot, relativePath), onLine);
     },
     async countSites(identifier, declaredPaths) {
       return countSitesOnDisk(repoRoot, identifier, declaredPaths);
     }
   };
-}
-
-async function gitOptional(repoRoot, args) {
-  return (await gitResult(repoRoot, args)).stdout;
 }
 
 // Keeps the exit code, so callers can tell "command succeeded and found
@@ -394,21 +397,38 @@ async function gitResult(repoRoot, args) {
   }
 }
 
-async function readTextFileIfSmall(fullPath, skipped = null) {
+/**
+ * Stream one file line by line, invoking `onLine` for each. Returns a status so
+ * callers can distinguish "scanned", "skipped because binary" (which `grep -I`
+ * also skips, so it is not a divergence) and "could not read" (which is).
+ */
+async function scanFileLines(fullPath, onLine) {
+  let handle;
   try {
-    const stats = await stat(fullPath);
-    if (!stats.isFile()) return null;
-    if (stats.size > MAX_SCANNED_FILE_BYTES) {
-      // `grep -I` has no size cap, so a file we decline to read would make the
-      // recount disagree with the command this gate tells operators to run.
-      // Record it instead of dropping it silently.
-      skipped?.push(fullPath);
-      return null;
-    }
-    const content = await readFile(fullPath, 'utf8');
-    return NUL_BYTE.test(content) ? null : content;
+    handle = await open(fullPath, 'r');
   } catch {
-    return null;
+    return 'unreadable';
+  }
+  try {
+    const stats = await handle.stat();
+    if (!stats.isFile()) return 'skipped';
+    if (stats.size > 0) {
+      const probe = Buffer.alloc(Math.min(BINARY_PROBE_BYTES, stats.size));
+      await handle.read(probe, 0, probe.length, 0);
+      if (probe.includes(0)) return 'binary';
+    }
+  } catch {
+    return 'unreadable';
+  } finally {
+    await handle.close().catch(() => {});
+  }
+  try {
+    const stream = createReadStream(fullPath, { encoding: 'utf8' });
+    const lines = readline.createInterface({ input: stream, crlfDelay: Infinity });
+    for await (const line of lines) onLine(line);
+    return 'scanned';
+  } catch {
+    return 'unreadable';
   }
 }
 
@@ -447,9 +467,14 @@ async function listFilesUnder(repoRoot, prefixes, filter) {
 async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
   const matcher = buildWholeTokenMatcher(identifier);
   const missingPaths = [];
-  const skippedAbsolute = [];
+  const unreadablePaths = [];
   let lines = 0;
   let files = 0;
+  // Hits restricted to product source, so the range floor compares like with
+  // like. Counting any file in the declared range against a product-source
+  // expectation let a range holding zero product source satisfy the floor.
+  let productSourceLines = 0;
+  let productSourceFiles = 0;
   const root = path.resolve(repoRoot);
   for (const declared of declaredPaths) {
     const normalized = declared.replace(/^\.\//, '').replace(/\/$/, '');
@@ -471,23 +496,30 @@ async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
       ? await listFilesUnder(repoRoot, [`${normalized}/`], null)
       : [normalized];
     for (const candidate of candidates) {
-      const content = await readTextFileIfSmall(path.join(repoRoot, candidate), skippedAbsolute);
-      if (content === null) continue;
-      let fileHit = false;
-      for (const line of content.split('\n')) {
-        if (matcher.test(line)) {
-          lines += 1;
-          fileHit = true;
-        }
+      let fileLines = 0;
+      const status = await scanFileLines(path.join(repoRoot, candidate), (line) => {
+        if (matcher.test(line)) fileLines += 1;
+      });
+      if (status === 'unreadable') {
+        unreadablePaths.push(candidate);
+        continue;
       }
-      if (fileHit) files += 1;
+      if (status !== 'scanned' || fileLines === 0) continue;
+      lines += fileLines;
+      files += 1;
+      if (isProductSourcePath(candidate)) {
+        productSourceLines += fileLines;
+        productSourceFiles += 1;
+      }
     }
   }
   return {
     lines,
     files,
+    product_source_lines: productSourceLines,
+    product_source_files: productSourceFiles,
     missing_paths: missingPaths,
-    unscannable_paths: skippedAbsolute.map((absolute) => path.relative(root, absolute))
+    unscannable_paths: unreadablePaths
   };
 }
 
@@ -547,7 +579,19 @@ export async function collectEnumerationCoverage({
     };
   }
   const addedLiterals = added;
-  const { fileCounts, siteCounts } = await countHeadFiles(tree, addedLiterals);
+  const { fileCounts, siteCounts, unreadable } = await countHeadFiles(tree, addedLiterals);
+  if (unreadable.length > 0) {
+    return {
+      schema_version: ENUMERATION_EVIDENCE_SCHEMA_VERSION,
+      status: 'inconclusive',
+      reason: `product source file(s) could not be read, so the introduced-identifier class cannot be sized: ${unreadable.join(', ')}`,
+      required: [],
+      missing: [],
+      skipped: [],
+      claims: scenarios.map(describeScenario),
+      rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection)
+    };
+  }
   const { required, skipped } = selectRequiredIdentifiers({
     addedLiterals,
     baseLiterals,
@@ -618,18 +662,21 @@ function verifyObservedCount(claim, observed, requirement = null) {
     return {
       ok: false,
       id: 'enumeration_range_unscannable',
-      reason: `enumeration of ${claim.identifier} declares a range containing file(s) this recount cannot read, so the recount and the published grep would disagree: ${observed.unscannable_paths.join(', ')}; narrow the declared range to exclude them`
+      reason: `enumeration of ${claim.identifier} declares a range containing file(s) this recount could not read, so the recount and the published grep would disagree: ${observed.unscannable_paths.join(', ')}; make them readable or narrow the declared range`
     };
   }
   // A claimant choosing a trivially narrow range would otherwise close the gate
   // over a fraction of the class. The range must reach at least as many files
   // as the identifier is known to span in product source.
   const expectedFiles = requirement?.product_source_files ?? 0;
-  if (expectedFiles > 0 && observed.files < expectedFiles) {
+  const expectedSites = requirement?.product_source_sites ?? 0;
+  const observedProductFiles = observed.product_source_files ?? 0;
+  const observedProductLines = observed.product_source_lines ?? 0;
+  if (expectedFiles > 0 && (observedProductFiles < expectedFiles || observedProductLines < expectedSites)) {
     return {
       ok: false,
       id: 'enumeration_range_too_narrow',
-      reason: `enumeration of ${claim.identifier} declares a range covering ${observed.files} file(s), but the identifier spans ${expectedFiles} product source file(s); declare a range that reaches the whole class`
+      reason: `enumeration of ${claim.identifier} declares a range reaching ${observedProductFiles} product source file(s) and ${observedProductLines} product source site(s), but the identifier spans ${expectedFiles} file(s) and ${expectedSites} site(s) in product source; declare a range that reaches the whole class`
     };
   }
   if (observed.lines !== claim.found) {
@@ -646,21 +693,30 @@ function verifyObservedCount(claim, observed, requirement = null) {
 async function countHeadFiles(tree, literals) {
   const fileCounts = new Map();
   const siteCounts = new Map();
-  if (literals.size === 0) return { fileCounts, siteCounts };
+  const unreadable = [];
+  if (literals.size === 0) return { fileCounts, siteCounts, unreadable };
   const files = await tree.productSourceFiles();
-  const matchers = new Map([...literals].map((literal) => [literal, buildWholeTokenMatcher(literal)]));
+  const matchers = [...literals].map((literal) => [literal, buildWholeTokenMatcher(literal)]);
   for (const file of files) {
-    const content = await tree.readTextFile(file);
-    if (content === null) continue;
-    const lines = content.split('\n');
-    for (const [literal, matcher] of matchers) {
-      if (!matcher.test(content)) continue;
+    const perLiteral = new Map();
+    const status = await tree.scanFile(file, (line) => {
+      for (const [literal, matcher] of matchers) {
+        if (matcher.test(line)) perLiteral.set(literal, (perLiteral.get(literal) ?? 0) + 1);
+      }
+    });
+    if (status === 'unreadable') {
+      // An unreadable product source file would silently shrink the declared
+      // class, so it is surfaced rather than subtracted.
+      unreadable.push(file);
+      continue;
+    }
+    if (status !== 'scanned') continue;
+    for (const [literal, hits] of perLiteral) {
       fileCounts.set(literal, (fileCounts.get(literal) ?? 0) + 1);
-      const hits = lines.reduce((total, line) => (matcher.test(line) ? total + 1 : total), 0);
       siteCounts.set(literal, (siteCounts.get(literal) ?? 0) + hits);
     }
   }
-  return { fileCounts, siteCounts };
+  return { fileCounts, siteCounts, unreadable };
 }
 
 function describeScenario(entry) {

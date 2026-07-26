@@ -66,6 +66,8 @@ const UNRESOLVED_STATUSES = new Set([
   'needs_rebase',
   'needs_changes',
   'contradicted',
+  // pr-manager.js isUnresolvedGateStatus と揃える。未解決を解決扱いにしない。
+  'inconclusive',
   'stale',
   'block',
   'failed',

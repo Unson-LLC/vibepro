@@ -12634,7 +12634,7 @@ function buildEnumerationCoverageGate({ storyId = null, enumerationCoverage = nu
   const story = storyId ?? 'unknown-story';
   const nextCommands = [];
   for (const identifier of missing) {
-    nextCommands.push(reproductionCommand(identifier, ['src', 'test', 'docs']));
+    nextCommands.push(reproductionCommand(identifier, ['src', 'bin', 'lib', 'scripts', 'test']));
     nextCommands.push(
       `vibepro verify record . --id ${shellQuote(story)} --kind unit --status pass `
       + `--command ${shellQuote('node --test test')} --target src `

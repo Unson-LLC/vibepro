@@ -119,7 +119,7 @@
     {
       "id": "C-004",
       "type": "contract",
-      "statement": "Enumeration is required only for identifiers introduced by the change and present in two or more product source files at head; pre-existing vocabulary and single-file constants are skipped with a recorded reason, a change with no such identifier resolves as not_applicable, and an unreadable base tree resolves as inconclusive rather than a pass.",
+      "statement": "Enumeration is required only for identifiers introduced by the change that reach two or more product source files or two or more sites within product source; an identifier registered repeatedly inside a single module is therefore in scope. Pre-existing vocabulary and single-site constants are skipped with a recorded reason, a change with no such identifier resolves as not_applicable, and an unreadable base tree, diff, or product source file resolves as inconclusive rather than a pass.",
       "origin": {
         "story_refs": [
           {
