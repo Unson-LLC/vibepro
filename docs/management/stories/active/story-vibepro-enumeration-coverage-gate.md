@@ -64,6 +64,10 @@ When a change is docs-only, the docs-only evidence profile and its depth resolut
 unchanged and existing.
 The existing `verify record` command surface, its `--kind` overwrite semantics, and every
 already recorded verification evidence artifact are unchanged and existing.
+When `!supplied && !runAuthority` holds in `src/verification-evidence.js`, the existing run
+authority resolution for a record supplied with neither an explicit value nor a resolved run
+authority is unchanged and existing; this Story adds scenario validation only and does not
+change how run authority is resolved.
 
 ## User Story
 
