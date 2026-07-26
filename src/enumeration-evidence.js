@@ -48,13 +48,20 @@ const MAX_SCANNED_FILE_BYTES = 2_000_000;
 // Mirror `grep -I`: a file containing a NUL byte is treated as binary and skipped.
 const NUL_BYTE = /\u0000/;
 
-// A value that joins an enumerable set in this codebase is snake_case with at
-// least one underscore (`needs_evidence`, `not_applicable`, `cost_missing`).
-// Requiring the underscore excludes single English words and, because the
-// pattern forbids whitespace, excludes prose error messages.
-const ENUMERABLE_LITERAL = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)+$/;
+// A value that joins an enumerable set in this codebase is a lowercase token
+// with at least one `_` or `:` separator: `needs_evidence`, `not_applicable`,
+// `cost_missing`, and namespaced ids like `gate:enumeration_coverage`.
+//
+// The `:` alternative is not cosmetic. Gate ids are the widest-spreading
+// enumerable here — one id is registered in the DAG, in two independent
+// blocking predicates, and in the depth planner's risk set — and an
+// underscore-only pattern silently excluded every one of them.
+//
+// Requiring a separator excludes single English words, and forbidding
+// whitespace excludes prose error messages.
+const ENUMERABLE_LITERAL = /^[a-z][a-z0-9]*(?:[_:][a-z0-9]+)+$/;
 
-const ENUMERABLE_LITERAL_SCAN = /['"]([a-z][a-z0-9]*(?:_[a-z0-9]+)+)['"]/g;
+const ENUMERABLE_LITERAL_SCAN = /['"]([a-z][a-z0-9]*(?:[_:][a-z0-9]+)+)['"]/g;
 
 // An identifier must reach at least this many distinct product source files
 // before it has a class worth enumerating. A literal confined to one file has
@@ -70,7 +77,7 @@ const ENUMERATION_SCENARIO_GRAMMAR = new RegExp(
   'i'
 );
 
-const IDENTIFIER_SHAPE = /^[A-Za-z_][A-Za-z0-9_.-]*$/;
+const IDENTIFIER_SHAPE = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
 
 /**
  * Parse one `--scenario` string as an enumeration claim.
@@ -216,7 +223,11 @@ export function extractEnumerableLiterals(text) {
   const found = new Set();
   for (const match of String(text ?? '').matchAll(ENUMERABLE_LITERAL_SCAN)) {
     const literal = match[1];
-    if (ENUMERABLE_LITERAL.test(literal)) found.add(literal);
+    if (!ENUMERABLE_LITERAL.test(literal)) continue;
+    // Node builtin module specifiers share the namespaced shape but are import
+    // targets, never enumerable domain values.
+    if (literal.startsWith('node:')) continue;
+    found.add(literal);
   }
   return found;
 }
@@ -318,8 +329,12 @@ export function createGitTreeProvider({ repoRoot, baseRef, headRef }) {
       if (!baseRef) return null;
       const resolved = await gitResult(repoRoot, ['rev-parse', '--verify', '--quiet', `${baseRef}^{commit}`]);
       if (!resolved.ok || resolved.stdout.trim().length === 0) return null;
+      // Must stay the same shape as ENUMERABLE_LITERAL_SCAN. A narrower
+      // producer pattern here makes pre-existing literals look newly
+      // introduced, which is the producer/consumer split this gate exists to
+      // catch — so the two are asserted equivalent in the test suite.
       const grep = await gitResult(repoRoot, [
-        'grep', '-oh', '-E', "['\"][a-z][a-z0-9]*(_[a-z0-9]+)+['\"]",
+        'grep', '-oh', '-E', "['\"][a-z][a-z0-9]*([_:][a-z0-9]+)+['\"]",
         baseRef, '--', ...PRODUCT_SOURCE_PREFIXES
       ]);
       if (!grep.ok && grep.code !== 1) return null;

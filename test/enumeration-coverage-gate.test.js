@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import {
@@ -326,6 +327,30 @@ test('a declared path escaping the repository is treated as missing', async () =
   const provider = createGitTreeProvider({ repoRoot: process.cwd(), baseRef: 'HEAD', headRef: 'HEAD' });
   const observed = await provider.countSites('cost_missing', ['../../..', 'src']);
   assert.ok(observed.missing_paths.includes('../../..'));
+});
+
+test('the base-tree grep pattern and the in-process scan pattern accept the same literals', async () => {
+  // Producer/consumer split guard: baseLiterals() greps the base tree with a
+  // literal ERE string while extractEnumerableLiterals() uses a JS regex. When
+  // the two drifted apart, pre-existing namespaced literals such as
+  // 'node:path' looked newly introduced and were demanded as enumerations.
+  const source = await readFile(new URL('../src/enumeration-evidence.js', import.meta.url), 'utf8');
+  const grepPattern = source.match(/'\['"\]\(\?:\)?.*?\['"\]'/) ?? source.match(/"\['\\"\]\[a-z\].*?\['\\"\]"/);
+  assert.ok(grepPattern, 'the git grep pattern literal should be findable in the module source');
+  const asRegExp = new RegExp(grepPattern[0].slice(1, -1).replaceAll('\\"', '"'), 'g');
+  for (const sample of ["'needs_evidence'", "'gate:enumeration_coverage'", "'gate:e2e'"]) {
+    assert.ok(asRegExp.test(sample), `base grep pattern should match ${sample}`);
+    asRegExp.lastIndex = 0;
+    assert.equal(extractEnumerableLiterals(sample).size, 1, `scan pattern should match ${sample}`);
+  }
+  // Prose and separator-free words are excluded by both.
+  assert.equal(extractEnumerableLiterals("'a prose message'").size, 0);
+  assert.equal(extractEnumerableLiterals("'pass'").size, 0);
+});
+
+test('node builtin specifiers are never demanded as enumerable identifiers', () => {
+  assert.equal(extractEnumerableLiterals("import path from 'node:path';").size, 0);
+  assert.equal(extractEnumerableLiterals("'node:child_process'").size, 0);
 });
 
 // --- supporting units ------------------------------------------------------
