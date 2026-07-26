@@ -10,6 +10,7 @@ import { buildContentBinding } from './content-binding.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
+import { parseEnumerationScenario } from './enumeration-evidence.js';
 
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
 const ALLOWED_STATUSES = new Set(['pass', 'passed', 'success', 'ok', 'fail', 'failed', 'error', 'needs_setup']);
@@ -390,6 +391,7 @@ function normalizeArtifact(repoRoot, artifact) {
 function buildObservation(options, artifactObservedValues = {}) {
   const targets = normalizeStringList(options.targets);
   const scenarios = normalizeStringList(options.scenarios);
+  assertEnumerationScenariosWellFormed(scenarios);
   const cliValues = parseObservedPairs(options.observed);
   // artifact-derived values first so explicit CLI observations win on key conflicts
   return {
@@ -402,6 +404,21 @@ function buildObservation(options, artifactObservedValues = {}) {
 function normalizeStringList(value) {
   if (!Array.isArray(value)) return [];
   return value.map((item) => String(item).trim()).filter(Boolean);
+}
+
+// Reject a malformed enumeration claim at record time rather than storing it and
+// failing at the gate. The gate stays the authority on whether the claim is
+// *true* (it recounts the range); this only rejects claims that are not even
+// well formed, so a bad sweep claim never reaches the evidence artifact.
+function assertEnumerationScenariosWellFormed(scenarios) {
+  for (const scenario of scenarios) {
+    const parsed = parseEnumerationScenario(scenario);
+    if (!parsed.matched || parsed.ok) continue;
+    throw new Error(
+      `verify record --scenario declares an enumeration claim that is not well formed (${parsed.rejection.id}): `
+      + `${parsed.rejection.reason}`
+    );
+  }
 }
 
 function parseObservedPairs(observed) {

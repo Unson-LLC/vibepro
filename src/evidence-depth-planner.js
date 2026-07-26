@@ -32,6 +32,7 @@ const RISK_BEARING_GATE_IDS = new Set([
   'gate:agent_review',
   'gate:review_inspection_required',
   'gate:failure_mode_coverage',
+  'gate:enumeration_coverage',
   'gate:path_surface_matrix',
   'gate:artifact_consistency',
   'gate:pr_freshness',

@@ -962,8 +962,20 @@
         "started_at": "2026-07-25",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-enumeration-coverage-gate",
+        "title": "網羅範囲(enumeration)の証跡をGateで必須化し、instance単位の修正closureを止める",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-26",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-docs-only-evidence-profile"
+    "current_story_id": "story-vibepro-enumeration-coverage-gate"
   }
 }

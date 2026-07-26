@@ -70,6 +70,38 @@ Token matching and record existence are no longer the final word: two required g
 
 Scanners that examine zero targets no longer report `pass`. `inconclusive` means the scanner applied to the story but discovered no scan targets — absence of coverage is not evidence of a pass; give the scanner real targets or fix discovery before treating the gate as closed. `not_applicable` means the scanner is out of scope for the story. Never present an `inconclusive` result as a passing gate.
 
+## Enumeration Coverage (`gate:enumeration_coverage`)
+
+A review finding names an instance; the work item is its class. This is enforced, not advised: the gate blocks.
+
+**When it applies.** The gate collects string literals your change introduces into `src/`, `bin/`, `lib/`, `scripts/` that are absent from the base tree **and** reach two or more product source files at head. Pre-existing vocabulary and single-file constants are skipped with a recorded reason; a change with no such identifier — including every docs-only change — resolves as `not_applicable`.
+
+**What it wants.** One scenario per introduced identifier, in exactly this form:
+
+```
+--scenario "enumeration: grepped <identifier> across src, test, docs; N sites found, M updated, K unchanged because <reason>"
+```
+
+**Why prose does not work.** Three checks run independently:
+
+1. the grammar rejects count-free narration — "swept src, docs and bin" is not a claim;
+2. the counts must partition: `N === M + K`, `N >= 1`, and any `K > 0` needs a `because` clause. These are enforced at `verify record` time, so a malformed claim never reaches the evidence artifact;
+3. **the gate recounts.** It re-scans the declared paths for the identifier with whole-token matching and rejects a claim whose number differs from what it observes. Take the number from the command the gate prints: `grep -rIn --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.vibepro -w -- <identifier> <paths> | wc -l`.
+
+Because the count is recounted, the scenario cannot be satisfied by writing the token — only by having actually swept the range it names. Record it after the tree is final: editing a declared path changes the count and the claim stops matching. `inconclusive` (base ref unresolvable) is not a pass, and a claim on stale-bound evidence does not count.
+
+Classes worth enumerating whenever a new field, state, or predicate appears:
+
+| Class | Enumerate |
+|---|---|
+| producer | every site that writes the field — never infer the field name from a consumer |
+| consumer | every site that reads it, including renderers and per-group rollups, not just the primary aggregate |
+| value | the full value space (`0`, `null`, negative, absent, alias spellings); check the write side and read side agree |
+| emitter | every generated command template and every doc showing a copy-pasteable example |
+| sibling predicate | any predicate resolving the same input — `isCriticalUnresolvedGate` exists in both `pr-manager.js` and `execution-state.js` |
+
+Do not report convergence from "the last round passed" — that only means the reviewers did not look there. Convergence is claimable only after an enumeration that finds nothing new.
+
 ## Architecture / Spec Write
 
 - `vibepro spec write` validates that `code_refs`/`test_refs` files exist and anchor strings are present — register the Spec **after or together with** implementation. Input JSON needs `schema_version` and `story_id`; clause types are invariant/scenario/contract/sla.
@@ -105,6 +137,7 @@ Start from `vibepro pr prepare --summary-json` or `--view <readiness|blocking-ga
 - "I'll write the Spec first so the gates are ready." `spec write` validates that code_refs/test_refs exist; register it after or with implementation.
 - "The judgment-axis tokens matched, so the item is closed." Token matching only feeds the mechanical layer; `gate:judgment_dag_adjudication` can still rule the item `judged_unsound` against the actual diff.
 - "The scanner found nothing, so the gate passes." Zero scanned targets is `inconclusive`, not a pass.
+- "I fixed the line the reviewer pointed at." A finding names an instance; `gate:enumeration_coverage` asks for the class and recounts the range you claim to have swept.
 
 ## Red Flags
 
@@ -115,6 +148,9 @@ Start from `vibepro pr prepare --summary-json` or `--view <readiness|blocking-ga
 - Resolving a blocked gate by rewording summaries instead of adding verifiable observations or artifacts.
 - Adjudication verdicts recorded by the implementing agent itself, or verdicts whose `head_commit` no longer matches the current head.
 - An `inconclusive` scanner status reported as a pass.
+- Fixing a review finding at the reported line without grepping for the rest of its class.
+- Reporting convergence because the last review round passed, with no enumeration behind the claim.
+- An enumeration count written from memory or estimated rather than taken from the printed grep — the gate recounts and will reject it.
 
 ## Verification
 

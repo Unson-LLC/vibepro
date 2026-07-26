@@ -104,6 +104,7 @@ import { buildCodeTopologyContext } from './code-topology-provider.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { recordResolvedGateOutcomes } from './gate-outcome-ledger.js';
 import { assertArtifactWritePath, collectCurrentGeneratedProjectionPaths, projectArtifact, resolveArtifactRoute, resolveGraphifyArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
+import { collectEnumerationCoverage, reproductionCommand, scenarioTemplate } from './enumeration-evidence.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -6168,6 +6169,15 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     risks: []
   };
   const scopeBoundary = await readScopeBoundaryIfExists(repoRoot, story.story_id);
+  // Enumeration scope needs the base tree, so it is resolved here (async) and
+  // handed to the synchronous gate builder as a finished report.
+  const enumerationCoverage = await collectEnumerationCoverage({
+    repoRoot,
+    baseRef: git?.base_ref ?? null,
+    headRef: git?.head_ref ?? 'HEAD',
+    verificationEvidence: boundVerificationEvidence
+  });
+  context.enumeration_coverage = enumerationCoverage;
   context.gate_dag = buildGateDag({
     repoRoot,
     story,
@@ -6207,7 +6217,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     journeyMap,
     managedWorktreeContext,
     managedWorktreeGate,
-    validationSequenceEvaluation
+    validationSequenceEvaluation,
+    enumerationCoverage
   });
   context.completion_quality = buildCompletionQuality({
     gateDag: context.gate_dag,
@@ -11228,7 +11239,8 @@ function buildGateDag({
   journeyMap = null,
   managedWorktreeContext = null,
   managedWorktreeGate = null,
-  validationSequenceEvaluation = null
+  validationSequenceEvaluation = null,
+  enumerationCoverage = null
 }) {
   const acceptanceCriteria = storySource.acceptance_criteria.length > 0
     ? storySource.acceptance_criteria
@@ -11402,6 +11414,10 @@ function buildGateDag({
     verificationEvidence,
     inferredSpec
   });
+  const enumerationCoverageGate = buildEnumerationCoverageGate({
+    storyId: story.story_id,
+    enumerationCoverage
+  });
   const fastLane = buildFastLaneEvaluation({
     prRoute,
     changeClassification,
@@ -11505,6 +11521,7 @@ function buildGateDag({
     responsibilityAuthorityGate,
     requirementGate,
     failureModeCoverageGate,
+    enumerationCoverageGate,
     decisionRecordGate,
     ...gates,
     ...(designQualityGate ? [designQualityGate] : []),
@@ -11627,7 +11644,8 @@ function buildGateDag({
     { from: 'gate:design_ssot_reconciliation', to: 'gate:responsibility_authority' },
     { from: 'gate:responsibility_authority', to: 'gate:requirement' },
     { from: 'gate:requirement', to: 'gate:failure_mode_coverage' },
-    { from: 'gate:failure_mode_coverage', to: 'gate:decision_record' },
+    { from: 'gate:failure_mode_coverage', to: 'gate:enumeration_coverage' },
+    { from: 'gate:enumeration_coverage', to: 'gate:decision_record' },
     { from: 'gate:decision_record', to: 'gate:unit' },
     { from: 'gate:unit', to: 'gate:integration' },
     { from: 'gate:integration', to: 'gate:e2e' },
@@ -11700,6 +11718,7 @@ function buildGateDag({
     responsibilityAuthorityGate,
     requirementGate,
     failureModeCoverageGate,
+    enumerationCoverageGate,
     decisionRecordGate,
     ...gates,
     designQualityGate,
@@ -11752,6 +11771,7 @@ function buildGateDag({
       responsibility_authority_status: responsibilityAuthorityGate.status,
       requirement_status: requirementGate.status,
       failure_mode_coverage_status: failureModeCoverageGate.status,
+      enumeration_coverage_status: enumerationCoverageGate.status,
       decision_record_status: decisionRecordGate.status,
       review_inspection_required_status: reviewInspectionRequiredGate.status,
       artifact_consistency_status: artifactConsistencyGate.status,
@@ -12593,6 +12613,66 @@ function buildFailureModeCoverageGate({ storyId = null, storySource = null, file
         ? 'No route-specific failure mode candidates were detected'
         : `${coveredModes.length} failure mode candidate(s) are covered or not critical for this route profile`
       : `${missing.length} high-risk failure mode candidate(s) lack current verification evidence`
+  };
+}
+
+// Enumeration coverage: "did you cover the range", as opposed to the behaviour
+// gates' "does it work". The report is produced by src/enumeration-evidence.js;
+// this builder only turns it into a gate node with actionable next commands.
+function buildEnumerationCoverageGate({ storyId = null, enumerationCoverage = null } = {}) {
+  const report = enumerationCoverage ?? {
+    status: 'inconclusive',
+    reason: 'enumeration coverage was not evaluated for this preparation',
+    required: [],
+    missing: [],
+    skipped: [],
+    claims: [],
+    rejections: []
+  };
+  const missing = report.missing ?? [];
+  const rejections = report.rejections ?? [];
+  const story = storyId ?? 'unknown-story';
+  const nextCommands = [];
+  for (const identifier of missing) {
+    nextCommands.push(reproductionCommand(identifier, ['src', 'test', 'docs']));
+    nextCommands.push(
+      `vibepro verify record . --id ${shellQuote(story)} --kind unit --status pass `
+      + `--command ${shellQuote('node --test test')} --target src `
+      + `--scenario ${shellQuote(scenarioTemplate(identifier))}`
+    );
+  }
+  if (nextCommands.length > 0) {
+    nextCommands.push(`vibepro pr prepare . --story-id ${shellQuote(story)} --view blocking-gates`);
+  }
+  const requiredActions = [];
+  if (missing.length > 0) {
+    requiredActions.push(
+      `Enumerate the full class of each introduced identifier before claiming closure: ${missing.join(', ')}`,
+      'Run the printed grep to obtain the real site count, then record it verbatim; the gate recounts the same range and rejects a mismatch'
+    );
+  }
+  for (const rejection of rejections) {
+    requiredActions.push(`${rejection.id}: ${rejection.reason}`);
+  }
+  if (report.status === 'inconclusive') {
+    requiredActions.push('Resolve the base ref so the introduced-identifier scope can be computed; an unknown scope is not a pass');
+  }
+  return {
+    id: 'gate:enumeration_coverage',
+    type: 'enumeration_coverage_gate',
+    label: 'Enumeration Coverage Gate',
+    status: report.status,
+    required: true,
+    required_identifier_count: (report.required ?? []).length,
+    missing_identifiers: missing,
+    skipped_candidate_count: (report.skipped ?? []).length,
+    claims: report.claims ?? [],
+    rejections,
+    primary_next_command: nextCommands[0] ?? null,
+    next_commands: nextCommands,
+    required_actions: requiredActions,
+    artifact: `.vibepro/pr/${story}/pr-prepare.json#enumeration_coverage`,
+    reason: report.reason
   };
 }
 
@@ -15211,6 +15291,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'design_ssot_reconciliation_gate',
       'senior_gap_judgment_gate',
       'failure_mode_coverage_gate',
+      'enumeration_coverage_gate',
       'traceability_clause_coverage_gate',
       'path_surface_matrix_gate',
       'journey_context_gate',
@@ -15288,6 +15369,9 @@ export function isUnresolvedGateStatus(status) {
     'needs_scope_correction',
     'contradicted',
     'missing_coverage',
+    // A scanner that resolved no scope has not passed; see the inconclusive
+    // vs not_applicable rule in skills/vibepro-gate-evidence.
+    'inconclusive',
     'partial_surface',
     'stale',
     'stale_evidence',
@@ -15392,6 +15476,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:artifact_consistency' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:failure_mode_coverage' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:enumeration_coverage' && !['passed', 'not_applicable'].includes(gate.status)) return true;
   if (gate.id === 'gate:path_surface_matrix' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:responsibility_authority' && !['passed', 'not_applicable'].includes(gate.status)) return true;
   if (gate.id === 'gate:review_inspection_required' && gate.status !== 'passed') return true;
