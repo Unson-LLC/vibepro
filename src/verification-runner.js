@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -36,6 +36,7 @@ export const COMPUTED_OBSERVATION_KEYS = Object.freeze([
   'worktree_sha256_before',
   'worktree_sha256_after',
   'worktree_sampled',
+  'worktree_sampling_complete',
   'stdout_sha256',
   'output_sha256',
   'output_bytes',
@@ -89,6 +90,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     throw new Error('verify run requires the command to execute after `--`, e.g. vibepro verify run . --id <id> --kind unit -- node --test test/foo.test.js');
   }
   const timeoutMs = normalizeTimeout(options.timeoutMs);
+  const maxOutputBytes = normalizeOutputLimit(options.maxOutputBytes);
   // Check the declared kind against the command before running it: the artifact and log
   // for this kind are overwritten by the run, so a post-execution rejection would destroy
   // the previous record's artifact while leaving that record pointing at it.
@@ -98,7 +100,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   // source file mid-run moves the tree without moving HEAD, so both are sampled.
   const treeBefore = await sampleTreeState(root);
   const startedAt = new Date();
-  const execution = await executeCommand(root, argv, { timeoutMs, env: options.env });
+  const execution = await executeCommand(root, argv, { timeoutMs, maxOutputBytes, env: options.env });
   const finishedAt = new Date();
   const treeAfter = await sampleTreeState(root);
 
@@ -111,9 +113,11 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   const durationMs = finishedAt.getTime() - startedAt.getTime();
   const status = execution.exitCode === 0 && !execution.signal ? 'pass' : 'fail';
   const headMoved = Boolean(headBefore && headAfter && headBefore !== headAfter);
-  // A fingerprint that could not be computed is not evidence of an unchanged tree; the
-  // record says which it was rather than letting "not sampled" read as "unchanged".
-  const worktreeSampled = Boolean(treeBefore.worktree && treeAfter.worktree && treeBefore.complete && treeAfter.complete);
+  // A difference between two fingerprints is proof of a change even when one of them was
+  // only partially computed; it is the *absence* of a difference that a partial sample
+  // cannot establish. Sampling state is recorded separately from the verdict.
+  const worktreeSampled = Boolean(treeBefore.worktree && treeAfter.worktree);
+  const worktreeSamplingComplete = worktreeSampled && treeBefore.complete && treeAfter.complete;
   const worktreeChanged = worktreeSampled && treeBefore.worktree !== treeAfter.worktree;
   const treeMutated = headMoved || worktreeChanged;
 
@@ -129,6 +133,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     ...(headBefore ? { head_sha_before: headBefore } : {}),
     ...(headAfter ? { head_sha_after: headAfter, head_sha: headAfter } : {}),
     worktree_sampled: String(worktreeSampled),
+    worktree_sampling_complete: String(worktreeSamplingComplete),
     ...(treeBefore.worktree ? { worktree_sha256_before: treeBefore.worktree } : {}),
     ...(treeAfter.worktree ? { worktree_sha256_after: treeAfter.worktree } : {}),
     // stdout_sha256 covers stdout alone; output_sha256 covers exactly the stdout+stderr
@@ -167,6 +172,13 @@ export async function runVerificationCommand(repoRoot, options = {}) {
           reason: 'the working-tree fingerprint could not be computed before and after the run, so an uncommitted mid-run change would not have been detected; only the HEAD comparison applies to this record'
         }]
       : []),
+    ...(worktreeSampled && !worktreeSamplingComplete && !worktreeChanged
+      ? [{
+          id: 'verification_worktree_sampling_partial',
+          command_name: 'verify run',
+          reason: 'the working-tree fingerprint was computed from status lines only (the diff sample failed), so no difference was seen but an uncommitted mid-run change cannot be ruled out for this record'
+        }]
+      : []),
     ...(status === 'pass' && output.trim().length === 0
       ? [{
           id: 'verification_run_produced_no_output',
@@ -202,11 +214,16 @@ export async function runVerificationCommand(repoRoot, options = {}) {
       ? [{
           id: 'verification_run_output_limit_exceeded',
           command_name: 'verify run',
-          reason: `the command was killed after exceeding the ${MAX_OUTPUT_BUFFER_BYTES}-byte output buffer; the recorded fail status is an output-volume kill, not a test failure, and the captured output is incomplete`
+          reason: `the command was killed after exceeding the ${maxOutputBytes}-byte output buffer; the recorded fail status is an output-volume kill, not a test failure, and the captured output is incomplete`
         }]
       : [])
   ];
 
+  // The previous run's artifact and log are the ones the current evidence record points
+  // at. They are only replaced once the new record commits: any throw after this point
+  // (evidence lock timeout, corrupt-evidence quarantine, lineage assertion) would
+  // otherwise leave the surviving record pointing at a run that was never recorded.
+  const restorePreviousRunFiles = await snapshotRunFiles(root, storyId, options.kind);
   const logPath = await writeRunLog(root, storyId, options.kind, output);
   const artifactPath = await writeRunArtifact(root, storyId, options.kind, {
     status,
@@ -232,10 +249,11 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     timeoutMs,
     timedOut: execution.timedOut,
     worktreeSampled,
+    worktreeSamplingComplete,
     warnings
   });
 
-  const record = await recordVerificationEvidence(root, {
+  const record = await recordEvidenceOrRestore(restorePreviousRunFiles, () => recordVerificationEvidence(root, {
     storyId,
     kind: options.kind,
     status,
@@ -267,7 +285,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     },
     observationOverrides: overrides,
     additionalWarnings: warnings
-  });
+  }));
 
   return {
     schema_version: '0.1.0',
@@ -284,6 +302,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     head_sha_after: headAfter,
     tree_mutated_during_run: treeMutated,
     worktree_sampled: worktreeSampled,
+    worktree_sampling_complete: worktreeSamplingComplete,
     output_metrics: outputMetrics,
     counts: runCounts,
     warnings,
@@ -367,14 +386,14 @@ function sanitizeEnv(env) {
   return { env: base, removed };
 }
 
-async function executeCommand(root, argv, { timeoutMs, env }) {
+async function executeCommand(root, argv, { timeoutMs, maxOutputBytes, env }) {
   const sanitized = sanitizeEnv(env);
   try {
     const { stdout, stderr } = await execFileAsync(argv[0], argv.slice(1), {
       cwd: root,
       encoding: 'utf8',
       timeout: timeoutMs,
-      maxBuffer: MAX_OUTPUT_BUFFER_BYTES,
+      maxBuffer: maxOutputBytes,
       env: sanitized.env
     });
     return { stdout, stderr, exitCode: 0, signal: null, timedOut: false, envRemoved: sanitized.removed };
@@ -464,6 +483,7 @@ async function writeRunArtifact(root, storyId, kind, run) {
       head_moved_during_run: run.headMoved,
       worktree_changed_during_run: run.worktreeChanged,
       worktree_sampled: run.worktreeSampled,
+      worktree_sampling_complete: run.worktreeSamplingComplete,
       output_metrics: run.outputMetrics,
       counts: run.counts,
       harness_env_removed: run.execution.envRemoved ?? [],
@@ -477,6 +497,37 @@ async function writeRunArtifact(root, storyId, kind, run) {
   return artifactPath;
 }
 
+// Reads whatever the previous run left at the per-kind artifact and log paths so it can be
+// put back verbatim if the new record does not commit.
+async function snapshotRunFiles(root, storyId, kind) {
+  const artifactPath = await resolvePrArtifactFile(root, storyId, path.join('verification-runs', `${kind}.json`));
+  const logPath = await resolvePrArtifactFile(root, storyId, path.join('verification-runs', `${kind}.log`));
+  const previous = [];
+  for (const filePath of [artifactPath, logPath]) {
+    try {
+      previous.push({ filePath, content: await readFile(filePath) });
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+      previous.push({ filePath, content: null });
+    }
+  }
+  return async () => {
+    for (const { filePath, content } of previous) {
+      if (content === null) await rm(filePath, { force: true });
+      else await writeFile(filePath, content);
+    }
+  };
+}
+
+async function recordEvidenceOrRestore(restore, record) {
+  try {
+    return await record();
+  } catch (error) {
+    await restore().catch(() => null);
+    throw error;
+  }
+}
+
 function composeSummary(agentSummary, computedSummary) {
   const declared = String(agentSummary ?? '').trim();
   return declared ? `${computedSummary} | agent summary: ${declared}` : computedSummary;
@@ -487,19 +538,36 @@ function buildSummary(kind, status, execution, runCounts, durationMs) {
   return `vibepro verify run executed the ${kind} command: exit_code=${execution.exitCode}${counts}, duration_ms=${durationMs}, status=${status} computed from the exit code`;
 }
 
-// The shared kind matcher allows a bare `node --test` only when the artifact already
-// reports counts, which cannot be known before the run. Pre-flight therefore checks the
-// same rule with that one allowance granted, and the real check still runs at record time.
+// The pre-flight must mirror the record-time rule, not a more permissive version of it:
+// the runner's own artifact always parses as generic_status, so any allowance that depends
+// on a tap/vitest artifact would be granted here and refused after the command had already
+// run. It is checked against the same shape the record path will see.
+export const RUNNER_ARTIFACT_CHECK_SHAPE = Object.freeze({ status: 'verified', format: 'generic_status' });
+
 function assertRunnableKindCommand(kind, command) {
   try {
-    assertCommandMatchesVerificationKind(kind, command, 'pass', null, { format: 'tap' }, { tests: '1', pass: '1' });
+    assertCommandMatchesVerificationKind(kind, command, 'pass', null, RUNNER_ARTIFACT_CHECK_SHAPE, {});
   } catch (error) {
-    throw new Error(String(error.message).replace('verify record --kind', 'verify run --kind'));
+    throw new Error(
+      `${String(error.message).replace('verify record --kind', 'verify run --kind')}`
+      + ' (verify run checks the command against the declared kind before executing it, so a rejected'
+      + ' command never overwrites the previous run artifact; name the test files or use'
+      + ' --test-name-pattern instead of a bare runner invocation)'
+    );
   }
 }
 
 function normalizeArgv(argv) {
   return (Array.isArray(argv) ? argv : []).map((item) => String(item)).filter((item) => item.length > 0);
+}
+
+function normalizeOutputLimit(value) {
+  if (value === undefined || value === null || value === '') return MAX_OUTPUT_BUFFER_BYTES;
+  const number = Number(value);
+  if (!Number.isFinite(number) || number <= 0) {
+    throw new Error(`verify run --max-output-bytes must be a positive number, got: ${value}`);
+  }
+  return number;
 }
 
 function normalizeTimeout(value) {

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -444,6 +444,78 @@ test('verify run surfaces the warnings it computed on its human summary', async 
   assert.match(result.stdout, /## Warnings/);
   assert.match(result.stdout, /verification_run_timed_out/);
   assert.ok(result.result.warnings.some((warning) => warning.id === 'verification_run_timed_out'));
+});
+
+test('verify run rejects a bare runner invocation up front instead of after overwriting the previous run', async () => {
+  const root = await setupRepo();
+  await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  const before = await readJson(runArtifactPath(root, 'unit'));
+  const beforeLog = await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'unit.log'), 'utf8');
+  const beforeEvidence = await readJson(evidencePath(root));
+
+  // The runner's own artifact always parses as generic_status, so the record path can never
+  // accept a bare `node --test`; the pre-flight must refuse it rather than grant an
+  // allowance the record path will revoke after the command has already run.
+  const rejected = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test'
+  ]);
+  assert.notEqual(rejected.exitCode, 0);
+  assert.match(rejected.stderr, /verify run --kind unit/);
+  assert.ok(!/verify record --kind/.test(rejected.stderr));
+  assert.deepEqual(await readJson(runArtifactPath(root, 'unit')), before);
+  assert.equal(await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'unit.log'), 'utf8'), beforeLog);
+  assert.equal((await readJson(evidencePath(root))).updated_at, beforeEvidence.updated_at);
+});
+
+test('verify run restores the previous run artifact when the record does not commit', async () => {
+  const root = await setupRepo();
+  await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  const before = await readJson(runArtifactPath(root, 'unit'));
+  const beforeLog = await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'unit.log'), 'utf8');
+
+  // Hold the evidence lock so recordVerificationEvidence throws after the run has executed.
+  const lockPath = path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-evidence.json.lock');
+  await mkdir(lockPath, { recursive: true });
+  try {
+    const result = await cli([
+      'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+      '--target', 'tests/sample.test.js',
+      '--observed', 'note=second run',
+      '--', 'node', '--test', 'tests/sample.test.js'
+    ]);
+    assert.notEqual(result.exitCode, 0);
+  } finally {
+    await rm(lockPath, { recursive: true, force: true });
+  }
+  // The artifact and log the surviving record points at describe the run that was recorded.
+  assert.deepEqual(await readJson(runArtifactPath(root, 'unit')), before);
+  assert.equal(await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'unit.log'), 'utf8'), beforeLog);
+});
+
+test('verify run reports an output-buffer kill as its own cause, not as a timeout', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, 'Makefile'), 'all:\n\t@node -e "process.stdout.write(\'x\'.repeat(200000))"\n');
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'build',
+    '--target', 'Makefile', '--max-output-bytes', '4096',
+    '--', 'make'
+  ]);
+  assert.equal(result.result.status, 'fail');
+  assert.equal(result.result.output_limit_exceeded, true);
+  assert.equal(result.result.timed_out, false);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'build');
+  assert.ok(record.warnings.some((warning) => warning.id === 'verification_run_output_limit_exceeded'));
+  assert.ok(!record.warnings.some((warning) => warning.id === 'verification_run_timed_out'));
 });
 
 test('verify run requires an executable command after the separator', async () => {

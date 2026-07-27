@@ -20,7 +20,9 @@ status: active
 - A passing run whose evidential value is limited is named on the record rather than left to the reader: `verification_run_produced_no_output` (exit 0, nothing printed), `verification_run_counts_not_parsed` (exit 0, output present, no counts parseable), `verification_run_counts_trivial` (exit 0 with at most one reported test).
 - A killed run distinguishes its cause: `verification_run_timed_out` for the timeout and `verification_run_output_limit_exceeded` for an output-buffer kill, which Node reports with the same killed+signal shape.
 - Harness markers that would make a nested runner report to a foreign harness (`NODE_TEST_CONTEXT`) are removed from the child environment and the removal is recorded in the run artifact.
-- The command must still match the declared kind; `verify run` exits non-zero when the executed command fails, and records the failing run.
+- The declared kind is checked against the command **before** the command runs, against the same rule the record path applies, so a rejected command never executes and never replaces the previous run's artifact or log. Because the runner's own artifact always parses as `generic_status`, a bare runner invocation (`node --test` with no file or `--test-name-pattern`) is refused: name the test files or pass a pattern. The check applies to every run, including one that would have failed, so a kind-mismatched command is rejected rather than recorded as a failure.
+- `verify run` exits non-zero when the executed command fails, and records the failing run. If recording does not commit for any reason, the previous run's artifact and log are restored so the surviving evidence record never points at an unrecorded run.
+- `--max-output-bytes` bounds the captured output; exceeding it kills the run and is reported as an output-limit kill, not a timeout.
 - `vibepro verify record` keeps its existing input handling, validation, and record shape. Existing recorded evidence stays valid.
 
 ## Workflow states
