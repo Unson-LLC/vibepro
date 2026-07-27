@@ -8,6 +8,7 @@ import { promisify } from 'node:util';
 
 import {
   closeAgentReviewLifecycle,
+  getAgentReviewStatus,
   readReviewSurfaceViolationSummary,
   recordAgentReview,
   startAgentReviewLifecycle,
@@ -87,6 +88,8 @@ async function start(root, { role = 'gate_evidence', agentId = 'task-1' } = {}) 
     role,
     agentSystem: 'claude_code',
     agentId,
+    agentThreadId: `thread-${agentId}`,
+    agentSessionId: `session-${agentId}`,
     timeoutMs: 600000
   });
 }
@@ -430,6 +433,88 @@ test('RSV-7 legacy lifecycle entries and a missing ledger read as zero violation
 
   const reviews = await summarizeAgentReviewsForPr(root, { storyId: STORY_ID, fileGroups: null });
   assert.equal(reviews.surface_violations.unacknowledged_count, 0);
+});
+
+test('RSV-6 failure mode timeout: a timed-out review close records no violation and still terminalizes', async () => {
+  const root = await setupRepo();
+  const started = await start(root);
+  await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = "mutated while the reviewer hung";\n');
+  const closed = await close(root, { closeReason: 'timeout' });
+
+  assert.equal(closed.lifecycle.close_reason, 'timeout');
+  assert.equal(closed.surface_violation, null);
+  const summary = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
+  assert.equal(summary.total_count, 0, 'a timeout is a discarded attempt, not a contaminated verdict');
+
+  const lifecycle = await readJson(lifecyclePath(root));
+  const entry = lifecycle.entries.find((item) => item.lifecycle_id === started.lifecycle.lifecycle_id);
+  assert.equal(entry.status, 'closed');
+  assert.ok(entry.closed_surface_digest, 'the close-time surface is still recorded for a timeout');
+});
+
+test('RSV-7 failure mode parse_failure: an unreadable ledger reads as zero violations instead of throwing', async () => {
+  const root = await setupRepo();
+  const storyReviewDir = path.join(root, '.vibepro', 'reviews', STORY_ID);
+  await mkdir(storyReviewDir, { recursive: true });
+  await writeFile(violationsPath(root), '{ this is not json');
+
+  const ledger = await readReviewSurfaceViolations(storyReviewDir, STORY_ID);
+  assert.deepEqual(ledger.entries, []);
+  const summary = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
+  assert.equal(summary.total_count, 0);
+
+  // A parse failure must not block recording the next violation.
+  await start(root);
+  await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = "mutated mid-review";\n');
+  await close(root);
+  assert.equal((await readJson(violationsPath(root))).entries.length, 1);
+});
+
+test('RSV-7 evidence_lifecycle_regression: recorded review results and lifecycle statuses keep their prior shape', async () => {
+  const root = await setupRepo();
+  const started = await start(root);
+  const closed = await close(root);
+  const recorded = await recordAgentReview(root, {
+    storyId: STORY_ID,
+    stage: 'gate',
+    role: 'gate_evidence',
+    status: 'pass',
+    summary: 'clean review over the finalized tree',
+    reviewerSystem: 'claude_code',
+    reviewerId: 'task-1',
+    agentThreadId: 'thread-task-1',
+    agentSessionId: 'session-task-1',
+    agentTranscript: 'transcript://task-1',
+    agentCloseEvidence: 'subagent shut down',
+    agentClosed: true,
+    judgmentDeltas: ['initial: unverified -> final: verified because the fixture export matches the asserted test'],
+    inspectionSummary: 'Read src/foo.js and test/foo.test.js in full.',
+    inspectionEvidence: 'src/foo.js:1 defines the fixture export asserted by test/foo.test.js.',
+    inspectionInputs: ['src/foo.js', 'test/foo.test.js']
+  });
+
+  assert.equal(started.lifecycle.status, 'running');
+  assert.equal(closed.lifecycle.status, 'closed');
+  assert.equal(closed.lifecycle.close_reason, 'completed');
+  assert.equal(recorded.review.status, 'pass');
+  assert.equal(recorded.review.agent_provenance.lifecycle.agent_closed, true);
+
+  // The recorded result keeps its prior shape: the ledger writes to its own file
+  // and adds nothing to, and removes nothing from, the review result artifact.
+  assert.ok(recorded.review.git_context.head_sha);
+  assert.equal(recorded.review.surface_violation_id, undefined);
+  assert.equal(recorded.review.evidence_class, undefined);
+
+  const status = await getAgentReviewStatus(root, { storyId: STORY_ID, stage: 'gate' });
+  const stage = status.stages.find((item) => item.stage === 'gate');
+  const role = stage.roles.find((item) => item.role === 'gate_evidence');
+  assert.equal(stage.lifecycle.running_count, 0, 'the closed lifecycle is no longer counted as running');
+  assert.equal(stage.stale_count, 0, 'a clean round produces no staleness');
+  // This fixture supplies no separate-session provenance, so the pre-existing
+  // provenance rule still downgrades the role. That downgrade is the unchanged
+  // behaviour under test: the ledger must not alter this path in either direction.
+  assert.equal(role.effective_status, 'unverified_agent');
+  assert.equal(role.status, 'pass');
 });
 
 test('RSV-7 detectReviewSurfaceMutation ignores entries with no recorded start surface', () => {
