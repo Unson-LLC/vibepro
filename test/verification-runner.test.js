@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -242,6 +243,91 @@ test('verify run warns when a passing command produced no output at all', async 
   const evidence = await readJson(evidencePath(root));
   const command = evidence.commands.find((item) => item.kind === 'build');
   assert.ok(command.warnings.some((warning) => warning.id === 'verification_run_produced_no_output'));
+});
+
+test('verify run records a worktree change during the run even when HEAD does not move', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, 'tests', 'sample.test.js'), `import test from 'node:test';
+import assert from 'node:assert/strict';
+import { writeFileSync } from 'node:fs';
+import path from 'node:path';
+test('edits a tracked file without committing', () => {
+  writeFileSync(path.join(process.cwd(), 'index.html'), '<!doctype html><title>Edited mid-run</title>');
+  assert.ok(true);
+});
+`);
+  await writeFile(path.join(root, 'index.html'), '<!doctype html><title>Test</title>');
+  await git(root, ['add', '.']);
+  await git(root, ['commit', '-m', 'mutating test']);
+  const before = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  const after = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
+  assert.equal(before, after, 'HEAD must not move in this case');
+  assert.equal(result.result.tree_mutated_during_run, true);
+
+  const artifact = await readJson(runArtifactPath(root, 'unit'));
+  assert.equal(artifact.run.head_moved_during_run, false);
+  assert.equal(artifact.run.worktree_changed_during_run, true);
+  assert.notEqual(artifact.run.worktree_sha256_before, artifact.run.worktree_sha256_after);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
+  const warning = record.warnings.find((item) => item.id === 'verification_tree_mutated_during_run');
+  assert.ok(warning);
+  assert.match(warning.reason, /working tree changed while the command was running/);
+});
+
+test('verify run hashes the exact stream the retained log is written from', async () => {
+  const root = await setupRepo();
+  // A recipe that writes to stderr and exits 0: node --test folds a child's stderr into
+  // its own stdout report, so it cannot produce the stdout/stderr split this covers.
+  await writeFile(path.join(root, 'Makefile'), 'all:\n\t@echo "a warning on stderr" >&2\n');
+  await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'build',
+    '--target', 'Makefile',
+    '--', 'make'
+  ]);
+  const artifact = await readJson(runArtifactPath(root, 'build'));
+  const log = await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'build.log'), 'utf8');
+  assert.match(log, /a warning on stderr/, 'the retained log must include stderr for this case to be meaningful');
+  assert.equal(artifact.observed.log_truncated, 'false');
+  // The retained log is re-derivable from the recorded hash when it is not truncated.
+  assert.equal(createHash('sha256').update(log).digest('hex'), artifact.observed.output_sha256);
+  // stdout alone hashes differently, so the two anchors are not interchangeable.
+  assert.notEqual(artifact.observed.stdout_sha256, artifact.observed.output_sha256);
+});
+
+test('verify run warns when a passing run reports a count that cannot distinguish a real check from an empty file', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, 'tests', 'sample.test.js'), 'export const nothing = true;\n');
+  await git(root, ['add', '.']);
+  await git(root, ['commit', '-m', 'test file with no tests']);
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  // node --test reports `tests 1 / pass 1` and exits 0 for a file that defines no tests.
+  assert.equal(result.result.status, 'pass');
+  assert.equal(result.result.counts.tests, 1);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
+  assert.ok(record.warnings.some((warning) => warning.id === 'verification_run_counts_trivial'));
+});
+
+test('verify run keeps its computed summary sentence when the agent supplies one', async () => {
+  const root = await setupRepo();
+  await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--summary', 'everything is completely fine',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
+  assert.match(record.summary, /exit_code=0/);
+  assert.match(record.summary, /tests=2 pass=2 fail=0/);
+  assert.match(record.summary, /agent summary: everything is completely fine/);
 });
 
 test('verify run requires an executable command after the separator', async () => {

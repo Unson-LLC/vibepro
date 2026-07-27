@@ -70,19 +70,25 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   }
   const timeoutMs = normalizeTimeout(options.timeoutMs);
 
-  const headBefore = await gitHead(root);
+  // "The tree" is the checked-out commit plus the working tree: a suite that rewrites a
+  // source file mid-run moves the tree without moving HEAD, so both are sampled.
+  const treeBefore = await sampleTreeState(root);
   const startedAt = new Date();
   const execution = await executeCommand(root, argv, { timeoutMs, env: options.env });
   const finishedAt = new Date();
-  const headAfter = await gitHead(root);
+  const treeAfter = await sampleTreeState(root);
 
+  const headBefore = treeBefore.head;
+  const headAfter = treeAfter.head;
   const output = `${execution.stdout}${execution.stderr}`;
   const parsedCounts = extractOutputCounts(execution.stdout) ?? extractOutputCounts(output);
   const runCounts = parsedCounts?.counts ?? null;
   const outputMetrics = parsedCounts?.format ?? 'none';
   const durationMs = finishedAt.getTime() - startedAt.getTime();
   const status = execution.exitCode === 0 && !execution.signal ? 'pass' : 'fail';
-  const treeMutated = Boolean(headBefore && headAfter && headBefore !== headAfter);
+  const headMoved = Boolean(headBefore && headAfter && headBefore !== headAfter);
+  const worktreeChanged = Boolean(treeBefore.worktree && treeAfter.worktree && treeBefore.worktree !== treeAfter.worktree);
+  const treeMutated = headMoved || worktreeChanged;
 
   const computedValues = {
     exit_code: String(execution.exitCode),
@@ -95,8 +101,15 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     finished_at: finishedAt.toISOString(),
     ...(headBefore ? { head_sha_before: headBefore } : {}),
     ...(headAfter ? { head_sha_after: headAfter, head_sha: headAfter } : {}),
+    ...(treeBefore.worktree ? { worktree_sha256_before: treeBefore.worktree } : {}),
+    ...(treeAfter.worktree ? { worktree_sha256_after: treeAfter.worktree } : {}),
+    // stdout_sha256 covers stdout alone; output_sha256 covers exactly the stdout+stderr
+    // stream the retained log is written from, so the log can be checked against it
+    // whenever log_truncated is false.
     stdout_sha256: sha256(execution.stdout),
-    output_bytes: String(Buffer.byteLength(output))
+    output_sha256: sha256(output),
+    output_bytes: String(Buffer.byteLength(output)),
+    log_truncated: String(Buffer.byteLength(output) > MAX_STORED_LOG_BYTES)
   };
 
   const { retained, overrides } = partitionAgentObservations(options.observed, computedValues);
@@ -112,7 +125,11 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     durationMs,
     headBefore,
     headAfter,
+    treeBefore,
+    treeAfter,
     treeMutated,
+    headMoved,
+    worktreeChanged,
     counts: runCounts,
     outputMetrics,
     computedValues,
@@ -129,7 +146,9 @@ export async function runVerificationCommand(repoRoot, options = {}) {
       ? [{
           id: 'verification_tree_mutated_during_run',
           command_name: 'verify run',
-          reason: `the working tree moved from ${shortSha(headBefore)} to ${shortSha(headAfter)} while the command was running; the recorded result does not describe a single tree`
+          reason: headMoved
+            ? `HEAD moved from ${shortSha(headBefore)} to ${shortSha(headAfter)} while the command was running${worktreeChanged ? ' and the working tree changed as well' : ''}; the recorded result does not describe a single tree`
+            : 'the working tree changed while the command was running (HEAD is unchanged, tracked file state is not); the recorded result does not describe a single tree'
         }]
       : []),
     ...(overrides.length > 0
@@ -146,11 +165,35 @@ export async function runVerificationCommand(repoRoot, options = {}) {
           reason: 'the command exited 0 without printing anything; a silent success is not evidence that any check ran'
         }]
       : []),
+    // Exit code 0 says the command did not fail; it does not say anything ran. Without
+    // parsed counts the record carries no measure of how much was checked, so the gap is
+    // named on the record instead of being left for a reader to notice.
+    ...(status === 'pass' && output.trim().length > 0 && !runCounts
+      ? [{
+          id: 'verification_run_counts_not_parsed',
+          command_name: 'verify run',
+          reason: 'the command exited 0 but no test counts could be parsed from its output; the record proves the command did not fail, not how much it checked'
+        }]
+      : []),
+    ...(status === 'pass' && runCounts && Number(runCounts.tests) <= 1
+      ? [{
+          id: 'verification_run_counts_trivial',
+          command_name: 'verify run',
+          reason: `the command exited 0 reporting only ${runCounts.tests} test(s); node --test reports tests 1 / pass 1 for a file that defines no tests, so this count does not distinguish a real check from an empty one`
+        }]
+      : []),
     ...(execution.timedOut
       ? [{
           id: 'verification_run_timed_out',
           command_name: 'verify run',
           reason: `the command was killed after ${timeoutMs}ms; the recorded fail status is a timeout, not a test failure`
+        }]
+      : []),
+    ...(execution.outputLimitExceeded
+      ? [{
+          id: 'verification_run_output_limit_exceeded',
+          command_name: 'verify run',
+          reason: `the command was killed after exceeding the ${MAX_OUTPUT_BUFFER_BYTES}-byte output buffer; the recorded fail status is an output-volume kill, not a test failure, and the captured output is incomplete`
         }]
       : [])
   ];
@@ -160,7 +203,10 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     kind: options.kind,
     status,
     command: renderCommand(argv),
-    summary: options.summary ?? buildSummary(options.kind, status, execution, runCounts, durationMs),
+    // An agent-supplied summary is added to the computed sentence, never in place of it:
+    // `summary` is the first thing a reader (and some consumers) look at, so the runner's
+    // own account of the run stays on every record.
+    summary: composeSummary(options.summary, buildSummary(options.kind, status, execution, runCounts, durationMs)),
     artifact: toWorkspaceRelative(root, artifactPath),
     targets: options.targets ?? [],
     scenarios: options.scenarios ?? [],
@@ -178,6 +224,8 @@ export async function runVerificationCommand(repoRoot, options = {}) {
       run_artifact: toWorkspaceRelative(root, artifactPath),
       run_log: toWorkspaceRelative(root, logPath),
       tree_mutated_during_run: treeMutated,
+      head_moved_during_run: headMoved,
+      worktree_changed_during_run: worktreeChanged,
       output_metrics: outputMetrics
     },
     observationOverrides: overrides,
@@ -193,6 +241,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     exit_code: execution.exitCode,
     signal: execution.signal,
     timed_out: execution.timedOut,
+    output_limit_exceeded: execution.outputLimitExceeded === true,
     duration_ms: durationMs,
     head_sha_before: headBefore,
     head_sha_after: headAfter,
@@ -290,7 +339,11 @@ async function executeCommand(root, argv, { timeoutMs, env }) {
       stderr: String(error.stderr ?? ''),
       exitCode: typeof error.code === 'number' ? error.code : 1,
       signal: error.signal ?? null,
-      timedOut: error.killed === true && Boolean(error.signal),
+      // A maxBuffer kill looks identical to a timeout kill (killed + signal); only the
+      // error code separates them, and calling one the other sends a reader hunting for
+      // a hang that never happened.
+      timedOut: error.killed === true && Boolean(error.signal) && error.code !== 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER',
+      outputLimitExceeded: error.code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER',
       envRemoved: sanitized.removed
     };
   }
@@ -352,10 +405,15 @@ async function writeRunArtifact(root, storyId, kind, run) {
       exit_code: run.execution.exitCode,
       signal: run.execution.signal,
       timed_out: run.timedOut,
+      output_limit_exceeded: run.execution.outputLimitExceeded === true,
       timeout_ms: run.timeoutMs,
       head_sha_before: run.headBefore,
       head_sha_after: run.headAfter,
+      worktree_sha256_before: run.treeBefore?.worktree ?? null,
+      worktree_sha256_after: run.treeAfter?.worktree ?? null,
       tree_mutated_during_run: run.treeMutated,
+      head_moved_during_run: run.headMoved,
+      worktree_changed_during_run: run.worktreeChanged,
       output_metrics: run.outputMetrics,
       counts: run.counts,
       harness_env_removed: run.execution.envRemoved ?? [],
@@ -366,6 +424,11 @@ async function writeRunArtifact(root, storyId, kind, run) {
   };
   await writeFile(artifactPath, `${JSON.stringify(doc, null, 2)}\n`);
   return artifactPath;
+}
+
+function composeSummary(agentSummary, computedSummary) {
+  const declared = String(agentSummary ?? '').trim();
+  return declared ? `${computedSummary} | agent summary: ${declared}` : computedSummary;
 }
 
 function buildSummary(kind, status, execution, runCounts, durationMs) {
@@ -396,10 +459,38 @@ function sha256(value) {
   return createHash('sha256').update(String(value ?? '')).digest('hex');
 }
 
+async function sampleTreeState(root) {
+  return {
+    head: await gitHead(root),
+    worktree: await worktreeFingerprint(root)
+  };
+}
+
 async function gitHead(root) {
   try {
     const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' });
     return stdout.trim();
+  } catch {
+    return null;
+  }
+}
+
+// Porcelain status plus the index/worktree tree hash: catches an edit to a tracked file,
+// a new untracked file, and a staged change, none of which move HEAD.
+async function worktreeFingerprint(root) {
+  try {
+    const { stdout } = await execFileAsync('git', ['status', '--porcelain=v1', '--untracked-files=all'], {
+      cwd: root,
+      encoding: 'utf8',
+      maxBuffer: 8 * 1024 * 1024
+    });
+    const lines = stdout.replace(/\r\n?/g, '\n').split('\n').filter(Boolean).sort();
+    const diff = await execFileAsync('git', ['diff', '--no-ext-diff'], {
+      cwd: root,
+      encoding: 'utf8',
+      maxBuffer: 32 * 1024 * 1024
+    }).then((result) => result.stdout).catch(() => '');
+    return sha256(`${lines.join('\n')}\n${diff}`);
   } catch {
     return null;
   }

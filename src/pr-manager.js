@@ -50,7 +50,7 @@ import {
   summarizeAgentReviewsForPr
 } from './agent-review.js';
 import { importCiEvidence } from './ci-evidence.js';
-import { recordVerificationEvidence } from './verification-evidence.js';
+import { RUNNER_EVIDENCE_RECEIPT, recordVerificationEvidence } from './verification-evidence.js';
 import {
   renderExplorePrSection,
   summarizeExploreEvidenceForPr
@@ -1750,7 +1750,23 @@ export async function autopilotPullRequest(repoRoot, options = {}) {
       observed: [
         `exit_code=${run.exit_code}`,
         `head_sha=${run.head_sha ?? 'unknown'}`
-      ]
+      ],
+      // Autopilot executes the command itself and derives the status from the exit code,
+      // so the outcome is computed, not self-reported. It is marked as its own source
+      // rather than runner_direct: the command runs through a login shell, and the record
+      // carries no parsed counts, before/after tree sampling, or output hash.
+      evidenceReceipt: RUNNER_EVIDENCE_RECEIPT,
+      evidenceSource: 'autopilot_run',
+      computedObservation: {
+        producer: 'vibepro pr autopilot',
+        computed_keys: ['exit_code', 'head_sha'],
+        values: {
+          exit_code: String(run.exit_code),
+          head_sha: run.head_sha ?? null
+        },
+        run_artifact: toWorkspaceRelative(root, artifact),
+        output_metrics: 'exit_code_only'
+      }
     });
     operations.push({
       id: `verify_${command.kind}`,

@@ -22,7 +22,12 @@ const EVIDENCE_LOCK_STALE_MS = 60000;
 // CLI flag for it. A caller that computes the outcome itself (the local runner, the CI
 // importer) presents this receipt; every other caller records self-reported evidence.
 export const RUNNER_EVIDENCE_RECEIPT = Symbol('vibepro-computed-verification-evidence');
-const COMPUTED_EVIDENCE_SOURCES = new Set(['runner_direct', 'ci_import']);
+// runner_direct: `verify run` executed argv itself and parsed the outcome from the run.
+// autopilot_run: `pr autopilot` executed a configured shell command and derived the status
+//   from its exit code — VibePro-computed, but without the runner's argv execution,
+//   parsed counts, before/after tree sampling, or output hash.
+// ci_import:     a completed CI check at the current head was transcribed.
+const COMPUTED_EVIDENCE_SOURCES = new Set(['runner_direct', 'autopilot_run', 'ci_import']);
 const SELF_REPORTED_EVIDENCE_SOURCE = 'self_reported';
 
 export async function recordVerificationEvidence(repoRoot, options = {}) {
