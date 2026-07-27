@@ -20,8 +20,10 @@ import {
   evaluateDeliveryBudget,
   planLifecycleTerminalization,
   resolveEfficiencyPolicy,
+  resolveEfficiencyPolicyDecision,
   selectRiskAdaptiveReviewCoverage
 } from './delivery-efficiency-guardrail.js';
+import { readDecisionRecordsIfExists } from './decision-records.js';
 import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js';
 import { assertSafeStoryPathSegment } from './story-id.js';
 
@@ -707,7 +709,8 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
     stage,
     role
   });
-  const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root, storyId);
+  const efficiencyDecision = await readDeliveryEfficiencyPolicyDecision(root, storyId);
+  const efficiencyPolicy = efficiencyDecision.policy;
   if (!efficiencyPolicy) throw new Error('review authorize requires budgets.delivery_efficiency in .vibepro/config.json');
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   const storyReviewDir = path.dirname(reviewDir);
@@ -780,6 +783,7 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
       agent_cost_tier: agentCostTier,
       model_policy_preflight: modelPolicyPreflight,
       dispatch_decision: dispatchDecision,
+      budget_override: efficiencyDecision.override,
       created_at: now.toISOString(),
       expires_at: new Date(now.getTime() + timeoutMs).toISOString(),
       consumed_at: null,
@@ -791,16 +795,25 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
   return {
     authorization,
     dispatch_decision: authorization.dispatch_decision,
+    budget_override: efficiencyDecision.override,
     artifact: toWorkspaceRelative(root, getDispatchAuthorizationsPath(storyReviewDir))
   };
 }
 
 async function readDeliveryEfficiencyPolicy(repoRoot, storyId) {
+  return (await readDeliveryEfficiencyPolicyDecision(repoRoot, storyId)).policy;
+}
+
+// Story overrides are inert without an accepted budget approval (CEA-S-4), so
+// the decision records have to be loaded before the policy is resolved.
+async function readDeliveryEfficiencyPolicyDecision(repoRoot, storyId) {
+  const inert = { policy: null, override: { status: 'absent', story_id: storyId ?? null, digest: null, reasons: [], approval: null } };
   try {
     const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
-    return resolveEfficiencyPolicy(config, storyId);
+    const records = await readDecisionRecordsIfExists(repoRoot, storyId).catch(() => null);
+    return resolveEfficiencyPolicyDecision(config, storyId, { decisions: records?.decisions ?? [] });
   } catch (error) {
-    if (error.code === 'ENOENT') return null;
+    if (error.code === 'ENOENT') return inert;
     throw error;
   }
 }

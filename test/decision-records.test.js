@@ -181,3 +181,112 @@ test('DRES-SCENARIO-005 recording a decision refreshes the single active Run Con
   assert.ok(capsule.open_decisions.some((decision) => decision.prompt === 'Choose the handoff owner.'));
   assert.ok(capsule.source_fingerprints.some((source) => source.kind === 'decisions'));
 });
+
+// OGB-S-10 ... OGB-S-12: the write side of the budget-approval grant. The digest
+// is read out of .vibepro/config.json here rather than accepted from the caller,
+// so an approval always binds to the limits that are actually configured.
+async function makeBudgetWorkspaceRepo(storyId, override) {
+  const root = await makeWorkspaceRepo();
+  await writeFile(
+    path.join(root, '.vibepro', 'config.json'),
+    JSON.stringify({
+      schema_version: '0.1.0',
+      budgets: {
+        delivery_efficiency: { max_subagent_count: 6 },
+        delivery_efficiency_by_story: { [storyId]: override }
+      }
+    }, null, 2)
+  );
+  return root;
+}
+
+test('OGB-S-10 budget approval computes the override digest from config, not from caller input', async () => {
+  const storyId = 'story-ogb-write';
+  const override = { max_subagent_count: 9, amendment_reason: 'one extra repair round' };
+  const root = await makeBudgetWorkspaceRepo(storyId, override);
+
+  const { decision } = await recordDecision(root, {
+    storyId,
+    type: 'waiver',
+    status: 'accepted',
+    source: `budget:delivery_efficiency:${storyId}`,
+    summary: 'owner approved raising the Story subagent cap to 9',
+    reason: 'owner approved the raise on 2026-07-27',
+    budgetGrantor: 'sato-keigo',
+    budgetGrantorKind: 'human',
+    agentSystem: 'claude_code',
+    agentId: 'agent-ogb-1',
+    overrideDigest: 'attacker-supplied-digest'
+  });
+
+  const { computeBudgetOverrideDigest, resolveBudgetOverrideAuthority } =
+    await import('../src/budget-override-authority.js');
+  assert.equal(decision.budget_approval.override_digest, computeBudgetOverrideDigest(storyId, override));
+  assert.notEqual(decision.budget_approval.override_digest, 'attacker-supplied-digest');
+  assert.equal(decision.budget_approval.grantor, 'sato-keigo');
+  assert.deepEqual(decision.budget_approval.recorded_by, { agent_system: 'claude_code', agent_id: 'agent-ogb-1' });
+
+  assert.equal(resolveBudgetOverrideAuthority({ storyId, override, decisions: [decision] }).status, 'authorized');
+});
+
+test('OGB-S-11 budget approval refuses a self-grant and an unidentified recorder', async () => {
+  const storyId = 'story-ogb-self';
+  const root = await makeBudgetWorkspaceRepo(storyId, { max_subagent_count: 9, amendment_reason: 'raise' });
+  const base = {
+    storyId,
+    type: 'waiver',
+    status: 'accepted',
+    source: `budget:delivery_efficiency:${storyId}`,
+    summary: 'raise the cap',
+    reason: 'the run needs more lifecycles',
+    budgetGrantorKind: 'human',
+    agentSystem: 'claude_code',
+    agentId: 'agent-ogb-2'
+  };
+
+  await assert.rejects(
+    recordDecision(root, { ...base, budgetGrantor: 'agent-ogb-2' }),
+    /grantor must differ from the recording agent/
+  );
+  await assert.rejects(
+    recordDecision(root, { ...base, budgetGrantor: 'sato-keigo', agentId: undefined }),
+    /--agent-id/
+  );
+  await assert.rejects(
+    recordDecision(root, { ...base, budgetGrantor: 'sato-keigo', reason: undefined }),
+    /requires --reason/
+  );
+});
+
+test('OGB-S-12 budget approval requires a configured override and a matching story id', async () => {
+  const storyId = 'story-ogb-missing';
+  const root = await makeWorkspaceRepo();
+  await writeFile(
+    path.join(root, '.vibepro', 'config.json'),
+    JSON.stringify({ schema_version: '0.1.0', budgets: { delivery_efficiency: { max_subagent_count: 6 } } }, null, 2)
+  );
+  const base = {
+    storyId,
+    type: 'waiver',
+    status: 'accepted',
+    summary: 'raise the cap',
+    reason: 'the run needs more lifecycles',
+    budgetGrantor: 'sato-keigo',
+    budgetGrantorKind: 'human',
+    agentSystem: 'claude_code',
+    agentId: 'agent-ogb-3'
+  };
+
+  await assert.rejects(
+    recordDecision(root, { ...base, source: `budget:delivery_efficiency:${storyId}` }),
+    /found no delivery_efficiency_by_story override/
+  );
+  await assert.rejects(
+    recordDecision(root, { ...base, source: 'budget:delivery_efficiency:story-other' }),
+    /does not match --id/
+  );
+  await assert.rejects(
+    recordDecision(root, { ...base, source: 'gate:agent_review' }),
+    /budget approval flags require --source/
+  );
+});

@@ -4,6 +4,11 @@ import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import {
+  buildBudgetApproval,
+  computeBudgetOverrideDigest,
+  parseBudgetApprovalSource
+} from './budget-override-authority.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
@@ -46,6 +51,7 @@ export async function recordDecision(repoRoot, options = {}) {
 
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root);
+  const budgetApproval = await buildBudgetApprovalForSource(root, storyId, options);
   const evidencePath = await resolvePrArtifactFile(root, storyId, 'decision-records.json');
   await mkdir(path.dirname(evidencePath), { recursive: true });
   const existing = await readDecisionRecords(root, storyId);
@@ -71,6 +77,7 @@ export async function recordDecision(repoRoot, options = {}) {
     reviewer: normalizeNullable(options.reviewer),
     artifact: options.artifact ? normalizeArtifact(root, options.artifact) : null,
     verification_evidence_summary: verificationEvidenceSummary,
+    budget_approval: budgetApproval,
     secret_exposure: type === 'secret_exposure' ? {
       location: options.secretLocation,
       action: options.secretAction,
@@ -212,6 +219,46 @@ async function buildVerificationEvidenceSummary(repoRoot, storyId) {
     result: command?.status ?? null
   }));
   return { count: entries.length, entries };
+}
+
+// Mints the grant that makes a delivery-efficiency Story override effective
+// (CEA-S-4). The digest is read out of `.vibepro/config.json` here rather than
+// accepted from the caller, so the record approves the numbers that are actually
+// configured; an agent cannot approve one budget and then apply another.
+async function buildBudgetApprovalForSource(repoRoot, storyId, options) {
+  const sourceStoryId = parseBudgetApprovalSource(options.source);
+  if (sourceStoryId === null) {
+    if (options.budgetGrantor || options.budgetGrantorKind) {
+      throw new Error('budget approval flags require --source budget:delivery_efficiency:<story-id>');
+    }
+    return null;
+  }
+  if (sourceStoryId !== storyId) {
+    throw new Error(`budget approval --source story ${sourceStoryId} does not match --id ${storyId}`);
+  }
+  if (!options.reason) {
+    throw new Error('budget approval requires --reason <text> stating what the human approved');
+  }
+  let config;
+  try {
+    config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') throw new Error('budget approval requires an initialized .vibepro/config.json');
+    throw error;
+  }
+  const override = config?.budgets?.delivery_efficiency_by_story?.[storyId];
+  if (!override || typeof override !== 'object' || Array.isArray(override)) {
+    throw new Error(`budget approval found no delivery_efficiency_by_story override for ${storyId}; `
+      + 'configure the override first so the approval binds to concrete limits');
+  }
+  return buildBudgetApproval({
+    storyId,
+    overrideDigest: computeBudgetOverrideDigest(storyId, override),
+    grantorKind: options.budgetGrantorKind,
+    grantor: options.budgetGrantor,
+    agentSystem: options.agentSystem,
+    agentId: options.agentId
+  });
 }
 
 async function readDecisionRecords(repoRoot, storyId) {
