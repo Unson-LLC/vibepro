@@ -7132,11 +7132,24 @@
         "stale_review_hash": "needs_review",
         "accepted_adr_supersession_conflict": "block"
       },
-      "children": {},
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-runner-direct-evidence.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
       "child_links": [
         {
           "kind": "spec",
-          "path": "docs/specs/story-vibepro-runner-direct-evidence.md"
+          "path": "docs/specs/story-vibepro-runner-direct-evidence.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
         }
       ],
       "source": "design-ssot.json"
