@@ -49,6 +49,10 @@ import {
   renderAgentReviewPrSection,
   summarizeAgentReviewsForPr
 } from './agent-review.js';
+import {
+  REVIEW_SURFACE_INTEGRITY_GATE_ID,
+  buildReviewSurfaceViolationAcknowledgementCommand
+} from './review-surface-violations.js';
 import { importCiEvidence } from './ci-evidence.js';
 import { recordVerificationEvidence } from './verification-evidence.js';
 import {
@@ -6068,6 +6072,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     performanceEvidence,
     changeClassification,
     validationSequence,
+    decisionRecords,
     git
   });
   if (agentReviews) {
@@ -11413,6 +11418,7 @@ function buildGateDag({
   const agentReviewGate = buildAgentReviewGate(agentReviews, fileGroups, fastLane);
   const agentReviewDag = fastLane.applicable ? { nodes: [], terminal_nodes: [], stage_order: [] } : buildAgentReviewProcessDag(agentReviews);
   const fastLaneGate = fastLane.applicable ? buildFastLaneGate(fastLane) : null;
+  const reviewSurfaceIntegrityGate = buildReviewSurfaceIntegrityGate({ agentReviews });
   const reviewInspectionRequiredGate = buildReviewInspectionRequiredGate({
     agentReviews,
     changeClassification,
@@ -11514,6 +11520,7 @@ function buildGateDag({
     ...(fastLaneGate ? [fastLaneGate] : []),
     ...agentReviewDag.nodes,
     agentReviewGate,
+    reviewSurfaceIntegrityGate,
     reviewInspectionRequiredGate,
     definitionOfDoneGate,
     artifactConsistencyGate,
@@ -11658,7 +11665,8 @@ function buildGateDag({
         fastLaneNodeId: fastLaneGate ? 'gate:fast_lane' : null
       })
     ]),
-    { from: 'gate:agent_review', to: 'gate:review_inspection_required' },
+    { from: 'gate:agent_review', to: REVIEW_SURFACE_INTEGRITY_GATE_ID },
+    { from: REVIEW_SURFACE_INTEGRITY_GATE_ID, to: 'gate:review_inspection_required' },
     { from: 'gate:review_inspection_required', to: 'gate:definition_of_done' },
     { from: 'gate:definition_of_done', to: 'gate:artifact_consistency' },
     { from: 'gate:artifact_consistency', to: 'gate:validation_sequencing' },
@@ -11707,6 +11715,7 @@ function buildGateDag({
     ...workflowHeavyGates,
     ...agentReviewDag.nodes,
     agentReviewGate,
+    reviewSurfaceIntegrityGate,
     reviewInspectionRequiredGate,
     definitionOfDoneGate,
     artifactConsistencyGate,
@@ -14066,6 +14075,51 @@ function buildReviewInspectionRequiredGate({ agentReviews = null, changeClassifi
   };
 }
 
+// Distinct from gate:agent_review on purpose. gate:agent_review answers "is there
+// a passing review for the current surface", which a re-run legitimately flips.
+// This gate answers "did a review surface move while a review was running", which
+// a re-run cannot answer at all — only a human looking at the recorded fact can.
+function buildReviewSurfaceIntegrityGate({ agentReviews = null } = {}) {
+  const violations = agentReviews?.surface_violations ?? null;
+  const storyId = agentReviews?.story_id ?? '<story-id>';
+  const total = violations?.total_count ?? 0;
+  const unacknowledged = violations?.unacknowledged ?? [];
+  const acknowledgedCount = violations?.acknowledged_count ?? 0;
+  const status = unacknowledged.length > 0 ? 'failed' : 'passed';
+  return {
+    id: REVIEW_SURFACE_INTEGRITY_GATE_ID,
+    type: 'review_surface_integrity_gate',
+    label: 'Review Surface Integrity Gate',
+    status,
+    required: true,
+    evidence_class: 'violation',
+    distinct_from: 'stale_review',
+    artifact: violations?.artifact ?? null,
+    violation_count: total,
+    acknowledged_violation_count: acknowledgedCount,
+    unacknowledged_violation_count: unacknowledged.length,
+    violations: violations?.entries ?? [],
+    unacknowledged_violations: unacknowledged.map((violation) => ({
+      violation_id: violation.violation_id,
+      stage: violation.stage ?? null,
+      role: violation.role ?? null,
+      lifecycle_id: violation.lifecycle_id ?? null,
+      changed_fields: violation.changed_fields ?? [],
+      recorded_at: violation.recorded_at ?? null
+    })),
+    required_actions: unacknowledged.length === 0 ? [] : [
+      `${unacknowledged.length} review(s) had their review surface change mid-review (${unacknowledged.map((violation) => `${violation.stage ?? '?'}:${violation.role ?? '?'} [${(violation.changed_fields ?? []).join(', ')}]`).join('; ')}). Re-running the review does not clear this record.`,
+      'State what the contaminated review actually inspected, then acknowledge each violation with an accepted decision record:',
+      ...unacknowledged.map((violation) => buildReviewSurfaceViolationAcknowledgementCommand(storyId, violation.violation_id))
+    ],
+    reason: status === 'passed'
+      ? total === 0
+        ? 'No review-surface mutation was recorded between any review start and its close'
+        : `All ${total} recorded review-surface violation(s) are acknowledged by an accepted decision record; the append-only records remain in ${violations?.artifact ?? 'the review surface violation ledger'}`
+      : `${unacknowledged.length} of ${total} recorded review-surface violation(s) are unacknowledged. These are violations, not stale evidence: they are append-only and survive every review re-run.`
+  };
+}
+
 function buildDefinitionOfDoneGate({ fileGroups = {}, verificationEvidence = null, flowVerification = null, agentReviewGate = null } = {}) {
   const sourceCount = fileGroups?.source?.count ?? 0;
   const testCount = fileGroups?.tests?.count ?? 0;
@@ -15215,6 +15269,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'path_surface_matrix_gate',
       'journey_context_gate',
       'design_diagrams_gate',
+      'review_surface_integrity_gate',
       'review_inspection_required_gate',
       'definition_of_done_gate',
       'visual_qa_gate',

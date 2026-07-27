@@ -23,6 +23,14 @@ import {
   selectRiskAdaptiveReviewCoverage
 } from './delivery-efficiency-guardrail.js';
 import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js';
+import {
+  REVIEW_SURFACE_INTEGRITY_GATE_ID,
+  appendReviewSurfaceViolation,
+  detectReviewSurfaceMutation,
+  getReviewSurfaceViolationsPath,
+  readReviewSurfaceViolations,
+  summarizeReviewSurfaceViolations
+} from './review-surface-violations.js';
 import { assertSafeStoryPathSegment } from './story-id.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
@@ -845,6 +853,22 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
   }
   let match = null;
   const gitContext = await collectReviewGitContext(root, storyId);
+  const closeHeadSha = gitContext.head_sha ?? null;
+  const closeSurfaceDigest = gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash ?? null;
+  // Record the violation before the lifecycle write. If the close itself fails
+  // afterwards the ledger has still captured an observed mid-review mutation,
+  // which is the direction we want to fail in.
+  const surfaceViolation = await recordReviewSurfaceViolationForClose(root, storyId, stage, {
+    role,
+    lifecycleId: options.lifecycleId,
+    agentId: options.agentId,
+    agentSystem: options.agentSystem,
+    operationIdempotencyKey,
+    closeReason,
+    closeEvidence,
+    closeHeadSha,
+    closeSurfaceDigest
+  });
   let summary = null;
   await updateLifecycle(root, storyId, stage, (lifecycle) => {
     const alreadyClosed = operationIdempotencyKey && lifecycle.entries.find((entry) => entry.close_operation_idempotency_key === operationIdempotencyKey);
@@ -860,6 +884,13 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
     }
     if (['closed', 'replaced'].includes(match.status)) {
       throw new Error(`review close cannot rewrite already ${match.status} lifecycle ${match.lifecycle_id}; lifecycle closure is immutable`);
+    }
+    // Recorded on every close path, including the terminalized ones below, so the
+    // surface a review ended on is always reconstructable from the artifact.
+    match.closed_head_sha = closeHeadSha;
+    match.closed_surface_digest = closeSurfaceDigest;
+    if (surfaceViolation?.entry?.violation_id) {
+      match.surface_violation_id = surfaceViolation.entry.violation_id;
     }
     if (match.head_sha && match.head_sha !== gitContext.head_sha) {
       if (options.cancellationConfirmed !== true) {
@@ -891,8 +922,61 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
   });
   return {
     lifecycle: decorateLifecycleEntry(match),
+    surface_violation: surfaceViolation?.entry ?? null,
     summary,
-    artifact: toWorkspaceRelative(root, getLifecyclePath(reviewDir))
+    artifact: toWorkspaceRelative(root, getLifecyclePath(reviewDir)),
+    ...(surfaceViolation ? {
+      surface_violations_artifact: toWorkspaceRelative(root, getReviewSurfaceViolationsPath(path.dirname(reviewDir)))
+    } : {})
+  };
+}
+
+async function recordReviewSurfaceViolationForClose(root, storyId, stage, {
+  role,
+  lifecycleId,
+  agentId,
+  agentSystem,
+  operationIdempotencyKey,
+  closeReason,
+  closeEvidence,
+  closeHeadSha,
+  closeSurfaceDigest
+}) {
+  const lifecycle = await readLifecycle(root, storyId, stage);
+  if (operationIdempotencyKey
+    && lifecycle.entries.some((entry) => entry.close_operation_idempotency_key === operationIdempotencyKey)) {
+    return null;
+  }
+  const candidate = findLifecycleEntry(lifecycle.entries, { lifecycleId, role, agentId, agentSystem });
+  // No candidate, or an already-terminal one, means this close will throw; do not
+  // record a violation for a close that never happens.
+  if (!candidate || ['closed', 'replaced'].includes(candidate.status)) return null;
+  const mutation = detectReviewSurfaceMutation(candidate, { closeHeadSha, closeSurfaceDigest, closeReason });
+  if (!mutation) return null;
+  const storyReviewDir = path.dirname(await getReviewStageDir(root, storyId, stage));
+  return appendReviewSurfaceViolation(storyReviewDir, storyId, {
+    ...mutation,
+    stage,
+    role: candidate.role ?? role,
+    lifecycle_id: candidate.lifecycle_id,
+    agent_system: candidate.agent_system ?? null,
+    agent_id: candidate.agent_id ?? null,
+    started_at: candidate.started_at ?? null,
+    close_reason: closeReason,
+    close_evidence: closeEvidence ?? null,
+    detected_by: 'review close'
+  });
+}
+
+export async function readReviewSurfaceViolationSummary(repoRoot, storyId, { decisionRecords = null } = {}) {
+  const root = path.resolve(repoRoot);
+  const route = await resolveArtifactRoute(root, 'review', { storyId });
+  const storyReviewDir = path.resolve(root, route.canonical.relative_path);
+  const ledger = await readReviewSurfaceViolations(storyReviewDir, storyId);
+  return {
+    ...summarizeReviewSurfaceViolations(ledger.entries, { decisionRecords }),
+    story_id: storyId,
+    artifact: toWorkspaceRelative(root, getReviewSurfaceViolationsPath(storyReviewDir))
   };
 }
 
@@ -1348,6 +1432,11 @@ export async function summarizeAgentReviewsForPr(repoRoot, options = {}) {
     unmet_required_reviews: allUnmetRequiredReviews,
     unmet_checkpoint_reviews: allUnmetCheckpointReviews,
     stages: stageSummaries,
+    // Violations are read from their own append-only ledger, never from the
+    // review results, so a later passing re-run cannot hide an earlier one.
+    surface_violations: await readReviewSurfaceViolationSummary(root, storyId, {
+      decisionRecords: options.decisionRecords ?? null
+    }),
     parallel_dispatch: await buildParallelDispatchSummary(root, storyId, stageSummaries, [
       ...requiredReviews,
       ...checkpointRequiredReviews
@@ -1522,7 +1611,35 @@ export function renderAgentReviewLifecycleCloseSummary(result) {
 - status: ${result.lifecycle.effective_status ?? result.lifecycle.status}
 - agent: ${result.lifecycle.agent_system}/${result.lifecycle.agent_id ?? '-'}
 - close_reason: ${result.lifecycle.close_reason ?? '-'}
+- closed_head_sha: ${result.lifecycle.closed_head_sha ?? '-'}
+- closed_surface_digest: ${result.lifecycle.closed_surface_digest ?? '-'}
 - artifact: ${result.artifact}
+${result.surface_violation ? `
+## Review Surface Violation Recorded
+
+- violation_id: ${result.surface_violation.violation_id}
+- changed_fields: ${(result.surface_violation.changed_fields ?? []).join(', ')}
+- artifact: ${result.surface_violations_artifact ?? '-'}
+- note: append-only. Re-running this review does not remove this record. Resolve it with an accepted decision record on ${REVIEW_SURFACE_INTEGRITY_GATE_ID}:${result.surface_violation.violation_id}.
+` : ''}`;
+}
+
+export function renderReviewSurfaceViolationSummary(summary) {
+  const rows = summary.entries.length
+    ? summary.entries.map((entry) => (
+      `- ${entry.violation_id} ${entry.stage ?? '?'}:${entry.role ?? '?'} changed=[${(entry.changed_fields ?? []).join(', ')}] acknowledged=${entry.acknowledged ? 'yes' : 'no'} recorded_at=${entry.recorded_at ?? '-'}`
+    )).join('\n')
+    : '- none';
+  return `# Review Surface Violations
+
+- story: ${summary.story_id}
+- total: ${summary.total_count}
+- unacknowledged: ${summary.unacknowledged_count}
+- artifact: ${summary.artifact}
+
+## Entries (append-only)
+
+${rows}
 `;
 }
 

@@ -962,8 +962,20 @@
         "started_at": "2026-07-25",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-review-surface-violation-ledger",
+        "title": "レビュー中のレビュー面変更をappend-onlyの違反として型分離し再実行で消えない記録にする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-27",
+        "due_at": null,
+        "category": "architecture"
       }
     ],
-    "current_story_id": "story-vibepro-docs-only-evidence-profile"
+    "current_story_id": "story-vibepro-review-surface-violation-ledger"
   }
 }
