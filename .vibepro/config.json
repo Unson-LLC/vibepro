@@ -981,6 +981,18 @@
         "started_at": "2026-07-26",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-computed-evidence-architecture",
+        "title": "証跡を「AIが書くもの」から「実行が残すもの」へ移し、AIの誠実さに依存しない出荷構造を作る",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "next",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-27",
+        "due_at": null,
+        "category": "architecture"
       }
     ],
     "current_story_id": "story-vibepro-enumeration-coverage-gate"
