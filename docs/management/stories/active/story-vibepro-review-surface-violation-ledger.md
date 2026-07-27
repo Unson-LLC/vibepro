@@ -8,7 +8,7 @@ category: architecture
 source:
   type: operator_feedback
   title: "先行 Story の round 6 で、実装エージェントがレビュー実行中にツリーを変更した。lifecycle は start 時の head_sha しか記録しないため機械検出されず、レビュアーが git status を偶然見て発見した。違反は stale と同じ failed 表示になり、レビュー再実行で痕跡ごと消えた"
-parent_design: story-vibepro-computed-evidence-architecture
+parent_design: vibepro-review-surface-violation-ledger
 related_stories:
   - story-vibepro-computed-evidence-architecture
   - story-vibepro-enumeration-coverage-gate

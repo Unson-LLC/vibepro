@@ -7118,7 +7118,7 @@
     {
       "id": "vibepro-review-surface-violation-ledger",
       "title": "Review Surface Violation Ledger",
-      "root_doc": "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+      "root_doc": "docs/architecture/vibepro-review-surface-violation-ledger.md",
       "owner": null,
       "status": "active",
       "authority_level": "design_root",
@@ -7128,7 +7128,9 @@
         "review surface violation ledger (.vibepro/reviews/<story-id>/surface-violations.json)",
         "gate:review_surface_integrity"
       ],
-      "required_child_kinds": [],
+      "required_child_kinds": [
+        "story"
+      ],
       "reconciliation_policy": {
         "root_only_change": "needs_review",
         "missing_required_child": "block",
@@ -7136,8 +7138,26 @@
         "stale_review_hash": "needs_review",
         "accepted_adr_supersession_conflict": "block"
       },
-      "children": {},
-      "child_links": [],
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
       "source": "design-ssot.json"
     }
   ],
