@@ -994,7 +994,16 @@ export async function readReviewSurfaceViolationSummary(repoRoot, storyId, { dec
   // Lifecycle entries are the second record of the same fact: review close stamps
   // surface_violation_id on them. Reconciling the two is what makes a well-formed
   // ledger rewrite detectable — corruption rejection alone would not catch it.
-  const lifecycleEntries = await readStoryLifecycleEntries(storyReviewDir).catch(() => []);
+  // The cross-check must not fail more quietly than the record it guards: an
+  // unreadable lifecycle means the pointers could not be compared, and that is
+  // reported rather than silently read as "no pointers".
+  let lifecycleEntries = [];
+  let pointersReadable = true;
+  try {
+    lifecycleEntries = await readStoryLifecycleEntries(storyReviewDir);
+  } catch {
+    pointersReadable = false;
+  }
   let summary;
   try {
     const ledger = await readReviewSurfaceViolations(storyReviewDir, storyId);
@@ -1007,6 +1016,7 @@ export async function readReviewSurfaceViolationSummary(repoRoot, storyId, { dec
   }
   return {
     ...summary,
+    pointers_readable: pointersReadable,
     story_id: storyId,
     artifact: toWorkspaceRelative(root, getReviewSurfaceViolationsPath(storyReviewDir))
   };

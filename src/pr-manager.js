@@ -14082,6 +14082,22 @@ function buildReviewInspectionRequiredGate({ agentReviews = null, changeClassifi
 function buildReviewSurfaceIntegrityGate({ agentReviews = null } = {}) {
   const violations = agentReviews?.surface_violations ?? null;
   const storyId = agentReviews?.story_id ?? '<story-id>';
+  if (!violations) {
+    // The ledger was never opened. Saying "no violation was recorded" here would
+    // be a positive claim about a file nobody read; type the absence instead.
+    return {
+      id: REVIEW_SURFACE_INTEGRITY_GATE_ID,
+      type: 'review_surface_integrity_gate',
+      label: 'Review Surface Integrity Gate',
+      status: 'not_generated',
+      required: true,
+      ledger_read: false,
+      required_actions: [
+        'Run `vibepro pr prepare` with a resolvable story id so the review surface violation ledger is read.'
+      ],
+      reason: 'The Agent Review summary was not generated, so the review surface violation ledger was never read. This is not a clean result.'
+    };
+  }
   const total = violations?.total_count ?? 0;
   const unacknowledged = violations?.unacknowledged ?? [];
   const acknowledgedCount = violations?.acknowledged_count ?? 0;
@@ -14108,7 +14124,11 @@ function buildReviewSurfaceIntegrityGate({ agentReviews = null } = {}) {
       recorded_at: violation.recorded_at ?? null
     })),
     ledger_readable: violations?.readable !== false,
+    pointers_readable: violations?.pointers_readable !== false,
     ...(violations?.readable === false ? { unreadable_reason: violations.unreadable_reason ?? null } : {}),
+    ...(violations?.pointers_readable === false ? {
+      warnings: ['Lifecycle surface_violation_id pointers could not be read, so the ledger cross-check did not run. A ledger rewrite would not be detected in this state.']
+    } : {}),
     required_actions: unacknowledged.length === 0 ? [] : violations?.readable === false ? [
       `The review surface violation ledger could not be read: ${violations.unreadable_reason ?? 'unknown reason'}`,
       'An unreadable ledger fails closed because it is indistinguishable from an erased one. Restore the file if a copy exists (.vibepro artifacts are usually untracked, so git history may not have one), otherwise state what was lost and acknowledge it:',

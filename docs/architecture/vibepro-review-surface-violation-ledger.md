@@ -117,8 +117,12 @@ attempt visible rather than impossible.
   editing the ledger is not itself a review-surface change. What catches it is
   the second copy of the same fact: `review close` stamps `surface_violation_id`
   onto the lifecycle entry, and reconciliation reports every pointer with no
-  matching ledger entry as a `review_surface_violation_entry_missing` violation.
-  Erasing an entry therefore exchanges one recorded violation for another, and
+  matching ledger entry as a `review_surface_violation_entry_missing` violation
+  under its own id, `missing:<violation-id>`. The separate id matters: reusing
+  the erased entry's id would let the decision record that acknowledged the
+  original violation also acknowledge its disappearance, so an *acknowledged*
+  violation could be deleted for free. Erasing an entry therefore exchanges one
+  recorded violation for another that needs its own human acknowledgement, and
   the erasure is visible in the gate.
 
 ## Residual, stated plainly
@@ -131,7 +135,9 @@ Two things this does **not** close:
 2. **Coordinated tampering.** Someone who edits both the ledger and every
    matching `lifecycle.json` pointer leaves no inconsistency to find. The design
    raises the cost and makes the single-file edit visible; it does not make the
-   record cryptographically tamper-evident.
+   record cryptographically tamper-evident. When the lifecycle pointers cannot be
+   read at all, the summary reports `pointers_readable: false` and the gate
+   carries a warning, rather than reading the absence of pointers as agreement.
 
 Neither is claimed as covered anywhere in this Story's acceptance criteria.
 

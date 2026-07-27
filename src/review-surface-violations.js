@@ -195,7 +195,13 @@ export function reconcileReviewSurfaceViolationPointers(entries = [], lifecycleE
     const violationId = lifecycle?.surface_violation_id;
     if (!violationId || known.has(violationId) || orphans.has(violationId)) continue;
     orphans.set(violationId, {
-      violation_id: violationId,
+      // Deliberately NOT the erased entry's own id. Reusing it would let the
+      // decision record that acknowledged the original violation also acknowledge
+      // its disappearance, so an already-acknowledged violation could be deleted
+      // with nothing left blocking. Erasing a record is a separate fact and needs
+      // a separate human acknowledgement.
+      violation_id: `missing:${violationId}`,
+      erased_violation_id: violationId,
       kind: REVIEW_SURFACE_LEDGER_ENTRY_MISSING_KIND,
       evidence_class: 'violation',
       changed_fields: [],

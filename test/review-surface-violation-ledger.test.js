@@ -553,7 +553,8 @@ test('RSV-8 replacing the ledger with a well-formed empty one does not clear the
   const summary = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
   assert.equal(summary.unacknowledged_count, 1, 'the erased entry must still be reported');
   const [reported] = summary.unacknowledged;
-  assert.equal(reported.violation_id, violationId);
+  assert.equal(reported.violation_id, `missing:${violationId}`);
+  assert.equal(reported.erased_violation_id, violationId);
   assert.equal(reported.kind, 'review_surface_violation_entry_missing');
   assert.match(reported.detail, /no such entry exists in the ledger/);
 
@@ -569,9 +570,53 @@ test('RSV-8 reconciliation reports each orphaned pointer once and stays quiet wh
     { lifecycle_id: 'lc-3', stage: 'gate', role: 'release_risk', surface_violation_id: 'rsv-2' },
     { lifecycle_id: 'lc-4', stage: 'gate', role: 'runtime_contract' }
   ];
-  assert.deepEqual(reconcileReviewSurfaceViolationPointers(entries, lifecycles).map((item) => item.violation_id), ['rsv-2']);
+  const orphans = reconcileReviewSurfaceViolationPointers(entries, lifecycles);
+  assert.deepEqual(orphans.map((item) => item.violation_id), ['missing:rsv-2']);
+  assert.deepEqual(orphans.map((item) => item.erased_violation_id), ['rsv-2']);
   assert.deepEqual(reconcileReviewSurfaceViolationPointers(entries, [lifecycles[0]]), []);
   assert.deepEqual(reconcileReviewSurfaceViolationPointers([], []), []);
+});
+
+test('RSV-8 acknowledging a violation does not also acknowledge erasing it', async () => {
+  const root = await setupRepo();
+  await start(root);
+  await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = "mutated mid-review";\n');
+  const closed = await close(root);
+  const violationId = closed.surface_violation.violation_id;
+
+  await recordDecision(root, {
+    storyId: STORY_ID,
+    type: 'needs_review',
+    status: 'accepted',
+    source: `${REVIEW_SURFACE_INTEGRITY_GATE_ID}:${violationId}`,
+    summary: 'Reviewer confirmed the mid-review edit was limited to a comment.',
+    reason: 'Owner inspected the diff between the start and close digests.',
+    artifact: 'README.md'
+  });
+  const decisionRecords = await readDecisionRecordsIfExists(root, STORY_ID);
+  assert.equal((await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords })).unacknowledged_count, 0);
+
+  // Now erase the acknowledged entry. The existing acknowledgement must not
+  // carry over to the erasure, or deleting an acknowledged record would be free.
+  await writeFile(violationsPath(root), JSON.stringify({ schema_version: '0.1.0', entries: [] }));
+  const afterErase = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords });
+  assert.equal(afterErase.unacknowledged_count, 1, 'erasing an acknowledged violation must block again');
+  const [orphan] = afterErase.unacknowledged;
+  assert.equal(orphan.violation_id, `missing:${violationId}`);
+  assert.equal(orphan.erased_violation_id, violationId);
+  assert.equal(orphan.kind, 'review_surface_violation_entry_missing');
+});
+
+test('RSV-8 unreadable lifecycle pointers are reported, not read as "no pointers"', async () => {
+  const root = await setupRepo();
+  await start(root);
+  await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = "mutated mid-review";\n');
+  await close(root);
+
+  await writeFile(lifecyclePath(root), '{ not json');
+  const summary = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
+  assert.equal(summary.pointers_readable, false, 'the cross-check must not fail silently');
+  assert.equal(summary.unacknowledged_count, 1, 'the ledger itself is still read');
 });
 
 test('RSV-9 concurrent appends of distinct violations both survive', async () => {
