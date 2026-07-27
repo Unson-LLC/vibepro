@@ -282,17 +282,23 @@ test('ac:11 the real CLI requires reason, grantor, grantor kind and agent identi
     const at = args.indexOf(flag);
     return [...args.slice(0, at), ...args.slice(at + 2)];
   };
-  for (const [flag, pattern] of [
+  const required = [
     ['--reason', /requires --reason/],
     ['--budget-grantor-kind', /grantor kind must be one of/],
     ['--agent-id', /--agent-id/]
-  ]) {
-    await assert.rejects(
-      execFileAsync(process.execPath, omit(flag)),
-      (error) => pattern.test(`${error.stderr ?? ''}${error.stdout ?? ''}${error.message}`),
-      'ac11 budget approval requires reason, grantor, grantor kind and agent identity; omitting any required flag must fail'
-    );
+  ];
+  const rejected = [];
+  for (const [flag, pattern] of required) {
+    try {
+      await execFileAsync(process.execPath, omit(flag));
+    } catch (error) {
+      if (pattern.test(`${error.stderr ?? ''}${error.stdout ?? ''}${error.message}`)) rejected.push(flag);
+    }
   }
+  assert.equal(rejected.length, required.length,
+    'ac11 budget approval requires --reason, --budget-grantor, --budget-grantor-kind, --agent-system and --agent-id; omitting a required flag must fail');
+  assert.deepEqual(rejected, ['--reason', '--budget-grantor-kind', '--agent-id'],
+    'ac11 each omitted required approval flag is rejected with its own specific error');
 });
 
 test('ac:12 the real CLI rejects a mismatched or non-budget source', async () => {
