@@ -104,3 +104,33 @@ test('subject breaks', () => assert.equal(1, 2));
   assert.equal(record.observation.values.fail, '1');
   assert.equal(record.evidence_source, 'runner_direct');
 });
+
+test('pr autopilot records its own executed outcome as a computed source, not as self-reported', async () => {
+  const root = await fixture();
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  config.execution = { managed_worktree: 'disabled' };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await mkdir(path.join(root, 'scripts'), { recursive: true });
+  await writeFile(path.join(root, 'package.json'), `${JSON.stringify({
+    name: 'runner-consumers-fixture',
+    type: 'module',
+    scripts: { test: 'node ./scripts/pass.js' }
+  }, null, 2)}\n`);
+  await writeFile(path.join(root, 'scripts', 'pass.js'), 'process.stdout.write("pass\\n");\n');
+  await execFileAsync('git', ['add', '.'], { cwd: root });
+  await execFileAsync('git', ['commit', '-m', 'autopilot target'], { cwd: root });
+
+  await runCli(['pr', 'autopilot', root, '--base', 'main', '--story-id', STORY_ID, '--verify', 'unit=npm test', '--json'], {
+    stdout: { write: () => {} },
+    stderr: { write: () => {} }
+  });
+
+  const record = (await readEvidence(root)).commands.find((item) => item.kind === 'unit');
+  // Autopilot runs the command itself and derives status from the exit code, so the record
+  // must carry a computed source; self_reported would misdescribe who produced the outcome.
+  assert.equal(record.evidence_source, 'autopilot_run');
+  assert.equal(record.computed_observation.producer, 'vibepro pr autopilot');
+  assert.equal(record.computed_observation.values.exit_code, '0');
+  assert.equal(record.computed_observation.output_metrics, 'exit_code_only');
+});
