@@ -101,10 +101,12 @@ test('ac:5 ac:6 OGB-E2E-2 flow_replay: the real CLI refuses a self-grant and lea
 
   await assert.rejects(
     execFileAsync(process.execPath, grantArgs(root, ['--budget-grantor', 'agent-ogb-e2e'])),
-    (error) => /grantor must differ from the recording agent/.test(`${error.stderr ?? ''}${error.stdout ?? ''}${error.message}`)
+    (error) => /grantor must differ from the recording agent/.test(`${error.stderr ?? ''}${error.stdout ?? ''}${error.message}`),
+    'ac6 the CLI throws at write time when the grantor equals the recording agent identity'
   );
 
-  assert.deepEqual(await readDecisions(root), []);
+  assert.deepEqual(await readDecisions(root), [],
+    'ac5 a refused self-grant writes no decision record, so the override cannot become authorized');
   const resolved = resolveEfficiencyPolicyDecision(await readConfig(root), STORY_ID, { decisions: await readDecisions(root) });
   assert.equal(resolved.policy.max_subagent_count, 6);
   assert.equal(resolved.override.status, 'unauthorized');
@@ -121,9 +123,12 @@ test('ac:3 OGB-E2E-3 flow_replay: raising the limit after a real grant reverts t
   await writeConfig(root, { ...OVERRIDE, max_subagent_count: 40 });
 
   const resolved = resolveEfficiencyPolicyDecision(await readConfig(root), STORY_ID, { decisions });
-  assert.equal(resolved.policy.max_subagent_count, 6);
-  assert.equal(resolved.override.status, 'unauthorized');
-  assert.deepEqual(resolved.override.reasons, ['approval_digest_mismatch']);
+  assert.equal(resolved.policy.max_subagent_count, 6,
+    'ac3 raising the configured limit after approval reverts the effective budget to the base policy');
+  assert.equal(resolved.override.status, 'unauthorized',
+    'ac3 an override edited after approval is no longer authorized');
+  assert.deepEqual(resolved.override.reasons, ['approval_digest_mismatch'],
+    'ac3 the disqualification reason is approval_digest_mismatch');
 });
 
 // parse_failure: a corrupt decision-records.json must fail closed to the base
@@ -219,8 +224,10 @@ test('ac:5 non-human grantor and unidentified recorder never authorize', () => {
     [{ recorded_by: { agent_system: 'claude_code', agent_id: '' } }, 'recording_agent_unidentified']
   ]) {
     const resolved = resolveBudgetOverrideAuthority({ storyId: STORY_ID, override: OVERRIDE, decisions: [decision(approval)] });
-    assert.equal(resolved.status, 'unauthorized');
-    assert.ok(resolved.reasons.includes(expected));
+    assert.equal(resolved.status, 'unauthorized',
+      'ac5 a non-human grantor, a self-grant, or an unidentified recorder never authorizes the override');
+    assert.ok(resolved.reasons.includes(expected),
+      'ac5 the specific disqualification reason is reported');
   }
 });
 
@@ -228,11 +235,13 @@ test('ac:6 buildBudgetApproval throws at write time on a self-grant or missing i
   assert.throws(() => buildBudgetApproval({
     storyId: STORY_ID, overrideDigest: 'abc', grantorKind: 'human',
     grantor: 'agent-x', agentSystem: 'claude_code', agentId: 'agent-x'
-  }), /grantor must differ from the recording agent/);
+  }), /grantor must differ from the recording agent/,
+  'ac6 buildBudgetApproval throws on a self-grant rather than persisting a silently inert record');
   assert.throws(() => buildBudgetApproval({
     storyId: STORY_ID, overrideDigest: 'abc', grantorKind: 'human',
     grantor: 'sato-keigo', agentSystem: 'claude_code'
-  }), /--agent-id/);
+  }), /--agent-id/,
+  'ac6 buildBudgetApproval throws when the recording agent identity is incomplete');
 });
 
 test('ac:7 ac:8 S-002 every shipped override is grandfathered by pinned digest or inert', async () => {
@@ -281,7 +290,7 @@ test('ac:11 the real CLI requires reason, grantor, grantor kind and agent identi
     await assert.rejects(
       execFileAsync(process.execPath, omit(flag)),
       (error) => pattern.test(`${error.stderr ?? ''}${error.stdout ?? ''}${error.message}`),
-      `ac11 omitting ${flag} must fail: budget approval requires reason, grantor, grantor kind and agent identity`
+      'ac11 budget approval requires reason, grantor, grantor kind and agent identity; omitting any required flag must fail'
     );
   }
 });
