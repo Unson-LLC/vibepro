@@ -52,11 +52,14 @@ test('story-vibepro-review-surface-violation-ledger RSV-5 CON-001 pr prepare blo
   assert.match(stdout, /RSV-5 the gate fails while unacknowledged, is not cleared by a re-run, and clears only by decision record/);
 });
 
-test('story-vibepro-review-surface-violation-ledger RSV-6 INV-003 stale stays separate from violation', async () => {
+test('story-vibepro-review-surface-violation-ledger RSV-6 S-002 INV-003 stale stays separate from violation and the review workflow state machine is unchanged', async () => {
   const { stdout } = await contractRun;
   assert.match(stdout, /RSV-6 stale and violation are typed apart: a later unrelated commit records no violation/);
   assert.match(stdout, /RSV-6 a non-completed close is not a violation, and cannot smuggle a review result through/);
   assert.match(stdout, /RSV-6 failure mode timeout: a timed-out review close records no violation and still terminalizes/);
+  // S-002: the workflow state machine gains no new states; every close transition
+  // still records the close-time snapshot.
+  assert.match(stdout, /RSV-7 evidence_lifecycle_regression: recorded review results and lifecycle statuses keep their prior shape/);
 });
 
 test('story-vibepro-review-surface-violation-ledger RSV-7 legacy artifacts read clean, a corrupt ledger fails closed, and the evidence lifecycle is unchanged', async () => {
