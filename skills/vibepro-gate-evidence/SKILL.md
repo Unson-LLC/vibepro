@@ -88,12 +88,14 @@ A review finding names an instance; the work item is its class. This is enforced
 2. the counts must partition: `N === M + K`, `N >= 1`, and any `K > 0` needs a `because` clause. These are enforced at `verify record` time, so a malformed claim never reaches the evidence artifact;
 3. **the gate recounts.** It re-scans the declared paths for the identifier with whole-token matching and rejects a claim whose number differs from what it observes. Take the number from the command the gate prints: `grep -rIn --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.vibepro -w -- <identifier> <paths> | wc -l`.
 
+A scenario that begins with `enumeration:` but is not recognised as a claim is reported in the gate's `required_actions` rather than dropped, so an unseen claim is never mistaken for a rejected one.
+
 Because the count is recounted, the scenario cannot be satisfied by writing the token — only by having actually swept the range it names. Record it after the tree is final: editing a declared path changes the count and the claim stops matching. `inconclusive` (base ref or diff unresolvable) is not a pass, and a claim on stale-bound evidence does not count.
 
 Three further rejections exist because a claimant otherwise controls the range:
 
-- `enumeration_range_too_narrow` — the declared range must reach at least as many **product source** files and sites as the identifier spans there. Declaring one file, or a range containing no product source at all, does not close the class.
-- `enumeration_range_unscannable` — a file in the range could not be read at all, so the recount and the published grep would disagree invisibly. The gate names the file; make it readable or narrow the range. (There is no size cap: large files are streamed, so the recount matches `grep -I` exactly.)
+- `enumeration_range_too_narrow` — the range must actually reach **every product source file the identifier lives in**; the gate names the ones it never reached. Declared paths are normalised, deduplicated and de-nested first, so repeating or nesting a path cannot inflate coverage.
+- `enumeration_range_unscannable` — a file in the range could not be read, so the recount and the published grep would disagree invisibly. The gate names the file; make it readable or narrow the range. There is no size cap — files are streamed and binary detection reads the whole stream, matching `grep -I` — but a single line over 4,000,000 characters is reported rather than materialised.
 - An identifier appearing twice inside a *single* file still requires a claim. A gate id written as a node type plus a collector allowlist entry lives in one file, and that is precisely the registration class that gets half closed.
 
 Classes worth enumerating whenever a new field, state, or predicate appears:

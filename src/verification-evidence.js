@@ -416,7 +416,7 @@ function assertEnumerationScenariosWellFormed(scenarios) {
     if (!parsed.matched || parsed.ok) continue;
     throw new Error(
       `verify record --scenario declares an enumeration claim that is not well formed (${parsed.rejection.id}): `
-      + `${parsed.rejection.reason}`
+      + `${parsed.rejection.reason}. Offending scenario: ${parsed.rejection.scenario}`
     );
   }
 }

@@ -12654,6 +12654,11 @@ function buildEnumerationCoverageGate({ storyId = null, enumerationCoverage = nu
   for (const rejection of rejections) {
     requiredActions.push(`${rejection.id}: ${rejection.reason}`);
   }
+  for (const entry of report.unrecognized_scenarios ?? []) {
+    requiredActions.push(
+      `A scenario begins with "enumeration:" but was not recognised as a claim, so it was not counted: ${entry.scenario}`
+    );
+  }
   if (report.status === 'inconclusive') {
     requiredActions.push('Resolve the base ref so the introduced-identifier scope can be computed; an unknown scope is not a pass');
   }
@@ -12668,6 +12673,7 @@ function buildEnumerationCoverageGate({ storyId = null, enumerationCoverage = nu
     skipped_candidate_count: (report.skipped ?? []).length,
     claims: report.claims ?? [],
     rejections,
+    unrecognized_scenarios: report.unrecognized_scenarios ?? [],
     primary_next_command: nextCommands[0] ?? null,
     next_commands: nextCommands,
     required_actions: requiredActions,

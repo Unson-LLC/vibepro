@@ -50,7 +50,7 @@ function stubProvider({ added = [], base = [], headFiles = new Map(), counts = n
     },
     async countSites(identifier, paths) {
       const key = `${identifier}::${paths.join(',')}`;
-      return counts.get(key) ?? { lines: 0, files: 0, product_source_lines: 0, product_source_files: 0, missing_paths: [], unscannable_paths: [] };
+      return counts.get(key) ?? { lines: 0, files: 0, product_source_lines: 0, product_source_files: 0, product_source_file_list: [], missing_paths: [], unscannable_paths: [] };
     }
   };
 }
@@ -139,7 +139,7 @@ test('ENUM-S-3 fails closed when the claimed count does not match the recount', 
         ['src/b.js', "if (v === 'cost_missing') {}"]
       ]),
       // The tree really contains 3 sites; the claim said 7.
-      counts: new Map([['cost_missing::src', { lines: 3, files: 2, product_source_lines: 3, product_source_files: 2, missing_paths: [], unscannable_paths: [] }]])
+      counts: new Map([['cost_missing::src', { lines: 3, files: 2, product_source_lines: 3, product_source_files: 2, product_source_file_list: ['src/a.js', 'src/b.js'], missing_paths: [], unscannable_paths: [] }]])
     })
   });
   assert.equal(report.status, 'failed');
@@ -158,7 +158,7 @@ test('ENUM-S-3 fails closed when a declared path does not exist', async () => {
         ['src/a.js', "const x = 'cost_missing';"],
         ['src/b.js', "if (v === 'cost_missing') {}"]
       ]),
-      counts: new Map([['cost_missing::src,ghost', { lines: 3, files: 2, product_source_lines: 3, product_source_files: 2, missing_paths: ['ghost'], unscannable_paths: [] }]])
+      counts: new Map([['cost_missing::src,ghost', { lines: 3, files: 2, product_source_lines: 3, product_source_files: 2, product_source_file_list: ['src/a.js', 'src/b.js'], missing_paths: ['ghost'], unscannable_paths: [] }]])
     })
   });
   assert.equal(report.status, 'failed');
@@ -175,7 +175,7 @@ test('ENUM-S-3 passes only when the claimed count survives the recount', async (
         ['src/a.js', "const x = 'cost_missing';"],
         ['src/b.js', "if (v === 'cost_missing') {}"]
       ]),
-      counts: new Map([['cost_missing::src', { lines: 3, files: 2, product_source_lines: 3, product_source_files: 2, missing_paths: [], unscannable_paths: [] }]])
+      counts: new Map([['cost_missing::src', { lines: 3, files: 2, product_source_lines: 3, product_source_files: 2, product_source_file_list: ['src/a.js', 'src/b.js'], missing_paths: [], unscannable_paths: [] }]])
     })
   });
   assert.equal(report.status, 'passed');
@@ -263,7 +263,7 @@ test('ENUM-S-5 a claim for a different identifier does not close the required on
         ['src/a.js', "const x = 'cost_missing';"],
         ['src/b.js', "if (v === 'cost_missing') {}"]
       ]),
-      counts: new Map([['other_thing::src', { lines: 2, files: 1, product_source_lines: 2, product_source_files: 1, missing_paths: [], unscannable_paths: [] }]])
+      counts: new Map([['other_thing::src', { lines: 2, files: 1, product_source_lines: 2, product_source_files: 1, product_source_file_list: ['src/a.js'], missing_paths: [], unscannable_paths: [] }]])
     })
   });
   assert.equal(report.status, 'needs_evidence');
@@ -337,6 +337,47 @@ test('ENUM-S-5 the gate node sits on the DAG between failure mode coverage and d
   assert.match(source, /\{ from: 'gate:enumeration_coverage', to: 'gate:decision_record' \}/);
 });
 
+test('ENUM-S-5 every unresolved-status vocabulary over the gate DAG treats inconclusive as unresolved', async () => {
+  // Round 2 and round 3 each found this registration half closed: first three
+  // of five vocabularies, then five of seven. Assert the whole set so a
+  // reverted entry fails a test instead of surviving to review.
+  const sources = await Promise.all([
+    'pr-manager', 'execution-state', 'gate-outcome-ledger',
+    'checkpoint-manager', 'html-report', 'canonical-audit', 'usage-report'
+  ].map(async (name) => [name, await readFile(new URL(`../src/${name}.js`, import.meta.url), 'utf8')]));
+  for (const [name, source] of sources) {
+    assert.ok(
+      source.includes("'inconclusive'"),
+      `${name}.js classifies gate DAG statuses and must treat inconclusive as unresolved`
+    );
+  }
+  const { isUnresolvedGateStatus } = await import('../src/pr-manager.js');
+  assert.equal(isUnresolvedGateStatus('inconclusive'), true);
+});
+
+test('a repeated or nested declared path cannot inflate coverage past the floor', () => {
+  // Reproduced by review: naming one file five times reached the numeric floor
+  // for a five-file class, and the published grep double-counted identically.
+  const { required } = selectRequiredIdentifiers({
+    addedLiterals: new Set(['new_status']),
+    baseLiterals: new Set(),
+    headFileCounts: new Map([['new_status', 5]]),
+    headSiteCounts: new Map([['new_status', 5]]),
+    headFileSets: new Map([['new_status', new Set(['src/a.js', 'src/b.js', 'src/c.js', 'src/d.js', 'src/e.js'])]])
+  });
+  assert.deepEqual(required[0].product_source_file_list, ['src/a.js', 'src/b.js', 'src/c.js', 'src/d.js', 'src/e.js']);
+});
+
+test('an enumeration-prefixed scenario that is not recognised as a claim is surfaced', () => {
+  const scenarios = collectEnumerationScenarios(evidenceWithScenarios(
+    'enumeration: covered every registration of gate:foo across src',
+    'unit: unrelated'
+  ));
+  assert.equal(scenarios.length, 0);
+  assert.equal(scenarios.unrecognized.length, 1);
+  assert.match(scenarios.unrecognized[0].scenario, /covered every registration/);
+});
+
 // --- regression guards on the gate's own failure modes ---------------------
 
 test('a base tree with no enumerable literal is an empty set, not an unreadable tree', async () => {
@@ -386,7 +427,7 @@ test('a stale-bound enumeration claim does not close the gate', async () => {
         ['src/a.js', "const x = 'cost_missing';"],
         ['src/b.js', "if (v === 'cost_missing') {}"]
       ]),
-      counts: new Map([['cost_missing::src', { lines: 3, files: 2, product_source_lines: 3, product_source_files: 2, missing_paths: [], unscannable_paths: [] }]])
+      counts: new Map([['cost_missing::src', { lines: 3, files: 2, product_source_lines: 3, product_source_files: 2, product_source_file_list: ['src/a.js', 'src/b.js'], missing_paths: [], unscannable_paths: [] }]])
     })
   });
   assert.equal(report.status, 'needs_evidence');
@@ -406,12 +447,12 @@ test('a trivially narrow declared range cannot close a required identifier', asy
         ['src/b.js', "if (v === 'cost_missing') {}"],
         ['src/c.js', "log('cost_missing');"]
       ]),
-      counts: new Map([['cost_missing::src/a.js', { lines: 1, files: 1, product_source_lines: 1, product_source_files: 1, missing_paths: [], unscannable_paths: [] }]])
+      counts: new Map([['cost_missing::src/a.js', { lines: 1, files: 1, product_source_lines: 1, product_source_files: 1, product_source_file_list: ['src/a.js'], missing_paths: [], unscannable_paths: [] }]])
     })
   });
   assert.equal(report.status, 'failed');
   assert.equal(report.rejections[0].id, 'enumeration_range_too_narrow');
-  assert.match(report.rejections[0].reason, /spans 3 file\(s\) and 3 site\(s\) in product source/);
+  assert.match(report.rejections[0].reason, /never reaches 2 of 3 product source file/);
 });
 
 test('a range reaching zero product source files cannot close a required identifier', async () => {
@@ -427,13 +468,13 @@ test('a range reaching zero product source files cannot close a required identif
         ['src/b.js', "if (v === 'cost_missing') {}"]
       ]),
       counts: new Map([['cost_missing::docs', {
-        lines: 4, files: 4, product_source_lines: 0, product_source_files: 0, missing_paths: [], unscannable_paths: []
+        lines: 4, files: 4, product_source_lines: 0, product_source_files: 0, product_source_file_list: [], missing_paths: [], unscannable_paths: []
       }]])
     })
   });
   assert.equal(report.status, 'failed');
   assert.equal(report.rejections[0].id, 'enumeration_range_too_narrow');
-  assert.match(report.rejections[0].reason, /reaching 0 product source file/);
+  assert.match(report.rejections[0].reason, /never reaches 2 of 2 product source file/);
 });
 
 test('an unreadable product source file makes the class size unknown, not smaller', async () => {
@@ -448,7 +489,7 @@ test('an unreadable product source file makes the class size unknown, not smalle
         onLine("const x = 'cost_missing';");
         return 'scanned';
       },
-      async countSites() { return { lines: 0, files: 0, product_source_lines: 0, product_source_files: 0, missing_paths: [], unscannable_paths: [] }; }
+      async countSites() { return { lines: 0, files: 0, product_source_lines: 0, product_source_files: 0, product_source_file_list: [], missing_paths: [], unscannable_paths: [] }; }
     }
   });
   assert.equal(report.status, 'inconclusive');
@@ -467,7 +508,7 @@ test('a range containing a file the recount cannot read fails closed instead of 
         ['src/a.js', "const x = 'cost_missing';"],
         ['src/b.js', "if (v === 'cost_missing') {}"]
       ]),
-      counts: new Map([['cost_missing::docs', { lines: 3, files: 2, product_source_lines: 3, product_source_files: 2, missing_paths: [], unscannable_paths: ['docs/huge-ledger.json'] }]])
+      counts: new Map([['cost_missing::docs', { lines: 3, files: 2, product_source_lines: 3, product_source_files: 2, product_source_file_list: ['src/a.js', 'src/b.js'], missing_paths: [], unscannable_paths: ['docs/huge-ledger.json'] }]])
     })
   });
   assert.equal(report.status, 'failed');
@@ -512,7 +553,7 @@ test('an unreadable diff is inconclusive, not a silent not_applicable', async ()
       async baseLiterals() { return new Set(); },
       async productSourceFiles() { return []; },
       async scanFile() { return 'skipped'; },
-      async countSites() { return { lines: 0, files: 0, product_source_lines: 0, product_source_files: 0, missing_paths: [], unscannable_paths: [] }; }
+      async countSites() { return { lines: 0, files: 0, product_source_lines: 0, product_source_files: 0, product_source_file_list: [], missing_paths: [], unscannable_paths: [] }; }
     }
   });
   assert.equal(report.status, 'inconclusive');

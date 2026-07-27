@@ -82,7 +82,7 @@
     {
       "id": "C-003",
       "type": "scenario",
-      "statement": "scenario_clause_e2e: the claimed site count is recounted against the tree over the same declared range with whole-token matching, and a claim whose number does not match the observed number, or whose declared path does not exist or escapes the repository, fails closed; writing the token alone never satisfies the gate.",
+      "statement": "scenario_clause_e2e: the claimed site count is recounted against the tree over the same declared range with whole-token matching. Declared paths are normalised, deduplicated and de-nested before counting, and the range must reach every product source file the identifier lives in, so repeating or nesting a path cannot inflate coverage. A claim whose number does not match the observed number, whose declared path does not exist or escapes the repository, or whose range holds an unreadable file, fails closed; writing the token alone never satisfies the gate.",
       "origin": {
         "story_refs": [
           {

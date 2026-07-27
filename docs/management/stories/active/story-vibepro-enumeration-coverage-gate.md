@@ -12,7 +12,7 @@ related_stories:
   - story-vibepro-review-token-accounting-closure
   - story-vibepro-docs-only-evidence-profile
   - story-vibepro-evidence-adjudication-gate
-reason: "alternatives considered: (a) Skillのdoc記述だけで class closure を周知する — 先行Storyで実際に記述したが、宣言は強制ではなく同じ失敗が再現しうる。(b) 全ての verify record に enumeration scenario を必須化する — docs-only変更や列挙対象を持たない変更で無意味な証跡を強制し、docs-only evidence profile と矛盾する。(c) 新規導入かつ複数 product source ファイルに跨る snake_case リテラルだけを対象に、専用 gate で fail closed にする — これを採用した。理由は、先行Storyで実際に取り逃した class (cost_missing の producer/consumer 分離) がまさにこの形状であり、単一ファイルに閉じたリテラルには列挙すべき class が存在しないため。compatibility impact: 既存の verify record の呼び出し形式・既存 scenario の意味・既存 gate の判定は変更しない。enumeration scenario は新しい任意の scenario 形式で、適用条件を満たす変更のみで必須になる。docs-only 変更は対象識別子が0件になるため not_applicable に落ち、docs-only evidence profile と競合しない。rollback plan: このブランチのコミットを revert すれば元の挙動に戻る。影響面は6つあり、revert 時にはすべてを戻す必要がある: (1) 新規モジュール src/enumeration-evidence.js、(2) src/pr-manager.js の gate ノード・DAGエッジ2本（failure_mode_coverage → enumeration_coverage → decision_record への張り替え）・requiredGates/nodes 登録・collectUnresolvedRequiredGates の type allowlist・isCriticalUnresolvedGate の1行、および共有 isUnresolvedGateStatus への 'inconclusive' 追加（これは全gateに効く共有リスト）、(3) src/execution-state.js の type allowlist・isCriticalUnresolvedGate・isUnresolvedStatus への 'inconclusive'、(4) src/evidence-depth-planner.js の RISK_BEARING_GATE_IDS 追加、(5) src/gate-outcome-ledger.js の UNRESOLVED_STATUSES への 'inconclusive'、(6) src/verification-evidence.js の record 時 parse 検証、(7) src/checkpoint-manager.js と src/html-report.js の未解決status語彙への 'inconclusive' 追加、(8) skills/vibepro-gate-evidence/SKILL.md の記述、(9) .vibepro/config.json のStory登録。既存の記録済み証跡artifactは形式が変わらないため影響を受けない。boundary and scope: 網羅範囲の宣言とその機械検証のみ。既存 gate の閾値・review 要件・evidence depth・budget は変更しない。列挙対象の自動修正や自動 grep 実行の代行はしない。"
+reason: "alternatives considered: (a) Skillのdoc記述だけで class closure を周知する — 先行Storyで実際に記述したが、宣言は強制ではなく同じ失敗が再現しうる。(b) 全ての verify record に enumeration scenario を必須化する — docs-only変更や列挙対象を持たない変更で無意味な証跡を強制し、docs-only evidence profile と矛盾する。(c) 新規導入かつ複数 product source ファイルに跨る snake_case リテラルだけを対象に、専用 gate で fail closed にする — これを採用した。理由は、先行Storyで実際に取り逃した class (cost_missing の producer/consumer 分離) がまさにこの形状であり、単一ファイルに閉じたリテラルには列挙すべき class が存在しないため。compatibility impact: 既存の verify record の呼び出し形式・既存 scenario の意味・既存 gate の判定は変更しない。enumeration scenario は新しい任意の scenario 形式で、適用条件を満たす変更のみで必須になる。docs-only 変更は対象識別子が0件になるため not_applicable に落ち、docs-only evidence profile と競合しない。rollback plan: このブランチのコミットを revert すれば元の挙動に戻る。影響面は9つあり、revert 時にはすべてを戻す必要がある: (1) 新規モジュール src/enumeration-evidence.js、(2) src/pr-manager.js の gate ノード・DAGエッジ2本（failure_mode_coverage → enumeration_coverage → decision_record への張り替え）・requiredGates/nodes 登録・collectUnresolvedRequiredGates の type allowlist・isCriticalUnresolvedGate の1行、および共有 isUnresolvedGateStatus への 'inconclusive' 追加（これは全gateに効く共有リスト）、(3) src/execution-state.js の type allowlist・isCriticalUnresolvedGate・isUnresolvedStatus への 'inconclusive'、(4) src/evidence-depth-planner.js の RISK_BEARING_GATE_IDS 追加、(5) src/gate-outcome-ledger.js の UNRESOLVED_STATUSES への 'inconclusive'、(6) src/verification-evidence.js の record 時 parse 検証、(7) src/checkpoint-manager.js・src/html-report.js・src/canonical-audit.js・src/usage-report.js の未解決status語彙への 'inconclusive' 追加、(8) skills/vibepro-gate-evidence/SKILL.md の記述、(9) .vibepro/config.json のStory登録。既存の記録済み証跡artifactは形式が変わらないため影響を受けない。boundary and scope: 網羅範囲の宣言とその機械検証のみ。既存 gate の閾値・review 要件・evidence depth・budget は変更しない。列挙対象の自動修正や自動 grep 実行の代行はしない。"
 parent_design: story-vibepro-enumeration-coverage-gate
 created_at: 2026-07-26
 updated_at: 2026-07-26
@@ -95,13 +95,17 @@ change how run authority is resolved.
       `gate:enumeration_coverage` が `needs_evidence` となって blocking gate に載り、
       `pr create` が止まる。scenario はあるが検証に失敗した場合は `failed` になる。
 
-## Operational impact (measured 2026-07-27)
+## Operational impact (measured 2026-07-27, streaming scanner)
 
-`pr prepare` ごとに enumeration scope の走査が加算される。本リポジトリ実測で
-base走査 約1.0〜1.7秒、記録済み claim 3件の recount 合計 約2.5秒、
-合わせて概ね3〜4秒。宣言レンジを広く取るほど増え、`docs` 全体（121MB / 7,780ファイル）
-を宣言した場合は1 claim あたり約22秒。キャッシュは持たないため、これを
-受容コストとして明示する。レンジは class を覆う最小限にすること。
+`pr prepare` ごとに enumeration scope の走査が加算される。本リポジトリ実測（現 head）で
+`collectEnumerationCoverage` 全体が約0.6秒、記録済み claim 1件の recount が
+宣言レンジ（src, test, skills, docs配下3ディレクトリ）で約0.34秒。
+参考として `docs` 全体（121MB）を宣言した場合は1 claim あたり約2.3秒。
+キャッシュは持たないため、これを受容コストとして明示する。
+
+走査は無制限ではなく、1行が400万文字を超えるファイルは unscannable として
+報告する（minified bundle 等でメモリを使い切らないため）。product source 側で
+読めないファイルが出た場合は class の大きさが確定できないため `inconclusive` になる。
 
 ## Non Goals
 
