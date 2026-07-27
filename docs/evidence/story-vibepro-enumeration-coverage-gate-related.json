@@ -1,9 +1,9 @@
 {
   "status": "pass",
   "exit_code": 0,
-  "command": "node --test --test-concurrency=2 test/execution-state.test.js test/gate-outcome-ledger.test.js test/evidence-depth-planner.test.js test/docs-only-evidence-profile.test.js test/docs-only-evidence-profile-integration.test.js test/adjudication.test.js test/decision-records.test.js test/gate-evidence-edge-robustness.test.js test/risk-adaptive-gate.test.js test/judgment-adjudication.test.js test/content-scoped-evidence-freshness.test.js",
-  "tests": 173,
-  "pass": 173,
+  "command": "node --test --test-concurrency=2 test/execution-state.test.js test/gate-outcome-ledger.test.js test/evidence-depth-planner.test.js test/docs-only-evidence-profile.test.js test/docs-only-evidence-profile-integration.test.js test/adjudication.test.js test/decision-records.test.js test/gate-evidence-edge-robustness.test.js test/risk-adaptive-gate.test.js test/judgment-adjudication.test.js test/content-scoped-evidence-freshness.test.js test/canonical-audit-self-contained.test.js",
+  "tests": 196,
+  "pass": 196,
   "fail": 0,
   "recorded_at": "2026-07-27"
 }

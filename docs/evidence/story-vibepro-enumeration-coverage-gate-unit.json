@@ -2,8 +2,8 @@
   "status": "pass",
   "exit_code": 0,
   "command": "node --test test/enumeration-coverage-gate.test.js",
-  "tests": 40,
-  "pass": 40,
+  "tests": 43,
+  "pass": 43,
   "fail": 0,
   "recorded_at": "2026-07-27"
 }
