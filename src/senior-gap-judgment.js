@@ -24,6 +24,10 @@ const UNRESOLVED_STATUSES = new Set([
   'stale',
   'stale_evidence',
   'story_source_mismatch',
+  // Kept aligned with the gate DAG vocabulary even though this set is consumed
+  // for judgment axes: it is a copy of that list, and copies are what left the
+  // same registration half closed across four review rounds.
+  'inconclusive',
   'block',
   'failed',
   'contradicted'

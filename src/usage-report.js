@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { isGateDagBlockingStatus } from './scan-status.js';
 import { readdir, readFile, realpath, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -1052,7 +1053,7 @@ function buildGateMetrics(prArtifacts) {
     if (artifact.kind === 'gate_dag') {
       for (const node of artifact.data?.nodes ?? []) {
         const metric = ensure(node.id ?? 'unknown_gate');
-        if (['block', 'needs_evidence', 'needs_review', 'failed', 'inconclusive'].includes(node.status)) metric.block_count += 1;
+        if (isGateDagBlockingStatus(node.status)) metric.block_count += 1;
         if (node.status === 'bypassed') metric.waiver_count += 1;
       }
     }
@@ -1265,7 +1266,7 @@ function collectGateMetrics(gateDag, storyId, storyMap) {
   for (const node of gateDag?.nodes ?? []) {
     const gateId = node.id ?? 'unknown_gate';
     const metric = story.gate_metrics[gateId] ?? { block_count: 0, waiver_count: 0, critical_unresolved_count: 0 };
-    if (['block', 'needs_evidence', 'needs_review', 'failed', 'inconclusive'].includes(node.status)) metric.block_count += 1;
+    if (isGateDagBlockingStatus(node.status)) metric.block_count += 1;
     if (node.status === 'bypassed') metric.waiver_count += 1;
     story.gate_metrics[gateId] = metric;
     if (node.status === 'stale_evidence') story.stale_evidence = true;

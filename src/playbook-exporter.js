@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { isGateDagBlockingStatus } from './scan-status.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -709,7 +710,7 @@ function summarizeGates(gateDag) {
     status: 'present',
     overall_status: gateDag.overall_status ?? null,
     items: nodes
-      .filter((node) => node.required || ['needs_evidence', 'needs_review', 'failed', 'block'].includes(node.status))
+      .filter((node) => node.required || isGateDagBlockingStatus(node.status))
       .slice(0, 20)
       .map((node) => ({
         id: node.id,

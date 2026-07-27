@@ -98,14 +98,22 @@ change how run authority is resolved.
 ## Operational impact (measured 2026-07-27, streaming scanner)
 
 `pr prepare` ごとに enumeration scope の走査が加算される。本リポジトリ実測（現 head）で
-`collectEnumerationCoverage` 全体が約0.6秒、記録済み claim 1件の recount が
+scope走査（claim無し）が約0.35秒、記録済み3 claim込みの全体が約1.3秒、記録済み claim 1件の recount が
 宣言レンジ（src, test, skills, docs配下3ディレクトリ）で約0.34秒。
 参考として `docs` 全体（121MB）を宣言した場合は1 claim あたり約2.3秒。
 キャッシュは持たないため、これを受容コストとして明示する。
 
-走査は無制限ではなく、1行が400万文字を超えるファイルは unscannable として
-報告する（minified bundle 等でメモリを使い切らないため）。product source 側で
-読めないファイルが出た場合は class の大きさが確定できないため `inconclusive` になる。
+走査は行単位のストリーミングで、ピークメモリはファイルサイズに比例しない。
+1行が400万文字を超えるファイルは unscannable として報告するが、これは
+readline が既にその行を組み立てた後の fail-closed 判定であり、メモリの
+上限そのものではない（上限はバッファせず流すことで得ている）。
+product source 側で読めないファイルが出た場合は class の大きさが確定できないため
+`inconclusive` になる。この状態には gate 固有の逃げ道が無く、汎用の
+`--allow-needs-verification` + `--verification-waiver` のみが使える。
+
+binary 判定は先頭バッファのみを見る。これは本プラットフォームの grep の実挙動
+（/usr/bin/grep・ugrep いずれも late NUL のファイルを全行数える）に合わせたもので、
+ストリーム全体を検査すると公開 grep と乖離することを実測で確認している。
 
 ## Non Goals
 

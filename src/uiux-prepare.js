@@ -1,4 +1,5 @@
 import { execFile } from 'node:child_process';
+import { isGateDagBlockingStatus } from './scan-status.js';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -381,7 +382,7 @@ function summarizeBlockingGates(gateDag) {
     return { status: 'not_recorded', count: 0, artifact: '.vibepro/pr/<story-id>/gate-dag.json', gates: [] };
   }
   const gates = (gateDag.data?.nodes ?? [])
-    .filter((node) => ['block', 'needs_evidence', 'needs_review', 'failed'].includes(String(node?.status ?? '').toLowerCase()))
+    .filter((node) => isGateDagBlockingStatus(node?.status))
     .map((node) => ({
       id: node.id,
       label: node.label ?? node.id,

@@ -43,7 +43,7 @@
       }
     },
     {
-      "id": "C-002",
+      "id": "INV-001",
       "type": "invariant",
       "statement": "Enumeration counts must partition the discovered sites: N equals M plus K, N is at least 1, and any K greater than zero requires an explicit because clause; a claim violating any of these is rejected at verify record time rather than stored.",
       "origin": {
@@ -80,7 +80,7 @@
       }
     },
     {
-      "id": "C-003",
+      "id": "S-003",
       "type": "scenario",
       "statement": "scenario_clause_e2e: the claimed site count is recounted against the tree over the same declared range with whole-token matching. Declared paths are normalised, deduplicated and de-nested before counting, and the range must reach every product source file the identifier lives in, so repeating or nesting a path cannot inflate coverage. A claim whose number does not match the observed number, whose declared path does not exist or escapes the repository, or whose range holds an unreadable file, fails closed; writing the token alone never satisfies the gate.",
       "origin": {
@@ -117,7 +117,7 @@
       }
     },
     {
-      "id": "C-004",
+      "id": "C-002",
       "type": "contract",
       "statement": "Enumeration is required only for identifiers introduced by the change that reach two or more product source files or two or more sites within product source; an identifier registered repeatedly inside a single module is therefore in scope. Pre-existing vocabulary and single-site constants are skipped with a recorded reason, a change with no such identifier resolves as not_applicable, and an unreadable base tree, diff, or product source file resolves as inconclusive rather than a pass.",
       "origin": {
@@ -154,7 +154,7 @@
       }
     },
     {
-      "id": "C-005",
+      "id": "C-003",
       "type": "contract",
       "statement": "gate:enumeration_coverage is a required node on the gate DAG between failure_mode_coverage and decision_record, blocks PR creation and managed execution in every status other than passed and not_applicable, and publishes the reproduction grep and the verify record template for each identifier still missing a claim.",
       "origin": {

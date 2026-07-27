@@ -588,6 +588,7 @@ function isCriticalGateDag(gateDag) {
     'contradicted',
     'stale',
     'needs_rebase',
+    'inconclusive',
     'block',
     'failed'
   ].includes(node.status));

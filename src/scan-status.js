@@ -1,3 +1,19 @@
+// Gate DAG node statuses that mean the node is not resolved.
+// Single source of truth: every surface that classifies gate DAG nodes
+// imports this instead of re-listing the vocabulary. Re-listing it is how
+// the same registration ended up half closed across four review rounds.
+export const GATE_DAG_BLOCKING_STATUSES = Object.freeze([
+  'block',
+  'needs_evidence',
+  'needs_review',
+  'failed',
+  'inconclusive'
+]);
+
+export function isGateDagBlockingStatus(status) {
+  return GATE_DAG_BLOCKING_STATUSES.includes(String(status ?? '').toLowerCase());
+}
+
 // Shared vocabulary for scanners that would otherwise report `pass` when they
 // scanned zero targets. "No findings because nothing was examined" and "no
 // findings after examining N targets" are different claims; conflating them

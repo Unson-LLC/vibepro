@@ -49,17 +49,15 @@ export const EXCLUDED_SCAN_DIRS = ['.git', 'node_modules', '.vibepro'];
 // command the gate publishes: the recount dropped large files while grep counts
 // them, so a class could be certified closed over an incomplete range. Files are
 // streamed line by line instead, and only genuinely unreadable files are
-// reported. Binary detection reads the WHOLE stream, not a leading probe: an
-// 8 KB probe let a file with a late NUL byte be counted here and skipped by
-// `grep -I`, re-opening the same divergence in the opposite direction.
-//
-// A single line above this many characters is not something `grep` would hand
-// back either, and materialising it risks exhausting memory, so the file is
-// reported as unscannable instead of silently truncated.
-const MAX_SCANNED_LINE_CHARS = 4_000_000;
+// reported. Binary detection reads the leading buffer, matching what grep on
+// this platform measurably does — testing the whole stream made the recount
+// return 0 for a file grep counts in full.
+const BINARY_PROBE_BYTES = 8192;
 
-// Mirror `grep -I`: a file containing a NUL byte is treated as binary and skipped.
-const NUL_BYTE = /\u0000/;
+// A line longer than this is reported rather than scanned. readline has already
+// assembled it by then, so this is a fail-closed status, not a memory bound;
+// the memory bound comes from streaming rather than buffering.
+const MAX_SCANNED_LINE_CHARS = 4_000_000;
 
 // A value that joins an enumerable set in this codebase is a lowercase token
 // with at least one `_` or `:` separator: `needs_evidence`, `not_applicable`,
@@ -431,42 +429,45 @@ async function scanFileLines(fullPath, onLine) {
     handle = await open(fullPath, 'r');
     const stats = await handle.stat();
     if (!stats.isFile()) return 'skipped';
+    // Binary detection matches what `grep` on this platform actually does: it
+    // decides from the leading buffer. Testing the whole stream instead made
+    // the recount return 0 for a file both /usr/bin/grep and ugrep count in
+    // full, which is a larger divergence than the one it was meant to fix.
+    if (stats.size > 0) {
+      const probe = Buffer.alloc(Math.min(BINARY_PROBE_BYTES, stats.size));
+      await handle.read(probe, 0, probe.length, 0);
+      if (probe.includes(0)) return 'binary';
+    }
   } catch {
     return 'unreadable';
   } finally {
     await handle?.close().catch(() => {});
   }
-  const pending = [];
+  // Streamed, never buffered. Callers discard their per-file tallies on any
+  // non-'scanned' status, so partial counts cannot leak; buffering every line
+  // to guarantee that made peak memory O(filesize) instead of O(1).
   try {
     const stream = createReadStream(fullPath, { encoding: 'utf8' });
     const lines = readline.createInterface({ input: stream, crlfDelay: Infinity });
     for await (const line of lines) {
-      // Whole-stream binary detection, matching `grep -I`. Buffer until the
-      // file is known to be text so a NUL anywhere discards the whole file
-      // rather than leaving partial counts behind.
-      if (NUL_BYTE.test(line)) {
-        lines.close();
-        stream.destroy();
-        return 'binary';
-      }
       if (line.length > MAX_SCANNED_LINE_CHARS) {
         lines.close();
         stream.destroy();
         return 'unreadable';
       }
-      pending.push(line);
+      onLine(line);
     }
+    return 'scanned';
   } catch {
     return 'unreadable';
   }
-  for (const line of pending) onLine(line);
-  return 'scanned';
 }
 
 async function listFilesUnder(repoRoot, prefixes, filter) {
   const results = [];
   for (const prefix of prefixes) {
-    await walk(path.join(repoRoot, prefix), prefix.replace(/\/$/, ''));
+    const base = prefix.replace(/\/$/, '');
+    await walk(path.join(repoRoot, base), base);
   }
   return results;
 
@@ -479,7 +480,7 @@ async function listFilesUnder(repoRoot, prefixes, filter) {
     }
     for (const entry of entries) {
       if (EXCLUDED_SCAN_DIRS.includes(entry.name)) continue;
-      const childRelative = `${relative}/${entry.name}`;
+      const childRelative = relative === '' ? entry.name : `${relative}/${entry.name}`;
       const childAbsolute = path.join(absolute, entry.name);
       if (entry.isDirectory()) {
         await walk(childAbsolute, childRelative);
@@ -508,12 +509,16 @@ async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
   // self-consistently false.
   const resolved = [];
   for (const declared of declaredPaths) {
-    const normalized = declared.replace(/^\.\//, '').replace(/\/$/, '');
-    const absolute = path.resolve(root, normalized);
+    const absolute = path.resolve(root, declared);
     if (absolute !== root && !absolute.startsWith(root + path.sep)) {
       missingPaths.push(declared);
       continue;
     }
+    // Always walk from a repo-relative path: joining an absolute path onto the
+    // root produced an empty range that was reported neither as missing nor as
+    // unscannable, and `.` produced './src/...' entries that never matched the
+    // product source prefixes.
+    const normalized = path.relative(root, absolute);
     try {
       await stat(absolute);
     } catch {
@@ -537,7 +542,7 @@ async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
   for (const entry of effective) {
     const stats = await stat(entry.absolute);
     const candidates = stats.isDirectory()
-      ? await listFilesUnder(repoRoot, [`${entry.normalized}/`], null)
+      ? await listFilesUnder(repoRoot, [entry.normalized === '' ? '' : `${entry.normalized}/`], null)
       : [entry.normalized];
     for (const candidate of candidates) {
       if (seen.has(candidate)) continue;
@@ -604,8 +609,10 @@ export async function collectEnumerationCoverage({
         : 'no base ref was resolved, so the required enumeration scope is unknown',
       required: [],
       skipped: [],
+      missing: [],
       claims: scenarios.map(describeScenario),
-      rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection)
+      rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection),
+      unrecognized_scenarios: scenarios.unrecognized ?? []
     };
   }
 
@@ -621,8 +628,10 @@ export async function collectEnumerationCoverage({
       required: [],
       missing: [],
       skipped: [],
+      missing: [],
       claims: scenarios.map(describeScenario),
-      rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection)
+      rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection),
+      unrecognized_scenarios: scenarios.unrecognized ?? []
     };
   }
   const addedLiterals = added;
@@ -635,8 +644,10 @@ export async function collectEnumerationCoverage({
       required: [],
       missing: [],
       skipped: [],
+      missing: [],
       claims: scenarios.map(describeScenario),
-      rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection)
+      rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection),
+      unrecognized_scenarios: scenarios.unrecognized ?? []
     };
   }
   const { required, skipped } = selectRequiredIdentifiers({

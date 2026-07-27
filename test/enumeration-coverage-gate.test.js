@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readdir, readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import {
@@ -337,22 +337,49 @@ test('ENUM-S-5 the gate node sits on the DAG between failure mode coverage and d
   assert.match(source, /\{ from: 'gate:enumeration_coverage', to: 'gate:decision_record' \}/);
 });
 
-test('ENUM-S-5 every unresolved-status vocabulary over the gate DAG treats inconclusive as unresolved', async () => {
-  // Round 2 and round 3 each found this registration half closed: first three
-  // of five vocabularies, then five of seven. Assert the whole set so a
-  // reverted entry fails a test instead of surviving to review.
-  const sources = await Promise.all([
-    'pr-manager', 'execution-state', 'gate-outcome-ledger',
-    'checkpoint-manager', 'html-report', 'canonical-audit', 'usage-report'
-  ].map(async (name) => [name, await readFile(new URL(`../src/${name}.js`, import.meta.url), 'utf8')]));
-  for (const [name, source] of sources) {
-    assert.ok(
-      source.includes("'inconclusive'"),
-      `${name}.js classifies gate DAG statuses and must treat inconclusive as unresolved`
-    );
+test('ENUM-S-5 no module re-lists the gate DAG blocking vocabulary instead of importing it', async () => {
+  // Rounds 1-4 each found this registration half closed: three of five, then
+  // five of seven, then seven of nine. A hardcoded list of module names cannot
+  // notice the next one, so derive the class from the codebase: no file may
+  // carry its own copy of the vocabulary.
+  const srcDir = new URL('../src/', import.meta.url);
+  const files = (await readdir(srcDir)).filter((name) => name.endsWith('.js'));
+  const offenders = [];
+  for (const name of files) {
+    if (name === 'scan-status.js') continue;
+    const source = await readFile(new URL(name, srcDir), 'utf8');
+    // A literal array holding both of these, over gate DAG node statuses, is a
+    // re-listed vocabulary rather than a use of the shared predicate.
+    for (const match of source.matchAll(/\[[^\]]*'needs_evidence'[^\]]*\]/g)) {
+      const literal = match[0];
+      // The gate DAG vocabulary is recognisable by carrying all four of these.
+      // Narrower lists belong to other DAGs (execution, judgment axes) and are
+      // a different class.
+      const isGateDagVocabulary = ["'block'", "'needs_evidence'", "'needs_review'", "'failed'"]
+        .every((token) => literal.includes(token));
+      if (!isGateDagVocabulary) continue;
+      if (literal.includes("'inconclusive'")) continue;
+      offenders.push(`${name}: ${literal.replace(/\s+/g, ' ').slice(0, 100)}`);
+    }
   }
+  assert.deepEqual(offenders, [], 'these modules re-list the gate DAG blocking vocabulary without inconclusive');
+});
+
+test('ENUM-S-5 the shared gate DAG blocking predicate treats inconclusive as unresolved', async () => {
+  const { isGateDagBlockingStatus, GATE_DAG_BLOCKING_STATUSES } = await import('../src/scan-status.js');
+  assert.equal(isGateDagBlockingStatus('inconclusive'), true);
+  assert.equal(isGateDagBlockingStatus('passed'), false);
+  assert.equal(isGateDagBlockingStatus('not_applicable'), false);
+  assert.ok(GATE_DAG_BLOCKING_STATUSES.includes('inconclusive'));
+
+  // Behavioural, not textual: each classifier must actually reject the status.
   const { isUnresolvedGateStatus } = await import('../src/pr-manager.js');
   assert.equal(isUnresolvedGateStatus('inconclusive'), true);
+  const { isCriticalUnresolvedGate } = await import('../src/execution-state.js');
+  assert.equal(
+    isCriticalUnresolvedGate({ id: 'gate:enumeration_coverage', type: 'enumeration_coverage_gate', status: 'inconclusive' }),
+    true
+  );
 });
 
 test('a repeated or nested declared path cannot inflate coverage past the floor', () => {

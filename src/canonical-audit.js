@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { isGateDagBlockingStatus } from './scan-status.js';
 import { mkdir, readdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { gunzipSync, gzipSync } from 'node:zlib';
@@ -1230,7 +1231,7 @@ function summarizeReplayArtifact(artifact) {
     return compactObject({
       overall_status: data?.overall_status,
       node_count: nodes.length,
-      blocking_count: nodes.filter((node) => ['block', 'needs_evidence', 'needs_review', 'failed', 'inconclusive'].includes(node?.status)).length,
+      blocking_count: nodes.filter((node) => isGateDagBlockingStatus(node?.status)).length,
       risk_profile: data?.risk_profile ?? data?.change_classification?.profile
     });
   }
@@ -1640,7 +1641,7 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
       overall_status: gateDag?.overall_status ?? null,
       node_count: Array.isArray(gateDag?.nodes) ? gateDag.nodes.length : 0,
       blocking_count: Array.isArray(gateDag?.nodes)
-        ? gateDag.nodes.filter((node) => ['block', 'needs_evidence', 'needs_review', 'failed', 'inconclusive'].includes(node.status)).length
+        ? gateDag.nodes.filter((node) => isGateDagBlockingStatus(node.status)).length
         : 0
     },
     senior_gap_judgment: {
@@ -2675,7 +2676,7 @@ function collectCanonicalAuditTriggerSignals({ merge = null, missingArtifacts = 
   if (missingArtifacts.length > 0) signals.push('missing_artifact');
   if (merge?.warnings?.length > 0) signals.push('merge_warning');
   for (const node of merge?.gate_dag?.nodes ?? []) {
-    if (['block', 'needs_evidence', 'needs_review', 'failed', 'inconclusive'].includes(node?.status)) {
+    if (isGateDagBlockingStatus(node?.status)) {
       signals.push(`gate:${node.id ?? 'unknown'}:${node.status}`);
     }
     if (node?.status === 'bypassed') signals.push(`gate:${node.id ?? 'unknown'}:waiver`);
