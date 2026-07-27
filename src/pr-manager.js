@@ -14111,7 +14111,8 @@ function buildReviewSurfaceIntegrityGate({ agentReviews = null } = {}) {
     ...(violations?.readable === false ? { unreadable_reason: violations.unreadable_reason ?? null } : {}),
     required_actions: unacknowledged.length === 0 ? [] : violations?.readable === false ? [
       `The review surface violation ledger could not be read: ${violations.unreadable_reason ?? 'unknown reason'}`,
-      'An unreadable ledger fails closed because it is indistinguishable from an erased one. Restore it from git history or the reviews artifact backup, then rerun `vibepro pr prepare`.'
+      'An unreadable ledger fails closed because it is indistinguishable from an erased one. Restore the file if a copy exists (.vibepro artifacts are usually untracked, so git history may not have one), otherwise state what was lost and acknowledge it:',
+      ...unacknowledged.map((violation) => buildReviewSurfaceViolationAcknowledgementCommand(storyId, violation.violation_id))
     ] : [
       `${unacknowledged.length} review(s) had their review surface change mid-review (${unacknowledged.map((violation) => `${violation.stage ?? '?'}:${violation.role ?? '?'} [${(violation.changed_fields ?? []).join(', ')}]`).join('; ')}). Re-running the review does not clear this record.`,
       'State what the contaminated review actually inspected, then acknowledge each violation with an accepted decision record:',

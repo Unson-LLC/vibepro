@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 // Review-surface violations are deliberately kept apart from review staleness.
@@ -13,8 +13,16 @@ import path from 'node:path';
 //
 // The separation is structural, not conventional: violations live in their own
 // story-level file, and this module exposes no delete or update operation. The
-// only write path appends, and it is idempotent on a deterministic violation_id
-// so replaying the same close cannot inflate the ledger either.
+// only write path appends under a story-level lock, and it is idempotent on a
+// deterministic violation_id so replaying the same close cannot inflate the
+// ledger either.
+//
+// The file itself is still just a file, and nothing here can stop someone from
+// overwriting it out of band. What the design does instead is make that visible:
+// review close also stamps surface_violation_id onto the lifecycle entry, and
+// reconciliation reports any pointer with no matching ledger entry as a
+// missing-entry violation. Replacing the ledger with a well-formed empty one
+// therefore trades a recorded violation for a different recorded violation.
 
 export const REVIEW_SURFACE_VIOLATIONS_FILE = 'surface-violations.json';
 export const REVIEW_SURFACE_MUTATION_KIND = 'review_surface_mutated_during_review';
@@ -27,6 +35,7 @@ export function getReviewSurfaceViolationsPath(storyReviewDir) {
 }
 
 export const REVIEW_SURFACE_LEDGER_UNREADABLE = 'VIBEPRO_REVIEW_SURFACE_LEDGER_UNREADABLE';
+export const REVIEW_SURFACE_LEDGER_UNREADABLE_VIOLATION_ID = 'ledger_unreadable';
 
 /**
  * A malformed or structurally invalid ledger is rejected, never read as empty.
@@ -56,7 +65,7 @@ export async function readReviewSurfaceViolations(storyReviewDir, storyId = null
 }
 
 function unreadableLedgerError(filePath, detail) {
-  const error = new Error(`review surface violation ledger ${filePath} is unreadable and is rejected rather than read as empty (${detail}). Restore it from git history or from the reviews artifact backup; an unreadable ledger fails closed because clearing it would erase append-only violation records.`);
+  const error = new Error(`review surface violation ledger ${filePath} is unreadable and is rejected rather than read as empty (${detail}). An unreadable ledger fails closed because clearing it would erase append-only violation records. Restore the file if a copy exists, or acknowledge the loss with an accepted decision record on ${REVIEW_SURFACE_INTEGRITY_GATE_ID}:${REVIEW_SURFACE_LEDGER_UNREADABLE_VIOLATION_ID}.`);
   error.code = REVIEW_SURFACE_LEDGER_UNREADABLE;
   error.ledger_path = filePath;
   return error;
@@ -112,33 +121,109 @@ export function buildReviewSurfaceViolationId(violation) {
 /**
  * Append-only. Never removes or rewrites an existing entry: a replayed close
  * resolves to the same violation_id and returns the entry already on disk.
+ *
+ * The whole read-modify-write is serialised on a story-level lock. Without it,
+ * two concurrent closes both read the same entries[] and the second rename drops
+ * the first entry — an erasure by race, on the one file that must never lose a
+ * record. Deduplicating on violation_id does not help here: it collapses
+ * identical facts, it does not serialise distinct ones.
  */
 export async function appendReviewSurfaceViolation(storyReviewDir, storyId, violation) {
-  const existing = await readReviewSurfaceViolations(storyReviewDir, storyId);
-  const entry = {
-    schema_version: SCHEMA_VERSION,
-    violation_id: buildReviewSurfaceViolationId({ ...violation, story_id: storyId }),
-    story_id: storyId,
-    ...violation,
-    detected_by: violation.detected_by ?? 'review close',
-    recorded_at: violation.recorded_at ?? new Date().toISOString()
-  };
-  const already = existing.entries.find((item) => item.violation_id === entry.violation_id);
-  if (already) return { entry: already, appended: false, entries: existing.entries };
-  const entries = [...existing.entries, entry];
-  await writeViolations(storyReviewDir, storyId, entries);
-  return { entry, appended: true, entries };
+  await mkdir(storyReviewDir, { recursive: true });
+  return withDirectoryLock(path.join(storyReviewDir, LEDGER_LOCK_DIR), async () => {
+    const existing = await readReviewSurfaceViolations(storyReviewDir, storyId);
+    const entry = {
+      schema_version: SCHEMA_VERSION,
+      violation_id: buildReviewSurfaceViolationId({ ...violation, story_id: storyId }),
+      story_id: storyId,
+      ...violation,
+      detected_by: violation.detected_by ?? 'review close',
+      recorded_at: violation.recorded_at ?? new Date().toISOString()
+    };
+    const already = existing.entries.find((item) => item.violation_id === entry.violation_id);
+    if (already) return { entry: already, appended: false, entries: existing.entries };
+    const entries = [...existing.entries, entry];
+    await writeViolations(storyReviewDir, storyId, entries);
+    return { entry, appended: true, entries };
+  });
 }
+
+const LEDGER_LOCK_DIR = '.surface-violations.lock';
+const LOCK_STALE_MS = 30_000;
+
+async function withDirectoryLock(lockDir, callback) {
+  const start = Date.now();
+  while (true) {
+    try {
+      await mkdir(lockDir);
+      break;
+    } catch (error) {
+      if (error.code !== 'EEXIST') throw error;
+      const lockStat = await stat(lockDir).catch((statError) => {
+        if (statError.code === 'ENOENT') return null;
+        throw statError;
+      });
+      if (lockStat && Date.now() - lockStat.mtimeMs > LOCK_STALE_MS) {
+        await rm(lockDir, { recursive: true, force: true });
+        continue;
+      }
+      if (Date.now() - start > LOCK_STALE_MS) {
+        throw new Error(`timed out waiting for the review surface violation ledger lock: ${lockDir}`);
+      }
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+  }
+  try {
+    return await callback();
+  } finally {
+    await rm(lockDir, { recursive: true, force: true });
+  }
+}
+
+/**
+ * The ledger is not the only record that a violation happened: review close also
+ * stamps surface_violation_id onto the lifecycle entry. Reconciling the two
+ * closes the erase path that corruption-rejection alone leaves open — replacing
+ * the ledger with a well-formed `{"entries": []}` is not malformed, but it
+ * orphans every lifecycle pointer, and an orphaned pointer is reported as a
+ * missing-entry violation that fails closed exactly like the record it replaced.
+ */
+export function reconcileReviewSurfaceViolationPointers(entries = [], lifecycleEntries = []) {
+  const known = new Set((Array.isArray(entries) ? entries : []).map((entry) => entry.violation_id));
+  const orphans = new Map();
+  for (const lifecycle of Array.isArray(lifecycleEntries) ? lifecycleEntries : []) {
+    const violationId = lifecycle?.surface_violation_id;
+    if (!violationId || known.has(violationId) || orphans.has(violationId)) continue;
+    orphans.set(violationId, {
+      violation_id: violationId,
+      kind: REVIEW_SURFACE_LEDGER_ENTRY_MISSING_KIND,
+      evidence_class: 'violation',
+      changed_fields: [],
+      stage: lifecycle.stage ?? null,
+      role: lifecycle.role ?? null,
+      lifecycle_id: lifecycle.lifecycle_id ?? null,
+      detected_by: 'ledger reconciliation',
+      detail: `Lifecycle ${lifecycle.lifecycle_id ?? 'unknown'} records surface_violation_id ${violationId}, but no such entry exists in the ledger. The ledger has been replaced or edited; append-only records cannot disappear.`
+    });
+  }
+  return [...orphans.values()];
+}
+
+export const REVIEW_SURFACE_LEDGER_ENTRY_MISSING_KIND = 'review_surface_violation_entry_missing';
 
 /**
  * Acknowledgement never deletes anything. It pairs surviving ledger entries with
  * accepted decision records so a human episode can close the gate while the
  * recorded fact stays in the artifact forever.
  */
-export function summarizeReviewSurfaceViolations(entries = [], { decisionRecords = null } = {}) {
+export function summarizeReviewSurfaceViolations(entries = [], { decisionRecords = null, lifecycleEntries = [] } = {}) {
   const accepted = (decisionRecords?.decisions ?? [])
     .filter((decision) => decision?.status === 'accepted' && typeof decision.source === 'string');
-  const items = (Array.isArray(entries) ? entries : []).map((entry) => {
+  const reconciled = [
+    ...(Array.isArray(entries) ? entries : []),
+    ...reconcileReviewSurfaceViolationPointers(entries, lifecycleEntries)
+  ];
+  const items = reconciled.map((entry) => {
     const acknowledgement = accepted.find((decision) => decision.source === `${REVIEW_SURFACE_INTEGRITY_GATE_ID}:${entry.violation_id}`) ?? null;
     return {
       ...entry,
@@ -165,26 +250,28 @@ export function summarizeReviewSurfaceViolations(entries = [], { decisionRecords
 }
 
 /**
- * The blocking summary for a ledger that could not be read. It reports one
- * unacknowledged item so the gate fails closed: an unreadable ledger cannot be
- * distinguished from an erased one, and both must stop the PR.
+ * The blocking summary for a ledger that could not be read. It reports the
+ * unreadable state as a violation entry so the gate fails closed: an unreadable
+ * ledger cannot be distinguished from an erased one, and both must stop the PR.
+ *
+ * It runs through the same acknowledgement path as any other violation. There is
+ * no self-service repair — .vibepro artifacts are not tracked in git, so
+ * "restore the file" is not a recovery for most repositories — and a block with
+ * no exit is not a gate, it is a dead end.
  */
-export function buildUnreadableReviewSurfaceViolationSummary(error) {
+export function buildUnreadableReviewSurfaceViolationSummary(error, { decisionRecords = null } = {}) {
+  const summary = summarizeReviewSurfaceViolations([{
+    violation_id: REVIEW_SURFACE_LEDGER_UNREADABLE_VIOLATION_ID,
+    kind: 'review_surface_ledger_unreadable',
+    evidence_class: 'violation',
+    changed_fields: [],
+    detected_by: 'ledger read',
+    detail: error?.message ?? 'review surface violation ledger could not be read'
+  }], { decisionRecords });
   return {
-    schema_version: SCHEMA_VERSION,
+    ...summary,
     readable: false,
-    unreadable_reason: error?.message ?? 'review surface violation ledger could not be read',
-    total_count: 0,
-    acknowledged_count: 0,
-    unacknowledged_count: 1,
-    entries: [],
-    unacknowledged: [{
-      violation_id: 'ledger_unreadable',
-      kind: 'review_surface_ledger_unreadable',
-      evidence_class: 'violation',
-      changed_fields: [],
-      detected_by: 'ledger read'
-    }]
+    unreadable_reason: error?.message ?? 'review surface violation ledger could not be read'
   };
 }
 

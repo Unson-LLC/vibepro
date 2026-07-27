@@ -26,6 +26,7 @@ import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js
 import {
   REVIEW_SURFACE_INTEGRITY_GATE_ID,
   REVIEW_SURFACE_LEDGER_UNREADABLE,
+  REVIEW_SURFACE_LEDGER_UNREADABLE_VIOLATION_ID,
   appendReviewSurfaceViolation,
   buildUnreadableReviewSurfaceViolationSummary,
   detectReviewSurfaceMutation,
@@ -847,6 +848,11 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
   const reviewPolicy = await readAgentReviewPolicy(root);
   const role = requireRole(reviewPolicy, stage, options.role, 'review close');
   const reviewDir = await getReviewStageDir(root, storyId, stage);
+  // Coercing an unrecognized value to `completed` used to only mislabel a row.
+  // It now decides whether an irreversible violation is recorded, so a typo like
+  // `--close-reason timed_out` must fail loudly instead of being read as a
+  // completed review over a moved surface.
+  assertRecognizedCloseReason(options.closeReason);
   const closeReason = normalizeCloseReason(options.closeReason);
   const operationIdempotencyKey = normalizeNullable(options.operationIdempotencyKey);
   const closeEvidence = normalizeNullable(options.closeEvidence);
@@ -869,7 +875,8 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
     closeReason,
     closeEvidence,
     closeHeadSha,
-    closeSurfaceDigest
+    closeSurfaceDigest,
+    cancellationConfirmed: options.cancellationConfirmed
   });
   let summary = null;
   await updateLifecycle(root, storyId, stage, (lifecycle) => {
@@ -891,6 +898,11 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
     // surface a review ended on is always reconstructable from the artifact.
     match.closed_head_sha = closeHeadSha;
     match.closed_surface_digest = closeSurfaceDigest;
+    // Detection needs both snapshots. Say so on the entry rather than leaving a
+    // silent skip that reads identically to "nothing moved".
+    match.surface_detection = (match.head_sha && closeHeadSha) || (match.surface_digest && closeSurfaceDigest)
+      ? 'evaluated'
+      : 'skipped_missing_snapshot';
     if (surfaceViolation?.entry?.violation_id) {
       match.surface_violation_id = surfaceViolation.entry.violation_id;
     }
@@ -942,7 +954,8 @@ async function recordReviewSurfaceViolationForClose(root, storyId, stage, {
   closeReason,
   closeEvidence,
   closeHeadSha,
-  closeSurfaceDigest
+  closeSurfaceDigest,
+  cancellationConfirmed
 }) {
   const lifecycle = await readLifecycle(root, storyId, stage);
   if (operationIdempotencyKey
@@ -953,6 +966,10 @@ async function recordReviewSurfaceViolationForClose(root, storyId, stage, {
   // No candidate, or an already-terminal one, means this close will throw; do not
   // record a violation for a close that never happens.
   if (!candidate || ['closed', 'replaced'].includes(candidate.status)) return null;
+  // The head moved and cancellation is unconfirmed: this close terminalizes the
+  // lifecycle as orphaned_agent and leaves it running, so no review result can
+  // ever attach to it. That is an abandoned attempt, not a contaminated verdict.
+  if (candidate.head_sha && candidate.head_sha !== closeHeadSha && cancellationConfirmed !== true) return null;
   const mutation = detectReviewSurfaceMutation(candidate, { closeHeadSha, closeSurfaceDigest, closeReason });
   if (!mutation) return null;
   const storyReviewDir = path.dirname(await getReviewStageDir(root, storyId, stage));
@@ -974,15 +991,19 @@ export async function readReviewSurfaceViolationSummary(repoRoot, storyId, { dec
   const root = path.resolve(repoRoot);
   const route = await resolveArtifactRoute(root, 'review', { storyId });
   const storyReviewDir = path.resolve(root, route.canonical.relative_path);
+  // Lifecycle entries are the second record of the same fact: review close stamps
+  // surface_violation_id on them. Reconciling the two is what makes a well-formed
+  // ledger rewrite detectable — corruption rejection alone would not catch it.
+  const lifecycleEntries = await readStoryLifecycleEntries(storyReviewDir).catch(() => []);
   let summary;
   try {
     const ledger = await readReviewSurfaceViolations(storyReviewDir, storyId);
-    summary = summarizeReviewSurfaceViolations(ledger.entries, { decisionRecords });
+    summary = summarizeReviewSurfaceViolations(ledger.entries, { decisionRecords, lifecycleEntries });
   } catch (error) {
     // Reading must not crash pr prepare, but an unreadable ledger must still
     // block: it is indistinguishable from an erased one.
     if (error.code !== REVIEW_SURFACE_LEDGER_UNREADABLE) throw error;
-    summary = buildUnreadableReviewSurfaceViolationSummary(error);
+    summary = buildUnreadableReviewSurfaceViolationSummary(error, { decisionRecords });
   }
   return {
     ...summary,
@@ -1637,17 +1658,22 @@ ${result.surface_violation ? `
 
 export function renderReviewSurfaceViolationSummary(summary) {
   const rows = summary.entries.length
-    ? summary.entries.map((entry) => (
-      `- ${entry.violation_id} ${entry.stage ?? '?'}:${entry.role ?? '?'} changed=[${(entry.changed_fields ?? []).join(', ')}] acknowledged=${entry.acknowledged ? 'yes' : 'no'} recorded_at=${entry.recorded_at ?? '-'}`
-    )).join('\n')
+    ? summary.entries.map((entry) => [
+      `- ${entry.violation_id} ${entry.stage ?? '?'}:${entry.role ?? '?'} kind=${entry.kind ?? '-'} changed=[${(entry.changed_fields ?? []).join(', ')}] acknowledged=${entry.acknowledged ? 'yes' : 'no'} recorded_at=${entry.recorded_at ?? '-'}`,
+      entry.detail ? `  detail: ${entry.detail}` : null
+    ].filter(Boolean).join('\n')).join('\n')
     : '- none';
+  const unreadable = summary.readable === false
+    ? `\n## Ledger Unreadable\n\n- reason: ${summary.unreadable_reason ?? 'unknown'}\n- The ledger is rejected rather than read as empty; it is indistinguishable from an erased one. Restore the file if you have a copy, or acknowledge it with an accepted decision record on ${REVIEW_SURFACE_INTEGRITY_GATE_ID}:${REVIEW_SURFACE_LEDGER_UNREADABLE_VIOLATION_ID}.\n`
+    : '';
   return `# Review Surface Violations
 
 - story: ${summary.story_id}
+- ledger_readable: ${summary.readable === false ? 'no' : 'yes'}
 - total: ${summary.total_count}
 - unacknowledged: ${summary.unacknowledged_count}
 - artifact: ${summary.artifact}
-
+${unreadable}
 ## Entries (append-only)
 
 ${rows}
@@ -3933,6 +3959,15 @@ function normalizeTimeoutMs(value) {
   const number = Number(value ?? DEFAULT_REVIEW_TIMEOUT_MS);
   if (!Number.isFinite(number) || number <= 0) return DEFAULT_REVIEW_TIMEOUT_MS;
   return Math.floor(number);
+}
+
+const REVIEW_CLOSE_REASONS = ['completed', 'timeout', 'replaced', 'manual_shutdown'];
+
+function assertRecognizedCloseReason(value) {
+  if (value === undefined || value === null || String(value).trim() === '') return;
+  const normalized = String(value).trim().toLowerCase().replace(/-/g, '_');
+  if (REVIEW_CLOSE_REASONS.includes(normalized)) return;
+  throw new Error(`review close --close-reason must be one of: ${REVIEW_CLOSE_REASONS.join(', ')} (got "${value}"). Unrecognized values are rejected rather than treated as completed, because only a completed close records a review surface violation.`);
 }
 
 function normalizeCloseReason(value) {

@@ -126,6 +126,25 @@ updated_at: 2026-07-27
       破損 ledger が 0 件として読めるなら不合格（ファイルを壊すだけで
       append-only 記録を消せてしまうため）。
 
+- [ ] RSV-8: ledger を well-formed な空 ledger（`{"entries": []}`）へ差し替えても
+      違反は消えない。`review close` は lifecycle entry へ `surface_violation_id`
+      を刻んでおり、ledger 側に該当 entry が無い pointer は
+      `review_surface_violation_entry_missing` として未承認の違反に数える。
+      **反証**: 違反を記録したのち ledger を `{"entries": []}` で上書きし、
+      サマリの `unacknowledged_count` が 0 にならず、kind が
+      `review_surface_violation_entry_missing` であることを確認する。
+      0 件になるなら不合格。
+- [ ] RSV-9: 並行 close で違反が失われない。append は story 単位のロック下で
+      実行され、同一 story に対する 2 つの close が同時に違反を記録しても
+      両方が ledger に残る。さらに、未知の `--close-reason` は `completed` へ
+      丸めず拒否する（タイプミスで違反を捏造も抑止もさせないため）。読めない
+      ledger は accepted decision record（`...:ledger_unreadable`）で承認でき、
+      出口のない block にはしない。
+      **反証**: 異なる違反 2 件を `Promise.all` で同時 append し、
+      entry 数が 2 であることを確認する。1 件なら不合格。
+      `--close-reason timed_out` が throw すること、
+      `ledger_unreadable` への accepted decision で gate が解消することを確認する。
+
 ## Non Goals
 
 - verify record 側の証跡計算化（親 Story CEA-S-1）。別の子 Story が担う。
@@ -138,9 +157,17 @@ updated_at: 2026-07-27
 
 ## 残余（明示しておく）
 
-`surface_digest` は `.vibepro/` を除外した user fingerprint（`.vibepro/config.json`
-のみ例外的に含む）に基づく。したがって「レビュー中に `.vibepro` 配下の生成物だけが
-更新された」ケースは違反にならない。これはレビュー自身が artifact を書くため
-必要な除外であり、レビュー面（ソース・テスト・ドキュメント・config）の変更は
-すべて検出範囲に入る。この境界は意図的なものであり、除外の外側で違反を
-見逃すことはない。
+閉じていないものを 3 つ明示する。いずれも受け入れ条件では「閉じた」と主張しない。
+
+1. **`.vibepro/` の除外。** `surface_digest` は `.vibepro/` を除外した user
+   fingerprint（`.vibepro/config.json` のみ例外的に含む）に基づく。レビュー自身が
+   artifact を書くため必要な除外である。副作用として、ledger ファイル自体の
+   書き換えはレビュー面の変更として検出されない。これは RSV-8 の
+   pointer 照合で別経路から可視化する。
+2. **端点サンプリング。** 検出は start 時点と close 時点の 2 スナップショットの
+   比較である。レビュー中に変更して同一内容へ戻した場合、両端が一致するため
+   検出されない。
+3. **協調的な改竄。** ledger と、対応する全 `lifecycle.json` の
+   `surface_violation_id` を両方書き換えれば不整合は残らない。本 Story は
+   単一ファイルの書き換えを可視化するところまでであり、暗号学的な
+   tamper-evidence は提供しない。

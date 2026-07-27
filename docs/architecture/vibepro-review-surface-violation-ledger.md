@@ -88,23 +88,52 @@ stateDiagram-v2
 The state is monotonic. Acknowledgement resolves the gate; it never removes the
 entry.
 
-## Bounded scope, and the evasions that were closed
+## Bounded scope, and the erase paths
+
+Each of these was raised as a way to make a recorded violation go away. What the
+design does to each one is stated precisely — including where it only makes the
+attempt visible rather than impossible.
 
 - **Only `close_reason: completed` records a violation.** `replaced`, `timeout`,
   and `manual_shutdown` mean the review did not complete, and `vibepro review
   record` already refuses to attach a result to such a lifecycle. Closing as
   `replaced` to dodge the record therefore discards the review result it was
-  protecting.
+  protecting. An unrecognized `--close-reason` is rejected rather than coerced to
+  `completed`, so a typo can neither mint nor suppress a record.
 - **Re-running the review cannot reach the ledger.** A new lifecycle appends a
   new entry at most; `violation_id` is derived deterministically from
   story/stage/role/lifecycle/kind and both snapshots, so a replayed close
   resolves to the entry already on disk.
+- **Concurrent closes cannot drop a record.** The append is a read-modify-write,
+  so it runs under a story-level directory lock. Without it two closes racing on
+  the same story would each write only their own entry and the loser's record
+  would vanish.
 - **A corrupt ledger fails closed.** Malformed JSON, or an `entries[]` that is
   not an array, is rejected with `VIBEPRO_REVIEW_SURFACE_LEDGER_UNREADABLE`
-  rather than read as empty, and appending over it throws. Reading corruption as
-  "no violations" would restore the erase path by another name: truncating one
-  file. An *absent* ledger is different and reads clean — nothing was ever
-  recorded there.
+  rather than read as empty, and appending over it throws. An *absent* ledger is
+  different and reads clean — nothing was ever recorded there.
+- **A well-formed rewrite is detected, not prevented.** Nothing stops an
+  out-of-band `{"entries": []}`, and `surface_digest` excludes `.vibepro/`, so
+  editing the ledger is not itself a review-surface change. What catches it is
+  the second copy of the same fact: `review close` stamps `surface_violation_id`
+  onto the lifecycle entry, and reconciliation reports every pointer with no
+  matching ledger entry as a `review_surface_violation_entry_missing` violation.
+  Erasing an entry therefore exchanges one recorded violation for another, and
+  the erasure is visible in the gate.
+
+## Residual, stated plainly
+
+Two things this does **not** close:
+
+1. **Endpoint sampling.** Detection compares the snapshot at start with the
+   snapshot at close. A change made and reverted entirely inside the review
+   window leaves both snapshots equal and is not detected.
+2. **Coordinated tampering.** Someone who edits both the ledger and every
+   matching `lifecycle.json` pointer leaves no inconsistency to find. The design
+   raises the cost and makes the single-file edit visible; it does not make the
+   record cryptographically tamper-evident.
+
+Neither is claimed as covered anywhere in this Story's acceptance criteria.
 
 ## Deliberate boundary
 
@@ -115,6 +144,15 @@ all do.
 
 Detection covers the window between `review start` and `review close` only.
 Changes after the close are staleness and stay with the existing machinery.
+
+## Recovery
+
+An unreadable ledger blocks the PR, and `.vibepro/` artifacts are normally
+untracked, so "restore it from git history" is not a recovery most repositories
+have. The exit is the same one every violation uses: state what was lost and
+record an accepted decision against
+`gate:review_surface_integrity:ledger_unreadable`. A block with no exit is not a
+gate, it is a dead end.
 
 ## Related
 

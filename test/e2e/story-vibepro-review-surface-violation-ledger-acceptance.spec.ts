@@ -46,13 +46,13 @@ test('story-vibepro-review-surface-violation-ledger RSV-4 replayed closes do not
   assert.match(stdout, /RSV-4 violation_id is deterministic, so a direct append of the same fact is a no-op/);
 });
 
-test('story-vibepro-review-surface-violation-ledger RSV-5 CON-001 pr prepare blocks and only a decision record clears it', async () => {
+test('story-vibepro-review-surface-violation-ledger RSV-5 C-001 pr prepare blocks and only a decision record clears it', async () => {
   const { stdout } = await contractRun;
   assert.match(stdout, /RSV-5 pr prepare blocks on gate:review_surface_integrity and keeps it on the DAG path/);
   assert.match(stdout, /RSV-5 the gate fails while unacknowledged, is not cleared by a re-run, and clears only by decision record/);
 });
 
-test('story-vibepro-review-surface-violation-ledger RSV-6 S-002 INV-003 stale stays separate from violation and the review workflow state machine is unchanged', async () => {
+test('story-vibepro-review-surface-violation-ledger RSV-6 S-002 INV-004 stale stays separate from violation and the review workflow state machine is unchanged', async () => {
   const { stdout } = await contractRun;
   assert.match(stdout, /RSV-6 stale and violation are typed apart: a later unrelated commit records no violation/);
   assert.match(stdout, /RSV-6 a non-completed close is not a violation, and cannot smuggle a review result through/);
@@ -69,8 +69,21 @@ test('story-vibepro-review-surface-violation-ledger RSV-7 legacy artifacts read 
   assert.match(stdout, /RSV-7 evidence_lifecycle_regression: recorded review results and lifecycle statuses keep their prior shape/);
 });
 
+test('story-vibepro-review-surface-violation-ledger RSV-8 RSV-9 the erase paths are recorded, not silently allowed', async () => {
+  const { stdout } = await contractRun;
+  assert.match(stdout, /RSV-8 replacing the ledger with a well-formed empty one does not clear the violation/);
+  assert.match(stdout, /RSV-9 concurrent appends of distinct violations both survive/);
+  assert.match(stdout, /RSV-9 an unrecognized close reason is rejected instead of coerced to completed/);
+  assert.match(stdout, /RSV-9 an unreadable ledger is acknowledgeable rather than a dead end/);
+  assert.match(stdout, /RSV-9 review violations CLI reports the unreadable reason and exits non-zero/);
+});
+
 test('story-vibepro-review-surface-violation-ledger acceptance suite is fully green', async () => {
   const { stdout } = await contractRun;
-  assert.match(stdout, /ℹ pass 16/);
+  // Assert on the failure count, not the pass count: pinning an exact total
+  // turns every future test added to the suite into an unrelated red.
   assert.match(stdout, /ℹ fail 0/);
+  assert.doesNotMatch(stdout, /^not ok/m);
+  const passed = Number(/ℹ pass (\d+)/.exec(stdout)?.[1] ?? 0);
+  assert.ok(passed >= 23, `expected at least 23 acceptance tests, saw ${passed}`);
 });

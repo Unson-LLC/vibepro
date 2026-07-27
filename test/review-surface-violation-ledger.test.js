@@ -20,6 +20,7 @@ import {
   appendReviewSurfaceViolation,
   detectReviewSurfaceMutation,
   readReviewSurfaceViolations,
+  reconcileReviewSurfaceViolationPointers,
   summarizeReviewSurfaceViolations
 } from '../src/review-surface-violations.js';
 import { recordDecision, readDecisionRecordsIfExists } from '../src/decision-records.js';
@@ -477,8 +478,8 @@ test('RSV-7 failure mode parse_failure: a malformed ledger is rejected and fails
   // pr prepare must not crash, but the gate must block.
   const summary = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
   assert.equal(summary.readable, false);
-  assert.equal(summary.total_count, 0);
   assert.equal(summary.unacknowledged_count, 1, 'an unreadable ledger fails closed');
+  assert.equal(summary.unacknowledged[0].kind, 'review_surface_ledger_unreadable');
   const reviews = await summarizeAgentReviewsForPr(root, { storyId: STORY_ID, fileGroups: null });
   assert.equal(reviews.surface_violations.readable, false);
 
@@ -536,6 +537,151 @@ test('RSV-7 evidence_lifecycle_regression: recorded review results and lifecycle
   // behaviour under test: the ledger must not alter this path in either direction.
   assert.equal(role.effective_status, 'unverified_agent');
   assert.equal(role.status, 'pass');
+});
+
+test('RSV-8 replacing the ledger with a well-formed empty one does not clear the violation', async () => {
+  const root = await setupRepo();
+  await start(root);
+  await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = "mutated mid-review";\n');
+  const closed = await close(root);
+  const violationId = closed.surface_violation.violation_id;
+
+  // The erase attempt that corruption-rejection alone would not catch: valid
+  // JSON, valid shape, zero entries.
+  await writeFile(violationsPath(root), JSON.stringify({ schema_version: '0.1.0', entries: [] }));
+
+  const summary = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
+  assert.equal(summary.unacknowledged_count, 1, 'the erased entry must still be reported');
+  const [reported] = summary.unacknowledged;
+  assert.equal(reported.violation_id, violationId);
+  assert.equal(reported.kind, 'review_surface_violation_entry_missing');
+  assert.match(reported.detail, /no such entry exists in the ledger/);
+
+  const reviews = await summarizeAgentReviewsForPr(root, { storyId: STORY_ID, fileGroups: null });
+  assert.equal(reviews.surface_violations.unacknowledged_count, 1);
+});
+
+test('RSV-8 reconciliation reports each orphaned pointer once and stays quiet when the ledger matches', () => {
+  const entries = [{ violation_id: 'rsv-1' }];
+  const lifecycles = [
+    { lifecycle_id: 'lc-1', stage: 'gate', role: 'gate_evidence', surface_violation_id: 'rsv-1' },
+    { lifecycle_id: 'lc-2', stage: 'gate', role: 'release_risk', surface_violation_id: 'rsv-2' },
+    { lifecycle_id: 'lc-3', stage: 'gate', role: 'release_risk', surface_violation_id: 'rsv-2' },
+    { lifecycle_id: 'lc-4', stage: 'gate', role: 'runtime_contract' }
+  ];
+  assert.deepEqual(reconcileReviewSurfaceViolationPointers(entries, lifecycles).map((item) => item.violation_id), ['rsv-2']);
+  assert.deepEqual(reconcileReviewSurfaceViolationPointers(entries, [lifecycles[0]]), []);
+  assert.deepEqual(reconcileReviewSurfaceViolationPointers([], []), []);
+});
+
+test('RSV-9 concurrent appends of distinct violations both survive', async () => {
+  const root = await setupRepo();
+  const storyReviewDir = path.join(root, '.vibepro', 'reviews', STORY_ID);
+  const base = {
+    kind: 'review_surface_mutated_during_review',
+    evidence_class: 'violation',
+    changed_fields: ['surface_digest'],
+    stage: 'gate',
+    started: { head_sha: 'aaa', surface_digest: 'd1' },
+    closed: { head_sha: 'aaa', surface_digest: 'd2' }
+  };
+  const results = await Promise.all([
+    appendReviewSurfaceViolation(storyReviewDir, STORY_ID, { ...base, role: 'gate_evidence', lifecycle_id: 'lc-1' }),
+    appendReviewSurfaceViolation(storyReviewDir, STORY_ID, { ...base, role: 'release_risk', lifecycle_id: 'lc-2' })
+  ]);
+  assert.deepEqual(results.map((item) => item.appended), [true, true]);
+
+  const ledger = await readReviewSurfaceViolations(storyReviewDir, STORY_ID);
+  assert.equal(ledger.entries.length, 2, 'a racing append must not drop the other entry');
+  assert.deepEqual(
+    ledger.entries.map((entry) => entry.lifecycle_id).sort(),
+    ['lc-1', 'lc-2']
+  );
+});
+
+test('RSV-9 an unrecognized close reason is rejected instead of coerced to completed', async () => {
+  const root = await setupRepo();
+  await start(root);
+  await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = "mutated mid-review";\n');
+
+  await assert.rejects(() => close(root, { closeReason: 'timed_out' }), /--close-reason must be one of/);
+  const summary = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
+  assert.equal(summary.total_count, 0, 'a rejected close must not mint a violation');
+
+  // The correctly spelled reason still records nothing, per RSV-6.
+  await close(root, { closeReason: 'timeout' });
+  assert.equal((await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null })).total_count, 0);
+});
+
+test('RSV-9 an unreadable ledger is acknowledgeable rather than a dead end', async () => {
+  const root = await setupRepo();
+  const storyReviewDir = path.join(root, '.vibepro', 'reviews', STORY_ID);
+  await mkdir(storyReviewDir, { recursive: true });
+  await writeFile(violationsPath(root), '{ this is not json');
+
+  const blocked = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
+  assert.equal(blocked.readable, false);
+  assert.equal(blocked.unacknowledged_count, 1);
+  assert.equal(blocked.unacknowledged[0].violation_id, 'ledger_unreadable');
+
+  await recordDecision(root, {
+    storyId: STORY_ID,
+    type: 'needs_review',
+    status: 'accepted',
+    source: `${REVIEW_SURFACE_INTEGRITY_GATE_ID}:ledger_unreadable`,
+    summary: 'Ledger lost to a disk error; the affected review was re-run from scratch.',
+    reason: 'Owner confirmed no violation had been recorded before the corruption.',
+    artifact: 'README.md'
+  });
+
+  const acknowledged = await readReviewSurfaceViolationSummary(root, STORY_ID, {
+    decisionRecords: await readDecisionRecordsIfExists(root, STORY_ID)
+  });
+  assert.equal(acknowledged.readable, false, 'the unreadable state is still reported');
+  assert.equal(acknowledged.unacknowledged_count, 0, 'but it is no longer blocking');
+});
+
+test('RSV-9 review violations CLI reports the unreadable reason and exits non-zero', async () => {
+  const root = await setupRepo();
+  const storyReviewDir = path.join(root, '.vibepro', 'reviews', STORY_ID);
+  await mkdir(storyReviewDir, { recursive: true });
+  await writeFile(violationsPath(root), '{ this is not json');
+
+  let out = '';
+  const stdout = { write: (chunk) => { out += chunk; } };
+  const blocked = await runCli(['review', 'violations', root, '--id', STORY_ID], { stdout });
+  assert.equal(blocked.exitCode, 2);
+  assert.match(out, /ledger_readable: no/);
+  assert.match(out, /Ledger Unreadable/);
+  assert.match(out, /malformed JSON/);
+  assert.match(out, /ledger_unreadable/);
+
+  out = '';
+  await writeFile(violationsPath(root), JSON.stringify({ schema_version: '0.1.0', entries: [] }));
+  const clean = await runCli(['review', 'violations', root, '--id', STORY_ID], { stdout });
+  assert.equal(clean.exitCode, 0);
+  assert.match(out, /ledger_readable: yes/);
+  assert.match(out, /total: 0/);
+});
+
+test('RSV-7 a close whose head moved without confirmed cancellation records no violation', async () => {
+  const root = await setupRepo();
+  const started = await start(root);
+  await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = "committed mid-review";\n');
+  await git(root, ['add', 'src/foo.js']);
+  await git(root, ['commit', '-m', 'mid-review commit']);
+
+  // This close terminalizes as orphaned_agent and leaves the lifecycle running,
+  // so no review result can ever attach: an abandoned attempt, not a verdict.
+  const closed = await close(root, { cancellationConfirmed: false });
+  assert.equal(closed.lifecycle.terminal_status, 'orphaned_agent');
+  assert.equal(closed.surface_violation, null);
+  assert.equal((await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null })).total_count, 0);
+
+  const lifecycle = await readJson(lifecyclePath(root));
+  const entry = lifecycle.entries.find((item) => item.lifecycle_id === started.lifecycle.lifecycle_id);
+  assert.equal(entry.status, 'running', 'an orphaned close does not complete the lifecycle');
+  assert.equal(entry.surface_detection, 'evaluated');
 });
 
 test('RSV-7 detectReviewSurfaceMutation ignores entries with no recorded start surface', () => {
