@@ -68,7 +68,7 @@ test('AC-1 AC-2 flow_replay: the real CLI rejects a malformed enumeration claim 
   });
 });
 
-test('AC-3 S-001 S-002 scenario_clause_e2e: the enumeration report over this repository recounts claims against the real tree', async () => {
+test('AC-3 S-003 S-002 scenario_clause_e2e: the enumeration report over this repository recounts claims against the real tree', async () => {
   const { collectEnumerationCoverage } = await import('../../src/enumeration-evidence.js');
 
   const truthful = await collectEnumerationCoverage({
