@@ -471,6 +471,21 @@ async function finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir
       throw new Error(`review record ${stage}:${role} requires a lifecycle started from a consumed dispatch authorization when delivery efficiency policy is enabled`);
     }
   }
+  // Same detection the explicit close performs, for the record-side close.
+  const recordCloseHeadSha = gitContext.head_sha ?? null;
+  const recordCloseSurfaceDigest = gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash ?? null;
+  const recordSurfaceViolation = result.agent_provenance.lifecycle?.agent_closed
+    ? await recordReviewSurfaceViolationForClose(root, storyId, stage, {
+      role,
+      agentId: result.agent_provenance.agent_id,
+      agentSystem: result.agent_provenance.system,
+      closeReason: 'completed',
+      closeEvidence: result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath),
+      closeHeadSha: recordCloseHeadSha,
+      closeSurfaceDigest: recordCloseSurfaceDigest,
+      detectedBy: 'review record'
+    })
+    : null;
   let summary = null;
   await updateLifecycle(root, storyId, stage, async (lifecycle) => {
     if (result.agent_provenance.lifecycle?.agent_closed) {
@@ -498,12 +513,24 @@ async function finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir
           entry.close_evidence = result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath);
         }
       } else {
+        // `review record --agent-closed` closes the lifecycle itself when
+        // `review close` was skipped. That is a completed close like any other,
+        // so it must record the close-time surface too — otherwise the whole
+        // detection is opt-out by simply not running `review close`.
         entry.status = 'closed';
         entry.closed_at = result.recorded_at ?? new Date().toISOString();
         entry.close_reason = 'completed';
         entry.close_evidence = result.agent_provenance.lifecycle.close_evidence ?? toWorkspaceRelative(root, resultPath);
         entry.result_artifact = toWorkspaceRelative(root, resultPath);
         entry.result_status = result.status;
+        entry.closed_head_sha = recordCloseHeadSha;
+        entry.closed_surface_digest = recordCloseSurfaceDigest;
+        entry.surface_detection = (entry.head_sha && recordCloseHeadSha) || (entry.surface_digest && recordCloseSurfaceDigest)
+          ? 'evaluated'
+          : 'skipped_missing_snapshot';
+        if (recordSurfaceViolation?.entry?.violation_id) {
+          entry.surface_violation_id = recordSurfaceViolation.entry.violation_id;
+        }
       }
     }
   }, async () => {
@@ -955,7 +982,8 @@ async function recordReviewSurfaceViolationForClose(root, storyId, stage, {
   closeEvidence,
   closeHeadSha,
   closeSurfaceDigest,
-  cancellationConfirmed
+  cancellationConfirmed,
+  detectedBy = 'review close'
 }) {
   const lifecycle = await readLifecycle(root, storyId, stage);
   if (operationIdempotencyKey
@@ -966,10 +994,13 @@ async function recordReviewSurfaceViolationForClose(root, storyId, stage, {
   // No candidate, or an already-terminal one, means this close will throw; do not
   // record a violation for a close that never happens.
   if (!candidate || ['closed', 'replaced'].includes(candidate.status)) return null;
-  // The head moved and cancellation is unconfirmed: this close terminalizes the
-  // lifecycle as orphaned_agent and leaves it running, so no review result can
-  // ever attach to it. That is an abandoned attempt, not a contaminated verdict.
-  if (candidate.head_sha && candidate.head_sha !== closeHeadSha && cancellationConfirmed !== true) return null;
+  // An orphaned_agent close (head moved, cancellation unconfirmed) is NOT exempt.
+  // It was, on the reasoning that no review result could attach to such a
+  // lifecycle — but that reasoning was wrong: the entry keeps closed_at unset, so
+  // `review record --agent-closed` walks straight into the not-yet-closed branch
+  // and completes it. The default CLI close passes no --cancellation-confirmed,
+  // so exempting it left the most common path undetected.
+  void cancellationConfirmed;
   const mutation = detectReviewSurfaceMutation(candidate, { closeHeadSha, closeSurfaceDigest, closeReason });
   if (!mutation) return null;
   const storyReviewDir = path.dirname(await getReviewStageDir(root, storyId, stage));
@@ -983,7 +1014,7 @@ async function recordReviewSurfaceViolationForClose(root, storyId, stage, {
     started_at: candidate.started_at ?? null,
     close_reason: closeReason,
     close_evidence: closeEvidence ?? null,
-    detected_by: 'review close'
+    detected_by: detectedBy
   });
 }
 
@@ -997,13 +1028,9 @@ export async function readReviewSurfaceViolationSummary(repoRoot, storyId, { dec
   // The cross-check must not fail more quietly than the record it guards: an
   // unreadable lifecycle means the pointers could not be compared, and that is
   // reported rather than silently read as "no pointers".
-  let lifecycleEntries = [];
-  let pointersReadable = true;
-  try {
-    lifecycleEntries = await readStoryLifecycleEntries(storyReviewDir);
-  } catch {
-    pointersReadable = false;
-  }
+  const pointers = await readStoryLifecyclePointers(storyReviewDir);
+  const lifecycleEntries = pointers.entries;
+  const pointersReadable = pointers.readable;
   let summary;
   try {
     const ledger = await readReviewSurfaceViolations(storyReviewDir, storyId);
@@ -2634,7 +2661,7 @@ function buildReviewAuthorizeCommand({ storyId, stage, role, modelPolicy = null 
 }
 
 function buildReviewCloseCommand({ storyId, stage, role }) {
-  return `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} --agent-id "<replacement-agent-id>" --close-reason "<completed|timeout|replaced|manual_shutdown>" --close-evidence "<replacement-agent-close-evidence>"`;
+  return `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} --agent-id "<replacement-agent-id>" --close-reason completed --close-evidence "<replacement-agent-close-evidence>"`;
 }
 
 function buildReviewPrepareCommand({ storyId, stage, roles = [] }) {
@@ -3731,6 +3758,39 @@ async function readStoryLifecycleEntries(storyReviewDir) {
     .filter((entry) => entry.isDirectory() && REVIEW_STAGES.has(entry.name))
     .map((entry) => readJsonIfExists(path.join(storyReviewDir, entry.name, 'lifecycle.json'))));
   return lifecycles.flatMap((lifecycle) => Array.isArray(lifecycle?.entries) ? lifecycle.entries : []);
+}
+
+/**
+ * The reconciliation view of the same files, with the ledger's failure policy
+ * rather than the lenient one. `readStoryLifecycleEntries` folds a lifecycle
+ * whose `entries` is valid JSON but not an array into zero entries; here that is
+ * an unusable cross-check, because the ledger reader rejects the identical shape
+ * and the two must not disagree about what "unreadable" means.
+ */
+async function readStoryLifecyclePointers(storyReviewDir) {
+  let stages = [];
+  try {
+    stages = await readdir(storyReviewDir, { withFileTypes: true });
+  } catch (error) {
+    if (error.code === 'ENOENT') return { entries: [], readable: true };
+    return { entries: [], readable: false };
+  }
+  const paths = stages
+    .filter((entry) => entry.isDirectory() && REVIEW_STAGES.has(entry.name))
+    .map((entry) => path.join(storyReviewDir, entry.name, 'lifecycle.json'));
+  const entries = [];
+  for (const filePath of paths) {
+    let lifecycle;
+    try {
+      lifecycle = await readJsonIfExists(filePath);
+    } catch {
+      return { entries: [], readable: false };
+    }
+    if (lifecycle === null || lifecycle === undefined) continue;
+    if (!Array.isArray(lifecycle.entries)) return { entries: [], readable: false };
+    entries.push(...lifecycle.entries);
+  }
+  return { entries, readable: true };
 }
 
 async function readDispatchAuthorizations(storyReviewDir, storyId) {

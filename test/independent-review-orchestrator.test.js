@@ -187,6 +187,26 @@ test('IRO-S-5 timeout, schema_failure, retry_or_async_failure, auth_denied, work
   }
 });
 
+test('IRO-S-5 a runtime stop closes the lifecycle with a real close reason, not the stop code', async () => {
+  // vibepro review close rejects anything outside completed|timeout|replaced|
+  // manual_shutdown, and only a completed close records a review-surface
+  // violation. Passing the raw stop code through would either throw or, before
+  // that assertion existed, silently label an abandoned review as completed.
+  for (const [code, expected] of [
+    ['runtime_timeout', 'timeout'],
+    ['runtime_required', 'manual_shutdown'],
+    ['review_blocked', 'manual_shutdown']
+  ]) {
+    const closeReasons = [];
+    const base = boundaries({ stop: { poll: { status: 'waiting_for_runtime', stop_reason: { code, message: code } } } });
+    await orchestrateIndependentReview({
+      stages: [{ stage: 'architecture', roles: ['architecture'] }],
+      boundaries: { ...base, close: async (input) => { closeReasons.push(input.closeReason); return { status: 'closed' }; } }
+    });
+    assert.deepEqual(closeReasons, [expected], `stop code ${code} must close as ${expected}`);
+  }
+});
+
 const RETRYABLE_REVIEW_STOPS = new Set([
   'runtime_unavailable', 'auth_denied', 'permission_wait', 'review_readonly_unavailable'
 ]);

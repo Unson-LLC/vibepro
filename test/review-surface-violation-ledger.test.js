@@ -314,6 +314,26 @@ test('RSV-5 pr prepare blocks on gate:review_surface_integrity and keeps it on t
   assert.ok(edges.some((edge) => edge.from === REVIEW_SURFACE_INTEGRITY_GATE_ID), 'gate must stay on the path to pr');
   const dagConnectivity = nodes.find((node) => node.id === 'gate:dag_connectivity');
   assert.equal(dagConnectivity.status, 'passed', 'the new node must not break dag connectivity');
+
+  // The clearing leg, through the real command rather than the pure function:
+  // without decisionRecords wired into pr prepare the gate would be unclearable
+  // in the CLI while every unit assertion still passed.
+  await recordDecision(root, {
+    storyId: STORY_ID,
+    type: 'needs_review',
+    status: 'accepted',
+    source: `${REVIEW_SURFACE_INTEGRITY_GATE_ID}:${violationId}`,
+    summary: 'Reviewer confirmed the mid-review edit was limited to a comment.',
+    reason: 'Owner inspected the diff between the start and close digests.',
+    artifact: 'README.md'
+  });
+  await runCli(['pr', 'prepare', root, '--story-id', STORY_ID, '--base', 'main', '--json']);
+  const cleared = await readJson(path.join(root, '.vibepro', 'pr', STORY_ID, 'pr-prepare.json'));
+  const clearedGate = cleared.pr_context.gate_dag.nodes.find((node) => node.id === REVIEW_SURFACE_INTEGRITY_GATE_ID);
+  assert.equal(clearedGate.status, 'passed', 'an accepted decision must clear the gate through pr prepare');
+  assert.equal(clearedGate.violation_count, 1, 'and the record must still be there');
+  assert.equal(clearedGate.acknowledged_violation_count, 1);
+  assert.ok(!cleared.gate_status.unresolved_gates.some((item) => item.id === REVIEW_SURFACE_INTEGRITY_GATE_ID));
 });
 
 test('RSV-5 the gate reports zero violations as passed without touching stale review handling', () => {
@@ -625,10 +645,20 @@ test('RSV-8 unreadable lifecycle pointers block instead of reading as "no pointe
   assert.equal(summary.unacknowledged_count, 1, 'an unusable cross-check blocks');
   assert.equal(summary.unacknowledged[0].kind, 'review_surface_lifecycle_pointers_unreadable');
 
-  // The wider pr prepare path also refuses to proceed over an unreadable
+  // The wider pr prepare path also refuses to proceed over a malformed
   // lifecycle, so the two failure directions agree rather than one covering for
   // the other.
   await assert.rejects(() => summarizeAgentReviewsForPr(root, { storyId: STORY_ID, fileGroups: null }), SyntaxError);
+
+  // Valid JSON of the wrong shape is the same unusable state, and the ledger
+  // reader rejects the identical shape — the two must not disagree. Here nothing
+  // else throws, so this branch is the only thing standing between an empty
+  // ledger and a clean gate.
+  await writeFile(lifecyclePath(root), JSON.stringify({ schema_version: '0.1.0', entries: {} }));
+  const wrongType = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
+  assert.equal(wrongType.pointers_readable, false);
+  assert.equal(wrongType.unacknowledged_count, 1);
+  assert.equal(wrongType.unacknowledged[0].kind, 'review_surface_lifecycle_pointers_unreadable');
 });
 
 test('RSV-8 the gate names each violation kind in its own words', () => {
@@ -746,24 +776,68 @@ test('RSV-9 review violations CLI reports the unreadable reason and exits non-ze
   assert.match(out, /total: 0/);
 });
 
-test('RSV-7 a close whose head moved without confirmed cancellation records no violation', async () => {
+test('RSV-2 the default close path, without --cancellation-confirmed, still records the violation', async () => {
   const root = await setupRepo();
   const started = await start(root);
   await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = "committed mid-review";\n');
   await git(root, ['add', 'src/foo.js']);
   await git(root, ['commit', '-m', 'mid-review commit']);
 
-  // This close terminalizes as orphaned_agent and leaves the lifecycle running,
-  // so no review result can ever attach: an abandoned attempt, not a verdict.
+  // The CLI never passes --cancellation-confirmed, so this is the common path.
+  // The lifecycle terminalizes as orphaned_agent and keeps closed_at unset, which
+  // means `review record --agent-closed` can still complete it — so exempting
+  // this path from detection would have left the default flow unwatched.
   const closed = await close(root, { cancellationConfirmed: false });
   assert.equal(closed.lifecycle.terminal_status, 'orphaned_agent');
-  assert.equal(closed.surface_violation, null);
-  assert.equal((await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null })).total_count, 0);
+  assert.ok(closed.surface_violation, 'the default close path must record the violation');
+  assert.ok(closed.surface_violation.changed_fields.includes('head_sha'));
+  assert.equal((await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null })).total_count, 1);
 
   const lifecycle = await readJson(lifecyclePath(root));
   const entry = lifecycle.entries.find((item) => item.lifecycle_id === started.lifecycle.lifecycle_id);
-  assert.equal(entry.status, 'running', 'an orphaned close does not complete the lifecycle');
   assert.equal(entry.surface_detection, 'evaluated');
+  assert.equal(entry.surface_violation_id, closed.surface_violation.violation_id);
+});
+
+test('RSV-1 review record closing a lifecycle itself also records the close-time surface', async () => {
+  const root = await setupRepo();
+  const started = await start(root);
+  await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = "committed mid-review";\n');
+  await git(root, ['add', 'src/foo.js']);
+  await git(root, ['commit', '-m', 'mid-review commit']);
+
+  // Skipping `review close` entirely: review record --agent-closed completes the
+  // lifecycle by itself. Detection must not be opt-out by taking this route.
+  await recordAgentReview(root, {
+    storyId: STORY_ID,
+    stage: 'gate',
+    role: 'gate_evidence',
+    status: 'pass',
+    summary: 'review recorded without an explicit close',
+    reviewerSystem: 'claude_code',
+    reviewerId: 'task-1',
+    agentThreadId: 'thread-task-1',
+    agentSessionId: 'session-task-1',
+    agentTranscript: 'transcript://task-1',
+    agentCloseEvidence: 'subagent shut down',
+    agentClosed: true,
+    judgmentDeltas: ['initial: unverified -> final: verified because the fixture export matches the asserted test'],
+    inspectionSummary: 'Read src/foo.js and test/foo.test.js in full.',
+    inspectionEvidence: 'src/foo.js:1 defines the fixture export asserted by test/foo.test.js.',
+    inspectionInputs: ['src/foo.js', 'test/foo.test.js']
+  });
+
+  const lifecycle = await readJson(lifecyclePath(root));
+  const entry = lifecycle.entries.find((item) => item.lifecycle_id === started.lifecycle.lifecycle_id);
+  assert.equal(entry.close_reason, 'completed');
+  assert.ok(entry.closed_head_sha, 'the record-side close records the close-time head');
+  assert.ok(entry.closed_surface_digest, 'the record-side close records the close-time digest');
+  assert.equal(entry.surface_detection, 'evaluated');
+
+  const summary = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
+  assert.equal(summary.total_count, 1, 'skipping review close must not skip detection');
+  assert.equal(summary.entries[0].detected_by, 'review record');
+  assert.equal(entry.surface_violation_id, summary.entries[0].violation_id);
 });
 
 test('RSV-7 detectReviewSurfaceMutation ignores entries with no recorded start surface', () => {

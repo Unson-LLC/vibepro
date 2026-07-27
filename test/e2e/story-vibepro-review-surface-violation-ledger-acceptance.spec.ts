@@ -35,7 +35,7 @@ test('story-vibepro-review-surface-violation-ledger RSV-2 S-001 a mid-review sur
   assert.match(stdout, /RSV-2 a commit landed mid-review is recorded with head_sha among the changed fields/);
 });
 
-test('story-vibepro-review-surface-violation-ledger RSV-3 INV-002 a later clean round never removes the earlier violation', async () => {
+test('story-vibepro-review-surface-violation-ledger RSV-3 INV-003 a later clean round never removes the earlier violation', async () => {
   const { stdout } = await contractRun;
   assert.match(stdout, /RSV-3 a later clean review round never removes or rewrites an earlier violation/);
 });

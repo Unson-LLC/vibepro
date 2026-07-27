@@ -72,21 +72,25 @@ updated_at: 2026-07-27
 
 反証手順つき。すべて `test/review-surface-violation-ledger.test.js` で機械検証する。
 
-- [ ] RSV-1: `review close` は毎回、close 時点の head sha と surface digest を
+- [ ] RSV-1: lifecycle を閉じる操作は毎回、close 時点の head sha と surface digest を
       lifecycle entry の `closed_head_sha` / `closed_surface_digest` に記録する。
-      変更がなかった close でも記録される。
+      変更がなかった close でも記録される。`review close` を省略して
+      `review record --agent-closed` が lifecycle を閉じた場合も同様に記録する
+      （閉じ方を選ぶだけで検出を回避できてはならない）。
       **反証**: ツリーを一切変更せず start→close し、lifecycle.json の当該 entry に
       両フィールドが存在し start 時の値と一致することを確認する。欠落または
       null なら不合格。
 - [ ] RSV-2: close 時点の head sha または surface digest が start 時点と異なり、
-      かつ `close_reason` が `completed` の場合、`review close` は
+      かつ `close_reason` が `completed` の場合、close は
       `.vibepro/reviews/<story-id>/surface-violations.json` に
       `kind: "review_surface_mutated_during_review"`,
       `evidence_class: "violation"` の entry を 1 件追加し、
       `changed_fields` に変化したフィールド名を列挙する。
       **反証**: start 後にトラッキング済みファイルを書き換えてから close し、
       entry が存在し `changed_fields` が `surface_digest` を含むことを確認する。
-      未 commit の変更で entry が作られないなら不合格。
+      未 commit の変更で entry が作られないなら不合格。`--cancellation-confirmed`
+      を付けない既定の close（CLI が実際に発行する形）でも、
+      `review close` を省いた `review record --agent-closed` でも記録されること。
 - [ ] RSV-3: ledger はレビュー再実行で消えない。違反の記録後に同一 story/stage/role で
       新しい lifecycle を start→close→record しても、既存 entry は削除も改変もされず、
       entry 総数は減少しない。
@@ -151,8 +155,10 @@ updated_at: 2026-07-27
 - 網羅数 N の計算化（CEA-S-2）。
 - 予算・停止条件 override の人間承認必須化（CEA-S-4）。本 Story の承認経路は
   既存の decision record をそのまま使い、書き込み主体の制限は行わない。
-- `review record` 時点や adjudication 時点での面変更検出。本 Story は
-  start と close の間だけを対象にする。
+- adjudication 時点での面変更検出。本 Story は start と「lifecycle を閉じる操作」の
+  間だけを対象にする。`review record --agent-closed` が lifecycle を閉じる場合は
+  その record 時点が close 時点であり対象に含まれるが、既に閉じた lifecycle へ
+  結果を添付するだけの record は対象外。
 - 既に記録済みの過去 Story の遡及的な違反抽出。
 
 ## 残余（明示しておく）
@@ -171,3 +177,9 @@ updated_at: 2026-07-27
    `surface_violation_id` を両方書き換えれば不整合は残らない。本 Story は
    単一ファイルの書き換えを可視化するところまでであり、暗号学的な
    tamper-evidence は提供しない。
+4. **記録の耐久性。** ledger は `.vibepro/reviews/<story-id>/` 配下にあり
+   `.gitignore` の対象で、canonical audit の promotion 対象にも入っていない。
+   つまり `.vibepro/reviews/<story-id>/` ごと削除すれば ledger と
+   lifecycle pointer が同時に消え、照合対象が無くなる。append-only は
+   「1 ファイルだけの改変を可視化する」保証であって、
+   ディレクトリごとの消去に対する保証ではない。
