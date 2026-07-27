@@ -1116,7 +1116,7 @@ export function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:split_resolution' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:managed_worktree' && gate.required && gate.status !== 'satisfied') return true;
   if (gate.id === 'gate:decision_record' && gate.status !== 'passed') return true;
-  if (gate.id === 'gate:enumeration_coverage' && !['passed', 'not_applicable'].includes(gate.status)) return true;
+  if (gate.id === 'gate:enumeration_coverage' && !['passed', 'not_applicable', 'accepted_followup'].includes(gate.status)) return true;
   if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
   if (gate.type === 'workflow_heavy_gate' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:agent_review' && gate.status !== 'passed') return true;

@@ -624,7 +624,8 @@ export async function collectEnumerationCoverage({
       skipped: [],
       claims: scenarios.map(describeScenario),
       rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection),
-      unrecognized_scenarios: scenarios.unrecognized ?? []
+      unrecognized_scenarios: scenarios.unrecognized ?? [],
+      binary_paths: []
     };
   }
 
@@ -643,7 +644,8 @@ export async function collectEnumerationCoverage({
       skipped: [],
       claims: scenarios.map(describeScenario),
       rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection),
-      unrecognized_scenarios: scenarios.unrecognized ?? []
+      unrecognized_scenarios: scenarios.unrecognized ?? [],
+      binary_paths: []
     };
   }
   const addedLiterals = added;
@@ -660,7 +662,8 @@ export async function collectEnumerationCoverage({
       skipped: [],
       claims: scenarios.map(describeScenario),
       rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection),
-      unrecognized_scenarios: scenarios.unrecognized ?? []
+      unrecognized_scenarios: scenarios.unrecognized ?? [],
+      binary_paths: []
     };
   }
   const { required, skipped } = selectRequiredIdentifiers({
@@ -715,7 +718,12 @@ export async function collectEnumerationCoverage({
     skipped,
     claims,
     rejections,
-    unrecognized_scenarios: scenarios.unrecognized ?? []
+    unrecognized_scenarios: scenarios.unrecognized ?? [],
+    // Product source files excluded as binary during class sizing. Wiring this
+    // only at the consumer left the field structurally empty while real files
+    // were being excluded — the producer/consumer half-closure this gate exists
+    // to catch, committed inside its own repair.
+    binary_paths: binary
   };
 }
 

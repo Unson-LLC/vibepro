@@ -11416,7 +11416,8 @@ function buildGateDag({
   });
   const enumerationCoverageGate = buildEnumerationCoverageGate({
     storyId: story.story_id,
-    enumerationCoverage
+    enumerationCoverage,
+    decisionRecords
   });
   const fastLane = buildFastLaneEvaluation({
     prRoute,
@@ -12619,7 +12620,7 @@ function buildFailureModeCoverageGate({ storyId = null, storySource = null, file
 // Enumeration coverage: "did you cover the range", as opposed to the behaviour
 // gates' "does it work". The report is produced by src/enumeration-evidence.js;
 // this builder only turns it into a gate node with actionable next commands.
-function buildEnumerationCoverageGate({ storyId = null, enumerationCoverage = null } = {}) {
+export function buildEnumerationCoverageGate({ storyId = null, enumerationCoverage = null, decisionRecords = null } = {}) {
   const report = enumerationCoverage ?? {
     status: 'inconclusive',
     reason: 'enumeration coverage was not evaluated for this preparation',
@@ -12632,6 +12633,15 @@ function buildEnumerationCoverageGate({ storyId = null, enumerationCoverage = nu
   const missing = report.missing ?? [];
   const rejections = report.rejections ?? [];
   const story = storyId ?? 'unknown-story';
+  // The unreadable-file cause is the one an operator genuinely cannot fix in
+  // their own tree (a vendored or generated bundle). Printing a decision-record
+  // escape that nothing consumed made the gate advertise a remediation it did
+  // not honour, which is worse than having none.
+  const acceptedDecision = report.status === 'inconclusive'
+    && report.inconclusive_cause === 'product_source_unreadable'
+    ? findAcceptedDecisionForSource(decisionRecords, 'gate:enumeration_coverage')
+    : null;
+  const effectiveStatus = acceptedDecision ? 'accepted_followup' : report.status;
   const nextCommands = [];
   for (const identifier of missing) {
     nextCommands.push(reproductionCommand(identifier, ['src', 'bin', 'lib', 'scripts', 'test']));
@@ -12682,7 +12692,10 @@ function buildEnumerationCoverageGate({ storyId = null, enumerationCoverage = nu
     id: 'gate:enumeration_coverage',
     type: 'enumeration_coverage_gate',
     label: 'Enumeration Coverage Gate',
-    status: report.status,
+    status: effectiveStatus,
+    accepted_decision: acceptedDecision
+      ? { id: acceptedDecision.id ?? null, reason: acceptedDecision.reason ?? null, artifact: acceptedDecision.artifact ?? null }
+      : null,
     required: true,
     required_identifier_count: (report.required ?? []).length,
     missing_identifiers: missing,
@@ -12696,7 +12709,9 @@ function buildEnumerationCoverageGate({ storyId = null, enumerationCoverage = nu
     next_commands: nextCommands,
     required_actions: requiredActions,
     artifact: `.vibepro/pr/${story}/pr-prepare.json#enumeration_coverage`,
-    reason: report.reason
+    reason: acceptedDecision
+      ? `${report.reason}; an accepted decision records why the file cannot be read, so the gate is followed up rather than blocking`
+      : report.reason
   };
 }
 
@@ -15500,7 +15515,7 @@ export function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:artifact_consistency' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:failure_mode_coverage' && gate.status !== 'passed') return true;
-  if (gate.id === 'gate:enumeration_coverage' && !['passed', 'not_applicable'].includes(gate.status)) return true;
+  if (gate.id === 'gate:enumeration_coverage' && !['passed', 'not_applicable', 'accepted_followup'].includes(gate.status)) return true;
   if (gate.id === 'gate:path_surface_matrix' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:responsibility_authority' && !['passed', 'not_applicable'].includes(gate.status)) return true;
   if (gate.id === 'gate:review_inspection_required' && gate.status !== 'passed') return true;

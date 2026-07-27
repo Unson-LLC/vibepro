@@ -422,6 +422,66 @@ test('an enumeration-prefixed scenario that is not recognised as a claim is surf
   assert.match(scenarios.unrecognized[0].scenario, /covered every registration/);
 });
 
+test('an unreadable product source file surfaces binary and unreadable paths on every return', async () => {
+  // binary_paths was wired at the consumer and never produced, so the gate node
+  // reported [] while real files were being excluded. Assert the producer.
+  const report = await collectEnumerationCoverage({
+    verificationEvidence: { commands: [] },
+    provider: {
+      async addedLiterals() { return new Set(['cost_missing']); },
+      async baseLiterals() { return new Set(); },
+      async productSourceFiles() { return ['src/a.js', 'src/blob.js']; },
+      async scanFile(file, onLine) {
+        if (file === 'src/blob.js') return 'binary';
+        onLine("const x = 'cost_missing';");
+        return 'scanned';
+      },
+      async countSites() {
+        return { lines: 0, files: 0, product_source_lines: 0, product_source_files: 0, product_source_file_list: [], missing_paths: [], unscannable_paths: [], binary_paths: [] };
+      }
+    }
+  });
+  assert.ok(Array.isArray(report.binary_paths), 'binary_paths must exist on the report');
+  assert.deepEqual(report.binary_paths, ['src/blob.js']);
+});
+
+test('the published inconclusive escape is actually honoured by the gate', async () => {
+  // Round 5 printed a decision-record escape that no code consumed: the gate
+  // stayed critical and pr create refused it. Assert the escape works.
+  const { buildEnumerationCoverageGate, isCriticalUnresolvedGate } = await import('../src/pr-manager.js');
+  const inconclusive = {
+    status: 'inconclusive',
+    inconclusive_cause: 'product_source_unreadable',
+    unreadable_product_source: ['src/vendor.min.js'],
+    reason: 'product source file(s) could not be read',
+    required: [], missing: [], skipped: [], claims: [], rejections: [], unrecognized_scenarios: [], binary_paths: []
+  };
+
+  const withoutDecision = buildEnumerationCoverageGate({ storyId: 's', enumerationCoverage: inconclusive });
+  assert.equal(withoutDecision.status, 'inconclusive');
+  assert.equal(isCriticalUnresolvedGate(withoutDecision), true, 'inconclusive must block without a decision');
+  assert.ok(
+    withoutDecision.required_actions.some((action) => /could not be read/.test(action)),
+    'the required action must name the real cause, not the base ref'
+  );
+
+  const withDecision = buildEnumerationCoverageGate({
+    storyId: 's',
+    enumerationCoverage: inconclusive,
+    decisionRecords: {
+      decisions: [{
+        id: 'd1', type: 'needs_review', status: 'accepted',
+        source: 'gate:enumeration_coverage',
+        reason: 'vendored bundle cannot be made readable',
+        artifact: 'src/vendor.min.js'
+      }]
+    }
+  });
+  assert.equal(withDecision.status, 'accepted_followup');
+  assert.equal(isCriticalUnresolvedGate(withDecision), false, 'an accepted decision must clear the block');
+  assert.equal(withDecision.accepted_decision.id, 'd1');
+});
+
 // --- regression guards on the gate's own failure modes ---------------------
 
 test('a base tree with no enumerable literal is an empty set, not an unreadable tree', async () => {
