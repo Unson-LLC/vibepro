@@ -1218,7 +1218,7 @@ function gateStatus(gateDag, id) {
   return gateDag.nodes.find((node) => node.id === id)?.status ?? 'unknown';
 }
 
-function isUnresolvedStatus(status) {
+export function isUnresolvedStatus(status) {
   return ['missing', 'needs_evidence', 'needs_setup', 'needs_review', 'contradicted', 'inconclusive', 'not_generated'].includes(status);
 }
 
@@ -1226,7 +1226,7 @@ function statusClass(status) {
   return `status ${toneForStatus(status)}`;
 }
 
-function toneForStatus(status) {
+export function toneForStatus(status) {
   if (['pass', 'passed', 'present', 'satisfied', 'ready_for_review', 'single_pr_ok', 'primary_pr', 'same_pr_allowed', 'executed'].includes(status)) return 'good';
   if (['active_accepted_followup', 'accepted_followup', 'needs_evidence', 'needs_setup', 'needs_review', 'needs_verification', 'inconclusive', 'split_recommended', 'separate_pr', 'cumulative_after_dependencies', 'dry_run'].includes(status)) return 'warn';
   if (['missing', 'contradicted', 'failed', 'blocked', 'stale', 'stale_evidence', 'unbound'].includes(status)) return 'danger';

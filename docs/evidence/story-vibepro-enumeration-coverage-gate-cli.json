@@ -5,5 +5,6 @@
   "tests": 441,
   "pass": 441,
   "fail": 0,
-  "recorded_at": "2026-07-27"
+  "recorded_at": "2026-07-27",
+  "head_sha_at_run": "pending"
 }

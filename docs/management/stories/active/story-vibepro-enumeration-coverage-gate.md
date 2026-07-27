@@ -12,7 +12,7 @@ related_stories:
   - story-vibepro-review-token-accounting-closure
   - story-vibepro-docs-only-evidence-profile
   - story-vibepro-evidence-adjudication-gate
-reason: "alternatives considered: (a) Skillのdoc記述だけで class closure を周知する — 先行Storyで実際に記述したが、宣言は強制ではなく同じ失敗が再現しうる。(b) 全ての verify record に enumeration scenario を必須化する — docs-only変更や列挙対象を持たない変更で無意味な証跡を強制し、docs-only evidence profile と矛盾する。(c) 新規導入かつ複数 product source ファイルに跨る snake_case リテラルだけを対象に、専用 gate で fail closed にする — これを採用した。理由は、先行Storyで実際に取り逃した class (cost_missing の producer/consumer 分離) がまさにこの形状であり、単一ファイルに閉じたリテラルには列挙すべき class が存在しないため。compatibility impact: 既存の verify record の呼び出し形式・既存 scenario の意味・既存 gate の判定は変更しない。enumeration scenario は新しい任意の scenario 形式で、適用条件を満たす変更のみで必須になる。docs-only 変更は対象識別子が0件になるため not_applicable に落ち、docs-only evidence profile と競合しない。rollback plan: このブランチのコミットを revert すれば元の挙動に戻る。影響面は9つあり、revert 時にはすべてを戻す必要がある: (1) 新規モジュール src/enumeration-evidence.js、(2) src/pr-manager.js の gate ノード・DAGエッジ2本（failure_mode_coverage → enumeration_coverage → decision_record への張り替え）・requiredGates/nodes 登録・collectUnresolvedRequiredGates の type allowlist・isCriticalUnresolvedGate の1行、および共有 isUnresolvedGateStatus への 'inconclusive' 追加（これは全gateに効く共有リスト）、(3) src/execution-state.js の type allowlist・isCriticalUnresolvedGate・isUnresolvedStatus への 'inconclusive'、(4) src/evidence-depth-planner.js の RISK_BEARING_GATE_IDS 追加、(5) src/gate-outcome-ledger.js の UNRESOLVED_STATUSES への 'inconclusive'、(6) src/verification-evidence.js の record 時 parse 検証、(7) src/checkpoint-manager.js・src/html-report.js・src/canonical-audit.js・src/usage-report.js の未解決status語彙への 'inconclusive' 追加、(8) skills/vibepro-gate-evidence/SKILL.md の記述、(9) .vibepro/config.json のStory登録。既存の記録済み証跡artifactは形式が変わらないため影響を受けない。boundary and scope: 網羅範囲の宣言とその機械検証のみ。既存 gate の閾値・review 要件・evidence depth・budget は変更しない。列挙対象の自動修正や自動 grep 実行の代行はしない。"
+reason: "alternatives considered: (a) Skillのdoc記述だけで class closure を周知する — 先行Storyで実際に記述したが、宣言は強制ではなく同じ失敗が再現しうる。(b) 全ての verify record に enumeration scenario を必須化する — docs-only変更や列挙対象を持たない変更で無意味な証跡を強制し、docs-only evidence profile と矛盾する。(c) 新規導入かつ複数 product source ファイルに跨る snake_case リテラルだけを対象に、専用 gate で fail closed にする — これを採用した。理由は、先行Storyで実際に取り逃した class (cost_missing の producer/consumer 分離) がまさにこの形状であり、単一ファイルに閉じたリテラルには列挙すべき class が存在しないため。compatibility impact: 既存の verify record の呼び出し形式・既存 scenario の意味・既存 gate の判定は変更しない。enumeration scenario は新しい任意の scenario 形式で、適用条件を満たす変更のみで必須になる。docs-only 変更は対象識別子が0件になるため not_applicable に落ち、docs-only evidence profile と競合しない。rollback plan: このブランチのコミットを revert すれば元の挙動に戻る。影響面は11あり、revert 時にはすべてを戻す必要がある: (1) 新規モジュール src/enumeration-evidence.js、(2) src/pr-manager.js の gate ノード・DAGエッジ2本（failure_mode_coverage → enumeration_coverage → decision_record への張り替え）・requiredGates/nodes 登録・collectUnresolvedRequiredGates の type allowlist・isCriticalUnresolvedGate の1行、および共有 isUnresolvedGateStatus への 'inconclusive' 追加（これは全gateに効く共有リスト）、(3) src/execution-state.js の type allowlist・isCriticalUnresolvedGate・isUnresolvedStatus への 'inconclusive'、(4) src/evidence-depth-planner.js の RISK_BEARING_GATE_IDS 追加、(5) src/gate-outcome-ledger.js の UNRESOLVED_STATUSES への 'inconclusive'、(6) src/verification-evidence.js の record 時 parse 検証、(7) gate DAG の未解決status語彙を src/scan-status.js の GATE_DAG_BLOCKING_STATUSES / isGateDagBlockingStatus に集約し、src/canonical-audit.js・src/usage-report.js・src/uiux-prepare.js・src/playbook-exporter.js を共有述語に切り替え、src/checkpoint-manager.js・src/html-report.js・src/gate-outcome-ledger.js・src/self-dogfood-scanner.js・src/senior-gap-judgment.js の各語彙に 'inconclusive' を追加（うち uiux-prepare・playbook-exporter・self-dogfood-scanner・senior-gap-judgment の4面は実際に振る舞いが変わる）、(10) 上記分類器の一部をテスト可能にする export 追加、(11) src/scan-status.js の新規 export、(8) skills/vibepro-gate-evidence/SKILL.md の記述、(9) .vibepro/config.json のStory登録。既存の記録済み証跡artifactは形式が変わらないため影響を受けない。boundary and scope: 網羅範囲の宣言とその機械検証のみ。既存 gate の閾値・review 要件・evidence depth・budget は変更しない。列挙対象の自動修正や自動 grep 実行の代行はしない。"
 parent_design: story-vibepro-enumeration-coverage-gate
 created_at: 2026-07-26
 updated_at: 2026-07-26
@@ -103,7 +103,9 @@ scope走査（claim無し）が約0.35秒、記録済み3 claim込みの全体�
 参考として `docs` 全体（121MB）を宣言した場合は1 claim あたり約2.3秒。
 キャッシュは持たないため、これを受容コストとして明示する。
 
-走査は行単位のストリーミングで、ピークメモリはファイルサイズに比例しない。
+走査は行単位のストリーミングで、行区切りのある入力ではピークメモリがファイルサイズに比例しない
+（実測: 200MB ファイルで peak RSS 99MB、buffering していた版は 740MB）。
+ただし1行が極端に長いファイルでは readline がその行を組み立てるため、その1行分は比例する。
 1行が400万文字を超えるファイルは unscannable として報告するが、これは
 readline が既にその行を組み立てた後の fail-closed 判定であり、メモリの
 上限そのものではない（上限はバッファせず流すことで得ている）。
@@ -111,9 +113,13 @@ product source 側で読めないファイルが出た場合は class の大き�
 `inconclusive` になる。この状態には gate 固有の逃げ道が無く、汎用の
 `--allow-needs-verification` + `--verification-waiver` のみが使える。
 
-binary 判定は先頭バッファのみを見る。これは本プラットフォームの grep の実挙動
-（/usr/bin/grep・ugrep いずれも late NUL のファイルを全行数える）に合わせたもので、
-ストリーム全体を検査すると公開 grep と乖離することを実測で確認している。
+binary 判定は先頭 32768 バイトのみを見る。この値は推測ではなく本ホストでの実測値で、
+NUL の位置を 4096 から 65536 まで変えた fixture に /usr/bin/grep -I を適用すると
+32768 未満で binary 扱い（0件）、32768 以上で全行計数に切り替わる。
+8192 にしていた期間は 8KB〜32KB の窓で公開 grep と乖離しており、
+ストリーム全体を検査した期間は逆方向に乖離していた。
+grep 実装により閾値は異なりうるため、binary として除外したファイルは
+`binary_paths` に記録し、黙って落とさない。
 
 ## Non Goals
 

@@ -369,7 +369,7 @@ function summarizeVerification(flowVerification, visualQa) {
   };
 }
 
-function summarizeBlockingGates(gateDag) {
+export function summarizeBlockingGates(gateDag) {
   if (gateDag.status === 'invalid') {
     return {
       status: 'blocked',

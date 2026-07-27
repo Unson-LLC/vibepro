@@ -567,7 +567,7 @@ async function collectTextFiles(dir, files) {
   }
 }
 
-function isCriticalGateDag(gateDag) {
+export function isCriticalGateDag(gateDag) {
   return (gateDag.nodes ?? []).some((node) => node.required === true && [
     'story',
     'architecture_gate',

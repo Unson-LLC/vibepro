@@ -50,9 +50,15 @@ export const EXCLUDED_SCAN_DIRS = ['.git', 'node_modules', '.vibepro'];
 // them, so a class could be certified closed over an incomplete range. Files are
 // streamed line by line instead, and only genuinely unreadable files are
 // reported. Binary detection reads the leading buffer, matching what grep on
-// this platform measurably does — testing the whole stream made the recount
-// return 0 for a file grep counts in full.
-const BINARY_PROBE_BYTES = 8192;
+// this platform measurably does.
+//
+// The size is measured, not guessed. On this host /usr/bin/grep -I treats a
+// file as binary when a NUL falls below 32768 bytes and counts it in full at or
+// above that, so an 8 KB probe left an 8-32 KB window where the recount and the
+// published grep disagreed by hundreds of sites. A whole-stream test is wrong
+// in the other direction. Implementations differ, so files excluded this way
+// are reported in `binary_paths` rather than silently dropped.
+const BINARY_PROBE_BYTES = 32768;
 
 // A line longer than this is reported rather than scanned. readline has already
 // assembled it by then, so this is a fail-closed status, not a memory bound;
@@ -500,6 +506,7 @@ async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
   const matcher = buildWholeTokenMatcher(identifier);
   const missingPaths = [];
   const unreadablePaths = [];
+  const binaryPaths = [];
   const root = path.resolve(repoRoot);
 
   // Normalise, dedupe and drop paths already covered by another declared path.
@@ -555,6 +562,10 @@ async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
         unreadablePaths.push(candidate);
         continue;
       }
+      if (status === 'binary') {
+        binaryPaths.push(candidate);
+        continue;
+      }
       if (status !== 'scanned' || fileLines === 0) continue;
       lines += fileLines;
       files += 1;
@@ -571,7 +582,8 @@ async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
     product_source_files: productSourceFileSet.size,
     product_source_file_list: [...productSourceFileSet].sort(),
     missing_paths: missingPaths,
-    unscannable_paths: unreadablePaths
+    unscannable_paths: unreadablePaths,
+    binary_paths: binaryPaths
   };
 }
 
@@ -604,12 +616,12 @@ export async function collectEnumerationCoverage({
     return {
       schema_version: ENUMERATION_EVIDENCE_SCHEMA_VERSION,
       status: 'inconclusive',
+      inconclusive_cause: 'base_ref_unresolved',
       reason: baseRef
         ? `the base tree ${baseRef} could not be scanned for existing enumerable literals, so the required enumeration scope is unknown`
         : 'no base ref was resolved, so the required enumeration scope is unknown',
       required: [],
       skipped: [],
-      missing: [],
       claims: scenarios.map(describeScenario),
       rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection),
       unrecognized_scenarios: scenarios.unrecognized ?? []
@@ -624,27 +636,28 @@ export async function collectEnumerationCoverage({
     return {
       schema_version: ENUMERATION_EVIDENCE_SCHEMA_VERSION,
       status: 'inconclusive',
+      inconclusive_cause: 'diff_unreadable',
       reason: `the diff between ${baseRef} and ${headRef} could not be read, so the introduced-identifier scope is unknown`,
       required: [],
       missing: [],
       skipped: [],
-      missing: [],
       claims: scenarios.map(describeScenario),
       rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection),
       unrecognized_scenarios: scenarios.unrecognized ?? []
     };
   }
   const addedLiterals = added;
-  const { fileCounts, siteCounts, fileSets, unreadable } = await countHeadFiles(tree, addedLiterals);
+  const { fileCounts, siteCounts, fileSets, unreadable, binary } = await countHeadFiles(tree, addedLiterals);
   if (unreadable.length > 0) {
     return {
       schema_version: ENUMERATION_EVIDENCE_SCHEMA_VERSION,
       status: 'inconclusive',
+      inconclusive_cause: 'product_source_unreadable',
+      unreadable_product_source: unreadable,
       reason: `product source file(s) could not be read, so the introduced-identifier class cannot be sized: ${unreadable.join(', ')}`,
       required: [],
       missing: [],
       skipped: [],
-      missing: [],
       claims: scenarios.map(describeScenario),
       rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection),
       unrecognized_scenarios: scenarios.unrecognized ?? []
@@ -760,7 +773,8 @@ async function countHeadFiles(tree, literals) {
   const siteCounts = new Map();
   const fileSets = new Map();
   const unreadable = [];
-  if (literals.size === 0) return { fileCounts, siteCounts, fileSets, unreadable };
+  const binary = [];
+  if (literals.size === 0) return { fileCounts, siteCounts, fileSets, unreadable, binary };
   const files = await tree.productSourceFiles();
   const matchers = [...literals].map((literal) => [literal, buildWholeTokenMatcher(literal)]);
   for (const file of files) {
@@ -776,6 +790,12 @@ async function countHeadFiles(tree, literals) {
       unreadable.push(file);
       continue;
     }
+    if (status === 'binary') {
+      // grep -I skips these too, so they are not a divergence, but record them
+      // so a shrunken class is never invisible.
+      binary.push(file);
+      continue;
+    }
     if (status !== 'scanned') continue;
     for (const [literal, hits] of perLiteral) {
       fileCounts.set(literal, (fileCounts.get(literal) ?? 0) + 1);
@@ -784,7 +804,7 @@ async function countHeadFiles(tree, literals) {
       fileSets.get(literal).add(file);
     }
   }
-  return { fileCounts, siteCounts, fileSets, unreadable };
+  return { fileCounts, siteCounts, fileSets, unreadable, binary };
 }
 
 function describeScenario(entry) {

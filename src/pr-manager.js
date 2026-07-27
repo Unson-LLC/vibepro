@@ -12660,7 +12660,23 @@ function buildEnumerationCoverageGate({ storyId = null, enumerationCoverage = nu
     );
   }
   if (report.status === 'inconclusive') {
-    requiredActions.push('Resolve the base ref so the introduced-identifier scope can be computed; an unknown scope is not a pass');
+    // One canned action for three different causes sent operators to fix a base
+    // ref when the real problem was an unreadable file. Branch on the cause the
+    // report actually recorded.
+    const cause = report.inconclusive_cause ?? 'base_ref_unresolved';
+    if (cause === 'product_source_unreadable') {
+      const files = (report.unreadable_product_source ?? []).join(', ');
+      requiredActions.push(
+        `Product source file(s) could not be read, so the introduced-identifier class cannot be sized: ${files}. `
+        + 'Make them readable, or exclude them by narrowing what is checked in under the product source prefixes. '
+        + 'If the file is a generated or vendored bundle that cannot be changed, record a decision with '
+        + `\`vibepro decision record . --id ${shellQuote(story)} --type needs_review --source gate:enumeration_coverage --status accepted --summary <text> --reason <why the file cannot be read> --artifact <path>\``
+      );
+    } else if (cause === 'diff_unreadable') {
+      requiredActions.push('The diff against the base ref could not be read, so the introduced-identifier scope is unknown; fetch the base ref or repair the shallow clone');
+    } else {
+      requiredActions.push('Resolve the base ref so the introduced-identifier scope can be computed; an unknown scope is not a pass');
+    }
   }
   return {
     id: 'gate:enumeration_coverage',
@@ -12674,6 +12690,8 @@ function buildEnumerationCoverageGate({ storyId = null, enumerationCoverage = nu
     claims: report.claims ?? [],
     rejections,
     unrecognized_scenarios: report.unrecognized_scenarios ?? [],
+    inconclusive_cause: report.inconclusive_cause ?? null,
+    binary_paths: report.binary_paths ?? [],
     primary_next_command: nextCommands[0] ?? null,
     next_commands: nextCommands,
     required_actions: requiredActions,

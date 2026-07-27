@@ -337,32 +337,49 @@ test('ENUM-S-5 the gate node sits on the DAG between failure mode coverage and d
   assert.match(source, /\{ from: 'gate:enumeration_coverage', to: 'gate:decision_record' \}/);
 });
 
-test('ENUM-S-5 no module re-lists the gate DAG blocking vocabulary instead of importing it', async () => {
-  // Rounds 1-4 each found this registration half closed: three of five, then
-  // five of seven, then seven of nine. A hardcoded list of module names cannot
-  // notice the next one, so derive the class from the codebase: no file may
-  // carry its own copy of the vocabulary.
-  const srcDir = new URL('../src/', import.meta.url);
-  const files = (await readdir(srcDir)).filter((name) => name.endsWith('.js'));
-  const offenders = [];
-  for (const name of files) {
-    if (name === 'scan-status.js') continue;
-    const source = await readFile(new URL(name, srcDir), 'utf8');
-    // A literal array holding both of these, over gate DAG node statuses, is a
-    // re-listed vocabulary rather than a use of the shared predicate.
-    for (const match of source.matchAll(/\[[^\]]*'needs_evidence'[^\]]*\]/g)) {
-      const literal = match[0];
-      // The gate DAG vocabulary is recognisable by carrying all four of these.
-      // Narrower lists belong to other DAGs (execution, judgment axes) and are
-      // a different class.
-      const isGateDagVocabulary = ["'block'", "'needs_evidence'", "'needs_review'", "'failed'"]
-        .every((token) => literal.includes(token));
-      if (!isGateDagVocabulary) continue;
-      if (literal.includes("'inconclusive'")) continue;
-      offenders.push(`${name}: ${literal.replace(/\s+/g, ' ').slice(0, 100)}`);
-    }
-  }
-  assert.deepEqual(offenders, [], 'these modules re-list the gate DAG blocking vocabulary without inconclusive');
+test('ENUM-S-5 every gate DAG status classifier behaviourally treats inconclusive as unresolved', async () => {
+  // Rounds 1-5 each found this registration half closed. A source-text scan
+  // recognises one spelling and missed html-report.js entirely; assert the
+  // behaviour of each classifier instead, so any spelling that stops rejecting
+  // the status fails here.
+  const node = { id: 'gate:enumeration_coverage', type: 'enumeration_coverage_gate', status: 'inconclusive', required: true };
+
+  const { isGateDagBlockingStatus } = await import('../src/scan-status.js');
+  assert.equal(isGateDagBlockingStatus('inconclusive'), true, 'shared predicate');
+
+  const { isUnresolvedGateStatus } = await import('../src/pr-manager.js');
+  assert.equal(isUnresolvedGateStatus('inconclusive'), true, 'pr-manager');
+
+  const executionState = await import('../src/execution-state.js');
+  assert.equal(
+    executionState.isCriticalUnresolvedGate(node),
+    true,
+    'execution-state blocking predicate'
+  );
+
+  const { UNRESOLVED_STATUSES } = await import('../src/checkpoint-manager.js');
+  assert.ok(UNRESOLVED_STATUSES.has('inconclusive'), 'checkpoint-manager');
+
+  const ledger = await import('../src/gate-outcome-ledger.js');
+  assert.ok(ledger.UNRESOLVED_STATUSES.has('inconclusive'), 'gate-outcome-ledger');
+
+  const htmlReport = await import('../src/html-report.js');
+  assert.equal(htmlReport.isUnresolvedStatus('inconclusive'), true, 'html-report unresolved list');
+  assert.notEqual(htmlReport.toneForStatus('inconclusive'), 'neutral', 'html-report must not render it as neutral');
+
+  const uiux = await import('../src/uiux-prepare.js');
+  assert.equal(
+    uiux.summarizeBlockingGates({ status: 'available', path: 'x', data: { nodes: [node] } }).count,
+    1,
+    'uiux prepare must count an inconclusive required gate as blocking'
+  );
+
+  const selfDogfood = await import('../src/self-dogfood-scanner.js');
+  assert.equal(
+    selfDogfood.isCriticalGateDag({ nodes: [{ ...node, type: 'verification_gate' }] }),
+    true,
+    'self-dogfood scanner'
+  );
 });
 
 test('ENUM-S-5 the shared gate DAG blocking predicate treats inconclusive as unresolved', async () => {

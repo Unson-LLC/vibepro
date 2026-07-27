@@ -54,7 +54,7 @@ const CHECKPOINTS = {
   }
 };
 
-const UNRESOLVED_STATUSES = new Set([
+export const UNRESOLVED_STATUSES = new Set([
   'candidate',
   'missing',
   'transient',
