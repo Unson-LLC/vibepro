@@ -340,6 +340,29 @@ test('verify run records a parse failure as an unparsed count rather than invent
   assert.ok(!record.warnings.some((warning) => warning.id === 'verification_run_produced_no_output'));
 });
 
+test('verify run records a timeout kill as a failing run and names the timeout as its cause', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, 'Makefile'), 'all:\n\t@sleep 30\n');
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'build',
+    '--target', 'Makefile', '--timeout-ms', '700',
+    '--', 'make'
+  ]);
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.result.status, 'fail');
+  assert.equal(result.result.timed_out, true);
+  assert.equal(result.result.output_limit_exceeded, false);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'build');
+  assert.equal(record.status, 'fail');
+  const warning = record.warnings.find((item) => item.id === 'verification_run_timed_out');
+  assert.ok(warning);
+  assert.match(warning.reason, /killed after 700ms/);
+  assert.ok(!record.warnings.some((item) => item.id === 'verification_run_output_limit_exceeded'));
+  const artifact = await readJson(runArtifactPath(root, 'build'));
+  assert.equal(artifact.run.timed_out, true);
+  assert.equal(artifact.run.timeout_ms, 700);
+});
+
 test('verify run keeps its computed summary sentence when the agent supplies one', async () => {
   const root = await setupRepo();
   await cli([
