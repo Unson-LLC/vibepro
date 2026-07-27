@@ -23,6 +23,14 @@ status: active
 - The command must still match the declared kind; `verify run` exits non-zero when the executed command fails, and records the failing run.
 - `vibepro verify record` keeps its existing input handling, validation, and record shape. Existing recorded evidence stays valid.
 
+## Workflow states
+
+The recording workflow has fixed states and every transition is decided by observed execution, not by declaration:
+
+`declared` (kind, targets, scenarios accepted; `--status` rejected) → `tree sampled before` → `executed` → `tree sampled after` → `outcome computed` (status from the exit code; counts parsed or explicitly absent) → `artifact and log written` → `recorded`.
+
+The record carries the warning states the run entered: tree moved (HEAD or worktree), counts unparsed, counts trivial, no output, timeout, output limit exceeded, observations overridden. A failing or killed run follows the same transitions and is recorded rather than skipped, and the CLI process status mirrors the computed outcome so a caller's control flow cannot diverge from the record.
+
 ## Verification
 
 - `node --test test/verification-runner.test.js test/verification-observation.test.js test/verification-evidence-artifact-check.test.js test/ci-evidence-import.test.js test/cli-reference-docs.test.js test/session-efficiency-audit.test.js test/session-efficiency-run-lineage.test.js test/evidence-cost-budget.test.js`

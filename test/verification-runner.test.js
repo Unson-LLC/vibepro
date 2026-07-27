@@ -316,6 +316,30 @@ test('verify run warns when a passing run reports a count that cannot distinguis
   assert.ok(record.warnings.some((warning) => warning.id === 'verification_run_counts_trivial'));
 });
 
+test('verify run records a parse failure as an unparsed count rather than inventing one', async () => {
+  const root = await setupRepo();
+  // Output that is not TAP and not the node spec summary, including lines that look like
+  // a summary but are malformed: the parser must decline rather than half-read them.
+  await writeFile(
+    path.join(root, 'Makefile'),
+    'all:\n\t@echo "Ran the checks"\n\t@echo "# tests"\n\t@echo "i pass many"\n\t@echo "{\\"tests\\": 42"\n'
+  );
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'build',
+    '--target', 'Makefile',
+    '--', 'make'
+  ]);
+  assert.equal(result.result.status, 'pass');
+  assert.equal(result.result.output_metrics, 'none');
+  assert.equal(result.result.counts, null);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'build');
+  // No fabricated counts land in the observation.
+  assert.equal(record.observation.values.tests, undefined);
+  assert.equal(record.observation.values.pass, undefined);
+  assert.ok(record.warnings.some((warning) => warning.id === 'verification_run_counts_not_parsed'));
+  assert.ok(!record.warnings.some((warning) => warning.id === 'verification_run_produced_no_output'));
+});
+
 test('verify run keeps its computed summary sentence when the agent supplies one', async () => {
   const root = await setupRepo();
   await cli([
