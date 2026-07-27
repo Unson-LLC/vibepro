@@ -9,6 +9,7 @@ import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
 import { recordVerificationEvidence } from '../src/verification-evidence.js';
+import { COMPUTED_OBSERVATION_KEYS } from '../src/verification-runner.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-test-runner';
@@ -375,6 +376,74 @@ test('verify run keeps its computed summary sentence when the agent supplies one
   assert.match(record.summary, /exit_code=0/);
   assert.match(record.summary, /tests=2 pass=2 fail=0/);
   assert.match(record.summary, /agent summary: everything is completely fine/);
+});
+
+test('every value the runner computes is protected from agent input', async () => {
+  const root = await setupRepo();
+  await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  const artifact = await readJson(runArtifactPath(root, 'unit'));
+  // The structural guarantee: a computed key outside the protected set would be
+  // overwritable by --observed, since CLI observations win the merge.
+  const unprotected = Object.keys(artifact.observed).filter((key) => !COMPUTED_OBSERVATION_KEYS.includes(key));
+  assert.deepEqual(unprotected, []);
+
+  // And the integrity anchors specifically: an agent value for them is discarded.
+  const attacked = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--observed', 'output_sha256=0000000000000000000000000000000000000000000000000000000000000000',
+    '--observed', 'worktree_sha256_after=fabricated',
+    '--observed', 'log_truncated=false',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
+  assert.notEqual(record.observation.values.output_sha256, '0'.repeat(64));
+  assert.notEqual(record.observation.values.worktree_sha256_after, 'fabricated');
+  assert.deepEqual(
+    record.observation_overrides.map((item) => item.key).sort(),
+    ['log_truncated', 'output_sha256', 'worktree_sha256_after']
+  );
+  assert.ok(attacked.result.warnings.some((warning) => warning.id === 'verification_observation_overridden'));
+});
+
+test('verify run rejects a kind-mismatched command before executing it, leaving the previous run artifact intact', async () => {
+  const root = await setupRepo();
+  await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  const before = await readJson(runArtifactPath(root, 'unit'));
+  const beforeLog = await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'unit.log'), 'utf8');
+
+  const rejected = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'Makefile',
+    '--', 'git', 'status'
+  ]);
+  assert.notEqual(rejected.exitCode, 0);
+  assert.match(rejected.stderr, /verify run --kind unit/);
+  // The recorded artifact and log the previous record points at are untouched.
+  assert.deepEqual(await readJson(runArtifactPath(root, 'unit')), before);
+  assert.equal(await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'unit.log'), 'utf8'), beforeLog);
+});
+
+test('verify run surfaces the warnings it computed on its human summary', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, 'Makefile'), 'all:\n\t@sleep 30\n');
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'build',
+    '--target', 'Makefile', '--timeout-ms', '700',
+    '--', 'make'
+  ]);
+  // A killed run and a failing suite both print `status: fail`; only the warning separates them.
+  assert.match(result.stdout, /## Warnings/);
+  assert.match(result.stdout, /verification_run_timed_out/);
+  assert.ok(result.result.warnings.some((warning) => warning.id === 'verification_run_timed_out'));
 });
 
 test('verify run requires an executable command after the separator', async () => {

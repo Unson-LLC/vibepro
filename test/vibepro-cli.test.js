@@ -9608,6 +9608,12 @@ test('pr autopilot records passing verification evidence from a defined command'
   assert.equal(evidence.commands[0].kind, 'unit');
   assert.equal(evidence.commands[0].status, 'pass');
   assert.equal(evidence.commands[0].command, 'npm test');
+  // Autopilot executes the command itself and derives the status from the exit code, so the
+  // record must not claim to be self-reported.
+  assert.equal(evidence.commands[0].evidence_source, 'autopilot_run');
+  assert.equal(evidence.commands[0].computed_observation.producer, 'vibepro pr autopilot');
+  assert.equal(evidence.commands[0].computed_observation.values.exit_code, '0');
+  assert.equal(evidence.commands[0].computed_observation.output_metrics, 'exit_code_only');
   const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'autopilot', 'unit-verification.json'));
   assert.equal(artifact.exit_code, 0);
   assert.equal(artifact.status, 'pass');

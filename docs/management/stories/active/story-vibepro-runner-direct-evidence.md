@@ -56,23 +56,39 @@ updated_at: 2026-07-27
 - [ ] RDE-1: `vibepro verify run <repo> --id <story-id> --kind <kind> -- <command...>` が
       コマンドを VibePro 自身のプロセスとして実行し、その exit code から導出した status を
       証跡へ記録する。エージェントは status を渡せない（`--status` を渡すと記録は拒否される）。
-- [ ] RDE-2: 実行の排気（exit code・TAP 集計の tests/pass/fail・所要時間・実行前後の head sha・
-      stdout の SHA-256）が、エージェントの入力を経由せず artifact と
-      `observation.values` に記録される。
+- [ ] RDE-2: 実行の排気（exit code・テスト計数の tests/pass/fail・所要時間・実行前後の head sha と
+      working tree fingerprint・stdout の SHA-256・stdout+stderr の SHA-256・log の truncate 有無）が、
+      エージェントの入力を経由せず artifact と `observation.values` に記録される。
+      runner が計算する値のキーは、ひとつ残らず上書き保護の対象に含まれていなければならない。
 - [ ] RDE-3: エージェントが計算対象フィールドと同じキーを `--observed` で渡した場合、
       記録された値は計算値で上書きされ、`observation_overrides` に
       `{key, agent_value, computed_value}` の差分が残る。エージェントの値が
       そのまま記録されることはない。
 - [ ] RDE-4: runner 直結の記録と自己申告の記録が artifact 上で区別できる。
       `verify run` の記録は `evidence_source: "runner_direct"`、
-      `verify record` の記録は `evidence_source: "self_reported"`、
-      `verify import-ci` の記録は `evidence_source: "ci_import"` を持つ。
+      `pr autopilot` の記録は `"autopilot_run"`、`verify import-ci` の記録は `"ci_import"`、
+      `verify record` とそれ以外の記録は `"self_reported"` を持つ。
+      VibePro 自身がコマンドを実行する経路はすべて計算済みの値を持ち、自己申告として記録されない。
       この値は CLI フラグでは指定できない（記録経路が内部 receipt で決める）。
-- [ ] RDE-5: 実行中にツリーが変更された場合（実行前後の head sha が異なる場合）、
-      証跡に `tree_mutated_during_run: true` と警告が残り、事後にレビュアーが
-      「どの木に対する実行だったか」を判定できる。
+- [ ] RDE-5: 実行中にツリーが変更された場合（head が動いた場合と、head は同じで
+      working tree が変わった場合の両方）、証跡に `tree_mutated_during_run: true` と
+      どちらが動いたかを示す警告が残り、事後にレビュアーが「どの木に対する実行だったか」を
+      判定できる。fingerprint を採取できなかった場合は「変化なし」ではなく
+      「未採取」として記録される。
 - [ ] RDE-6: 既存の `verify record` の挙動と記録形式は変わらない。
       `evidence_source` を持たない既存の記録は self_reported として解釈される。
+
+## 解決 (Solution)
+
+`vibepro verify run <repo> --id <story-id> --kind <kind> -- <command...>` を追加し、VibePro 自身がそのコマンドを argv として（shell を介さず）実行する。status は観測した exit code から導出し、テスト計数は実際の出力から解析し、実行前後の head sha と working tree fingerprint、所要時間、stdout と stdout+stderr の SHA-256 を記録する。`--status` は拒否し、runner が計算するキーへの `--observed` は計算値で上書きして破棄した入力を `observation_overrides` として残す。証跡の出所は記録経路が決める（`runner_direct` / `autopilot_run` / `ci_import` / `self_reported`）。既存の `pr autopilot` もコマンドを自ら実行しているため `autopilot_run` として記録する。
+
+## 互換性 (Compatibility)
+
+追加のみで破壊的変更はない。`verification-evidence.json` の command entry に `evidence_source` / `computed_observation` / `observation_overrides` を追加するが、既存フィールドの意味は変えず、未知フィールドを拒否する consumer はリポジトリ内に存在しない。`evidence_source` を持たない既存記録は self_reported として解釈する。`verify record` の入力検証・記録形式は変更しない。`verify import-ci` と `pr autopilot` は次のリリースから新フィールドを書き始める（利用者側の選択ではない）。rollback は本ブランチのコミット群を**まとめて** revert する必要がある（`RUNNER_EVIDENCE_RECEIPT` を後続コミットが import しているため、feature commit だけの revert は CLI 全体の module load を壊す）。revert 後も記録済みの値は読み取り側で検証されないため無害な JSON として残る。
+
+## 利用者に必要な操作 (User Action)
+
+必須の操作はない。新しい `verify run` は任意で使い始められ、移行・設定変更・データ backfill は不要。ローカルで実行可能な検証は `verify record` より `verify run` を推奨する（Skill `vibepro-gate-evidence` に記載）。なお本 Story の時点では `evidence_source` を読んで挙動を変える gate は存在しない（trust marker の記録のみ。gate 側の利用は後続 Story）。
 
 ## Non Goals
 

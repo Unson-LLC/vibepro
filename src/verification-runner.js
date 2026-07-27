@@ -6,7 +6,7 @@ import { promisify } from 'node:util';
 
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { toWorkspaceRelative } from './workspace.js';
-import { RUNNER_EVIDENCE_RECEIPT, recordVerificationEvidence } from './verification-evidence.js';
+import { RUNNER_EVIDENCE_RECEIPT, assertCommandMatchesVerificationKind, recordVerificationEvidence } from './verification-evidence.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -33,12 +33,32 @@ export const COMPUTED_OBSERVATION_KEYS = Object.freeze([
   'head_sha',
   'head_sha_before',
   'head_sha_after',
+  'worktree_sha256_before',
+  'worktree_sha256_after',
+  'worktree_sampled',
   'stdout_sha256',
+  'output_sha256',
   'output_bytes',
+  'log_truncated',
   'evidence_source'
 ]);
 
 const COMPUTED_OBSERVATION_KEY_SET = new Set(COMPUTED_OBSERVATION_KEYS);
+
+// A computed key that is not in the protected set is agent-writable: CLI observations win
+// the merge in buildObservation, so it would silently shadow the computed value with no
+// override entry. Asserting the subset at the point of construction keeps the two from
+// drifting apart when a new computed value is added.
+function assertComputedKeysProtected(computedValues) {
+  const unprotected = Object.keys(computedValues).filter((key) => !COMPUTED_OBSERVATION_KEY_SET.has(key));
+  if (unprotected.length > 0) {
+    throw new Error(
+      `verify run computed values that are not protected from agent input: ${unprotected.join(', ')}. `
+      + 'Add them to COMPUTED_OBSERVATION_KEYS so an --observed value cannot overwrite them.'
+    );
+  }
+  return computedValues;
+}
 
 // Markers that make a nested runner report to a foreign harness instead of running normally.
 // Inheriting NODE_TEST_CONTEXT makes `node --test` exit 0 having run nothing and printed
@@ -69,6 +89,10 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     throw new Error('verify run requires the command to execute after `--`, e.g. vibepro verify run . --id <id> --kind unit -- node --test test/foo.test.js');
   }
   const timeoutMs = normalizeTimeout(options.timeoutMs);
+  // Check the declared kind against the command before running it: the artifact and log
+  // for this kind are overwritten by the run, so a post-execution rejection would destroy
+  // the previous record's artifact while leaving that record pointing at it.
+  assertRunnableKindCommand(options.kind, renderCommand(argv));
 
   // "The tree" is the checked-out commit plus the working tree: a suite that rewrites a
   // source file mid-run moves the tree without moving HEAD, so both are sampled.
@@ -87,10 +111,13 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   const durationMs = finishedAt.getTime() - startedAt.getTime();
   const status = execution.exitCode === 0 && !execution.signal ? 'pass' : 'fail';
   const headMoved = Boolean(headBefore && headAfter && headBefore !== headAfter);
-  const worktreeChanged = Boolean(treeBefore.worktree && treeAfter.worktree && treeBefore.worktree !== treeAfter.worktree);
+  // A fingerprint that could not be computed is not evidence of an unchanged tree; the
+  // record says which it was rather than letting "not sampled" read as "unchanged".
+  const worktreeSampled = Boolean(treeBefore.worktree && treeAfter.worktree && treeBefore.complete && treeAfter.complete);
+  const worktreeChanged = worktreeSampled && treeBefore.worktree !== treeAfter.worktree;
   const treeMutated = headMoved || worktreeChanged;
 
-  const computedValues = {
+  const computedValues = assertComputedKeysProtected({
     exit_code: String(execution.exitCode),
     ...(execution.signal ? { signal: execution.signal } : {}),
     ...(runCounts
@@ -101,6 +128,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     finished_at: finishedAt.toISOString(),
     ...(headBefore ? { head_sha_before: headBefore } : {}),
     ...(headAfter ? { head_sha_after: headAfter, head_sha: headAfter } : {}),
+    worktree_sampled: String(worktreeSampled),
     ...(treeBefore.worktree ? { worktree_sha256_before: treeBefore.worktree } : {}),
     ...(treeAfter.worktree ? { worktree_sha256_after: treeAfter.worktree } : {}),
     // stdout_sha256 covers stdout alone; output_sha256 covers exactly the stdout+stderr
@@ -110,35 +138,9 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     output_sha256: sha256(output),
     output_bytes: String(Buffer.byteLength(output)),
     log_truncated: String(Buffer.byteLength(output) > MAX_STORED_LOG_BYTES)
-  };
+  });
 
   const { retained, overrides } = partitionAgentObservations(options.observed, computedValues);
-
-  const logPath = await writeRunLog(root, storyId, options.kind, output);
-  const artifactPath = await writeRunArtifact(root, storyId, options.kind, {
-    status,
-    argv,
-    command: renderCommand(argv),
-    execution,
-    startedAt,
-    finishedAt,
-    durationMs,
-    headBefore,
-    headAfter,
-    treeBefore,
-    treeAfter,
-    treeMutated,
-    headMoved,
-    worktreeChanged,
-    counts: runCounts,
-    outputMetrics,
-    computedValues,
-    overrides,
-    logPath: toWorkspaceRelative(root, logPath),
-    logTruncated: Buffer.byteLength(output) > MAX_STORED_LOG_BYTES,
-    timeoutMs,
-    timedOut: execution.timedOut
-  });
 
   const warnings = [
     ...(options.managedWorktreeWarning ? [options.managedWorktreeWarning] : []),
@@ -156,6 +158,13 @@ export async function runVerificationCommand(repoRoot, options = {}) {
           id: 'verification_observation_overridden',
           command_name: 'verify run',
           reason: `agent-supplied --observed values were discarded for computed keys: ${overrides.map((item) => item.key).join(', ')}`
+        }]
+      : []),
+    ...(!worktreeSampled
+      ? [{
+          id: 'verification_worktree_not_sampled',
+          command_name: 'verify run',
+          reason: 'the working-tree fingerprint could not be computed before and after the run, so an uncommitted mid-run change would not have been detected; only the HEAD comparison applies to this record'
         }]
       : []),
     ...(status === 'pass' && output.trim().length === 0
@@ -197,6 +206,34 @@ export async function runVerificationCommand(repoRoot, options = {}) {
         }]
       : [])
   ];
+
+  const logPath = await writeRunLog(root, storyId, options.kind, output);
+  const artifactPath = await writeRunArtifact(root, storyId, options.kind, {
+    status,
+    argv,
+    command: renderCommand(argv),
+    execution,
+    startedAt,
+    finishedAt,
+    durationMs,
+    headBefore,
+    headAfter,
+    treeBefore,
+    treeAfter,
+    treeMutated,
+    headMoved,
+    worktreeChanged,
+    counts: runCounts,
+    outputMetrics,
+    computedValues,
+    overrides,
+    logPath: toWorkspaceRelative(root, logPath),
+    logTruncated: Buffer.byteLength(output) > MAX_STORED_LOG_BYTES,
+    timeoutMs,
+    timedOut: execution.timedOut,
+    worktreeSampled,
+    warnings
+  });
 
   const record = await recordVerificationEvidence(root, {
     storyId,
@@ -246,8 +283,10 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     head_sha_before: headBefore,
     head_sha_after: headAfter,
     tree_mutated_during_run: treeMutated,
+    worktree_sampled: worktreeSampled,
     output_metrics: outputMetrics,
     counts: runCounts,
+    warnings,
     observation_overrides: overrides,
     run_artifact: toWorkspaceRelative(root, artifactPath),
     run_log: toWorkspaceRelative(root, logPath),
@@ -260,6 +299,11 @@ export function renderVerificationRunSummary(result) {
   const counts = result.counts
     ? Object.entries(result.counts).map(([key, value]) => `${key}=${value}`).join(', ')
     : 'not parsed from output';
+  // The warnings are the part an operator most needs: a killed run and a failing suite
+  // both print `status: fail`, and only the warning says which one happened.
+  const warnings = result.warnings?.length
+    ? result.warnings.map((warning) => `- ${warning.id}: ${warning.reason}`).join('\n')
+    : '- none';
   const overrides = result.observation_overrides.length > 0
     ? result.observation_overrides
       .map((item) => `- ${item.key}: agent="${item.agent_value}" discarded, computed="${item.computed_value}"`)
@@ -274,9 +318,14 @@ export function renderVerificationRunSummary(result) {
 - counts: ${counts}
 - duration_ms: ${result.duration_ms}
 - head before/after: ${shortSha(result.head_sha_before)} -> ${shortSha(result.head_sha_after)}${result.tree_mutated_during_run ? ' (TREE MUTATED DURING RUN)' : ''}
+- worktree sampled: ${result.worktree_sampled ? 'yes' : 'no'}
 - run artifact: ${result.run_artifact}
 - run log: ${result.run_log}
 - evidence: ${result.artifact}
+
+## Warnings
+
+${warnings}
 
 ## Discarded Agent Observations
 
@@ -333,17 +382,17 @@ async function executeCommand(root, argv, { timeoutMs, env }) {
     if (error.code === 'ENOENT') {
       throw new Error(`verify run could not execute ${argv[0]}: command not found`);
     }
-    if (typeof error.code !== 'number' && !error.killed) throw error;
+    // A maxBuffer overflow carries a string code and no killed/signal, so it would be
+    // rethrown by the numeric-code guard and never reach the classification below.
+    const outputLimitExceeded = error.code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER';
+    if (typeof error.code !== 'number' && !error.killed && !outputLimitExceeded) throw error;
     return {
       stdout: String(error.stdout ?? ''),
       stderr: String(error.stderr ?? ''),
       exitCode: typeof error.code === 'number' ? error.code : 1,
       signal: error.signal ?? null,
-      // A maxBuffer kill looks identical to a timeout kill (killed + signal); only the
-      // error code separates them, and calling one the other sends a reader hunting for
-      // a hang that never happened.
-      timedOut: error.killed === true && Boolean(error.signal) && error.code !== 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER',
-      outputLimitExceeded: error.code === 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER',
+        timedOut: error.killed === true && Boolean(error.signal) && !outputLimitExceeded,
+      outputLimitExceeded,
       envRemoved: sanitized.removed
     };
   }
@@ -414,13 +463,15 @@ async function writeRunArtifact(root, storyId, kind, run) {
       tree_mutated_during_run: run.treeMutated,
       head_moved_during_run: run.headMoved,
       worktree_changed_during_run: run.worktreeChanged,
+      worktree_sampled: run.worktreeSampled,
       output_metrics: run.outputMetrics,
       counts: run.counts,
       harness_env_removed: run.execution.envRemoved ?? [],
       log: run.logPath,
       log_truncated: run.logTruncated
     },
-    discarded_agent_observations: run.overrides
+    discarded_agent_observations: run.overrides,
+    warnings: run.warnings
   };
   await writeFile(artifactPath, `${JSON.stringify(doc, null, 2)}\n`);
   return artifactPath;
@@ -434,6 +485,17 @@ function composeSummary(agentSummary, computedSummary) {
 function buildSummary(kind, status, execution, runCounts, durationMs) {
   const counts = runCounts ? `, tests=${runCounts.tests} pass=${runCounts.pass} fail=${runCounts.fail}` : '';
   return `vibepro verify run executed the ${kind} command: exit_code=${execution.exitCode}${counts}, duration_ms=${durationMs}, status=${status} computed from the exit code`;
+}
+
+// The shared kind matcher allows a bare `node --test` only when the artifact already
+// reports counts, which cannot be known before the run. Pre-flight therefore checks the
+// same rule with that one allowance granted, and the real check still runs at record time.
+function assertRunnableKindCommand(kind, command) {
+  try {
+    assertCommandMatchesVerificationKind(kind, command, 'pass', null, { format: 'tap' }, { tests: '1', pass: '1' });
+  } catch (error) {
+    throw new Error(String(error.message).replace('verify record --kind', 'verify run --kind'));
+  }
 }
 
 function normalizeArgv(argv) {
@@ -460,9 +522,11 @@ function sha256(value) {
 }
 
 async function sampleTreeState(root) {
+  const worktree = await worktreeFingerprint(root);
   return {
     head: await gitHead(root),
-    worktree: await worktreeFingerprint(root)
+    worktree: worktree.fingerprint,
+    complete: worktree.complete
   };
 }
 
@@ -489,10 +553,10 @@ async function worktreeFingerprint(root) {
       cwd: root,
       encoding: 'utf8',
       maxBuffer: 32 * 1024 * 1024
-    }).then((result) => result.stdout).catch(() => '');
-    return sha256(`${lines.join('\n')}\n${diff}`);
+    }).then((result) => ({ text: result.stdout, complete: true })).catch(() => ({ text: '', complete: false }));
+    return { fingerprint: sha256(`${lines.join('\n')}\n${diff.text}`), complete: diff.complete };
   } catch {
-    return null;
+    return { fingerprint: null, complete: false };
   }
 }
 
