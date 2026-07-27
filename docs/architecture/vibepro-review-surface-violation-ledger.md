@@ -136,8 +136,10 @@ Two things this does **not** close:
    matching `lifecycle.json` pointer leaves no inconsistency to find. The design
    raises the cost and makes the single-file edit visible; it does not make the
    record cryptographically tamper-evident. When the lifecycle pointers cannot be
-   read at all, the summary reports `pointers_readable: false` and the gate
-   carries a warning, rather than reading the absence of pointers as agreement.
+   read at all the cross-check cannot run, so that state is itself a blocking
+   violation (`lifecycle_pointers_unreadable`) rather than being read as
+   agreement — otherwise one malformed byte in `lifecycle.json` would reopen the
+   well-formed-rewrite path.
 
 Neither is claimed as covered anywhere in this Story's acceptance criteria.
 

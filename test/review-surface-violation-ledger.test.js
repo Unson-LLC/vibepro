@@ -25,6 +25,7 @@ import {
 } from '../src/review-surface-violations.js';
 import { recordDecision, readDecisionRecordsIfExists } from '../src/decision-records.js';
 import { runCli } from '../src/cli.js';
+import { buildReviewSurfaceIntegrityGate, isUnresolvedGateStatus } from '../src/pr-manager.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-test';
@@ -607,16 +608,52 @@ test('RSV-8 acknowledging a violation does not also acknowledge erasing it', asy
   assert.equal(orphan.kind, 'review_surface_violation_entry_missing');
 });
 
-test('RSV-8 unreadable lifecycle pointers are reported, not read as "no pointers"', async () => {
+test('RSV-8 unreadable lifecycle pointers block instead of reading as "no pointers"', async () => {
   const root = await setupRepo();
   await start(root);
   await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = "mutated mid-review";\n');
   await close(root);
 
+  // The two-file version of the erase: empty the ledger, then break the pointers
+  // that would have caught it. Without the pointers the cross-check cannot run,
+  // so it must block rather than report a clean result.
+  await writeFile(violationsPath(root), JSON.stringify({ schema_version: '0.1.0', entries: [] }));
   await writeFile(lifecyclePath(root), '{ not json');
+
   const summary = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
   assert.equal(summary.pointers_readable, false, 'the cross-check must not fail silently');
-  assert.equal(summary.unacknowledged_count, 1, 'the ledger itself is still read');
+  assert.equal(summary.unacknowledged_count, 1, 'an unusable cross-check blocks');
+  assert.equal(summary.unacknowledged[0].kind, 'review_surface_lifecycle_pointers_unreadable');
+
+  // The wider pr prepare path also refuses to proceed over an unreadable
+  // lifecycle, so the two failure directions agree rather than one covering for
+  // the other.
+  await assert.rejects(() => summarizeAgentReviewsForPr(root, { storyId: STORY_ID, fileGroups: null }), SyntaxError);
+});
+
+test('RSV-8 the gate names each violation kind in its own words', () => {
+  const gate = buildReviewSurfaceIntegrityGate({
+    agentReviews: {
+      story_id: STORY_ID,
+      surface_violations: summarizeReviewSurfaceViolations([
+        { violation_id: 'rsv-1', kind: 'review_surface_mutated_during_review', stage: 'gate', role: 'gate_evidence', changed_fields: ['surface_digest'] },
+        { violation_id: 'missing:rsv-2', erased_violation_id: 'rsv-2', kind: 'review_surface_violation_entry_missing', stage: 'gate', role: 'release_risk', changed_fields: [] }
+      ], { decisionRecords: null })
+    }
+  });
+  assert.equal(gate.status, 'failed');
+  const actions = gate.required_actions.join('\n');
+  assert.match(actions, /had their review surface change mid-review/);
+  assert.match(actions, /missing from the ledger while the lifecycle still points at them/);
+  assert.match(actions, /gate:review_surface_integrity:missing:rsv-2/);
+});
+
+test('RSV-8 the gate does not claim a clean ledger it never read', () => {
+  const gate = buildReviewSurfaceIntegrityGate({ agentReviews: null });
+  assert.equal(gate.ledger_read, false);
+  assert.equal(gate.required, true);
+  assert.ok(isUnresolvedGateStatus(gate.status), 'an unread ledger must block, not read as a pass');
+  assert.match(gate.reason, /not a clean result/);
 });
 
 test('RSV-9 concurrent appends of distinct violations both survive', async () => {

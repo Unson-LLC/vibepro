@@ -1007,7 +1007,15 @@ export async function readReviewSurfaceViolationSummary(repoRoot, storyId, { dec
   let summary;
   try {
     const ledger = await readReviewSurfaceViolations(storyReviewDir, storyId);
-    summary = summarizeReviewSurfaceViolations(ledger.entries, { decisionRecords, lifecycleEntries });
+    summary = summarizeReviewSurfaceViolations(ledger.entries, {
+      decisionRecords,
+      lifecycleEntries,
+      // An unreadable lifecycle is not "no pointers to compare". Without the
+      // pointers the erasure cross-check cannot run at all, so this must block
+      // exactly like the ledger it guards — otherwise one malformed byte in
+      // lifecycle.json reopens the well-formed-rewrite erase path.
+      pointersReadable
+    });
   } catch (error) {
     // Reading must not crash pr prepare, but an unreadable ledger must still
     // block: it is indistinguishable from an erased one.

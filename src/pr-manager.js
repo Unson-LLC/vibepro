@@ -14079,7 +14079,31 @@ function buildReviewInspectionRequiredGate({ agentReviews = null, changeClassifi
 // a passing review for the current surface", which a re-run legitimately flips.
 // This gate answers "did a review surface move while a review was running", which
 // a re-run cannot answer at all — only a human looking at the recorded fact can.
-function buildReviewSurfaceIntegrityGate({ agentReviews = null } = {}) {
+// One blocking line per kind. The mid-review-mutation wording is wrong for an
+// erased entry or an unreadable artifact, and the headline is the only part most
+// readers ever see.
+function describeReviewSurfaceViolations(violations = []) {
+  const byKind = new Map();
+  for (const violation of violations) {
+    const kind = violation.kind ?? 'review_surface_mutated_during_review';
+    byKind.set(kind, [...(byKind.get(kind) ?? []), violation]);
+  }
+  const label = (violation) => `${violation.stage ?? '?'}:${violation.role ?? '?'}`;
+  return [...byKind.entries()].map(([kind, items]) => {
+    if (kind === 'review_surface_violation_entry_missing') {
+      return `${items.length} recorded violation(s) are missing from the ledger while the lifecycle still points at them (${items.map((item) => `${label(item)} -> ${item.erased_violation_id ?? item.violation_id}`).join('; ')}). The ledger was replaced or edited; append-only records cannot disappear.`;
+    }
+    if (kind === 'review_surface_ledger_unreadable') {
+      return 'The review surface violation ledger could not be read, so it is indistinguishable from an erased one.';
+    }
+    if (kind === 'review_surface_lifecycle_pointers_unreadable') {
+      return 'The lifecycle entries carrying surface_violation_id could not be read, so the ledger cross-check did not run and a ledger rewrite would go undetected.';
+    }
+    return `${items.length} review(s) had their review surface change mid-review (${items.map((item) => `${label(item)} [${(item.changed_fields ?? []).join(', ')}]`).join('; ')}).`;
+  });
+}
+
+export function buildReviewSurfaceIntegrityGate({ agentReviews = null } = {}) {
   const violations = agentReviews?.surface_violations ?? null;
   const storyId = agentReviews?.story_id ?? '<story-id>';
   if (!violations) {
@@ -14089,7 +14113,10 @@ function buildReviewSurfaceIntegrityGate({ agentReviews = null } = {}) {
       id: REVIEW_SURFACE_INTEGRITY_GATE_ID,
       type: 'review_surface_integrity_gate',
       label: 'Review Surface Integrity Gate',
-      status: 'not_generated',
+      // needs_evidence, not not_generated: isUnresolvedGateStatus does not treat
+      // not_generated as blocking, so a "typed absence" with that status would be
+      // indistinguishable from a pass for every consumer that matters.
+      status: 'needs_evidence',
       required: true,
       ledger_read: false,
       required_actions: [
@@ -14134,8 +14161,8 @@ function buildReviewSurfaceIntegrityGate({ agentReviews = null } = {}) {
       'An unreadable ledger fails closed because it is indistinguishable from an erased one. Restore the file if a copy exists (.vibepro artifacts are usually untracked, so git history may not have one), otherwise state what was lost and acknowledge it:',
       ...unacknowledged.map((violation) => buildReviewSurfaceViolationAcknowledgementCommand(storyId, violation.violation_id))
     ] : [
-      `${unacknowledged.length} review(s) had their review surface change mid-review (${unacknowledged.map((violation) => `${violation.stage ?? '?'}:${violation.role ?? '?'} [${(violation.changed_fields ?? []).join(', ')}]`).join('; ')}). Re-running the review does not clear this record.`,
-      'State what the contaminated review actually inspected, then acknowledge each violation with an accepted decision record:',
+      ...describeReviewSurfaceViolations(unacknowledged),
+      'Re-running the review does not clear any of these records. State what actually happened, then acknowledge each one with an accepted decision record:',
       ...unacknowledged.map((violation) => buildReviewSurfaceViolationAcknowledgementCommand(storyId, violation.violation_id))
     ],
     reason: violations?.readable === false

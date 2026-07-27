@@ -36,6 +36,7 @@ export function getReviewSurfaceViolationsPath(storyReviewDir) {
 
 export const REVIEW_SURFACE_LEDGER_UNREADABLE = 'VIBEPRO_REVIEW_SURFACE_LEDGER_UNREADABLE';
 export const REVIEW_SURFACE_LEDGER_UNREADABLE_VIOLATION_ID = 'ledger_unreadable';
+export const REVIEW_SURFACE_POINTERS_UNREADABLE_VIOLATION_ID = 'lifecycle_pointers_unreadable';
 
 /**
  * A malformed or structurally invalid ledger is rejected, never read as empty.
@@ -222,12 +223,24 @@ export const REVIEW_SURFACE_LEDGER_ENTRY_MISSING_KIND = 'review_surface_violatio
  * accepted decision records so a human episode can close the gate while the
  * recorded fact stays in the artifact forever.
  */
-export function summarizeReviewSurfaceViolations(entries = [], { decisionRecords = null, lifecycleEntries = [] } = {}) {
+export function summarizeReviewSurfaceViolations(entries = [], {
+  decisionRecords = null,
+  lifecycleEntries = [],
+  pointersReadable = true
+} = {}) {
   const accepted = (decisionRecords?.decisions ?? [])
     .filter((decision) => decision?.status === 'accepted' && typeof decision.source === 'string');
   const reconciled = [
     ...(Array.isArray(entries) ? entries : []),
-    ...reconcileReviewSurfaceViolationPointers(entries, lifecycleEntries)
+    ...reconcileReviewSurfaceViolationPointers(entries, lifecycleEntries),
+    ...(pointersReadable ? [] : [{
+      violation_id: REVIEW_SURFACE_POINTERS_UNREADABLE_VIOLATION_ID,
+      kind: 'review_surface_lifecycle_pointers_unreadable',
+      evidence_class: 'violation',
+      changed_fields: [],
+      detected_by: 'ledger reconciliation',
+      detail: 'The lifecycle entries carrying surface_violation_id could not be read, so the ledger cross-check did not run. In this state a ledger rewrite would not be detected, which is why it blocks rather than reading the missing pointers as agreement.'
+    }])
   ];
   const items = reconciled.map((entry) => {
     const acknowledgement = accepted.find((decision) => decision.source === `${REVIEW_SURFACE_INTEGRITY_GATE_ID}:${entry.violation_id}`) ?? null;
