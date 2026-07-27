@@ -25,7 +25,9 @@ import {
 import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js';
 import {
   REVIEW_SURFACE_INTEGRITY_GATE_ID,
+  REVIEW_SURFACE_LEDGER_UNREADABLE,
   appendReviewSurfaceViolation,
+  buildUnreadableReviewSurfaceViolationSummary,
   detectReviewSurfaceMutation,
   getReviewSurfaceViolationsPath,
   readReviewSurfaceViolations,
@@ -972,9 +974,18 @@ export async function readReviewSurfaceViolationSummary(repoRoot, storyId, { dec
   const root = path.resolve(repoRoot);
   const route = await resolveArtifactRoute(root, 'review', { storyId });
   const storyReviewDir = path.resolve(root, route.canonical.relative_path);
-  const ledger = await readReviewSurfaceViolations(storyReviewDir, storyId);
+  let summary;
+  try {
+    const ledger = await readReviewSurfaceViolations(storyReviewDir, storyId);
+    summary = summarizeReviewSurfaceViolations(ledger.entries, { decisionRecords });
+  } catch (error) {
+    // Reading must not crash pr prepare, but an unreadable ledger must still
+    // block: it is indistinguishable from an erased one.
+    if (error.code !== REVIEW_SURFACE_LEDGER_UNREADABLE) throw error;
+    summary = buildUnreadableReviewSurfaceViolationSummary(error);
+  }
   return {
-    ...summarizeReviewSurfaceViolations(ledger.entries, { decisionRecords }),
+    ...summary,
     story_id: storyId,
     artifact: toWorkspaceRelative(root, getReviewSurfaceViolationsPath(storyReviewDir))
   };

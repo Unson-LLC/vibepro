@@ -16,6 +16,7 @@ import {
 } from '../src/agent-review.js';
 import {
   REVIEW_SURFACE_INTEGRITY_GATE_ID,
+  REVIEW_SURFACE_LEDGER_UNREADABLE,
   appendReviewSurfaceViolation,
   detectReviewSurfaceMutation,
   readReviewSurfaceViolations,
@@ -452,22 +453,42 @@ test('RSV-6 failure mode timeout: a timed-out review close records no violation 
   assert.ok(entry.closed_surface_digest, 'the close-time surface is still recorded for a timeout');
 });
 
-test('RSV-7 failure mode parse_failure: an unreadable ledger reads as zero violations instead of throwing', async () => {
+test('RSV-7 failure mode parse_failure: a malformed ledger is rejected and fails closed, never read as empty', async () => {
   const root = await setupRepo();
   const storyReviewDir = path.join(root, '.vibepro', 'reviews', STORY_ID);
   await mkdir(storyReviewDir, { recursive: true });
+
+  // Truncating the ledger is the obvious way to erase append-only records.
+  // Malformed input must be rejected, not silently treated as zero violations.
   await writeFile(violationsPath(root), '{ this is not json');
+  await assert.rejects(() => readReviewSurfaceViolations(storyReviewDir, STORY_ID), (error) => {
+    assert.equal(error.code, REVIEW_SURFACE_LEDGER_UNREADABLE);
+    assert.match(error.message, /malformed JSON/);
+    return true;
+  });
 
-  const ledger = await readReviewSurfaceViolations(storyReviewDir, STORY_ID);
-  assert.deepEqual(ledger.entries, []);
+  // Structurally invalid input is rejected on the same terms.
+  await writeFile(violationsPath(root), JSON.stringify({ schema_version: '0.1.0', entries: 'gone' }));
+  await assert.rejects(() => readReviewSurfaceViolations(storyReviewDir, STORY_ID), (error) => {
+    assert.equal(error.code, REVIEW_SURFACE_LEDGER_UNREADABLE);
+    return true;
+  });
+
+  // pr prepare must not crash, but the gate must block.
   const summary = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
+  assert.equal(summary.readable, false);
   assert.equal(summary.total_count, 0);
+  assert.equal(summary.unacknowledged_count, 1, 'an unreadable ledger fails closed');
+  const reviews = await summarizeAgentReviewsForPr(root, { storyId: STORY_ID, fileGroups: null });
+  assert.equal(reviews.surface_violations.readable, false);
 
-  // A parse failure must not block recording the next violation.
+  // Appending over a corrupt ledger throws rather than overwriting it.
   await start(root);
   await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = "mutated mid-review";\n');
-  await close(root);
-  assert.equal((await readJson(violationsPath(root))).entries.length, 1);
+  await assert.rejects(() => close(root), (error) => {
+    assert.equal(error.code, REVIEW_SURFACE_LEDGER_UNREADABLE);
+    return true;
+  });
 });
 
 test('RSV-7 evidence_lifecycle_regression: recorded review results and lifecycle statuses keep their prior shape', async () => {

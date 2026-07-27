@@ -111,11 +111,20 @@ updated_at: 2026-07-27
       `gate:review_surface_integrity` は 0 件のまま passed である。
       **反証**: クリーンな start→close→record の後に無関係ファイルを commit し、
       ledger が空であることを確認する。entry が作られるなら不合格。
-- [ ] RSV-7: 既存 artifact の後方互換。`closed_head_sha` を持たない旧 lifecycle entry
-      および `surface-violations.json` が存在しない Story は、例外を投げずに
-      違反 0 件として読め、gate は passed になる。
-      **反証**: 当該フィールドを持たない lifecycle entry と ledger 不在の状態で
-      サマリ生成を実行し、throw せず `unacknowledged_count` が 0 であることを確認する。
+- [ ] RSV-7: 既存 artifact の後方互換と、破損 ledger の fail-closed。
+      `closed_head_sha` を持たない旧 lifecycle entry および `surface-violations.json`
+      が **存在しない** Story は、例外を投げずに違反 0 件として読め、gate は passed
+      になる。いっぽう ledger が **存在するが読めない**（malformed JSON、または
+      `entries[]` が配列でない）場合は 0 件として読まず拒否し、gate は failed に
+      なる。読めない ledger は「消された ledger」と区別できないため、
+      両者を同じ扱い（block）にする。
+      **反証**: (a) 当該フィールドを持たない lifecycle entry と ledger 不在の状態で
+      サマリ生成を実行し、throw せず `unacknowledged_count` が 0 であること。
+      (b) ledger を切り詰めた状態で読み取りが `VIBEPRO_REVIEW_SURFACE_LEDGER_UNREADABLE`
+      で拒否され、`readable: false` かつ `unacknowledged_count` が 1 になり、
+      その状態での `review close` が violation を静かに落とさず throw すること。
+      破損 ledger が 0 件として読めるなら不合格（ファイルを壊すだけで
+      append-only 記録を消せてしまうため）。
 
 ## Non Goals
 

@@ -59,10 +59,10 @@ test('story-vibepro-review-surface-violation-ledger RSV-6 INV-003 stale stays se
   assert.match(stdout, /RSV-6 failure mode timeout: a timed-out review close records no violation and still terminalizes/);
 });
 
-test('story-vibepro-review-surface-violation-ledger RSV-7 legacy artifacts, parse failures, and evidence lifecycle are unaffected', async () => {
+test('story-vibepro-review-surface-violation-ledger RSV-7 legacy artifacts read clean, a corrupt ledger fails closed, and the evidence lifecycle is unchanged', async () => {
   const { stdout } = await contractRun;
   assert.match(stdout, /RSV-7 legacy lifecycle entries and a missing ledger read as zero violations/);
-  assert.match(stdout, /RSV-7 failure mode parse_failure: an unreadable ledger reads as zero violations instead of throwing/);
+  assert.match(stdout, /RSV-7 failure mode parse_failure: a malformed ledger is rejected and fails closed, never read as empty/);
   assert.match(stdout, /RSV-7 evidence_lifecycle_regression: recorded review results and lifecycle statuses keep their prior shape/);
 });
 

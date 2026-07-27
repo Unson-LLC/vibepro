@@ -26,17 +26,40 @@ export function getReviewSurfaceViolationsPath(storyReviewDir) {
   return path.join(storyReviewDir, REVIEW_SURFACE_VIOLATIONS_FILE);
 }
 
+export const REVIEW_SURFACE_LEDGER_UNREADABLE = 'VIBEPRO_REVIEW_SURFACE_LEDGER_UNREADABLE';
+
+/**
+ * A malformed or structurally invalid ledger is rejected, never read as empty.
+ * Treating corrupt content as "no violations" would hand back the erase path
+ * this module exists to remove: truncating the file would silently clear every
+ * recorded violation. An absent file is different — nothing was ever recorded.
+ */
 export async function readReviewSurfaceViolations(storyReviewDir, storyId = null) {
-  const empty = { schema_version: SCHEMA_VERSION, story_id: storyId, entries: [] };
+  const filePath = getReviewSurfaceViolationsPath(storyReviewDir);
+  let raw;
   try {
-    const parsed = JSON.parse(await readFile(getReviewSurfaceViolationsPath(storyReviewDir), 'utf8'));
-    if (!Array.isArray(parsed?.entries)) return empty;
-    return { ...empty, ...parsed, entries: parsed.entries };
+    raw = await readFile(filePath, 'utf8');
   } catch (error) {
-    if (error.code === 'ENOENT') return empty;
-    if (error instanceof SyntaxError) return empty;
+    if (error.code === 'ENOENT') return { schema_version: SCHEMA_VERSION, story_id: storyId, entries: [] };
     throw error;
   }
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (error) {
+    throw unreadableLedgerError(filePath, `malformed JSON: ${error.message}`);
+  }
+  if (!Array.isArray(parsed?.entries)) {
+    throw unreadableLedgerError(filePath, 'invalid ledger: entries[] is missing or not an array');
+  }
+  return { schema_version: SCHEMA_VERSION, story_id: storyId, ...parsed, entries: parsed.entries };
+}
+
+function unreadableLedgerError(filePath, detail) {
+  const error = new Error(`review surface violation ledger ${filePath} is unreadable and is rejected rather than read as empty (${detail}). Restore it from git history or from the reviews artifact backup; an unreadable ledger fails closed because clearing it would erase append-only violation records.`);
+  error.code = REVIEW_SURFACE_LEDGER_UNREADABLE;
+  error.ledger_path = filePath;
+  return error;
 }
 
 /**
@@ -132,11 +155,36 @@ export function summarizeReviewSurfaceViolations(entries = [], { decisionRecords
   const unacknowledged = items.filter((item) => !item.acknowledged);
   return {
     schema_version: SCHEMA_VERSION,
+    readable: true,
     total_count: items.length,
     acknowledged_count: items.length - unacknowledged.length,
     unacknowledged_count: unacknowledged.length,
     entries: items,
     unacknowledged
+  };
+}
+
+/**
+ * The blocking summary for a ledger that could not be read. It reports one
+ * unacknowledged item so the gate fails closed: an unreadable ledger cannot be
+ * distinguished from an erased one, and both must stop the PR.
+ */
+export function buildUnreadableReviewSurfaceViolationSummary(error) {
+  return {
+    schema_version: SCHEMA_VERSION,
+    readable: false,
+    unreadable_reason: error?.message ?? 'review surface violation ledger could not be read',
+    total_count: 0,
+    acknowledged_count: 0,
+    unacknowledged_count: 1,
+    entries: [],
+    unacknowledged: [{
+      violation_id: 'ledger_unreadable',
+      kind: 'review_surface_ledger_unreadable',
+      evidence_class: 'violation',
+      changed_fields: [],
+      detected_by: 'ledger read'
+    }]
   };
 }
 
