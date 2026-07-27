@@ -18,6 +18,13 @@ const FAIL_STATUSES = new Set(['fail', 'failed', 'error']);
 const EVIDENCE_LOCK_TIMEOUT_MS = 10000;
 const EVIDENCE_LOCK_STALE_MS = 60000;
 
+// Evidence source is a property of the recording path, never of agent input: there is no
+// CLI flag for it. A caller that computes the outcome itself (the local runner, the CI
+// importer) presents this receipt; every other caller records self-reported evidence.
+export const RUNNER_EVIDENCE_RECEIPT = Symbol('vibepro-computed-verification-evidence');
+const COMPUTED_EVIDENCE_SOURCES = new Set(['runner_direct', 'ci_import']);
+const SELF_REPORTED_EVIDENCE_SOURCE = 'self_reported';
+
 export async function recordVerificationEvidence(repoRoot, options = {}) {
   const storyId = options.storyId;
   if (!storyId) throw new Error('verify record requires --id <story-id>');
@@ -27,6 +34,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   if (!ALLOWED_STATUSES.has(options.status)) {
     throw new Error(`verify record --status must be one of: ${[...ALLOWED_STATUSES].join(', ')}`);
   }
+  const computedRecording = resolveComputedRecording(options);
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root);
   await assertManagedWorktreeCommandAllowed(root, {
@@ -76,12 +84,22 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       artifact_observed_values: artifactObservedValues,
       observation,
       observation_check: observationCheck,
+      evidence_source: computedRecording.source,
+      ...(computedRecording.computedObservation
+        ? { computed_observation: computedRecording.computedObservation }
+        : {}),
+      ...(computedRecording.observationOverrides.length > 0
+        ? { observation_overrides: computedRecording.observationOverrides }
+        : {}),
       executed_at: options.executedAt ?? new Date().toISOString(),
       git_context: gitContext,
       content_binding: contentBinding,
       ...(lineage ? { lineage } : {}),
       managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
-      warnings: [managedWorktreeWarning, observationWarning].filter(Boolean)
+      warnings: mergeWarnings(
+        [managedWorktreeWarning, observationWarning].filter(Boolean),
+        computedRecording.additionalWarnings
+      )
     };
     const commands = [
       command,
@@ -104,6 +122,35 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   return {
     evidence,
     artifact: toWorkspaceRelative(root, evidencePath)
+  };
+}
+
+function resolveComputedRecording(options) {
+  const selfReported = {
+    source: SELF_REPORTED_EVIDENCE_SOURCE,
+    computedObservation: null,
+    observationOverrides: [],
+    additionalWarnings: []
+  };
+  if (options.evidenceReceipt !== RUNNER_EVIDENCE_RECEIPT) {
+    if (options.evidenceSource || options.computedObservation || options.observationOverrides) {
+      throw new Error(
+        'verification evidence source is decided by the recording path, not by its caller: '
+        + 'computed evidence requires the internal receipt held by `vibepro verify run` and `vibepro verify import-ci`.'
+      );
+    }
+    return selfReported;
+  }
+  if (!COMPUTED_EVIDENCE_SOURCES.has(options.evidenceSource)) {
+    throw new Error(
+      `computed verification evidence source must be one of: ${[...COMPUTED_EVIDENCE_SOURCES].join(', ')}`
+    );
+  }
+  return {
+    source: options.evidenceSource,
+    computedObservation: options.computedObservation ?? null,
+    observationOverrides: Array.isArray(options.observationOverrides) ? options.observationOverrides : [],
+    additionalWarnings: Array.isArray(options.additionalWarnings) ? options.additionalWarnings : []
   };
 }
 
@@ -203,6 +250,7 @@ export function renderVerificationEvidenceSummary(result) {
 - story: ${result.evidence.story_id}
 - kind: ${latest.kind}
 - status: ${latest.status}
+- evidence_source: ${latest.evidence_source ?? SELF_REPORTED_EVIDENCE_SOURCE}
 - command: ${latest.command ?? '-'}
 - artifact: ${result.artifact}
 - managed_worktree: ${managedWorktree.headline}

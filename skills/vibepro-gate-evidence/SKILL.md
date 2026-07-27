@@ -34,6 +34,9 @@ Touching any file listed in a review's inspected surface (even a Story doc) afte
 
 ## Verification Evidence
 
+- **Prefer `vibepro verify run . --id <id> --kind <kind> -- <command...>` over `verify record` for anything runnable locally.** VibePro executes the command itself and writes the outcome: status from the exit code, test counts parsed from the real output, head sha before/after, duration, and a SHA-256 of stdout. `--status` is rejected, and any `--observed` key the runner computes is overwritten with the computed value and kept as a visible `observation_overrides` diff. Records carry `evidence_source: runner_direct`; `verify record` stays `self_reported` and `verify import-ci` is `ci_import`.
+- The runner reruns leave a real artifact diff (timestamps, duration, stdout hash), which is what makes "I reran it" checkable instead of assertable. It also strips `NODE_TEST_CONTEXT` from the child env — inherited, it makes `node --test` exit 0 having run nothing.
+- `verify run` exits non-zero when the executed command fails, and still records the failing run honestly.
 - `vibepro verify record` overwrites per `--kind`. A throwaway `--command "echo test"` destroys the real record for that kind.
 - Prefer structured observations: `--target <path>`, `--scenario <text>`, `--observed key=value`. Evidence classification matches the **observation text**, not the summary. Put markers like `scenario_clause_e2e: spec clause S-001 ...` directly in `--scenario`, using the registered Spec's clause id scheme.
 - Evidence strength: a matching kind alone is `supporting` and does not satisfy judgment-spine gates. Attach a real status artifact generated from the actual exit code (`{"status":"pass","exit_code":0}`) via `--artifact` to reach `quality=verified` / `strength=strong`.
@@ -100,6 +103,7 @@ Start from `vibepro pr prepare --summary-json` or `--view <readiness|blocking-ga
 
 - "I'll record the evidence now and commit the docs after." The commit invalidates every record; finalize the tree first.
 - "The tests passed, so the gate should accept the record." Kind match without a real status artifact stays `supporting`; judgment-spine gates need `strength=strong`.
+- "I'll hand-write the status artifact so the cross-check passes." Then the check compares one piece of agent prose with another. Use `verify run` and let the execution write it.
 - "A quick manual review note will satisfy the review gate." Required Agent Review needs the full lifecycle with subagent provenance, `--agent-closed`, and inspection inputs.
 - "Rewording the summary should clear the gate." Gates match observation text and artifacts; add verifiable facts, not phrasing.
 - "I'll write the Spec first so the gates are ready." `spec write` validates that code_refs/test_refs exist; register it after or with implementation.

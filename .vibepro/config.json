@@ -962,8 +962,20 @@
         "started_at": "2026-07-25",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-runner-direct-evidence",
+        "title": "検証コマンドをVibePro自身が実行し、exit code・計数値・head shaを実装エージェントの入力を経由せず証跡に記録する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-27",
+        "due_at": null,
+        "category": "architecture"
       }
     ],
-    "current_story_id": "story-vibepro-docs-only-evidence-profile"
+    "current_story_id": "story-vibepro-runner-direct-evidence"
   }
 }
