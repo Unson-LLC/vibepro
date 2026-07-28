@@ -2,9 +2,9 @@
   "status": "pass",
   "exit_code": 0,
   "command": "node --test test/enumeration-coverage-gate.test.js",
-  "tests": 52,
-  "pass": 52,
+  "tests": 63,
+  "pass": 63,
   "fail": 0,
-  "head_sha_at_run": "5eab69623c810671b0a74116b4722a32dfa14e7e",
-  "recorded_at": "2026-07-28T04:10Z"
+  "head_sha_at_run": "31701cc7a7eee4761f48685c012409488db16112",
+  "recorded_at": "2026-07-28T09:20Z"
 }
