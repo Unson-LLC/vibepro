@@ -296,6 +296,31 @@ test('ac:1 the absent state is asserted, not just unauthorized', () => {
 });
 
 // GE-002: the bare agent_system self-grant form was named in the AC but untested.
+// GE-011: the seventh condition of the invariant table (non-empty reason) had
+// no behavioural coverage -- deleting it left all 55 recorded tests green.
+test('ac:2 a grant with no reason does not authorize the override', () => {
+  const digest = computeBudgetOverrideDigest(STORY_ID, OVERRIDE);
+  const grant = (reason) => ({
+    story_id: STORY_ID, status: 'accepted', source: `budget:delivery_efficiency:${STORY_ID}`,
+    reason,
+    budget_approval: {
+      story_id: STORY_ID, override_digest: digest, grantor_kind: 'human',
+      grantor: 'sato-keigo', recorded_by: { agent_system: 'claude_code', agent_id: 'agent-x' }
+    }
+  });
+  for (const reason of [undefined, null, '', '   ']) {
+    const resolved = resolveBudgetOverrideAuthority({ storyId: STORY_ID, override: OVERRIDE, decisions: [grant(reason)] });
+    assert.equal(resolved.status, 'unauthorized',
+      'ac2 a grant carrying no stated reason must not authorize the override');
+    assert.ok(resolved.reasons.includes('approval_missing_reason'),
+      'ac2 the missing reason is reported as approval_missing_reason');
+  }
+  assert.equal(
+    resolveBudgetOverrideAuthority({ storyId: STORY_ID, override: OVERRIDE, decisions: [grant('owner approved')] }).status,
+    'authorized',
+    'ac2 the same grant with a stated reason does authorize, so the check is the reason and nothing else');
+});
+
 test('ac:5 a grantor equal to the bare agent_system is a self-grant', () => {
   const digest = computeBudgetOverrideDigest(STORY_ID, OVERRIDE);
   const resolved = resolveBudgetOverrideAuthority({

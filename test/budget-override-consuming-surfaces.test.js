@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -13,7 +13,11 @@ import {
 } from '../src/agent-review.js';
 import { computeBudgetOverrideDigest } from '../src/budget-override-authority.js';
 import { recordDecision } from '../src/decision-records.js';
-import { buildAgentReviewEfficiencySummary, buildDeliveryEfficiencyContext } from '../src/pr-manager.js';
+import {
+  buildAgentReviewEfficiencySummary,
+  buildDeliveryEfficiencyContext,
+  preparePullRequest
+} from '../src/pr-manager.js';
 
 // GE-001. The override authority status was wired into both consuming surfaces
 // but nothing exercised either surface: the acceptance spec called the resolver
@@ -144,13 +148,14 @@ test('OGB-SURF-4 pr prepare efficiency summary carries the override status and d
   assert.ok(!absent.debt.some((entry) => entry.kind === 'budget_override_unauthorized'));
 });
 
-// GE-006. The previous round's mutation check was aimed at the wrong line: it
-// mutated buildAgentReviewEfficiencySummary (the consumer) rather than
-// buildDeliveryEfficiencyContext (the producer that feeds it from the resolver).
-// Deleting the producer line left every test green while pr-prepare.json would
-// have silently reported status 'absent' for a configured, inert override.
-// buildDeliveryEfficiencyContext is not exported, so bind it through the real
-// public surface: preparePullRequest.
+// GE-006 / GE-008. The resolver reaches pr-prepare.json through two links in
+// series: the seam that calls the producer (`agentReviews.delivery_efficiency =
+// await buildDeliveryEfficiencyContext(...)`) and the producer's own
+// `budget_override` field. Binding only the producer left the seam deletable
+// with every test still green, which is the same silent-'absent' regression in
+// a different place. OGB-SURF-5 binds the producer directly; OGB-SURF-7 binds
+// the whole chain by asserting the written pr-prepare.json artifact, which is
+// the surface a human actually reads.
 async function makePrRepo() {
   const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-budget-pr-'));
   await git(repo, ['init', '-b', 'main']);
@@ -223,6 +228,25 @@ test('OGB-SURF-5 the pr prepare delivery context is fed the resolver override st
 
 // GE-007. The RR-003 text renderer shipped with three branches and no coverage;
 // deleting its whole output line left the recorded 37/37 evidence set green.
+test('OGB-SURF-7 the written pr-prepare artifact reports a configured inert override', async () => {
+  const repo = await makePrRepo();
+
+  await preparePullRequest(repo, { storyId: STORY_ID });
+  const artifact = JSON.parse(await readFile(path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-prepare.json'), 'utf8'));
+  const delivery = artifact?.pr_context?.agent_reviews?.delivery_efficiency;
+
+  assert.ok(delivery, 'pr prepare must attach the delivery efficiency context to its written artifact');
+  assert.equal(delivery.budget_override.status, 'unauthorized',
+    'the artifact a human reads must show a configured override as unauthorized, never silently absent');
+  assert.deepEqual(delivery.budget_override.reasons, ['missing_approval']);
+  assert.equal(delivery.budget_override.digest, computeBudgetOverrideDigest(STORY_ID, OVERRIDE));
+
+  const debt = artifact?.pr_context?.gate_dag?.summary?.efficiency_debt;
+  assert.ok(debt, 'the gate summary must carry the efficiency debt projection');
+  assert.equal(debt.budget_override.status, 'unauthorized',
+    'the inert override must also reach the gate summary that drives efficiency debt');
+});
+
 test('OGB-SURF-6 the authorize text output states the override status in every branch', () => {
   const render = (budgetOverride) => renderAgentReviewDispatchAuthorizationSummary({
     authorization: {
