@@ -4,7 +4,10 @@ import {
 } from './evidence-cost-budget.js';
 
 const BLOCKING_STATUSES = new Set(['block', 'failed', 'contradicted', 'active_blocked']);
-const UNRESOLVED_STATUSES = new Set([
+// Exported so the copy can be asserted behaviourally. It is a copy of the gate
+// DAG vocabulary, and copies are exactly what left the same registration half
+// closed across four review rounds.
+export const UNRESOLVED_STATUSES = new Set([
   'candidate',
   'missing',
   'transient',

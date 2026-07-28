@@ -378,6 +378,27 @@ test('ENUM-S-5 every gate DAG status classifier behaviourally treats inconclusiv
     'uiux prepare must count an inconclusive required gate as blocking'
   );
 
+  // The two surfaces round 8 proved were claimed but not asserted. Reverting
+  // either one used to leave the whole suite green, which is how the recorded
+  // "all four surfaces asserted behaviourally" claim survived being false.
+  const seniorGap = await import('../src/senior-gap-judgment.js');
+  assert.ok(
+    seniorGap.UNRESOLVED_STATUSES.has('inconclusive'),
+    'senior-gap-judgment keeps its own copy of the vocabulary and must reject the status'
+  );
+
+  const playbook = await import('../src/playbook-exporter.js');
+  assert.deepEqual(
+    playbook.summarizeGates({ nodes: [{ ...node, required: false }] }).items.map((item) => item.id),
+    ['gate:enumeration_coverage'],
+    'playbook export must surface a non-required inconclusive gate through the shared predicate'
+  );
+  assert.deepEqual(
+    playbook.summarizeGates({ nodes: [{ ...node, required: false, status: 'passed' }] }).items,
+    [],
+    'and must not surface a passing non-required gate'
+  );
+
   const selfDogfood = await import('../src/self-dogfood-scanner.js');
   assert.equal(
     selfDogfood.isCriticalGateDag({ nodes: [{ ...node, type: 'verification_gate' }] }),
@@ -528,126 +549,60 @@ const acceptedFor = (artifact) => ({
   }]
 });
 
-test('the published inconclusive escape is actually honoured by the gate', async () => {
-  // Round 5 printed a decision-record escape that no code consumed: the gate
-  // stayed critical and pr create refused it. Assert the escape works.
-  const { buildEnumerationCoverageGate } = await import('../src/pr-manager.js');
-
-  const withoutDecision = buildEnumerationCoverageGate({ storyId: 's', enumerationCoverage: unreadableReport() });
-  assert.equal(withoutDecision.status, 'inconclusive');
-  assert.ok(
-    withoutDecision.required_actions.some((action) => /could not be read/.test(action)),
-    'the required action must name the real cause, not the base ref'
-  );
-
-  const withDecision = buildEnumerationCoverageGate({
-    storyId: 's',
-    enumerationCoverage: unreadableReport(),
-    decisionRecords: acceptedFor('src/vendor.min.js')
-  });
-  assert.equal(withDecision.status, 'accepted_followup');
-  assert.equal(withDecision.accepted_decision.id, 'd1');
-});
-
-test('the escape stops blocking through the production collector, in both gate DAG consumers', async () => {
-  // The previous round asserted this by calling isCriticalUnresolvedGate
-  // directly in each module. That is the same shape as the dead-code defect it
-  // was written to close: accepted_followup is filtered as resolved *before*
-  // either predicate runs, so reverting one of the two predicate lines failed
-  // no test. Drive the collectors that production actually calls.
+test('the unreadable-file inconclusive has no gate-specific escape', async () => {
+  // An escape existed here and was reviewed twice. Both rounds found it
+  // releasing more than it advertised: the product_source_unreadable early
+  // return fires before the recount loop, so a consumer-side guard could not see
+  // a rejection the producer had not computed yet, and an unrecounted false
+  // claim shipped whenever any unrelated file happened to be unreadable.
+  // Binding it to the unreadable file narrowed it without closing it — naming
+  // one of several excused them all — and the two blocking-predicate exemptions
+  // it needed were unreachable dead code throughout. It is deleted rather than
+  // patched a third time, so this asserts its absence.
   const { buildEnumerationCoverageGate, collectUnresolvedRequiredGates } = await import('../src/pr-manager.js');
   const executionState = await import('../src/execution-state.js');
 
-  const blocking = buildEnumerationCoverageGate({ storyId: 's', enumerationCoverage: unreadableReport() });
-  const cleared = buildEnumerationCoverageGate({
-    storyId: 's',
-    enumerationCoverage: unreadableReport(),
-    decisionRecords: acceptedFor('src/vendor.min.js')
-  });
+  const accepted = {
+    decisions: [{
+      id: 'd1', type: 'needs_review', status: 'accepted',
+      source: 'gate:enumeration_coverage',
+      reason: 'vendored bundle cannot be made readable',
+      artifact: 'src/vendor.min.js'
+    }]
+  };
 
-  for (const [label, collect] of [
-    ['pr-manager', (nodes) => collectUnresolvedRequiredGates({ nodes })],
-    ['execution-state', (nodes) => executionState.collectUnresolvedRequiredGates({ nodes })]
-  ]) {
-    const stillBlocking = collect([blocking]).map((gate) => gate.id);
-    assert.ok(stillBlocking.includes('gate:enumeration_coverage'), `${label} must report the un-escaped gate as unresolved`);
-    const afterEscape = collect([cleared]).map((gate) => gate.id);
-    assert.ok(!afterEscape.includes('gate:enumeration_coverage'), `${label} must drop the gate once the escape applies`);
+  // Whatever decision records exist, the status is the report's own.
+  for (const decisionRecords of [undefined, accepted]) {
+    const gate = buildEnumerationCoverageGate({ storyId: 's', enumerationCoverage: unreadableReport(), decisionRecords });
+    assert.equal(gate.status, 'inconclusive', 'an accepted decision must not convert the status');
+    assert.equal(gate.accepted_decision, undefined, 'the gate node must carry no escape decision');
+    for (const [label, collect] of [
+      ['pr-manager', (nodes) => collectUnresolvedRequiredGates({ nodes })],
+      ['execution-state', (nodes) => executionState.collectUnresolvedRequiredGates({ nodes })]
+    ]) {
+      assert.ok(
+        collect([gate]).map((entry) => entry.id).includes('gate:enumeration_coverage'),
+        `${label} must keep reporting the unsized class as unresolved`
+      );
+    }
   }
 });
 
-test('the escape works by status resolution, not by the blocking predicates', async () => {
-  // Pin the mechanism, so the two predicate exemptions are never mistaken for
-  // coverage again. Mutation proved both lines dead: reverting either failed no
-  // test, because neither predicate is ever reached with this status.
-  const { isUnresolvedGateStatus } = await import('../src/pr-manager.js');
-  const executionState = await import('../src/execution-state.js');
-  assert.equal(
-    isUnresolvedGateStatus('accepted_followup'),
-    false,
-    'accepted_followup must resolve at the status filter; the predicate exemptions are unreachable defence in depth'
-  );
-  // Same fact from the execution-state side, through its own collector: a node
-  // carrying the status is dropped before any predicate sees it. The collector
-  // also synthesizes an overall_status node, so assert the absence of this gate
-  // rather than an empty list.
-  const unresolved = executionState.collectUnresolvedRequiredGates({
-    nodes: [{ id: 'gate:enumeration_coverage', type: 'enumeration_coverage_gate', required: true, status: 'accepted_followup' }]
-  }).map((gate) => gate.id);
-  assert.ok(!unresolved.includes('gate:enumeration_coverage'), 'accepted_followup must resolve before the predicate');
-});
-
-test('the escape does not release a report carrying a rejected or unrecognised claim', async () => {
-  // The unreadable early return forces `inconclusive` while still carrying the
-  // rejections it collected, so keying the escape on the cause alone released a
-  // demonstrably false claim whenever any unrelated file was unreadable. That
-  // inverts the module's invariant that an unchecked false claim always fails.
+test('the unreadable-file action routes to the generic auditable waiver, not a bespoke bypass', async () => {
+  // The gate previously printed a decision-record command it did not honour,
+  // then one it honoured too broadly. It now names the route that actually
+  // exists at pr create/pr ship, so the remediation and the behaviour agree.
   const { buildEnumerationCoverageGate } = await import('../src/pr-manager.js');
-
-  const withRejection = buildEnumerationCoverageGate({
-    storyId: 's',
-    enumerationCoverage: unreadableReport({
-      rejections: [{ id: 'enumeration_count_mismatch', reason: 'claimed 40 sites for gate:foo but the tree has 3', scenario: 'enumeration: ...' }]
-    }),
-    decisionRecords: acceptedFor('src/vendor.min.js')
-  });
-  assert.equal(withRejection.status, 'inconclusive', 'a recount mismatch must survive the escape');
-  assert.equal(withRejection.accepted_decision, null);
-
-  const withUnrecognized = buildEnumerationCoverageGate({
-    storyId: 's',
-    enumerationCoverage: unreadableReport({
-      unrecognized_scenarios: [{ kind: 'unit', scenario: 'enumeration: swept everything' }]
-    }),
-    decisionRecords: acceptedFor('src/vendor.min.js')
-  });
-  assert.equal(withUnrecognized.status, 'inconclusive', 'an unrecognised claim must survive the escape');
-});
-
-test('the escape excuses only the file its decision names', async () => {
-  // findAcceptedDecisionForSource matched any accepted enumeration decision, so
-  // one waiver cleared every later unreadable-file inconclusive, while the
-  // printed next-command advertised an --artifact binding nothing consumed.
-  const { buildEnumerationCoverageGate } = await import('../src/pr-manager.js');
-
-  const otherFile = buildEnumerationCoverageGate({
-    storyId: 's',
-    enumerationCoverage: unreadableReport(),
-    decisionRecords: acceptedFor('src/some-other-bundle.js')
-  });
-  assert.equal(otherFile.status, 'inconclusive', 'a decision for a different file must not clear this one');
-
-  const noArtifact = buildEnumerationCoverageGate({
-    storyId: 's',
-    enumerationCoverage: unreadableReport(),
-    decisionRecords: { decisions: [{ id: 'd2', type: 'waiver', status: 'accepted', source: 'gate:enumeration_coverage', reason: 'generic' }] }
-  });
-  assert.equal(noArtifact.status, 'inconclusive', 'a decision with no artifact must not clear the gate');
-
+  const actions = buildEnumerationCoverageGate({ storyId: 's', enumerationCoverage: unreadableReport() }).required_actions;
+  assert.ok(actions.some((action) => /could not be read/.test(action)), 'the action must name the real cause');
+  assert.ok(actions.some((action) => action.includes('src/vendor.min.js')), 'and the file it could not read');
   assert.ok(
-    buildEnumerationCoverageGate({ storyId: 's', enumerationCoverage: unreadableReport() })
-      .required_actions.some((action) => action.includes('src/vendor.min.js')),
-    'the printed escape must name the file the artifact has to reference'
+    actions.some((action) => /--allow-needs-verification --verification-waiver/.test(action)),
+    'the printed route must be the generic waiver that exists'
+  );
+  assert.ok(
+    !actions.some((action) => /decision record .*--source gate:enumeration_coverage/.test(action)),
+    'no gate-specific decision-record escape may be advertised'
   );
 });
 

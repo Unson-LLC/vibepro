@@ -703,7 +703,10 @@ function summarizeArchitecture(docs) {
   return first ?? `${docs.length}件のArchitecture docを参照`;
 }
 
-function summarizeGates(gateDag) {
+// Exported for behavioural assertion: this surface changed when the blocking
+// vocabulary moved to the shared predicate, and a source-text check cannot
+// show whether an inconclusive node actually reaches the exported playbook.
+export function summarizeGates(gateDag) {
   if (!gateDag) return { status: 'missing', overall_status: null, items: [] };
   const nodes = Array.isArray(gateDag.nodes) ? gateDag.nodes : [];
   return {
