@@ -9,6 +9,7 @@ import {
   extractEnumerableLiterals,
   isProductSourcePath,
   parseAddedLineMap,
+  summarizeCountProvenance,
   parseEnumerationScenario,
   reproductionCommand,
   scenarioTemplate,
@@ -1098,4 +1099,97 @@ test('CEA-S-2 classifySites returns null when the diff is unavailable', () => {
     classifySites([['src/a.js', [1, 2]]], new Map([['src/a.js', new Set([2])]])),
     { found: 2, updated: 1, unchanged: 1 }
   );
+});
+
+// --- CEA-S-2 round 2: findings from the three-role gate review ---------------
+
+test('CEA-S-2 count_provenance is produced on every return shape, not only the terminal one', async () => {
+  // binary_paths shipped on the success return only and had to be repaired
+  // twice. count_provenance was written the same way. A field the consumer
+  // reads but the producer sometimes omits is indistinguishable from a field
+  // that is legitimately empty — and the inconclusive returns are exactly where
+  // an operator needs to know whether any claim in play was agent-written.
+  const counted = 'enumeration: grepped ghost_state across src; 3 sites found, 3 updated, 0 unchanged';
+  const shapes = [
+    ['base_ref_unresolved', { baseLiterals: async () => null, addedLiterals: async () => new Set() }],
+    ['diff_unreadable', { baseLiterals: async () => new Set(), addedLiterals: async () => null }]
+  ];
+  for (const [cause, overrides] of shapes) {
+    const report = await collectEnumerationCoverage({
+      verificationEvidence: evidenceWithScenarios(counted),
+      provider: {
+        async productSourceFiles() { return []; },
+        async scanFile() { return 'scanned'; },
+        async countSites() { return { lines: 0, files: 0, product_source_lines: 0, product_source_files: 0, product_source_file_list: [], missing_paths: [], unscannable_paths: [], binary_paths: [], sites: [] }; },
+        async addedLineMap() { return new Map(); },
+        ...overrides
+      }
+    });
+    assert.equal(report.inconclusive_cause, cause);
+    assert.deepEqual(
+      report.count_provenance,
+      { computed: 0, agent_declared: 1 },
+      `${cause} must report provenance for the claims it is carrying`
+    );
+  }
+
+  const unreadable = await collectEnumerationCoverage({
+    verificationEvidence: evidenceWithScenarios(counted),
+    provider: { ...providerWithBinary({ unreadableFile: 'src/vendor.min.js' }), async addedLineMap() { return new Map(); } }
+  });
+  assert.equal(unreadable.inconclusive_cause, 'product_source_unreadable');
+  assert.deepEqual(unreadable.count_provenance, { computed: 0, agent_declared: 1 });
+});
+
+test('CEA-S-2 parseAddedLineMap does not mistake added content for a file header', () => {
+  // In git diff -U0 an added line whose content starts with "++ " is emitted as
+  // "+++ ...". Treating every +++ line as a header dropped the real file out of
+  // the map so its sites read untouched; skipping "++++" content shifted every
+  // later added line one low, which can mark an untouched site as updated and
+  // remove the judgment requirement entirely.
+  const map = parseAddedLineMap([
+    'diff --git a/src/a.js b/src/a.js',
+    '--- a/src/a.js',
+    '+++ b/src/a.js',
+    '@@ -1,0 +2,3 @@',
+    '++ bullet TOKEN_A',
+    '+++plus prefixed',
+    '+normal'
+  ].join('\n'));
+  assert.deepEqual([...(map.get('src/a.js') ?? [])].sort((x, y) => x - y), [2, 3, 4]);
+  assert.equal(map.has('bullet TOKEN_A'), false, 'added content must never become a file key');
+});
+
+test('CEA-S-2 parseAddedLineMap unquotes a non-ASCII path before stripping the b/ prefix', () => {
+  const map = parseAddedLineMap([
+    'diff --git "a/src/\\346\\227\\245.js" "b/src/\\346\\227\\245.js"',
+    '--- "a/src/\\346\\227\\245.js"',
+    '+++ "b/src/\\346\\227\\245.js"',
+    '@@ -0,0 +1 @@',
+    '+const x = 1;'
+  ].join('\n'));
+  assert.deepEqual([...map.keys()], ['src/日.js'], 'a quoted path must resolve to the scan candidate spelling');
+});
+
+test('CEA-S-2 the production provider fails closed when there is no base ref to diff against', async () => {
+  // The split_unknown assertion drives a stub. This drives the real provider:
+  // git diff -U0 ...HEAD succeeds with empty output when baseRef is absent, so
+  // returning a map there would report every site as untouched — a wrong split
+  // presented as a measured one.
+  const { createGitTreeProvider } = await import('../src/enumeration-evidence.js');
+  // An empty base ref is the dangerous one: `git diff -U0 ...HEAD` is accepted
+  // by git and returns empty output, so without the guard the map comes back
+  // empty and every site reads as untouched. A null base ref happens to fail in
+  // git's own argument parsing, so it proves nothing about the guard.
+  const emptyBase = createGitTreeProvider({ repoRoot: process.cwd(), baseRef: '', headRef: 'HEAD' });
+  assert.equal(await emptyBase.addedLineMap(), null, 'an empty base ref must be unknown, not an empty diff');
+
+  const noBase = createGitTreeProvider({ repoRoot: process.cwd(), baseRef: null, headRef: 'HEAD' });
+  assert.equal(await noBase.addedLineMap(), null);
+
+  const badBase = createGitTreeProvider({ repoRoot: process.cwd(), baseRef: 'refs/heads/definitely-not-a-ref-xyz', headRef: 'HEAD' });
+  assert.equal(await badBase.addedLineMap(), null);
+
+  const realBase = createGitTreeProvider({ repoRoot: process.cwd(), baseRef: 'HEAD', headRef: 'HEAD' });
+  assert.ok((await realBase.addedLineMap()) instanceof Map, 'a resolvable base must produce a map, not null');
 });

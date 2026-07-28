@@ -446,6 +446,11 @@ export function createGitTreeProvider({ repoRoot, baseRef, headRef }) {
     // too. Returns null when the diff cannot be read, so the caller reports the
     // updated/unchanged split as unknown instead of guessing it is all new.
     async addedLineMap() {
+      // Without a base ref there is nothing to diff against. `git diff -U0
+      // ...HEAD` succeeds with empty output in that case, which would report
+      // every site as untouched rather than as unknown — a wrong split
+      // presented as a measured one.
+      if (!baseRef) return null;
       let result = await gitResult(repoRoot, ['diff', '-U0', `${baseRef}...${headRef}`]);
       if (!result.ok) result = await gitResult(repoRoot, ['diff', '-U0', baseRef, headRef]);
       if (!result.ok) return null;
@@ -466,25 +471,73 @@ export function parseAddedLineMap(diffText) {
   const map = new Map();
   let file = null;
   let nextLine = 0;
+  let previousWasOldFileHeader = false;
   for (const line of String(diffText).split('\n')) {
-    if (line.startsWith('+++ ')) {
+    // A `+++` line is only a header when it follows the `---` line of the same
+    // pair. Treating every `+++ ` line as a header misread added *content*
+    // beginning with `++ ` as a file header: the real file dropped out of the
+    // map and all of its sites silently read as untouched. Content beginning
+    // with `+++` was skipped entirely, which shifted every later added line one
+    // low — the fail-open direction, since a shifted number can land on a site
+    // this change never wrote and mark it updated.
+    if (previousWasOldFileHeader && line.startsWith('+++ ')) {
       const target = line.slice(4).trim();
-      file = target === '/dev/null' ? null : target.replace(/^b\//, '');
+      file = target === '/dev/null' ? null : normalizeDiffPath(target);
+      previousWasOldFileHeader = false;
       continue;
     }
+    previousWasOldFileHeader = line.startsWith('--- ');
+    if (previousWasOldFileHeader) continue;
     const hunk = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/.exec(line);
     if (hunk) {
       nextLine = Number(hunk[1]);
       continue;
     }
     if (!file) continue;
-    if (line.startsWith('+') && !line.startsWith('+++')) {
+    if (line.startsWith('+')) {
       if (!map.has(file)) map.set(file, new Set());
       map.get(file).add(nextLine);
       nextLine += 1;
     }
   }
   return map;
+}
+
+/**
+ * Strip the `b/` prefix git puts on the head-side path, unquoting first.
+ *
+ * git quotes any path containing non-ASCII bytes or specials, so the prefix
+ * sits inside the quotes and a naive strip leaves a key that matches no scan
+ * candidate — every site in such a file would read as untouched.
+ */
+function normalizeDiffPath(target) {
+  let text = target;
+  if (text.startsWith('"') && text.endsWith('"') && text.length >= 2) {
+    const inner = text.slice(1, -1);
+    try {
+      // git escapes as C string literals with octal byte escapes.
+      const bytes = [];
+      for (let index = 0; index < inner.length; index += 1) {
+        if (inner[index] !== '\\') {
+          bytes.push(inner.charCodeAt(index));
+          continue;
+        }
+        const octal = /^[0-7]{3}/.exec(inner.slice(index + 1));
+        if (octal) {
+          bytes.push(parseInt(octal[0], 8));
+          index += 3;
+          continue;
+        }
+        const escaped = inner[index + 1];
+        bytes.push(({ n: 10, t: 9, r: 13 }[escaped] ?? escaped.charCodeAt(0)));
+        index += 1;
+      }
+      text = Buffer.from(bytes).toString('utf8');
+    } catch {
+      text = inner;
+    }
+  }
+  return text.replace(/^b\//, '');
 }
 
 // Keeps the exit code, so callers can tell "command succeeded and found
@@ -683,6 +736,25 @@ async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
  * is unknown rather than report every site as updated — an unknown split must
  * not read as a complete sweep.
  */
+/**
+ * Provenance of the numbers in a report, at a glance. A story whose
+ * agent_declared count is above zero still has a surface where an agent can
+ * write a measurement; one that is fully computed does not.
+ *
+ * Exported and applied on every return path. The predecessor Story shipped
+ * `binary_paths` on the success return only and had to repair it twice, because
+ * a field the consumer reads but the producer sometimes omits is
+ * indistinguishable from a field that is legitimately empty. The inconclusive
+ * returns are exactly where an operator needs to know whether any claim in play
+ * was agent-written.
+ */
+export function summarizeCountProvenance(claims) {
+  return {
+    computed: (claims ?? []).filter((claim) => claim.count_source === 'computed').length,
+    agent_declared: (claims ?? []).filter((claim) => claim.count_source === 'agent_declared').length
+  };
+}
+
 export function classifySites(sites, addedLineMap) {
   if (!addedLineMap) return null;
   let updated = 0;
@@ -735,7 +807,8 @@ export async function collectEnumerationCoverage({
       claims: scenarios.map(describeScenario),
       rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection),
       unrecognized_scenarios: scenarios.unrecognized ?? [],
-      binary_paths: []
+      binary_paths: [],
+      count_provenance: summarizeCountProvenance(scenarios.map(describeScenario))
     };
   }
 
@@ -755,7 +828,8 @@ export async function collectEnumerationCoverage({
       claims: scenarios.map(describeScenario),
       rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection),
       unrecognized_scenarios: scenarios.unrecognized ?? [],
-      binary_paths: []
+      binary_paths: [],
+      count_provenance: summarizeCountProvenance(scenarios.map(describeScenario))
     };
   }
   const addedLiterals = added;
@@ -777,7 +851,8 @@ export async function collectEnumerationCoverage({
       // real binary list. Returning [] here dropped exactly the data the
       // operator needs to understand why the class was sized the way it was —
       // the same producer/consumer half-closure, one return further along.
-      binary_paths: binary
+      binary_paths: binary,
+      count_provenance: summarizeCountProvenance(scenarios.map(describeScenario))
     };
   }
   const { required, skipped } = selectRequiredIdentifiers({
@@ -842,13 +917,7 @@ export async function collectEnumerationCoverage({
     schema_version: ENUMERATION_EVIDENCE_SCHEMA_VERSION,
     status,
     reason: buildReason({ status, required, missing, rejections, skipped }),
-    // Provenance of the numbers in this report, at a glance. A story whose
-    // agent_declared count is above zero still has a surface where an agent can
-    // write a measurement; one that is fully computed does not.
-    count_provenance: {
-      computed: claims.filter((claim) => claim.count_source === 'computed').length,
-      agent_declared: claims.filter((claim) => claim.count_source === 'agent_declared').length
-    },
+    count_provenance: summarizeCountProvenance(claims),
     required,
     missing: missing.map((item) => item.identifier),
     skipped,

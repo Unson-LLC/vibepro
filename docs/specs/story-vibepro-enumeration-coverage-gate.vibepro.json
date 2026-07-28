@@ -12,7 +12,7 @@
     {
       "id": "C-001",
       "type": "contract",
-      "statement": "An enumeration scenario is accepted only in the form 'enumeration: grepped <identifier> across <paths>; <N> sites found, <M> updated, <K> unchanged because <reason>'; count-free narration, a missing searchable path, and a non-identifier subject are rejected with a typed reason, and scenarios that do not declare themselves as enumeration claims pass through unchanged.",
+      "statement": "An enumeration scenario is accepted in either of two forms: the declaration form 'enumeration: count <identifier> across <paths>[; unchanged because <reason>]', whose counts are measured by the gate and parse to null, or the legacy counted form 'enumeration: grepped <identifier> across <paths>; <N> sites found, <M> updated, <K> unchanged because <reason>'. Count-free narration, a missing searchable path, and a non-identifier subject are rejected with a typed reason, and scenarios that do not declare themselves as enumeration claims pass through unchanged.",
       "origin": {
         "story_refs": [
           {
@@ -45,7 +45,7 @@
     {
       "id": "INV-001",
       "type": "invariant",
-      "statement": "Enumeration counts must partition the discovered sites: N equals M plus K, N is at least 1, and any K greater than zero requires an explicit because clause; a claim violating any of these is rejected at verify record time rather than stored.",
+      "statement": "Enumeration counts must partition the discovered sites: N equals M plus K, N is at least 1, and any K greater than zero requires an explicit because clause; a claim violating any of these is rejected at verify record time rather than stored. These arithmetic checks apply to the counted form only; a declaration form carries no counts to partition, and its measured unchanged remainder instead requires a judgment clause via enumeration_unchanged_reason_missing.",
       "origin": {
         "story_refs": [
           {

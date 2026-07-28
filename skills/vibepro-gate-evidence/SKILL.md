@@ -85,7 +85,9 @@ A review finding names an instance; the work item is its class. This is enforced
 
 **Do not write a number.** You declare the identifier and the range; the gate measures everything else. It counts the sites, and splits them into the ones this change wrote and the ones it left alone by mapping each site onto the base diff's added lines. Those values land on the artifact as `claims[].found` / `updated` / `unchanged` with `count_source: "computed"`, having never passed through your input.
 
-Append `; unchanged because <reason>` only when the gate says the split leaves sites untouched — its rejection tells you the exact numbers, so you never count to find out. The reason is the one thing measurement cannot supply: why leaving those sites is correct.
+Append `; unchanged because <reason>` only when the gate says the split leaves sites untouched — its rejection tells you the exact numbers, so you never count to find out. The reason is the one thing measurement cannot supply: why leaving those sites is correct. Note the trade: the reason is validated once, when the untouched remainder first appears, and is not re-checked as that remainder grows with later commits. Removing the recount round trip removes its re-reading prompt too, so on review the reason clause is the field to read rather than trust.
+
+One narrowing came with the form: a scenario beginning `enumeration:` that contains `count <token> across` but does not match the grammar is now `enumeration_scenario_malformed`, which fails the whole `verify record` invocation. Prose like "enumeration: we count ghost_state across src and test as one class" used to record; reword it or drop the prefix.
 
 **Why prose does not work.** The grammar rejects count-free narration — "swept src, docs and bin" is not a claim — and a declared range still has to reach every product source file the identifier lives in. Reproduce what the gate sees with `grep -rIn --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.vibepro -w -- <identifier> <paths> | wc -l`.
 
