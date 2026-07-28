@@ -39,15 +39,24 @@ change is a **violation**, not staleness, and violations are append-only.
 
 ## Public contract
 
-Everything added is additive. No existing field is removed, renamed, or
-repurposed.
+No existing field is removed, renamed, or repurposed, and no existing artifact
+loses a value. **Two changes are not purely additive**, and are listed as such
+rather than folded into the additive rows:
+
+| Surface | Change | Compatibility |
+|---|---|---|
+| `vibepro review close` | an unrecognized `--close-reason` now **throws** | previously coerced to `completed`. Loud instead of silent, and deliberate: only a `completed` close records a violation, so a typo could otherwise mint or suppress a record. Every in-repo caller was audited and fixed; verified by RSV-9 |
+| Gate DAG edges | the direct `gate:agent_review` → `gate:review_inspection_required` edge is **replaced** by two edges through the new node | the path length changes; no gate is reordered, dropped, or restatused, and `gate:dag_connectivity` stays passed |
+
+Everything else is additive:
 
 | Surface | Addition | Compatibility |
 |---|---|---|
-| CLI | `vibepro review violations [repo] --id <story-id> [--json]`, read-only; exit 2 when unacknowledged violations exist | new subcommand; no existing command changes |
-| Gate DAG | `gate:review_surface_integrity`, required, between `gate:agent_review` and `gate:review_inspection_required` | additive node plus two edges; cannot change any existing gate's status |
-| `lifecycle.json` entries | `closed_head_sha`, `closed_surface_digest`, `surface_violation_id` | entries without them read as zero violations |
+| CLI | `vibepro review violations [repo] --id <story-id> [--json]`, read-only; exit 2 when unacknowledged violations exist | new subcommand, no existing subcommand changes |
+| Gate DAG | `gate:review_surface_integrity`, required, between `gate:agent_review` and `gate:review_inspection_required` | new node; cannot change any existing gate's status |
+| `lifecycle.json` entries | `closed_head_sha`, `closed_surface_digest`, `surface_detection`, `surface_violation_id`, `surface_violation_ids[]` | entries without them read as zero violations, and are counted as *unevaluated* rather than clean |
 | `pr-prepare.json` | `pr_context.agent_reviews.surface_violations` | absent ledger reports zero violations, gate passes |
+| `review close` result | `surface_violation`, `surface_violations_artifact` | null and absent respectively when nothing was recorded |
 | New artifact | `.vibepro/reviews/<story-id>/surface-violations.json` | absent for every story that predates this change |
 
 ## Topology
