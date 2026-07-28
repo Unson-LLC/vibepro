@@ -270,7 +270,7 @@
   "budgets": {
     "pr_artifact_bytes": 16384,
     "delivery_efficiency": {
-      "max_elapsed_ms": 2700000,
+      "max_elapsed_ms": 10800000,
       "max_observed_work_ms": 900000,
       "max_active_wait_ms": 1200000,
       "max_tool_wait_ms": 1200000,
@@ -278,7 +278,7 @@
       "max_fresh_input_tokens": 8000000,
       "max_cost_usd": null,
       "max_subagent_count": 12,
-      "max_agent_consumption_ms": 1800000,
+      "max_agent_consumption_ms": 5400000,
       "max_repair_batches": 3,
       "max_expensive_verification_count": 1,
       "max_review_dispatches_by_role": {
