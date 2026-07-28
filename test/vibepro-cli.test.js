@@ -8660,6 +8660,34 @@ Weighted semantic/layout residual: **34%**
   ]);
   assert.equal(routedTaskPrepare.exitCode, 0);
   assert.equal(routedTaskPrepare.result.preparation.task_context.task.id, 'TASK-001');
+
+  await writeJson(routedTaskStatePath, {
+    ...validTaskState,
+    story: { ...validTaskState.story, story_id: 'story-other' }
+  });
+  let mismatchedRoutedTaskStateStderr = '';
+  const mismatchedRoutedTaskState = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stderr: { write: (text) => { mismatchedRoutedTaskStateStderr += text; } }
+  });
+  assert.equal(mismatchedRoutedTaskState.exitCode, 1);
+  assert.match(
+    mismatchedRoutedTaskStateStderr,
+    /Task state story mismatch for PR prepare: expected story-pr-prepare, received story-other/
+  );
+
+  await writeFile(routedTaskStatePath, '{"story":');
+  let malformedRoutedTaskStateStderr = '';
+  const malformedRoutedTaskState = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stderr: { write: (text) => { malformedRoutedTaskStateStderr += text; } }
+  });
+  assert.equal(malformedRoutedTaskState.exitCode, 1);
+  assert.match(malformedRoutedTaskStateStderr, /Unexpected end of JSON input/);
+
+  await writeJson(routedTaskStatePath, validTaskState);
   await rm(routedTaskStatePath);
   let missingRoutedTaskStateStderr = '';
   const missingRoutedTaskState = await runCli([

@@ -15479,6 +15479,17 @@ function assertStrictTargetFiles(taskContext, changedFiles, options) {
 
 async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
   const taskState = await readTaskState(repoRoot, storyId);
+  const taskStateStoryId = typeof taskState?.story?.story_id === 'string'
+    ? taskState.story.story_id.trim()
+    : '';
+  if (!taskStateStoryId) {
+    throw new Error(`Task state story_id is required for PR prepare: ${storyId}`);
+  }
+  if (taskStateStoryId !== storyId) {
+    throw new Error(
+      `Task state story mismatch for PR prepare: expected ${storyId}, received ${taskStateStoryId}`
+    );
+  }
   const task = (taskState.tasks ?? []).find((item) => item.id === taskId);
   if (!task) throw new Error(`Task not found for PR prepare: ${taskId}`);
   const group = groupId ? (task.target_groups ?? []).find((item) => item.id === groupId) : null;
