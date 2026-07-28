@@ -15515,7 +15515,13 @@ async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
       taskStatePath
     );
   }
-  const task = (taskState.tasks ?? []).find((item) => item.id === taskId);
+  if (!Array.isArray(taskState.tasks)) {
+    throw taskPlanRepairError(
+      'Invalid Task state schema for PR prepare: tasks must be an array',
+      taskStatePath
+    );
+  }
+  const task = taskState.tasks.find((item) => item.id === taskId);
   if (!task) {
     throw taskPlanRepairError(`Task not found for PR prepare: ${taskId}`, taskStatePath);
   }

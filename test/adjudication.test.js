@@ -172,6 +172,21 @@ test('ADJ-S-005 gate fails when any clause is judged not_demonstrated and carrie
   assert.match(gate.reason, /string-existence test does not demonstrate the outcome/);
 });
 
+test('ADJ-S-005 gate fails closed when a current-head verdict uses an unknown vocabulary value', () => {
+  const gate = buildEvidenceAdjudicationGate({
+    storyId: STORY_ID,
+    acceptanceCriteria: [{ id: 'AC-1', text: 'a' }],
+    adjudication: {
+      verdicts: [{ clause_id: 'AC-1', verdict: 'totally_invalid', reason: 'corrupt artifact', head_commit: 'head-1' }]
+    },
+    headSha: 'head-1'
+  });
+  assert.equal(gate.status, 'failed');
+  assert.deepEqual(gate.invalid_verdicts, [{ clause_id: 'AC-1', verdict: 'totally_invalid' }]);
+  assert.match(gate.reason, /unknown adjudication verdict/);
+  assert.doesNotMatch(gate.reason, /All 1 acceptance criteria/);
+});
+
 test('ADJ-S-006 not_verifiable_by_automation demands human verification and is closed only by an accepted decision with reason and artifact', () => {
   const clauses = [{ id: 'AC-1', text: 'a' }];
   const adjudication = {

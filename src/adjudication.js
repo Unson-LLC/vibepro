@@ -333,6 +333,8 @@ export function buildEvidenceAdjudicationGate({
   const currentScope = normalizeAcceptanceScope(acceptanceScope, storyId, acceptanceCriteria);
   const currentScopeFingerprint = acceptanceScopeFingerprint(currentScope);
   const freshVerdictByClause = new Map();
+  const currentClauseIds = new Set(acceptanceCriteria.map((clause) => clause.id));
+  const invalidVerdicts = [];
   for (const entry of verdicts) {
     if (!entry?.clause_id) continue;
     // Fail closed on both sides of the freshness comparison: a verdict without a
@@ -340,6 +342,12 @@ export function buildEvidenceAdjudicationGate({
     // is unverifiable, so no verdict counts as fresh.
     if (!headSha || entry.head_commit !== headSha) continue;
     if (!entryMatchesAcceptanceScope(entry, currentScope)) continue;
+    if (!ADJUDICATION_VERDICTS.includes(entry.verdict)) {
+      if (currentClauseIds.has(entry.clause_id)) {
+        invalidVerdicts.push({ clause_id: entry.clause_id, verdict: entry.verdict });
+      }
+      continue;
+    }
     freshVerdictByClause.set(entry.clause_id, entry);
   }
   const acceptedHumanClosures = new Set(
@@ -359,6 +367,16 @@ export function buildEvidenceAdjudicationGate({
       })
       .filter(Boolean)
   );
+  if (invalidVerdicts.length > 0) {
+    return {
+      ...base,
+      status: 'failed',
+      invalid_verdicts: invalidVerdicts,
+      reason: `Current-head adjudication contains ${invalidVerdicts.length} unknown adjudication verdict value(s): `
+        + invalidVerdicts.map((item) => `${item.clause_id} (${item.verdict ?? '(missing)'})`).join('; ')
+        + `. Repair or remove the corrupt adjudication artifact at ${base.artifact}, then re-record the verdicts.`
+    };
+  }
   const missing = [];
   const notDemonstrated = [];
   const needsHuman = [];

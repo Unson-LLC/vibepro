@@ -8765,6 +8765,31 @@ Weighted semantic/layout residual: **34%**
   assert.match(malformedRoutedTaskStateStderr, /Repair the configured canonical Task plan and rerun vibepro pr prepare/);
   assert.match(malformedRoutedTaskStateStderr, /Unexpected end of JSON input/);
 
+  await writeJson(routedTaskStatePath, {
+    story: { story_id: 'story-pr-prepare' },
+    tasks: { 'TASK-001': validTaskState.tasks[0] }
+  });
+  let invalidRoutedTaskSchemaStderr = '';
+  const invalidRoutedTaskSchema = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stderr: { write: (text) => { invalidRoutedTaskSchemaStderr += text; } }
+  });
+  assert.equal(invalidRoutedTaskSchema.exitCode, 1);
+  assert.match(
+    invalidRoutedTaskSchemaStderr,
+    /Invalid Task state schema for PR prepare: tasks must be an array/
+  );
+  assert.match(
+    invalidRoutedTaskSchemaStderr,
+    /\.vibepro\/routed\/story-pr-prepare-tasks\.json/
+  );
+  assert.match(
+    invalidRoutedTaskSchemaStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
+  assert.doesNotMatch(invalidRoutedTaskSchemaStderr, /TypeError/);
+
   await writeJson(routedTaskStatePath, validTaskState);
   await rm(routedTaskStatePath);
   let missingRoutedTaskStateStderr = '';
