@@ -40,6 +40,10 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     throw new Error(`verify record --status must be one of: ${[...ALLOWED_STATUSES].join(', ')}`);
   }
   const computedRecording = resolveComputedRecording(options);
+  // The receipt decides whether the computed keys on this record are the recording path's own
+  // or a caller's, so it also decides whether either producer of observation.values may carry
+  // one in. It is read once here and applied to both producers below.
+  const receiptBacked = options.evidenceReceipt === RUNNER_EVIDENCE_RECEIPT;
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root);
   await assertManagedWorktreeCommandAllowed(root, {
@@ -54,11 +58,18 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
     branch: gitContext.current_branch,
     head_sha: gitContext.head_sha
   }, `verification-${options.kind}`);
-  const { check: artifactCheck, observedValues: artifactObservedValues } = await crossCheckArtifact(root, {
+  const { check: artifactCheck, observedValues: liftedArtifactValues } = await crossCheckArtifact(root, {
     artifact: options.artifact,
     status: options.status
   });
-  const observation = buildObservation(options, artifactObservedValues);
+  // The artifact is a file the caller chose, so its lifted values are caller input on every
+  // path but the receipt-backed one, where the artifact was written by the recording path
+  // itself moments earlier and carries its own computed evidence_source.
+  const artifactFilter = receiptBacked
+    ? { values: liftedArtifactValues, rejected: [] }
+    : partitionCallerForbiddenValues(liftedArtifactValues, `--artifact ${options.artifact}`);
+  const artifactObservedValues = artifactFilter.values;
+  const observation = buildObservation(options, artifactObservedValues, { receiptBacked });
   assertCommandMatchesVerificationKind(options.kind, options.command, options.status, observation, artifactCheck, artifactObservedValues);
   const observationCheck = buildObservationCheck({ status: options.status, observation });
   const evidencePath = await resolvePrArtifactFile(root, storyId, 'verification-evidence.json');
@@ -79,6 +90,16 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
           reason: `passing ${options.kind} claim was recorded without observation targets, scenarios, or observed values; add --target/--scenario/--observed so the evidence states what was observed, not only what was run`
         }
       : null;
+    // A silent strip would leave the record looking as if the caller had never claimed the
+    // key, so the rejected value is named on the record itself: a reader sees both that the
+    // claim was made and that it was not recorded.
+    const callerKeyWarnings = artifactFilter.rejected.map((item) => ({
+      id: 'verification_observation_caller_key_rejected',
+      command_name: 'verify record',
+      reason: `${item.key}="${item.value}" arrived from ${item.producer} and was not recorded in observation.values: `
+        + `it states how the record was produced, and this record is ${computedRecording.source}. `
+        + 'Only the recording path writes that key.'
+    }));
     const command = {
       kind: options.kind,
       status: options.status,
@@ -102,7 +123,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       ...(lineage ? { lineage } : {}),
       managed_worktree_context: normalizeManagedWorktreeContext(options.managedWorktreeContext),
       warnings: mergeWarnings(
-        [managedWorktreeWarning, observationWarning].filter(Boolean),
+        [managedWorktreeWarning, observationWarning, ...callerKeyWarnings].filter(Boolean),
         computedRecording.additionalWarnings
       )
     };
@@ -440,16 +461,26 @@ function normalizeArtifact(repoRoot, artifact) {
   return toWorkspaceRelative(repoRoot, resolved);
 }
 
-function buildObservation(options, artifactObservedValues = {}) {
+function buildObservation(options, artifactObservedValues = {}, { receiptBacked = false } = {}) {
   const targets = normalizeStringList(options.targets);
   const scenarios = normalizeStringList(options.scenarios);
   const cliValues = parseObservedPairs(options.observed);
   // artifact-derived values first so explicit CLI observations win on key conflicts
-  return {
-    targets,
-    scenarios,
-    values: { ...artifactObservedValues, ...cliValues }
-  };
+  const values = { ...artifactObservedValues, ...cliValues };
+  // The rule is enforced on the merged object as well as on each producer: a producer added
+  // later is covered by this check without knowing it exists, which is what makes the
+  // protection a property of the key set rather than of the two producers that exist today.
+  if (!receiptBacked) {
+    const leaked = Object.keys(values).filter((key) => isCallerForbiddenObservationKey(key));
+    if (leaked.length > 0) {
+      throw new Error(
+        `verification observation values reached a self-reported record carrying ${leaked.join(', ')}, `
+        + 'which states how the record was produced. A producer of observation.values bypassed '
+        + 'the caller-forbidden key rule; route it through partitionCallerForbiddenValues.'
+      );
+    }
+  }
+  return { targets, scenarios, values };
 }
 
 function normalizeStringList(value) {
@@ -458,12 +489,36 @@ function normalizeStringList(value) {
 }
 
 // evidence_source is the field a reader uses to decide how much the rest of the record is
-// worth. It is set by the recording path itself, never by its caller. Rejecting it here
-// rather than letting it through into observation.values closes the one way an agent could
-// put the string `runner_direct` on a self_reported record. Only this key is rejected: the
-// other computed keys stay writable on the self-reported path, where an agent recording a
-// run it performed by hand legitimately supplies its counts.
-const CALLER_FORBIDDEN_OBSERVATION_KEYS = new Set(['evidence_source']);
+// worth. It is set by the recording path itself, never by its caller. observation.values has
+// two caller-reachable producers — the `--observed` pairs parsed below and the values lifted
+// back out of the cross-checked artifact, which is a file the caller wrote and chose — so the
+// rule is one set applied to both, gated on the recording receipt. Guarding only `--observed`
+// left the artifact carrying `runner_direct` onto a self_reported record by the same route
+// the genuine runner uses. Only this key is filtered: the other computed keys stay writable
+// on the self-reported path, where an agent recording a run it performed by hand legitimately
+// supplies its counts.
+export const CALLER_FORBIDDEN_OBSERVATION_KEYS = new Set(['evidence_source']);
+
+export function isCallerForbiddenObservationKey(key) {
+  return CALLER_FORBIDDEN_OBSERVATION_KEYS.has(key);
+}
+
+// Direct CLI input is rejected outright (below); values arriving inside a file are stripped
+// and reported instead, because an artifact written by some other tool is not something the
+// caller can always edit, and refusing to record the run at all would cost more than dropping
+// one key from it. Both producers apply the same set.
+function partitionCallerForbiddenValues(values, producer) {
+  const kept = {};
+  const rejected = [];
+  for (const [key, value] of Object.entries(values ?? {})) {
+    if (isCallerForbiddenObservationKey(key)) {
+      rejected.push({ key, value: String(value), producer });
+      continue;
+    }
+    kept[key] = value;
+  }
+  return { values: kept, rejected };
+}
 
 function parseObservedPairs(observed) {
   const values = {};
@@ -475,7 +530,7 @@ function parseObservedPairs(observed) {
     if (!key || !value) {
       throw new Error(`verify record --observed must be key=value, got: ${raw}`);
     }
-    if (CALLER_FORBIDDEN_OBSERVATION_KEYS.has(key)) {
+    if (isCallerForbiddenObservationKey(key)) {
       throw new Error(
         `verify record --observed cannot set ${key}: it states how the record was produced `
         + 'and is written by the recording path itself.'
@@ -560,13 +615,29 @@ function extractArtifactObservedValues(data, parsed) {
 
 // observation.values has two producers: the CLI observations parsed here, and the values
 // lifted back out of the run artifact above. The runner's protection assert only sees the
-// first. These are the keys the extractor can lift from a runner-written artifact's top
-// level, obtained by running the extractor over a probe rather than restating the list, so
-// a new top-level extraction cannot drift away from the protected set unnoticed.
-// verification-runner.js cross-asserts the result; see assertArtifactDerivedKeysProtected.
-export function runnerArtifactDerivedObservationKeys() {
-  const probe = { status: 'probe', exit_code: 0, observed: {} };
-  return Object.keys(extractArtifactObservedValues(probe, { format: 'generic_status' }));
+// first. This classifies a document the runner's own artifact writer produced, through the
+// same parseArtifactOutcome the record path runs, rather than restating either the artifact
+// shape or the extraction: a new artifact field that reroutes format detection (a `success`
+// flag, a `stats` object) changes the lifted key set here instead of drifting away from the
+// protected set unnoticed. verification-runner.js cross-asserts the result; see
+// assertArtifactDerivedKeysProtected.
+export function classifyRunnerArtifactProbe(probeDocument) {
+  const parsed = parseArtifactOutcome(JSON.stringify(probeDocument));
+  if (!parsed) {
+    throw new Error(
+      'the document `vibepro verify run` writes as its run artifact is no longer recognized by the '
+      + 'record path artifact parser, so neither the values it will lift into observation.values nor '
+      + 'the artifact_check shape the pre-flight must mirror can be derived from it.'
+    );
+  }
+  return {
+    format: parsed.format,
+    derivedKeys: Object.keys(extractArtifactObservedValues(parsed.data, parsed))
+  };
+}
+
+export function runnerArtifactDerivedObservationKeys(probeDocument) {
+  return classifyRunnerArtifactProbe(probeDocument).derivedKeys;
 }
 
 async function crossCheckArtifact(repoRoot, { artifact, status }) {

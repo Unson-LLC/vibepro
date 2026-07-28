@@ -8,8 +8,19 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
-import { recordVerificationEvidence, runnerArtifactDerivedObservationKeys } from '../src/verification-evidence.js';
-import { COMPUTED_OBSERVATION_KEYS, buildRunWarnings, compareWorktreeSamples } from '../src/verification-runner.js';
+import { buildArtifactRemediationCommands } from '../src/pr-manager.js';
+import {
+  classifyRunnerArtifactProbe,
+  recordVerificationEvidence,
+  runnerArtifactDerivedObservationKeys
+} from '../src/verification-evidence.js';
+import {
+  COMPUTED_OBSERVATION_KEYS,
+  buildRunWarnings,
+  compareWorktreeSamples,
+  runArtifactProbeDocument,
+  runnerArtifactCheckShape
+} from '../src/verification-runner.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-test-runner';
@@ -755,7 +766,7 @@ test('verify run rejects a command that does not match the declared kind', async
 // silent. These three tests bind the closure to the key set rather than to the call sites.
 
 test('the artifact-derived observation keys are all inside the protected key set', async () => {
-  const derived = runnerArtifactDerivedObservationKeys();
+  const derived = runnerArtifactDerivedObservationKeys(runArtifactProbeDocument());
   assert.ok(derived.length > 0, 'the extractor must lift at least one top-level key');
   for (const key of derived) {
     assert.ok(
@@ -763,6 +774,137 @@ test('the artifact-derived observation keys are all inside the protected key set
       `${key} is lifted from the run artifact into observation.values but is not protected`
     );
   }
+});
+
+// Round 9, gate_evidence: the probe used to restate the artifact shape (`{format:
+// 'generic_status'}` plus a hand-written body), so a future artifact field that reroutes the
+// record path's format detection would change what is lifted while the probe kept reporting
+// the old key set. The probe is now the real writer's output classified by the real parser.
+test('the derivation follows the real artifact shape, so a format reroute changes what it reports', async () => {
+  const probe = runArtifactProbeDocument();
+  assert.equal(probe.producer, 'vibepro verify run', 'the probe must be the document the runner writes');
+  assert.deepEqual(runnerArtifactDerivedObservationKeys(probe).sort(), ['exit_code', 'status']);
+  assert.equal(classifyRunnerArtifactProbe(probe).format, 'generic_status');
+
+  // A `success` flag added to the artifact reroutes detection to the vitest/jest branch, which
+  // lifts a different, unprotected key set. The derivation reports that; a restated probe could not.
+  const rerouted = classifyRunnerArtifactProbe({ ...probe, success: true });
+  assert.equal(rerouted.format, 'vitest_jest');
+  assert.ok(
+    rerouted.derivedKeys.some((key) => !COMPUTED_OBSERVATION_KEYS.includes(key)),
+    'a rerouted artifact must surface keys the protected set does not cover, so the assert fires'
+  );
+
+  // The same derivation drives the pre-flight artifact_check shape, so the check the runner
+  // applies before executing cannot drift from the format the record path will actually see.
+  assert.equal(runnerArtifactCheckShape().format, classifyRunnerArtifactProbe(probe).format);
+});
+
+test('verify run records the artifact-derived key set its protection assert checked', async () => {
+  const root = await setupRepo();
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  assert.equal(result.exitCode, 0);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
+  // The assert's result is carried onto the record, so removing the call site is a failure
+  // rather than a silently dropped check.
+  const derived = record.computed_observation.artifact_derived_keys;
+  assert.deepEqual([...derived].sort(), ['exit_code', 'status']);
+  for (const key of derived) {
+    assert.ok(COMPUTED_OBSERVATION_KEYS.includes(key), `${key} must be protected`);
+  }
+});
+
+// Round 9, gate_evidence: the forbidden-key rule was consulted in the --observed parser only.
+// observation.values has a second caller-reachable producer — the values lifted back out of
+// the artifact the caller chose — and it is the same route the genuine runner uses, so a
+// caller-authored artifact put `runner_direct` onto a self_reported record unopposed.
+test('a caller-written artifact cannot put the runner trust marker on a self-reported record', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, 'forged.json'), JSON.stringify({
+    status: 'pass',
+    exit_code: 0,
+    observed: { evidence_source: 'runner_direct', tests: '52' }
+  }));
+  const result = await cli([
+    'verify', 'record', root, '--id', STORY_ID, '--kind', 'unit', '--status', 'pass',
+    '--command', 'node --test tests/sample.test.js',
+    '--target', 'tests/sample.test.js',
+    '--artifact', 'forged.json'
+  ]);
+  assert.equal(result.exitCode, 0);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
+  assert.equal(record.evidence_source, 'self_reported');
+  assert.equal(record.observation.values.evidence_source, undefined);
+  assert.equal(record.artifact_observed_values.evidence_source, undefined);
+  // Lifting arbitrary observed keys out of an artifact stays supported; only the key that
+  // states how the record was produced is filtered.
+  assert.equal(record.observation.values.tests, '52');
+  const rejection = record.warnings.find((item) => item.id === 'verification_observation_caller_key_rejected');
+  assert.ok(rejection, 'the strip must be visible on the record, not silent');
+  assert.match(rejection.reason, /evidence_source="runner_direct"/);
+  assert.match(rejection.reason, /self_reported/);
+});
+
+test('the runner keeps lifting its own computed evidence_source through the same extractor', async () => {
+  const root = await setupRepo();
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  assert.equal(result.exitCode, 0);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
+  // Same route the forgery took; the receipt is what separates them.
+  assert.equal(record.observation.values.evidence_source, 'runner_direct');
+  assert.equal(record.evidence_source, 'runner_direct');
+  assert.equal(
+    (record.warnings ?? []).some((item) => item.id === 'verification_observation_caller_key_rejected'),
+    false,
+    'the receipt-backed path must not report its own computed key as caller input'
+  );
+});
+
+// Round 9, gate_evidence: with evidence_source now on every runner-produced record's
+// observation.values, the stale-evidence remediation command reconstructed it as
+// `--observed evidence_source=runner_direct` — which `verify record` rejects, so the command
+// pr prepare tells an operator to run could not run.
+test('the emitted stale-evidence remediation command is runnable against a runner-produced record', async () => {
+  const root = await setupRepo();
+  const run = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--scenario', 'sample unit suite passes',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  assert.equal(run.exitCode, 0);
+  const recorded = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
+  assert.equal(recorded.observation.values.evidence_source, 'runner_direct', 'the fixture must carry the key');
+
+  const [recordCommand] = buildArtifactRemediationCommands({
+    artifact_type: 'verification_command',
+    kind: recorded.kind,
+    command: recorded.command,
+    summary: recorded.summary,
+    artifact: recorded.artifact,
+    observation: recorded.observation,
+    content_binding: recorded.content_binding
+  }, STORY_ID);
+  assert.ok(!recordCommand.includes('evidence_source'), `remediation command must not replay a rejected key: ${recordCommand}`);
+  assert.match(recordCommand, /--observed exit_code=0/);
+
+  // Executed, not only inspected: "unrunnable" is the finding, so the emitted string is run.
+  const executable = recordCommand.replace(
+    /^vibepro\b/,
+    `${JSON.stringify(process.execPath)} ${JSON.stringify(path.resolve('bin/vibepro.js'))}`
+  );
+  await execFileAsync('/bin/sh', ['-c', executable], { cwd: root, encoding: 'utf8' });
+  const rerecorded = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
+  assert.equal(rerecorded.evidence_source, 'self_reported', 'replaying by hand must not inherit the runner trust marker');
+  assert.equal(rerecorded.observation.values.evidence_source, undefined);
 });
 
 test('status and evidence_source are computed facts, not hand-listed exceptions', async () => {

@@ -50,7 +50,7 @@ import {
   summarizeAgentReviewsForPr
 } from './agent-review.js';
 import { importCiEvidence } from './ci-evidence.js';
-import { RUNNER_EVIDENCE_RECEIPT, recordVerificationEvidence } from './verification-evidence.js';
+import { RUNNER_EVIDENCE_RECEIPT, isCallerForbiddenObservationKey, recordVerificationEvidence } from './verification-evidence.js';
 import {
   renderExplorePrSection,
   summarizeExploreEvidenceForPr
@@ -12347,7 +12347,7 @@ function deriveArtifactRootCause(artifact) {
   return status;
 }
 
-function buildArtifactRemediationCommands(artifact, storyId = null) {
+export function buildArtifactRemediationCommands(artifact, storyId = null) {
   const storyArg = storyId ? shellQuote(storyId) : '<story-id>';
   if (artifact.artifact_type === 'verification_command') {
     const kindArg = artifact.kind ? shellQuote(artifact.kind) : '<kind>';
@@ -12360,7 +12360,12 @@ function buildArtifactRemediationCommands(artifact, storyId = null) {
     const scenarioArgs = (artifact.observation?.scenarios ?? [])
       .map((scenario) => ` --scenario ${shellQuote(scenario)}`)
       .join('');
+    // Keys the record path refuses from a caller are dropped rather than replayed: a
+    // runner-produced record carries evidence_source in observation.values, and reconstructing
+    // it as `--observed evidence_source=...` would emit a command `verify record` rejects on
+    // sight. The predicate is imported so there is one set, not a copy that can drift.
     const observedArgs = Object.entries(artifact.observation?.values ?? {})
+      .filter(([key]) => !isCallerForbiddenObservationKey(key))
       .map(([key, value]) => ` --observed ${shellQuote(`${key}=${value}`)}`)
       .join('');
     const strictFreshnessArg = artifact.content_binding?.mode === 'strict_head'

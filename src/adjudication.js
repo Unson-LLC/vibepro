@@ -85,44 +85,54 @@ async function readVerificationEvidenceEntries(repoRoot, storyId) {
   }
 }
 
+// Every value interpolated into this entry is agent-controlled text landing in a markdown
+// list, and the list is where the authoritative fields (evidence_source, the producer, the
+// discarded-input diff) are stated. A value containing a newline would render as its own list
+// item, so an observation value could write a second `- evidence_source: runner_direct` line
+// under a self_reported record. Newlines are folded into a visible escape rather than dropped,
+// so the judge still sees that the value was multi-line.
+function inlineText(value) {
+  return String(value ?? '').replace(/\r\n|\r|\n/g, '\\n');
+}
+
 function formatEvidenceEntry(entry, index) {
   const lines = [
-    `### 証拠 E-${index + 1}: kind=${entry.kind ?? 'unknown'} status=${entry.status ?? 'unknown'}`,
+    `### 証拠 E-${index + 1}: kind=${inlineText(entry.kind ?? 'unknown')} status=${inlineText(entry.status ?? 'unknown')}`,
     '',
-    `- command: \`${entry.command ?? '-'}\``,
-    `- summary: ${entry.summary ?? '-'}`
+    `- command: \`${inlineText(entry.command ?? '-')}\``,
+    `- summary: ${inlineText(entry.summary ?? '-')}`
   ];
   const observation = entry.observation ?? {};
   const targets = Array.isArray(observation.targets) ? observation.targets : [];
   const scenarios = Array.isArray(observation.scenarios) ? observation.scenarios : [];
   const values = observation.values && typeof observation.values === 'object' ? observation.values : {};
-  if (targets.length > 0) lines.push(`- observation.targets: ${targets.join(', ')}`);
+  if (targets.length > 0) lines.push(`- observation.targets: ${targets.map(inlineText).join(', ')}`);
   if (scenarios.length > 0) {
     lines.push('- observation.scenarios:');
-    for (const scenario of scenarios) lines.push(`  - ${scenario}`);
+    for (const scenario of scenarios) lines.push(`  - ${inlineText(scenario)}`);
   }
   const valueEntries = Object.entries(values);
   if (valueEntries.length > 0) {
-    lines.push(`- observation.values: ${valueEntries.map(([key, value]) => `${key}=${value}`).join(', ')}`);
+    lines.push(`- observation.values: ${valueEntries.map(([key, value]) => `${inlineText(key)}=${inlineText(value)}`).join(', ')}`);
   }
   // The adjudicator judges whether the evidence demonstrates the clause, so it has to see
   // how the evidence was produced and what the producer already flagged about it. Without
   // these, observation.values is the only thing on the page, and a value an agent wrote is
   // indistinguishable from one an execution left behind.
-  lines.push(`- evidence_source: ${entry.evidence_source ?? 'self_reported'}`);
+  lines.push(`- evidence_source: ${inlineText(entry.evidence_source ?? 'self_reported')}`);
   const computed = entry.computed_observation;
   if (computed && typeof computed === 'object') {
     const computedKeys = Array.isArray(computed.computed_keys) ? computed.computed_keys : [];
-    lines.push(`- computed_observation.producer: ${computed.producer ?? '-'}`);
+    lines.push(`- computed_observation.producer: ${inlineText(computed.producer ?? '-')}`);
     if (computedKeys.length > 0) {
-      lines.push(`- computed_observation.computed_keys: ${computedKeys.join(', ')}`);
+      lines.push(`- computed_observation.computed_keys: ${computedKeys.map(inlineText).join(', ')}`);
     }
   }
   const overrides = Array.isArray(entry.observation_overrides) ? entry.observation_overrides : [];
   if (overrides.length > 0) {
     lines.push('- observation_overrides (agent input discarded in favour of the computed value):');
     for (const override of overrides) {
-      lines.push(`  - ${override.key ?? '-'}: agent=${override.agent_value ?? '-'} computed=${override.computed_value ?? '-'}`);
+      lines.push(`  - ${inlineText(override.key ?? '-')}: agent=${inlineText(override.agent_value ?? '-')} computed=${inlineText(override.computed_value ?? '-')}`);
     }
   }
   const warnings = Array.isArray(entry.warnings) ? entry.warnings : [];
@@ -132,10 +142,10 @@ function formatEvidenceEntry(entry, index) {
       const text = typeof warning === 'string'
         ? warning
         : (warning?.id ?? warning?.code ?? warning?.message ?? JSON.stringify(warning));
-      lines.push(`  - ${text}`);
+      lines.push(`  - ${inlineText(text)}`);
     }
   }
-  if (entry.artifact) lines.push(`- artifact: ${entry.artifact}`);
+  if (entry.artifact) lines.push(`- artifact: ${inlineText(entry.artifact)}`);
   return lines.join('\n');
 }
 

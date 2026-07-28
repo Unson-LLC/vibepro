@@ -9,6 +9,7 @@ import { toWorkspaceRelative } from './workspace.js';
 import {
   RUNNER_EVIDENCE_RECEIPT,
   assertCommandMatchesVerificationKind,
+  classifyRunnerArtifactProbe,
   recordVerificationEvidence,
   runnerArtifactDerivedObservationKeys
 } from './verification-evidence.js';
@@ -89,8 +90,8 @@ function assertComputedKeysProtected(computedValues) {
 // key set rather than of the enumerated call sites, which is the distinction the round-5
 // finding turned on.
 function assertArtifactDerivedKeysProtected() {
-  const unprotected = runnerArtifactDerivedObservationKeys()
-    .filter((key) => !COMPUTED_OBSERVATION_KEY_SET.has(key));
+  const derived = runnerArtifactDerivedObservationKeys(runArtifactProbeDocument());
+  const unprotected = derived.filter((key) => !COMPUTED_OBSERVATION_KEY_SET.has(key));
   if (unprotected.length > 0) {
     throw new Error(
       'verify run writes an artifact whose top level is lifted into observation.values under '
@@ -98,6 +99,10 @@ function assertArtifactDerivedKeysProtected() {
       + 'Add them to COMPUTED_OBSERVATION_KEYS so an --observed value cannot overwrite them.'
     );
   }
+  // Returned rather than only asserted so the record states which of its observation values
+  // came back through the artifact extractor, and so dropping the call site is a failure
+  // rather than a silent loss of the check.
+  return derived;
 }
 
 // Markers that make a nested runner report to a foreign harness instead of running normally.
@@ -159,7 +164,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   const treeMutated = headMoved || worktreeChanged;
 
   const runFilePaths = await resolveRunFilePaths(root, storyId, options.kind);
-  assertArtifactDerivedKeysProtected();
+  const artifactDerivedKeys = assertArtifactDerivedKeysProtected();
   const computedValues = assertComputedKeysProtected({
     // status and evidence_source are computed here too, and both reach observation.values.
     // Carrying them in this object rather than only in the protected-key list is what puts
@@ -286,6 +291,9 @@ export async function runVerificationCommand(repoRoot, options = {}) {
       // Every fact mirrored here is also in `values`, which assertComputedKeysProtected has
       // checked against the protected set; nothing is computed on this object alone.
       values: computedValues,
+      // The keys the record path lifts back out of this run's artifact into
+      // observation.values, as derived and checked before the command ran.
+      artifact_derived_keys: artifactDerivedKeys,
       run_artifact: computedValues.run_artifact,
       run_log: computedValues.run_log,
       tree_mutated_during_run: treeMutated,
@@ -463,7 +471,16 @@ async function writeRunLog(logPath, output) {
 
 async function writeRunArtifact(artifactPath, storyId, kind, run) {
   await mkdir(path.dirname(artifactPath), { recursive: true });
-  const doc = {
+  const doc = buildRunArtifactDocument(storyId, kind, run);
+  await writeFile(artifactPath, `${JSON.stringify(doc, null, 2)}\n`);
+  return artifactPath;
+}
+
+// The document a run artifact is written from. It is a named builder rather than an inline
+// literal so the protection assert and the pre-flight artifact_check shape can be derived
+// from the real shape (see runArtifactProbeDocument) instead of restating it.
+function buildRunArtifactDocument(storyId, kind, run) {
+  return {
     schema_version: '0.1.0',
     status: run.status,
     exit_code: run.execution.exitCode,
@@ -504,8 +521,44 @@ async function writeRunArtifact(artifactPath, storyId, kind, run) {
     discarded_agent_observations: run.overrides,
     warnings: run.warnings
   };
-  await writeFile(artifactPath, `${JSON.stringify(doc, null, 2)}\n`);
-  return artifactPath;
+}
+
+// A minimal run put through the real artifact builder: what the record path will see, in the
+// shape this module actually writes. Everything derived from the artifact — the keys lifted
+// back into observation.values, the artifact_check format the pre-flight mirrors — is read
+// off this document, so a field added to the builder reaches both derivations.
+export function runArtifactProbeDocument() {
+  const epoch = new Date(0);
+  return buildRunArtifactDocument('probe-story', 'unit', {
+    status: 'pass',
+    argv: ['node'],
+    command: 'node',
+    execution: { exitCode: 0, signal: null, envRemoved: [], outputLimitExceeded: false },
+    startedAt: epoch,
+    finishedAt: epoch,
+    durationMs: 0,
+    headBefore: null,
+    headAfter: null,
+    treeBefore: null,
+    treeAfter: null,
+    treeMutated: false,
+    headMoved: false,
+    worktreeChanged: false,
+    counts: null,
+    outputMetrics: 'none',
+    // Empty: the values the runner puts here are covered by assertComputedKeysProtected, and
+    // this probe exists to derive what the extractor lifts around them.
+    computedValues: {},
+    overrides: [],
+    logPath: null,
+    logTruncated: false,
+    timeoutMs: DEFAULT_TIMEOUT_MS,
+    timedOut: false,
+    worktreeSampled: false,
+    worktreeSamplingComplete: false,
+    maxOutputBytes: MAX_OUTPUT_BUFFER_BYTES,
+    warnings: []
+  });
 }
 
 async function resolveRunFilePaths(root, storyId, kind) {
@@ -670,15 +723,21 @@ function buildSummary(kind, status, execution, runCounts, durationMs) {
   return `vibepro verify run executed the ${kind} command: exit_code=${execution.exitCode}${counts}, duration_ms=${durationMs}, status=${status} computed from the exit code`;
 }
 
-// The pre-flight must mirror the record-time rule, not a more permissive version of it:
-// the runner's own artifact always parses as generic_status, so any allowance that depends
-// on a tap/vitest artifact would be granted here and refused after the command had already
-// run. It is checked against the same shape the record path will see.
-export const RUNNER_ARTIFACT_CHECK_SHAPE = Object.freeze({ status: 'verified', format: 'generic_status' });
+// The pre-flight must mirror the record-time rule, not a more permissive version of it: any
+// allowance that depends on the artifact format would otherwise be granted here and refused
+// after the command had already run. The format is classified from the document this module
+// writes rather than named, so an artifact field that reroutes format detection moves the
+// pre-flight and the record-time rule together instead of splitting them apart.
+export function runnerArtifactCheckShape() {
+  return Object.freeze({
+    status: 'verified',
+    format: classifyRunnerArtifactProbe(runArtifactProbeDocument()).format
+  });
+}
 
 function assertRunnableKindCommand(kind, command) {
   try {
-    assertCommandMatchesVerificationKind(kind, command, 'pass', null, RUNNER_ARTIFACT_CHECK_SHAPE, {});
+    assertCommandMatchesVerificationKind(kind, command, 'pass', null, runnerArtifactCheckShape(), {});
   } catch (error) {
     throw new Error(
       `${String(error.message).replace('verify record --kind', 'verify run --kind')}`
