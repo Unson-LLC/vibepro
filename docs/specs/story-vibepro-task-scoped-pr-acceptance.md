@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-task-scoped-pr-acceptance
 architecture_ref: docs/architecture/ADR-story-vibepro-task-scoped-pr-acceptance.md
+parent_design: vibepro-task-scoped-pr-acceptance
 status: accepted
 ---
 
