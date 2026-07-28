@@ -3,12 +3,15 @@ import { readdir, readFile } from 'node:fs/promises';
 import test from 'node:test';
 
 import {
+  classifySites,
   collectEnumerationCoverage,
   collectEnumerationScenarios,
   extractEnumerableLiterals,
   isProductSourcePath,
+  parseAddedLineMap,
   parseEnumerationScenario,
   reproductionCommand,
+  scenarioTemplate,
   selectRequiredIdentifiers,
   validateEnumerationClaim
 } from '../src/enumeration-evidence.js';
@@ -883,4 +886,216 @@ test('collectEnumerationScenarios reads scenarios out of recorded verification e
   assert.equal(scenarios[0].claim.identifier, 'cost_missing');
   assert.equal(scenarios[0].kind, 'unit');
   assert.equal(scenarios[0].binding, 'current');
+});
+
+// --- CEA-S-2: the count is computed, never written -------------------------
+//
+// The counted form was never broken by the gate's recount — six review rounds
+// tried. What it cost was the round trip: the numbers in it went stale every
+// time any commit touched a declared path, and across this Story's eight rounds
+// the same six claims were hand-recounted and rewritten eight times, three of
+// them changing on a commit that touched neither identifier's meaning. The
+// declaration form removes the field the number goes in.
+
+/**
+ * A provider whose tree and diff are both controllable, so the computed split
+ * can be asserted against a known answer rather than against git.
+ */
+function computingProvider({ files = new Map(), addedLines = new Map(), diffReadable = true } = {}) {
+  return {
+    async addedLiterals() { return new Set(['ghost_state']); },
+    async baseLiterals() { return new Set(); },
+    async productSourceFiles() { return [...files.keys()].filter(isProductSourcePath); },
+    async scanFile(file, onLine) {
+      const content = files.get(file);
+      if (content === undefined) return 'skipped';
+      for (const line of content.split('\n')) onLine(line);
+      return 'scanned';
+    },
+    async countSites(identifier, paths) {
+      const matcher = new RegExp(`(?<![A-Za-z0-9_])${identifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z0-9_])`);
+      const sites = [];
+      const productSourceFileList = [];
+      let lines = 0;
+      for (const [file, content] of files) {
+        if (!paths.some((p) => file === p || file.startsWith(`${p}/`))) continue;
+        const hits = [];
+        content.split('\n').forEach((line, index) => {
+          if (matcher.test(line)) hits.push(index + 1);
+        });
+        if (hits.length === 0) continue;
+        lines += hits.length;
+        sites.push([file, hits]);
+        if (isProductSourcePath(file)) productSourceFileList.push(file);
+      }
+      return {
+        lines,
+        files: sites.length,
+        product_source_lines: lines,
+        product_source_files: productSourceFileList.length,
+        product_source_file_list: productSourceFileList.sort(),
+        missing_paths: [],
+        unscannable_paths: [],
+        binary_paths: [],
+        sites
+      };
+    },
+    async addedLineMap() { return diffReadable ? addedLines : null; }
+  };
+}
+
+const TWO_FILE_TREE = new Map([
+  ['src/a.js', "const a = 'ghost_state';\nconst untouched = 'ghost_state';"],
+  ['src/b.js', "export const b = 'ghost_state';"]
+]);
+
+test('CEA-S-2 a declaration parses with no counts and is marked computed', () => {
+  const parsed = parseEnumerationScenario('enumeration: count ghost_state across src, test');
+  assert.equal(parsed.matched, true);
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.claim.identifier, 'ghost_state');
+  assert.deepEqual(parsed.claim.paths, ['src', 'test']);
+  assert.equal(parsed.claim.count_source, 'computed');
+  // The three fields an agent used to fill in do not exist on this form.
+  assert.equal(parsed.claim.found, null);
+  assert.equal(parsed.claim.updated, null);
+  assert.equal(parsed.claim.unchanged, null);
+});
+
+test('CEA-S-2 the legacy counted form is still accepted and marked agent_declared', () => {
+  const parsed = parseEnumerationScenario(WELL_FORMED);
+  assert.equal(parsed.ok, true);
+  assert.equal(parsed.claim.count_source, 'agent_declared');
+  assert.equal(parsed.claim.found, 7);
+});
+
+test('CEA-S-2 the gate fills in the counts the declaration does not carry', async () => {
+  const report = await collectEnumerationCoverage({
+    verificationEvidence: evidenceWithScenarios(
+      'enumeration: count ghost_state across src; unchanged because the second site is a doc example left as is'
+    ),
+    provider: computingProvider({
+      files: TWO_FILE_TREE,
+      // This change wrote src/a.js line 1 and src/b.js line 1; a.js line 2 predates it.
+      addedLines: new Map([['src/a.js', new Set([1])], ['src/b.js', new Set([1])]])
+    })
+  });
+  const claim = report.claims[0];
+  assert.equal(claim.count_source, 'computed');
+  assert.equal(claim.found, 3, 'three sites exist across the declared range');
+  assert.equal(claim.updated, 2, 'two of them sit on lines this change wrote');
+  assert.equal(claim.unchanged, 1, 'the third predates the change');
+  assert.equal(claim.verified, true);
+  // Nothing the agent typed produced any of those three numbers.
+  assert.equal(claim.agent_declared_found, null);
+});
+
+test('CEA-S-2 a computed claim demands the judgment it cannot measure, and supplies the number', async () => {
+  const report = await collectEnumerationCoverage({
+    verificationEvidence: evidenceWithScenarios('enumeration: count ghost_state across src'),
+    provider: computingProvider({
+      files: TWO_FILE_TREE,
+      addedLines: new Map([['src/a.js', new Set([1])], ['src/b.js', new Set([1])]])
+    })
+  });
+  assert.equal(report.status, 'failed');
+  const rejection = report.rejections.find((entry) => entry.id === 'enumeration_unchanged_reason_missing');
+  assert.ok(rejection, 'leaving sites untouched without saying why must be rejected');
+  // The operator is never asked to count: the rejection carries the numbers.
+  assert.match(rejection.reason, /found 3 site\(s\), of which this change wrote 2 and left 1 untouched/);
+});
+
+test('CEA-S-2 an unreadable diff reports the split as unknown rather than as a full sweep', async () => {
+  const report = await collectEnumerationCoverage({
+    verificationEvidence: evidenceWithScenarios('enumeration: count ghost_state across src'),
+    provider: computingProvider({ files: TWO_FILE_TREE, diffReadable: false })
+  });
+  assert.equal(report.status, 'failed');
+  assert.ok(report.rejections.some((entry) => entry.id === 'enumeration_split_unknown'));
+});
+
+test('CEA-S-2 a declaration survives a tree change that invalidates the equivalent counted claim', async () => {
+  // This is the whole point. Same identifier, same range, same sweep — one
+  // claim writes the number and one does not. A commit adds a site.
+  const before = TWO_FILE_TREE;
+  const after = new Map([...TWO_FILE_TREE, ['src/c.js', "const c = 'ghost_state';"]]);
+  const addedBefore = new Map([['src/a.js', new Set([1])], ['src/b.js', new Set([1])]]);
+  const addedAfter = new Map([...addedBefore, ['src/c.js', new Set([1])]]);
+
+  const declaration = 'enumeration: count ghost_state across src; unchanged because the doc example is left as is';
+  const counted = 'enumeration: grepped ghost_state across src; 3 sites found, 2 updated, 1 unchanged because the doc example is left as is';
+
+  const run = (scenario, files, addedLines) => collectEnumerationCoverage({
+    verificationEvidence: evidenceWithScenarios(scenario),
+    provider: computingProvider({ files, addedLines })
+  });
+
+  // Both hold on the tree they were written against.
+  assert.equal((await run(declaration, before, addedBefore)).claims[0].verified, true);
+  assert.equal((await run(counted, before, addedBefore)).claims[0].verified, true);
+
+  // A commit adds one site. The counted claim is now false and must be
+  // rewritten by hand; the declaration re-measures and stays true.
+  const countedAfter = await run(counted, after, addedAfter);
+  assert.equal(countedAfter.claims[0].verified, false);
+  assert.ok(countedAfter.rejections.some((entry) => entry.id === 'enumeration_count_mismatch'));
+
+  const declarationAfter = await run(declaration, after, addedAfter);
+  assert.equal(declarationAfter.claims[0].verified, true, 'the declaration needs no rewrite');
+  assert.equal(declarationAfter.claims[0].found, 4, 'and reports the new number itself');
+  assert.equal(declarationAfter.claims[0].updated, 3);
+});
+
+test('CEA-S-2 the artifact distinguishes computed evidence from agent-written evidence', async () => {
+  const report = await collectEnumerationCoverage({
+    verificationEvidence: evidenceWithScenarios(
+      'enumeration: count ghost_state across src; unchanged because the doc example is left as is',
+      'enumeration: grepped ghost_state across src; 3 sites found, 2 updated, 1 unchanged because the doc example is left as is'
+    ),
+    provider: computingProvider({
+      files: TWO_FILE_TREE,
+      addedLines: new Map([['src/a.js', new Set([1])], ['src/b.js', new Set([1])]])
+    })
+  });
+  const computed = report.claims.find((claim) => claim.count_source === 'computed');
+  const declared = report.claims.find((claim) => claim.count_source === 'agent_declared');
+  assert.ok(computed && declared, 'both provenances must be present and labelled');
+  // Same identifier, same range, same numbers — distinguishable only because
+  // the provenance is recorded rather than inferred.
+  assert.equal(computed.found, declared.found);
+  assert.equal(computed.agent_declared_found, null);
+  assert.equal(declared.agent_declared_found, 3);
+  assert.deepEqual(report.count_provenance, { computed: 1, agent_declared: 1 });
+});
+
+test('CEA-S-2 the gate publishes the form that has no number in it', () => {
+  const template = scenarioTemplate('ghost_state', ['src', 'test']);
+  assert.equal(template, 'enumeration: count ghost_state across src, test');
+  assert.ok(!/<N>|<M>|<K>|sites found/.test(template), 'the published template must offer no field for a count');
+});
+
+test('CEA-S-2 parseAddedLineMap maps hunk headers onto head line numbers', () => {
+  const map = parseAddedLineMap([
+    'diff --git a/src/a.js b/src/a.js',
+    '--- a/src/a.js',
+    '+++ b/src/a.js',
+    '@@ -0,0 +1,2 @@',
+    '+one',
+    '+two',
+    '@@ -5,0 +10 @@',
+    '+ten',
+    'diff --git a/src/gone.js b/src/gone.js',
+    '--- a/src/gone.js',
+    '+++ /dev/null'
+  ].join('\n'));
+  assert.deepEqual([...map.get('src/a.js')].sort((x, y) => x - y), [1, 2, 10]);
+  assert.equal(map.has('/dev/null'), false);
+});
+
+test('CEA-S-2 classifySites returns null when the diff is unavailable', () => {
+  assert.equal(classifySites([['src/a.js', [1, 2]]], null), null);
+  assert.deepEqual(
+    classifySites([['src/a.js', [1, 2]]], new Map([['src/a.js', new Set([2])]])),
+    { found: 2, updated: 1, unchanged: 1 }
+  );
 });

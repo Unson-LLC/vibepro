@@ -12693,7 +12693,7 @@ export function buildEnumerationCoverageGate({ storyId = null, enumerationCovera
   if (missing.length > 0) {
     requiredActions.push(
       `Enumerate the full class of each introduced identifier before claiming closure: ${missing.join(', ')}`,
-      'Run the printed grep to obtain the real site count, then record it verbatim; the gate recounts the same range and rejects a mismatch'
+      'Declare the identifier and the range only; the gate counts the sites and splits them against the base diff. Do not write a number — the printed grep is for reproducing what the gate sees, not for transcribing into the scenario'
     );
   }
   for (const rejection of rejections) {

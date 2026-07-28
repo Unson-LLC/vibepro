@@ -85,6 +85,14 @@ const ENUMERABLE_LITERAL_SCAN = /['"]([a-z][a-z0-9]*(?:[_:][a-z0-9]+)+)['"]/g;
 // no producer/consumer spread.
 const CROSS_FILE_THRESHOLD = 2;
 
+// The original claim form. The claimant writes the numbers and the gate
+// recounts them. Six rounds of review never broke the recount, but the numbers
+// themselves were rewritten eight times: any commit touching a declared path
+// changes N, so a true claim becomes a false one without anyone editing it, and
+// the claimant must hand-count again to restore it. Retained because existing
+// evidence uses it and must stay valid, and because a claim that carries a
+// number is still checkable — but every claim recorded through it is marked
+// `agent_declared` so the two provenances are distinguishable on the artifact.
 const ENUMERATION_SCENARIO_GRAMMAR = new RegExp(
   '^enumeration:\\s*grepped\\s+(?<identifier>\\S+)\\s+across\\s+(?<paths>[^;]+);'
   + '\\s*(?<found>\\d+)\\s+sites?\\s+found,'
@@ -94,12 +102,24 @@ const ENUMERATION_SCENARIO_GRAMMAR = new RegExp(
   'i'
 );
 
+// The successor form. It has no field for a number, so no number can be
+// fabricated, mis-transcribed, or left stale in it. The claimant declares only
+// the two things they actually decide — which identifier, and over what range —
+// and optionally why the sites they left alone are correct to leave. N, the
+// updated count and the unchanged count are measured by the gate against the
+// tree and the base diff, and never pass through the claimant's input.
+const ENUMERATION_DECLARATION_GRAMMAR = new RegExp(
+  '^enumeration:\\s*count\\s+(?<identifier>\\S+)\\s+across\\s+(?<paths>[^;]+?)'
+  + '(?:;\\s*unchanged\\s+because\\s+(?<reason>.+?))?\\s*$',
+  'i'
+);
+
 const IDENTIFIER_SHAPE = /^[A-Za-z_][A-Za-z0-9_.:-]*$/;
 
 // Marks text as an attempted sweep claim rather than incidental prose that
 // happens to begin with the prefix. "swept" is included deliberately so
 // count-free sweep narration is still rejected rather than quietly ignored.
-const ENUMERATION_CLAIM_SIGNAL = /\b(grepped|swept|sweep|sites?\s+found)\b|\b\d+\s+sites?\b/i;
+const ENUMERATION_CLAIM_SIGNAL = /\b(grepped|swept|sweep|sites?\s+found)\b|\b\d+\s+sites?\b|\bcount\s+\S+\s+across\b/i;
 
 /**
  * Parse one `--scenario` string as an enumeration claim.
@@ -121,7 +141,8 @@ export function parseEnumerationScenario(text) {
   if (!ENUMERATION_CLAIM_SIGNAL.test(raw)) {
     return { matched: false, ok: false, claim: null, rejection: null };
   }
-  const match = ENUMERATION_SCENARIO_GRAMMAR.exec(raw);
+  const declaration = ENUMERATION_DECLARATION_GRAMMAR.exec(raw);
+  const match = declaration ?? ENUMERATION_SCENARIO_GRAMMAR.exec(raw);
   if (!match) {
     return {
       matched: true,
@@ -129,7 +150,9 @@ export function parseEnumerationScenario(text) {
       claim: null,
       rejection: {
         id: 'enumeration_scenario_malformed',
-        reason: 'enumeration scenario does not match the required form: '
+        reason: 'enumeration scenario does not match either supported form. Preferred: '
+          + 'enumeration: count <identifier> across <path>[, <path>...][; unchanged because <reason>] '
+          + '— the gate measures the counts. Legacy: '
           + 'enumeration: grepped <identifier> across <path>[, <path>...]; '
           + '<N> sites found, <M> updated, <K> unchanged because <reason>',
         scenario: raw
@@ -167,15 +190,22 @@ export function parseEnumerationScenario(text) {
   const claim = {
     identifier,
     paths,
-    found: Number(groups.found),
-    updated: Number(groups.updated),
-    unchanged: Number(groups.unchanged),
+    // A declaration carries no counts by construction. They stay null until the
+    // gate measures them, so there is no field an agent could have written and
+    // no value that can go stale when an unrelated commit touches the range.
+    found: declaration ? null : Number(groups.found),
+    updated: declaration ? null : Number(groups.updated),
+    unchanged: declaration ? null : Number(groups.unchanged),
     reason: reason.length > 0 ? reason : null,
+    count_source: declaration ? 'computed' : 'agent_declared',
     scenario: raw
   };
-  const arithmetic = validateEnumerationClaim(claim);
-  if (!arithmetic.ok) {
-    return { matched: true, ok: false, claim, rejection: arithmetic.rejection };
+  // Only a form that carries numbers can have inconsistent numbers.
+  if (!declaration) {
+    const arithmetic = validateEnumerationClaim(claim);
+    if (!arithmetic.ok) {
+      return { matched: true, ok: false, claim, rejection: arithmetic.rejection };
+    }
   }
   return { matched: true, ok: true, claim, rejection: null };
 }
@@ -342,9 +372,12 @@ export function reproductionCommand(identifier, paths) {
   return `grep -rIn ${excludes} -w -- ${shellQuote(identifier)} ${paths.map(shellQuote).join(' ')} | wc -l`;
 }
 
+// The form the gate publishes. It emits the declaration deliberately: an agent
+// following the printed command has no field to write a number into, so the
+// stale-count round trip cannot start. The counted form stays parseable for
+// evidence already recorded, but it is never advertised.
 export function scenarioTemplate(identifier, paths = ['src', 'bin', 'lib', 'scripts', 'test']) {
-  return `enumeration: grepped ${identifier} across ${paths.join(', ')}; `
-    + '<N> sites found, <M> updated, <K> unchanged because <reason>';
+  return `enumeration: count ${identifier} across ${paths.join(', ')}`;
 }
 
 function shellQuote(value) {
@@ -406,8 +439,52 @@ export function createGitTreeProvider({ repoRoot, baseRef, headRef }) {
     },
     async countSites(identifier, declaredPaths) {
       return countSitesOnDisk(repoRoot, identifier, declaredPaths);
+    },
+    // Head-side line numbers touched by this change, per file, over the whole
+    // tree rather than only the product source prefixes: a declared range
+    // normally includes test/ and docs/, and those sites have to be classified
+    // too. Returns null when the diff cannot be read, so the caller reports the
+    // updated/unchanged split as unknown instead of guessing it is all new.
+    async addedLineMap() {
+      let result = await gitResult(repoRoot, ['diff', '-U0', `${baseRef}...${headRef}`]);
+      if (!result.ok) result = await gitResult(repoRoot, ['diff', '-U0', baseRef, headRef]);
+      if (!result.ok) return null;
+      return parseAddedLineMap(result.stdout);
     }
   };
+}
+
+/**
+ * Build `file -> Set(head line numbers added or modified)` from `git diff -U0`.
+ *
+ * A "site" is a line carrying the identifier. A site sitting on one of these
+ * lines was written or rewritten by this change; every other site was already
+ * there and is being left alone deliberately. That is exactly the
+ * updated/unchanged split the claim form used to ask the agent to assert.
+ */
+export function parseAddedLineMap(diffText) {
+  const map = new Map();
+  let file = null;
+  let nextLine = 0;
+  for (const line of String(diffText).split('\n')) {
+    if (line.startsWith('+++ ')) {
+      const target = line.slice(4).trim();
+      file = target === '/dev/null' ? null : target.replace(/^b\//, '');
+      continue;
+    }
+    const hunk = /^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@/.exec(line);
+    if (hunk) {
+      nextLine = Number(hunk[1]);
+      continue;
+    }
+    if (!file) continue;
+    if (line.startsWith('+') && !line.startsWith('+++')) {
+      if (!map.has(file)) map.set(file, new Set());
+      map.get(file).add(nextLine);
+      nextLine += 1;
+    }
+  }
+  return map;
 }
 
 // Keeps the exit code, so callers can tell "command succeeded and found
@@ -546,6 +623,7 @@ async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
   let files = 0;
   let productSourceLines = 0;
   const productSourceFileSet = new Set();
+  const sites = [];
   for (const entry of effective) {
     const stats = await stat(entry.absolute);
     const candidates = stats.isDirectory()
@@ -555,8 +633,16 @@ async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
       if (seen.has(candidate)) continue;
       seen.add(candidate);
       let fileLines = 0;
+      let lineNumber = 0;
+      const fileSites = [];
       const status = await scanFileLines(path.join(repoRoot, candidate), (line) => {
-        if (matcher.test(line)) fileLines += 1;
+        lineNumber += 1;
+        if (matcher.test(line)) {
+          fileLines += 1;
+          // Recorded so the gate can classify each site against the base diff.
+          // Counting alone cannot tell an updated site from an untouched one.
+          fileSites.push(lineNumber);
+        }
       });
       if (status === 'unreadable') {
         unreadablePaths.push(candidate);
@@ -569,6 +655,7 @@ async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
       if (status !== 'scanned' || fileLines === 0) continue;
       lines += fileLines;
       files += 1;
+      sites.push([candidate, fileSites]);
       if (isProductSourcePath(candidate)) {
         productSourceLines += fileLines;
         productSourceFileSet.add(candidate);
@@ -583,8 +670,31 @@ async function countSitesOnDisk(repoRoot, identifier, declaredPaths) {
     product_source_file_list: [...productSourceFileSet].sort(),
     missing_paths: missingPaths,
     unscannable_paths: unreadablePaths,
-    binary_paths: binaryPaths
+    binary_paths: binaryPaths,
+    sites
   };
+}
+
+/**
+ * Split observed sites into the ones this change wrote and the ones it left
+ * alone, using the head-side added-line map.
+ *
+ * Returns `null` when the map is unavailable, so the caller can say the split
+ * is unknown rather than report every site as updated — an unknown split must
+ * not read as a complete sweep.
+ */
+export function classifySites(sites, addedLineMap) {
+  if (!addedLineMap) return null;
+  let updated = 0;
+  let total = 0;
+  for (const [file, lineNumbers] of sites ?? []) {
+    const added = addedLineMap.get(file);
+    for (const lineNumber of lineNumbers) {
+      total += 1;
+      if (added?.has(lineNumber)) updated += 1;
+    }
+  }
+  return { found: total, updated, unchanged: total - updated };
 }
 
 // ---------------------------------------------------------------------------
@@ -681,6 +791,9 @@ export async function collectEnumerationCoverage({
   const rejections = scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection);
   const verifiedByIdentifier = new Map();
   const claims = [];
+  // Fetched once for the whole report rather than per claim: it is one git
+  // invocation and every declaration needs the same map.
+  const addedLineMap = typeof tree.addedLineMap === 'function' ? await tree.addedLineMap() : null;
   for (const entry of scenarios) {
     if (!entry.ok) {
       claims.push(describeScenario(entry));
@@ -688,15 +801,27 @@ export async function collectEnumerationCoverage({
     }
     const observed = await tree.countSites(entry.claim.identifier, entry.claim.paths);
     const requirement = required.find((item) => item.identifier === entry.claim.identifier) ?? null;
-    const verification = verifyObservedCount(entry.claim, observed, requirement);
-    claims.push({ ...describeScenario(entry), observed, verified: verification.ok, verification_reason: verification.reason });
+    // A declaration has no counts yet. Measure them here, from the tree and the
+    // base diff, and carry them on the claim so downstream code sees the same
+    // shape either form produced — with `count_source` recording which of the
+    // two actually supplied the numbers.
+    const claim = entry.claim.count_source === 'computed'
+      ? { ...entry.claim, ...(classifySites(observed.sites, addedLineMap) ?? {}) }
+      : entry.claim;
+    const verification = verifyObservedCount(claim, observed, requirement, { addedLineMap });
+    claims.push({
+      ...describeScenario({ ...entry, claim }),
+      observed,
+      verified: verification.ok,
+      verification_reason: verification.reason
+    });
     if (verification.ok) {
-      verifiedByIdentifier.set(entry.claim.identifier, entry.claim);
+      verifiedByIdentifier.set(claim.identifier, claim);
     } else {
       rejections.push({
         id: verification.id,
         reason: verification.reason,
-        scenario: entry.claim.scenario
+        scenario: claim.scenario
       });
     }
   }
@@ -717,6 +842,13 @@ export async function collectEnumerationCoverage({
     schema_version: ENUMERATION_EVIDENCE_SCHEMA_VERSION,
     status,
     reason: buildReason({ status, required, missing, rejections, skipped }),
+    // Provenance of the numbers in this report, at a glance. A story whose
+    // agent_declared count is above zero still has a surface where an agent can
+    // write a measurement; one that is fully computed does not.
+    count_provenance: {
+      computed: claims.filter((claim) => claim.count_source === 'computed').length,
+      agent_declared: claims.filter((claim) => claim.count_source === 'agent_declared').length
+    },
     required,
     missing: missing.map((item) => item.identifier),
     skipped,
@@ -731,7 +863,7 @@ export async function collectEnumerationCoverage({
   };
 }
 
-function verifyObservedCount(claim, observed, requirement = null) {
+function verifyObservedCount(claim, observed, requirement = null, { addedLineMap = null } = {}) {
   if (observed.missing_paths.length > 0) {
     return {
       ok: false,
@@ -769,12 +901,44 @@ function verifyObservedCount(claim, observed, requirement = null) {
       };
     }
   }
+  // A computed claim has nothing to disagree with: the counts on it were
+  // measured from this same scan a moment ago. What still needs checking is the
+  // one thing the claimant is responsible for — whether leaving the untouched
+  // sites alone is justified. The gate supplies the number so the claimant
+  // never has to count; they supply the reason, which no measurement can.
+  if (claim.count_source === 'computed') {
+    if (!addedLineMap) {
+      return {
+        ok: false,
+        id: 'enumeration_split_unknown',
+        reason: `enumeration of ${claim.identifier} could not be split into updated and unchanged sites because the diff against the base ref could not be read; an unknown split must not read as a complete sweep`
+      };
+    }
+    if (claim.unchanged > 0 && !claim.reason) {
+      return {
+        ok: false,
+        id: 'enumeration_unchanged_reason_missing',
+        reason: `enumeration of ${claim.identifier} found ${claim.found} site(s), of which this change wrote ${claim.updated} and left ${claim.unchanged} untouched. `
+          + `The gate counted them; state why the untouched ones are correct to leave by appending "; unchanged because <reason>" to the scenario`
+      };
+    }
+    if (claim.found < 1) {
+      return {
+        ok: false,
+        id: 'enumeration_found_zero',
+        reason: `enumeration of ${claim.identifier} across ${claim.paths.join(', ')} finds 0 sites; a sweep that discovers nothing is a discovery failure, not coverage`
+      };
+    }
+    return { ok: true, id: null, reason: null };
+  }
   if (observed.lines !== claim.found) {
     return {
       ok: false,
       id: 'enumeration_count_mismatch',
       reason: `enumeration of ${claim.identifier} claims ${claim.found} site(s) across ${claim.paths.join(', ')}, `
-        + `but recounting the same range observes ${observed.lines}; rerun ${reproductionCommand(claim.identifier, claim.paths)} and record the observed number`
+        + `but recounting the same range observes ${observed.lines}; rerun ${reproductionCommand(claim.identifier, claim.paths)} and record the observed number. `
+        + `A claim in the "count" form needs no number and cannot go stale this way: `
+        + `${scenarioTemplate(claim.identifier, claim.paths)}`
     };
   }
   return { ok: true, id: null, reason: `recount over ${claim.paths.join(', ')} observed ${observed.lines} site(s), matching the claim` };
@@ -820,6 +984,7 @@ async function countHeadFiles(tree, literals) {
 }
 
 function describeScenario(entry) {
+  const countSource = entry.claim?.count_source ?? null;
   return {
     identifier: entry.claim?.identifier ?? null,
     paths: entry.claim?.paths ?? [],
@@ -827,6 +992,16 @@ function describeScenario(entry) {
     updated: entry.claim?.updated ?? null,
     unchanged: entry.claim?.unchanged ?? null,
     unchanged_reason: entry.claim?.reason ?? null,
+    // Which side produced the numbers above. `agent_declared` means they were
+    // typed into the scenario by the implementing agent and then recounted;
+    // `computed` means the agent declared only the identifier and the range,
+    // and the gate measured everything else. The distinction is recorded rather
+    // than inferred, so an auditor can tell the two provenances apart on the
+    // artifact without re-deriving anything.
+    count_source: countSource,
+    // Null for a computed claim by construction — there was no field to write
+    // a number into. Non-null only when an agent asserted the number itself.
+    agent_declared_found: countSource === 'agent_declared' ? (entry.claim?.found ?? null) : null,
     kind: entry.kind ?? null,
     binding: entry.binding ?? null,
     accepted: entry.ok,

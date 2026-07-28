@@ -993,8 +993,20 @@
         "started_at": "2026-07-27",
         "due_at": null,
         "category": "architecture"
+      },
+      {
+        "story_id": "story-vibepro-computed-enumeration",
+        "title": "網羅範囲の実測値をシステムが計算して埋め、エージェントには識別子と範囲だけを宣言させる",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-28",
+        "due_at": null,
+        "category": "architecture"
       }
     ],
-    "current_story_id": "story-vibepro-enumeration-coverage-gate"
+    "current_story_id": "story-vibepro-computed-enumeration"
   }
 }

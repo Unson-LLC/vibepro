@@ -76,17 +76,20 @@ A review finding names an instance; the work item is its class. This is enforced
 
 **When it applies.** The gate collects string literals your change introduces into `src/`, `bin/`, `lib/`, `scripts/` that are absent from the base tree **and** reach two or more product source *files* at head, **or** appear twice or more in a single one. Pre-existing vocabulary and genuinely single-site constants are skipped with a recorded reason; a change with no such identifier — including every docs-only change — resolves as `not_applicable`.
 
-**What it wants.** One scenario per introduced identifier, in exactly this form:
+**What it wants.** One scenario per introduced identifier. Use this form:
 
 ```
---scenario "enumeration: grepped <identifier> across src, test, docs; N sites found, M updated, K unchanged because <reason>"
+--scenario "enumeration: count <identifier> across src, test, docs"
+--scenario "enumeration: count <identifier> across src, test, docs; unchanged because <reason>"
 ```
 
-**Why prose does not work.** Three checks run independently:
+**Do not write a number.** You declare the identifier and the range; the gate measures everything else. It counts the sites, and splits them into the ones this change wrote and the ones it left alone by mapping each site onto the base diff's added lines. Those values land on the artifact as `claims[].found` / `updated` / `unchanged` with `count_source: "computed"`, having never passed through your input.
 
-1. the grammar rejects count-free narration — "swept src, docs and bin" is not a claim;
-2. the counts must partition: `N === M + K`, `N >= 1`, and any `K > 0` needs a `because` clause. These are enforced at `verify record` time, so a malformed claim never reaches the evidence artifact;
-3. **the gate recounts.** It re-scans the declared paths for the identifier with whole-token matching and rejects a claim whose number differs from what it observes. Take the number from the command the gate prints: `grep -rIn --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.vibepro -w -- <identifier> <paths> | wc -l`.
+Append `; unchanged because <reason>` only when the gate says the split leaves sites untouched — its rejection tells you the exact numbers, so you never count to find out. The reason is the one thing measurement cannot supply: why leaving those sites is correct.
+
+**Why prose does not work.** The grammar rejects count-free narration — "swept src, docs and bin" is not a claim — and a declared range still has to reach every product source file the identifier lives in. Reproduce what the gate sees with `grep -rIn --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.vibepro -w -- <identifier> <paths> | wc -l`.
+
+**Legacy counted form.** `enumeration: grepped <id> across <paths>; N sites found, M updated, K unchanged because <reason>` still parses, still recounts, and existing records stay valid — but it is recorded as `count_source: "agent_declared"` and it goes stale on every commit that touches a declared path, whether or not the identifier's meaning changed. Across the gate's own eight review rounds the same six claims were hand-recounted and rewritten eight times, and three of the rewrites were triggered by commits that touched neither identifier. Prefer `count`. `report.count_provenance` shows how many of each form a story is carrying.
 
 A scenario that begins with `enumeration:` but is not recognised as a claim is reported in the gate's `required_actions` rather than dropped, so an unseen claim is never mistaken for a rejected one.
 
@@ -160,7 +163,7 @@ Start from `vibepro pr prepare --summary-json` or `--view <readiness|blocking-ga
 - An `inconclusive` scanner status reported as a pass.
 - Fixing a review finding at the reported line without grepping for the rest of its class.
 - Reporting convergence because the last review round passed, with no enumeration behind the claim.
-- An enumeration count written from memory or estimated rather than taken from the printed grep — the gate recounts and will reject it.
+- An enumeration scenario that contains a number at all. Use `enumeration: count <id> across <paths>`; the gate measures it. A hand-written count is either already stale or about to be.
 
 ## Verification
 
