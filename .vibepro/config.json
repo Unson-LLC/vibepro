@@ -291,19 +291,19 @@
     },
     "delivery_efficiency_by_story": {
       "story-vibepro-task-scoped-pr-acceptance": {
-        "max_subagent_count": 38,
+        "max_subagent_count": 48,
         "max_agent_consumption_ms": 20000000,
         "max_review_dispatches_by_role": {
-          "product_requirement": 6,
-          "architecture_boundary": 10,
-          "spec_consistency": 8,
-          "regression_risk": 3,
-          "gate_evidence": 3,
-          "runtime_contract": 3,
-          "release_risk": 2,
-          "pr_split_scope": 2
+          "product_requirement": 7,
+          "architecture_boundary": 13,
+          "spec_consistency": 10,
+          "regression_risk": 4,
+          "gate_evidence": 4,
+          "runtime_contract": 4,
+          "release_risk": 3,
+          "pr_split_scope": 3
         },
-        "amendment_reason": "Fourteen provenance-bound review lifecycles were consumed while the implementation repaired task-plan identity validation and rebound planning, architecture, runtime, and gate evidence to successive accepted heads. The final implementation HEAD passed the focused 64-test verification and current-HEAD Spec drift, but the required architecture_spec spec_consistency authorization correctly failed closed at the Story-local 14/14 cap. The user explicitly authorized continuation on 2026-07-28. The first bounded amendment underestimated parallel lifecycle wall time: after the required current-HEAD planning and architecture reviews, the ledger contains 20 closed lifecycles with 7,107,099 ms of measured agent consumption, so the 6,600,000 ms cap correctly stopped the implementation runtime_contract authorization. The second amendment reserved a replacement round but undercounted role-level dispatches shared across planning_spec and architecture_spec: at frozen HEAD 5ead61f1, architecture_boundary was 8/8 and spec_consistency was 6/6 before their required current-HEAD replacements, while a tracked config amendment itself invalidates every review because .vibepro/config.json is intentionally part of the evidence surface. Reserve exactly one final current-HEAD pass for product_requirement, two for architecture_boundary, two for spec_consistency, one for regression_risk, one for runtime_contract, one for gate_evidence, one for release_risk, and one for pr_split_scope; reserve four additional aggregate subagent slots and 6,000,000 ms for those ten bounded lifecycles. Permit no waiver, unrelated role expansion, further replacement loop, AWS apply, state migration, or live negative test."
+        "amendment_reason": "Fourteen provenance-bound review lifecycles were consumed while the implementation repaired task-plan identity validation and rebound planning, architecture, runtime, and gate evidence to successive accepted heads. The final implementation HEAD passed the focused 64-test verification and current-HEAD Spec drift, but the required architecture_spec spec_consistency authorization correctly failed closed at the Story-local 14/14 cap. The user explicitly authorized continuation on 2026-07-28. The first bounded amendment underestimated parallel lifecycle wall time: after the required current-HEAD planning and architecture reviews, the ledger contains 20 closed lifecycles with 7,107,099 ms of measured agent consumption, so the 6,600,000 ms cap correctly stopped the implementation runtime_contract authorization. The second amendment reserved a replacement round but undercounted role-level dispatches shared across planning_spec and architecture_spec: at frozen HEAD 5ead61f1, architecture_boundary was 8/8 and spec_consistency was 6/6 before their required current-HEAD replacements, while a tracked config amendment itself invalidates every review because .vibepro/config.json is intentionally part of the evidence surface. Reserve exactly one final current-HEAD pass for product_requirement, two for architecture_boundary, two for spec_consistency, one for regression_risk, one for runtime_contract, one for gate_evidence, one for release_risk, and one for pr_split_scope; reserve four additional aggregate subagent slots and 6,000,000 ms for those ten bounded lifecycles. The final pr_split_scope review then confirmed that all eleven files form one coherent Story contract within the review-size limit, but correctly failed closed because the Story had not explicitly declared an atomic single-PR boundary and the tracked config/design authority files were not represented by a safe split. Add that typed atomic declaration now and reserve exactly one strict-HEAD replacement for every planning, architecture, runtime, and gate role invalidated by this tracked metadata correction, plus one final architecture preflight. Permit no waiver, unrelated role expansion, further replacement loop, AWS apply, state migration, or live negative test."
       },
       "story-vibepro-gate-decision-outcome-ledger": {
         "max_subagent_count": 481,
