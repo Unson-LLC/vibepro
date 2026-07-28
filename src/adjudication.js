@@ -86,12 +86,25 @@ async function readVerificationEvidenceEntries(repoRoot, storyId) {
 }
 
 function normalizeAcceptanceScope(scope, storyId, acceptanceCriteria = []) {
-  const source = scope?.source === 'task' ? 'task' : 'story';
+  const source = scope?.source ?? 'story';
+  if (!['story', 'task'].includes(source)) {
+    throw new Error(
+      `Invalid adjudication acceptance scope source "${String(source)}"; expected "story" or "task".`
+    );
+  }
+  if (source === 'task' && !String(scope?.task_id ?? '').trim()) {
+    throw new Error('Invalid adjudication acceptance scope: task_id is required for task scope.');
+  }
+  const criteria = scope?.acceptance_criteria
+    ?? acceptanceCriteria.map((clause) => clause.text);
+  if (!Array.isArray(criteria)) {
+    throw new Error('Invalid adjudication acceptance scope: acceptance_criteria must be an array.');
+  }
   return {
     source,
     story_id: String(scope?.story_id ?? storyId ?? ''),
     task_id: source === 'task' ? String(scope?.task_id ?? '') : null,
-    acceptance_criteria: (scope?.acceptance_criteria ?? acceptanceCriteria.map((clause) => clause.text))
+    acceptance_criteria: criteria
       .map((criterion) => String(criterion).trim())
       .filter(Boolean)
   };

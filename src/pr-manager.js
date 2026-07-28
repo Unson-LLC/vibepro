@@ -15521,11 +15521,42 @@ async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
       taskStatePath
     );
   }
+  if (taskState.tasks.some((item) => (
+    !item
+    || typeof item !== 'object'
+    || Array.isArray(item)
+    || typeof item.id !== 'string'
+    || item.id.trim().length === 0
+  ))) {
+    throw taskPlanRepairError(
+      'Invalid Task state schema for PR prepare: tasks must contain objects with non-empty id values',
+      taskStatePath
+    );
+  }
   const task = taskState.tasks.find((item) => item.id === taskId);
   if (!task) {
     throw taskPlanRepairError(`Task not found for PR prepare: ${taskId}`, taskStatePath);
   }
-  const group = groupId ? (task.target_groups ?? []).find((item) => item.id === groupId) : null;
+  const targetGroups = task.target_groups ?? [];
+  if (!Array.isArray(targetGroups)) {
+    throw taskPlanRepairError(
+      'Invalid Task state schema for PR prepare: target_groups must be an array',
+      taskStatePath
+    );
+  }
+  if (targetGroups.some((item) => (
+    !item
+    || typeof item !== 'object'
+    || Array.isArray(item)
+    || typeof item.id !== 'string'
+    || item.id.trim().length === 0
+  ))) {
+    throw taskPlanRepairError(
+      'Invalid Task state schema for PR prepare: target_groups must contain objects with non-empty id values',
+      taskStatePath
+    );
+  }
+  const group = groupId ? targetGroups.find((item) => item.id === groupId) : null;
   if (groupId && !group) {
     throw taskPlanRepairError(`Target group not found for PR prepare: ${groupId}`, taskStatePath);
   }

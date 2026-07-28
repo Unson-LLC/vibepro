@@ -8790,6 +8790,74 @@ Weighted semantic/layout residual: **34%**
   );
   assert.doesNotMatch(invalidRoutedTaskSchemaStderr, /TypeError/);
 
+  await writeJson(routedTaskStatePath, {
+    ...validTaskState,
+    tasks: [null, ...validTaskState.tasks]
+  });
+  let invalidRoutedTaskItemStderr = '';
+  const invalidRoutedTaskItem = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stderr: { write: (text) => { invalidRoutedTaskItemStderr += text; } }
+  });
+  assert.equal(invalidRoutedTaskItem.exitCode, 1);
+  assert.match(
+    invalidRoutedTaskItemStderr,
+    /Invalid Task state schema for PR prepare: tasks must contain objects with non-empty id values/
+  );
+  assert.match(invalidRoutedTaskItemStderr, /\.vibepro\/routed\/story-pr-prepare-tasks\.json/);
+  assert.match(
+    invalidRoutedTaskItemStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
+  assert.doesNotMatch(invalidRoutedTaskItemStderr, /TypeError/);
+
+  await writeJson(routedTaskStatePath, {
+    ...validTaskState,
+    tasks: [{
+      ...validTaskState.tasks[0],
+      target_groups: { group: validTaskState.tasks[0].target_groups[0] }
+    }]
+  });
+  let invalidTargetGroupsSchemaStderr = '';
+  const invalidTargetGroupsSchema = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001', '--group', 'group-a'
+  ], {
+    stderr: { write: (text) => { invalidTargetGroupsSchemaStderr += text; } }
+  });
+  assert.equal(invalidTargetGroupsSchema.exitCode, 1);
+  assert.match(
+    invalidTargetGroupsSchemaStderr,
+    /Invalid Task state schema for PR prepare: target_groups must be an array/
+  );
+  assert.match(invalidTargetGroupsSchemaStderr, /\.vibepro\/routed\/story-pr-prepare-tasks\.json/);
+  assert.match(
+    invalidTargetGroupsSchemaStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
+  assert.doesNotMatch(invalidTargetGroupsSchemaStderr, /TypeError/);
+
+  await writeJson(routedTaskStatePath, {
+    ...validTaskState,
+    tasks: [{
+      ...validTaskState.tasks[0],
+      target_groups: [null]
+    }]
+  });
+  let invalidTargetGroupItemStderr = '';
+  const invalidTargetGroupItem = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001', '--group', 'group-a'
+  ], {
+    stderr: { write: (text) => { invalidTargetGroupItemStderr += text; } }
+  });
+  assert.equal(invalidTargetGroupItem.exitCode, 1);
+  assert.match(
+    invalidTargetGroupItemStderr,
+    /Invalid Task state schema for PR prepare: target_groups must contain objects with non-empty id values/
+  );
+  assert.match(invalidTargetGroupItemStderr, /\.vibepro\/routed\/story-pr-prepare-tasks\.json/);
+  assert.doesNotMatch(invalidTargetGroupItemStderr, /TypeError/);
+
   await writeJson(routedTaskStatePath, validTaskState);
   await rm(routedTaskStatePath);
   let missingRoutedTaskStateStderr = '';

@@ -378,6 +378,43 @@ test('ADJ-S-014 contradictory stored scope and fingerprint fail closed for the g
   assert.equal(summary.demonstrated_count, 0);
 });
 
+test('ADJ-S-015 invalid acceptance scope sources fail closed instead of falling back to Story scope', async () => {
+  const invalidScope = {
+    source: 'tasks',
+    story_id: STORY_ID,
+    task_id: 'TASK-A',
+    acceptance_criteria: ['Task A outcome']
+  };
+  assert.throws(
+    () => buildEvidenceAdjudicationGate({
+      storyId: STORY_ID,
+      acceptanceCriteria: [{ id: 'ac:1', text: 'Task A outcome' }],
+      acceptanceScope: invalidScope,
+      adjudication: {
+        verdicts: [{
+          clause_id: 'ac:1',
+          verdict: 'demonstrated',
+          reason: 'A legacy unscoped verdict must not pass an invalid Task scope.',
+          head_commit: 'head-1'
+        }]
+      },
+      headSha: 'head-1'
+    }),
+    /Invalid adjudication acceptance scope source "tasks"/
+  );
+
+  const repo = await makeRepo();
+  const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'pr-prepare.json'), `${JSON.stringify({
+    pr_context: { acceptance_scope: invalidScope }
+  }, null, 2)}\n`);
+  await assert.rejects(
+    () => prepareAdjudication(repo, { storyId: STORY_ID }),
+    /Invalid adjudication acceptance scope source "tasks"/
+  );
+});
+
 test('ADJ-S-012 prepare and record bind verdicts to the active task scope from pr-prepare.json', async () => {
   const repo = await makeRepo();
   await git(repo, ['add', '.']);
