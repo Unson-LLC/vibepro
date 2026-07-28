@@ -31,4 +31,4 @@ title: VibePro PR ship Command Spec
 ## 回帰テスト
 
 - CLI/unit: `test/vibepro-cli.test.js` の `pr ship dry-run reruns prepare...` で、dry-run JSON、Agent Review手順、raw GitHub CLI非提示を検証する。
-- Story E2E: `test/e2e/story-vibepro-pr-ship-command-main.test.js` と `.spec.ts` で受け入れ基準の文言カバレッジを持つ。
+- 受け入れ基準のカバレッジは上記のCLI/unitテストが正本。かつて存在した `test/e2e/story-vibepro-pr-ship-command-main.test.js` と `.spec.ts` は、製品コードを実行せず文言だけを照合していたため story-vibepro-vacuous-e2e-test-elimination で削除した。

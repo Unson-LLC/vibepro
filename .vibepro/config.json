@@ -962,8 +962,20 @@
         "started_at": "2026-07-25",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+        "title": "製品コードを実行しないtest/e2eの自己充足テストを解消し再発をlintで止める",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-28",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-docs-only-evidence-profile"
+    "current_story_id": "story-vibepro-vacuous-e2e-test-elimination"
   }
 }
