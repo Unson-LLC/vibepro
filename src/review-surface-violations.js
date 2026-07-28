@@ -66,7 +66,7 @@ export async function readReviewSurfaceViolations(storyReviewDir, storyId = null
 }
 
 function unreadableLedgerError(filePath, detail) {
-  const error = new Error(`review surface violation ledger ${filePath} is unreadable and is rejected rather than read as empty (${detail}). An unreadable ledger fails closed because clearing it would erase append-only violation records. Restore the file if a copy exists, or acknowledge the loss with an accepted decision record on ${REVIEW_SURFACE_INTEGRITY_GATE_ID}:${REVIEW_SURFACE_LEDGER_UNREADABLE_VIOLATION_ID}.`);
+  const error = new Error(`review surface violation ledger ${filePath} is unreadable and is rejected rather than read as empty (${detail}). An unreadable ledger fails closed because clearing it would erase append-only violation records. Restore the file from a copy, or move it aside so a fresh ledger can be started - both review close and review record refuse to append over it until then. An accepted decision record on ${REVIEW_SURFACE_INTEGRITY_GATE_ID}:${REVIEW_SURFACE_LEDGER_UNREADABLE_VIOLATION_ID} clears the pr prepare gate but does not make this append succeed.`);
   error.code = REVIEW_SURFACE_LEDGER_UNREADABLE;
   error.ledger_path = filePath;
   return error;
@@ -193,7 +193,7 @@ export function reconcileReviewSurfaceViolationPointers(entries = [], lifecycleE
   const known = new Set((Array.isArray(entries) ? entries : []).map((entry) => entry.violation_id));
   const orphans = new Map();
   for (const lifecycle of Array.isArray(lifecycleEntries) ? lifecycleEntries : []) {
-    const violationId = lifecycle?.surface_violation_id;
+    for (const violationId of lifecycleViolationPointers(lifecycle)) {
     if (!violationId || known.has(violationId) || orphans.has(violationId)) continue;
     orphans.set(violationId, {
       // Deliberately NOT the erased entry's own id. Reusing it would let the
@@ -212,8 +212,18 @@ export function reconcileReviewSurfaceViolationPointers(entries = [], lifecycleE
       detected_by: 'ledger reconciliation',
       detail: `Lifecycle ${lifecycle.lifecycle_id ?? 'unknown'} records surface_violation_id ${violationId}, but no such entry exists in the ledger. The ledger has been replaced or edited; append-only records cannot disappear.`
     });
+    }
   }
   return [...orphans.values()];
+}
+
+// One lifecycle can carry more than one violation: an orphaned close records one
+// and the record that completes the same entry can record another. Reading only
+// the latest pointer would make the earlier erasure invisible.
+function lifecycleViolationPointers(lifecycle) {
+  const pointers = Array.isArray(lifecycle?.surface_violation_ids) ? lifecycle.surface_violation_ids : [];
+  const latest = lifecycle?.surface_violation_id;
+  return latest && !pointers.includes(latest) ? [...pointers, latest] : pointers;
 }
 
 export const REVIEW_SURFACE_LEDGER_ENTRY_MISSING_KIND = 'review_surface_violation_entry_missing';
@@ -228,6 +238,12 @@ export function summarizeReviewSurfaceViolations(entries = [], {
   lifecycleEntries = [],
   pointersReadable = true
 } = {}) {
+  // Lifecycles closed before this detection existed carry no surface_detection.
+  // They are not "checked and clean", and the summary must not let them be
+  // reported as such.
+  const lifecycles = Array.isArray(lifecycleEntries) ? lifecycleEntries : [];
+  const closedLifecycles = lifecycles.filter((item) => item?.closed_at || ['closed', 'replaced'].includes(item?.status));
+  const unevaluated = closedLifecycles.filter((item) => item?.surface_detection !== 'evaluated');
   const accepted = (decisionRecords?.decisions ?? [])
     .filter((decision) => decision?.status === 'accepted' && typeof decision.source === 'string');
   const reconciled = [
@@ -260,6 +276,8 @@ export function summarizeReviewSurfaceViolations(entries = [], {
   return {
     schema_version: SCHEMA_VERSION,
     readable: true,
+    evaluated_lifecycle_count: closedLifecycles.length - unevaluated.length,
+    unevaluated_lifecycle_count: unevaluated.length,
     total_count: items.length,
     acknowledged_count: items.length - unacknowledged.length,
     unacknowledged_count: unacknowledged.length,

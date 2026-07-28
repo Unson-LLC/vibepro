@@ -137,7 +137,11 @@ updated_at: 2026-07-27
       **反証**: 違反を記録したのち ledger を `{"entries": []}` で上書きし、
       サマリの `unacknowledged_count` が 0 にならず、kind が
       `review_surface_violation_entry_missing` であることを確認する。
-      0 件になるなら不合格。
+      0 件になるなら不合格。1 lifecycle が 2 件の違反を出した場合は
+      `surface_violation_ids[]` に両方が残り、消去時も 2 件として報告されること。
+      さらに、検出が実行されなかった lifecycle（旧 artifact 等）は
+      `unevaluated_lifecycle_count` として分離され、gate の pass 理由が
+      「違反なし」と断定しないこと。
 - [ ] RSV-9: 並行 close で違反が失われない。append は story 単位のロック下で
       実行され、同一 story に対する 2 つの close が同時に違反を記録しても
       両方が ledger に残る。さらに、未知の `--close-reason` は `completed` へ
@@ -148,6 +152,10 @@ updated_at: 2026-07-27
       entry 数が 2 であることを確認する。1 件なら不合格。
       `--close-reason timed_out` が throw すること、
       `ledger_unreadable` への accepted decision で gate が解消することを確認する。
+      加えて、生成される close command テンプレートが、その用途
+      （timeout / replacement / manual shutdown / 結果なし closure）に一致する
+      `--close-reason` を出すこと。`completed` を出すなら不合格
+      （verdict の無いレビューに違反を捏造するため）。
 
 ## Non Goals
 

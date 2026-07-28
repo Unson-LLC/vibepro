@@ -840,6 +840,104 @@ test('RSV-1 review record closing a lifecycle itself also records the close-time
   assert.equal(entry.surface_violation_id, summary.entries[0].violation_id);
 });
 
+test('RSV-9 generated close commands carry a reason that matches what they are for', async () => {
+  const root = await setupRepo();
+  await runCli(['review', 'prepare', root, '--id', STORY_ID, '--stage', 'gate', '--role', 'gate_evidence']);
+  const dispatch = await readFile(path.join(root, '.vibepro', 'reviews', STORY_ID, 'gate', 'parallel-dispatch.md'), 'utf8');
+  const request = await readFile(path.join(root, '.vibepro', 'reviews', STORY_ID, 'gate', 'review-request-gate_evidence.md'), 'utf8');
+
+  for (const [name, text] of [['parallel-dispatch', dispatch], ['review-request', request]]) {
+    for (const line of text.split('\n').filter((item) => item.includes('--close-reason'))) {
+      const reason = /--close-reason\s+("?)([a-z_|<>-]+)\1/.exec(line)?.[2];
+      assert.ok(['completed', 'timeout', 'replaced', 'manual_shutdown'].includes(reason),
+        `${name} emits an unusable --close-reason: ${line.trim()}`);
+      // These templates are all for a review that produced no verdict. Emitting
+      // `completed` there would mint a violation for a review that never ran.
+      assert.notEqual(reason, 'completed', `${name} must not tell a coordinator to close an abandoned review as completed: ${line.trim()}`);
+    }
+  }
+});
+
+test('RSV-8 a lifecycle carrying two violations reports both when the ledger is emptied', async () => {
+  const root = await setupRepo();
+  await start(root);
+  await writeFile(path.join(root, 'src', 'foo.js'), 'export const fixture = "first mid-review change";\n');
+  await git(root, ['add', 'src/foo.js']);
+  await git(root, ['commit', '-m', 'first mid-review commit']);
+  // Terminalizes as orphaned_agent and leaves the entry completable.
+  const firstClose = await close(root, { cancellationConfirmed: false });
+  assert.ok(firstClose.surface_violation);
+
+  await writeFile(path.join(root, 'src', 'unrelated.js'), 'export const unrelated = "second mid-review change";\n');
+  await git(root, ['add', 'src/unrelated.js']);
+  await git(root, ['commit', '-m', 'second mid-review commit']);
+  await recordAgentReview(root, {
+    storyId: STORY_ID,
+    stage: 'gate',
+    role: 'gate_evidence',
+    status: 'pass',
+    summary: 'record completing an orphaned lifecycle after a further head move',
+    reviewerSystem: 'claude_code',
+    reviewerId: 'task-1',
+    agentThreadId: 'thread-task-1',
+    agentSessionId: 'session-task-1',
+    agentCloseEvidence: 'subagent shut down',
+    agentClosed: true,
+    judgmentDeltas: ['initial: unverified -> final: verified because the fixture export matches the asserted test'],
+    inspectionSummary: 'Read src/foo.js and test/foo.test.js in full.',
+    inspectionEvidence: 'src/foo.js:1 defines the fixture export asserted by test/foo.test.js.',
+    inspectionInputs: ['src/foo.js', 'test/foo.test.js']
+  });
+
+  const ledger = await readJson(violationsPath(root));
+  assert.equal(ledger.entries.length, 2, 'both closes recorded a distinct violation');
+  const lifecycle = await readJson(lifecyclePath(root));
+  const entry = lifecycle.entries.at(-1);
+  assert.deepEqual(entry.surface_violation_ids.sort(), ledger.entries.map((item) => item.violation_id).sort(),
+    'every violation must stay reachable from the lifecycle, not just the latest');
+
+  // Emptying the ledger must surface both erasures, not one.
+  await writeFile(violationsPath(root), JSON.stringify({ schema_version: '0.1.0', entries: [] }));
+  const summary = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
+  assert.equal(summary.unacknowledged_count, 2);
+});
+
+test('RSV-1 a close with no recorded start surface is typed as a skipped detection', async () => {
+  const root = await setupRepo();
+  const stageDir = path.join(root, '.vibepro', 'reviews', STORY_ID, 'gate');
+  await mkdir(stageDir, { recursive: true });
+  await writeFile(path.join(stageDir, 'lifecycle.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    stage: 'gate',
+    entries: [{
+      lifecycle_id: 'legacy-running-1',
+      story_id: STORY_ID,
+      stage: 'gate',
+      role: 'gate_evidence',
+      status: 'running',
+      agent_system: 'claude_code',
+      agent_id: 'task-1',
+      started_at: '2026-01-01T00:00:00.000Z',
+      timeout_ms: 600000
+    }]
+  }));
+
+  const closed = await close(root);
+  assert.equal(closed.surface_violation, null, 'no snapshot means nothing to compare');
+  const entry = (await readJson(lifecyclePath(root))).entries[0];
+  assert.equal(entry.surface_detection, 'skipped_missing_snapshot',
+    'a detection that could not run must not read like "nothing moved"');
+
+  // And the gate must not call that clean.
+  const summary = await readReviewSurfaceViolationSummary(root, STORY_ID, { decisionRecords: null });
+  assert.equal(summary.unevaluated_lifecycle_count, 1);
+  const gate = buildReviewSurfaceIntegrityGate({ agentReviews: { story_id: STORY_ID, surface_violations: summary } });
+  assert.equal(gate.status, 'passed');
+  assert.equal(gate.unevaluated_lifecycle_count, 1);
+  assert.match(gate.reason, /never evaluated/);
+});
+
 test('RSV-7 detectReviewSurfaceMutation ignores entries with no recorded start surface', () => {
   assert.equal(detectReviewSurfaceMutation(null, { closeReason: 'completed' }), null);
   assert.equal(detectReviewSurfaceMutation({}, {

@@ -135,7 +135,9 @@ Two things this does **not** close:
 2. **Coordinated tampering.** Someone who edits both the ledger and every
    matching `lifecycle.json` pointer leaves no inconsistency to find. The design
    raises the cost and makes the single-file edit visible; it does not make the
-   record cryptographically tamper-evident. When the lifecycle pointers cannot be
+   record cryptographically tamper-evident. A lifecycle accumulates every violation
+   it produces in `surface_violation_ids[]`, so reconciliation reports each erased
+   entry rather than only the most recent one. When the lifecycle pointers cannot be
    read at all the cross-check cannot run, so that state is itself a blocking
    violation (`lifecycle_pointers_unreadable`) rather than being read as
    agreement — otherwise one malformed byte in `lifecycle.json` would reopen the
@@ -152,6 +154,14 @@ all do.
 
 Detection covers the window between `review start` and `review close` only.
 Changes after the close are staleness and stay with the existing machinery.
+
+## What the gate does not claim
+
+Lifecycles closed before this detection shipped carry no `surface_detection`, so
+they were never evaluated. The gate counts them separately and says so in its
+pass reason rather than folding them into "no mutation was recorded" — the same
+rule the absent-ledger branch follows: never make a positive claim about
+something nobody read.
 
 ## Recovery
 

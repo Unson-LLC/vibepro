@@ -14129,6 +14129,7 @@ export function buildReviewSurfaceIntegrityGate({ agentReviews = null } = {}) {
   const unacknowledged = violations?.unacknowledged ?? [];
   const acknowledgedCount = violations?.acknowledged_count ?? 0;
   const status = unacknowledged.length > 0 ? 'failed' : 'passed';
+  const unevaluatedCount = violations?.unevaluated_lifecycle_count ?? 0;
   return {
     id: REVIEW_SURFACE_INTEGRITY_GATE_ID,
     type: 'review_surface_integrity_gate',
@@ -14165,11 +14166,15 @@ export function buildReviewSurfaceIntegrityGate({ agentReviews = null } = {}) {
       'Re-running the review does not clear any of these records. State what actually happened, then acknowledge each one with an accepted decision record:',
       ...unacknowledged.map((violation) => buildReviewSurfaceViolationAcknowledgementCommand(storyId, violation.violation_id))
     ],
+    evaluated_lifecycle_count: violations?.evaluated_lifecycle_count ?? null,
+    unevaluated_lifecycle_count: violations?.unevaluated_lifecycle_count ?? null,
     reason: violations?.readable === false
       ? `The review surface violation ledger is unreadable and is rejected rather than read as empty: ${violations.unreadable_reason ?? 'unknown reason'}`
       : status === 'passed'
       ? total === 0
-        ? 'No review-surface mutation was recorded between any review start and its close'
+        ? unevaluatedCount > 0
+          ? `No review-surface mutation was recorded across ${violations?.evaluated_lifecycle_count ?? 0} evaluated review lifecycle(s). ${unevaluatedCount} closed lifecycle(s) predate surface detection and were never evaluated, so they are not covered by this result.`
+          : 'No review-surface mutation was recorded between any review start and its close'
         : `All ${total} recorded review-surface violation(s) are acknowledged by an accepted decision record; the append-only records remain in ${violations?.artifact ?? 'the review surface violation ledger'}`
       : `${unacknowledged.length} of ${total} recorded review-surface violation(s) are unacknowledged. These are violations, not stale evidence: they are append-only and survive every review re-run.`
   };

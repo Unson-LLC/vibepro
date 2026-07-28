@@ -529,7 +529,11 @@ async function finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir
           ? 'evaluated'
           : 'skipped_missing_snapshot';
         if (recordSurfaceViolation?.entry?.violation_id) {
+          // Accumulate, never replace: one lifecycle can produce a violation at
+          // an orphaned close and another at the record that completes it, and
+          // an overwritten pointer would leave the first erasure undetectable.
           entry.surface_violation_id = recordSurfaceViolation.entry.violation_id;
+          entry.surface_violation_ids = addViolationPointer(entry.surface_violation_ids, recordSurfaceViolation.entry.violation_id);
         }
       }
     }
@@ -932,6 +936,7 @@ export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
       : 'skipped_missing_snapshot';
     if (surfaceViolation?.entry?.violation_id) {
       match.surface_violation_id = surfaceViolation.entry.violation_id;
+      match.surface_violation_ids = addViolationPointer(match.surface_violation_ids, surfaceViolation.entry.violation_id);
     }
     if (match.head_sha && match.head_sha !== gitContext.head_sha) {
       if (options.cancellationConfirmed !== true) {
@@ -2660,8 +2665,14 @@ function buildReviewAuthorizeCommand({ storyId, stage, role, modelPolicy = null 
   return `vibepro review authorize . --id ${storyId} --stage ${stage} --role ${role} --review-kind <preflight|final> --closes-risk "<risk>" --expected-judgment-delta "<decision this review can change>" --reusable-evidence <ref> --freeze <source,spec,test,review_surface>${modelArgs}`;
 }
 
-function buildReviewCloseCommand({ storyId, stage, role }) {
-  return `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} --agent-id "<replacement-agent-id>" --close-reason completed --close-evidence "<replacement-agent-close-evidence>"`;
+// The reason must match the situation the caller is in. Every template here is
+// for a review that did NOT produce a verdict (timeout, replacement, manual
+// shutdown, closure recorded without a result), and only a `completed` close
+// records a review-surface violation — so emitting `completed` on these surfaces
+// would mint violations for reviews that never reached a verdict.
+function buildReviewCloseCommand({ storyId, stage, role, closeReason = 'manual_shutdown' }) {
+  assertRecognizedCloseReason(closeReason);
+  return `vibepro review close . --id ${storyId} --stage ${stage} --role ${role} --agent-id "<replacement-agent-id>" --close-reason ${closeReason} --close-evidence "<replacement-agent-close-evidence>"`;
 }
 
 function buildReviewPrepareCommand({ storyId, stage, roles = [] }) {
@@ -4037,6 +4048,11 @@ function normalizeTimeoutMs(value) {
   const number = Number(value ?? DEFAULT_REVIEW_TIMEOUT_MS);
   if (!Number.isFinite(number) || number <= 0) return DEFAULT_REVIEW_TIMEOUT_MS;
   return Math.floor(number);
+}
+
+function addViolationPointer(existing, violationId) {
+  const pointers = Array.isArray(existing) ? existing : [];
+  return pointers.includes(violationId) ? pointers : [...pointers, violationId];
 }
 
 const REVIEW_CLOSE_REASONS = ['completed', 'timeout', 'replaced', 'manual_shutdown'];
