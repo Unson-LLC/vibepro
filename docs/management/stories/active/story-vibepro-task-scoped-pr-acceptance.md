@@ -7,16 +7,18 @@ spec_docs:
   - docs/specs/story-vibepro-task-scoped-pr-acceptance.md
 parent_design: vibepro-task-scoped-pr-acceptance
 pr_scope_strategy: atomic_single_pr
-pr_scope_reason: "The requirements SSOT, task-scoped runtime behavior, executable regression evidence, design authority, and Story-local review controls form one acceptance contract; none is independently releasable without leaving the selected-Task PR gate incomplete or misleading, so they require one current-HEAD review boundary."
+pr_scope_reason: "The repo-control, requirements-ssot, runtime-behavior, e2e-gate, and misc-follow-up facets form one acceptance contract; none is independently releasable without leaving the selected-Task PR gate incomplete or misleading, so they require one current-HEAD review boundary."
 pr_scope_review_facets:
   - repo-control
   - requirements-ssot
   - runtime-behavior
+  - e2e-gate
   - misc-follow-up
 pr_scope_dependency_boundaries:
   - repo-control->requirements-ssot
   - requirements-ssot->runtime-behavior
-  - runtime-behavior->misc-follow-up
+  - runtime-behavior->e2e-gate
+  - e2e-gate->misc-follow-up
 ---
 
 # Story: Task指定PRはStory文脈を保ちながらTask受入範囲だけを判定する
