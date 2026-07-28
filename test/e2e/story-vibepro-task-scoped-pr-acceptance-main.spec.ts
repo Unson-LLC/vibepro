@@ -26,6 +26,7 @@ test(
       process.execPath,
       [
         '--test',
+        '--test-reporter=tap',
         '--test-name-pattern=pr prepare writes PR artifacts for the selected story',
         'test/vibepro-cli.test.js'
       ],
