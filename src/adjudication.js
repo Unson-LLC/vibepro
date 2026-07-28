@@ -107,8 +107,9 @@ function normalizeAcceptanceScope(scope, storyId, acceptanceCriteria = []) {
   if (source === 'task' && !String(scope?.task_id ?? '').trim()) {
     throw new Error('Invalid adjudication acceptance scope: task_id is required for task scope.');
   }
-  const criteria = scope?.acceptance_criteria
-    ?? acceptanceCriteria.map((clause) => clause.text);
+  const criteria = scope == null
+    ? acceptanceCriteria.map((clause) => clause.text)
+    : scope.acceptance_criteria;
   if (!Array.isArray(criteria)) {
     throw new Error('Invalid adjudication acceptance scope: acceptance_criteria must be an array.');
   }

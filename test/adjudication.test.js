@@ -486,6 +486,15 @@ test('ADJ-S-017 present partial acceptance scopes fail closed while an absent sc
         acceptance_criteria: ['Task A outcome']
       },
       /Invalid adjudication acceptance scope: story_id is required/
+    ],
+    [
+      {
+        source: 'task',
+        story_id: STORY_ID,
+        task_id: 'TASK-A',
+        acceptance_criteria: null
+      },
+      /acceptance scope.*acceptance_criteria/
     ]
   ]) {
     await writeFile(path.join(prDir, 'pr-prepare.json'), `${JSON.stringify({
@@ -506,6 +515,22 @@ test('ADJ-S-017 present partial acceptance scopes fail closed while an absent sc
   assert.deepEqual(
     legacy.acceptance_scope.acceptance_criteria,
     ['初見のユーザーが責任範囲を区別できる', '検索から該当ページへ到達できる']
+  );
+
+  assert.throws(
+    () => buildEvidenceAdjudicationGate({
+      storyId: STORY_ID,
+      acceptanceCriteria: [{ id: 'ac:1', text: 'Borrowed criterion' }],
+      acceptanceScope: {
+        source: 'task',
+        story_id: STORY_ID,
+        task_id: 'TASK-A',
+        acceptance_criteria: null
+      },
+      adjudication: { verdicts: [] },
+      headSha: 'head-1'
+    }),
+    /Invalid adjudication acceptance scope: acceptance_criteria must be an array/
   );
 });
 
