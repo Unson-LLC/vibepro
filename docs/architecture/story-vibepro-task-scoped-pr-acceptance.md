@@ -52,6 +52,11 @@ remain in machine-readable artifacts and HTML review surfaces. Malformed routed
 JSON fails with its resolved repository-relative path and an actionable repair
 instruction.
 
+rollback_plan: Revert the acceptance-scope consumer changes and their focused
+tests together. This restores Story-wide PR acceptance evaluation without
+rewriting existing Story, Task, adjudication, or review artifacts; any artifacts
+created by the reverted shape must be regenerated before the next PR prepare.
+
 ## Consequences
 
 - A completed Task can reach PR readiness while later Story Tasks remain

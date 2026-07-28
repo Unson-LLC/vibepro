@@ -14,11 +14,12 @@ const acceptanceCriteria = [
   'E2E coverage、Gate DAG、traceability、evidence adjudication、senior-gap judgmentが選択Taskの受入基準を使う',
   'task未指定フローはStory受入基準を使い続ける',
   'Task不一致、欠落、空の受入基準はfail closedする',
-  'task scopeとrouted task planの回帰テストが通る'
+  'task scopeとrouted task planの回帰テストが通る',
+  '複数Task Storyの現在Task完了・後続Task未完了とfeature packet routingを再現する'
 ];
 
 test(
-  'story-vibepro-task-scoped-pr-acceptance ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 replays the production Task-scoped PR integration',
+  'story-vibepro-task-scoped-pr-acceptance ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 S-002 replays the production Task-scoped PR integration',
   async () => {
     const result = await execFileAsync(
       process.execPath,
@@ -43,5 +44,6 @@ test(
     assert.equal(result.stderr, '', `story-vibepro-task-scoped-pr-acceptance ac:4 ${acceptanceCriteria[3]}`);
     assert.equal(result.stdout.includes('not ok'), false, `story-vibepro-task-scoped-pr-acceptance ac:5 ${acceptanceCriteria[4]}`);
     assert.equal(result.stdout.includes('ok 1'), true, `story-vibepro-task-scoped-pr-acceptance ac:6 ${acceptanceCriteria[5]}`);
+    assert.match(result.stdout, /pass 1[\s\S]*fail 0/, `story-vibepro-task-scoped-pr-acceptance ac:7 S-002 ${acceptanceCriteria[6]}`);
   }
 );
