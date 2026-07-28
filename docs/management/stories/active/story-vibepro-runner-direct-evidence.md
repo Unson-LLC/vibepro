@@ -75,8 +75,13 @@ updated_at: 2026-07-27
       どちらが動いたかを示す警告が残り、事後にレビュアーが「どの木に対する実行だったか」を
       判定できる。fingerprint を採取できなかった場合は「変化なし」ではなく
       「未採取」として記録される。
-- [ ] RDE-6: 既存の `verify record` の挙動と記録形式は変わらない。
-      `evidence_source` を持たない既存の記録は self_reported として解釈される。
+- [ ] RDE-6: 既存の記録形式は互換に保たれ、`evidence_source` を持たない既存の記録は
+      self_reported として解釈される。`verify record` の入力検証は**意図的に狭まる**:
+      runner の実行だけが生成できる provenance/integrity キー26個は `--observed` で拒否され、
+      caller 提供の `--artifact` から持ち上がる場合は strip され警告として記録に残る。
+      成果観測キー（tests / pass / fail / duration_ms / head_sha 等12個）は従来どおり
+      受け付ける。この絞り込みが、自己申告の記録を機械生成に見せかける偽造経路を
+      閉じる本 Story の中核であり、副作用ではない。
 
 ## 解決 (Solution)
 
@@ -84,7 +89,7 @@ updated_at: 2026-07-27
 
 ## 互換性 (Compatibility)
 
-追加のみで破壊的変更はない。`verification-evidence.json` の command entry に `evidence_source` / `computed_observation` / `observation_overrides` を追加するが、既存フィールドの意味は変えず、未知フィールドを拒否する consumer はリポジトリ内に存在しない。`evidence_source` を持たない既存記録は self_reported として解釈する。`verify record` の入力検証と既存フィールドは変更しない（`verify record` の記録にも `evidence_source: self_reported` は付く）。`verify import-ci` と `pr autopilot` は次のリリースから新フィールドを書き始める（利用者側の選択ではない）。rollback は本ブランチのコミット群を**まとめて** revert する必要がある（`RUNNER_EVIDENCE_RECEIPT` を後続コミットが import しているため、feature commit だけの revert は CLI 全体の module load を壊す）。revert 後も記録済みの値は読み取り側で検証されないため無害な JSON として残る。
+記録**形式**は追加のみで、既存フィールドの意味は変えず、未知フィールドを拒否する consumer はリポジトリ内に存在しない。`evidence_source` を持たない既存記録は self_reported として解釈する。一方、`verify record` の**入力契約は非互換に狭まる**: これまで受理されていた `--observed` のうち、runner の実行だけが生成できる provenance/integrity キー26個（`run_artifact`, `stdout_sha256`, `worktree_sha256_before` 等。境界は Spec に列挙）は拒否になり、caller 提供 artifact 経由の同キーは strip + 警告記録になる。影響範囲は検証済み: リポジトリ内の全記録済み証跡にこれらのキーを非 runner 経路で持つものは存在せず、docs / skills / scripts に該当キーを渡す利用例もない（独立裁定者が実行確認）。成果観測キー12個（tests / pass / fail / duration_ms / head_sha 等）は従来どおり受理される。`verify import-ci` と `pr autopilot` は次のリリースから新フィールドを書き始める（利用者側の選択ではない）。rollback は本ブランチのコミット群を**まとめて** revert する必要がある（`RUNNER_EVIDENCE_RECEIPT` を後続コミットが import しているため、feature commit だけの revert は CLI 全体の module load を壊す）。revert 後も記録済みの値は読み取り側で検証されないため無害な JSON として残る。
 
 ## 利用者に必要な操作 (User Action)
 

@@ -33,7 +33,7 @@ status: active
 - The declared kind is checked against the command **before** the command runs, against the same rule the record path applies, so a rejected command never executes and never replaces the previous run's artifact or log. Because the runner's own artifact always parses as `generic_status`, a bare runner invocation (`node --test` with no file or `--test-name-pattern`) is refused: name the test files or pass a pattern. The check applies to every run, including one that would have failed, so a kind-mismatched command is rejected rather than recorded as a failure.
 - `verify run` exits non-zero when the executed command fails, and records the failing run. If recording does not commit for any reason, the previous run's artifact and log are restored so the surviving evidence record never points at an unrecorded run.
 - `--max-output-bytes` bounds the captured output; exceeding it kills the run and is reported as an output-limit kill, not a timeout.
-- `vibepro verify record` keeps its existing input handling, validation, and record shape. Existing recorded evidence stays valid.
+- `vibepro verify record` keeps its record shape, and existing recorded evidence stays valid. Its input contract is deliberately narrowed, not preserved: the 26 caller-forbidden provenance/integrity keys are rejected on `--observed` and stripped from caller-supplied artifacts with a named warning, as specified above — this narrowing is the Story's forgery closure, not a side effect. The 12 hand-suppliable outcome keys remain accepted. No recorded evidence in this repository and no documented caller passes a forbidden key on a non-runner path (verified by execution during adjudication).
 
 ## Workflow states
 
