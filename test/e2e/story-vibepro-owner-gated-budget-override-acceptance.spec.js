@@ -179,20 +179,25 @@ test('ac:5 OGB-E2E-5 evidence_lifecycle_regression: a superseded grant stops aut
   assert.ok(resolved.override.reasons.includes('approval_not_accepted'));
 });
 
-// path_surface: review_surface. `review authorize` and `pr prepare` are the two
-// surfaces that consume the resolved policy, so both must carry the status.
-test('ac:2 ac:9 OGB-E2E-6 path_surface: both consuming surfaces report the override authority status', async () => {
+// GE-001: this test asserts the resolver contract that both consuming surfaces
+// depend on -- a stable digest and an applied flag. It does NOT invoke `review
+// authorize` or `pr prepare`; those surfaces are asserted directly in
+// test/budget-override-consuming-surfaces.test.js.
+test('ac:2 OGB-E2E-6 the resolver exposes a stable digest and applied flag to its consumers', async () => {
   const root = await makeRepo();
   const config = await readConfig(root);
 
   const inert = resolveEfficiencyPolicyDecision(config, STORY_ID, { decisions: [] });
-  assert.equal(inert.override.applied, false);
+  assert.equal(inert.override.applied, false,
+    'ac2 an override without a grant is reported as not applied');
   assert.equal(inert.override.digest, computeBudgetOverrideDigest(STORY_ID, OVERRIDE));
 
   await execFileAsync(process.execPath, grantArgs(root, ['--budget-grantor', 'sato-keigo']));
   const granted = resolveEfficiencyPolicyDecision(config, STORY_ID, { decisions: await readDecisions(root) });
-  assert.equal(granted.override.applied, true);
-  assert.equal(granted.override.digest, inert.override.digest);
+  assert.equal(granted.override.applied, true,
+    'ac2 an override is applied only once every grant condition is satisfied');
+  assert.equal(granted.override.digest, inert.override.digest,
+    'ac2 the digest is stable across the unauthorized and authorized states');
 });
 
 // The remaining acceptance criteria are pure-resolution properties. They are
@@ -310,8 +315,10 @@ test('ac:9 an unauthorized override is reported as efficiency debt', () => {
     correctness_ready: true,
     budget_override: { status: 'unauthorized', reasons: ['self_approved'] }
   });
-  assert.equal(debt.has_efficiency_debt, true);
-  assert.deepEqual(debt.debt, [{ kind: 'budget_override_unauthorized', reasons: ['self_approved'] }]);
+  assert.equal(debt.has_efficiency_debt, true,
+    'ac9 an unauthorized override must register as efficiency debt');
+  assert.deepEqual(debt.debt, [{ kind: 'budget_override_unauthorized', reasons: ['self_approved'] }],
+    'ac9 the debt entry names budget_override_unauthorized and carries its reasons');
 });
 
 test('ac:10 the recorded digest comes from config and ignores any caller-supplied value', async () => {
