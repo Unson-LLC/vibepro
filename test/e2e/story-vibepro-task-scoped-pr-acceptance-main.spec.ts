@@ -9,17 +9,18 @@ const execFileAsync = promisify(execFile);
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 const acceptanceCriteria = [
-  'artifact routingで解決したcanonical task planを読み、feature packet経路でもTaskを選択できる',
-  'task指定PR artifactがmachine-readableなacceptance scopeを公開する',
+  'artifact routingで解決したcanonical task planを読み、feature packet経路とlegacy Markdown routingの両方でTaskを選択できる',
+  'task指定PR artifactがmachine-readableなacceptance scopeを公開し、PR本文とreview cockpitに同じ判定範囲を表示する',
   'E2E coverage、Gate DAG、traceability、evidence adjudication、senior-gap judgmentが選択Taskの受入基準を使う',
+  'evidence verdictとhuman closureをTask ID、normalized acceptance scope fingerprint、HEADへ束縛し、同一HEADの別Task、矛盾fingerprint、旧HEADから再利用しない',
+  'Story source、Architecture、Accepted Spec、requirement consistency、risk、responsibilityの設計判定はTask指定時も完全なStoryを参照する',
   'task未指定フローはStory受入基準を使い続ける',
-  'Task不一致、欠落、空の受入基準はfail closedする',
-  'task scopeとrouted task planの回帰テストが通る',
-  '複数Task Storyの現在Task完了・後続Task未完了とfeature packet routingを再現する'
+  'Task不一致、欠落、malformed JSON、空の受入基準は対象パスと修復手順を示してfail closedする',
+  'task scopeとrouted task planの回帰テストが通る'
 ];
 
 test(
-  'story-vibepro-task-scoped-pr-acceptance ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 S-002 replays the production Task-scoped PR integration',
+  'story-vibepro-task-scoped-pr-acceptance ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 ac:8 S-002 replays the production Task-scoped PR integration',
   async () => {
     const result = await execFileAsync(
       process.execPath,
@@ -44,6 +45,7 @@ test(
     assert.equal(result.stderr, '', `story-vibepro-task-scoped-pr-acceptance ac:4 ${acceptanceCriteria[3]}`);
     assert.equal(result.stdout.includes('not ok'), false, `story-vibepro-task-scoped-pr-acceptance ac:5 ${acceptanceCriteria[4]}`);
     assert.equal(result.stdout.includes('ok 1'), true, `story-vibepro-task-scoped-pr-acceptance ac:6 ${acceptanceCriteria[5]}`);
-    assert.match(result.stdout, /pass 1[\s\S]*fail 0/, `story-vibepro-task-scoped-pr-acceptance ac:7 S-002 ${acceptanceCriteria[6]}`);
+    assert.match(result.stdout, /pass 1[\s\S]*fail 0/, `story-vibepro-task-scoped-pr-acceptance ac:7 ${acceptanceCriteria[6]}`);
+    assert.match(result.stdout, /pr prepare writes PR artifacts[\s\S]*pass 1[\s\S]*fail 0/, `story-vibepro-task-scoped-pr-acceptance ac:8 S-002 ${acceptanceCriteria[7]}`);
   }
 );
