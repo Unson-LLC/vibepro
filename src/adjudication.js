@@ -87,12 +87,51 @@ async function readVerificationEvidenceEntries(repoRoot, storyId) {
 
 // Every value interpolated into this entry is agent-controlled text landing in a markdown
 // list, and the list is where the authoritative fields (evidence_source, the producer, the
-// discarded-input diff) are stated. A value containing a newline would render as its own list
-// item, so an observation value could write a second `- evidence_source: runner_direct` line
-// under a self_reported record. Newlines are folded into a visible escape rather than dropped,
-// so the judge still sees that the value was multi-line.
+// discarded-input diff) are stated. A value containing a line break would render as its own
+// list item, so an observation value could write a second `- evidence_source: runner_direct`
+// line under a self_reported record.
+//
+// Folding only `\r\n|\r|\n` closed one instance of that hole and left the class open: U+2028
+// and U+2029 are ECMAScript LineTerminators, so `^` under the `m` flag starts a line at them —
+// the same forged item composes itself under a different codepoint, and the oracle that counts
+// `- evidence_source:` lines sees two. NEL, vertical tab and form feed break lines for markdown
+// renderers and terminals in the same way. The fold therefore covers the whole line-breaking
+// class, and every remaining C0 control (plus DEL) is escaped after it, so nothing invisible
+// survives into the request. Characters are escaped, never dropped: the judge still sees that
+// the value carried a break, and which one.
+const LINE_BREAK_ESCAPES = new Map([
+  ['\r\n', '\\n'],
+  ['\n', '\\n'],
+  ['\r', '\\r'],
+  ['\u000b', '\\v'],
+  ['\f', '\\f'],
+  ['\u0085', '\\u0085'],
+  ['\u2028', '\\u2028'],
+  ['\u2029', '\\u2029']
+]);
+const LINE_BREAK_PATTERN = /\r\n|[\n\r\u000b\f\u0085\u2028\u2029]/g;
+const CONTROL_CHARACTER_PATTERN = /[\u0000-\u0009\u000e-\u001f\u007f]/g;
+
 function inlineText(value) {
-  return String(value ?? '').replace(/\r\n|\r|\n/g, '\\n');
+  return String(value ?? '')
+    .replace(LINE_BREAK_PATTERN, (match) => LINE_BREAK_ESCAPES.get(match))
+    .replace(CONTROL_CHARACTER_PATTERN, (match) => (
+      match === '\t' ? '\\t' : `\\u${match.codePointAt(0).toString(16).padStart(4, '0')}`
+    ));
+}
+
+// A warning id names the category; the reason carries what the recording path actually
+// found — the rejected key and its quoted value, which head moved, how thin the counts were.
+// Rendering the id alone dropped exactly that: a caller-key rejection reached the judge as
+// the bare string `verification_observation_caller_key_rejected`, with the forged claim it
+// was reporting nowhere on the page. Both are rendered, and the reason goes through
+// inlineText like every other agent-reachable string.
+function formatWarningText(warning) {
+  if (typeof warning === 'string') return warning;
+  const id = warning?.id ?? warning?.code ?? null;
+  const reason = warning?.reason ?? warning?.message ?? null;
+  if (id && reason) return `${id}: ${reason}`;
+  return id ?? reason ?? JSON.stringify(warning);
 }
 
 function formatEvidenceEntry(entry, index) {
@@ -139,10 +178,7 @@ function formatEvidenceEntry(entry, index) {
   if (warnings.length > 0) {
     lines.push('- warnings:');
     for (const warning of warnings) {
-      const text = typeof warning === 'string'
-        ? warning
-        : (warning?.id ?? warning?.code ?? warning?.message ?? JSON.stringify(warning));
-      lines.push(`  - ${inlineText(text)}`);
+      lines.push(`  - ${inlineText(formatWarningText(warning))}`);
     }
   }
   if (entry.artifact) lines.push(`- artifact: ${inlineText(entry.artifact)}`);

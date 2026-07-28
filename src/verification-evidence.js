@@ -92,13 +92,16 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       : null;
     // A silent strip would leave the record looking as if the caller had never claimed the
     // key, so the rejected value is named on the record itself: a reader sees both that the
-    // claim was made and that it was not recorded.
+    // claim was made and that it was not recorded. The wording states the operator's next
+    // move rather than accusing them — the usual cause is a replay of a real runner artifact
+    // through `verify record`, which is a mistake, not a forgery — while still quoting the
+    // key and value for the audit trail.
     const callerKeyWarnings = artifactFilter.rejected.map((item) => ({
       id: 'verification_observation_caller_key_rejected',
       command_name: 'verify record',
       reason: `${item.key}="${item.value}" arrived from ${item.producer} and was not recorded in observation.values: `
-        + `it states how the record was produced, and this record is ${computedRecording.source}. `
-        + 'Only the recording path writes that key.'
+        + `this record is ${computedRecording.source}, replayed from a runner artifact, and provenance keys `
+        + 'are not inherited by a hand-recorded replay. Rerun `vibepro verify run` to restore a runner_direct record.'
     }));
     const command = {
       kind: options.kind,
@@ -461,15 +464,19 @@ function normalizeArtifact(repoRoot, artifact) {
   return toWorkspaceRelative(repoRoot, resolved);
 }
 
-function buildObservation(options, artifactObservedValues = {}, { receiptBacked = false } = {}) {
+// Exported for the sink test: the assert below is unreachable from the CLI while both of
+// today's producers filter first, so the only way to prove it still fires — and that deleting
+// it is a test failure — is to call this function with a producer that did not.
+export function buildObservation(options, artifactObservedValues = {}, { receiptBacked = false } = {}) {
   const targets = normalizeStringList(options.targets);
   const scenarios = normalizeStringList(options.scenarios);
   const cliValues = parseObservedPairs(options.observed);
   // artifact-derived values first so explicit CLI observations win on key conflicts
   const values = { ...artifactObservedValues, ...cliValues };
-  // The rule is enforced on the merged object as well as on each producer: a producer added
-  // later is covered by this check without knowing it exists, which is what makes the
-  // protection a property of the key set rather than of the two producers that exist today.
+  // The rule is enforced on the merged object as well as on each producer: a non-receipt
+  // producer added later and routed through this function is covered without knowing the rule
+  // exists. It is a backstop for that route, not for every route — a caller that assembles a
+  // record without coming through here is outside its reach.
   if (!receiptBacked) {
     const leaked = Object.keys(values).filter((key) => isCallerForbiddenObservationKey(key));
     if (leaked.length > 0) {
@@ -488,16 +495,75 @@ function normalizeStringList(value) {
   return value.map((item) => String(item).trim()).filter(Boolean);
 }
 
-// evidence_source is the field a reader uses to decide how much the rest of the record is
-// worth. It is set by the recording path itself, never by its caller. observation.values has
-// two caller-reachable producers — the `--observed` pairs parsed below and the values lifted
-// back out of the cross-checked artifact, which is a file the caller wrote and chose — so the
-// rule is one set applied to both, gated on the recording receipt. Guarding only `--observed`
-// left the artifact carrying `runner_direct` onto a self_reported record by the same route
-// the genuine runner uses. Only this key is filtered: the other computed keys stay writable
-// on the self-reported path, where an agent recording a run it performed by hand legitimately
-// supplies its counts.
-export const CALLER_FORBIDDEN_OBSERVATION_KEYS = new Set(['evidence_source']);
+// observation.values has two caller-reachable producers — the `--observed` pairs parsed below
+// and the values lifted back out of the cross-checked artifact, which is a file the caller
+// wrote and chose — so the rule is one set applied to both, gated on the recording receipt.
+//
+// The set is drawn along one line: **provenance and integrity facts versus outcome facts**.
+// A provenance fact states how the record was produced or proves that the production was
+// undisturbed — the trust marker itself, the paths of the run files, the output and worktree
+// hashes, the before/after head shas, the during-run mutation verdicts, the sampling
+// completeness flags, the harness scrub, the declared limits and whether they were hit. None
+// of those can be honestly asserted by a caller: they are readings a runner takes of its own
+// execution, and a hand-recorded run has no execution of its own to read. An outcome fact —
+// status, exit code, signal, counts, duration, timestamps, the head the work sits on — is
+// something an agent transcribing a run it performed by hand legitimately reports, and
+// `verify import-ci` legitimately lifts `head_sha` from the CI check it read.
+//
+// Restricting the set to `evidence_source` closed one instance and left the class open: a
+// forged artifact still lifted `run_artifact`, `stdout_sha256`, `worktree_sha256_before` and
+// a dozen siblings onto a self_reported record, which then read as machine-produced to any
+// consumer that inspects observation.values rather than the one field. The relationship
+// between this set, the allowlist below, and the runner's COMPUTED_OBSERVATION_KEYS is
+// asserted in test/verification-runner.test.js, so a computed key added later must be
+// classified into one of the two lists or the test fails.
+export const CALLER_FORBIDDEN_OBSERVATION_KEYS = new Set([
+  'evidence_source',
+  'run_artifact',
+  'run_log',
+  'stdout_sha256',
+  'output_sha256',
+  'output_bytes',
+  'log_truncated',
+  'output_metrics',
+  'timed_out',
+  'output_limit_exceeded',
+  'timeout_ms',
+  'max_output_bytes',
+  'harness_env_removed',
+  'head_sha_before',
+  'head_sha_after',
+  'head_moved_during_run',
+  'tree_mutated_during_run',
+  'worktree_changed_during_run',
+  'worktree_sampled',
+  'worktree_sampling_complete',
+  'worktree_sha256_before',
+  'worktree_sha256_after',
+  'worktree_status_sha256_before',
+  'worktree_status_sha256_after',
+  'worktree_diff_sha256_before',
+  'worktree_diff_sha256_after'
+]);
+
+// The other side of the partition: computed keys a caller may still supply, because they are
+// outcomes an agent can observe without being the runner. Declared here rather than left
+// implicit so the partition is a checkable property of two named sets instead of the
+// complement of one.
+export const HAND_SUPPLIABLE_OBSERVATION_KEYS = new Set([
+  'status',
+  'exit_code',
+  'signal',
+  'tests',
+  'pass',
+  'fail',
+  'skipped',
+  'todo',
+  'duration_ms',
+  'started_at',
+  'finished_at',
+  'head_sha'
+]);
 
 export function isCallerForbiddenObservationKey(key) {
   return CALLER_FORBIDDEN_OBSERVATION_KEYS.has(key);

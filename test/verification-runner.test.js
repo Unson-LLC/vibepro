@@ -10,6 +10,9 @@ import { promisify } from 'node:util';
 import { runCli } from '../src/cli.js';
 import { buildArtifactRemediationCommands } from '../src/pr-manager.js';
 import {
+  CALLER_FORBIDDEN_OBSERVATION_KEYS,
+  HAND_SUPPLIABLE_OBSERVATION_KEYS,
+  buildObservation,
   classifyRunnerArtifactProbe,
   recordVerificationEvidence,
   runnerArtifactDerivedObservationKeys
@@ -800,7 +803,11 @@ test('the derivation follows the real artifact shape, so a format reroute change
   assert.equal(runnerArtifactCheckShape().format, classifyRunnerArtifactProbe(probe).format);
 });
 
-test('verify run records the artifact-derived key set its protection assert checked', async () => {
+// Round 10, gate_evidence: the field said `['exit_code','status']` on every record, because it
+// carried the empty probe's answer rather than a classification of the artifact the run wrote.
+// The record therefore stated 2 artifact-lifted keys while its observation.values carried the
+// whole computed-value object back through the same extractor — a false description of itself.
+test('artifact_derived_keys describes the artifact this run wrote, not the empty probe', async () => {
   const root = await setupRepo();
   const result = await cli([
     'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
@@ -809,13 +816,79 @@ test('verify run records the artifact-derived key set its protection assert chec
   ]);
   assert.equal(result.exitCode, 0);
   const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
-  // The assert's result is carried onto the record, so removing the call site is a failure
-  // rather than a silently dropped check.
   const derived = record.computed_observation.artifact_derived_keys;
-  assert.deepEqual([...derived].sort(), ['exit_code', 'status']);
+  const probeKeys = runnerArtifactDerivedObservationKeys(runArtifactProbeDocument());
+
+  // The extractor lifts the artifact's `observed` block, which is the run's whole computed-value
+  // object, so every computed key must appear — not only the two the probe reaches around it.
+  for (const key of Object.keys(record.computed_observation.values)) {
+    assert.ok(derived.includes(key), `${key} is lifted from the artifact but not reported as derived`);
+  }
+  assert.ok(
+    derived.length > probeKeys.length,
+    `the recorded set (${derived.length}) must describe the real artifact, not the probe (${probeKeys.length})`
+  );
+  // What it claims is lifted is what observation.values actually carries.
   for (const key of derived) {
+    assert.ok(key in record.observation.values, `${key} is claimed as derived but is not in observation.values`);
     assert.ok(COMPUTED_OBSERVATION_KEYS.includes(key), `${key} must be protected`);
   }
+  // The structural keys the probe does reach are still in it: the classification widened, it
+  // did not swap one incomplete answer for another.
+  for (const key of probeKeys) {
+    assert.ok(derived.includes(key), `${key} is structurally lifted and must stay reported`);
+  }
+});
+
+// Round 10, gate_evidence: the forbidden set held one key, so a forged artifact still lifted
+// run_artifact, stdout_sha256, worktree_sha256_before and their siblings onto a self_reported
+// record, which then read as machine-produced to anything inspecting observation.values. This
+// is the class rule: every key the runner computes must be classified as provenance (the
+// caller may never assert it) or as a hand-suppliable outcome (an agent transcribing its own
+// run legitimately reports it). A key added to COMPUTED_OBSERVATION_KEYS later and left out of
+// both lists fails here rather than defaulting to caller-writable.
+test('every computed observation key is classified as provenance or hand-suppliable', () => {
+  const unclassified = COMPUTED_OBSERVATION_KEYS.filter((key) => (
+    !CALLER_FORBIDDEN_OBSERVATION_KEYS.has(key) && !HAND_SUPPLIABLE_OBSERVATION_KEYS.has(key)
+  ));
+  assert.deepEqual(
+    unclassified,
+    [],
+    'add each key to CALLER_FORBIDDEN_OBSERVATION_KEYS (provenance/integrity) or to '
+    + 'HAND_SUPPLIABLE_OBSERVATION_KEYS (an outcome a hand-recorded run may report)'
+  );
+
+  // The two lists partition rather than overlap, so no key is both refused and allowed.
+  const both = COMPUTED_OBSERVATION_KEYS.filter((key) => (
+    CALLER_FORBIDDEN_OBSERVATION_KEYS.has(key) && HAND_SUPPLIABLE_OBSERVATION_KEYS.has(key)
+  ));
+  assert.deepEqual(both, [], 'a key cannot be both caller-forbidden and hand-suppliable');
+
+  // The provenance side is the larger one: restricting it to evidence_source is the state this
+  // test exists to prevent, and `head_sha` must stay suppliable or verify import-ci breaks.
+  assert.ok(CALLER_FORBIDDEN_OBSERVATION_KEYS.size > 1, 'the rule must cover a class, not one key');
+  assert.equal(CALLER_FORBIDDEN_OBSERVATION_KEYS.has('head_sha'), false);
+  for (const key of ['run_artifact', 'stdout_sha256', 'worktree_sha256_before', 'harness_env_removed']) {
+    assert.ok(CALLER_FORBIDDEN_OBSERVATION_KEYS.has(key), `${key} states how the record was produced`);
+  }
+});
+
+// Round 10, gate_evidence: the merged-observation assert had no test at all. Both of today's
+// producers filter before reaching it, so it is unreachable from the CLI and a deletion would
+// have gone unnoticed. This calls it with the producer it exists to catch: one that did not.
+test('the merged-observation sink rejects a producer that skipped the forbidden-key filter', () => {
+  const forged = { tests: '52', run_artifact: '.vibepro/verification-runs/unit.json' };
+  assert.throws(
+    () => buildObservation({ targets: ['src/a.js'] }, forged, { receiptBacked: false }),
+    /run_artifact/,
+    'a non-receipt producer that skipped the filter must be stopped at the sink'
+  );
+  // The receipt is what separates the runner's own values from caller input on the same route.
+  const allowed = buildObservation({ targets: ['src/a.js'] }, forged, { receiptBacked: true });
+  assert.equal(allowed.values.run_artifact, '.vibepro/verification-runs/unit.json');
+  // A producer carrying only permitted keys passes on the non-receipt path.
+  const clean = buildObservation({ targets: ['src/a.js'] }, { tests: '52' }, { receiptBacked: false });
+  assert.equal(clean.values.tests, '52');
 });
 
 // Round 9, gate_evidence: the forbidden-key rule was consulted in the --observed parser only.
@@ -827,7 +900,17 @@ test('a caller-written artifact cannot put the runner trust marker on a self-rep
   await writeFile(path.join(root, 'forged.json'), JSON.stringify({
     status: 'pass',
     exit_code: 0,
-    observed: { evidence_source: 'runner_direct', tests: '52' }
+    observed: {
+      evidence_source: 'runner_direct',
+      // Round 10: the siblings that rode the same artifact in while the set held one key.
+      run_artifact: '.vibepro/verification-runs/unit.json',
+      stdout_sha256: 'a'.repeat(64),
+      worktree_sha256_before: 'b'.repeat(64),
+      tree_mutated_during_run: 'false',
+      harness_env_removed: 'none',
+      tests: '52',
+      duration_ms: '1200'
+    }
   }));
   const result = await cli([
     'verify', 'record', root, '--id', STORY_ID, '--kind', 'unit', '--status', 'pass',
@@ -838,15 +921,25 @@ test('a caller-written artifact cannot put the runner trust marker on a self-rep
   assert.equal(result.exitCode, 0);
   const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
   assert.equal(record.evidence_source, 'self_reported');
-  assert.equal(record.observation.values.evidence_source, undefined);
-  assert.equal(record.artifact_observed_values.evidence_source, undefined);
-  // Lifting arbitrary observed keys out of an artifact stays supported; only the key that
-  // states how the record was produced is filtered.
+  for (const key of [
+    'evidence_source', 'run_artifact', 'stdout_sha256',
+    'worktree_sha256_before', 'tree_mutated_during_run', 'harness_env_removed'
+  ]) {
+    assert.equal(record.observation.values[key], undefined, `${key} must not reach observation.values`);
+    assert.equal(record.artifact_observed_values[key], undefined, `${key} must not reach artifact_observed_values`);
+  }
+  // Lifting arbitrary observed keys out of an artifact stays supported, and so do the outcome
+  // facts a hand-recorded run legitimately reports; only provenance/integrity keys are filtered.
   assert.equal(record.observation.values.tests, '52');
-  const rejection = record.warnings.find((item) => item.id === 'verification_observation_caller_key_rejected');
+  assert.equal(record.observation.values.duration_ms, '1200');
+  const rejections = record.warnings.filter((item) => item.id === 'verification_observation_caller_key_rejected');
+  assert.equal(rejections.length, 6, 'every stripped key must be named on the record, not silently dropped');
+  const rejection = rejections.find((item) => item.reason.includes('evidence_source='));
   assert.ok(rejection, 'the strip must be visible on the record, not silent');
   assert.match(rejection.reason, /evidence_source="runner_direct"/);
   assert.match(rejection.reason, /self_reported/);
+  // Operator-actionable: the warning says what to run, not that the caller cheated.
+  assert.match(rejection.reason, /vibepro verify run/);
 });
 
 test('the runner keeps lifting its own computed evidence_source through the same extractor', async () => {

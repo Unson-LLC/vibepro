@@ -89,8 +89,12 @@ function assertComputedKeysProtected(computedValues) {
 // module silent. Asserting that direction too is what makes the protection a property of the
 // key set rather than of the enumerated call sites, which is the distinction the round-5
 // finding turned on.
-function assertArtifactDerivedKeysProtected() {
-  const derived = runnerArtifactDerivedObservationKeys(runArtifactProbeDocument());
+// This runs before the command does, against the probe document, so a shape change fails the
+// run instead of destroying the previous run's artifact first. The probe carries an empty
+// `observed`, so it reports the keys the extractor lifts *around* the run's own computed
+// values — the structural derivation, not this run's key set.
+function assertArtifactDerivedKeysProtected(document = runArtifactProbeDocument()) {
+  const derived = runnerArtifactDerivedObservationKeys(document);
   const unprotected = derived.filter((key) => !COMPUTED_OBSERVATION_KEY_SET.has(key));
   if (unprotected.length > 0) {
     throw new Error(
@@ -99,9 +103,8 @@ function assertArtifactDerivedKeysProtected() {
       + 'Add them to COMPUTED_OBSERVATION_KEYS so an --observed value cannot overwrite them.'
     );
   }
-  // Returned rather than only asserted so the record states which of its observation values
-  // came back through the artifact extractor, and so dropping the call site is a failure
-  // rather than a silent loss of the check.
+  // Returned rather than only asserted so dropping the call site is a failure rather than a
+  // silent loss of the check.
   return derived;
 }
 
@@ -164,7 +167,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   const treeMutated = headMoved || worktreeChanged;
 
   const runFilePaths = await resolveRunFilePaths(root, storyId, options.kind);
-  const artifactDerivedKeys = assertArtifactDerivedKeysProtected();
+  assertArtifactDerivedKeysProtected();
   const computedValues = assertComputedKeysProtected({
     // status and evidence_source are computed here too, and both reach observation.values.
     // Carrying them in this object rather than only in the protected-key list is what puts
@@ -237,7 +240,7 @@ export async function runVerificationCommand(repoRoot, options = {}) {
 
   const restorePreviousRunFiles = await snapshotRunFiles(runFilePaths);
   const logPath = await withRunFileRestore(restorePreviousRunFiles, () => writeRunLog(runFilePaths.logPath, output));
-  const artifactPath = await withRunFileRestore(restorePreviousRunFiles, () => writeRunArtifact(runFilePaths.artifactPath, storyId, options.kind, {
+  const written = await withRunFileRestore(restorePreviousRunFiles, () => writeRunArtifact(runFilePaths.artifactPath, storyId, options.kind, {
     status,
     argv,
     command: renderCommand(argv),
@@ -265,6 +268,17 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     maxOutputBytes,
     warnings
   }));
+  const artifactPath = written.artifactPath;
+  // Classified from the document actually written, not from the empty probe: the probe carries
+  // no `observed` block, so its two structural keys are not this run's key set — the extractor
+  // also lifts every key under `observed`, which is the whole computed-value object. Reporting
+  // the probe's answer stated `exit_code, status` on a record whose observation.values carried
+  // ~37 artifact-lifted keys, which is a false claim about this record. The probe assert above
+  // stays where it is, before execution, as the protection check; this is the description of
+  // what happened. Re-asserting here covers the keys the probe cannot see: every one of them
+  // comes from computedValues, which assertComputedKeysProtected already checked, so this can
+  // only fire if a future edit lifts something from outside that object.
+  const artifactDerivedKeys = assertArtifactDerivedKeysProtected(written.document);
 
   const record = await withRunFileRestore(restorePreviousRunFiles, () => recordVerificationEvidence(root, {
     storyId,
@@ -291,8 +305,8 @@ export async function runVerificationCommand(repoRoot, options = {}) {
       // Every fact mirrored here is also in `values`, which assertComputedKeysProtected has
       // checked against the protected set; nothing is computed on this object alone.
       values: computedValues,
-      // The keys the record path lifts back out of this run's artifact into
-      // observation.values, as derived and checked before the command ran.
+      // The keys the record path lifts back out of *this run's* written artifact into
+      // observation.values, classified off the document on disk.
       artifact_derived_keys: artifactDerivedKeys,
       run_artifact: computedValues.run_artifact,
       run_log: computedValues.run_log,
@@ -469,11 +483,13 @@ async function writeRunLog(logPath, output) {
   return logPath;
 }
 
+// The written document is returned alongside its path so the caller can classify what it
+// actually wrote rather than re-deriving it from a probe that stands in for it.
 async function writeRunArtifact(artifactPath, storyId, kind, run) {
   await mkdir(path.dirname(artifactPath), { recursive: true });
-  const doc = buildRunArtifactDocument(storyId, kind, run);
-  await writeFile(artifactPath, `${JSON.stringify(doc, null, 2)}\n`);
-  return artifactPath;
+  const document = buildRunArtifactDocument(storyId, kind, run);
+  await writeFile(artifactPath, `${JSON.stringify(document, null, 2)}\n`);
+  return { artifactPath, document };
 }
 
 // The document a run artifact is written from. It is a named builder rather than an inline
