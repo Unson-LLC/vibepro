@@ -8,7 +8,7 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
-import { recordVerificationEvidence } from '../src/verification-evidence.js';
+import { recordVerificationEvidence, runnerArtifactDerivedObservationKeys } from '../src/verification-evidence.js';
 import { COMPUTED_OBSERVATION_KEYS, buildRunWarnings, compareWorktreeSamples } from '../src/verification-runner.js';
 
 const execFileAsync = promisify(execFile);
@@ -747,4 +747,123 @@ test('verify run rejects a command that does not match the declared kind', async
   ]);
   assert.notEqual(result.exitCode, 0);
   assert.match(result.stderr, /requires a recognized executable e2e check/);
+});
+
+// Round 8, gate_evidence: the protection assert only ever checked the values this module
+// computes. observation.values has a second producer — the extractor that lifts values back
+// out of the written artifact — and a key added there was agent-writable with this module
+// silent. These three tests bind the closure to the key set rather than to the call sites.
+
+test('the artifact-derived observation keys are all inside the protected key set', async () => {
+  const derived = runnerArtifactDerivedObservationKeys();
+  assert.ok(derived.length > 0, 'the extractor must lift at least one top-level key');
+  for (const key of derived) {
+    assert.ok(
+      COMPUTED_OBSERVATION_KEYS.includes(key),
+      `${key} is lifted from the run artifact into observation.values but is not protected`
+    );
+  }
+});
+
+test('status and evidence_source are computed facts, not hand-listed exceptions', async () => {
+  const root = await setupRepo();
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  assert.equal(result.exitCode, 0);
+  const artifact = await readJson(runArtifactPath(root, 'unit'));
+  // Both keys travel in the object assertComputedKeysProtected checks, so a future change
+  // that stops computing them fails the assert instead of silently reopening the hole.
+  assert.equal(artifact.observed.status, 'pass');
+  assert.equal(artifact.observed.evidence_source, 'runner_direct');
+  const evidence = await readJson(evidencePath(root));
+  const record = evidence.commands.find((entry) => entry.kind === 'unit');
+  assert.equal(record.observation.values.evidence_source, 'runner_direct');
+  assert.ok(record.computed_observation.computed_keys.includes('status'));
+  assert.ok(record.computed_observation.computed_keys.includes('evidence_source'));
+});
+
+test('a discarded agent status carries the real computed value, not null', async () => {
+  const root = await setupRepo({ passing: false });
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--observed', 'status=pass',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  assert.notEqual(result.exitCode, 0);
+  const evidence = await readJson(evidencePath(root));
+  const record = evidence.commands.find((entry) => entry.kind === 'unit');
+  assert.equal(record.status, 'fail');
+  const override = (record.observation_overrides ?? []).find((entry) => entry.key === 'status');
+  assert.ok(override, 'the discarded status must be retained as an override');
+  assert.equal(override.agent_value, 'pass');
+  // Before this fix the entry read computed_value: null while the record said fail, so the
+  // diff a reviewer reads under-reported the computed side for exactly this key.
+  assert.equal(override.computed_value, 'fail');
+});
+
+test('verify record refuses to let a caller write the evidence_source trust marker', async () => {
+  const root = await setupRepo();
+  const result = await cli([
+    'verify', 'record', root, '--id', STORY_ID, '--kind', 'unit', '--status', 'pass',
+    '--command', 'node --test tests/sample.test.js',
+    '--target', 'tests/sample.test.js',
+    '--observed', 'evidence_source=runner_direct'
+  ]);
+  assert.notEqual(result.exitCode, 0);
+  assert.match(result.stderr, /cannot set evidence_source/);
+});
+
+// Round 8, gate_evidence: the typecheck evidence this Story records ran `npm run typecheck`,
+// which was `node --check bin/vibepro.js && node --check src/*.js`. `node --check` treats
+// only its first positional as the entry point and ignores the rest, so the run checked two
+// files out of 143 and none of the five this Story changes. The recorded evidence proved a
+// command exited 0, not that the changed code parses. These two tests bind both halves: the
+// semantics that made it vacuous, and the script form that no longer relies on them.
+
+test('node --check ignores every file after the first, so a glob form checks only one', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-typecheck-form-'));
+  await writeFile(path.join(root, 'a-good.js'), 'export const a = 1;\n', 'utf8');
+  await writeFile(path.join(root, 'b-broken.js'), 'const x = ;\n', 'utf8');
+
+  // The old form: the broken file is second, and the check passes anyway.
+  const globForm = await execFileAsync('sh', ['-c', 'node --check a-good.js b-broken.js'], { cwd: root })
+    .then(() => 0)
+    .catch((error) => error.code ?? 1);
+  assert.equal(globForm, 0, 'node --check must be shown to ignore the second file');
+
+  // The loop form: the same broken file is found.
+  const loopForm = await execFileAsync('sh', ['-c', 'for f in a-good.js b-broken.js; do node --check "$f" || exit 1; done'], { cwd: root })
+    .then(() => 0)
+    .catch((error) => error.code ?? 1);
+  assert.equal(loopForm, 1, 'the per-file loop must reject a broken file in any position');
+
+  await rm(root, { recursive: true, force: true });
+});
+
+test('the typecheck script checks every file rather than only the glob head', async () => {
+  const manifest = await readJson(path.join(process.cwd(), 'package.json'));
+  const script = manifest.scripts.typecheck;
+  // The real script string is executed against a fixture tree rather than pattern-matched,
+  // so this binds the behaviour (every file is checked) and not one spelling of the fix.
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-typecheck-script-'));
+  await mkdir(path.join(root, 'bin'), { recursive: true });
+  await mkdir(path.join(root, 'src'), { recursive: true });
+  await writeFile(path.join(root, 'bin', 'vibepro.js'), 'export const entry = 1;\n', 'utf8');
+  await writeFile(path.join(root, 'src', 'a-good.js'), 'export const a = 1;\n', 'utf8');
+
+  const run = async () => execFileAsync('sh', ['-c', script], { cwd: root })
+    .then(() => 0)
+    .catch((error) => error.code ?? 1);
+
+  assert.equal(await run(), 0, 'a clean fixture tree must pass');
+
+  // Broken, and deliberately not the first entry of the glob.
+  await writeFile(path.join(root, 'src', 'z-broken.js'), 'const x = ;\n', 'utf8');
+  assert.equal(await run(), 1, 'a broken file after the first must fail the script');
+
+  await rm(root, { recursive: true, force: true });
 });

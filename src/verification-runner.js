@@ -6,7 +6,12 @@ import { promisify } from 'node:util';
 
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { toWorkspaceRelative } from './workspace.js';
-import { RUNNER_EVIDENCE_RECEIPT, assertCommandMatchesVerificationKind, recordVerificationEvidence } from './verification-evidence.js';
+import {
+  RUNNER_EVIDENCE_RECEIPT,
+  assertCommandMatchesVerificationKind,
+  recordVerificationEvidence,
+  runnerArtifactDerivedObservationKeys
+} from './verification-evidence.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -77,6 +82,24 @@ function assertComputedKeysProtected(computedValues) {
   return computedValues;
 }
 
+// The assert above closes one direction only: everything this module computes is protected.
+// It cannot see the second producer of observation.values — the extractor that lifts values
+// back out of the written artifact — so a key added there would be agent-writable with this
+// module silent. Asserting that direction too is what makes the protection a property of the
+// key set rather than of the enumerated call sites, which is the distinction the round-5
+// finding turned on.
+function assertArtifactDerivedKeysProtected() {
+  const unprotected = runnerArtifactDerivedObservationKeys()
+    .filter((key) => !COMPUTED_OBSERVATION_KEY_SET.has(key));
+  if (unprotected.length > 0) {
+    throw new Error(
+      'verify run writes an artifact whose top level is lifted into observation.values under '
+      + `keys that are not protected from agent input: ${unprotected.join(', ')}. `
+      + 'Add them to COMPUTED_OBSERVATION_KEYS so an --observed value cannot overwrite them.'
+    );
+  }
+}
+
 // Markers that make a nested runner report to a foreign harness instead of running normally.
 // Inheriting NODE_TEST_CONTEXT makes `node --test` exit 0 having run nothing and printed
 // nothing — a silent green that this command exists to make impossible.
@@ -136,7 +159,14 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   const treeMutated = headMoved || worktreeChanged;
 
   const runFilePaths = await resolveRunFilePaths(root, storyId, options.kind);
+  assertArtifactDerivedKeysProtected();
   const computedValues = assertComputedKeysProtected({
+    // status and evidence_source are computed here too, and both reach observation.values.
+    // Carrying them in this object rather than only in the protected-key list is what puts
+    // them under the assert instead of under a hand-maintained exception, and it gives the
+    // discarded-input diff a real computed_value for them instead of null.
+    status,
+    evidence_source: 'runner_direct',
     run_artifact: toWorkspaceRelative(root, runFilePaths.artifactPath),
     run_log: toWorkspaceRelative(root, runFilePaths.logPath),
     exit_code: String(execution.exitCode),

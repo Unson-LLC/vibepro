@@ -105,6 +105,36 @@ function formatEvidenceEntry(entry, index) {
   if (valueEntries.length > 0) {
     lines.push(`- observation.values: ${valueEntries.map(([key, value]) => `${key}=${value}`).join(', ')}`);
   }
+  // The adjudicator judges whether the evidence demonstrates the clause, so it has to see
+  // how the evidence was produced and what the producer already flagged about it. Without
+  // these, observation.values is the only thing on the page, and a value an agent wrote is
+  // indistinguishable from one an execution left behind.
+  lines.push(`- evidence_source: ${entry.evidence_source ?? 'self_reported'}`);
+  const computed = entry.computed_observation;
+  if (computed && typeof computed === 'object') {
+    const computedKeys = Array.isArray(computed.computed_keys) ? computed.computed_keys : [];
+    lines.push(`- computed_observation.producer: ${computed.producer ?? '-'}`);
+    if (computedKeys.length > 0) {
+      lines.push(`- computed_observation.computed_keys: ${computedKeys.join(', ')}`);
+    }
+  }
+  const overrides = Array.isArray(entry.observation_overrides) ? entry.observation_overrides : [];
+  if (overrides.length > 0) {
+    lines.push('- observation_overrides (agent input discarded in favour of the computed value):');
+    for (const override of overrides) {
+      lines.push(`  - ${override.key ?? '-'}: agent=${override.agent_value ?? '-'} computed=${override.computed_value ?? '-'}`);
+    }
+  }
+  const warnings = Array.isArray(entry.warnings) ? entry.warnings : [];
+  if (warnings.length > 0) {
+    lines.push('- warnings:');
+    for (const warning of warnings) {
+      const text = typeof warning === 'string'
+        ? warning
+        : (warning?.id ?? warning?.code ?? warning?.message ?? JSON.stringify(warning));
+      lines.push(`  - ${text}`);
+    }
+  }
   if (entry.artifact) lines.push(`- artifact: ${entry.artifact}`);
   return lines.join('\n');
 }

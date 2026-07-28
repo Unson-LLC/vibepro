@@ -457,6 +457,14 @@ function normalizeStringList(value) {
   return value.map((item) => String(item).trim()).filter(Boolean);
 }
 
+// evidence_source is the field a reader uses to decide how much the rest of the record is
+// worth. It is set by the recording path itself, never by its caller. Rejecting it here
+// rather than letting it through into observation.values closes the one way an agent could
+// put the string `runner_direct` on a self_reported record. Only this key is rejected: the
+// other computed keys stay writable on the self-reported path, where an agent recording a
+// run it performed by hand legitimately supplies its counts.
+const CALLER_FORBIDDEN_OBSERVATION_KEYS = new Set(['evidence_source']);
+
 function parseObservedPairs(observed) {
   const values = {};
   for (const entry of Array.isArray(observed) ? observed : []) {
@@ -466,6 +474,12 @@ function parseObservedPairs(observed) {
     const value = separator > 0 ? raw.slice(separator + 1).trim() : '';
     if (!key || !value) {
       throw new Error(`verify record --observed must be key=value, got: ${raw}`);
+    }
+    if (CALLER_FORBIDDEN_OBSERVATION_KEYS.has(key)) {
+      throw new Error(
+        `verify record --observed cannot set ${key}: it states how the record was produced `
+        + 'and is written by the recording path itself.'
+      );
     }
     values[key] = value;
   }
@@ -542,6 +556,17 @@ function extractArtifactObservedValues(data, parsed) {
     record('head_sha', data.head_sha);
   }
   return values;
+}
+
+// observation.values has two producers: the CLI observations parsed here, and the values
+// lifted back out of the run artifact above. The runner's protection assert only sees the
+// first. These are the keys the extractor can lift from a runner-written artifact's top
+// level, obtained by running the extractor over a probe rather than restating the list, so
+// a new top-level extraction cannot drift away from the protected set unnoticed.
+// verification-runner.js cross-asserts the result; see assertArtifactDerivedKeysProtected.
+export function runnerArtifactDerivedObservationKeys() {
+  const probe = { status: 'probe', exit_code: 0, observed: {} };
+  return Object.keys(extractArtifactObservedValues(probe, { format: 'generic_status' }));
 }
 
 async function crossCheckArtifact(repoRoot, { artifact, status }) {
