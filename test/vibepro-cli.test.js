@@ -8305,7 +8305,7 @@ architecture_ref: docs/architecture/ADR-story-pr-prepare.md
       source_id: 'TASK-001',
       title: 'PR準備Task',
       priority: 'high',
-      status: 'todo',
+      status: 'completed',
       execution_policy: 'proposal_only',
       mutates_repository: false,
       target_count: 1,
@@ -8660,6 +8660,18 @@ Weighted semantic/layout residual: **34%**
   ]);
   assert.equal(routedTaskPrepare.exitCode, 0);
   assert.equal(routedTaskPrepare.result.preparation.task_context.task.id, 'TASK-001');
+  await rm(routedTaskStatePath);
+  let missingRoutedTaskStateStderr = '';
+  const missingRoutedTaskState = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stderr: { write: (text) => { missingRoutedTaskStateStderr += text; } }
+  });
+  assert.equal(missingRoutedTaskState.exitCode, 1);
+  assert.match(
+    missingRoutedTaskStateStderr,
+    /Task state not found for PR prepare: \.vibepro\/routed\/story-pr-prepare-tasks\.json/
+  );
   await writeJson(configPath, originalConfig);
   await writeJson(taskStatePath, validTaskState);
 
