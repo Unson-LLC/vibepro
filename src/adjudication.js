@@ -108,8 +108,12 @@ function entryMatchesAcceptanceScope(entry, scope) {
   const entryScope = entry?.acceptance_scope
     ? normalizeAcceptanceScope(entry.acceptance_scope, scope.story_id)
     : null;
-  const entryFingerprint = entry?.acceptance_scope_fingerprint
-    ?? (entryScope ? acceptanceScopeFingerprint(entryScope) : null);
+  const embeddedFingerprint = entryScope ? acceptanceScopeFingerprint(entryScope) : null;
+  const storedFingerprint = entry?.acceptance_scope_fingerprint ?? null;
+  if (storedFingerprint && embeddedFingerprint && storedFingerprint !== embeddedFingerprint) {
+    return false;
+  }
+  const entryFingerprint = storedFingerprint ?? embeddedFingerprint;
   return entryFingerprint === acceptanceScopeFingerprint(scope);
 }
 
@@ -341,6 +345,10 @@ export function buildEvidenceAdjudicationGate({
   const acceptedHumanClosures = new Set(
     (decisions ?? [])
       .filter((decision) => decision?.status === 'accepted' && decision?.reason && decision?.artifact)
+      .filter((decision) => (
+        currentScope.source === 'story'
+        || (Boolean(headSha) && decision?.git_context?.head_sha === headSha)
+      ))
       .map((decision) => String(decision.source ?? ''))
       .filter((source) => source.startsWith('gate:evidence_adjudication:'))
       .map((source) => source.slice('gate:evidence_adjudication:'.length))

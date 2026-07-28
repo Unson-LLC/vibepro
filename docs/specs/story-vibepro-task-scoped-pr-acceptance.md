@@ -28,7 +28,9 @@ scope. Evidence adjudication requests and recorded verdicts expose the
 normalized scope plus a deterministic scope fingerprint. A verdict is reusable
 only when its HEAD and scope fingerprint both match the current PR preparation.
 Task-scoped human closures use the scope fingerprint in their decision source;
-an unscoped or differently scoped closure does not satisfy the Task gate.
+an unscoped, differently scoped, or different-HEAD closure does not satisfy the
+Task gate. A stored fingerprint that contradicts its embedded normalized scope
+is invalid rather than authoritative.
 
 ### TSPA-CONTRACT-003 Story-wide consumers
 
@@ -75,6 +77,18 @@ Given Task A and Task B are prepared from the same commit and both number their
 first criterion `ac:1`, when Task A has a demonstrated adjudication verdict and
 PR preparation switches to Task B, then Task B remains `needs_evidence` until
 an independent verdict is recorded for Task B's acceptance scope.
+
+### TSPA-STORY-006 Contradictory adjudication artifact
+
+Given a stored verdict embeds Task A's normalized scope but claims Task B's
+fingerprint, when Task B's gate and PR summary are evaluated, then the verdict
+is stale and cannot contribute to readiness.
+
+### TSPA-STORY-007 Old-HEAD human closure
+
+Given a Task-scoped human closure was accepted on an older HEAD, when the same
+Task is evaluated on a new HEAD, then the closure cannot satisfy the current
+Task gate even if its scope fingerprint matches.
 
 ## Scenarios
 

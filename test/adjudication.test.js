@@ -12,7 +12,8 @@ import {
   buildEvidenceAdjudicationGate,
   prepareAdjudication,
   readAdjudicationIfExists,
-  recordAdjudication
+  recordAdjudication,
+  summarizeAdjudicationForPr
 } from '../src/adjudication.js';
 import { preparePullRequest } from '../src/pr-manager.js';
 
@@ -291,10 +292,75 @@ test('ADJ-S-011 task-scoped verdicts cannot be reused by a different task on the
       source: `gate:evidence_adjudication:${taskAFingerprint}:ac:1`,
       status: 'accepted',
       reason: 'Task A scope was observed.',
-      artifact: 'evidence/task-a.png'
+      artifact: 'evidence/task-a.png',
+      git_context: { head_sha: 'head-1' }
     }]
   });
   assert.equal(scopedClosure.status, 'passed');
+
+  const staleScopedClosure = buildEvidenceAdjudicationGate({
+    storyId: STORY_ID,
+    acceptanceCriteria: [{ id: 'ac:1', text: 'Task A outcome' }],
+    acceptanceScope: taskA,
+    adjudication: humanAdjudication,
+    headSha: 'head-1',
+    decisions: [{
+      source: `gate:evidence_adjudication:${taskAFingerprint}:ac:1`,
+      status: 'accepted',
+      reason: 'Task A was observed on an older implementation.',
+      artifact: 'evidence/task-a-old-head.png',
+      git_context: { head_sha: 'old-head' }
+    }]
+  });
+  assert.equal(staleScopedClosure.status, 'needs_evidence');
+});
+
+test('ADJ-S-014 contradictory stored scope and fingerprint fail closed for the gate and PR summary', () => {
+  const taskA = {
+    source: 'task',
+    story_id: STORY_ID,
+    task_id: 'TASK-A',
+    acceptance_criteria: ['Task A outcome']
+  };
+  const taskB = {
+    source: 'task',
+    story_id: STORY_ID,
+    task_id: 'TASK-B',
+    acceptance_criteria: ['Task B outcome']
+  };
+  const taskBFingerprint = createHash('sha256')
+    .update(JSON.stringify(taskB))
+    .digest('hex');
+  const adjudication = {
+    verdicts: [{
+      clause_id: 'ac:1',
+      verdict: 'demonstrated',
+      reason: 'The embedded scope and claimed fingerprint contradict each other.',
+      head_commit: 'head-1',
+      acceptance_scope: taskA,
+      acceptance_scope_fingerprint: taskBFingerprint
+    }]
+  };
+
+  const gate = buildEvidenceAdjudicationGate({
+    storyId: STORY_ID,
+    acceptanceCriteria: [{ id: 'ac:1', text: 'Task B outcome' }],
+    acceptanceScope: taskB,
+    adjudication,
+    headSha: 'head-1'
+  });
+  assert.equal(gate.status, 'needs_evidence');
+  assert.deepEqual(gate.missing_clauses, ['ac:1']);
+
+  const summary = summarizeAdjudicationForPr({
+    storyId: STORY_ID,
+    acceptanceCriteria: [{ id: 'ac:1', text: 'Task B outcome' }],
+    acceptanceScope: taskB,
+    adjudication,
+    headSha: 'head-1'
+  });
+  assert.equal(summary.fresh_verdict_count, 0);
+  assert.equal(summary.demonstrated_count, 0);
 });
 
 test('ADJ-S-012 prepare and record bind verdicts to the active task scope from pr-prepare.json', async () => {
