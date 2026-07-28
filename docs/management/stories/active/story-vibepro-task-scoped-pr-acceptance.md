@@ -53,7 +53,9 @@ artifact routingでfeature packet内をcanonicalにしたrepositoryでは
 - TSPA-AC-003: task指定時は選択Taskの受入基準がE2E coverage、
   Gate DAGのacceptance node/count、traceability、evidence adjudication、
   senior-gap judgmentのacceptance countを駆動し、後続Taskの受入基準は
-  現在Taskのblocking outcomeにならない。
+  現在Taskのblocking outcomeにならない。evidence adjudicationの依頼・裁定・
+  human closureはTask IDとacceptance scopeへ束縛され、同一HEADの別Taskへ
+  再利用されない。
 - TSPA-AC-004: Story source、Architecture、Spec、リスク分類、
   requirement consistencyはtask指定時もStory全体を参照する。
 - TSPA-AC-005: `--task`なしのPR prepare/createは従来どおり

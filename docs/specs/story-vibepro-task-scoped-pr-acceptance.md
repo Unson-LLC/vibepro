@@ -24,7 +24,11 @@ status: accepted
 
 Story E2E coverage, Gate DAG acceptance nodes/counts, clause traceability,
 evidence adjudication, and senior gap acceptance counts consume the acceptance
-scope.
+scope. Evidence adjudication requests and recorded verdicts expose the
+normalized scope plus a deterministic scope fingerprint. A verdict is reusable
+only when its HEAD and scope fingerprint both match the current PR preparation.
+Task-scoped human closures use the scope fingerprint in their decision source;
+an unscoped or differently scoped closure does not satisfy the Task gate.
 
 ### TSPA-CONTRACT-003 Story-wide consumers
 
@@ -53,6 +57,7 @@ flowchart LR
   Input[Configured routed Task artifact] --> Validate{Canonical Task validation}
   Validate -->|valid Story ID, Task ID, and criteria| Scope[Task acceptance_scope]
   Scope --> Outcome[Outcome gates and PR evidence]
+  Scope --> Bind[Bind adjudication to HEAD and scope fingerprint]
   Validate -->|missing, malformed, mismatched, or empty| Reject[Fail closed before Gate evaluation]
   Story[Complete Story source] --> Design[Story-wide design and risk gates]
   Reject -. no silent fallback .-> Story
@@ -63,6 +68,13 @@ rewrite Story design. Missing, malformed, mismatched, or empty Task data is
 rejected before Gate evaluation. Only validated criteria enter Task-scoped
 outcome evidence; the complete Story remains authoritative for design and risk
 checks.
+
+### TSPA-STORY-005 Same HEAD, different Task
+
+Given Task A and Task B are prepared from the same commit and both number their
+first criterion `ac:1`, when Task A has a demonstrated adjudication verdict and
+PR preparation switches to Task B, then Task B remains `needs_evidence` until
+an independent verdict is recorded for Task B's acceptance scope.
 
 ## Scenarios
 

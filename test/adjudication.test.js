@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -209,6 +210,222 @@ test('ADJ-S-007 gate passes when every clause has a fresh demonstrated verdict, 
   const empty = buildEvidenceAdjudicationGate({ storyId: STORY_ID, acceptanceCriteria: [] });
   assert.equal(empty.status, 'not_applicable');
   assert.match(empty.reason, /not a pass/);
+});
+
+test('ADJ-S-011 task-scoped verdicts cannot be reused by a different task on the same HEAD', () => {
+  const taskA = {
+    source: 'task',
+    story_id: STORY_ID,
+    task_id: 'TASK-A',
+    acceptance_criteria: ['Task A outcome']
+  };
+  const taskB = {
+    source: 'task',
+    story_id: STORY_ID,
+    task_id: 'TASK-B',
+    acceptance_criteria: ['Task B outcome']
+  };
+  const adjudication = {
+    verdicts: [{
+      clause_id: 'ac:1',
+      verdict: 'demonstrated',
+      reason: 'Task A evidence demonstrates Task A only.',
+      head_commit: 'head-1',
+      acceptance_scope: taskA
+    }]
+  };
+
+  const taskAGate = buildEvidenceAdjudicationGate({
+    storyId: STORY_ID,
+    acceptanceCriteria: [{ id: 'ac:1', text: 'Task A outcome' }],
+    acceptanceScope: taskA,
+    adjudication,
+    headSha: 'head-1'
+  });
+  assert.equal(taskAGate.status, 'passed');
+
+  const taskBGate = buildEvidenceAdjudicationGate({
+    storyId: STORY_ID,
+    acceptanceCriteria: [{ id: 'ac:1', text: 'Task B outcome' }],
+    acceptanceScope: taskB,
+    adjudication,
+    headSha: 'head-1'
+  });
+  assert.equal(taskBGate.status, 'needs_evidence');
+  assert.deepEqual(taskBGate.missing_clauses, ['ac:1']);
+
+  const taskAFingerprint = createHash('sha256')
+    .update(JSON.stringify(taskA))
+    .digest('hex');
+  const humanAdjudication = {
+    verdicts: [{
+      clause_id: 'ac:1',
+      verdict: 'not_verifiable_by_automation',
+      reason: 'Task A requires a human observation.',
+      head_commit: 'head-1',
+      acceptance_scope: taskA
+    }]
+  };
+  const unscopedClosure = buildEvidenceAdjudicationGate({
+    storyId: STORY_ID,
+    acceptanceCriteria: [{ id: 'ac:1', text: 'Task A outcome' }],
+    acceptanceScope: taskA,
+    adjudication: humanAdjudication,
+    headSha: 'head-1',
+    decisions: [{
+      source: 'gate:evidence_adjudication:ac:1',
+      status: 'accepted',
+      reason: 'Unscoped observation.',
+      artifact: 'evidence/unscoped.png'
+    }]
+  });
+  assert.equal(unscopedClosure.status, 'needs_evidence');
+
+  const scopedClosure = buildEvidenceAdjudicationGate({
+    storyId: STORY_ID,
+    acceptanceCriteria: [{ id: 'ac:1', text: 'Task A outcome' }],
+    acceptanceScope: taskA,
+    adjudication: humanAdjudication,
+    headSha: 'head-1',
+    decisions: [{
+      source: `gate:evidence_adjudication:${taskAFingerprint}:ac:1`,
+      status: 'accepted',
+      reason: 'Task A scope was observed.',
+      artifact: 'evidence/task-a.png'
+    }]
+  });
+  assert.equal(scopedClosure.status, 'passed');
+});
+
+test('ADJ-S-012 prepare and record bind verdicts to the active task scope from pr-prepare.json', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: baseline']);
+  const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
+  await mkdir(prDir, { recursive: true });
+  const writePrepare = async (taskId, criterion) => {
+    await writeFile(path.join(prDir, 'pr-prepare.json'), `${JSON.stringify({
+      pr_context: {
+        acceptance_scope: {
+          source: 'task',
+          story_id: STORY_ID,
+          task_id: taskId,
+          acceptance_criteria: [criterion]
+        }
+      }
+    }, null, 2)}\n`);
+  };
+
+  await writePrepare('TASK-A', 'Task A outcome');
+  const taskARequest = await prepareAdjudication(repo, { storyId: STORY_ID });
+  assert.equal(taskARequest.acceptance_scope.task_id, 'TASK-A');
+  assert.deepEqual(taskARequest.clauses, [{ id: 'ac:1', text: 'Task A outcome' }]);
+  await recordAdjudication(repo, {
+    storyId: STORY_ID,
+    clauseId: 'ac:1',
+    verdict: 'demonstrated',
+    reason: 'Task A evidence demonstrates Task A only.',
+    agentSystem: 'codex',
+    agentId: 'adjudicator-task-a'
+  });
+  const stored = await readAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(stored.verdicts[0].acceptance_scope.task_id, 'TASK-A');
+
+  await writePrepare('TASK-B', 'Task B outcome');
+  const taskBRequest = await prepareAdjudication(repo, { storyId: STORY_ID });
+  assert.equal(taskBRequest.acceptance_scope.task_id, 'TASK-B');
+  assert.notEqual(
+    taskBRequest.acceptance_scope_fingerprint,
+    taskARequest.acceptance_scope_fingerprint
+  );
+  const taskBGate = buildEvidenceAdjudicationGate({
+    storyId: STORY_ID,
+    acceptanceCriteria: taskBRequest.clauses,
+    acceptanceScope: taskBRequest.acceptance_scope,
+    adjudication: stored,
+    headSha: stored.verdicts[0].head_commit
+  });
+  assert.equal(taskBGate.status, 'needs_evidence');
+});
+
+test('ADJ-S-013 real PR prepare keeps same-HEAD adjudication isolated between selected tasks', async () => {
+  const repo = await makeRepo();
+  const tasksDir = path.join(repo, '.vibepro', 'stories', STORY_ID, 'tasks');
+  await mkdir(tasksDir, { recursive: true });
+  const task = (id, criterion) => ({
+    id,
+    source_type: 'story_plan_candidate',
+    source_id: id,
+    title: id,
+    priority: 'high',
+    status: 'completed',
+    execution_policy: 'proposal_only',
+    mutates_repository: false,
+    target_count: 1,
+    target_files: ['README.md'],
+    target_routes: [],
+    target_groups: [],
+    read_first_files: [{ file: 'README.md', reason: 'fixture' }],
+    recommended_strategy: { id: 'fixture', reason: 'scope regression' },
+    implementation_steps: [],
+    acceptance_criteria: [criterion],
+    graph_context: null,
+    pre_fix_briefing: null
+  });
+  await writeFile(path.join(tasksDir, 'tasks.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    generated_at: '2026-07-28T00:00:00.000Z',
+    story: { story_id: STORY_ID, title: 'Adjudication fixture story' },
+    source_run: { run_id: 'story-plan', gate_status: 'pass' },
+    tasks: [task('TASK-A', 'Task A outcome'), task('TASK-B', 'Task B outcome')]
+  }, null, 2)}\n`);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: baseline']);
+  await git(repo, ['switch', '-c', 'feature/task-scope-adjudication']);
+  await writeFile(path.join(repo, 'README.md'), '# Fixture\n\nsame HEAD task scope change\n');
+  await git(repo, ['add', 'README.md']);
+  await git(repo, ['commit', '-m', 'feat: change']);
+
+  const taskAPrepare = await preparePullRequest(repo, {
+    storyId: STORY_ID,
+    baseRef: 'main',
+    branchName: 'feature/task-scope-adjudication',
+    taskId: 'TASK-A',
+    evidenceDepth: 'summary'
+  });
+  assert.equal(taskAPrepare.preparation.pr_context.acceptance_scope.task_id, 'TASK-A');
+  await recordAdjudication(repo, {
+    storyId: STORY_ID,
+    clauseId: 'ac:1',
+    verdict: 'demonstrated',
+    reason: 'Task A evidence demonstrates Task A only.',
+    agentSystem: 'codex',
+    agentId: 'adjudicator-task-a'
+  });
+  const taskAWithVerdict = await preparePullRequest(repo, {
+    storyId: STORY_ID,
+    baseRef: 'main',
+    branchName: 'feature/task-scope-adjudication',
+    taskId: 'TASK-A',
+    evidenceDepth: 'summary'
+  });
+  const taskAGate = taskAWithVerdict.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:evidence_adjudication');
+  assert.equal(taskAGate.status, 'passed', JSON.stringify(taskAGate));
+
+  const taskBPrepare = await preparePullRequest(repo, {
+    storyId: STORY_ID,
+    baseRef: 'main',
+    branchName: 'feature/task-scope-adjudication',
+    taskId: 'TASK-B',
+    evidenceDepth: 'summary'
+  });
+  assert.equal(taskBPrepare.preparation.pr_context.acceptance_scope.task_id, 'TASK-B');
+  assert.equal(
+    taskBPrepare.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:evidence_adjudication').status,
+    'needs_evidence'
+  );
 });
 
 test('ADJ-S-010 verdicts without a head_commit are stale (fail closed), and record refuses to run outside a git repository', async () => {

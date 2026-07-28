@@ -30,7 +30,10 @@ PR context exposes an explicit `acceptance_scope`:
 
 Only outcome/readiness consumers use `acceptance_scope`: Story E2E coverage,
 Gate DAG acceptance nodes and counts, clause traceability, evidence
-adjudication, and senior gap ideal-state counts.
+adjudication, and senior gap ideal-state counts. Evidence adjudication records
+carry the normalized acceptance scope and its fingerprint. A verdict or human
+closure is fresh only when both HEAD and acceptance scope match, so switching
+Tasks at the same HEAD invalidates the previous Task's evidence.
 
 Story source integrity, Architecture, Accepted Spec, requirement consistency,
 risk classification, and responsibility authority continue to use the complete
@@ -46,6 +49,8 @@ to use its established sibling machine state.
   intentionally incomplete.
 - Machine-readable PR evidence states exactly which acceptance authority was
   evaluated.
+- Evidence verdicts cannot make a different Task green merely because its
+  clause IDs and HEAD happen to match.
 - Routed feature packets no longer require a compatibility copy in the legacy
   Story task directory.
 - Invalid Task acceptance state blocks early with a specific error.

@@ -85,6 +85,57 @@ async function readVerificationEvidenceEntries(repoRoot, storyId) {
   }
 }
 
+function normalizeAcceptanceScope(scope, storyId, acceptanceCriteria = []) {
+  const source = scope?.source === 'task' ? 'task' : 'story';
+  return {
+    source,
+    story_id: String(scope?.story_id ?? storyId ?? ''),
+    task_id: source === 'task' ? String(scope?.task_id ?? '') : null,
+    acceptance_criteria: (scope?.acceptance_criteria ?? acceptanceCriteria.map((clause) => clause.text))
+      .map((criterion) => String(criterion).trim())
+      .filter(Boolean)
+  };
+}
+
+function acceptanceScopeFingerprint(scope) {
+  return createHash('sha256').update(JSON.stringify(scope)).digest('hex');
+}
+
+function entryMatchesAcceptanceScope(entry, scope) {
+  if (scope.source === 'story' && !entry?.acceptance_scope && !entry?.acceptance_scope_fingerprint) {
+    return true;
+  }
+  const entryScope = entry?.acceptance_scope
+    ? normalizeAcceptanceScope(entry.acceptance_scope, scope.story_id)
+    : null;
+  const entryFingerprint = entry?.acceptance_scope_fingerprint
+    ?? (entryScope ? acceptanceScopeFingerprint(entryScope) : null);
+  return entryFingerprint === acceptanceScopeFingerprint(scope);
+}
+
+async function resolveCurrentAcceptanceScope(root, storyId, storyClauses) {
+  const fallback = normalizeAcceptanceScope(null, storyId, storyClauses);
+  const preparePath = await resolvePrArtifactFile(root, storyId, 'pr-prepare.json');
+  try {
+    const prepare = JSON.parse(await readFile(preparePath, 'utf8'));
+    const scope = prepare?.pr_context?.acceptance_scope;
+    if (!scope) return fallback;
+    const normalized = normalizeAcceptanceScope(scope, storyId);
+    if (normalized.story_id !== storyId) {
+      throw new Error(
+        `adjudication acceptance scope story mismatch: expected ${storyId}, received ${normalized.story_id}`
+      );
+    }
+    if (normalized.source === 'task' && (!normalized.task_id || normalized.acceptance_criteria.length === 0)) {
+      throw new Error('adjudication task acceptance scope requires task_id and non-empty acceptance_criteria');
+    }
+    return normalized;
+  } catch (error) {
+    if (error.code === 'ENOENT') return fallback;
+    throw error;
+  }
+}
+
 function formatEvidenceEntry(entry, index) {
   const lines = [
     `### 証拠 E-${index + 1}: kind=${entry.kind ?? 'unknown'} status=${entry.status ?? 'unknown'}`,
@@ -124,11 +175,19 @@ export async function prepareAdjudication(repoRoot, { storyId } = {}) {
       + 'This is an explicit error, not a pass.'
     );
   }
+  const acceptanceScope = await resolveCurrentAcceptanceScope(root, storyId, clauses);
+  const scopedClauses = acceptanceScope.source === 'task'
+    ? acceptanceScope.acceptance_criteria.map((text, index) => ({ id: `ac:${index + 1}`, text }))
+    : clauses;
+  const scopeFingerprint = acceptanceScopeFingerprint(acceptanceScope);
   const evidenceEntries = await readVerificationEvidenceEntries(root, storyId);
   const lines = [
     `# Evidence Adjudication Request: ${storyId}`,
     '',
     `- story: ${source.path}`,
+    `- acceptance_scope: ${acceptanceScope.source}`,
+    `- task_id: ${acceptanceScope.task_id ?? '-'}`,
+    `- acceptance_scope_fingerprint: ${scopeFingerprint}`,
     `- generated_at: ${new Date().toISOString()}`,
     '',
     '## 裁定者への指示',
@@ -156,7 +215,7 @@ export async function prepareAdjudication(repoRoot, { storyId } = {}) {
     '## 受け入れ基準 clauses',
     ''
   ];
-  for (const clause of clauses) {
+  for (const clause of scopedClauses) {
     lines.push(`### ${clause.id}`, '', `> ${clause.text}`, '');
   }
   lines.push('## 記録済み検証証拠', '');
@@ -173,8 +232,10 @@ export async function prepareAdjudication(repoRoot, { storyId } = {}) {
   return {
     story_id: storyId,
     story_path: source.path,
-    clause_count: clauses.length,
-    clauses: clauses.map((clause) => ({ id: clause.id, text: clause.text })),
+    clause_count: scopedClauses.length,
+    clauses: scopedClauses.map((clause) => ({ id: clause.id, text: clause.text })),
+    acceptance_scope: acceptanceScope,
+    acceptance_scope_fingerprint: scopeFingerprint,
     evidence_count: evidenceEntries.length,
     artifact: toWorkspaceRelative(root, requestPath)
   };
@@ -196,6 +257,10 @@ export async function recordAdjudication(repoRoot, options = {}) {
     throw new Error('adjudicate record could not resolve the current HEAD commit (git rev-parse HEAD failed); verdicts must be head-bound, so run this command inside the target git repository');
   }
   const existing = await readAdjudicationIfExists(root, storyId);
+  const source = await findStorySource(root, { story_id: storyId });
+  const storyClauses = source?.content ? extractAcceptanceCriteria(source.content) : [];
+  const acceptanceScope = await resolveCurrentAcceptanceScope(root, storyId, storyClauses);
+  const scopeFingerprint = acceptanceScopeFingerprint(acceptanceScope);
   const entry = {
     clause_id: clauseId,
     verdict,
@@ -206,11 +271,15 @@ export async function recordAdjudication(repoRoot, options = {}) {
       session_ref: options.sessionRef ?? null
     },
     head_commit: headCommit,
+    acceptance_scope: acceptanceScope,
+    acceptance_scope_fingerprint: scopeFingerprint,
     recorded_at: new Date().toISOString()
   };
   const verdicts = [
     entry,
-    ...(existing?.verdicts ?? []).filter((item) => item.clause_id !== clauseId)
+    ...(existing?.verdicts ?? []).filter((item) => (
+      item.clause_id !== clauseId || !entryMatchesAcceptanceScope(item, acceptanceScope)
+    ))
   ];
   const next = {
     schema_version: ADJUDICATION_SCHEMA_VERSION,
@@ -236,6 +305,7 @@ export function isAdjudicationEnabled(config) {
 export function buildEvidenceAdjudicationGate({
   storyId,
   acceptanceCriteria = [],
+  acceptanceScope = null,
   adjudication = null,
   headSha = null,
   decisions = []
@@ -256,6 +326,8 @@ export function buildEvidenceAdjudicationGate({
     };
   }
   const verdicts = Array.isArray(adjudication?.verdicts) ? adjudication.verdicts : [];
+  const currentScope = normalizeAcceptanceScope(acceptanceScope, storyId, acceptanceCriteria);
+  const currentScopeFingerprint = acceptanceScopeFingerprint(currentScope);
   const freshVerdictByClause = new Map();
   for (const entry of verdicts) {
     if (!entry?.clause_id) continue;
@@ -263,6 +335,7 @@ export function buildEvidenceAdjudicationGate({
     // recorded head_commit is stale, and an unknown current HEAD means freshness
     // is unverifiable, so no verdict counts as fresh.
     if (!headSha || entry.head_commit !== headSha) continue;
+    if (!entryMatchesAcceptanceScope(entry, currentScope)) continue;
     freshVerdictByClause.set(entry.clause_id, entry);
   }
   const acceptedHumanClosures = new Set(
@@ -271,6 +344,12 @@ export function buildEvidenceAdjudicationGate({
       .map((decision) => String(decision.source ?? ''))
       .filter((source) => source.startsWith('gate:evidence_adjudication:'))
       .map((source) => source.slice('gate:evidence_adjudication:'.length))
+      .map((source) => {
+        if (currentScope.source === 'story') return source;
+        const prefix = `${currentScopeFingerprint}:`;
+        return source.startsWith(prefix) ? source.slice(prefix.length) : null;
+      })
+      .filter(Boolean)
   );
   const missing = [];
   const notDemonstrated = [];
@@ -306,9 +385,12 @@ export function buildEvidenceAdjudicationGate({
         + 'Run `vibepro adjudicate prepare`, dispatch an independent fresh-context subagent, and record verdicts with `vibepro adjudicate record`.');
     }
     if (needsHuman.length > 0) {
+      const decisionSource = currentScope.source === 'task'
+        ? `gate:evidence_adjudication:${currentScopeFingerprint}:<clause-id>`
+        : 'gate:evidence_adjudication:<clause-id>';
       reasons.push(`${needsHuman.length} clause(s) were judged not verifiable by automation and require human verification: `
         + needsHuman.map((item) => item.clause_id).join(', ')
-        + '. Close each with a decision record: `vibepro decision record . --id <story-id> --type needs_review --source gate:evidence_adjudication:<clause-id> --status accepted --reason <human-observation> --artifact <evidence-path>`.');
+        + `. Close each with a decision record: \`vibepro decision record . --id <story-id> --type needs_review --source ${decisionSource} --status accepted --reason <human-observation> --artifact <evidence-path>\`.`);
     }
     return {
       ...base,
@@ -325,9 +407,20 @@ export function buildEvidenceAdjudicationGate({
   };
 }
 
-export function summarizeAdjudicationForPr({ acceptanceCriteria = [], adjudication = null, headSha = null } = {}) {
+export function summarizeAdjudicationForPr({
+  storyId = null,
+  acceptanceCriteria = [],
+  acceptanceScope = null,
+  adjudication = null,
+  headSha = null
+} = {}) {
   const verdicts = Array.isArray(adjudication?.verdicts) ? adjudication.verdicts : [];
-  const fresh = verdicts.filter((entry) => Boolean(headSha) && entry.head_commit === headSha);
+  const currentScope = normalizeAcceptanceScope(acceptanceScope, storyId, acceptanceCriteria);
+  const fresh = verdicts.filter((entry) => (
+    Boolean(headSha)
+    && entry.head_commit === headSha
+    && entryMatchesAcceptanceScope(entry, currentScope)
+  ));
   return {
     clause_count: acceptanceCriteria.length,
     fresh_verdict_count: fresh.length,

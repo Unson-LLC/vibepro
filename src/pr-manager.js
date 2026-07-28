@@ -424,12 +424,15 @@ export async function preparePullRequest(repoRoot, options = {}) {
     const adjudicationGate = buildEvidenceAdjudicationGate({
       storyId: story.story_id,
       acceptanceCriteria: adjudicationAcceptanceCriteria,
+      acceptanceScope: prContext.acceptance_scope,
       adjudication: adjudicationRecords,
       headSha: reviewGit.head_sha,
       decisions: prContext.decision_records?.decisions ?? []
     });
     prContext.evidence_adjudication = summarizeAdjudicationForPr({
+      storyId: story.story_id,
       acceptanceCriteria: adjudicationAcceptanceCriteria,
+      acceptanceScope: prContext.acceptance_scope,
       adjudication: adjudicationRecords,
       headSha: reviewGit.head_sha
     });
