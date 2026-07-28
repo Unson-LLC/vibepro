@@ -8318,6 +8318,25 @@ architecture_ref: docs/architecture/ADR-story-pr-prepare.md
       acceptance_criteria: ['Task/HandoffがPR本文に入る'],
       graph_context: null,
       pre_fix_briefing: null
+    }, {
+      id: 'TASK-002',
+      source_type: 'story_plan_candidate',
+      source_id: 'TASK-002',
+      title: '将来のlive apply Task',
+      priority: 'medium',
+      status: 'todo',
+      execution_policy: 'proposal_only',
+      mutates_repository: false,
+      target_count: 1,
+      target_files: ['src/feature/future-apply.js'],
+      target_routes: [],
+      target_groups: [],
+      read_first_files: [],
+      recommended_strategy: { id: 'future-task', reason: '後続Taskは現在PRの受け入れ範囲外' },
+      implementation_steps: [],
+      acceptance_criteria: ['将来のlive applyが完了する'],
+      graph_context: null,
+      pre_fix_briefing: null
     }]
   }));
   await writeFile(path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'TASK-001', 'briefing.json'), JSON.stringify({ mode: 'pre_fix_briefing' }));
@@ -8504,7 +8523,30 @@ Weighted semantic/layout residual: **34%**
   assert.equal(prepare.pr_context.gate_dag.overall_status, 'needs_verification');
   assert.equal(prepare.pr_context.refactoring_delta.status, 'available');
   assert.equal(prepare.pr_context.refactoring_delta.top_remaining.length, 1);
-  assert.equal(prepare.pr_context.gate_dag.summary.acceptance_criteria_count, 3);
+  assert.deepEqual(prepare.pr_context.acceptance_scope, {
+    source: 'task',
+    story_id: 'story-pr-prepare',
+    task_id: 'TASK-001',
+    acceptance_criteria: ['Task/HandoffがPR本文に入る']
+  });
+  assert.equal(prepare.pr_context.story_source.acceptance_criteria.length, 3);
+  assert.equal(prepare.pr_context.gate_dag.summary.acceptance_criteria_count, 1);
+  assert.deepEqual(prepare.pr_context.gate_dag.summary.scenario_clauses, []);
+  assert.equal(prepare.pr_context.acceptance_e2e_coverage.scenario_clause_count, 0);
+  assert.equal(prepare.pr_context.gate_dag.summary.traceability_clause_coverage.acceptance_criteria_count, 1);
+  const taskScopedTraceability = await readJson(
+    path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'traceability.json')
+  );
+  assert.equal(
+    taskScopedTraceability.acceptance_criteria
+      .some((criterion) => /将来のlive apply/.test(criterion.source_text)),
+    false
+  );
+  assert.deepEqual(
+    prepare.pr_context.gate_dag.summary.traceability_clause_coverage.scenario_lineage.story_scenario_ids,
+    []
+  );
+  assert.equal(prepare.pr_context.senior_gap_judgment.ideal_state.acceptance_criteria_count, 1);
   assert.equal(prepare.pr_context.gate_dag.summary.requirement_status, 'not_applicable');
   assert.equal(prepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:requirement'), true);
   assert.equal(prepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:e2e'), true);
@@ -8571,6 +8613,79 @@ Weighted semantic/layout residual: **34%**
   assert.equal(prepare.next_commands.some((command) => command.includes('vibepro pr create')), false);
   assert.equal(prepare.next_commands.some((command) => command.includes('vibepro review status')), true);
   assert.equal(prepare.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
+
+  const taskStatePath = path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'tasks.json');
+  const validTaskState = await readJson(taskStatePath);
+  await writeJson(taskStatePath, {
+    ...validTaskState,
+    tasks: validTaskState.tasks.map((task) => ({ ...task, acceptance_criteria: [] }))
+  });
+  let emptyTaskCriteriaStderr = '';
+  const emptyTaskCriteria = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stderr: { write: (text) => { emptyTaskCriteriaStderr += text; } }
+  });
+  assert.equal(emptyTaskCriteria.exitCode, 1);
+  assert.match(emptyTaskCriteriaStderr, /Task acceptance criteria are required for PR prepare: TASK-001/);
+  await writeJson(taskStatePath, validTaskState);
+
+  let missingTaskStderr = '';
+  const missingTask = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-MISSING'
+  ], {
+    stderr: { write: (text) => { missingTaskStderr += text; } }
+  });
+  assert.equal(missingTask.exitCode, 1);
+  assert.match(missingTaskStderr, /Task not found for PR prepare: TASK-MISSING/);
+
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const originalConfig = await readJson(configPath);
+  const routedTaskStatePath = path.join(repo, '.vibepro', 'routed', 'story-pr-prepare-tasks.json');
+  await mkdir(path.dirname(routedTaskStatePath), { recursive: true });
+  await writeJson(routedTaskStatePath, validTaskState);
+  await writeJson(taskStatePath, { ...validTaskState, tasks: [] });
+  await writeJson(configPath, {
+    ...originalConfig,
+    artifact_routing: {
+      ...(originalConfig.artifact_routing ?? {}),
+      artifacts: {
+        ...(originalConfig.artifact_routing?.artifacts ?? {}),
+        task_plan: { canonical: '.vibepro/routed/{story_id}-tasks.json' }
+      }
+    }
+  });
+  const routedTaskPrepare = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ]);
+  assert.equal(routedTaskPrepare.exitCode, 0);
+  assert.equal(routedTaskPrepare.result.preparation.task_context.task.id, 'TASK-001');
+  await writeJson(configPath, originalConfig);
+  await writeJson(taskStatePath, validTaskState);
+
+  const storyScopedPrepare = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare'
+  ]);
+  assert.equal(storyScopedPrepare.exitCode, 0);
+  const storyScopedArtifact = await readJson(
+    path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json')
+  );
+  assert.deepEqual(storyScopedArtifact.pr_context.acceptance_scope, {
+    source: 'story',
+    story_id: 'story-pr-prepare',
+    task_id: null,
+    acceptance_criteria: [
+      'PR本文に背景が入る',
+      'PR本文にADR判断が入る',
+      'PR本文に検証候補が入る'
+    ]
+  });
+  assert.equal(storyScopedArtifact.pr_context.gate_dag.summary.acceptance_criteria_count, 3);
+
+  const restoredTaskPrepare = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ]);
+  assert.equal(restoredTaskPrepare.exitCode, 0);
 
   // gate guard: flag無しなら needs_verification で拒否される
   let stderrOutput = '';
@@ -8639,14 +8754,8 @@ Weighted semantic/layout residual: **1%**
 import { expect, test } from '@playwright/test';
 test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async () => {
   // story-pr-prepare ac:1
-  // PR本文に背景が入る
-  // story-pr-prepare ac:2
-  // PR本文にADR判断が入る
-  // story-pr-prepare ac:3
-  // PR本文に検証候補が入る
-  expect('PR本文に背景が入る').toContain('背景');
-  expect('PR本文にADR判断が入る').toContain('ADR');
-  expect('PR本文に検証候補が入る').toContain('検証');
+  // Task/HandoffがPR本文に入る
+  expect('Task/HandoffがPR本文に入る').toContain('Task/Handoff');
 });
 `);
   await git(repo, ['add', 'tests/e2e/story-pr-prepare-pr-artifacts.spec.ts']);
@@ -8749,9 +8858,7 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
   ]);
 
   for (const [clause, reason] of [
-    ['AC-1', 'PR本文artifactの生成テストが背景セクションの出力を直接観測している'],
-    ['AC-2', 'PR本文artifactの生成テストがADR判断セクションの出力を直接観測している'],
-    ['AC-3', 'PR本文artifactの生成テストが検証候補セクションの出力を直接観測している']
+    ['ac:1', 'PR本文artifactの生成テストがTask/Handoffセクションの出力を直接観測している']
   ]) {
     assert.equal((await runCli([
       'adjudicate', 'record', repo,
@@ -8971,7 +9078,7 @@ PR本文がファイル数だけではレビュー判断に足りない。
   ])).exitCode, 0);
   await recordRequiredAgentReviews(repo, 'story-pr-prepare');
   await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
-  for (const clause of ['AC-1', 'AC-2', 'AC-3']) {
+  for (const clause of ['ac:1']) {
     assert.equal((await runCli([
       'adjudicate', 'record', repo,
       '--id', 'story-pr-prepare',

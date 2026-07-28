@@ -404,6 +404,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const traceabilityMap = buildTraceabilityClauseMap({
     storyId: story.story_id,
     storyText: storyTextForTraceability,
+    acceptanceCriteria: prContext.acceptance_scope?.source === 'task'
+      ? prContext.acceptance_scope.acceptance_criteria
+      : null,
     changedFiles: changedFilesForTraceability,
     tests: testsForTraceability,
     evidence: traceabilityEvidenceForCoverage,
@@ -5956,6 +5959,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   if (!storyDocMatchesStory(primaryStory, story)) {
     primaryStory = buildUnresolvedStorySource(story);
   }
+  const acceptanceScope = buildAcceptanceScope(story, primaryStory, taskContext);
   const storySourceIntegrity = buildStorySourceIntegrity(story, primaryStory, storyDocs);
   const architectureDecision = resolveArchitectureDecision(primaryStory, fileGroups);
   const typecheckCommand = await detectTypecheckCommand(repoRoot);
@@ -5986,8 +5990,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     storySource: primaryStory,
     inferredSpec
   });
-  const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, primaryStory, {
-    inferredSpec,
+  const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, acceptanceScope, {
+    inferredSpec: acceptanceScope.source === 'task' ? null : inferredSpec,
     verificationEvidence: boundVerificationEvidence
   });
   const specDrift = await readDrift(repoRoot, story.story_id);
@@ -6114,6 +6118,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const uiuxResponsiveA11yMatrix = await readResponsiveA11yMatrixForPr(repoRoot, story.story_id);
   const context = {
     story_source: primaryStory,
+    acceptance_scope: acceptanceScope,
     story_source_integrity: storySourceIntegrity,
     architecture_decision: architectureDecision,
     architecture_sources: architectureSources,
@@ -6172,6 +6177,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     repoRoot,
     story,
     storySource: primaryStory,
+    acceptanceScope,
     storySourceIntegrity,
     architectureDecision,
     requirementConsistency,
@@ -11193,6 +11199,7 @@ function buildGateDag({
   repoRoot,
   story,
   storySource,
+  acceptanceScope = null,
   storySourceIntegrity = null,
   architectureDecision,
   requirementConsistency,
@@ -11230,8 +11237,8 @@ function buildGateDag({
   managedWorktreeGate = null,
   validationSequenceEvaluation = null
 }) {
-  const acceptanceCriteria = storySource.acceptance_criteria.length > 0
-    ? storySource.acceptance_criteria
+  const acceptanceCriteria = acceptanceScope?.acceptance_criteria?.length > 0
+    ? acceptanceScope.acceptance_criteria
     : ['Storyの受け入れ基準を明文化する'];
   const gates = buildVerificationGates({
     fileGroups,
@@ -11531,7 +11538,7 @@ function buildGateDag({
     id: `ac:${index + 1}`,
     type: 'acceptance_criterion',
     label: criterion,
-    status: storySource.acceptance_criteria.length > 0 ? 'present' : 'missing'
+    status: acceptanceScope?.acceptance_criteria?.length > 0 ? 'present' : 'missing'
   }));
 
   const edges = [
@@ -11745,7 +11752,9 @@ function buildGateDag({
       architecture_status: architectureGate.status,
       architecture_axis_quality_status: architectureAxisQuality.status,
       spec_status: specGate.status,
-      scenario_clauses: extractScenarioCoverageClauses(inferredSpec),
+      scenario_clauses: acceptanceScope?.source === 'task'
+        ? []
+        : extractScenarioCoverageClauses(inferredSpec),
       path_surface_matrix_status: pathSurfaceMatrixGate.status,
       journey_context_status: journeyContextGate?.status ?? null,
       design_ssot_reconciliation_status: designSsotGate.status,
@@ -15485,7 +15494,7 @@ async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
 }
 
 async function readTaskState(repoRoot, storyId) {
-  const taskPath = path.join(getWorkspaceDir(repoRoot), 'stories', storyId, 'tasks', 'tasks.json');
+  const taskPath = await resolvePrTaskStatePath(repoRoot, storyId);
   try {
     return JSON.parse(await readFile(taskPath, 'utf8'));
   } catch (error) {
@@ -15494,6 +15503,54 @@ async function readTaskState(repoRoot, storyId) {
     }
     throw error;
   }
+}
+
+export async function resolvePrTaskStatePath(repoRoot, storyId) {
+  const route = await resolveArtifactRoute(repoRoot, 'task_plan', { storyId });
+  return route.canonical.relative_path.endsWith('.json')
+    ? route.canonical.absolute_path
+    : path.join(getWorkspaceDir(repoRoot), 'stories', storyId, 'tasks', 'tasks.json');
+}
+
+function buildAcceptanceScope(story, storySource, taskContext) {
+  if (!taskContext) {
+    return {
+      source: 'story',
+      story_id: story.story_id,
+      task_id: null,
+      acceptance_criteria: normalizeAcceptanceCriteria(storySource?.acceptance_criteria)
+    };
+  }
+  if (taskContext.story_id !== story.story_id) {
+    throw new Error(
+      `Task acceptance scope story mismatch: expected ${story.story_id}, received ${taskContext.story_id}`
+    );
+  }
+  const acceptanceCriteria = normalizeAcceptanceCriteria(taskContext.task?.acceptance_criteria);
+  if (acceptanceCriteria.length === 0) {
+    throw new Error(
+      `Task acceptance criteria are required for PR prepare: ${taskContext.task?.id ?? 'unknown task'}`
+    );
+  }
+  return {
+    source: 'task',
+    story_id: story.story_id,
+    task_id: taskContext.task.id,
+    acceptance_criteria: acceptanceCriteria
+  };
+}
+
+function normalizeAcceptanceCriteria(criteria) {
+  if (!Array.isArray(criteria)) return [];
+  return criteria
+    .map((criterion) => {
+      if (typeof criterion === 'string') return criterion.trim();
+      if (criterion && typeof criterion === 'object') {
+        return String(criterion.text ?? criterion.statement ?? criterion.criterion ?? '').trim();
+      }
+      return '';
+    })
+    .filter(Boolean);
 }
 
 function resolveTaskArtifacts(repoRoot, storyId, taskId, groupId = null) {

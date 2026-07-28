@@ -1,6 +1,6 @@
 ---
 story_id: story-vibepro-task-scoped-pr-acceptance
-architecture_ref: docs/architecture/ADR-story-vibepro-task-scoped-pr-acceptance.md
+architecture_ref: docs/architecture/story-vibepro-task-scoped-pr-acceptance.md
 parent_design: vibepro-task-scoped-pr-acceptance
 status: accepted
 ---
@@ -16,7 +16,9 @@ status: accepted
 - `source`: `task` or `story`
 - `story_id`
 - `task_id`: selected Task ID or `null`
-- `acceptance_criteria`: non-empty normalized criterion strings
+- `acceptance_criteria`: normalized criterion strings. An explicit Task scope
+  requires at least one non-empty criterion; Story fallback preserves the
+  existing missing-criteria Gate behavior.
 
 ### TSPA-CONTRACT-002 Outcome consumers
 
