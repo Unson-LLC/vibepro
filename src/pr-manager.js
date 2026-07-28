@@ -15499,27 +15499,36 @@ function assertStrictTargetFiles(taskContext, changedFiles, options) {
 }
 
 async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
-  const taskState = await readTaskState(repoRoot, storyId);
+  const { state: taskState, relativePath: taskStatePath } = await readTaskState(repoRoot, storyId);
   const taskStateStoryId = typeof taskState?.story?.story_id === 'string'
     ? taskState.story.story_id.trim()
     : '';
   if (!taskStateStoryId) {
-    throw new Error(`Task state story_id is required for PR prepare: ${storyId}`);
+    throw taskPlanRepairError(
+      `Task state story_id is required for PR prepare: ${storyId}`,
+      taskStatePath
+    );
   }
   if (taskStateStoryId !== storyId) {
-    throw new Error(
-      `Task state story mismatch for PR prepare: expected ${storyId}, received ${taskStateStoryId}`
+    throw taskPlanRepairError(
+      `Task state story mismatch for PR prepare: expected ${storyId}, received ${taskStateStoryId}`,
+      taskStatePath
     );
   }
   const task = (taskState.tasks ?? []).find((item) => item.id === taskId);
-  if (!task) throw new Error(`Task not found for PR prepare: ${taskId}`);
+  if (!task) {
+    throw taskPlanRepairError(`Task not found for PR prepare: ${taskId}`, taskStatePath);
+  }
   const group = groupId ? (task.target_groups ?? []).find((item) => item.id === groupId) : null;
-  if (groupId && !group) throw new Error(`Target group not found for PR prepare: ${groupId}`);
+  if (groupId && !group) {
+    throw taskPlanRepairError(`Target group not found for PR prepare: ${groupId}`, taskStatePath);
+  }
   const artifacts = resolveTaskArtifacts(repoRoot, storyId, taskId, groupId);
   return {
     story_id: storyId,
     task,
     group,
+    task_state_path: taskStatePath,
     source_run: taskState.source_run ?? null,
     artifacts: await filterExistingArtifacts(repoRoot, artifacts)
   };
@@ -15527,17 +15536,30 @@ async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
 
 async function readTaskState(repoRoot, storyId) {
   const taskPath = await resolvePrTaskStatePath(repoRoot, storyId);
+  const relativePath = toWorkspaceRelative(repoRoot, taskPath);
   try {
-    return JSON.parse(await readFile(taskPath, 'utf8'));
+    return {
+      state: JSON.parse(await readFile(taskPath, 'utf8')),
+      relativePath
+    };
   } catch (error) {
     if (error.code === 'ENOENT') {
-      throw new Error(`Task state not found for PR prepare: ${toWorkspaceRelative(repoRoot, taskPath)}`);
+      throw taskPlanRepairError('Task state not found for PR prepare', relativePath);
     }
-    throw new Error(
-      `Invalid Task state JSON for PR prepare: ${toWorkspaceRelative(repoRoot, taskPath)}. `
-      + `Repair the configured canonical Task plan and rerun vibepro pr prepare. Cause: ${error.message}`
+    throw taskPlanRepairError(
+      'Invalid Task state JSON for PR prepare',
+      relativePath,
+      error.message
     );
   }
+}
+
+function taskPlanRepairError(detail, relativePath, cause = null) {
+  return new Error(
+    `${detail}: ${relativePath}. `
+    + `Repair the configured canonical Task plan and rerun vibepro pr prepare.`
+    + (cause ? ` Cause: ${cause}` : '')
+  );
 }
 
 export async function resolvePrTaskStatePath(repoRoot, storyId) {
@@ -15563,8 +15585,9 @@ function buildAcceptanceScope(story, storySource, taskContext) {
   }
   const acceptanceCriteria = normalizeAcceptanceCriteria(taskContext.task?.acceptance_criteria);
   if (acceptanceCriteria.length === 0) {
-    throw new Error(
-      `Task acceptance criteria are required for PR prepare: ${taskContext.task?.id ?? 'unknown task'}`
+    throw taskPlanRepairError(
+      `Task acceptance criteria are required for PR prepare: ${taskContext.task?.id ?? 'unknown task'}`,
+      taskContext.task_state_path
     );
   }
   return {

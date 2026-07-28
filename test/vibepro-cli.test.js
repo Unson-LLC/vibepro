@@ -8641,6 +8641,8 @@ Weighted semantic/layout residual: **34%**
   });
   assert.equal(emptyTaskCriteria.exitCode, 1);
   assert.match(emptyTaskCriteriaStderr, /Task acceptance criteria are required for PR prepare: TASK-001/);
+  assert.match(emptyTaskCriteriaStderr, /\.vibepro\/stories\/story-pr-prepare\/tasks\/tasks\.json/);
+  assert.match(emptyTaskCriteriaStderr, /Repair the configured canonical Task plan and rerun vibepro pr prepare/);
   await writeJson(taskStatePath, validTaskState);
 
   let missingTaskStderr = '';
@@ -8651,6 +8653,8 @@ Weighted semantic/layout residual: **34%**
   });
   assert.equal(missingTask.exitCode, 1);
   assert.match(missingTaskStderr, /Task not found for PR prepare: TASK-MISSING/);
+  assert.match(missingTaskStderr, /\.vibepro\/stories\/story-pr-prepare\/tasks\/tasks\.json/);
+  assert.match(missingTaskStderr, /Repair the configured canonical Task plan and rerun vibepro pr prepare/);
 
   const configPath = path.join(repo, '.vibepro', 'config.json');
   const originalConfig = await readJson(configPath);
@@ -8689,6 +8693,14 @@ Weighted semantic/layout residual: **34%**
     mismatchedRoutedTaskStateStderr,
     /Task state story mismatch for PR prepare: expected story-pr-prepare, received story-other/
   );
+  assert.match(
+    mismatchedRoutedTaskStateStderr,
+    /\.vibepro\/routed\/story-pr-prepare-tasks\.json/
+  );
+  assert.match(
+    mismatchedRoutedTaskStateStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
 
   await writeFile(routedTaskStatePath, '{"story":');
   let malformedRoutedTaskStateStderr = '';
@@ -8718,11 +8730,20 @@ Weighted semantic/layout residual: **34%**
     missingRoutedTaskStateStderr,
     /Task state not found for PR prepare: \.vibepro\/routed\/story-pr-prepare-tasks\.json/
   );
+  assert.match(
+    missingRoutedTaskStateStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
   await writeJson(configPath, originalConfig);
   await writeJson(taskStatePath, validTaskState);
 
   const storyScopedPrepare = await runCli([
-    'pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare'
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect Story fallback HTML acceptance scope',
+    '--evidence-depth-consumer', 'vibepro-cli-test',
+    '--evidence-depth-target', 'pr-prepare.html',
+    '--evidence-depth-target', 'review-cockpit.html'
   ]);
   assert.equal(storyScopedPrepare.exitCode, 0);
   const storyScopedArtifact = await readJson(
@@ -8747,6 +8768,20 @@ Weighted semantic/layout residual: **34%**
   assert.match(storyScopedPrBody, /- Task ID: なし/);
   assert.match(storyScopedPrBody, /- 対象受入基準: 3件/);
   assert.doesNotMatch(storyScopedPrBody, /1\. PR本文に背景が入る/);
+  const storyScopedPrepareHtml = await readFile(
+    path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.html'),
+    'utf8'
+  );
+  assert.match(storyScopedPrepareHtml, />Story</);
+  assert.match(storyScopedPrepareHtml, /対象受入基準 \(3件\)/);
+  assert.match(storyScopedPrepareHtml, /PR本文に背景が入る/);
+  assert.match(storyScopedPrepareHtml, /PR本文にADR判断が入る/);
+  assert.match(storyScopedPrepareHtml, /PR本文に検証候補が入る/);
+  const storyScopedReviewCockpitHtml = await readFile(
+    path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'review-cockpit.html'),
+    'utf8'
+  );
+  assert.equal(storyScopedReviewCockpitHtml, storyScopedPrepareHtml);
 
   const restoredTaskPrepare = await runCli([
     'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'

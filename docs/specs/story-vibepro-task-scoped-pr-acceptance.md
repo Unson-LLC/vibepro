@@ -55,10 +55,11 @@ the established `.vibepro/stories/<story-id>/tasks/tasks.json` machine state.
 ### TSPA-CONTRACT-005 Fail closed
 
 An explicit Task request fails before Gate evaluation when the routed task plan
-is absent, the Task ID is absent, or the selected Task has no non-empty
-acceptance criteria. It never falls back to Story acceptance criteria.
-Malformed canonical JSON reports the resolved repository-relative path, an
-actionable repair instruction, and the underlying parser cause.
+is absent or malformed, its Story identity is absent or mismatched, the Task ID
+is absent, or the selected Task has no non-empty acceptance criteria. Every
+failure reports the resolved repository-relative canonical Task plan path and
+an actionable repair instruction, and never falls back to Story acceptance
+criteria. Malformed canonical JSON also reports the underlying parser cause.
 
 ## Diagrams
 
