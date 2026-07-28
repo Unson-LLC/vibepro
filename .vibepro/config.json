@@ -291,12 +291,12 @@
     },
     "delivery_efficiency_by_story": {
       "story-vibepro-task-scoped-pr-acceptance": {
-        "max_subagent_count": 89,
+        "max_subagent_count": 92,
         "max_agent_consumption_ms": 52000000,
         "max_review_dispatches_by_role": {
-          "product_requirement": 14,
-          "architecture_boundary": 23,
-          "spec_consistency": 20,
+          "product_requirement": 15,
+          "architecture_boundary": 24,
+          "spec_consistency": 21,
           "regression_risk": 8,
           "gate_evidence": 8,
           "runtime_contract": 8,

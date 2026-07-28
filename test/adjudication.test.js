@@ -532,6 +532,21 @@ test('ADJ-S-017 present partial acceptance scopes fail closed while an absent sc
     }),
     /Invalid adjudication acceptance scope: acceptance_criteria must be an array/
   );
+  assert.throws(
+    () => buildEvidenceAdjudicationGate({
+      storyId: STORY_ID,
+      acceptanceCriteria: [],
+      acceptanceScope: {
+        source: 'task',
+        story_id: STORY_ID,
+        task_id: 'TASK-A',
+        acceptance_criteria: null
+      },
+      adjudication: { verdicts: [] },
+      headSha: 'head-1'
+    }),
+    /Invalid adjudication acceptance scope: acceptance_criteria must be an array/
+  );
 });
 
 test('ADJ-S-012 prepare and record bind verdicts to the active task scope from pr-prepare.json', async () => {

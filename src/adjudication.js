@@ -365,6 +365,7 @@ export function buildEvidenceAdjudicationGate({
     command: `vibepro adjudicate prepare . --id ${storyId}`,
     artifact: `.vibepro/adjudication/${storyId}/adjudication.json`
   };
+  const currentScope = normalizeAcceptanceScope(acceptanceScope, storyId, acceptanceCriteria);
   if (acceptanceCriteria.length === 0) {
     return {
       ...base,
@@ -373,7 +374,6 @@ export function buildEvidenceAdjudicationGate({
     };
   }
   const verdicts = Array.isArray(adjudication?.verdicts) ? adjudication.verdicts : [];
-  const currentScope = normalizeAcceptanceScope(acceptanceScope, storyId, acceptanceCriteria);
   const currentScopeFingerprint = acceptanceScopeFingerprint(currentScope);
   const freshVerdictByClause = new Map();
   const currentClauseIds = new Set(acceptanceCriteria.map((clause) => clause.id));
