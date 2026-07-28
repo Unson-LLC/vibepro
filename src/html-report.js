@@ -10,6 +10,7 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
   const executionGate = preparation.pr_context.execution_gate ?? preparation.gate_status?.execution_gate ?? null;
   const agentReviews = preparation.pr_context.agent_reviews ?? null;
   const labels = prPrepareLabels(language);
+  const acceptanceScopeSection = renderAcceptanceScopePanel(preparation.pr_context.acceptance_scope, language);
   const cards = [
     metricCard(labels.scope, preparation.scope.status, preparation.scope.recommended_strategy),
     metricCard('Gate DAG', gateDag.overall_status, localizedText(language, {
@@ -88,6 +89,7 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
         ${flow}
       </section>
       ${risks}
+      ${acceptanceScopeSection}
       ${scopeEvidence}
       ${lineageEvidence}
       ${engineeringJudgmentSection}
@@ -116,6 +118,35 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
       </section>
     `
   });
+}
+
+function renderAcceptanceScopePanel(acceptanceScope, language = 'ja') {
+  const isTask = acceptanceScope?.source === 'task';
+  const criteria = Array.isArray(acceptanceScope?.acceptance_criteria)
+    ? acceptanceScope.acceptance_criteria.filter((criterion) => typeof criterion === 'string' && criterion.trim())
+    : [];
+  const sourceLabel = isTask ? 'Task' : 'Story';
+  return `
+    <section data-acceptance-scope="${escapeAttr(acceptanceScope?.source ?? 'story')}">
+      <h2>${escapeHtml(localizedText(language, { ja: '受入判定スコープ', en: 'Acceptance Decision Scope' }))}</h2>
+      ${renderKeyValueTable([
+        [localizedText(language, { ja: '判定単位', en: 'Decision source' }), sourceLabel],
+        ['Story ID', acceptanceScope?.story_id ?? '-'],
+        ['Task ID', acceptanceScope?.task_id ?? localizedText(language, { ja: 'なし', en: 'None' })]
+      ])}
+      ${renderCards(
+        localizedText(language, {
+          ja: `対象受入基準 (${criteria.length}件)`,
+          en: `Acceptance criteria (${criteria.length})`
+        }),
+        criteria.map((criterion, index) => ({
+          title: `${index + 1}`,
+          detail: criterion,
+          tone: 'info'
+        }))
+      )}
+    </section>
+  `;
 }
 
 export function renderGateDagHtml(gateDag, options = {}) {

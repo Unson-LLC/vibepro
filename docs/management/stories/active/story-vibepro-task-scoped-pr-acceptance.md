@@ -49,7 +49,8 @@ artifact routingでfeature packet内をcanonicalにしたrepositoryでは
 - TSPA-AC-001: `pr prepare/create --task`はartifact routingで解決した
   canonical task planを読み、feature packet経路でも互換コピーなしで動作する。
 - TSPA-AC-002: task指定PR artifactは、`source: task`、Story ID、Task ID、
-  選択された受入基準を含むmachine-readableなacceptance scopeを公開する。
+  選択された受入基準を含むmachine-readableなacceptance scopeを公開し、
+  PR本文とreview cockpitにも同じ判定単位、ID、件数、受入基準を表示する。
 - TSPA-AC-003: task指定時は選択Taskの受入基準がE2E coverage、
   Gate DAGのacceptance node/count、traceability、evidence adjudication、
   senior-gap judgmentのacceptance countを駆動し、後続Taskの受入基準は
@@ -60,8 +61,9 @@ artifact routingでfeature packet内をcanonicalにしたrepositoryでは
   requirement consistencyはtask指定時もStory全体を参照する。
 - TSPA-AC-005: `--task`なしのPR prepare/createは従来どおり
   Story Acceptance Criteriaを使い、出力意味を変更しない。
-- TSPA-AC-006: routed task plan欠落、Task ID不一致、空のTask受入基準は
-  推測やStory fallbackをせず、解決対象を示してfail closedする。
+- TSPA-AC-006: routed task plan欠落、malformed JSON、Task ID不一致、
+  空のTask受入基準は推測やStory fallbackをせず、解決対象パスと修復手順を
+  示してfail closedする。
 - TSPA-AC-007: 複数Task Storyの現在Task完了・後続Task未完了ケースと、
   feature packet routingケースを回帰テストで再現する。
 

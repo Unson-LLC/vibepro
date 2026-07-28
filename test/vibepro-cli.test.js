@@ -8495,6 +8495,12 @@ Weighted semantic/layout residual: **34%**
   assert.match(prBody, /PR本文を日本語の判断ブリーフ/);
   assert.doesNotMatch(prBody, /npm test -- --runTestsByPath src\/feature\/pr-prepare.test.js tests\/unit\/pr-prepare.test.js --runInBand/);
   assert.match(prBody, /TASK-001 PR準備Task/);
+  assert.match(prBody, /^## 受入判定スコープ$/m);
+  assert.match(prBody, /- 判定単位: Task/);
+  assert.match(prBody, /- Story ID: story-pr-prepare/);
+  assert.match(prBody, /- Task ID: TASK-001/);
+  assert.match(prBody, /- 対象受入基準: 1件/);
+  assert.match(prBody, /1\. Task\/HandoffがPR本文に入る/);
   assert.match(prBody, /- Gate: needs_verification/);
   assert.match(prBody, /- 実行状態: blocked/);
   assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
@@ -8581,6 +8587,13 @@ Weighted semantic/layout residual: **34%**
   assert.match(prepareHtml, /変更ファイル分類/);
   assert.match(prepareHtml, /実行Gate/);
   assert.match(prepareHtml, /Requirement Consistency/);
+  assert.match(prepareHtml, /受入判定スコープ/);
+  assert.match(prepareHtml, /判定単位/);
+  assert.match(prepareHtml, />Task</);
+  assert.match(prepareHtml, /Task ID/);
+  assert.match(prepareHtml, />TASK-001</);
+  assert.match(prepareHtml, /対象受入基準 \(1件\)/);
+  assert.match(prepareHtml, /Task\/HandoffがPR本文に入る/);
   assert.match(prepareHtml, /gate-dag\.html/);
   const reviewCockpitHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'review-cockpit.html'), 'utf8');
   assert.equal(reviewCockpitHtml, prepareHtml);
@@ -8685,6 +8698,11 @@ Weighted semantic/layout residual: **34%**
     stderr: { write: (text) => { malformedRoutedTaskStateStderr += text; } }
   });
   assert.equal(malformedRoutedTaskState.exitCode, 1);
+  assert.match(
+    malformedRoutedTaskStateStderr,
+    /Invalid Task state JSON for PR prepare: \.vibepro\/routed\/story-pr-prepare-tasks\.json/
+  );
+  assert.match(malformedRoutedTaskStateStderr, /Repair the configured canonical Task plan and rerun vibepro pr prepare/);
   assert.match(malformedRoutedTaskStateStderr, /Unexpected end of JSON input/);
 
   await writeJson(routedTaskStatePath, validTaskState);
@@ -8721,6 +8739,14 @@ Weighted semantic/layout residual: **34%**
     ]
   });
   assert.equal(storyScopedArtifact.pr_context.gate_dag.summary.acceptance_criteria_count, 3);
+  const storyScopedPrBody = await readFile(
+    path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'),
+    'utf8'
+  );
+  assert.match(storyScopedPrBody, /- 判定単位: Story/);
+  assert.match(storyScopedPrBody, /- Task ID: なし/);
+  assert.match(storyScopedPrBody, /- 対象受入基準: 3件/);
+  assert.match(storyScopedPrBody, /1\. PR本文に背景が入る/);
 
   const restoredTaskPrepare = await runCli([
     'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'

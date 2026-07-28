@@ -43,12 +43,21 @@ Task state resolution uses the configured `task_plan` artifact route. A
 configured JSON route is the read authority; legacy Markdown routing continues
 to use its established sibling machine state.
 
+The normalized acceptance authority is projected into both machine-readable
+PR context and the human review surfaces (`pr-body.md`, `pr-prepare.html`, and
+`review-cockpit.html`). A reviewer can therefore identify the exact Task or
+Story criteria being gated without reverse-engineering JSON. Malformed routed
+JSON fails with its resolved repository-relative path and an actionable repair
+instruction.
+
 ## Consequences
 
 - A completed Task can reach PR readiness while later Story Tasks remain
   intentionally incomplete.
 - Machine-readable PR evidence states exactly which acceptance authority was
   evaluated.
+- Human-facing PR and review-cockpit surfaces state the same acceptance
+  authority and criteria.
 - Evidence verdicts cannot make a different Task green merely because its
   clause IDs and HEAD happen to match.
 - Routed feature packets no longer require a compatibility copy in the legacy

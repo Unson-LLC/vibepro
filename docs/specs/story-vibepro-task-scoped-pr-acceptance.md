@@ -20,6 +20,12 @@ status: accepted
   requires at least one non-empty criterion; Story fallback preserves the
   existing missing-criteria Gate behavior.
 
+The same normalized authority is rendered in `pr-body.md`,
+`pr-prepare.html`, and `review-cockpit.html` as a human-readable decision
+scope. Those surfaces identify the source (`Task` or `Story`), Story ID, Task
+ID (or none), criterion count, and criterion text without requiring a reviewer
+to inspect JSON.
+
 ### TSPA-CONTRACT-002 Outcome consumers
 
 Story E2E coverage, Gate DAG acceptance nodes/counts, clause traceability,
@@ -49,6 +55,8 @@ the established `.vibepro/stories/<story-id>/tasks/tasks.json` machine state.
 An explicit Task request fails before Gate evaluation when the routed task plan
 is absent, the Task ID is absent, or the selected Task has no non-empty
 acceptance criteria. It never falls back to Story acceptance criteria.
+Malformed canonical JSON reports the resolved repository-relative path, an
+actionable repair instruction, and the underlying parser cause.
 
 ## Diagrams
 

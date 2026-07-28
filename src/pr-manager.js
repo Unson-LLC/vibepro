@@ -3937,6 +3937,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const taskLine = taskContext
     ? `- Task: ${taskContext.task.id} ${taskContext.task.title ?? ''}`.trim()
     : null;
+  const acceptanceScopeSection = renderPrAcceptanceScope(prContext.acceptance_scope);
   const sourceLine = sourceFiles.length ? `- 実装: ${formatRepoPathList(sourceFiles)}` : null;
   const testLine = testFiles.length ? `- テスト: ${formatRepoPathList(testFiles)}` : null;
   const docLine = docFiles.length ? `- 設計/Story: ${formatRepoPathList(docFiles)}` : null;
@@ -3996,6 +3997,8 @@ ${narrativeSection ? `${narrativeSection.trim()}\n` : ''}
 ## 解決
 - ${solution}
 
+${acceptanceScopeSection}
+
 ## Release Notes
 
 ### Change Summary
@@ -4022,6 +4025,20 @@ ${verification}
 ## 詳細
 ${details}
 `;
+}
+
+function renderPrAcceptanceScope(acceptanceScope) {
+  const source = acceptanceScope?.source === 'task' ? 'Task' : 'Story';
+  const criteria = normalizeAcceptanceCriteria(acceptanceScope?.acceptance_criteria);
+  const criterionLines = criteria.length > 0
+    ? criteria.map((criterion, index) => `${index + 1}. ${linkifyRepoPathsInText(criterion)}`).join('\n')
+    : 'なし';
+  return `## 受入判定スコープ
+- 判定単位: ${source}
+- Story ID: ${acceptanceScope?.story_id ?? 'なし'}
+- Task ID: ${acceptanceScope?.task_id ?? 'なし'}
+- 対象受入基準: ${criteria.length}件
+${criterionLines}`;
 }
 
 function buildPrBodyStoryInterpretation({ requirementTitle, fileGroups }) {
@@ -15515,7 +15532,10 @@ async function readTaskState(repoRoot, storyId) {
     if (error.code === 'ENOENT') {
       throw new Error(`Task state not found for PR prepare: ${toWorkspaceRelative(repoRoot, taskPath)}`);
     }
-    throw error;
+    throw new Error(
+      `Invalid Task state JSON for PR prepare: ${toWorkspaceRelative(repoRoot, taskPath)}. `
+      + `Repair the configured canonical Task plan and rerun vibepro pr prepare. Cause: ${error.message}`
+    );
   }
 }
 
