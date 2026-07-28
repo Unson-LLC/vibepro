@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -600,52 +600,136 @@ test('an agent cannot shadow a computed run fact that lives outside the observat
 
 test('a partial worktree sample emits its caveat even when a change was detected', () => {
   const ids = (warnings) => warnings.map((warning) => warning.id);
+  // Every fact is required, so a caller that forgets one loses no caveat silently.
+  const facts = (overrides) => ({
+    treeMutated: false, headMoved: false, worktreeChanged: false,
+    worktreeSampled: true, worktreeSamplingComplete: true,
+    status: 'pass', outputEmpty: false, runCounts: { tests: 5 },
+    timedOut: false, outputLimitExceeded: false, overrides: [],
+    timeoutMs: 1000, maxOutputBytes: 1000, ...overrides
+  });
+  assert.throws(() => buildRunWarnings({ ...facts(), worktreeSampled: undefined }), /missing: worktreeSampled/);
+
   // Round 4 suppressed the caveat whenever a change was reported, which is exactly the
   // case where the reader most needs to know the sample was incomplete.
-  const partialAndChanged = buildRunWarnings({
-    treeMutated: true, worktreeChanged: true, worktreeSampled: true, worktreeSamplingComplete: false
-  });
+  const partialAndChanged = buildRunWarnings(facts({
+    treeMutated: true, worktreeChanged: true, worktreeSamplingComplete: false
+  }));
   assert.ok(ids(partialAndChanged).includes('verification_worktree_sampling_partial'));
   assert.ok(ids(partialAndChanged).includes('verification_tree_mutated_during_run'));
 
-  const partialAndUnchanged = buildRunWarnings({ worktreeSampled: true, worktreeSamplingComplete: false, runCounts: { tests: 5 } });
+  const partialAndUnchanged = buildRunWarnings(facts({ worktreeSamplingComplete: false }));
   assert.ok(ids(partialAndUnchanged).includes('verification_worktree_sampling_partial'));
 
-  const notSampled = buildRunWarnings({ worktreeSampled: false, worktreeSamplingComplete: false, runCounts: { tests: 5 } });
+  const notSampled = buildRunWarnings(facts({ worktreeSampled: false, worktreeSamplingComplete: false }));
   assert.ok(ids(notSampled).includes('verification_worktree_not_sampled'));
   assert.ok(!ids(notSampled).includes('verification_worktree_sampling_partial'));
 
-  const clean = buildRunWarnings({ runCounts: { tests: 5 } });
-  assert.deepEqual(ids(clean), []);
+  assert.deepEqual(ids(buildRunWarnings(facts())), []);
 });
 
-test('verify run restores the previous run files when the artifact write fails, and reports a failed restore', async () => {
+test('verify run restores the previous run log when the artifact write fails', async () => {
   const root = await setupRepo();
   await cli([
     'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
     '--target', 'tests/sample.test.js',
     '--', 'node', '--test', 'tests/sample.test.js'
   ]);
-  const before = await readJson(runArtifactPath(root, 'unit'));
-  const beforeLog = await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'unit.log'), 'utf8');
+  const artifactFile = runArtifactPath(root, 'unit');
+  const logFile = path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'unit.log');
+  const beforeArtifact = await readFile(artifactFile, 'utf8');
+  const beforeLog = await readFile(logFile, 'utf8');
 
-  // Make the artifact path unwritable so the failure lands between the log write and the
-  // record — the window the round-4 restore did not cover.
-  await rm(runArtifactPath(root, 'unit'), { force: true });
-  await mkdir(runArtifactPath(root, 'unit'), { recursive: true });
-  const result = await cli([
+  // A second suite so run 2's output is unmistakably different from run 1's; otherwise a
+  // "log unchanged" assertion could pass because the two logs happen to match.
+  await writeFile(path.join(root, 'tests', 'extra.test.js'), `import test from 'node:test';
+import assert from 'node:assert/strict';
+test('extra one', () => assert.ok(true));
+test('extra two', () => assert.ok(true));
+`);
+  assert.match(beforeLog, /tests 2/);
+
+  // Read-only, not a directory: the snapshot can still read it, so the failure lands in
+  // the artifact write — the window the previous fixture never reached.
+  await chmod(artifactFile, 0o444);
+  try {
+    const result = await cli([
+      'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+      '--target', 'tests/sample.test.js',
+      '--scenario', 'second run whose artifact write fails',
+      '--', 'node', '--test', 'tests/sample.test.js', 'tests/extra.test.js'
+    ]);
+    assert.notEqual(result.exitCode, 0);
+    assert.match(result.stderr, /EACCES|permission denied/);
+  } finally {
+    await chmod(artifactFile, 0o644);
+  }
+  // Both files the surviving record points at describe the run that was recorded: the
+  // 4-test run 2 left no trace, and the log is byte-identical to run 1's.
+  assert.equal(await readFile(artifactFile, 'utf8'), beforeArtifact);
+  const restoredLog = await readFile(logFile, 'utf8');
+  assert.equal(restoredLog, beforeLog);
+  assert.match(restoredLog, /tests 2/);
+  assert.ok(!/tests 4/.test(restoredLog), 'run 2 output must not survive in the restored log');
+});
+
+test('a restore that cannot put every file back reports it instead of failing silently', async () => {
+  const root = await setupRepo();
+  await cli([
     'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
     '--target', 'tests/sample.test.js',
     '--', 'node', '--test', 'tests/sample.test.js'
   ]);
-  assert.notEqual(result.exitCode, 0);
-  // The artifact path is a directory, so the restore of the artifact cannot succeed either:
-  // the operator must be told the run files no longer match the record, not just the write error.
-  assert.match(result.stderr, /could not be restored after this failure|EISDIR|illegal operation on a directory/);
-  // The log the surviving record points at is put back.
-  await rm(runArtifactPath(root, 'unit'), { recursive: true, force: true });
-  assert.equal(await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'unit.log'), 'utf8'), beforeLog);
-  assert.ok(before.run.command);
+  const runsDir = path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs');
+  const artifactFile = runArtifactPath(root, 'unit');
+  await chmod(artifactFile, 0o444);
+  // The directory is read-only too, so the restore write itself cannot succeed: the
+  // operator must be told the run files no longer match the record.
+  await chmod(runsDir, 0o555);
+  try {
+    const result = await cli([
+      'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+      '--target', 'tests/sample.test.js',
+      '--', 'node', '--test', 'tests/sample.test.js'
+    ]);
+    assert.notEqual(result.exitCode, 0);
+    assert.match(result.stderr, /could not be restored after this failure/);
+    assert.match(result.stderr, /no longer/);
+  } finally {
+    await chmod(runsDir, 0o755);
+    await chmod(artifactFile, 0o644);
+  }
+});
+
+test('the reproduced round-5 attack stays closed: a computed verdict cannot be shadowed', async () => {
+  const root = await setupRepo({ mutatesTree: true });
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    // The exact attack round 5 reproduced, plus the two path facts round 6 added.
+    '--observed', 'tree_mutated_during_run=false',
+    '--observed', 'head_moved_during_run=false',
+    '--observed', 'run_artifact=somewhere-else.json',
+    '--observed', 'run_log=somewhere-else.log',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  assert.equal(result.result.tree_mutated_during_run, true);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
+  assert.equal(record.observation.values.tree_mutated_during_run, 'true');
+  assert.equal(record.observation.values.head_moved_during_run, 'true');
+  assert.match(record.observation.values.run_artifact, /verification-runs\/unit\.json$/);
+  assert.match(record.observation.values.run_log, /verification-runs\/unit\.log$/);
+  assert.deepEqual(
+    record.observation_overrides.map((item) => item.key).sort(),
+    ['head_moved_during_run', 'run_artifact', 'run_log', 'tree_mutated_during_run']
+  );
+  assert.ok(record.warnings.some((warning) => warning.id === 'verification_observation_overridden'));
+  // computed_observation must mirror the asserted object, never compute a fact of its own.
+  assert.equal(record.computed_observation.tree_mutated_during_run, true);
+  assert.equal(record.computed_observation.run_artifact, record.observation.values.run_artifact);
+  for (const key of Object.keys(record.computed_observation.values)) {
+    assert.ok(COMPUTED_OBSERVATION_KEYS.includes(key), `${key} must be protected`);
+  }
 });
 
 test('verify run requires an executable command after the separator', async () => {

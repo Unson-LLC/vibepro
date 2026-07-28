@@ -478,11 +478,6 @@ async function writeRunArtifact(artifactPath, storyId, kind, run) {
   return artifactPath;
 }
 
-// Reads whatever the previous run left at the per-kind artifact and log paths so it can be
-// put back verbatim if the new record does not commit. The `spent` flag makes the restore
-// idempotent across the three wrapped steps; it does not detect a commit, so the narrow
-// window where recordVerificationEvidence throws after writing the evidence file would
-// still roll the run files back under a committed record.
 async function resolveRunFilePaths(root, storyId, kind) {
   return {
     artifactPath: await resolvePrArtifactFile(root, storyId, path.join('verification-runs', `${kind}.json`)),
@@ -490,6 +485,11 @@ async function resolveRunFilePaths(root, storyId, kind) {
   };
 }
 
+// Reads whatever the previous run left at the per-kind artifact and log paths so it can be
+// put back verbatim if the new record does not commit. The `spent` flag makes the restore
+// idempotent across the wrapped steps; it does not detect a commit, so the narrow window
+// where recordVerificationEvidence throws after writing the evidence file would still roll
+// the run files back under a committed record.
 async function snapshotRunFiles({ artifactPath, logPath }) {
   const previous = [];
   for (const filePath of [artifactPath, logPath]) {
@@ -504,25 +504,39 @@ async function snapshotRunFiles({ artifactPath, logPath }) {
   return async () => {
     if (spent) return;
     spent = true;
+    // Every file is attempted before reporting: restoring one and abandoning the other
+    // would leave a mismatched pair on disk under the surviving evidence record, which is
+    // the state this exists to prevent.
+    const failures = [];
     for (const { filePath, content } of previous) {
-      if (content === null) await rm(filePath, { force: true });
-      else await writeFile(filePath, content);
+      try {
+        if (content === null) await rm(filePath, { force: true });
+        else await writeFile(filePath, content);
+      } catch (error) {
+        failures.push(`${filePath}: ${error.message}`);
+      }
     }
+    if (failures.length > 0) throw new Error(failures.join('; '));
   };
 }
 
-// Any failure between the snapshot and a committed record puts the previous run's files
-// back. A restore that itself fails is reported rather than swallowed: the operator would
-// otherwise be told only about the original error while the run files on disk no longer
-// match the evidence record that points at them.
+// Required rather than defaulted: a benign default would silently drop the caveat for any
+// fact a future caller forgets to pass, which is the failure mode these warnings exist to
+// prevent.
 export function buildRunWarnings(input) {
+  const required = [
+    'treeMutated', 'headMoved', 'worktreeChanged', 'worktreeSampled', 'worktreeSamplingComplete',
+    'status', 'outputEmpty', 'timedOut', 'outputLimitExceeded', 'overrides', 'timeoutMs', 'maxOutputBytes'
+  ];
+  const missing = required.filter((key) => input?.[key] === undefined);
+  if (missing.length > 0) {
+    throw new Error(`buildRunWarnings requires every observed fact; missing: ${missing.join(', ')}`);
+  }
   const {
-    treeMutated = false, headMoved = false, worktreeChanged = false,
-    worktreeSampled = true, worktreeSamplingComplete = true,
-    status = 'pass', outputEmpty = false, runCounts = null,
-    timedOut = false, outputLimitExceeded = false,
-    headBefore = null, headAfter = null, overrides = [],
-    timeoutMs = 0, maxOutputBytes = 0, managedWorktreeWarning = null
+    treeMutated, headMoved, worktreeChanged, worktreeSampled, worktreeSamplingComplete,
+    status, outputEmpty, runCounts = null, timedOut, outputLimitExceeded,
+    headBefore = null, headAfter = null, overrides,
+    timeoutMs, maxOutputBytes, managedWorktreeWarning = null
   } = input;
   return [
     ...(managedWorktreeWarning ? [managedWorktreeWarning] : []),
@@ -594,6 +608,10 @@ export function buildRunWarnings(input) {
   ];
 }
 
+// Any failure between the snapshot and a committed record puts the previous run's files
+// back. A restore that itself fails is reported rather than swallowed: the operator would
+// otherwise be told only about the original error while the run files on disk no longer
+// match the evidence record that points at them.
 async function withRunFileRestore(restore, action) {
   try {
     return await action();
