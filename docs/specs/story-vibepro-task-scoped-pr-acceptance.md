@@ -44,6 +44,26 @@ An explicit Task request fails before Gate evaluation when the routed task plan
 is absent, the Task ID is absent, or the selected Task has no non-empty
 acceptance criteria. It never falls back to Story acceptance criteria.
 
+## Diagrams
+
+### TSPA-DIAGRAM-001 Task acceptance trust boundary
+
+```mermaid
+flowchart LR
+  Input[Configured routed Task artifact] --> Validate{Canonical Task validation}
+  Validate -->|valid Story ID, Task ID, and criteria| Scope[Task acceptance_scope]
+  Scope --> Outcome[Outcome gates and PR evidence]
+  Validate -->|missing, malformed, mismatched, or empty| Reject[Fail closed before Gate evaluation]
+  Story[Complete Story source] --> Design[Story-wide design and risk gates]
+  Reject -. no silent fallback .-> Story
+```
+
+The routed Task artifact is an input boundary rather than an authority to
+rewrite Story design. Missing, malformed, mismatched, or empty Task data is
+rejected before Gate evaluation. Only validated criteria enter Task-scoped
+outcome evidence; the complete Story remains authoritative for design and risk
+checks.
+
 ## Scenarios
 
 ### TSPA-STORY-001 Current Task complete, later Task incomplete
