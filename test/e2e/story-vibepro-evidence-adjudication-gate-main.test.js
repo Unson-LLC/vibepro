@@ -152,14 +152,14 @@ test('story-vibepro-evidence-adjudication-gate ac:10 config opt-out removes the 
 test('story-vibepro-evidence-adjudication-gate ac:11 the unit suite contains executable coverage for every required category', async () => {
   // テストは「request生成の内容」「AC 0件の明示エラー」「record入力検証とHEADバインド」「ゲート4状態（needs_evidence / failed / 人間検証要求 / passed）」「overall_status・ready_for_pr_create・critical連動」「オプトアウトと後方互換」を含む
   const unitSuite = await readFile(path.resolve('test/adjudication.test.js'), 'utf8');
-  for (const testId of ['ADJ-S-001', 'ADJ-S-002', 'ADJ-S-003', 'ADJ-S-004', 'ADJ-S-005', 'ADJ-S-006', 'ADJ-S-007', 'ADJ-S-008', 'ADJ-S-009', 'ADJ-S-010']) {
+  for (const testId of ['ADJ-S-001', 'ADJ-S-002', 'ADJ-S-003', 'ADJ-S-004', 'ADJ-S-005', 'ADJ-S-006', 'ADJ-S-007', 'ADJ-S-008', 'ADJ-S-009', 'ADJ-S-010', 'ADJ-S-014', 'ADJ-S-015', 'ADJ-S-016', 'ADJ-S-017']) {
     assert.ok(unitSuite.includes(`test('${testId}`), `${testId} test block must exist`);
   }
   const childEnv = { ...process.env };
   delete childEnv.NODE_TEST_CONTEXT;
   delete childEnv.NODE_OPTIONS;
   const { stdout } = await execFileAsync(process.execPath, ['--test', '--test-reporter=spec', 'test/adjudication.test.js'], { cwd: path.resolve('.'), encoding: 'utf8', env: childEnv }).catch((error) => ({ stdout: error.stdout ?? '' }));
-  assert.match(stdout, /pass 14/);
+  assert.match(stdout, /pass 18/);
   assert.match(stdout, /fail 0/);
 });
 

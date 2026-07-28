@@ -89,6 +89,15 @@ function normalizeAcceptanceScope(scope, storyId, acceptanceCriteria = []) {
   if (scope != null && scope.source == null) {
     throw new Error('Invalid adjudication acceptance scope: source is required.');
   }
+  if (scope != null && !String(scope.story_id ?? '').trim()) {
+    throw new Error('Invalid adjudication acceptance scope: story_id is required.');
+  }
+  if (
+    scope != null
+    && !Object.prototype.hasOwnProperty.call(scope, 'acceptance_criteria')
+  ) {
+    throw new Error('Invalid adjudication acceptance scope: acceptance_criteria is required.');
+  }
   const source = scope == null ? 'story' : scope.source;
   if (!['story', 'task'].includes(source)) {
     throw new Error(

@@ -465,6 +465,50 @@ test('ADJ-S-016 present malformed acceptance scopes never use the legacy Story f
   assert.deepEqual(gate.missing_clauses, ['ac:1']);
 });
 
+test('ADJ-S-017 present partial acceptance scopes fail closed while an absent scope retains the legacy Story fallback', async () => {
+  const repo = await makeRepo();
+  const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
+  await mkdir(prDir, { recursive: true });
+
+  for (const [scope, expectedError] of [
+    [
+      { source: 'story', acceptance_criteria: ['Story outcome'] },
+      /Invalid adjudication acceptance scope: story_id is required/
+    ],
+    [
+      { source: 'story', story_id: STORY_ID },
+      /Invalid adjudication acceptance scope: acceptance_criteria is required/
+    ],
+    [
+      {
+        source: 'task',
+        task_id: 'TASK-A',
+        acceptance_criteria: ['Task A outcome']
+      },
+      /Invalid adjudication acceptance scope: story_id is required/
+    ]
+  ]) {
+    await writeFile(path.join(prDir, 'pr-prepare.json'), `${JSON.stringify({
+      pr_context: { acceptance_scope: scope }
+    }, null, 2)}\n`);
+    await assert.rejects(
+      () => prepareAdjudication(repo, { storyId: STORY_ID }),
+      expectedError
+    );
+  }
+
+  await writeFile(path.join(prDir, 'pr-prepare.json'), `${JSON.stringify({
+    pr_context: {}
+  }, null, 2)}\n`);
+  const legacy = await prepareAdjudication(repo, { storyId: STORY_ID });
+  assert.equal(legacy.acceptance_scope.source, 'story');
+  assert.equal(legacy.acceptance_scope.story_id, STORY_ID);
+  assert.deepEqual(
+    legacy.acceptance_scope.acceptance_criteria,
+    ['初見のユーザーが責任範囲を区別できる', '検索から該当ページへ到達できる']
+  );
+});
+
 test('ADJ-S-012 prepare and record bind verdicts to the active task scope from pr-prepare.json', async () => {
   const repo = await makeRepo();
   await git(repo, ['add', '.']);
