@@ -9,7 +9,7 @@ import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
 import { recordVerificationEvidence } from '../src/verification-evidence.js';
-import { COMPUTED_OBSERVATION_KEYS } from '../src/verification-runner.js';
+import { COMPUTED_OBSERVATION_KEYS, compareWorktreeSamples } from '../src/verification-runner.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-test-runner';
@@ -516,6 +516,86 @@ test('verify run reports an output-buffer kill as its own cause, not as a timeou
   const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'build');
   assert.ok(record.warnings.some((warning) => warning.id === 'verification_run_output_limit_exceeded'));
   assert.ok(!record.warnings.some((warning) => warning.id === 'verification_run_timed_out'));
+});
+
+test('a partially sampled worktree does not report a change that did not happen, and says so', () => {
+  const complete = (status, diff) => ({ worktree: `${status}:${diff}`, status, diff, complete: true });
+  const partial = (status) => ({ worktree: `${status}:none`, status, diff: null, complete: false });
+
+  // The case the round-4 combined-hash comparison got wrong: the two samples used different
+  // sampling modes, so their combined fingerprints differ while the tree did not change.
+  const mixed = compareWorktreeSamples(complete('s1', 'd1'), partial('s1'));
+  assert.equal(mixed.changed, false, 'a mode difference is not a tree change');
+  assert.equal(mixed.sampled, true);
+  assert.equal(mixed.complete, false, 'the sampling gap is reported separately from the verdict');
+
+  // A status-line difference is a real change even when one sample was partial.
+  assert.equal(compareWorktreeSamples(complete('s1', 'd1'), partial('s2')).changed, true);
+  // A diff-only difference counts only when both samples captured the diff.
+  assert.equal(compareWorktreeSamples(complete('s1', 'd1'), complete('s1', 'd2')).changed, true);
+  assert.equal(compareWorktreeSamples(complete('s1', 'd1'), complete('s1', 'd1')).changed, false);
+  // A sample that could not be taken at all is neither a change nor an unchanged tree.
+  assert.deepEqual(
+    compareWorktreeSamples({ worktree: null, status: null, diff: null, complete: false }, complete('s1', 'd1')),
+    { sampled: false, complete: false, changed: false }
+  );
+});
+
+test('a run whose worktree sample was partial says so on the record', async () => {
+  const root = await setupRepo();
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  // This run samples completely, so the caveat must be absent and completeness recorded.
+  assert.equal(result.result.tree_mutated_during_run, false);
+  assert.equal(result.result.worktree_sampled, true);
+  const artifact = await readJson(runArtifactPath(root, 'unit'));
+  assert.equal(artifact.run.worktree_sampling_complete, true);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
+  assert.equal(record.observation.values.worktree_sampling_complete, 'true');
+  assert.ok(!record.warnings.some((warning) => warning.id === 'verification_worktree_sampling_partial'));
+  assert.ok(!record.warnings.some((warning) => warning.id === 'verification_worktree_not_sampled'));
+});
+
+test('verify run records the declared limits whether or not they were hit', async () => {
+  const root = await setupRepo();
+  await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--timeout-ms', '600000', '--max-output-bytes', '1048576',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  const artifact = await readJson(runArtifactPath(root, 'unit'));
+  assert.equal(artifact.run.timeout_ms, 600000);
+  assert.equal(artifact.run.max_output_bytes, 1048576);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'unit');
+  // A run capped low enough to matter leaves a trace even when it finished inside the cap.
+  assert.equal(record.observation.values.max_output_bytes, '1048576');
+  assert.equal(record.observation.values.timeout_ms, '600000');
+  assert.equal(record.observation.values.timed_out, 'false');
+  assert.equal(record.observation.values.output_limit_exceeded, 'false');
+  assert.equal(record.observation.values.harness_env_removed, 'NODE_TEST_CONTEXT');
+});
+
+test('an agent cannot shadow a computed run fact that lives outside the observation payload', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, 'Makefile'), 'all:\n\t@sleep 30\n');
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'build',
+    '--target', 'Makefile', '--timeout-ms', '700',
+    '--observed', 'timed_out=false', '--observed', 'output_metrics=tap',
+    '--', 'make'
+  ]);
+  assert.equal(result.result.timed_out, true);
+  const record = (await readJson(evidencePath(root))).commands.find((item) => item.kind === 'build');
+  assert.equal(record.observation.values.timed_out, 'true');
+  assert.equal(record.observation.values.output_metrics, 'none');
+  assert.deepEqual(
+    record.observation_overrides.map((item) => item.key).sort(),
+    ['output_metrics', 'timed_out']
+  );
 });
 
 test('verify run requires an executable command after the separator', async () => {

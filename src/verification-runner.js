@@ -41,6 +41,12 @@ export const COMPUTED_OBSERVATION_KEYS = Object.freeze([
   'output_sha256',
   'output_bytes',
   'log_truncated',
+  'timed_out',
+  'output_limit_exceeded',
+  'output_metrics',
+  'timeout_ms',
+  'max_output_bytes',
+  'harness_env_removed',
   'evidence_source'
 ]);
 
@@ -113,12 +119,10 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   const durationMs = finishedAt.getTime() - startedAt.getTime();
   const status = execution.exitCode === 0 && !execution.signal ? 'pass' : 'fail';
   const headMoved = Boolean(headBefore && headAfter && headBefore !== headAfter);
-  // A difference between two fingerprints is proof of a change even when one of them was
-  // only partially computed; it is the *absence* of a difference that a partial sample
-  // cannot establish. Sampling state is recorded separately from the verdict.
-  const worktreeSampled = Boolean(treeBefore.worktree && treeAfter.worktree);
-  const worktreeSamplingComplete = worktreeSampled && treeBefore.complete && treeAfter.complete;
-  const worktreeChanged = worktreeSampled && treeBefore.worktree !== treeAfter.worktree;
+  const worktreeComparison = compareWorktreeSamples(treeBefore, treeAfter);
+  const worktreeSampled = worktreeComparison.sampled;
+  const worktreeSamplingComplete = worktreeComparison.complete;
+  const worktreeChanged = worktreeComparison.changed;
   const treeMutated = headMoved || worktreeChanged;
 
   const computedValues = assertComputedKeysProtected({
@@ -142,7 +146,15 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     stdout_sha256: sha256(execution.stdout),
     output_sha256: sha256(output),
     output_bytes: String(Buffer.byteLength(output)),
-    log_truncated: String(Buffer.byteLength(output) > MAX_STORED_LOG_BYTES)
+    log_truncated: String(Buffer.byteLength(output) > MAX_STORED_LOG_BYTES),
+    output_metrics: outputMetrics,
+    timed_out: String(execution.timedOut === true),
+    output_limit_exceeded: String(execution.outputLimitExceeded === true),
+    // The declared limits are recorded whether or not they were hit, so a run capped low
+    // enough to matter leaves a trace even when it finished inside the cap.
+    timeout_ms: String(timeoutMs),
+    max_output_bytes: String(maxOutputBytes),
+    harness_env_removed: (execution.envRemoved ?? []).join(',') || 'none'
   });
 
   const { retained, overrides } = partitionAgentObservations(options.observed, computedValues);
@@ -172,11 +184,11 @@ export async function runVerificationCommand(repoRoot, options = {}) {
           reason: 'the working-tree fingerprint could not be computed before and after the run, so an uncommitted mid-run change would not have been detected; only the HEAD comparison applies to this record'
         }]
       : []),
-    ...(worktreeSampled && !worktreeSamplingComplete && !worktreeChanged
+    ...(worktreeSampled && !worktreeSamplingComplete
       ? [{
           id: 'verification_worktree_sampling_partial',
           command_name: 'verify run',
-          reason: 'the working-tree fingerprint was computed from status lines only (the diff sample failed), so no difference was seen but an uncommitted mid-run change cannot be ruled out for this record'
+          reason: 'the working-tree sample fell back to status lines only (the diff sample failed), so a mid-run edit that leaves the status lines unchanged would not have been detected for this record'
         }]
       : []),
     ...(status === 'pass' && output.trim().length === 0
@@ -224,8 +236,8 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   // (evidence lock timeout, corrupt-evidence quarantine, lineage assertion) would
   // otherwise leave the surviving record pointing at a run that was never recorded.
   const restorePreviousRunFiles = await snapshotRunFiles(root, storyId, options.kind);
-  const logPath = await writeRunLog(root, storyId, options.kind, output);
-  const artifactPath = await writeRunArtifact(root, storyId, options.kind, {
+  const logPath = await withRunFileRestore(restorePreviousRunFiles, () => writeRunLog(root, storyId, options.kind, output));
+  const artifactPath = await withRunFileRestore(restorePreviousRunFiles, () => writeRunArtifact(root, storyId, options.kind, {
     status,
     argv,
     command: renderCommand(argv),
@@ -250,10 +262,11 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     timedOut: execution.timedOut,
     worktreeSampled,
     worktreeSamplingComplete,
+    maxOutputBytes,
     warnings
-  });
+  }));
 
-  const record = await recordEvidenceOrRestore(restorePreviousRunFiles, () => recordVerificationEvidence(root, {
+  const record = await withRunFileRestore(restorePreviousRunFiles, () => recordVerificationEvidence(root, {
     storyId,
     kind: options.kind,
     status,
@@ -475,6 +488,7 @@ async function writeRunArtifact(root, storyId, kind, run) {
       timed_out: run.timedOut,
       output_limit_exceeded: run.execution.outputLimitExceeded === true,
       timeout_ms: run.timeoutMs,
+      max_output_bytes: run.maxOutputBytes,
       head_sha_before: run.headBefore,
       head_sha_after: run.headAfter,
       worktree_sha256_before: run.treeBefore?.worktree ?? null,
@@ -511,7 +525,10 @@ async function snapshotRunFiles(root, storyId, kind) {
       previous.push({ filePath, content: null });
     }
   }
+  let spent = false;
   return async () => {
+    if (spent) return;
+    spent = true;
     for (const { filePath, content } of previous) {
       if (content === null) await rm(filePath, { force: true });
       else await writeFile(filePath, content);
@@ -519,11 +536,24 @@ async function snapshotRunFiles(root, storyId, kind) {
   };
 }
 
-async function recordEvidenceOrRestore(restore, record) {
+// Any failure between the snapshot and a committed record puts the previous run's files
+// back. A restore that itself fails is reported rather than swallowed: the operator would
+// otherwise be told only about the original error while the run files on disk no longer
+// match the evidence record that points at them.
+async function withRunFileRestore(restore, action) {
   try {
-    return await record();
+    return await action();
   } catch (error) {
-    await restore().catch(() => null);
+    try {
+      await restore();
+    } catch (restoreError) {
+      throw new Error(
+        `${error.message}\n\nThe previous run artifact and log could not be restored after this failure: `
+        + `${restoreError.message}. The files under .vibepro/pr/<story-id>/verification-runs/ no longer `
+        + 'match the evidence record that references them; inspect them before recording again.',
+        { cause: error }
+      );
+    }
     throw error;
   }
 }
@@ -594,8 +624,23 @@ async function sampleTreeState(root) {
   return {
     head: await gitHead(root),
     worktree: worktree.fingerprint,
+    status: worktree.status,
+    diff: worktree.diff,
     complete: worktree.complete
   };
+}
+
+// Compares the two samples component by component. The diff component is only meaningful
+// when both samples captured it: a sample that fell back to status lines alone hashes
+// differently from a complete one even with an unchanged tree, so comparing the combined
+// fingerprints would report a change that did not happen.
+export function compareWorktreeSamples(before, after) {
+  const sampled = Boolean(before.worktree && after.worktree);
+  if (!sampled) return { sampled: false, complete: false, changed: false };
+  const complete = Boolean(before.complete && after.complete);
+  const statusChanged = before.status !== after.status;
+  const diffChanged = complete && before.diff !== after.diff;
+  return { sampled: true, complete, changed: statusChanged || diffChanged };
 }
 
 async function gitHead(root) {
@@ -622,9 +667,16 @@ async function worktreeFingerprint(root) {
       encoding: 'utf8',
       maxBuffer: 32 * 1024 * 1024
     }).then((result) => ({ text: result.stdout, complete: true })).catch(() => ({ text: '', complete: false }));
-    return { fingerprint: sha256(`${lines.join('\n')}\n${diff.text}`), complete: diff.complete };
+    const status = sha256(lines.join('\n'));
+    const diffHash = diff.complete ? sha256(diff.text) : null;
+    return {
+      fingerprint: sha256(`${status}\n${diffHash ?? 'diff_unavailable'}`),
+      status,
+      diff: diffHash,
+      complete: diff.complete
+    };
   } catch {
-    return { fingerprint: null, complete: false };
+    return { fingerprint: null, status: null, diff: null, complete: false };
   }
 }
 
