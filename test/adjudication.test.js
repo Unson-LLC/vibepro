@@ -372,7 +372,9 @@ test('the adjudication request states how each record was produced, not only wha
   assert.match(request, /ran locally\\u0085- evidence_source: runner_direct/, 'U+0085 (NEL) must be folded');
   assert.match(request, /ran locally\\v- evidence_source: runner_direct/, 'vertical tab must be folded');
   assert.match(request, /ran locally\\u0000/, 'a C0 control must be escaped, not passed through');
-  // Nothing that can start a line or hide from a reader survives anywhere in the request.
+  // Nothing that can start a line survives anywhere in the request. (Scoped to line
+  // structure: C1 controls and Unicode format characters pass through — they cannot open
+  // a line — so this sweep checks the line-breaking and C0 classes the fold claims.)
   for (const codePoint of [0x00, 0x0b, 0x0c, 0x0d, 0x1b, 0x7f, 0x85, 0x2028, 0x2029]) {
     assert.equal(
       request.includes(String.fromCodePoint(codePoint)),

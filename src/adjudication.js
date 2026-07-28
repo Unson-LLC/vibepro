@@ -96,9 +96,13 @@ async function readVerificationEvidenceEntries(repoRoot, storyId) {
 // the same forged item composes itself under a different codepoint, and the oracle that counts
 // `- evidence_source:` lines sees two. NEL, vertical tab and form feed break lines for markdown
 // renderers and terminals in the same way. The fold therefore covers the whole line-breaking
-// class, and every remaining C0 control (plus DEL) is escaped after it, so nothing invisible
-// survives into the request. Characters are escaped, never dropped: the judge still sees that
-// the value carried a break, and which one.
+// class, and every remaining C0 control (plus DEL) is escaped after it. The claim is scoped
+// to line structure: no agent-controlled codepoint can open a new line in the request. C1
+// controls and Unicode format characters (zero-width, bidi, BOM) pass through unescaped —
+// none of them starts a line in regex or markdown semantics, so they cannot displace the
+// authoritative fields, but they are not invisible-proofed. Characters are escaped, never
+// dropped: the judge still sees that the value carried a break, and which one (`\r\n` folds
+// with `\n` as one line break).
 const LINE_BREAK_ESCAPES = new Map([
   ['\r\n', '\\n'],
   ['\n', '\\n'],

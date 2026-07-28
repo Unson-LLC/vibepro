@@ -277,8 +277,11 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   // stays where it is, before execution, as the protection check; this is the description of
   // what happened. Re-asserting here covers the keys the probe cannot see: every one of them
   // comes from computedValues, which assertComputedKeysProtected already checked, so this can
-  // only fire if a future edit lifts something from outside that object.
-  const artifactDerivedKeys = assertArtifactDerivedKeysProtected(written.document);
+  // only fire if a future edit lifts something from outside that object. Wrapped in the same
+  // restore as the writes around it: this assert sits after the new artifact is on disk and
+  // before the record commits, so a throw here without the restore would leave the evidence
+  // file pointing at a replaced artifact — the exact window the restore invariant covers.
+  const artifactDerivedKeys = await withRunFileRestore(restorePreviousRunFiles, () => assertArtifactDerivedKeysProtected(written.document));
 
   const record = await withRunFileRestore(restorePreviousRunFiles, () => recordVerificationEvidence(root, {
     storyId,

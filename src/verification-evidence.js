@@ -92,16 +92,19 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
       : null;
     // A silent strip would leave the record looking as if the caller had never claimed the
     // key, so the rejected value is named on the record itself: a reader sees both that the
-    // claim was made and that it was not recorded. The wording states the operator's next
-    // move rather than accusing them — the usual cause is a replay of a real runner artifact
-    // through `verify record`, which is a mistake, not a forgery — while still quoting the
-    // key and value for the audit trail.
+    // claim was made and that it was not recorded. The wording states only what this path
+    // can verify — the claim arrived, it was not recorded, and who writes the key — and the
+    // operator's next move. It does not assert why the key was present: this path never
+    // inspects whether the artifact came from a runner replay (a mistake) or was written by
+    // hand (a forgery), and this reason is rendered to the adjudicator, so an unverified
+    // benign cause stated as fact would exonerate exactly the case the filter exists for.
+    // The key and value stay quoted for the audit trail.
     const callerKeyWarnings = artifactFilter.rejected.map((item) => ({
       id: 'verification_observation_caller_key_rejected',
       command_name: 'verify record',
       reason: `${item.key}="${item.value}" arrived from ${item.producer} and was not recorded in observation.values: `
-        + `this record is ${computedRecording.source}, replayed from a runner artifact, and provenance keys `
-        + 'are not inherited by a hand-recorded replay. Rerun `vibepro verify run` to restore a runner_direct record.'
+        + `this record is ${computedRecording.source}, and only the recording path writes that key. `
+        + 'If this artifact came from a real runner run, rerun `vibepro verify run` to restore a runner_direct record.'
     }));
     const command = {
       kind: options.kind,
