@@ -290,6 +290,20 @@
       "require_known_attribution": false
     },
     "delivery_efficiency_by_story": {
+      "story-vibepro-task-scoped-pr-acceptance": {
+        "max_subagent_count": 14,
+        "max_agent_consumption_ms": 4200000,
+        "max_review_dispatches_by_role": {
+          "product_requirement": 3,
+          "architecture_boundary": 5,
+          "spec_consistency": 3,
+          "gate_evidence": 3,
+          "runtime_contract": 2,
+          "release_risk": 2,
+          "pr_split_scope": 2
+        },
+        "amendment_reason": "Six valid planning review lifecycles across two implementation heads exhausted the default Story-local cap before the accepted threat-model documentation and final regression fixture moved HEAD. The user explicitly authorized continuation on 2026-07-28. Reserve only the current-HEAD planning refresh, required gate evidence, risk-adaptive validation-sequence review, and independent evidence/judgment adjudication needed for PR readiness. Permit no waiver, unrelated role expansion, AWS apply, state migration, or live negative test."
+      },
       "story-vibepro-gate-decision-outcome-ledger": {
         "max_subagent_count": 481,
         "max_agent_consumption_ms": 1448270856,
