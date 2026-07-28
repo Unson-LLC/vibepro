@@ -13,6 +13,15 @@ related_stories:
   - story-vibepro-enumeration-coverage-gate
 reason: "alternatives considered: (a) 記入欄を残したまま stale 検出を賢くする — 再計算はすでに8戦8勝で正しく検出できており、問題は検出漏れではなく『検出されるたびに人手で数え直す往復』なので、精度を上げても往復は減らない。(b) N の自書きを禁止し既存 artifact も無効化する — 親Storyの Non Goals『既存の記録済み証跡 artifact の遡及的無効化』に反し、8ラウンド分の有効な証跡を捨てることになる。(c) 数値欄を持たない宣言形式を追加し、N・M・K をシステムが tree と base diff から計測して埋め、claim ごとに count_source で出所を記録する — これを採用。8ラウンドで唯一無敗だった機構（再計算）はそのまま残し、その入力からエージェントの記入だけを外す。既存の counted 形式は引き続き parse・recount され、agent_declared として区別可能に記録されるため遡及的無効化は起きない。compatibility impact: 既存の counted 形式の scenario・その意味・gate の判定は変更しない。宣言形式は新しい任意の形式で、gate が next_commands で publish する雛形だけが宣言形式に変わる。計測不能時（base diff が読めない）は enumeration_split_unknown で fail closed にし、『不明』が『全件更新』として通らないようにする。rollback plan: 影響面は4つで、revert 時にはすべてを戻す必要がある: (1) src/enumeration-evidence.js の ENUMERATION_DECLARATION_GRAMMAR・ENUMERATION_CLAIM_SIGNAL への count 追加・parseEnumerationScenario の分岐と count_source・countSitesOnDisk の sites 収集・classifySites・parseAddedLineMap・provider の addedLineMap・verifyObservedCount の computed 分岐・describeScenario の count_source と agent_declared_found・collectEnumerationCoverage の count_provenance・scenarioTemplate、(2) test/enumeration-coverage-gate.test.js の CEA-S-2 節（src/enumeration-evidence.js を static import しているため、コード面だけ戻すと module 解決ではなく assertion で落ちる）、(3) skills/vibepro-gate-evidence/SKILL.md の宣言形式の記述、(4) .vibepro/config.json のStory登録。既存の verify record 証跡artifactは形式が変わらないため影響を受けないが、gate 側の生成物は claims[].count_source / claims[].agent_declared_found / count_provenance を新たに持つ。いずれも prepare のたびに再生成される。boundary and scope: 網羅範囲の主張における計数の実行主体の移動のみ。gate の適用条件・range floor・recount の判定・escape・既存 gate の閾値は変更しない。親Storyの他の5つの子Story（violation ledger / runner-direct evidence / owner-gated budget / derived mutation checklist / class-recurrence circuit breaker）は対象外。"
 parent_design: story-vibepro-computed-evidence-architecture
+pr_scope_strategy: atomic_single_pr
+pr_scope_reason: "計数の実行主体を移す変更は3レーンに分割できない。runtime-behavior だけを先に出すと、gate が publish する雛形は宣言形式になる一方 SKILL.md は counted 形式を指示したままになり、requirements-ssot だけを先に出すと存在しない形式を運用者に指示することになる。どちらの順序でも、分割した瞬間にドキュメントと shipped behaviour が食い違う期間が生まれる。これはこのStory自身がラウンド7・8で high finding として2度検出された欠陥クラスそのものであり、分割によって意図的に作り出すべきものではない。misc-follow-up の4件は他の2レーンを実行した結果の証跡artifactであり、単独ではレビュー対象を持たない。したがって出荷境界は3レーンの和集合で1つであり、分割はレビュー容易性を上げず整合性だけを下げる。"
+pr_scope_review_facets:
+  - requirements-ssot
+  - runtime-behavior
+  - misc-follow-up
+pr_scope_dependency_boundaries:
+  - "requirements-ssot -> runtime-behavior"
+  - "runtime-behavior -> misc-follow-up"
 created_at: 2026-07-28
 updated_at: 2026-07-28
 ---
