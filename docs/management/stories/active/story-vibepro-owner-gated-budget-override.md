@@ -47,9 +47,19 @@ base policy にマージしていた。実装エージェントは自セッシ�
 「エージェント自身のセッションからは書き込めない」を、書き込みの**防止**ではなく
 消費時点の**無効化 (inert)** として実装した。理由は reason frontmatter の (a) に書いたとおり、
 `.vibepro/config.json` は平文 JSON であり書き込み防止は原理的に迂回可能だからである。
-一方、この override が policy に変換される箇所は
-`resolveEfficiencyPolicyDecision` の1箇所しかなく、そこで承認を要求すれば迂回路が無い。
+一方、Story 別 override が policy に変換される箇所は
+`resolveEfficiencyPolicyDecision` の1箇所しかなく、そこで承認を要求すれば
+**Story 別 override については**迂回路が無い。
 防止は bypass 可能、無効化は bypass 不可能 — 弱い方ではなく強い方を選んでいる。
+
+**ただし迂回路が皆無なわけではない（gate レビュー GE-004 の指摘、記録として残す）。**
+本 Story が塞いだのは `budgets.delivery_efficiency_by_story` だけである。
+global default の `budgets.delivery_efficiency` は同じ agent-writable な平文 JSON にあり、
+`resolveEfficiencyPolicyDecision` は base をそのまま返すため authority 検査を通らない。
+エージェントは global default を書き換えれば decision record 無しで同じ結果に到達できる。
+これは Non Goals に「global default budgets は対象外」と書いた範囲設定であって欠陥ではないが、
+「迂回路が無い」という表現は過大だったので訂正する。強制されている性質は
+**「Story 別 override に迂回路が無い」**であり、global default の gating は後続 Story に残る。
 
 具体的な検査（すべて `src/budget-override-authority.js` のコードが実行する）:
 
@@ -149,6 +159,9 @@ config 中の全 override が `grandfathered` か `unauthorized` のどちらか
 - 人間性の暗号学的証明。out-of-band な署名チャネルを持たない以上、コードは
   「実在する人間が承認した」ことを in-band で証明できない（残余に記載）。
 - global default budgets / `evidence_cost_budget` / `pr_artifact_bytes` の override 管理。
+  特に `budgets.delivery_efficiency`（global default）は本 Story では gating されない。
+  Story 別 override を塞いでも global default を書き換える経路が残るため、
+  CEA-S-4 の完全な達成には後続 Story が必要である（GE-004）。
 - 既存13件の override の値そのものの妥当性の再評価。
 - 承認回数の削減。目的は承認の**所在**を移すことであって、頻度を下げることではない。
 

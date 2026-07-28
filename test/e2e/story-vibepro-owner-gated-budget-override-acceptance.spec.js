@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import {
+  GRANDFATHERED_OVERRIDE_DIGESTS,
   buildBudgetApproval,
   computeBudgetOverrideDigest,
   resolveBudgetOverrideAuthority
@@ -244,18 +245,64 @@ test('ac:6 buildBudgetApproval throws at write time on a self-grant or missing i
   'ac6 buildBudgetApproval throws when the recording agent identity is incomplete');
 });
 
-test('ac:7 ac:8 S-002 every shipped override is grandfathered by pinned digest or inert', async () => {
+// RR-002: assert the acceptance criterion, not a snapshot. Pinning the count at
+// 13 and requiring every entry to be grandfathered would turn the suite red the
+// first time a Story legitimately obtains a grant -- the very workflow this
+// change ships. What OGB-S-7/S-8 actually require is that a pinned override is
+// grandfathered, that editing it revokes that, and that nothing resolves to an
+// unknown status.
+test('ac:7 ac:8 S-002 every shipped override resolves to a known authority status', async () => {
   const repoConfig = JSON.parse(await readFile(new URL('../../.vibepro/config.json', import.meta.url), 'utf8'));
   const entries = Object.entries(repoConfig.budgets.delivery_efficiency_by_story ?? {});
-  assert.equal(entries.length, 13);
+  assert.ok(entries.length > 0, 'ac8 the repository configures at least one Story override to resolve');
+  const pinned = [];
   for (const [storyId, override] of entries) {
     const resolved = resolveBudgetOverrideAuthority({ storyId, override, decisions: [] });
-    assert.equal(resolved.status, 'grandfathered', `${storyId} should be grandfathered as merged`);
-    const edited = resolveBudgetOverrideAuthority({
-      storyId, override: { ...override, max_subagent_count: 9999 }, decisions: []
-    });
-    assert.equal(edited.status, 'unauthorized', `${storyId} must lose grandfathering when edited`);
+    assert.ok(['grandfathered', 'unauthorized', 'authorized'].includes(resolved.status),
+      `ac8 ${storyId} must resolve to a known authority status, never silently effective`);
+    if (GRANDFATHERED_OVERRIDE_DIGESTS[storyId] === computeBudgetOverrideDigest(storyId, override)) {
+      pinned.push(storyId);
+      assert.equal(resolved.status, 'grandfathered',
+        `ac7 ${storyId} is pinned by digest and must stay grandfathered`);
+      const edited = resolveBudgetOverrideAuthority({
+        storyId, override: { ...override, max_subagent_count: 9999 }, decisions: []
+      });
+      assert.equal(edited.status, 'unauthorized',
+        `ac7 ${storyId} must lose grandfathering when its content is edited`);
+    }
   }
+  assert.equal(pinned.length, Object.keys(GRANDFATHERED_OVERRIDE_DIGESTS).length,
+    'ac7 every pinned digest must correspond to a configured override, with no stale map entry');
+});
+
+// GE-005: the absent leg of the state machine was claimed but never asserted.
+test('ac:1 the absent state is asserted, not just unauthorized', () => {
+  const config = { budgets: { delivery_efficiency: { max_subagent_count: 6 } } };
+  const resolved = resolveEfficiencyPolicyDecision(config, 'story-with-no-override', { decisions: [] });
+  assert.equal(resolved.override.status, 'absent',
+    'ac1 a Story with no configured override resolves absent, distinct from unauthorized');
+  assert.equal(resolved.override.digest, null);
+  assert.equal(resolved.policy.max_subagent_count, 6);
+});
+
+// GE-002: the bare agent_system self-grant form was named in the AC but untested.
+test('ac:5 a grantor equal to the bare agent_system is a self-grant', () => {
+  const digest = computeBudgetOverrideDigest(STORY_ID, OVERRIDE);
+  const resolved = resolveBudgetOverrideAuthority({
+    storyId: STORY_ID,
+    override: OVERRIDE,
+    decisions: [{
+      story_id: STORY_ID, status: 'accepted', source: `budget:delivery_efficiency:${STORY_ID}`,
+      reason: 'raise needed',
+      budget_approval: {
+        story_id: STORY_ID, override_digest: digest, grantor_kind: 'human',
+        grantor: 'claude_code', recorded_by: { agent_system: 'claude_code', agent_id: 'agent-x' }
+      }
+    }]
+  });
+  assert.equal(resolved.status, 'unauthorized');
+  assert.ok(resolved.reasons.includes('self_approved'),
+    'ac5 naming the recording agent_system as grantor is a self-grant, like agent_id and system:id');
 });
 
 test('ac:9 an unauthorized override is reported as efficiency debt', () => {
@@ -284,7 +331,9 @@ test('ac:11 the real CLI requires reason, grantor, grantor kind and agent identi
   };
   const required = [
     ['--reason', /requires --reason/],
+    ['--budget-grantor', /--budget-grantor/],
     ['--budget-grantor-kind', /grantor kind must be one of/],
+    ['--agent-system', /--agent-system/],
     ['--agent-id', /--agent-id/]
   ];
   const rejected = [];
@@ -297,7 +346,7 @@ test('ac:11 the real CLI requires reason, grantor, grantor kind and agent identi
   }
   assert.equal(rejected.length, required.length,
     'ac11 budget approval requires --reason, --budget-grantor, --budget-grantor-kind, --agent-system and --agent-id; omitting a required flag must fail');
-  assert.deepEqual(rejected, ['--reason', '--budget-grantor-kind', '--agent-id'],
+  assert.deepEqual(rejected, ['--reason', '--budget-grantor', '--budget-grantor-kind', '--agent-system', '--agent-id'],
     'ac11 each omitted required approval flag is rejected with its own specific error');
 });
 

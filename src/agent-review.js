@@ -762,7 +762,7 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
         budget: evaluateDeliveryBudget(efficiencyPolicy, addProspectiveReviewDispatch(metrics, role))
       });
     }
-    if (dispatchDecision.action !== 'dispatch') throwReviewDispatchStop(dispatchDecision);
+    if (dispatchDecision.action !== 'dispatch') throwReviewDispatchStop(dispatchDecision, efficiencyDecision.override);
     const timeoutMs = normalizeTimeoutMs(options.timeoutMs ?? rolePolicy.timeout_ms ?? reviewPolicy.defaults.timeout_ms);
     authorization = {
       schema_version: '0.1.0',
@@ -1522,8 +1522,19 @@ export function renderAgentReviewDispatchAuthorizationSummary(result) {
 - model: ${result.authorization.agent_model ?? '-'}
 - reasoning_effort: ${result.authorization.agent_reasoning_effort ?? '-'}
 - expires_at: ${result.authorization.expires_at}
+- budget_override: ${renderBudgetOverrideLine(result.budget_override)}
 - artifact: ${result.artifact}
 `;
+}
+
+// The override status was previously JSON-only, so the default text output never
+// told the operator that a configured override had been ignored.
+function renderBudgetOverrideLine(budgetOverride) {
+  if (!budgetOverride || budgetOverride.status === 'absent') return 'none configured';
+  if (budgetOverride.status === 'unauthorized') {
+    return `INERT (${(budgetOverride.reasons ?? []).join(', ') || 'unauthorized'}) - base budget applied`;
+  }
+  return budgetOverride.status;
 }
 
 export function renderAgentReviewLifecycleCloseSummary(result) {
@@ -3624,10 +3635,20 @@ function assertConsumableDispatchAuthorization(authorization, expected) {
   }
 }
 
-function throwReviewDispatchStop(dispatchDecision) {
-  const error = new Error(`review dispatch ${dispatchDecision.action}: ${dispatchDecision.stop_reason ?? dispatchDecision.duplicate_status ?? 'existing lifecycle must be reused'}`);
+function throwReviewDispatchStop(dispatchDecision, budgetOverride = null) {
+  // A stop that reads only `budget_exceeded` is misdiagnosable when the Story
+  // configured a higher override that never took effect: the operator sees the
+  // base limit while config plainly says otherwise. Name the inert override in
+  // the stop itself so the reason reaches the human at the point of the stop,
+  // not only in a separate pr prepare run.
+  const reason = dispatchDecision.stop_reason ?? dispatchDecision.duplicate_status ?? 'existing lifecycle must be reused';
+  const inertOverride = budgetOverride?.status === 'unauthorized'
+    ? ` (a Story budget override is configured but inert: ${(budgetOverride.reasons ?? []).join(', ') || 'unauthorized'}; the base budget applied)`
+    : '';
+  const error = new Error(`review dispatch ${dispatchDecision.action}: ${reason}${inertOverride}`);
   error.code = 'VIBEPRO_REVIEW_DISPATCH_STOP';
   error.dispatch_decision = dispatchDecision;
+  error.budget_override = budgetOverride ?? null;
   throw error;
 }
 
