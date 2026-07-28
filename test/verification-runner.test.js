@@ -9,7 +9,7 @@ import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
 import { recordVerificationEvidence } from '../src/verification-evidence.js';
-import { COMPUTED_OBSERVATION_KEYS, compareWorktreeSamples } from '../src/verification-runner.js';
+import { COMPUTED_OBSERVATION_KEYS, buildRunWarnings, compareWorktreeSamples } from '../src/verification-runner.js';
 
 const execFileAsync = promisify(execFile);
 const STORY_ID = 'story-test-runner';
@@ -541,7 +541,7 @@ test('a partially sampled worktree does not report a change that did not happen,
   );
 });
 
-test('a run whose worktree sample was partial says so on the record', async () => {
+test('a fully sampled run records completeness and carries no sampling caveat', async () => {
   const root = await setupRepo();
   const result = await cli([
     'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
@@ -596,6 +596,56 @@ test('an agent cannot shadow a computed run fact that lives outside the observat
     record.observation_overrides.map((item) => item.key).sort(),
     ['output_metrics', 'timed_out']
   );
+});
+
+test('a partial worktree sample emits its caveat even when a change was detected', () => {
+  const ids = (warnings) => warnings.map((warning) => warning.id);
+  // Round 4 suppressed the caveat whenever a change was reported, which is exactly the
+  // case where the reader most needs to know the sample was incomplete.
+  const partialAndChanged = buildRunWarnings({
+    treeMutated: true, worktreeChanged: true, worktreeSampled: true, worktreeSamplingComplete: false
+  });
+  assert.ok(ids(partialAndChanged).includes('verification_worktree_sampling_partial'));
+  assert.ok(ids(partialAndChanged).includes('verification_tree_mutated_during_run'));
+
+  const partialAndUnchanged = buildRunWarnings({ worktreeSampled: true, worktreeSamplingComplete: false, runCounts: { tests: 5 } });
+  assert.ok(ids(partialAndUnchanged).includes('verification_worktree_sampling_partial'));
+
+  const notSampled = buildRunWarnings({ worktreeSampled: false, worktreeSamplingComplete: false, runCounts: { tests: 5 } });
+  assert.ok(ids(notSampled).includes('verification_worktree_not_sampled'));
+  assert.ok(!ids(notSampled).includes('verification_worktree_sampling_partial'));
+
+  const clean = buildRunWarnings({ runCounts: { tests: 5 } });
+  assert.deepEqual(ids(clean), []);
+});
+
+test('verify run restores the previous run files when the artifact write fails, and reports a failed restore', async () => {
+  const root = await setupRepo();
+  await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  const before = await readJson(runArtifactPath(root, 'unit'));
+  const beforeLog = await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'unit.log'), 'utf8');
+
+  // Make the artifact path unwritable so the failure lands between the log write and the
+  // record — the window the round-4 restore did not cover.
+  await rm(runArtifactPath(root, 'unit'), { force: true });
+  await mkdir(runArtifactPath(root, 'unit'), { recursive: true });
+  const result = await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  assert.notEqual(result.exitCode, 0);
+  // The artifact path is a directory, so the restore of the artifact cannot succeed either:
+  // the operator must be told the run files no longer match the record, not just the write error.
+  assert.match(result.stderr, /could not be restored after this failure|EISDIR|illegal operation on a directory/);
+  // The log the surviving record points at is put back.
+  await rm(runArtifactPath(root, 'unit'), { recursive: true, force: true });
+  assert.equal(await readFile(path.join(root, '.vibepro', 'pr', STORY_ID, 'verification-runs', 'unit.log'), 'utf8'), beforeLog);
+  assert.ok(before.run.command);
 });
 
 test('verify run requires an executable command after the separator', async () => {

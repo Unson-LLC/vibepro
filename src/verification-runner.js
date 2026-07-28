@@ -43,6 +43,15 @@ export const COMPUTED_OBSERVATION_KEYS = Object.freeze([
   'log_truncated',
   'timed_out',
   'output_limit_exceeded',
+  'tree_mutated_during_run',
+  'head_moved_during_run',
+  'worktree_changed_during_run',
+  'worktree_status_sha256_before',
+  'worktree_status_sha256_after',
+  'worktree_diff_sha256_before',
+  'worktree_diff_sha256_after',
+  'run_artifact',
+  'run_log',
   'output_metrics',
   'timeout_ms',
   'max_output_bytes',
@@ -54,8 +63,9 @@ const COMPUTED_OBSERVATION_KEY_SET = new Set(COMPUTED_OBSERVATION_KEYS);
 
 // A computed key that is not in the protected set is agent-writable: CLI observations win
 // the merge in buildObservation, so it would silently shadow the computed value with no
-// override entry. Asserting the subset at the point of construction keeps the two from
-// drifting apart when a new computed value is added.
+// override entry. Every fact the runner computes goes through this one object — not only
+// the ones that read like observations — so adding a computed fact without protecting it
+// fails the run instead of quietly reopening the hole.
 function assertComputedKeysProtected(computedValues) {
   const unprotected = Object.keys(computedValues).filter((key) => !COMPUTED_OBSERVATION_KEY_SET.has(key));
   if (unprotected.length > 0) {
@@ -125,7 +135,10 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   const worktreeChanged = worktreeComparison.changed;
   const treeMutated = headMoved || worktreeChanged;
 
+  const runFilePaths = await resolveRunFilePaths(root, storyId, options.kind);
   const computedValues = assertComputedKeysProtected({
+    run_artifact: toWorkspaceRelative(root, runFilePaths.artifactPath),
+    run_log: toWorkspaceRelative(root, runFilePaths.logPath),
     exit_code: String(execution.exitCode),
     ...(execution.signal ? { signal: execution.signal } : {}),
     ...(runCounts
@@ -154,90 +167,42 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     // enough to matter leaves a trace even when it finished inside the cap.
     timeout_ms: String(timeoutMs),
     max_output_bytes: String(maxOutputBytes),
-    harness_env_removed: (execution.envRemoved ?? []).join(',') || 'none'
+    harness_env_removed: (execution.envRemoved ?? []).join(',') || 'none',
+    tree_mutated_during_run: String(treeMutated),
+    head_moved_during_run: String(headMoved),
+    worktree_changed_during_run: String(worktreeChanged),
+    // The component hashes the verdict is actually computed from, so a reader can
+    // recompute it from the record instead of trusting the conclusion.
+    ...(treeBefore.status ? { worktree_status_sha256_before: treeBefore.status } : {}),
+    ...(treeAfter.status ? { worktree_status_sha256_after: treeAfter.status } : {}),
+    ...(treeBefore.diff ? { worktree_diff_sha256_before: treeBefore.diff } : {}),
+    ...(treeAfter.diff ? { worktree_diff_sha256_after: treeAfter.diff } : {})
   });
 
   const { retained, overrides } = partitionAgentObservations(options.observed, computedValues);
 
-  const warnings = [
-    ...(options.managedWorktreeWarning ? [options.managedWorktreeWarning] : []),
-    ...(treeMutated
-      ? [{
-          id: 'verification_tree_mutated_during_run',
-          command_name: 'verify run',
-          reason: headMoved
-            ? `HEAD moved from ${shortSha(headBefore)} to ${shortSha(headAfter)} while the command was running${worktreeChanged ? ' and the working tree changed as well' : ''}; the recorded result does not describe a single tree`
-            : 'the working tree changed while the command was running (HEAD is unchanged, tracked file state is not); the recorded result does not describe a single tree'
-        }]
-      : []),
-    ...(overrides.length > 0
-      ? [{
-          id: 'verification_observation_overridden',
-          command_name: 'verify run',
-          reason: `agent-supplied --observed values were discarded for computed keys: ${overrides.map((item) => item.key).join(', ')}`
-        }]
-      : []),
-    ...(!worktreeSampled
-      ? [{
-          id: 'verification_worktree_not_sampled',
-          command_name: 'verify run',
-          reason: 'the working-tree fingerprint could not be computed before and after the run, so an uncommitted mid-run change would not have been detected; only the HEAD comparison applies to this record'
-        }]
-      : []),
-    ...(worktreeSampled && !worktreeSamplingComplete
-      ? [{
-          id: 'verification_worktree_sampling_partial',
-          command_name: 'verify run',
-          reason: 'the working-tree sample fell back to status lines only (the diff sample failed), so a mid-run edit that leaves the status lines unchanged would not have been detected for this record'
-        }]
-      : []),
-    ...(status === 'pass' && output.trim().length === 0
-      ? [{
-          id: 'verification_run_produced_no_output',
-          command_name: 'verify run',
-          reason: 'the command exited 0 without printing anything; a silent success is not evidence that any check ran'
-        }]
-      : []),
-    // Exit code 0 says the command did not fail; it does not say anything ran. Without
-    // parsed counts the record carries no measure of how much was checked, so the gap is
-    // named on the record instead of being left for a reader to notice.
-    ...(status === 'pass' && output.trim().length > 0 && !runCounts
-      ? [{
-          id: 'verification_run_counts_not_parsed',
-          command_name: 'verify run',
-          reason: 'the command exited 0 but no test counts could be parsed from its output; the record proves the command did not fail, not how much it checked'
-        }]
-      : []),
-    ...(status === 'pass' && runCounts && Number(runCounts.tests) <= 1
-      ? [{
-          id: 'verification_run_counts_trivial',
-          command_name: 'verify run',
-          reason: `the command exited 0 reporting only ${runCounts.tests} test(s); node --test reports tests 1 / pass 1 for a file that defines no tests, so this count does not distinguish a real check from an empty one`
-        }]
-      : []),
-    ...(execution.timedOut
-      ? [{
-          id: 'verification_run_timed_out',
-          command_name: 'verify run',
-          reason: `the command was killed after ${timeoutMs}ms; the recorded fail status is a timeout, not a test failure`
-        }]
-      : []),
-    ...(execution.outputLimitExceeded
-      ? [{
-          id: 'verification_run_output_limit_exceeded',
-          command_name: 'verify run',
-          reason: `the command was killed after exceeding the ${maxOutputBytes}-byte output buffer; the recorded fail status is an output-volume kill, not a test failure, and the captured output is incomplete`
-        }]
-      : [])
-  ];
+  const warnings = buildRunWarnings({
+    treeMutated,
+    headMoved,
+    worktreeChanged,
+    worktreeSampled,
+    worktreeSamplingComplete,
+    status,
+    outputEmpty: output.trim().length === 0,
+    runCounts,
+    timedOut: execution.timedOut === true,
+    outputLimitExceeded: execution.outputLimitExceeded === true,
+    headBefore,
+    headAfter,
+    overrides,
+    timeoutMs,
+    maxOutputBytes,
+    managedWorktreeWarning: options.managedWorktreeWarning ?? null
+  });
 
-  // The previous run's artifact and log are the ones the current evidence record points
-  // at. They are only replaced once the new record commits: any throw after this point
-  // (evidence lock timeout, corrupt-evidence quarantine, lineage assertion) would
-  // otherwise leave the surviving record pointing at a run that was never recorded.
-  const restorePreviousRunFiles = await snapshotRunFiles(root, storyId, options.kind);
-  const logPath = await withRunFileRestore(restorePreviousRunFiles, () => writeRunLog(root, storyId, options.kind, output));
-  const artifactPath = await withRunFileRestore(restorePreviousRunFiles, () => writeRunArtifact(root, storyId, options.kind, {
+  const restorePreviousRunFiles = await snapshotRunFiles(runFilePaths);
+  const logPath = await withRunFileRestore(restorePreviousRunFiles, () => writeRunLog(runFilePaths.logPath, output));
+  const artifactPath = await withRunFileRestore(restorePreviousRunFiles, () => writeRunArtifact(runFilePaths.artifactPath, storyId, options.kind, {
     status,
     argv,
     command: renderCommand(argv),
@@ -288,12 +253,16 @@ export async function runVerificationCommand(repoRoot, options = {}) {
     computedObservation: {
       producer: 'vibepro verify run',
       computed_keys: Object.keys(computedValues),
+      // Every fact mirrored here is also in `values`, which assertComputedKeysProtected has
+      // checked against the protected set; nothing is computed on this object alone.
       values: computedValues,
-      run_artifact: toWorkspaceRelative(root, artifactPath),
-      run_log: toWorkspaceRelative(root, logPath),
+      run_artifact: computedValues.run_artifact,
+      run_log: computedValues.run_log,
       tree_mutated_during_run: treeMutated,
       head_moved_during_run: headMoved,
       worktree_changed_during_run: worktreeChanged,
+      worktree_sampled: worktreeSampled,
+      worktree_sampling_complete: worktreeSamplingComplete,
       output_metrics: outputMetrics
     },
     observationOverrides: overrides,
@@ -452,8 +421,7 @@ function extractOutputCounts(output) {
   return null;
 }
 
-async function writeRunLog(root, storyId, kind, output) {
-  const logPath = await resolvePrArtifactFile(root, storyId, path.join('verification-runs', `${kind}.log`));
+async function writeRunLog(logPath, output) {
   await mkdir(path.dirname(logPath), { recursive: true });
   const buffer = Buffer.from(output);
   const stored = buffer.byteLength > MAX_STORED_LOG_BYTES
@@ -463,8 +431,7 @@ async function writeRunLog(root, storyId, kind, output) {
   return logPath;
 }
 
-async function writeRunArtifact(root, storyId, kind, run) {
-  const artifactPath = await resolvePrArtifactFile(root, storyId, path.join('verification-runs', `${kind}.json`));
+async function writeRunArtifact(artifactPath, storyId, kind, run) {
   await mkdir(path.dirname(artifactPath), { recursive: true });
   const doc = {
     schema_version: '0.1.0',
@@ -512,10 +479,18 @@ async function writeRunArtifact(root, storyId, kind, run) {
 }
 
 // Reads whatever the previous run left at the per-kind artifact and log paths so it can be
-// put back verbatim if the new record does not commit.
-async function snapshotRunFiles(root, storyId, kind) {
-  const artifactPath = await resolvePrArtifactFile(root, storyId, path.join('verification-runs', `${kind}.json`));
-  const logPath = await resolvePrArtifactFile(root, storyId, path.join('verification-runs', `${kind}.log`));
+// put back verbatim if the new record does not commit. The `spent` flag makes the restore
+// idempotent across the three wrapped steps; it does not detect a commit, so the narrow
+// window where recordVerificationEvidence throws after writing the evidence file would
+// still roll the run files back under a committed record.
+async function resolveRunFilePaths(root, storyId, kind) {
+  return {
+    artifactPath: await resolvePrArtifactFile(root, storyId, path.join('verification-runs', `${kind}.json`)),
+    logPath: await resolvePrArtifactFile(root, storyId, path.join('verification-runs', `${kind}.log`))
+  };
+}
+
+async function snapshotRunFiles({ artifactPath, logPath }) {
   const previous = [];
   for (const filePath of [artifactPath, logPath]) {
     try {
@@ -540,6 +515,85 @@ async function snapshotRunFiles(root, storyId, kind) {
 // back. A restore that itself fails is reported rather than swallowed: the operator would
 // otherwise be told only about the original error while the run files on disk no longer
 // match the evidence record that points at them.
+export function buildRunWarnings(input) {
+  const {
+    treeMutated = false, headMoved = false, worktreeChanged = false,
+    worktreeSampled = true, worktreeSamplingComplete = true,
+    status = 'pass', outputEmpty = false, runCounts = null,
+    timedOut = false, outputLimitExceeded = false,
+    headBefore = null, headAfter = null, overrides = [],
+    timeoutMs = 0, maxOutputBytes = 0, managedWorktreeWarning = null
+  } = input;
+  return [
+    ...(managedWorktreeWarning ? [managedWorktreeWarning] : []),
+    ...(treeMutated
+      ? [{
+          id: 'verification_tree_mutated_during_run',
+          command_name: 'verify run',
+          reason: headMoved
+            ? `HEAD moved from ${shortSha(headBefore)} to ${shortSha(headAfter)} while the command was running${worktreeChanged ? ' and the working tree changed as well' : ''}; the recorded result does not describe a single tree`
+            : 'the working tree changed while the command was running (HEAD is unchanged, tracked file state is not); the recorded result does not describe a single tree'
+        }]
+      : []),
+    ...(!worktreeSampled
+      ? [{
+          id: 'verification_worktree_not_sampled',
+          command_name: 'verify run',
+          reason: 'the working-tree fingerprint could not be computed before and after the run, so an uncommitted mid-run change would not have been detected; only the HEAD comparison applies to this record'
+        }]
+      : []),
+    ...(worktreeSampled && !worktreeSamplingComplete
+      ? [{
+          id: 'verification_worktree_sampling_partial',
+          command_name: 'verify run',
+          reason: 'the working-tree sample fell back to status lines only (the diff sample failed), so a mid-run edit that leaves the status lines unchanged would not have been detected for this record'
+        }]
+      : []),
+    ...(overrides.length > 0
+      ? [{
+          id: 'verification_observation_overridden',
+          command_name: 'verify run',
+          reason: `agent-supplied --observed values were discarded for computed keys: ${overrides.map((item) => item.key).join(', ')}`
+        }]
+      : []),
+    ...(status === 'pass' && outputEmpty
+      ? [{
+          id: 'verification_run_produced_no_output',
+          command_name: 'verify run',
+          reason: 'the command exited 0 without printing anything; a silent success is not evidence that any check ran'
+        }]
+      : []),
+    ...(status === 'pass' && !outputEmpty && !runCounts
+      ? [{
+          id: 'verification_run_counts_not_parsed',
+          command_name: 'verify run',
+          reason: 'the command exited 0 but no test counts could be parsed from its output; the record proves the command did not fail, not how much it checked'
+        }]
+      : []),
+    ...(status === 'pass' && runCounts && Number(runCounts.tests) <= 1
+      ? [{
+          id: 'verification_run_counts_trivial',
+          command_name: 'verify run',
+          reason: `the command exited 0 reporting only ${runCounts.tests} test(s); node --test reports tests 1 / pass 1 for a file that defines no tests, so this count does not distinguish a real check from an empty one`
+        }]
+      : []),
+    ...(timedOut
+      ? [{
+          id: 'verification_run_timed_out',
+          command_name: 'verify run',
+          reason: `the command was killed after ${timeoutMs}ms; the recorded fail status is a timeout, not a test failure`
+        }]
+      : []),
+    ...(outputLimitExceeded
+      ? [{
+          id: 'verification_run_output_limit_exceeded',
+          command_name: 'verify run',
+          reason: `the command was killed after exceeding the ${maxOutputBytes}-byte output buffer; the recorded fail status is an output-volume kill, not a test failure, and the captured output is incomplete`
+        }]
+      : [])
+  ];
+}
+
 async function withRunFileRestore(restore, action) {
   try {
     return await action();
