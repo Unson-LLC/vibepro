@@ -74,7 +74,7 @@ Scanners that examine zero targets no longer report `pass`. `inconclusive` means
 
 A review finding names an instance; the work item is its class. This is enforced, not advised: the gate blocks.
 
-**When it applies.** The gate collects string literals your change introduces into `src/`, `bin/`, `lib/`, `scripts/` that are absent from the base tree **and** reach two or more product source files at head. Pre-existing vocabulary and single-file constants are skipped with a recorded reason; a change with no such identifier — including every docs-only change — resolves as `not_applicable`.
+**When it applies.** The gate collects string literals your change introduces into `src/`, `bin/`, `lib/`, `scripts/` that are absent from the base tree **and** reach two or more product source *files* at head, **or** appear twice or more in a single one. Pre-existing vocabulary and genuinely single-site constants are skipped with a recorded reason; a change with no such identifier — including every docs-only change — resolves as `not_applicable`.
 
 **What it wants.** One scenario per introduced identifier, in exactly this form:
 
@@ -95,8 +95,10 @@ Because the count is recounted, the scenario cannot be satisfied by writing the 
 Three further rejections exist because a claimant otherwise controls the range:
 
 - `enumeration_range_too_narrow` — the range must actually reach **every product source file the identifier lives in**; the gate names the ones it never reached. Declared paths are normalised, deduplicated and de-nested first, so repeating or nesting a path cannot inflate coverage.
-- `enumeration_range_unscannable` — a file in the range could not be read, so the recount and the published grep would disagree invisibly. The gate names the file; make it readable or narrow the range. There is no size cap — files are streamed and binary detection reads the whole stream, matching `grep -I` — but a single line over 4,000,000 characters is reported rather than materialised.
+- `enumeration_range_unscannable` — a file in the range could not be read, so the recount and the published grep would disagree invisibly. The gate names the file; make it readable or narrow the range. There is no size cap: files are streamed line by line, and binary detection reads a **measured 32,768-byte leading probe** — the point at which `grep -I` on this host switches between calling a file binary and counting it in full — so files excluded that way are listed in the report's `binary_paths` rather than dropped silently. A single line over 4,000,000 characters is reported as unscannable, which is a fail-closed status rather than a memory bound: readline has already assembled the line by then.
 - An identifier appearing twice inside a *single* file still requires a claim. A gate id written as a node type plus a collector allowlist entry lives in one file, and that is precisely the registration class that gets half closed.
+
+`inconclusive` records which of three causes applies. Only `product_source_unreadable` has an escape, and it is narrower than a waiver: `vibepro decision record . --id <story> --type needs_review --source gate:enumeration_coverage --status accepted --reason <why> --artifact <the unreadable file>`. The `--artifact` must name one of the files the report actually could not read — the decision excuses that file, not the gate — and the escape does not apply while any enumeration claim is rejected or unrecognised, so a recount mismatch can never ride out on an unrelated unreadable file. The other two causes have no escape; fix the base ref or the diff.
 
 Classes worth enumerating whenever a new field, state, or predicate appears:
 

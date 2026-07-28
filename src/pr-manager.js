@@ -10622,6 +10622,24 @@ function findAcceptedDecisionForSource(decisionRecords, source) {
   )) ?? null;
 }
 
+// An accepted enumeration decision only excuses the specific file this report
+// could not read. Without the artifact check, one waiver recorded for an
+// unrelated enumeration problem silently cleared every later unreadable-file
+// inconclusive — and the gate's own next-command told operators to pass
+// `--artifact <path>` while nothing consumed it.
+function findAcceptedDecisionForUnreadableSource(decisionRecords, unreadablePaths) {
+  const unreadable = new Set((unreadablePaths ?? []).map((entry) => String(entry)));
+  if (unreadable.size === 0) return null;
+  const decisions = Array.isArray(decisionRecords?.decisions) ? decisionRecords.decisions : [];
+  return decisions.find((decision) => (
+    decision.source === 'gate:enumeration_coverage'
+    && decision.status === 'accepted'
+    && ['waiver', 'needs_review'].includes(decision.type)
+    && typeof decision.artifact === 'string'
+    && unreadable.has(decision.artifact)
+  )) ?? null;
+}
+
 function hasMirrorSourceEvidence({ git = {}, decisionRecords = null }) {
   if (findAcceptedDecisionForSource(decisionRecords, 'gate:mirror_source_traceability')) return true;
   const commitText = (git?.commits ?? [])
@@ -12637,9 +12655,26 @@ export function buildEnumerationCoverageGate({ storyId = null, enumerationCovera
   // their own tree (a vendored or generated bundle). Printing a decision-record
   // escape that nothing consumed made the gate advertise a remediation it did
   // not honour, which is worse than having none.
-  const acceptedDecision = report.status === 'inconclusive'
+  //
+  // Two conditions beyond the cause, both learned from the escape's own review:
+  //
+  // The unreadable early return forces `inconclusive` while still carrying any
+  // rejections and unrecognised scenarios it collected. Keying only on the
+  // cause therefore released a demonstrably false claim — a recount mismatch —
+  // whenever some unrelated file happened to be unreadable, which inverts the
+  // module's invariant that an unchecked false claim always fails the gate.
+  //
+  // And the escape must be bound to the file it excuses. Accepting any earlier
+  // enumeration decision let one waiver clear every later unreadable-file
+  // inconclusive, while the printed next-command advertised an `--artifact`
+  // binding that nothing consumed. The decision's artifact must name one of the
+  // files this report actually could not read.
+  const escapeEligible = report.status === 'inconclusive'
     && report.inconclusive_cause === 'product_source_unreadable'
-    ? findAcceptedDecisionForSource(decisionRecords, 'gate:enumeration_coverage')
+    && rejections.length === 0
+    && (report.unrecognized_scenarios ?? []).length === 0;
+  const acceptedDecision = escapeEligible
+    ? findAcceptedDecisionForUnreadableSource(decisionRecords, report.unreadable_product_source ?? [])
     : null;
   const effectiveStatus = acceptedDecision ? 'accepted_followup' : report.status;
   const nextCommands = [];
@@ -12680,7 +12715,9 @@ export function buildEnumerationCoverageGate({ storyId = null, enumerationCovera
         `Product source file(s) could not be read, so the introduced-identifier class cannot be sized: ${files}. `
         + 'Make them readable, or exclude them by narrowing what is checked in under the product source prefixes. '
         + 'If the file is a generated or vendored bundle that cannot be changed, record a decision with '
-        + `\`vibepro decision record . --id ${shellQuote(story)} --type needs_review --source gate:enumeration_coverage --status accepted --summary <text> --reason <why the file cannot be read> --artifact <path>\``
+        + `\`vibepro decision record . --id ${shellQuote(story)} --type needs_review --source gate:enumeration_coverage --status accepted --summary <text> --reason <why the file cannot be read> --artifact <one of: ${files}>\`. `
+        + 'The artifact must name one of those files: the escape excuses the file it names, not the gate. '
+        + 'It also does not apply while any enumeration claim is rejected or unrecognised — fix those first.'
       );
     } else if (cause === 'diff_unreadable') {
       requiredActions.push('The diff against the base ref could not be read, so the introduced-identifier scope is unknown; fetch the base ref or repair the shallow clone');
@@ -15295,7 +15332,11 @@ function buildDecisionRecordGate(decisionRecords) {
   };
 }
 
-function collectUnresolvedRequiredGates(gateDag) {
+// Exported so the gate DAG's real filtering path can be asserted. Testing the
+// blocking predicate directly hides whether a status is reachable at all: an
+// unresolved-status allowlist runs first, and a value missing from it is
+// dropped as resolved before any predicate sees it.
+export function collectUnresolvedRequiredGates(gateDag) {
   return (gateDag?.nodes ?? [])
     .filter((node) => [
       'story',
@@ -15515,6 +15556,10 @@ export function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:pr_freshness' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:artifact_consistency' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:failure_mode_coverage' && gate.status !== 'passed') return true;
+  // See the twin in execution-state.js: `accepted_followup` is defence in depth
+  // and unreachable here, because isUnresolvedGateStatus filters it out as
+  // resolved before this predicate runs. Assert the escape through
+  // collectUnresolvedRequiredGates, never by calling this predicate directly.
   if (gate.id === 'gate:enumeration_coverage' && !['passed', 'not_applicable', 'accepted_followup'].includes(gate.status)) return true;
   if (gate.id === 'gate:path_surface_matrix' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:responsibility_authority' && !['passed', 'not_applicable'].includes(gate.status)) return true;

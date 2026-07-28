@@ -663,7 +663,11 @@ export async function collectEnumerationCoverage({
       claims: scenarios.map(describeScenario),
       rejections: scenarios.filter((entry) => !entry.ok).map((entry) => entry.rejection),
       unrecognized_scenarios: scenarios.unrecognized ?? [],
-      binary_paths: []
+      // The head scan already ran, so this is the one early return that holds a
+      // real binary list. Returning [] here dropped exactly the data the
+      // operator needs to understand why the class was sized the way it was —
+      // the same producer/consumer half-closure, one return further along.
+      binary_paths: binary
     };
   }
   const { required, skipped } = selectRequiredIdentifiers({

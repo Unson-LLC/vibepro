@@ -422,44 +422,115 @@ test('an enumeration-prefixed scenario that is not recognised as a claim is surf
   assert.match(scenarios.unrecognized[0].scenario, /covered every registration/);
 });
 
-test('an unreadable product source file surfaces binary and unreadable paths on every return', async () => {
-  // binary_paths was wired at the consumer and never produced, so the gate node
-  // reported [] while real files were being excluded. Assert the producer.
+// binary_paths was wired at the consumer and never produced, so the gate node
+// reported [] while real files were being excluded. The first repair produced
+// it on the success path only and hard-coded [] on the unreadable early return
+// — the one return that actually holds a populated list — and the test that
+// claimed "every return" used a fixture with no unreadable file at all, so no
+// mutation of the early returns failed anything. Both returns are exercised
+// here, each with a binary file present.
+function providerWithBinary({ unreadableFile = null } = {}) {
+  const files = ['src/a.js', 'src/blob.js'];
+  if (unreadableFile) files.push(unreadableFile);
+  return {
+    async addedLiterals() { return new Set(['cost_missing']); },
+    async baseLiterals() { return new Set(); },
+    async productSourceFiles() { return files; },
+    async scanFile(file, onLine) {
+      if (file === 'src/blob.js') return 'binary';
+      if (file === unreadableFile) return 'unreadable';
+      onLine("const x = 'cost_missing';");
+      return 'scanned';
+    },
+    async countSites() {
+      return { lines: 0, files: 0, product_source_lines: 0, product_source_files: 0, product_source_file_list: [], missing_paths: [], unscannable_paths: [], binary_paths: [] };
+    }
+  };
+}
+
+test('the success return produces the binary path list rather than an empty default', async () => {
   const report = await collectEnumerationCoverage({
     verificationEvidence: { commands: [] },
+    provider: providerWithBinary()
+  });
+  assert.notEqual(report.status, 'inconclusive');
+  assert.deepEqual(report.binary_paths, ['src/blob.js']);
+});
+
+test('the unreadable early return carries the binary paths it already collected', async () => {
+  const report = await collectEnumerationCoverage({
+    verificationEvidence: { commands: [] },
+    provider: providerWithBinary({ unreadableFile: 'src/vendor.min.js' })
+  });
+  assert.equal(report.status, 'inconclusive');
+  assert.equal(report.inconclusive_cause, 'product_source_unreadable');
+  assert.deepEqual(report.unreadable_product_source, ['src/vendor.min.js']);
+  // The head scan has already run at this return, so [] here is a dropped
+  // measurement, not an absent one.
+  assert.deepEqual(
+    report.binary_paths,
+    ['src/blob.js'],
+    'the unreadable return must report the binary exclusions the scan observed'
+  );
+});
+
+test('every return shape of the coverage report declares binary_paths', async () => {
+  // The three pre-scan returns have no binary data yet, but the key must exist
+  // so a consumer never distinguishes "none excluded" from "field missing".
+  const unreadableBase = await collectEnumerationCoverage({
+    verificationEvidence: { commands: [] },
     provider: {
-      async addedLiterals() { return new Set(['cost_missing']); },
-      async baseLiterals() { return new Set(); },
-      async productSourceFiles() { return ['src/a.js', 'src/blob.js']; },
-      async scanFile(file, onLine) {
-        if (file === 'src/blob.js') return 'binary';
-        onLine("const x = 'cost_missing';");
-        return 'scanned';
-      },
-      async countSites() {
-        return { lines: 0, files: 0, product_source_lines: 0, product_source_files: 0, product_source_file_list: [], missing_paths: [], unscannable_paths: [], binary_paths: [] };
-      }
+      async baseLiterals() { return null; },
+      async addedLiterals() { return new Set(); },
+      async productSourceFiles() { return []; },
+      async scanFile() { return 'scanned'; },
+      async countSites() { return { lines: 0, files: 0, product_source_lines: 0, product_source_files: 0, product_source_file_list: [], missing_paths: [], unscannable_paths: [], binary_paths: [] }; }
     }
   });
-  assert.ok(Array.isArray(report.binary_paths), 'binary_paths must exist on the report');
-  assert.deepEqual(report.binary_paths, ['src/blob.js']);
+  assert.equal(unreadableBase.inconclusive_cause, 'base_ref_unresolved');
+  assert.ok(Array.isArray(unreadableBase.binary_paths));
+
+  const unreadableDiff = await collectEnumerationCoverage({
+    verificationEvidence: { commands: [] },
+    provider: {
+      async baseLiterals() { return new Set(); },
+      async addedLiterals() { return null; },
+      async productSourceFiles() { return []; },
+      async scanFile() { return 'scanned'; },
+      async countSites() { return { lines: 0, files: 0, product_source_lines: 0, product_source_files: 0, product_source_file_list: [], missing_paths: [], unscannable_paths: [], binary_paths: [] }; }
+    }
+  });
+  assert.equal(unreadableDiff.inconclusive_cause, 'diff_unreadable');
+  assert.ok(Array.isArray(unreadableDiff.binary_paths));
+});
+
+function unreadableReport(overrides = {}) {
+  return {
+    status: 'inconclusive',
+    inconclusive_cause: 'product_source_unreadable',
+    unreadable_product_source: ['src/vendor.min.js'],
+    reason: 'product source file(s) could not be read',
+    required: [], missing: [], skipped: [], claims: [], rejections: [], unrecognized_scenarios: [], binary_paths: [],
+    ...overrides
+  };
+}
+
+const acceptedFor = (artifact) => ({
+  decisions: [{
+    id: 'd1', type: 'needs_review', status: 'accepted',
+    source: 'gate:enumeration_coverage',
+    reason: 'vendored bundle cannot be made readable',
+    artifact
+  }]
 });
 
 test('the published inconclusive escape is actually honoured by the gate', async () => {
   // Round 5 printed a decision-record escape that no code consumed: the gate
   // stayed critical and pr create refused it. Assert the escape works.
-  const { buildEnumerationCoverageGate, isCriticalUnresolvedGate } = await import('../src/pr-manager.js');
-  const inconclusive = {
-    status: 'inconclusive',
-    inconclusive_cause: 'product_source_unreadable',
-    unreadable_product_source: ['src/vendor.min.js'],
-    reason: 'product source file(s) could not be read',
-    required: [], missing: [], skipped: [], claims: [], rejections: [], unrecognized_scenarios: [], binary_paths: []
-  };
+  const { buildEnumerationCoverageGate } = await import('../src/pr-manager.js');
 
-  const withoutDecision = buildEnumerationCoverageGate({ storyId: 's', enumerationCoverage: inconclusive });
+  const withoutDecision = buildEnumerationCoverageGate({ storyId: 's', enumerationCoverage: unreadableReport() });
   assert.equal(withoutDecision.status, 'inconclusive');
-  assert.equal(isCriticalUnresolvedGate(withoutDecision), true, 'inconclusive must block without a decision');
   assert.ok(
     withoutDecision.required_actions.some((action) => /could not be read/.test(action)),
     'the required action must name the real cause, not the base ref'
@@ -467,19 +538,113 @@ test('the published inconclusive escape is actually honoured by the gate', async
 
   const withDecision = buildEnumerationCoverageGate({
     storyId: 's',
-    enumerationCoverage: inconclusive,
-    decisionRecords: {
-      decisions: [{
-        id: 'd1', type: 'needs_review', status: 'accepted',
-        source: 'gate:enumeration_coverage',
-        reason: 'vendored bundle cannot be made readable',
-        artifact: 'src/vendor.min.js'
-      }]
-    }
+    enumerationCoverage: unreadableReport(),
+    decisionRecords: acceptedFor('src/vendor.min.js')
   });
   assert.equal(withDecision.status, 'accepted_followup');
-  assert.equal(isCriticalUnresolvedGate(withDecision), false, 'an accepted decision must clear the block');
   assert.equal(withDecision.accepted_decision.id, 'd1');
+});
+
+test('the escape stops blocking through the production collector, in both gate DAG consumers', async () => {
+  // The previous round asserted this by calling isCriticalUnresolvedGate
+  // directly in each module. That is the same shape as the dead-code defect it
+  // was written to close: accepted_followup is filtered as resolved *before*
+  // either predicate runs, so reverting one of the two predicate lines failed
+  // no test. Drive the collectors that production actually calls.
+  const { buildEnumerationCoverageGate, collectUnresolvedRequiredGates } = await import('../src/pr-manager.js');
+  const executionState = await import('../src/execution-state.js');
+
+  const blocking = buildEnumerationCoverageGate({ storyId: 's', enumerationCoverage: unreadableReport() });
+  const cleared = buildEnumerationCoverageGate({
+    storyId: 's',
+    enumerationCoverage: unreadableReport(),
+    decisionRecords: acceptedFor('src/vendor.min.js')
+  });
+
+  for (const [label, collect] of [
+    ['pr-manager', (nodes) => collectUnresolvedRequiredGates({ nodes })],
+    ['execution-state', (nodes) => executionState.collectUnresolvedRequiredGates({ nodes })]
+  ]) {
+    const stillBlocking = collect([blocking]).map((gate) => gate.id);
+    assert.ok(stillBlocking.includes('gate:enumeration_coverage'), `${label} must report the un-escaped gate as unresolved`);
+    const afterEscape = collect([cleared]).map((gate) => gate.id);
+    assert.ok(!afterEscape.includes('gate:enumeration_coverage'), `${label} must drop the gate once the escape applies`);
+  }
+});
+
+test('the escape works by status resolution, not by the blocking predicates', async () => {
+  // Pin the mechanism, so the two predicate exemptions are never mistaken for
+  // coverage again. Mutation proved both lines dead: reverting either failed no
+  // test, because neither predicate is ever reached with this status.
+  const { isUnresolvedGateStatus } = await import('../src/pr-manager.js');
+  const executionState = await import('../src/execution-state.js');
+  assert.equal(
+    isUnresolvedGateStatus('accepted_followup'),
+    false,
+    'accepted_followup must resolve at the status filter; the predicate exemptions are unreachable defence in depth'
+  );
+  // Same fact from the execution-state side, through its own collector: a node
+  // carrying the status is dropped before any predicate sees it. The collector
+  // also synthesizes an overall_status node, so assert the absence of this gate
+  // rather than an empty list.
+  const unresolved = executionState.collectUnresolvedRequiredGates({
+    nodes: [{ id: 'gate:enumeration_coverage', type: 'enumeration_coverage_gate', required: true, status: 'accepted_followup' }]
+  }).map((gate) => gate.id);
+  assert.ok(!unresolved.includes('gate:enumeration_coverage'), 'accepted_followup must resolve before the predicate');
+});
+
+test('the escape does not release a report carrying a rejected or unrecognised claim', async () => {
+  // The unreadable early return forces `inconclusive` while still carrying the
+  // rejections it collected, so keying the escape on the cause alone released a
+  // demonstrably false claim whenever any unrelated file was unreadable. That
+  // inverts the module's invariant that an unchecked false claim always fails.
+  const { buildEnumerationCoverageGate } = await import('../src/pr-manager.js');
+
+  const withRejection = buildEnumerationCoverageGate({
+    storyId: 's',
+    enumerationCoverage: unreadableReport({
+      rejections: [{ id: 'enumeration_count_mismatch', reason: 'claimed 40 sites for gate:foo but the tree has 3', scenario: 'enumeration: ...' }]
+    }),
+    decisionRecords: acceptedFor('src/vendor.min.js')
+  });
+  assert.equal(withRejection.status, 'inconclusive', 'a recount mismatch must survive the escape');
+  assert.equal(withRejection.accepted_decision, null);
+
+  const withUnrecognized = buildEnumerationCoverageGate({
+    storyId: 's',
+    enumerationCoverage: unreadableReport({
+      unrecognized_scenarios: [{ kind: 'unit', scenario: 'enumeration: swept everything' }]
+    }),
+    decisionRecords: acceptedFor('src/vendor.min.js')
+  });
+  assert.equal(withUnrecognized.status, 'inconclusive', 'an unrecognised claim must survive the escape');
+});
+
+test('the escape excuses only the file its decision names', async () => {
+  // findAcceptedDecisionForSource matched any accepted enumeration decision, so
+  // one waiver cleared every later unreadable-file inconclusive, while the
+  // printed next-command advertised an --artifact binding nothing consumed.
+  const { buildEnumerationCoverageGate } = await import('../src/pr-manager.js');
+
+  const otherFile = buildEnumerationCoverageGate({
+    storyId: 's',
+    enumerationCoverage: unreadableReport(),
+    decisionRecords: acceptedFor('src/some-other-bundle.js')
+  });
+  assert.equal(otherFile.status, 'inconclusive', 'a decision for a different file must not clear this one');
+
+  const noArtifact = buildEnumerationCoverageGate({
+    storyId: 's',
+    enumerationCoverage: unreadableReport(),
+    decisionRecords: { decisions: [{ id: 'd2', type: 'waiver', status: 'accepted', source: 'gate:enumeration_coverage', reason: 'generic' }] }
+  });
+  assert.equal(noArtifact.status, 'inconclusive', 'a decision with no artifact must not clear the gate');
+
+  assert.ok(
+    buildEnumerationCoverageGate({ storyId: 's', enumerationCoverage: unreadableReport() })
+      .required_actions.some((action) => action.includes('src/vendor.min.js')),
+    'the printed escape must name the file the artifact has to reference'
+  );
 });
 
 // --- regression guards on the gate's own failure modes ---------------------
