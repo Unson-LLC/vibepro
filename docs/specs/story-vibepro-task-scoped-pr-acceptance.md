@@ -23,8 +23,10 @@ status: accepted
 The same normalized authority is rendered in `pr-body.md`,
 `pr-prepare.html`, and `review-cockpit.html` as a human-readable decision
 scope. Those surfaces identify the source (`Task` or `Story`), Story ID, Task
-ID (or none), criterion count, and criterion text without requiring a reviewer
-to inspect JSON.
+ID (or none), and criterion count. Explicit Task scope also renders criterion
+text without requiring a reviewer to inspect JSON. Story fallback preserves the
+existing compact PR body; its criterion text remains available in the
+machine-readable artifacts and the HTML review surfaces.
 
 ### TSPA-CONTRACT-002 Outcome consumers
 

@@ -45,8 +45,10 @@ to use its established sibling machine state.
 
 The normalized acceptance authority is projected into both machine-readable
 PR context and the human review surfaces (`pr-body.md`, `pr-prepare.html`, and
-`review-cockpit.html`). A reviewer can therefore identify the exact Task or
-Story criteria being gated without reverse-engineering JSON. Malformed routed
+`review-cockpit.html`). Explicit Task criteria are expanded there so a reviewer
+can identify the exact Task being gated without reverse-engineering JSON. Story
+fallback keeps the established compact PR body while its complete criteria
+remain in machine-readable artifacts and HTML review surfaces. Malformed routed
 JSON fails with its resolved repository-relative path and an actionable repair
 instruction.
 
@@ -57,7 +59,7 @@ instruction.
 - Machine-readable PR evidence states exactly which acceptance authority was
   evaluated.
 - Human-facing PR and review-cockpit surfaces state the same acceptance
-  authority and criteria.
+  authority; explicit Task scopes also expose their complete criteria.
 - Evidence verdicts cannot make a different Task green merely because its
   clause IDs and HEAD happen to match.
 - Routed feature packets no longer require a compatibility copy in the legacy

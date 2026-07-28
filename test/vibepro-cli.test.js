@@ -8746,7 +8746,7 @@ Weighted semantic/layout residual: **34%**
   assert.match(storyScopedPrBody, /- 判定単位: Story/);
   assert.match(storyScopedPrBody, /- Task ID: なし/);
   assert.match(storyScopedPrBody, /- 対象受入基準: 3件/);
-  assert.match(storyScopedPrBody, /1\. PR本文に背景が入る/);
+  assert.doesNotMatch(storyScopedPrBody, /1\. PR本文に背景が入る/);
 
   const restoredTaskPrepare = await runCli([
     'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'

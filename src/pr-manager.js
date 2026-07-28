@@ -4028,11 +4028,12 @@ ${details}
 }
 
 function renderPrAcceptanceScope(acceptanceScope) {
-  const source = acceptanceScope?.source === 'task' ? 'Task' : 'Story';
+  const isTask = acceptanceScope?.source === 'task';
+  const source = isTask ? 'Task' : 'Story';
   const criteria = normalizeAcceptanceCriteria(acceptanceScope?.acceptance_criteria);
-  const criterionLines = criteria.length > 0
+  const criterionLines = isTask && criteria.length > 0
     ? criteria.map((criterion, index) => `${index + 1}. ${linkifyRepoPathsInText(criterion)}`).join('\n')
-    : 'なし';
+    : '';
   return `## 受入判定スコープ
 - 判定単位: ${source}
 - Story ID: ${acceptanceScope?.story_id ?? 'なし'}
