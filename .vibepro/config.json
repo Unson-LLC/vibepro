@@ -962,6 +962,18 @@
         "started_at": "2026-07-25",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-task-scoped-pr-acceptance",
+        "title": "Task指定PRはStory文脈を保ちながらTask受入範囲だけを判定する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-28",
+        "due_at": null,
+        "category": "quality"
       }
     ],
     "current_story_id": "story-vibepro-docs-only-evidence-profile"
