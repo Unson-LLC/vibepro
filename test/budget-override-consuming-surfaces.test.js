@@ -6,10 +6,14 @@ import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
 
-import { authorizeAgentReviewDispatch, prepareAgentReview } from '../src/agent-review.js';
+import {
+  authorizeAgentReviewDispatch,
+  prepareAgentReview,
+  renderAgentReviewDispatchAuthorizationSummary
+} from '../src/agent-review.js';
 import { computeBudgetOverrideDigest } from '../src/budget-override-authority.js';
 import { recordDecision } from '../src/decision-records.js';
-import { buildAgentReviewEfficiencySummary } from '../src/pr-manager.js';
+import { buildAgentReviewEfficiencySummary, buildDeliveryEfficiencyContext } from '../src/pr-manager.js';
 
 // GE-001. The override authority status was wired into both consuming surfaces
 // but nothing exercised either surface: the acceptance spec called the resolver
@@ -138,4 +142,109 @@ test('OGB-SURF-4 pr prepare efficiency summary carries the override status and d
   const absent = buildAgentReviewEfficiencySummary({ delivery_efficiency: { policy: {} } }, true);
   assert.equal(absent.budget_override.status, 'absent');
   assert.ok(!absent.debt.some((entry) => entry.kind === 'budget_override_unauthorized'));
+});
+
+// GE-006. The previous round's mutation check was aimed at the wrong line: it
+// mutated buildAgentReviewEfficiencySummary (the consumer) rather than
+// buildDeliveryEfficiencyContext (the producer that feeds it from the resolver).
+// Deleting the producer line left every test green while pr-prepare.json would
+// have silently reported status 'absent' for a configured, inert override.
+// buildDeliveryEfficiencyContext is not exported, so bind it through the real
+// public surface: preparePullRequest.
+async function makePrRepo() {
+  const repo = await mkdtemp(path.join(os.tmpdir(), 'vibepro-budget-pr-'));
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'test@example.com']);
+  await git(repo, ['config', 'user.name', 'Test User']);
+  await writeFile(path.join(repo, '.gitignore'), '.vibepro/\n');
+  await writeFile(path.join(repo, 'README.md'), '# Fixture\n');
+  await mkdir(path.join(repo, '.vibepro'), { recursive: true });
+  await writeFile(
+    path.join(repo, '.vibepro', 'vibepro-manifest.json'),
+    JSON.stringify({ schema_version: '0.1.0', selected_story_id: STORY_ID })
+  );
+  await writeFile(path.join(repo, '.vibepro', 'config.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    tool: 'vibepro',
+    workspace: '.vibepro',
+    budgets: {
+      delivery_efficiency: { max_subagent_count: 6 },
+      delivery_efficiency_by_story: { [STORY_ID]: OVERRIDE }
+    },
+    brainbase: {
+      stories: [{ story_id: STORY_ID, title: 'Budget surface fixture', ssot: 'local', status: 'active' }],
+      selected_story_id: STORY_ID
+    }
+  }, null, 2)}\n`, 'utf8');
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(
+    path.join(repo, 'docs', 'management', 'stories', 'active', `${STORY_ID}.md`),
+    `---\nstory_id: ${STORY_ID}\ntitle: Budget surface fixture\nstatus: active\n---\n\n# Story\n\n## 受け入れ基準\n\n- [ ] the override authority status reaches pr prepare\n`
+  );
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'init']);
+  // A source change is what makes agent reviews (and therefore the delivery
+  // efficiency context) required; without it pr prepare has nothing to bind.
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'thing.js'), 'export const thing = 1;\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'add source']);
+  return repo;
+}
+
+test('OGB-SURF-5 the pr prepare delivery context is fed the resolver override status', async () => {
+  const repo = await makePrRepo();
+
+  const inert = await buildDeliveryEfficiencyContext(repo, STORY_ID, { stages: [] });
+  assert.ok(inert.budget_override,
+    'the delivery context must carry budget_override, the only link from the resolver into pr prepare');
+  assert.equal(inert.budget_override.status, 'unauthorized',
+    'a configured override with no grant must reach pr prepare as unauthorized, never absent');
+  assert.deepEqual(inert.budget_override.reasons, ['missing_approval']);
+  assert.equal(inert.budget_override.digest, computeBudgetOverrideDigest(STORY_ID, OVERRIDE),
+    'the digest fed into pr prepare must be the one computed from the configured override');
+  assert.equal(inert.policy.max_subagent_count, 6,
+    'the policy fed into pr prepare must be the base one while the override is inert');
+
+  await recordDecision(repo, {
+    storyId: STORY_ID, type: 'waiver', status: 'accepted',
+    source: `budget:delivery_efficiency:${STORY_ID}`,
+    summary: 'raise the cap to 9', reason: 'owner approved the raise',
+    budgetGrantor: 'sato-keigo', budgetGrantorKind: 'human',
+    agentSystem: 'claude_code', agentId: 'agent-pr-surface'
+  });
+
+  const granted = await buildDeliveryEfficiencyContext(repo, STORY_ID, { stages: [] });
+  assert.equal(granted.budget_override.status, 'authorized',
+    'once a grant exists the delivery context must report the override as authorized');
+  assert.equal(granted.policy.max_subagent_count, 9,
+    'and the raised policy must be the one pr prepare reports');
+});
+
+// GE-007. The RR-003 text renderer shipped with three branches and no coverage;
+// deleting its whole output line left the recorded 37/37 evidence set green.
+test('OGB-SURF-6 the authorize text output states the override status in every branch', () => {
+  const render = (budgetOverride) => renderAgentReviewDispatchAuthorizationSummary({
+    authorization: {
+      story_id: STORY_ID, stage: 'gate', role: 'gate_evidence', authorization_id: 'auth-1',
+      agent_model: 'claude-opus-5', agent_reasoning_effort: 'high', expires_at: '2026-07-28T00:00:00.000Z'
+    },
+    dispatch_decision: { action: 'dispatch' },
+    budget_override: budgetOverride,
+    artifact: '.vibepro/reviews/x.json'
+  });
+
+  assert.match(render(undefined), /- budget_override: none configured/,
+    'a missing override must render explicitly, not as undefined');
+  assert.match(render({ status: 'absent' }), /- budget_override: none configured/);
+  assert.match(render({ status: 'unauthorized', reasons: ['self_approved'] }),
+    /- budget_override: INERT \(self_approved\) - base budget applied/,
+    'an inert override must say so in the default text output, not only in --json');
+  assert.match(render({ status: 'unauthorized', reasons: [] }), /- budget_override: INERT \(unauthorized\)/);
+  assert.match(render({ status: 'grandfathered' }), /- budget_override: grandfathered/);
+
+  const withApproval = render({ status: 'authorized', approval: { grantor: 'sato-keigo' } });
+  assert.match(withApproval, /- budget_override: authorized/);
+  assert.ok(!withApproval.includes('sato-keigo'),
+    'the text surface must not print the grantor identity');
 });

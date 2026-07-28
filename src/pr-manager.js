@@ -11813,7 +11813,11 @@ export function buildAgentReviewEfficiencySummary(agentReviews, correctnessReady
   };
 }
 
-async function buildDeliveryEfficiencyContext(repoRoot, storyId, agentReviews) {
+// Exported for test binding: this is the only link that carries the resolver's
+// override authority status into the pr prepare delivery context, and a review
+// found it was unasserted while a consumer-level test gave the false impression
+// that it was covered.
+export async function buildDeliveryEfficiencyContext(repoRoot, storyId, agentReviews) {
   let policy = {};
   // A Story budget override only applies when an accepted decision record grants
   // it (CEA-S-4); `budgetOverride` carries the status so an inert self-approved

@@ -276,6 +276,11 @@ test('ac:7 ac:8 S-002 every shipped override resolves to a known authority statu
         `ac7 ${storyId} must lose grandfathering when its content is edited`);
     }
   }
+  // RR-004: this couples the test to the frozen map's size, so amending or
+  // retiring one of the pinned overrides reddens it until the pin is removed in
+  // the same commit. That coupling is deliberate -- a stale pin is exactly what
+  // would silently re-grandfather an edited override -- and it fails safe: it
+  // can only over-report, never widen a budget or hide an inert override.
   assert.equal(pinned.length, Object.keys(GRANDFATHERED_OVERRIDE_DIGESTS).length,
     'ac7 every pinned digest must correspond to a configured override, with no stale map entry');
 });
