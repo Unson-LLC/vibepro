@@ -8645,6 +8645,34 @@ Weighted semantic/layout residual: **34%**
   assert.match(emptyTaskCriteriaStderr, /Repair the configured canonical Task plan and rerun vibepro pr prepare/);
   await writeJson(taskStatePath, validTaskState);
 
+  await writeJson(taskStatePath, {
+    ...validTaskState,
+    story: { ...validTaskState.story, story_id: '' }
+  });
+  let missingTaskStoryIdentityStdout = '';
+  let missingTaskStoryIdentityStderr = '';
+  const missingTaskStoryIdentity = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stdout: { write: (text) => { missingTaskStoryIdentityStdout += text; } },
+    stderr: { write: (text) => { missingTaskStoryIdentityStderr += text; } }
+  });
+  assert.equal(missingTaskStoryIdentity.exitCode, 1);
+  assert.match(
+    missingTaskStoryIdentityStderr,
+    /Task state story_id is required for PR prepare: story-pr-prepare/
+  );
+  assert.match(
+    missingTaskStoryIdentityStderr,
+    /\.vibepro\/stories\/story-pr-prepare\/tasks\/tasks\.json/
+  );
+  assert.match(
+    missingTaskStoryIdentityStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
+  assert.doesNotMatch(missingTaskStoryIdentityStdout, /判定単位: Story/);
+  await writeJson(taskStatePath, validTaskState);
+
   let missingTaskStderr = '';
   const missingTask = await runCli([
     'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-MISSING'
@@ -8655,6 +8683,26 @@ Weighted semantic/layout residual: **34%**
   assert.match(missingTaskStderr, /Task not found for PR prepare: TASK-MISSING/);
   assert.match(missingTaskStderr, /\.vibepro\/stories\/story-pr-prepare\/tasks\/tasks\.json/);
   assert.match(missingTaskStderr, /Repair the configured canonical Task plan and rerun vibepro pr prepare/);
+
+  let missingTargetGroupStdout = '';
+  let missingTargetGroupStderr = '';
+  const missingTargetGroup = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001', '--group', 'group-missing'
+  ], {
+    stdout: { write: (text) => { missingTargetGroupStdout += text; } },
+    stderr: { write: (text) => { missingTargetGroupStderr += text; } }
+  });
+  assert.equal(missingTargetGroup.exitCode, 1);
+  assert.match(missingTargetGroupStderr, /Target group not found for PR prepare: group-missing/);
+  assert.match(
+    missingTargetGroupStderr,
+    /\.vibepro\/stories\/story-pr-prepare\/tasks\/tasks\.json/
+  );
+  assert.match(
+    missingTargetGroupStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
+  assert.doesNotMatch(missingTargetGroupStdout, /判定単位: Story/);
 
   const configPath = path.join(repo, '.vibepro', 'config.json');
   const originalConfig = await readJson(configPath);
