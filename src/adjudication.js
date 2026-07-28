@@ -118,10 +118,21 @@ function acceptanceScopeFingerprint(scope) {
 }
 
 function entryMatchesAcceptanceScope(entry, scope) {
-  if (scope.source === 'story' && !entry?.acceptance_scope && !entry?.acceptance_scope_fingerprint) {
+  const hasEmbeddedScope = Object.prototype.hasOwnProperty.call(entry ?? {}, 'acceptance_scope');
+  if (scope.source === 'story' && !hasEmbeddedScope && !entry?.acceptance_scope_fingerprint) {
     return true;
   }
-  const entryScope = entry?.acceptance_scope
+  if (
+    hasEmbeddedScope
+    && (
+      entry.acceptance_scope === null
+      || typeof entry.acceptance_scope !== 'object'
+      || Array.isArray(entry.acceptance_scope)
+    )
+  ) {
+    return false;
+  }
+  const entryScope = hasEmbeddedScope
     ? normalizeAcceptanceScope(entry.acceptance_scope, scope.story_id)
     : null;
   const embeddedFingerprint = entryScope ? acceptanceScopeFingerprint(entryScope) : null;
@@ -138,8 +149,14 @@ async function resolveCurrentAcceptanceScope(root, storyId, storyClauses) {
   const preparePath = await resolvePrArtifactFile(root, storyId, 'pr-prepare.json');
   try {
     const prepare = JSON.parse(await readFile(preparePath, 'utf8'));
-    const scope = prepare?.pr_context?.acceptance_scope;
-    if (!scope) return fallback;
+    const prContext = prepare?.pr_context;
+    if (!Object.prototype.hasOwnProperty.call(prContext ?? {}, 'acceptance_scope')) {
+      return fallback;
+    }
+    const scope = prContext.acceptance_scope;
+    if (scope === null || typeof scope !== 'object' || Array.isArray(scope)) {
+      throw new Error('Invalid adjudication acceptance scope: expected an object.');
+    }
     const normalized = normalizeAcceptanceScope(scope, storyId);
     if (normalized.story_id !== storyId) {
       throw new Error(

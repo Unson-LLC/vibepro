@@ -431,6 +431,40 @@ test('ADJ-S-015 invalid acceptance scope sources fail closed instead of falling 
   }
 });
 
+test('ADJ-S-016 present malformed acceptance scopes never use the legacy Story fallback', async () => {
+  const repo = await makeRepo();
+  const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
+  await mkdir(prDir, { recursive: true });
+
+  for (const scope of [null, false, 0, '']) {
+    await writeFile(path.join(prDir, 'pr-prepare.json'), `${JSON.stringify({
+      pr_context: { acceptance_scope: scope }
+    }, null, 2)}\n`);
+    await assert.rejects(
+      () => prepareAdjudication(repo, { storyId: STORY_ID }),
+      /Invalid adjudication acceptance scope/
+    );
+  }
+
+  const gate = buildEvidenceAdjudicationGate({
+    storyId: STORY_ID,
+    acceptanceCriteria: [{ id: 'ac:1', text: 'Story outcome' }],
+    acceptanceScope: null,
+    adjudication: {
+      verdicts: [{
+        clause_id: 'ac:1',
+        verdict: 'demonstrated',
+        reason: 'A present malformed scope must not be accepted as legacy unscoped evidence.',
+        head_commit: 'head-1',
+        acceptance_scope: null
+      }]
+    },
+    headSha: 'head-1'
+  });
+  assert.equal(gate.status, 'needs_evidence');
+  assert.deepEqual(gate.missing_clauses, ['ac:1']);
+});
+
 test('ADJ-S-012 prepare and record bind verdicts to the active task scope from pr-prepare.json', async () => {
   const repo = await makeRepo();
   await git(repo, ['add', '.']);
