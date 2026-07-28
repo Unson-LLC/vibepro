@@ -86,7 +86,10 @@ async function readVerificationEvidenceEntries(repoRoot, storyId) {
 }
 
 function normalizeAcceptanceScope(scope, storyId, acceptanceCriteria = []) {
-  const source = scope?.source ?? 'story';
+  if (scope != null && scope.source == null) {
+    throw new Error('Invalid adjudication acceptance scope: source is required.');
+  }
+  const source = scope == null ? 'story' : scope.source;
   if (!['story', 'task'].includes(source)) {
     throw new Error(
       `Invalid adjudication acceptance scope source "${String(source)}"; expected "story" or "task".`

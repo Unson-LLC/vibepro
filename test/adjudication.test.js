@@ -385,34 +385,50 @@ test('ADJ-S-015 invalid acceptance scope sources fail closed instead of falling 
     task_id: 'TASK-A',
     acceptance_criteria: ['Task A outcome']
   };
-  assert.throws(
-    () => buildEvidenceAdjudicationGate({
-      storyId: STORY_ID,
-      acceptanceCriteria: [{ id: 'ac:1', text: 'Task A outcome' }],
-      acceptanceScope: invalidScope,
-      adjudication: {
-        verdicts: [{
-          clause_id: 'ac:1',
-          verdict: 'demonstrated',
-          reason: 'A legacy unscoped verdict must not pass an invalid Task scope.',
-          head_commit: 'head-1'
-        }]
-      },
-      headSha: 'head-1'
-    }),
-    /Invalid adjudication acceptance scope source "tasks"/
-  );
+  const missingSourceScope = {
+    story_id: STORY_ID,
+    task_id: 'TASK-A',
+    acceptance_criteria: ['Task A outcome']
+  };
+  for (const [scope, expectedError] of [
+    [invalidScope, /Invalid adjudication acceptance scope source "tasks"/],
+    [missingSourceScope, /Invalid adjudication acceptance scope: source is required/],
+    [{ ...missingSourceScope, source: null }, /Invalid adjudication acceptance scope: source is required/]
+  ]) {
+    assert.throws(
+      () => buildEvidenceAdjudicationGate({
+        storyId: STORY_ID,
+        acceptanceCriteria: [{ id: 'ac:1', text: 'Task A outcome' }],
+        acceptanceScope: scope,
+        adjudication: {
+          verdicts: [{
+            clause_id: 'ac:1',
+            verdict: 'demonstrated',
+            reason: 'A legacy unscoped verdict must not pass an invalid Task scope.',
+            head_commit: 'head-1'
+          }]
+        },
+        headSha: 'head-1'
+      }),
+      expectedError
+    );
+  }
 
   const repo = await makeRepo();
   const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
   await mkdir(prDir, { recursive: true });
-  await writeFile(path.join(prDir, 'pr-prepare.json'), `${JSON.stringify({
-    pr_context: { acceptance_scope: invalidScope }
-  }, null, 2)}\n`);
-  await assert.rejects(
-    () => prepareAdjudication(repo, { storyId: STORY_ID }),
-    /Invalid adjudication acceptance scope source "tasks"/
-  );
+  for (const [scope, expectedError] of [
+    [invalidScope, /Invalid adjudication acceptance scope source "tasks"/],
+    [missingSourceScope, /Invalid adjudication acceptance scope: source is required/]
+  ]) {
+    await writeFile(path.join(prDir, 'pr-prepare.json'), `${JSON.stringify({
+      pr_context: { acceptance_scope: scope }
+    }, null, 2)}\n`);
+    await assert.rejects(
+      () => prepareAdjudication(repo, { storyId: STORY_ID }),
+      expectedError
+    );
+  }
 });
 
 test('ADJ-S-012 prepare and record bind verdicts to the active task scope from pr-prepare.json', async () => {
