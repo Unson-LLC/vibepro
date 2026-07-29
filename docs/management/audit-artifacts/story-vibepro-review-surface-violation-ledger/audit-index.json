@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-review-surface-violation-ledger",
   "source": "execute_merge",
-  "generated_at": "2026-07-29T10:39:09.901Z",
+  "generated_at": "2026-07-29T16:16:26.637Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -23,9 +23,9 @@
       "merge_commit_sha": "e3ef7b963170f8500d370f6914037009944d3e0e",
       "base_authority": "merge_commit_first_parent"
     },
-    "diff_stats_collected_at": "2026-07-29T10:39:03.719Z",
+    "diff_stats_collected_at": "2026-07-29T16:16:24.847Z",
     "diff_stats_reason": null,
-    "artifact_lines": 1844,
+    "artifact_lines": 1819,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 2511,
@@ -92,7 +92,7 @@
         "merge_commit_sha": "e3ef7b963170f8500d370f6914037009944d3e0e",
         "base_authority": "merge_commit_first_parent"
       },
-      "collected_at": "2026-07-29T10:39:03.719Z",
+      "collected_at": "2026-07-29T16:16:24.847Z",
       "reason": null
     },
     "change_surface": {
@@ -128,7 +128,7 @@
     "product_code_changed_lines": 1822,
     "product_code_changed_lines_status": "available",
     "product_code_changed_lines_reason": null,
-    "artifact_code_ratio": 0.734,
+    "artifact_code_ratio": 0.724,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -163,12 +163,12 @@
     "implementation_budget_status": "within_budget",
     "docs_only_budget_status": "not_applicable",
     "replay_bundle": {
-      "compressed_bytes": 6480,
-      "expanded_bytes": 28527,
-      "expanded_line_count": 627,
+      "compressed_bytes": 6488,
+      "expanded_bytes": 28497,
+      "expanded_line_count": 629,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 24720,
+    "raw_source_artifact_lines": 24721,
     "raw_source_artifact_code_ratio": 9.845,
     "artifact_lines_source": "persisted_canonical_compact"
   },
@@ -240,25 +240,26 @@
       "reconciliation": {
         "status": "reconciliation_required",
         "reasons": [
+          "dirty_worktree",
           "decision_outcome_binding_failed"
         ],
-        "evaluated_at": "2026-07-29T10:39:04.005Z",
+        "evaluated_at": "2026-07-29T16:16:26.571Z",
         "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f"
       },
       "reconciliation_action": {
         "status": "required",
-        "reason": "decision_outcome_binding_failed",
+        "reason": "dirty_worktree",
         "commands": [
           "vibepro pr prepare . --story-id story-vibepro-review-surface-violation-ledger --base main",
           "vibepro execute merge . --story-id story-vibepro-review-surface-violation-ledger --base main --pr https://github.com/Unson-LLC/vibepro/pull/397"
         ]
       },
       "decision_outcome_binding": {
-        "status": "bound",
-        "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
+        "status": "failed",
+        "reason": "central_ledger_parse_failed",
         "expected_entry_count": 63,
         "promoted_count": 0,
-        "duplicate_count": 63,
+        "duplicate_count": 0,
         "persistence_status": null
       },
       "pr_url": "https://github.com/Unson-LLC/vibepro/pull/397",
@@ -317,14 +318,14 @@
     "stale_count": 0
   },
   "handoff_replay_status": "blocked",
-  "handoff_replay_unresolved_reference_count": 16,
+  "handoff_replay_unresolved_reference_count": 9,
   "missing_artifacts": [],
   "raw_artifact_count": 24,
   "automation_value_audit": {
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-review-surface-violation-ledger",
-    "generated_at": "2026-07-29T10:39:09.901Z",
+    "generated_at": "2026-07-29T16:16:26.637Z",
     "status": "needs_evidence",
     "purpose": "daily_automation_input",
     "sources": {
@@ -348,17 +349,18 @@
       "reconciliation": {
         "status": "reconciliation_required",
         "reasons": [
+          "dirty_worktree",
           "decision_outcome_binding_failed"
         ],
-        "evaluated_at": "2026-07-29T10:39:04.005Z",
+        "evaluated_at": "2026-07-29T16:16:26.571Z",
         "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f"
       },
       "decision_outcome_binding": {
-        "status": "bound",
-        "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
+        "status": "failed",
+        "reason": "central_ledger_parse_failed",
         "expected_entry_count": 63,
         "promoted_count": 0,
-        "duplicate_count": 63,
+        "duplicate_count": 0,
         "persistence_status": null
       },
       "merge_commit_sha": "e3ef7b963170f8500d370f6914037009944d3e0e",
@@ -383,7 +385,7 @@
       "story_spec_architecture_to_src": 0.761,
       "audit_artifacts_to_src": 0,
       "automation_evidence_to_src": 2.191,
-      "artifact_lines_to_product_changed_lines": 0.734
+      "artifact_lines_to_product_changed_lines": 0.724
     },
     "session_cost": {
       "token_status": "unavailable",
@@ -410,16 +412,16 @@
       "evidence_reuse_stale_reason_count": 0,
       "traceability_lifecycle": "merged",
       "handoff_replay_status": "blocked",
-      "handoff_replay_unresolved_reference_count": 16,
+      "handoff_replay_unresolved_reference_count": 9,
       "missing_artifact_count": 0
     },
     "cost_controls": {
       "status": "action_required",
       "budget_status": "within_budget",
-      "artifact_code_ratio": 0.734,
+      "artifact_code_ratio": 0.724,
       "automation_evidence_to_src": 2.191,
       "budget_exceeded_reasons": [],
-      "canonical_artifact_lines": 1844,
+      "canonical_artifact_lines": 1819,
       "product_changed_lines": 2511,
       "evidence_depth": "standard",
       "recommended_evidence_depth": "standard",
@@ -443,7 +445,7 @@
         "id": "canonical_handoff_replay_blocked",
         "severity": "review_needed",
         "reason": "canonical audit references cannot be fully replayed by another engineer or agent",
-        "unresolved_reference_count": 16
+        "unresolved_reference_count": 9
       }
     ]
   },
@@ -452,11 +454,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:74c1953306b91e44acd4b2bf477efc812dc85056db37b512979ee18cfc27b760",
-    "compressed_hash": "sha256:89da9a122b4d18f31b4d1d114f18633fe7ae5d8e65dd9ae537fe0e61a0c82666",
-    "expanded_bytes": 28527,
-    "compressed_bytes": 6480,
-    "expanded_line_count": 627,
+    "content_hash": "sha256:fe27f10c379d9791cd3caea978da9286d5166ac97afffe3ec45ddb63ba205a6f",
+    "compressed_hash": "sha256:ae431953ff33893719be7b79f3543d96bf0bd43c4966df3aa0f63f55726434b7",
+    "expanded_bytes": 28497,
+    "compressed_bytes": 6488,
+    "expanded_line_count": 629,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "decision_index",
@@ -476,9 +478,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-review-surface-violation-ledger",
     "cost": {
-      "compressed_bytes": 6480,
-      "expanded_bytes": 28527,
-      "expanded_line_count": 627,
+      "compressed_bytes": 6488,
+      "expanded_bytes": 28497,
+      "expanded_line_count": 629,
       "persisted_line_count": 1
     }
   }
