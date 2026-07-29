@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -179,6 +179,39 @@ test('LINT-7 VET-S-1 the repository test/e2e directory contains no file that exe
   const { status, output } = runLint(repoRoot);
   assert.equal(status, 0, output);
   assert.match(output, /all execute product behaviour/);
+});
+
+test('LINT-9 the lint ships with an operator-facing release note, observability and rollback path', () => {
+  // The lint adds a CI step that can fail a contributor's build, so the
+  // release note must answer three questions without reading the source:
+  // what must an operator do, how is the lint observed, and how is it undone.
+  // Asserting on the document keeps those answers from silently drifting.
+  const changelog = readFileSync(join(repoRoot, 'CHANGELOG.md'), 'utf8');
+  const unreleased = changelog.split(/^## /m).find((section) => section.startsWith('Unreleased'));
+  assert.ok(unreleased, 'CHANGELOG.md must have an Unreleased section');
+
+  const entry = unreleased.slice(0, unreleased.indexOf('\n## ') === -1 ? undefined : unreleased.indexOf('\n## '));
+  assert.match(entry, /lint:e2e-product-execution/, 'release_note must name the shipped command');
+  assert.match(entry, /scripts\/lint-e2e-product-execution\.mjs/);
+
+  // operator action
+  assert.match(entry, /\*\*Operator action\*\*/);
+  assert.match(entry, /no operator action|none for existing consumers/i);
+
+  // observability_evidence: how a reader sees what the lint did
+  assert.match(entry, /\*\*Observability\*\*/);
+  assert.match(entry, /exit code/i);
+  assert.match(entry, /::error::/);
+  assert.match(entry, /fail-closed/i);
+
+  // rollback_instruction: how to undo it, both fully and partially
+  assert.match(entry, /\*\*Rollback\*\*/);
+  assert.match(entry, /revert/i);
+  assert.match(entry, /\.github\/workflows\/ci\.yml/);
+
+  // The documented partial-rollback lever must actually exist in CI.
+  const ci = readFileSync(join(repoRoot, '.github', 'workflows', 'ci.yml'), 'utf8');
+  assert.match(ci, /npm run lint:e2e-product-execution/);
 });
 
 test('LINT-8 the lint is runnable as a standalone command and reports through its exit code', () => {
