@@ -178,6 +178,51 @@ test('GDO-S-2/GDO-S-3: delivery binding requires every local outcome to be promo
   assert.equal(merge.stop_reason, 'decision_outcome_binding_failed');
 });
 
+test('GDO-S-5: a successful rebinding clears stale binding-failure reconciliation flags', () => {
+  const merge = {
+    status: 'merged',
+    stop_reason: null,
+    delivery: {
+      status: 'merged',
+      pr_url: 'https://github.com/example/repo/pull/2',
+      merge_commit_sha: 'immutable-delivery'
+    },
+    reconciliation: { status: 'reconciled', reasons: [] }
+  };
+  applyDecisionOutcomeBinding(merge, {
+    localEntries: [entry()],
+    promotion: { status: 'failed', reason: 'central_ledger_parse_failed' }
+  });
+  assert.equal(merge.stop_reason, 'decision_outcome_binding_failed');
+
+  const rebound = applyDecisionOutcomeBinding(merge, {
+    localEntries: [entry()],
+    promotion: { status: 'promoted', promoted_count: 0, duplicate_count: 1 }
+  });
+  assert.equal(rebound.status, 'bound');
+  assert.equal(merge.reconciliation.status, 'reconciled');
+  assert.deepEqual(merge.reconciliation.reasons, []);
+  assert.equal(merge.stop_reason, null);
+
+  // Other reconciliation reasons and foreign stop_reasons are preserved.
+  const mixed = {
+    status: 'merged',
+    stop_reason: 'delivery_reconciliation_required',
+    delivery: merge.delivery,
+    reconciliation: {
+      status: 'reconciliation_required',
+      reasons: ['base_behind_remote', 'decision_outcome_binding_failed']
+    }
+  };
+  applyDecisionOutcomeBinding(mixed, {
+    localEntries: [entry()],
+    promotion: { status: 'promoted', promoted_count: 1, duplicate_count: 0 }
+  });
+  assert.equal(mixed.reconciliation.status, 'reconciliation_required');
+  assert.deepEqual(mixed.reconciliation.reasons, ['base_behind_remote']);
+  assert.equal(mixed.stop_reason, 'delivery_reconciliation_required');
+});
+
 test('GDO-S-4: stories without local decision outcomes do not invent a binding failure', () => {
   const binding = buildDecisionOutcomeBinding({
     localEntries: [],
