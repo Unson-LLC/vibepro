@@ -1,0 +1,197 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
+
+import {
+  detectProductExecutionSignals,
+  listE2eTestFiles,
+  lintE2eProductExecution,
+  PRODUCT_EXECUTION_SIGNALS
+} from '../scripts/lint-e2e-product-execution.mjs';
+
+const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const lintPath = join(repoRoot, 'scripts', 'lint-e2e-product-execution.mjs');
+
+function makeFixtureRoot(files) {
+  const root = mkdtempSync(join(tmpdir(), 'e2e-product-execution-lint-'));
+  mkdirSync(join(root, 'test', 'e2e'), { recursive: true });
+  for (const [name, content] of Object.entries(files)) {
+    writeFileSync(join(root, 'test', 'e2e', name), content);
+  }
+  return root;
+}
+
+function runLint(root, overrides = {}) {
+  const lines = [];
+  const status = lintE2eProductExecution({
+    rootDir: root,
+    log: (line) => lines.push(line),
+    ...overrides
+  });
+  return { status, output: lines.join('\n') };
+}
+
+// The smallest file this Story removed, quoted verbatim from the Story
+// background. The left operand is a literal the file wrote itself and the
+// right operand is a substring of that literal, so no product change can
+// fail it.
+const HISTORICAL_VACUOUS_FILE = `import test from 'node:test';
+import assert from 'node:assert/strict';
+
+test('story-vibepro-engineering-judgment-activation-precision ac:1', () => {
+  assert.match(
+    'activation_candidates activation_signals activation_precision',
+    /activation_precision/
+  );
+});
+`;
+
+const REAL_BEHAVIOUR_FILE = `import test from 'node:test';
+import assert from 'node:assert/strict';
+import { buildThing } from '../../src/thing.js';
+
+test('exercises the product', () => {
+  assert.equal(buildThing().ok, true);
+});
+`;
+
+test('LINT-1 VET-S-5 a test file that executes no product behaviour fails the lint and is named', () => {
+  const root = makeFixtureRoot({
+    'story-vacuous-main.test.js': HISTORICAL_VACUOUS_FILE,
+    'story-real-main.test.js': REAL_BEHAVIOUR_FILE
+  });
+  try {
+    const { status, output } = runLint(root);
+    assert.equal(status, 1);
+    assert.match(output, /story-vacuous-main\.test\.js/);
+    assert.doesNotMatch(output, /story-real-main\.test\.js/);
+    assert.match(output, /execute no product behaviour/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('LINT-2 VET-S-5 the lint fails closed when it cannot scan the e2e directory', () => {
+  // A lint that reports clean on a directory it cannot read is worse than no
+  // lint: it converts a missing subject into a passing signal.
+  const root = mkdtempSync(join(tmpdir(), 'e2e-product-execution-lint-missing-'));
+  try {
+    const { status, output } = runLint(root);
+    assert.equal(status, 1);
+    assert.match(output, /Could not scan/);
+    assert.match(output, /fails closed/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+
+  // Same contract when the directory exists but enumeration itself throws.
+  const permissionRoot = makeFixtureRoot({ 'story-real-main.test.js': REAL_BEHAVIOUR_FILE });
+  try {
+    const { status, output } = runLint(permissionRoot, {
+      readdir: () => {
+        throw Object.assign(new Error('EACCES: permission denied'), { code: 'EACCES' });
+      }
+    });
+    assert.equal(status, 1);
+    assert.match(output, /Could not scan/);
+    assert.match(output, /EACCES/);
+  } finally {
+    rmSync(permissionRoot, { recursive: true, force: true });
+  }
+});
+
+test('LINT-3 VET-S-5 an unreadable file fails the lint instead of being skipped', () => {
+  const root = makeFixtureRoot({ 'story-real-main.test.js': REAL_BEHAVIOUR_FILE });
+  try {
+    const { status, output } = runLint(root, {
+      readFile: () => {
+        throw Object.assign(new Error('EIO: i/o error'), { code: 'EIO' });
+      }
+    });
+    assert.equal(status, 1);
+    assert.match(output, /Could not read/);
+    assert.match(output, /fails closed/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('LINT-4 VET-S-5 an empty e2e directory fails rather than reporting a silent clean run', () => {
+  const root = makeFixtureRoot({});
+  try {
+    const { status, output } = runLint(root);
+    assert.equal(status, 1);
+    assert.match(output, /silent no-op/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('LINT-5 each of the three product-execution signals independently clears a file', () => {
+  const signalFixtures = {
+    product_import: `import { thing } from '../../src/thing.js';\ntest('x', () => { thing(); });\n`,
+    process_start: `import { execFileSync } from 'node:child_process';\ntest('x', () => { execFileSync('node', ['-e', '1']); });\n`,
+    filesystem_access: `import { readFileSync } from 'node:fs';\ntest('x', () => { readFileSync('package.json', 'utf8'); });\n`
+  };
+  assert.deepEqual(
+    Object.keys(signalFixtures).sort(),
+    PRODUCT_EXECUTION_SIGNALS.map((signal) => signal.id).sort(),
+    'every declared signal must have a fixture proving it is sufficient on its own'
+  );
+
+  for (const [signalId, content] of Object.entries(signalFixtures)) {
+    assert.deepEqual(detectProductExecutionSignals(content), [signalId]);
+    const root = makeFixtureRoot({ 'story-signal-main.test.js': content });
+    try {
+      const { status } = runLint(root);
+      assert.equal(status, 0, `${signalId} alone must satisfy the lint`);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  }
+
+  assert.deepEqual(detectProductExecutionSignals(HISTORICAL_VACUOUS_FILE), []);
+});
+
+test('LINT-6 the lint only inspects test files and sorts its inspection deterministically', () => {
+  const root = makeFixtureRoot({
+    'zz-story-main.test.js': REAL_BEHAVIOUR_FILE,
+    'aa-story-main.spec.ts': REAL_BEHAVIOUR_FILE,
+    'README.md': 'not a test file, and vacuous by nature'
+  });
+  try {
+    assert.deepEqual(listE2eTestFiles(join(root, 'test', 'e2e')), [
+      'aa-story-main.spec.ts',
+      'zz-story-main.test.js'
+    ]);
+    const { status } = runLint(root);
+    assert.equal(status, 0);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('LINT-7 VET-S-1 the repository test/e2e directory contains no file that executes no product behaviour', () => {
+  const { status, output } = runLint(repoRoot);
+  assert.equal(status, 0, output);
+  assert.match(output, /all execute product behaviour/);
+});
+
+test('LINT-8 the lint is runnable as a standalone command and reports through its exit code', () => {
+  const clean = spawnSync(process.execPath, [lintPath], { cwd: repoRoot, encoding: 'utf8' });
+  assert.equal(clean.status, 0, clean.stdout + clean.stderr);
+  assert.match(clean.stdout, /all execute product behaviour/);
+
+  const dirty = makeFixtureRoot({ 'story-vacuous-main.test.js': HISTORICAL_VACUOUS_FILE });
+  try {
+    const result = spawnSync(process.execPath, [lintPath], { cwd: dirty, encoding: 'utf8' });
+    assert.equal(result.status, 1);
+    assert.match(result.stdout, /story-vacuous-main\.test\.js/);
+  } finally {
+    rmSync(dirty, { recursive: true, force: true });
+  }
+});

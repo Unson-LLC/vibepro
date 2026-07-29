@@ -71,16 +71,46 @@ assert.match('activation_candidates activation_signals activation_precision', /a
 
 ## Delivery
 
-本Storyは2 PRに分けて出荷する。順序に依存関係があるため入れ替えられない。
+**現行方針(2026-07-29改訂): 単一PRで原子的に出荷する。**
 
-1. **PR 1 (e2e-gate / requirements-ssot / repo-control)**: 19件の削除・2件の実挙動テストへの書き換え・Story登録・`.vibepro/spec/` のtest_ref張り替え・`docs/specs/vibepro-pr-ship-command.md` の記述修正。VET-S-2 / VET-S-3 / VET-S-4 / VET-S-6 を満たす。
-2. **PR 2 (runtime-behavior)**: `scripts/lint-e2e-product-execution.mjs` と `test/e2e-product-execution-lint.test.js`。VET-S-1 / VET-S-5 を満たす。
+削除17件・実挙動テストへの書き換え2件・Story登録・`.vibepro/spec/` のtest_ref張り替え・
+`docs/specs/vibepro-pr-ship-command.md` の記述修正・`scripts/lint-e2e-product-execution.mjs`・
+`test/e2e-product-execution-lint.test.js`・CIステップ追加・Story acceptance replay specを
+1つのPRに含め、VET-S-1 から VET-S-6 までを同一HEADで満たす。
 
-lintは19件が存在する状態では失敗するため、PR 2 を先に出すとCIが赤になる。逆順(PR 1 → PR 2)は各PR単体でgreenであることを実測済み。
+### 旧方針(superseded: 2 PR分割)とその撤回理由
+
+当初の記載は以下のとおりで、これは撤回する。記録として残す。
+
+> 本Storyは2 PRに分けて出荷する。順序に依存関係があるため入れ替えられない。
+>
+> 1. **PR 1 (e2e-gate / requirements-ssot / repo-control)**: 19件の削除・2件の実挙動テストへの書き換え・Story登録・`.vibepro/spec/` のtest_ref張り替え・`docs/specs/vibepro-pr-ship-command.md` の記述修正。VET-S-2 / VET-S-3 / VET-S-4 / VET-S-6 を満たす。
+> 2. **PR 2 (runtime-behavior)**: `scripts/lint-e2e-product-execution.mjs` と `test/e2e-product-execution-lint.test.js`。VET-S-1 / VET-S-5 を満たす。
+>
+> lintは19件が存在する状態では失敗するため、PR 2 を先に出すとCIが赤になる。逆順(PR 1 → PR 2)は各PR単体でgreenであることを実測済み。
+
+撤回の根拠は2点あり、いずれも実測に基づく。
+
+1. **分割の主動機が実測で否定された**: 下記 Dogfooding findings 1 は「削除主体のlaneは
+   `atomic_scope` を `accepted` にできず、`gate:pr_scope_judgment` を分割以外で閉じられない」
+   ことを分割の理由としていた。しかし削除のみのPR 1 相当の内容で `pr prepare` を実行しても
+   `gate:pr_scope_judgment` は `needs_split` のままであり、分割してもこのgateは閉じない。
+   つまり分割はこの問題を解決しないので、分割を選ぶ根拠にならない。
+2. **順序制約は単一PR化で消滅する**: 「lintは19件が存在する状態では失敗する」という制約は、
+   削除とlintを同一commit範囲で出荷すれば発生しない。分割した場合にのみ生じる制約だった。
+
+加えて、Story全体のAcceptance CriteriaはStory単位で評価される
+(`buildStoryE2eAcceptanceCoverage` はStory markdownの `## Acceptance Criteria` 配下の
+全項目を必須とし、チェックボックス状態も繰り延べマーカーも解釈しない)。
+`pr prepare --task` によるacceptance scopeの絞り込みは、hand-written Storyでは
+`story derive` → `story plan` → `task create` の系列が使えないため利用できない。
+そのため2 PR分割を維持すると、PR 1 は VET-S-1 / VET-S-5 未達を理由に
+`gate:e2e` を `needs_evidence` のまま閉じられず、waiverなしには出荷できなかった。
+単一PR化はこのwaiverを不要にする。
 
 ## Dogfooding findings（VibePro本体の欠陥。本Storyでは修正せず別Storyに送る）
 
-1. **削除のみのlaneはatomic scopeを取得できない**: `buildAgentReviewOwnerMapEvidence()` はowner判定を `content_binding.surface_files` から行うが、`buildContentBinding()` は実在するファイルしかhashしないため、削除されたパスは永久に `uncovered_paths` に残る。結果として削除主体の変更は `atomic_scope` を `accepted` にできず、critical gateである `gate:pr_scope_judgment` を分割以外の方法で閉じられない。本Storyがまさにこれに当たり、単一PR方針を断念して分割した。
+1. **削除のみのlaneはatomic scopeを取得できない**: `buildAgentReviewOwnerMapEvidence()` はowner判定を `content_binding.surface_files` から行うが、`buildContentBinding()` は実在するファイルしかhashしないため、削除されたパスは永久に `uncovered_paths` に残る。結果として削除主体の変更は `atomic_scope` を `accepted` にできない。**訂正(2026-07-29)**: 当初これを「`gate:pr_scope_judgment` を分割以外の方法で閉じられない」と読み、分割の理由とした。しかし実測では分割しても `gate:pr_scope_judgment` は `needs_split` のままであり、このgateの解消は分割の有無に依存しない(理由付きdecision recordで解消する)。したがって本findingはVibePro側の欠陥報告としては有効だが、PR分割の根拠にはならない。上記 Delivery の撤回理由1を参照。
 2. **ディレクトリを `--inspection-input` に渡すと無言で捨てられる**: `buildContentBinding()` はディレクトリを `surface_files` にも `missing_files` にも入れないため、coordinatorは入力が無視されたことに気づけない。`verificationTargetCoversChangedPath()` はprefix一致を実装しており、ディレクトリ指定が効くように見えるのが誤解を強める。
 
 ## Non Goals

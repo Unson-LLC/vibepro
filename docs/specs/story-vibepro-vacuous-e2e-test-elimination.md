@@ -48,10 +48,23 @@ ESMではこの3つはいずれもimport/require無しには到達できない�
 
 ## 出荷単位
 
-lintは19ファイルが存在する状態では失敗するため、順序を入れ替えられない。
+**単一PR(2026-07-29改訂)**: 削除17件 + 書き換え2件 + Story/spec/doc/config + lint本体 +
+lintのCIステップ + Story acceptance replay spec を1つのPRに含め、
+VET-S-1 から VET-S-6 までを同一HEADで満たす。
 
-1. PR 1: 削除17件 + 書き換え2件 + Story/spec/doc/config → VET-S-2, VET-S-3, VET-S-4, VET-S-6
-2. PR 2: lint本体 → VET-S-1, VET-S-5
+旧記載は以下で、これは撤回した。
+
+> lintは19ファイルが存在する状態では失敗するため、順序を入れ替えられない。
+>
+> 1. PR 1: 削除17件 + 書き換え2件 + Story/spec/doc/config → VET-S-2, VET-S-3, VET-S-4, VET-S-6
+> 2. PR 2: lint本体 → VET-S-1, VET-S-5
+
+「lintは19ファイルが存在する状態では失敗する」という制約は、削除とlintを
+同一commit範囲に置けば発生しない。分割した場合にのみ生じる制約だった。
+分割のもう一方の根拠(削除のみのlaneは `atomic_scope` を取得できないので
+`gate:pr_scope_judgment` を分割でしか閉じられない)は実測で否定されている。
+分割しても同gateは `needs_split` のままで、解消は分割の有無に依存しない。
+詳細はStoryの Delivery 節を参照。
 
 ## 脅威モデル上の位置づけ
 

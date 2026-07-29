@@ -7,6 +7,11 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { listE2eTsSpecs, runE2eTsSpecs } from '../../scripts/run-e2e-ts-specs.mjs';
+import {
+  detectProductExecutionSignals,
+  listE2eTestFiles,
+  lintE2eProductExecution
+} from '../../scripts/lint-e2e-product-execution.mjs';
 
 const execFileAsync = promisify(execFile);
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -65,6 +70,7 @@ const replacementRun = replay(...REPLACEMENT_SUITES);
 const executionStateRun = replay('test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js');
 const managedWorktreeRun = replay('test/e2e/story-vibepro-managed-worktree-gate-main.test.js');
 const specGateRun = replay('test/node20-e2e-ts-ci-visibility.test.js');
+const lintRun = replay('test/e2e-product-execution-lint.test.js');
 
 test('story-vibepro-vacuous-e2e-test-elimination ac:2 VET-S-2 the removed files leave no coverage hole: their Story ACs still execute in behavioural suites', async () => {
   for (const removed of REMOVED_VACUOUS_FILES) {
@@ -156,8 +162,63 @@ test('story-vibepro-vacuous-e2e-test-elimination ac:6 INV-003 the .spec.ts gate 
   assert.doesNotMatch(stdout, /^not ok/m);
 });
 
-// ac:1 (VET-S-1) and ac:5 (VET-S-5) are delivered by PR 2 of this Story
-// (scripts/lint-e2e-product-execution.mjs and its test). They are deliberately
-// not asserted here: writing a placeholder assertion for them would recreate
-// exactly the vacuous-test defect this Story removes. See the Delivery section
-// of docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md.
+test('story-vibepro-vacuous-e2e-test-elimination ac:1 VET-S-1 no file under test/e2e executes zero product behaviour', async () => {
+  // Real run of the lint against the real repository directory.
+  const lines: string[] = [];
+  const status = lintE2eProductExecution({
+    rootDir: repoRoot,
+    log: (line: string) => lines.push(line)
+  });
+  const output = lines.join('\n');
+  assert.equal(status, 0, output);
+  assert.match(output, /all execute product behaviour/);
+
+  // The count the lint reports must be the directory it actually inspected,
+  // not a constant: otherwise a moved directory would still read as clean.
+  const inspected = Number(/e2e-product-execution: (\d+) e2e test file/.exec(output)?.[1] ?? 0);
+  assert.ok(inspected > 0);
+  assert.equal(inspected, listE2eTestFiles(path.join(repoRoot, 'test', 'e2e')).length);
+});
+
+test('story-vibepro-vacuous-e2e-test-elimination ac:5 VET-S-5 the lint detects a vacuous file and fails closed when it cannot scan', async () => {
+  // The exact shape this Story removed: a literal asserted against a regex
+  // built from that same literal.
+  const vacuous = [
+    "import test from 'node:test';",
+    "import assert from 'node:assert/strict';",
+    "test('x', () => {",
+    "  assert.match('activation_candidates activation_signals activation_precision', /activation_precision/);",
+    '});'
+  ].join('\n');
+  assert.deepEqual(detectProductExecutionSignals(vacuous), []);
+
+  const detected: string[] = [];
+  const detectedStatus = lintE2eProductExecution({
+    rootDir: repoRoot,
+    log: (line: string) => detected.push(line),
+    readdir: () => ['story-vacuous-main.test.js'],
+    readFile: () => vacuous
+  });
+  assert.equal(detectedStatus, 1);
+  assert.match(detected.join('\n'), /story-vacuous-main\.test\.js/);
+
+  // Second clause of VET-S-5: an unscannable directory must also fail.
+  const unscannable: string[] = [];
+  const unscannableStatus = lintE2eProductExecution({
+    rootDir: repoRoot,
+    log: (line: string) => unscannable.push(line),
+    readdir: () => {
+      throw Object.assign(new Error('ENOENT: no such file or directory'), { code: 'ENOENT' });
+    }
+  });
+  assert.equal(unscannableStatus, 1);
+  assert.match(unscannable.join('\n'), /Could not scan/);
+
+  // And the lint's own suite must be green, so the two clauses above are
+  // backed by a maintained test file rather than only by this replay.
+  const { stdout } = await lintRun;
+  assert.match(stdout, /LINT-1 VET-S-5 a test file that executes no product behaviour fails the lint and is named/);
+  assert.match(stdout, /LINT-2 VET-S-5 the lint fails closed when it cannot scan the e2e directory/);
+  assert.match(stdout, REPORTER_FAIL_ZERO);
+  assert.doesNotMatch(stdout, /^not ok/m);
+});
