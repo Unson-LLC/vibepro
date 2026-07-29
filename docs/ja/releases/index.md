@@ -209,3 +209,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:394:start -->
 - [PR #394](https://github.com/Unson-LLC/vibepro/pull/394) — [2026-07](/ja/releases/2026-07): feat: support task-scoped PR acceptance gates
 <!-- vibepro-release-index-pr:394:end -->
+
+<!-- vibepro-release-index-pr:395:start -->
+- [PR #395](https://github.com/Unson-LLC/vibepro/pull/395) — [2026-07](/ja/releases/2026-07): story-vibepro-runner-direct-evidence - 先行Storyで『441/441で再実行した』という真の主張ですら、artifactが前回と同一内容のためgit上で検証不能になり3ラウンド連続で指摘された。head_shaを手で足す対処をしたが、根本は実行した者と記録する者が同一であること
+<!-- vibepro-release-index-pr:395:end -->
