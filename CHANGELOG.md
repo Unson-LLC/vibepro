@@ -4,6 +4,44 @@ All notable changes to VibePro will be documented in this file.
 
 ## Unreleased
 
+- Remove 17 files under `test/e2e` that imported no product code, started no
+  process, and touched no filesystem. Each asserted a locally-defined string
+  against a regex built from that same string, so no product regression could
+  fail them, yet `node --test` counted them as passing e2e tests. Their Story
+  acceptance criteria are already executed against real git repositories and
+  real CLI runs by `test/cli-status-honesty.test.js`,
+  `test/engineering-judgment-activation-precision.test.js`,
+  `test/managed-worktree-policy-resync.test.js`,
+  `test/traceability-usage-report.test.js`, `test/vibepro-cli.test.js`, and the
+  real `-main.test.js` siblings. Two files covered branches nothing else
+  executed and were rewritten into behavioural tests instead of deleted.
+
+- Add `npm run lint:e2e-product-execution`
+  (`scripts/lint-e2e-product-execution.mjs`), which fails when a `test/e2e`
+  file executes no product behaviour — none of: importing repository product
+  code (`src/`, `scripts/`, `bin/`), starting a process, or touching the
+  filesystem. It runs in CI after `npm run test:e2e:ts`.
+
+  **Operator action**: none for existing consumers; this is a repository-internal
+  test-quality gate and changes no published CLI surface, artifact schema, or
+  runtime behaviour. Contributors adding a `test/e2e` file must assert on real
+  behaviour rather than on a literal the test wrote itself.
+
+  **Observability**: the lint reports through its exit code and prints either
+  `e2e-product-execution: <n> e2e test file(s) all execute product behaviour`
+  or a `::error::` annotation naming every offending file. The reported count
+  is the directory it actually inspected, so a moved or emptied directory is
+  visible rather than silently clean. It is fail-closed on every path where it
+  cannot see its subject: an unscannable directory, an unreadable file, and an
+  empty file set are all exit 1.
+
+  **Rollback**: revert the commit. The lint is a standalone script plus one CI
+  step and one npm script; nothing reads its output as data, there is no
+  persisted state, no schema, and no migration. To disable it without a revert,
+  remove the `npm run lint:e2e-product-execution` step from
+  `.github/workflows/ci.yml`; the deletions in this change stand on their own
+  and do not depend on the lint.
+
 ## 0.2.0-beta.2 - 2026-07-29
 
 - Add `vibepro verify run`: VibePro executes the verification command itself (argv,
