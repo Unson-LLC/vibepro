@@ -55,7 +55,7 @@
         ]
       },
       "first_seen_at": "2026-07-29T15:17:30.466Z",
-      "last_revised_at": "2026-07-29T15:17:30.466Z"
+      "last_revised_at": "2026-07-29T15:32:22.515Z"
     },
     {
       "id": "S-001",
@@ -106,8 +106,29 @@
         ]
       },
       "first_seen_at": "2026-07-29T15:17:30.466Z",
-      "last_revised_at": "2026-07-29T15:17:30.466Z"
+      "last_revised_at": "2026-07-29T15:32:22.515Z"
     }
   ],
-  "previous_spec_id": null
+  "diagrams": [
+    {
+      "kind": "state",
+      "mermaid": "stateDiagram-v2\n    [*] --> reconciled\n    reconciled --> reconciliation_required: binding failed (reason appended, stop_reason=decision_outcome_binding_failed)\n    reconciliation_required --> reconciled: rebinding bound and no other reasons remain (stop_reason cleared)\n    reconciliation_required --> reconciliation_required: rebinding bound but foreign reasons remain (stop_reason=delivery_reconciliation_required)",
+      "entities": [
+        "reconciled",
+        "reconciliation_required"
+      ],
+      "rationale": "AC-1..AC-3: reconciliation status/stop_reason transitions owned by applyDecisionOutcomeBinding in src/merge-manager.js"
+    },
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart TD\n    A[local gate-outcome ledger] --> B[applyDecisionOutcomeBinding]\n    B -->|failed| C[stop_reason=decision_outcome_binding_failed persisted in pr-merge.json]\n    B -->|bound| D[stale failure marker cleared]\n    C -->|threat: stale flag survives successful reruns and blocks delivery follow-up| B\n    D --> E[canonical ledger docs/management/roi-ledger/ledger.json unchanged by clearing]",
+      "entities": [
+        "local gate-outcome ledger",
+        "pr-merge.json",
+        "canonical ledger"
+      ],
+      "rationale": "AC-4: only the marker set by this function is cleared; failure fail-closed behavior and foreign stop_reasons are preserved, so no gate bypass is introduced"
+    }
+  ],
+  "previous_spec_id": "2026-07-30T00:00:00.000Z"
 }
