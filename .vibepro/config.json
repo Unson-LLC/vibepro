@@ -1006,8 +1006,20 @@
         "started_at": "2026-07-27",
         "due_at": null,
         "category": "architecture"
+      },
+      {
+        "story_id": "story-vibepro-release-0-2-0-beta-2",
+        "title": "0.2.0-beta.2 を npm へ出荷する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-29",
+        "due_at": null,
+        "category": "release"
       }
     ],
-    "current_story_id": "story-vibepro-runner-direct-evidence"
+    "current_story_id": "story-vibepro-release-0-2-0-beta-2"
   }
 }
