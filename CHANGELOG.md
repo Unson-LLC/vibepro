@@ -4,6 +4,43 @@ All notable changes to VibePro will be documented in this file.
 
 ## Unreleased
 
+## 0.2.0-beta.2 - 2026-07-29
+
+- Add `vibepro verify run`: VibePro executes the verification command itself (argv,
+  no shell) and records the execution exhaust — exit code, parsed test counts,
+  duration, head sha and worktree fingerprints before/after, output hashes — without
+  passing through agent input. Records carry an `evidence_source` trust marker
+  (`runner_direct` / `autopilot_run` / `ci_import` / `self_reported`) set by the
+  recording path via an internal receipt; no CLI flag sets it, and records without
+  the field read as `self_reported`.
+
+- **Breaking (input contract)**: `verify record --observed` now rejects 26
+  provenance/integrity keys only a runner's own execution can produce
+  (`run_artifact`, `stdout_sha256`, `worktree_sha256_before`, `timed_out`, …; the
+  boundary is enumerated in the Spec). The same keys arriving inside a caller
+  `--artifact` are stripped and named on the record as a warning. The 12 outcome
+  keys (`tests`, `pass`, `fail`, `duration_ms`, `head_sha`, …) stay accepted.
+  Audit existing `--observed` usage against the Spec list, or migrate locally
+  runnable checks to `verify run`.
+
+- **Behavior change (read-time classification)**: the gate evidence classification
+  corpus excludes those provenance keys and their values, so classification derives
+  only from declared targets/scenarios and retained outcome keys. Existing
+  `runner_direct` records that earned `runtime_path_evidence` solely from their own
+  artifact path lose it on the next `pr prepare`, and spine gates requiring that
+  kind can flip to unmet; re-record with truthful targets/scenarios via
+  `verify run`. Recorded artifacts are never rewritten.
+
+- `npm run typecheck` now checks every file instead of silently stopping at the
+  first glob entry (`node --check` reads only its first positional). Previously
+  passing broken files may now be detected — an intended behavior change.
+
+- The adjudication request states how each record was produced: `evidence_source`,
+  the computed-observation producer and keys, discarded-input diffs, and the
+  record's own warnings are rendered, and every agent-controlled string has its
+  line breaks and control characters escaped so a value cannot forge an
+  authoritative line.
+
 - Add risk-adaptive validation sequencing for workflow-heavy and boundary-sensitive
   changes. High-risk PR preparation now requires targeted validation, advisory
   preflight disposition, an exact freeze binding, reusable expensive verification,
@@ -16,6 +53,9 @@ All notable changes to VibePro will be documented in this file.
   Passing `review record` calls must now include `--inspection-summary`, at least
   one existing non-`.vibepro` `--inspection-input`, and `--judgment-delta`;
   existing automation must add these arguments when upgrading.
+
+- Support task-scoped PR acceptance gates: task-scoped PRs keep Story context while
+  judging only the selected task's acceptance scope.
 
 ## 0.2.0-beta.1 - 2026-07-18
 
