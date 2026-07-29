@@ -138,6 +138,12 @@ test('import-ci records successful CI checks as head-bound verification evidence
   assert.equal(integration.observation_check.status, 'recorded');
   assert.equal(integration.observation.values.head_sha, headSha);
   assert.match(integration.command, /ci\.example\/run/);
+  // The import transcribes a completed CI check at the current head, so the record must be
+  // marked as computed rather than self-reported.
+  assert.equal(integration.evidence_source, 'ci_import');
+  assert.equal(integration.computed_observation.producer, 'vibepro verify import-ci');
+  assert.equal(integration.computed_observation.values.head_sha, headSha);
+  assert.equal(integration.computed_observation.output_metrics, 'ci_check_conclusion');
 });
 
 test('import-ci public path records frozen node test coverage from realistic CI checks', async () => {

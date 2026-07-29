@@ -13,6 +13,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 
 | 公開日 | Version | Channel | 内容 |
 | --- | --- | --- | --- |
+| 2026-07-29 | [`0.2.0-beta.2`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.2) | npm `beta` / `latest` | PRマージ後のcontinuous release |
 | 2026-07-18 | [`0.2.0-beta.1`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.1) | npm `latest` / `beta` | PRマージ後のcontinuous release |
 | 2026-07-16 | [`0.2.0-beta.0`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.0) | npm `latest` / `beta` | release workflow完了後の現在の公開beta |
 | 2026-06-07 | [`0.1.0-beta.0`](https://www.npmjs.com/package/vibepro/v/0.1.0-beta.0) | npm | 以前の公開beta |
@@ -205,3 +206,19 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:392:start -->
 - [PR #392](https://github.com/Unson-LLC/vibepro/pull/392) — [2026-07](/ja/releases/2026-07): story-vibepro-docs-only-evidence-profile - budget exceeded 19/71の大半が製品変更0行のdocs/roadmap Storyで、bundleが3,700〜5,000行に膨らみ、計測上もdiff base喪失でratioが壊れている
 <!-- vibepro-release-index-pr:392:end -->
+
+<!-- vibepro-release-index-pr:394:start -->
+- [PR #394](https://github.com/Unson-LLC/vibepro/pull/394) — [2026-07](/ja/releases/2026-07): feat: support task-scoped PR acceptance gates
+<!-- vibepro-release-index-pr:394:end -->
+
+<!-- vibepro-release-index-pr:395:start -->
+- [PR #395](https://github.com/Unson-LLC/vibepro/pull/395) — [2026-07](/ja/releases/2026-07): story-vibepro-runner-direct-evidence - 先行Storyで『441/441で再実行した』という真の主張ですら、artifactが前回と同一内容のためgit上で検証不能になり3ラウンド連続で指摘された。head_shaを手で足す対処をしたが、根本は実行した者と記録する者が同一であること
+<!-- vibepro-release-index-pr:395:end -->
+
+<!-- vibepro-release-index-pr:396:start -->
+- [PR #396](https://github.com/Unson-LLC/vibepro/pull/396) — [2026-07](/ja/releases/2026-07): story-vibepro-release-0-2-0-beta-2 - runner-direct evidence (PR #395) を含む #356〜#395 の約20PR分が npm 未公開のまま main に滞留している
+<!-- vibepro-release-index-pr:396:end -->
+
+<!-- vibepro-release-index-pr:397:start -->
+- [PR #397](https://github.com/Unson-LLC/vibepro/pull/397) — [2026-07](/ja/releases/2026-07): story-vibepro-review-surface-violation-ledger - 先行 Story の round 6 で、実装エージェントがレビュー実行中にツリーを変更した。lifecycle は start 時の head_sha しか記録しないため機械検出されず、レビュアーが git status を偶然見て発見した。違反は stale と同じ failed 表示になり、レビュー再実行で痕跡ごと消えた
+<!-- vibepro-release-index-pr:397:end -->

@@ -1,6 +1,6 @@
 {
   "name": "vibepro",
-  "version": "0.2.0-beta.1",
+  "version": "0.2.0-beta.2",
   "description": "Product-intent gates and review evidence for AI coding agents",
   "type": "module",
   "license": "Apache-2.0",
@@ -48,7 +48,7 @@
     "docs:preview": "vitepress preview docs",
     "test": "node --test",
     "test:e2e:ts": "node scripts/run-e2e-ts-specs.mjs",
-    "typecheck": "node --check bin/vibepro.js && node --check src/*.js",
+    "typecheck": "for f in bin/vibepro.js src/*.js; do node --check \"$f\" || exit 1; done",
     "pack:dry-run": "npm pack --dry-run"
   },
   "devDependencies": {

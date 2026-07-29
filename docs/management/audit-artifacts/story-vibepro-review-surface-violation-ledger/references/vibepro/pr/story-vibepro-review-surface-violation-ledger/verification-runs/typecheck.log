@@ -1,0 +1,4 @@
+
+> vibepro@0.2.0-beta.2 typecheck
+> for f in bin/vibepro.js src/*.js; do node --check "$f" || exit 1; done
+

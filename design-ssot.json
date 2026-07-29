@@ -7114,7 +7114,205 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-task-scoped-pr-acceptance",
+      "title": "Task-scoped PR acceptance",
+      "root_doc": "docs/architecture/story-vibepro-task-scoped-pr-acceptance.md",
+      "owner": "vibepro",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-task-scoped-pr-acceptance.md",
+            "required": true,
+            "relationship": "defines",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-task-scoped-pr-acceptance.md",
+            "required": true,
+            "relationship": "specifies",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-task-scoped-pr-acceptance.md",
+          "required": true,
+          "relationship": "defines",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-task-scoped-pr-acceptance.md",
+          "required": true,
+          "relationship": "specifies",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-runner-direct-evidence",
+      "title": "Runner-direct verification evidence",
+      "root_doc": "docs/management/stories/active/story-vibepro-runner-direct-evidence.md",
+      "owner": "sato_keigo",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-runner-direct-evidence.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-runner-direct-evidence.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-release-0-2-0-beta-2",
+      "title": "Release 0.2.0-beta.2",
+      "root_doc": "docs/management/stories/active/story-vibepro-release-0-2-0-beta-2.md",
+      "owner": "sato_keigo",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-release-0-2-0-beta-2.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-release-0-2-0-beta-2.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-review-surface-violation-ledger",
+      "title": "Review Surface Violation Ledger",
+      "root_doc": "docs/architecture/vibepro-review-surface-violation-ledger.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "Append-only recording of review-surface changes observed between review start and close, kept typed apart from review staleness",
+      "owned_surfaces": [
+        "vibepro review close surface snapshot recording",
+        "review surface violation ledger (.vibepro/reviews/<story-id>/surface-violations.json)",
+        "gate:review_surface_integrity"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-25T00:47:14.149Z"
+  "updated_at": "2026-07-28T04:55:19.762Z"
 }

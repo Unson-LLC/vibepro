@@ -130,6 +130,50 @@ test('report fingerprint --kind pr-body emits story, gate, drift, spec, schema, 
   assert.ok(typeof fp.instructions === 'string' && fp.instructions.length > 0);
 });
 
+test('report fingerprint binds the digest and numerical truth to the selected Task acceptance scope', async () => {
+  const repo = await makeReportRepo();
+  const tasksDir = path.join(repo, '.vibepro', 'stories', STORY_ID, 'tasks');
+  await mkdir(tasksDir, { recursive: true });
+  const task = (id, criteria) => ({
+    id,
+    title: id,
+    status: 'completed',
+    target_files: ['src/lib/services/billing.ts'],
+    target_groups: [],
+    acceptance_criteria: criteria
+  });
+  await writeFile(path.join(tasksDir, 'tasks.json'), `${JSON.stringify({
+    story: { story_id: STORY_ID },
+    tasks: [
+      task('TASK-A', ['Task A outcome']),
+      task('TASK-B', ['Task B outcome one', 'Task B outcome two'])
+    ]
+  }, null, 2)}\n`);
+
+  const taskA = await captureRunCli([
+    'report', 'fingerprint', repo,
+    '--kind', 'pr-body', '--id', STORY_ID,
+    '--base', 'main', '--task', 'TASK-A'
+  ]);
+  const taskB = await captureRunCli([
+    'report', 'fingerprint', repo,
+    '--kind', 'pr-body', '--id', STORY_ID,
+    '--base', 'main', '--task', 'TASK-B'
+  ]);
+  assert.equal(taskA.exitCode, 0, taskA.stderr);
+  assert.equal(taskB.exitCode, 0, taskB.stderr);
+  const taskAFingerprint = JSON.parse(taskA.stdout);
+  const taskBFingerprint = JSON.parse(taskB.stdout);
+  assert.equal(taskAFingerprint.pr_context.acceptance_scope.task_id, 'TASK-A');
+  assert.equal(taskBFingerprint.pr_context.acceptance_scope.task_id, 'TASK-B');
+  assert.equal(taskAFingerprint.numerical_truth.acceptance_criteria_count, 1);
+  assert.equal(taskBFingerprint.numerical_truth.acceptance_criteria_count, 2);
+  assert.notEqual(
+    taskAFingerprint.inputs_digest.pr_context_sha,
+    taskBFingerprint.inputs_digest.pr_context_sha
+  );
+});
+
 test('report write rejects citation of nonexistent file', async () => {
   const repo = await makeReportRepo();
   const bogus = {

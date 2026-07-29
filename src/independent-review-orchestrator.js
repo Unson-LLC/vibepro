@@ -464,8 +464,18 @@ async function runRole({ boundaries, context, journal, stage, role, persistCheck
 
 async function closeStoppedLifecycle({ boundaries, base, lifecycle, dispatch, stop, journal, stage, role, persistCheckpoint }) {
   return once(journal, stage, role, 'close', (operation) => boundaries.close({
-    ...base, lifecycle, dispatch, poll: stop, closeReason: stop.stop_reason?.code ?? 'runtime_stopped', operation
+    ...base, lifecycle, dispatch, poll: stop, closeReason: runtimeStopCloseReason(stop), operation
   }), persistCheckpoint);
+}
+
+// A runtime stop code is not a lifecycle close reason. Passing it straight
+// through used to land on `completed` by coercion, which labelled an abandoned
+// review as a finished one — and now that only a completed close records a
+// review-surface violation, that mislabel would mint violations for reviews that
+// never produced a verdict. Map to the reason that is actually true instead.
+function runtimeStopCloseReason(stop) {
+  const code = String(stop?.stop_reason?.code ?? '');
+  return /timeout|timed_out|deadline/.test(code) ? 'timeout' : 'manual_shutdown';
 }
 
 async function once(journal, stage, role, operation, invoke, persistCheckpoint, options = {}) {

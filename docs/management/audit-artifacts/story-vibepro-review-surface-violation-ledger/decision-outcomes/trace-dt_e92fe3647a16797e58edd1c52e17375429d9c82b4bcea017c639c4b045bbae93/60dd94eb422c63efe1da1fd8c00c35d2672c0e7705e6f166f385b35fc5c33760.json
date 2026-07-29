@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-review-surface-violation-ledger",
+  "ledger_path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_e92fe3647a16797e58edd1c52e17375429d9c82b4bcea017c639c4b045bbae93"
+  },
+  "parent_revision_fingerprint": "8a0ad1846dc0fdddf075b3532a7209d3c986e6115feaa78de7ff2dff8839b50a",
+  "revision_fingerprint": "60dd94eb422c63efe1da1fd8c00c35d2672c0e7705e6f166f385b35fc5c33760",
+  "trace": {
+    "decision_trace_id": "dt_e92fe3647a16797e58edd1c52e17375429d9c82b4bcea017c639c4b045bbae93",
+    "collision_group": null,
+    "trace_source_ref": "tsr_d54942d49e46fe5076891316787d3baab4e1e8ce3a48f34ec5a93e26cc7d2e79",
+    "normalized_subject_key": "gate:vibepro_artifact_policy",
+    "source_identity": {
+      "source_kind": "decision_record",
+      "source_ref": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-records.json",
+      "native_id": "decision-1785313621373-c93f0219",
+      "digest": "34a2466e059dc1b9065e23705d119c1ed0b073efc077d465320678203fa3f8e6",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+    "parent_revision_fingerprint": "8a0ad1846dc0fdddf075b3532a7209d3c986e6115feaa78de7ff2dff8839b50a",
+    "revision_fingerprint": "60dd94eb422c63efe1da1fd8c00c35d2672c0e7705e6f166f385b35fc5c33760",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_e92fe3647a16797e58edd1c52e17375429d9c82b4bcea017c639c4b045bbae93"
+        },
+        "parent_revision_fingerprint": "d1d74d51038301be0811afc05b5fcf451cb03b92f0cec9624301e235dc3baf04"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 397,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/397",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "e3ef7b963170f8500d370f6914037009944d3e0e",
+        "status": "merged_externally",
+        "merged_at": "2026-07-29T10:38:00Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

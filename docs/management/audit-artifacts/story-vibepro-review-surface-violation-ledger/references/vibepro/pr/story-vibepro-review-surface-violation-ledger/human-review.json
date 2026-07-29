@@ -1,0 +1,169 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-review-surface-violation-ledger",
+  "created_at": "2026-07-29T10:37:47.821Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 21 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-review-surface-violation-ledger.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-review-surface-violation-ledger.md)"
+    },
+    "decision_records": {
+      "total": 7,
+      "open": 0,
+      "by_type": {
+        "needs_review": 7
+      },
+      "by_status": {
+        "accepted": 7
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "expected_root": null,
+          "expected_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+          "current_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1785317781867-268418d4",
+        "story_id": "story-vibepro-review-surface-violation-ledger",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_rollback_sensitive",
+        "source_status": "needs_evidence",
+        "summary": "rollback_sensitive axis: the change set reverts atomically; feature-gate and upgrade/downgrade legs are non-applicable to an additive ledger file plus a test-pin realignment",
+        "reason": "Rollback plan: the entire PR (ledger commits + pin commit bb1a463f) reverts with git revert of the set; no migration, no schema change, no dependency change. Stored-object safety: the only new stored object is .vibepro/reviews/<story>/surface-violations.json, which is additive-only, is read clean when absent, and whose corrupt/truncated states fail closed with a typed error, so a revert leaves no unreadable state behind. Version skew: an older vibepro binary running against a repo that already has a ledger file simply never reads it (the file is namespaced under .vibepro/reviews and old readers do not reference it), degrading to pre-ledger behavior without error; a newer binary against a repo without a ledger reads clean by design (AC-7). Feature gate: none exists and none is required - the gate blocks only on unacknowledged violations, and repos with no violations see a passed gate, so disabled-behavior testing has no subject. Upgrade/downgrade test: non-applicable for the same reason; the acceptance suite already covers the legacy-artifact leg (RSV-7 legacy lifecycles read clean). The npm-side rollback path for the version pin is owned by docs/specs/story-vibepro-release-0-2-0-beta-2.md Operations and unchanged here.",
+        "reviewer": "orchestrating-session-3850f7a1(fable-5)",
+        "artifact": "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.json",
+              "type": "typecheck",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+            "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+            "expected_root": null,
+            "expected_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+            "current_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+          "current_branch": "claude/story-vibepro-review-surface-violation-ledger",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-29T09:36:21.861Z"
+        },
+        "recorded_at": "2026-07-29T09:36:21.867Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-29T10:37:45.018Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "branch": "claude/story-vibepro-review-surface-violation-ledger",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "fd422708f670006b5af06918d561ef4482f0aab8",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -117,13 +117,25 @@ export function summarizeTraceabilityClauseMap({ acceptance_criteria = [], scena
 export function buildTraceabilityClauseMap({
   storyId = '',
   storyText = '',
+  acceptanceCriteria = null,
   changedFiles = [],
   tests = [],
   evidence = [],
   scenarioClauses = []
 } = {}) {
-  const storyScenarioIds = extractStoryScenarioIds(storyText);
-  const criteria = extractAcceptanceCriteria(storyText).map((criterion) => (
+  const storyScenarioIds = Array.isArray(acceptanceCriteria)
+    ? []
+    : extractStoryScenarioIds(storyText);
+  const sourceCriteria = Array.isArray(acceptanceCriteria)
+    ? acceptanceCriteria.map((criterion, index) => ({
+        id: criterion?.id ?? `ac:${index + 1}`,
+        text: typeof criterion === 'string'
+          ? criterion
+          : criterion?.text ?? criterion?.statement ?? criterion?.criterion ?? String(criterion),
+        source_line: criterion?.source_line ?? null
+      }))
+    : extractAcceptanceCriteria(storyText);
+  const criteria = sourceCriteria.map((criterion) => (
     buildClauseTraceabilityItem({
       ...criterion,
       type: 'acceptance_criterion',

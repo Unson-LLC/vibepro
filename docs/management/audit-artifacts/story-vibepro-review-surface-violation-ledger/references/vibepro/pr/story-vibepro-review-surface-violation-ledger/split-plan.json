@@ -1,0 +1,458 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-review-surface-violation-ledger",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "automatic_recommendation": {
+    "status": "split_recommended",
+    "recommended_strategy": "split_by_lane_then_prepare"
+  },
+  "accepted_current_story_lineage": [],
+  "atomic_scope": {
+    "status": "not_requested",
+    "strategy": null,
+    "reason": null,
+    "review_facets": [],
+    "dependency_boundaries": [],
+    "missing_review_facets": [],
+    "missing_dependency_facets": [],
+    "invalid_dependency_boundaries": [],
+    "unsafe_scope_signals": [],
+    "unsafe_scope_reasons": [],
+    "source_ref": "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md"
+  },
+  "rationale": [
+    "baseからのcommitが 21 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+    "4 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 9 changed files が一致し、156 related files を影響調査候補にした"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 5747,
+    "edge_count": 12877,
+    "matched_file_count": 9,
+    "related_file_count": 156,
+    "investigation_files": [
+      "bin/vibepro.js",
+      "scripts/generate-cli-reference.mjs",
+      "scripts/npm-release-lock.mjs",
+      "scripts/post-merge-release.mjs",
+      "src/adjudication.js",
+      "src/agent-harness-map.js",
+      "src/agent-harness-scanner.js",
+      "src/agent-review.js",
+      "src/agent-runtime-adapter.js",
+      "src/agent-runtime-connectors.js",
+      "src/architecture-conformance.js",
+      "src/architecture-readiness.js",
+      "src/architecture-store.js",
+      "src/artifact-routing.js",
+      "src/atomic-file.js",
+      "src/authorization-scoring.js",
+      "src/brainbase-importer.js",
+      "src/canonical-audit.js",
+      "src/change-risk-classifier.js",
+      "src/check-packs.js",
+      "src/checkpoint-manager.js",
+      "src/ci-evidence.js",
+      "src/cli.js",
+      "src/code-topology-provider.js",
+      "src/codex-manager.js",
+      "src/codex-runtime-bridge.js",
+      "src/content-binding.js",
+      "src/decision-outcome-ledger.js",
+      "src/decision-records.js",
+      "src/delivery-efficiency-guardrail.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "src/agent-review.js",
+        "matched_nodes": [
+          "src_agent_review_js",
+          "src_agent_review_localizedevidencehandlingblock",
+          "src_agent_review_localizedinvestigationguidelinesblock",
+          "src_agent_review_localizedagentskilldisciplineblock",
+          "src_agent_review_buildcoordinatorinstructions",
+          "src_agent_review_prepareagentreview",
+          "src_agent_review_recordagentreview",
+          "src_agent_review_finalizeagentreviewresult"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/checkpoint-manager.js",
+          "src/cli.js",
+          "src/content-binding.js",
+          "src/delivery-efficiency-guardrail.js",
+          "src/evidence-reuse.js",
+          "src/execution-state.js",
+          "src/git-fingerprint.js",
+          "src/language.js",
+          "src/managed-worktree-gate.js",
+          "src/pr-manager.js",
+          "src/review-inspection-inputs.js"
+        ]
+      },
+      {
+        "file": "src/cli.js",
+        "matched_nodes": [
+          "src_cli_js",
+          "src_cli_runcli",
+          "src_cli_parsevalidationdisposition",
+          "src_cli_renderartifactroutes",
+          "src_cli_renderartifactmigrationplan",
+          "src_cli_buildclierrorpayload",
+          "src_cli_serializeclierror",
+          "src_cli_serializeoutcomecommanderror"
+        ],
+        "related_files": [
+          "bin/vibepro.js",
+          "scripts/generate-cli-reference.mjs",
+          "scripts/npm-release-lock.mjs",
+          "scripts/post-merge-release.mjs",
+          "src/adjudication.js",
+          "src/agent-harness-map.js",
+          "src/agent-harness-scanner.js",
+          "src/agent-review.js",
+          "src/agent-runtime-adapter.js",
+          "src/agent-runtime-connectors.js",
+          "src/architecture-conformance.js",
+          "src/architecture-readiness.js"
+        ]
+      },
+      {
+        "file": "src/independent-review-orchestrator.js",
+        "matched_nodes": [
+          "src_independent_review_orchestrator_js",
+          "src_independent_review_orchestrator_createdefaultagentreviewops",
+          "src_independent_review_orchestrator_independentrevieworchestrationerror",
+          "src_independent_review_orchestrator_independentrevieworchestrationerror_constructor",
+          "src_independent_review_orchestrator_orchestrateindependentreview",
+          "src_independent_review_orchestrator_createindependentreviewactionrunner",
+          "src_independent_review_orchestrator_createguardedindependentreviewrunner",
+          "src_independent_review_orchestrator_recordguardedruntimereview"
+        ],
+        "related_files": [
+          "src/dispatch-identity.js",
+          "src/guarded-run-session.js",
+          "src/run-lineage.js",
+          "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+          "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+          "test/independent-review-orchestrator.test.js"
+        ]
+      },
+      {
+        "file": "src/pr-manager.js",
+        "matched_nodes": [
+          "src_pr_manager_js",
+          "src_pr_manager_createprprepareprogress",
+          "src_pr_manager_writefilewithtimeout",
+          "src_pr_manager_preparepullrequest",
+          "src_pr_manager_evaluategatereadiness",
+          "src_pr_manager_buildarchitecturereviewtemplate",
+          "src_pr_manager_buildhumanreviewtemplate",
+          "src_pr_manager_summarizereviewgate"
+        ],
+        "related_files": [
+          "src/adjudication.js",
+          "src/agent-review.js",
+          "src/architecture-readiness.js",
+          "src/artifact-routing.js",
+          "src/authorization-scoring.js",
+          "src/canonical-audit.js",
+          "src/change-risk-classifier.js",
+          "src/check-packs.js",
+          "src/checkpoint-manager.js",
+          "src/ci-evidence.js",
+          "src/cli.js",
+          "src/code-topology-provider.js"
+        ]
+      },
+      {
+        "file": "src/review-surface-violations.js",
+        "matched_nodes": [
+          "src_review_surface_violations_js",
+          "src_review_surface_violations_getreviewsurfaceviolationspath",
+          "src_review_surface_violations_readreviewsurfaceviolations",
+          "src_review_surface_violations_unreadableledgererror",
+          "src_review_surface_violations_detectreviewsurfacemutation",
+          "src_review_surface_violations_buildreviewsurfaceviolationid",
+          "src_review_surface_violations_appendreviewsurfaceviolation",
+          "src_review_surface_violations_withdirectorylock"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/architecture-conformance.js",
+          "src/canonical-audit.js",
+          "src/content-binding.js",
+          "src/run-context-capsule.js",
+          "src/spec-fingerprint.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_review_surface_violation_ledger_acceptance_spec_ts"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/independent-review-orchestrator.test.js",
+        "matched_nodes": [
+          "test_independent_review_orchestrator_test_js",
+          "test_independent_review_orchestrator_test_boundaries",
+          "test_independent_review_orchestrator_test_guardedruntimerunner",
+          "test_independent_review_orchestrator_test_guardedruntimestate",
+          "test_independent_review_orchestrator_test_completedruntimereview"
+        ],
+        "related_files": [
+          "src/independent-review-orchestrator.js",
+          "test/scan-status.test.js"
+        ]
+      },
+      {
+        "file": "test/public-release-notes.test.js",
+        "matched_nodes": [
+          "test_public_release_notes_test_js",
+          "test_public_release_notes_test_read",
+          "test_public_release_notes_test_pullrequestnumbers"
+        ],
+        "related_files": [
+          "src/environment-graph.js",
+          "src/public-discovery-scanner.js",
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "test/review-surface-violation-ledger.test.js",
+        "matched_nodes": [
+          "test_review_surface_violation_ledger_test_js",
+          "test_review_surface_violation_ledger_test_git",
+          "test_review_surface_violation_ledger_test_setuprepo",
+          "test_review_surface_violation_ledger_test_lifecyclepath",
+          "test_review_surface_violation_ledger_test_violationspath",
+          "test_review_surface_violation_ledger_test_readjson",
+          "test_review_surface_violation_ledger_test_start",
+          "test_review_surface_violation_ledger_test_close"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/agent-runtime-adapter.js",
+          "src/atomic-file.js",
+          "src/cli.js",
+          "src/design-modernize.js"
+        ]
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "separate_pr",
+      "files": [
+        "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+        "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+        "docs/architecture/vibepro-review-surface-violation-ledger.md"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 3,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-review-surface-violation-ledger-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "src/agent-review.js",
+        "src/cli.js",
+        "src/independent-review-orchestrator.js",
+        "src/pr-manager.js",
+        "src/review-surface-violations.js",
+        "test/independent-review-orchestrator.test.js",
+        "test/public-release-notes.test.js",
+        "test/review-surface-violation-ledger.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 8,
+      "graph_investigation_files": [
+        "bin/vibepro.js",
+        "scripts/generate-cli-reference.mjs",
+        "scripts/npm-release-lock.mjs",
+        "scripts/post-merge-release.mjs",
+        "src/adjudication.js",
+        "src/agent-harness-map.js",
+        "src/agent-harness-scanner.js",
+        "src/agent-runtime-adapter.js",
+        "src/agent-runtime-connectors.js",
+        "src/architecture-conformance.js",
+        "src/architecture-readiness.js",
+        "src/artifact-routing.js"
+      ],
+      "suggested_branch": "feat/vibepro-review-surface-violation-ledger-runtime-behavior"
+    },
+    {
+      "id": "e2e-gate",
+      "order": 30,
+      "title": "E2E and verification harness",
+      "category": "verification",
+      "recommendation": "separate_pr",
+      "files": [
+        "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+      ],
+      "required_gates": [
+        "E2E Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "E2E harnessが失敗exit codeを握りつぶしていないか",
+        "PR Gateが変更対象のE2Eに正しくスコープされているか"
+      ],
+      "file_count": 1,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-review-surface-violation-ledger-e2e-gate"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "design-ssot.json",
+        "docs/ja/reference/cli.md",
+        "docs/reference/cli.md",
+        "responsibility-authority.json"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 4,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-review-surface-violation-ledger-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "requirements-ssot",
+    "runtime-behavior",
+    "e2e-gate",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 4,
+      "cumulative_gate_count": 1,
+      "requires_cumulative_e2e": true,
+      "requires_atomic_head_validation": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts test/independent-review-orchestrator.test.js test/public-release-notes.test.js test/review-surface-violation-ledger.test.js",
+          "npm run typecheck"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認し、E2Eは後続のe2e-gateまたは累積validationで確認する。"
+      },
+      {
+        "lane_id": "e2e-gate",
+        "gate_mode": "cumulative_after_dependencies",
+        "depends_on": [
+          "requirements-ssot",
+          "runtime-behavior"
+        ],
+        "isolated_checks": [
+          "npm run typecheck",
+          "Playwright harness smoke if runtime dependencies are already merged"
+        ],
+        "cumulative_checks": [
+          "node --test test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts test/independent-review-orchestrator.test.js test/public-release-notes.test.js test/review-surface-violation-ledger.test.js",
+          "npm run typecheck",
+          "npx playwright test"
+        ],
+        "review_note": "e2e-gate は単体PRだけで完了判定せず、requirements-ssot -> runtime-behavior を取り込んだ累積状態でGateを確認する。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": true,
+      "trigger": "runtime-behavior と e2e-gate の両方がmerge対象に含まれる",
+      "commands": [
+        "node --test test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts test/independent-review-orchestrator.test.js test/public-release-notes.test.js test/review-surface-violation-ledger.test.js",
+        "npm run typecheck",
+        "npx playwright test"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-review-surface-violation-ledger-requirements-ssot with 3 files",
+      "command": "git switch -c feat/vibepro-review-surface-violation-ledger-requirements-ssot \"<base>\" && git add docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md docs/specs/story-vibepro-review-surface-violation-ledger.md docs/architecture/vibepro-review-surface-violation-ledger.md"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-review-surface-violation-ledger-runtime-behavior with 8 files",
+      "command": "git switch -c feat/vibepro-review-surface-violation-ledger-runtime-behavior \"<base>\" && git add src/agent-review.js src/cli.js src/independent-review-orchestrator.js src/pr-manager.js src/review-surface-violations.js test/independent-review-orchestrator.test.js test/public-release-notes.test.js test/review-surface-violation-ledger.test.js"
+    },
+    {
+      "lane_id": "e2e-gate",
+      "action": "Create feat/vibepro-review-surface-violation-ledger-e2e-gate with 1 files",
+      "command": "git switch -c feat/vibepro-review-surface-violation-ledger-e2e-gate \"<base>\" && git add test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-review-surface-violation-ledger-misc-follow-up with 4 files",
+      "command": "git switch -c feat/vibepro-review-surface-violation-ledger-misc-follow-up \"<base>\" && git add design-ssot.json docs/ja/reference/cli.md docs/reference/cli.md responsibility-authority.json"
+    }
+  ]
+}

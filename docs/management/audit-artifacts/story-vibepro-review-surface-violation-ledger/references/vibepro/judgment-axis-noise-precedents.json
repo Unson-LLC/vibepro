@@ -1,0 +1,87 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-review-surface-violation-ledger",
+      "decision_id": "decision-1785315354859-6829d908",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The diff is one decision read end to end: src/review-surface-violations.js is the only new module, and src/agent-review.js, src/independent-review-orchestrator.js, src/pr-manager.js and src/cli.js each touch it for the same reason - record the close-time snapshot, append the typed entry, surface it as gate:review_surface_integrity, and expose it read-only on the CLI. Splitting would leave a gate reading a ledger no writer maintains, so the blast radius is deliberately bundled and is bounded by the design root's owned surfaces. Review ownership is the gate stage: gate_evidence owns the gate node and the evidence shape, release_risk owns the operational exit. The remaining review_owner_map evidence is produced by that pending gate-stage agent review and is dispatched separately; it is not waived here. What is decided here is only the scope question - this PR is one reviewable unit and is not to be split.",
+      "artifact": "docs/architecture/vibepro-review-surface-violation-ledger.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-29T08:56:06.281Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:16|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-review-surface-violation-ledger",
+      "decision_id": "decision-1785315354859-6829d908",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The diff is one decision read end to end: src/review-surface-violations.js is the only new module, and src/agent-review.js, src/independent-review-orchestrator.js, src/pr-manager.js and src/cli.js each touch it for the same reason - record the close-time snapshot, append the typed entry, surface it as gate:review_surface_integrity, and expose it read-only on the CLI. Splitting would leave a gate reading a ledger no writer maintains, so the blast radius is deliberately bundled and is bounded by the design root's owned surfaces. Review ownership is the gate stage: gate_evidence owns the gate node and the evidence shape, release_risk owns the operational exit. The remaining review_owner_map evidence is produced by that pending gate-stage agent review and is dispatched separately; it is not waived here. What is decided here is only the scope question - this PR is one reviewable unit and is not to be split.",
+      "artifact": "docs/architecture/vibepro-review-surface-violation-ledger.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:16",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-29T09:33:39.202Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-review-surface-violation-ledger",
+      "decision_id": "decision-1785317781867-268418d4",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "Rollback plan: the entire PR (ledger commits + pin commit bb1a463f) reverts with git revert of the set; no migration, no schema change, no dependency change. Stored-object safety: the only new stored object is .vibepro/reviews/<story>/surface-violations.json, which is additive-only, is read clean when absent, and whose corrupt/truncated states fail closed with a typed error, so a revert leaves no unreadable state behind. Version skew: an older vibepro binary running against a repo that already has a ledger file simply never reads it (the file is namespaced under .vibepro/reviews and old readers do not reference it), degrading to pre-ledger behavior without error; a newer binary against a repo without a ledger reads clean by design (AC-7). Feature gate: none exists and none is required - the gate blocks only on unacknowledged violations, and repos with no violations see a passed gate, so disabled-behavior testing has no subject. Upgrade/downgrade test: non-applicable for the same reason; the acceptance suite already covers the legacy-artifact leg (RSV-7 legacy lifecycles read clean). The npm-side rollback path for the version pin is owned by docs/specs/story-vibepro-release-0-2-0-beta-2.md Operations and unchanged here.",
+      "artifact": "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+      "activation_candidates": [
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-29T09:49:50.365Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "release_ops|changed_path:release_ops",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-review-surface-violation-ledger",
+      "decision_id": "decision-1785317780818-444cacc2",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "The release_ops axis fired because the diff now touches test/public-release-notes.test.js. That commit only realigns the hardcoded npm dist-tag expectation (0.2.0-beta.1 -> 0.2.0-beta.2) with the registry state published by merged PR #396, repairing main's own red CI (same cross-PR pin-conflict class as the /pass 18 -> 19/ correction shipped in #396). The operator path for the release itself is owned and documented by the release story: CHANGELOG 0.2.0-beta.2 is the release note authority, and docs/specs/story-vibepro-release-0-2-0-beta-2.md Operations documents rollout (post-merge workflow), rollback (npm deprecate + dist-tag repoint to beta.1 + revert main before any workflow re-run), and observability (workflow run log, GitHub Release, npm view vibepro version). This PR adds no operator action, no release note obligation beyond the already-merged one, and no support path change; the ledger feature itself ships inside the normal package release train. Owner-visible evidence: npm view vibepro dist-tags returns latest=0.2.0-beta.2 beta=0.2.0-beta.2, matching both docs/*/reference/version-history.md tables and the updated pin.",
+      "artifact": "docs/specs/story-vibepro-release-0-2-0-beta-2.md",
+      "activation_candidates": [
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-29T09:49:50.365Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:31|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-review-surface-violation-ledger",
+      "decision_id": "decision-1785315354859-6829d908",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The diff is one decision read end to end: src/review-surface-violations.js is the only new module, and src/agent-review.js, src/independent-review-orchestrator.js, src/pr-manager.js and src/cli.js each touch it for the same reason - record the close-time snapshot, append the typed entry, surface it as gate:review_surface_integrity, and expose it read-only on the CLI. Splitting would leave a gate reading a ledger no writer maintains, so the blast radius is deliberately bundled and is bounded by the design root's owned surfaces. Review ownership is the gate stage: gate_evidence owns the gate node and the evidence shape, release_risk owns the operational exit. The remaining review_owner_map evidence is produced by that pending gate-stage agent review and is dispatched separately; it is not waived here. What is decided here is only the scope question - this PR is one reviewable unit and is not to be split.",
+      "artifact": "docs/architecture/vibepro-review-surface-violation-ledger.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:31",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-29T10:33:42.808Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

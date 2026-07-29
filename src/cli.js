@@ -125,6 +125,8 @@ import {
   renderAgentReviewPrepareSummary,
   renderAgentReviewRecordSummary,
   renderAgentReviewStatusSummary,
+  renderReviewSurfaceViolationSummary,
+  readReviewSurfaceViolationSummary,
   startAgentReviewLifecycle
 } from './agent-review.js';
 import {
@@ -191,8 +193,10 @@ import { renderFlowVerificationSummary, runFlowVerification } from './flow-verif
 import { renderVisualVerificationSummary, runVisualVerification } from './visual-verifier.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
 import { importCiEvidence, renderCiImportSummary } from './ci-evidence.js';
+import { renderVerificationRunSummary, runVerificationCommand } from './verification-runner.js';
 import {
   getDecisionStatus,
+  readDecisionRecordsIfExists,
   recordDecision,
   renderDecisionRecordSummary,
   renderDecisionStatusSummary
@@ -495,6 +499,7 @@ Usage:
   vibepro uiux prepare [repo] --id <story-id> [--design-system-id <id>] [--base <ref>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
+  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
@@ -518,6 +523,7 @@ Usage:
   vibepro review authorize [repo] --id <story-id> --stage <stage> --role <role> --review-kind preflight|final --closes-risk <risk> --expected-judgment-delta <text> [--reusable-evidence <ref>] [--freeze <source|spec|test|review_surface>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--timeout-ms <ms>] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-thread-id <id>] [--agent-session-id <id>] [--dispatch-authorization <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--cancellation-confirmed] [--close-evidence <ref>] [--json]
+  vibepro review violations [repo] --id <story-id> [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
@@ -771,6 +777,7 @@ Usage:
   vibepro uiux prepare [repo] --id <story-id> [--design-system-id <id>] [--base <ref>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
+  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
@@ -793,6 +800,7 @@ Usage:
   vibepro review authorize [repo] --id <story-id> --stage <stage> --role <role> --review-kind preflight|final --closes-risk <risk> --expected-judgment-delta <text> [--reusable-evidence <ref>] [--freeze <source|spec|test|review_surface>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--timeout-ms <ms>] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-thread-id <id>] [--agent-session-id <id>] [--dispatch-authorization <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--cancellation-confirmed] [--close-evidence <ref>] [--json]
+  vibepro review violations [repo] --id <story-id> [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro execute <run|status|watch|resume|cancel|start|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--run-id <id>] [--target pr_create|pr_ready] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
@@ -1623,9 +1631,46 @@ export async function runCli(argv, io = {}) {
     if (command === 'verify') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
+      // `verify run` takes the command to execute after `--`; option lookups (including the
+      // help probe) must never reach into that argv or a `--help` in the executed command
+      // would hijack the CLI.
+      const separatorIndex = rest.indexOf('--');
+      const verifyArgs = separatorIndex === -1 ? rest : rest.slice(0, separatorIndex);
+      const runArgv = separatorIndex === -1 ? [] : rest.slice(separatorIndex + 1);
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(verifyArgs, '--help') || hasFlag(verifyArgs, '-h')) {
+        write(stdout, renderHelp(getOption(verifyArgs, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'run') {
+        const storyId = getOption(verifyArgs, '--id') ?? getOption(verifyArgs, '--story-id');
+        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'verify run'
+        });
+        const result = await runVerificationCommand(repoRoot, {
+          storyId,
+          kind: getOption(verifyArgs, '--kind'),
+          status: getOption(verifyArgs, '--status'),
+          summary: getOption(verifyArgs, '--summary'),
+          targets: getOptions(verifyArgs, '--target'),
+          scenarios: getOptions(verifyArgs, '--scenario'),
+          observed: getOptions(verifyArgs, '--observed'),
+          timeoutMs: getOption(verifyArgs, '--timeout-ms'),
+          maxOutputBytes: getOption(verifyArgs, '--max-output-bytes'),
+          strictHeadBinding: hasFlag(verifyArgs, '--strict-head-binding'),
+          argv: runArgv,
+          env: io.env,
+          managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
+          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
+        });
+        await reconcileExecutionState(repoRoot, {
+          storyId: result.story_id,
+          target: 'pr_create'
+        }).catch(() => null);
+        write(stdout, hasFlag(verifyArgs, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderVerificationRunSummary(result));
+        return { exitCode: result.status === 'pass' ? 0 : 1, command, subcommand, result };
       }
       if (subcommand === 'flow') {
         const storyId = getOption(rest, '--id');
@@ -2076,6 +2121,16 @@ export async function runCli(argv, io = {}) {
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderAgentReviewStatusSummary(result));
         return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'violations') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        const result = await readReviewSurfaceViolationSummary(repoRoot, storyId, {
+          decisionRecords: await readDecisionRecordsIfExists(repoRoot, storyId)
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderReviewSurfaceViolationSummary(result));
+        return { exitCode: result.unacknowledged_count > 0 ? 2 : 0, command, subcommand, result };
       }
       if (subcommand === 'repair') {
         const result = await buildReviewRepairPlan(repoRoot, {
