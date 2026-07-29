@@ -54,7 +54,7 @@ import {
   buildReviewSurfaceViolationAcknowledgementCommand
 } from './review-surface-violations.js';
 import { importCiEvidence } from './ci-evidence.js';
-import { recordVerificationEvidence } from './verification-evidence.js';
+import { RUNNER_EVIDENCE_RECEIPT, isCallerForbiddenObservationKey, recordVerificationEvidence } from './verification-evidence.js';
 import {
   renderExplorePrSection,
   summarizeExploreEvidenceForPr
@@ -408,6 +408,9 @@ export async function preparePullRequest(repoRoot, options = {}) {
   const traceabilityMap = buildTraceabilityClauseMap({
     storyId: story.story_id,
     storyText: storyTextForTraceability,
+    acceptanceCriteria: prContext.acceptance_scope?.source === 'task'
+      ? prContext.acceptance_scope.acceptance_criteria
+      : null,
     changedFiles: changedFilesForTraceability,
     tests: testsForTraceability,
     evidence: traceabilityEvidenceForCoverage,
@@ -425,12 +428,15 @@ export async function preparePullRequest(repoRoot, options = {}) {
     const adjudicationGate = buildEvidenceAdjudicationGate({
       storyId: story.story_id,
       acceptanceCriteria: adjudicationAcceptanceCriteria,
+      acceptanceScope: prContext.acceptance_scope,
       adjudication: adjudicationRecords,
       headSha: reviewGit.head_sha,
       decisions: prContext.decision_records?.decisions ?? []
     });
     prContext.evidence_adjudication = summarizeAdjudicationForPr({
+      storyId: story.story_id,
       acceptanceCriteria: adjudicationAcceptanceCriteria,
+      acceptanceScope: prContext.acceptance_scope,
       adjudication: adjudicationRecords,
       headSha: reviewGit.head_sha
     });
@@ -1754,7 +1760,23 @@ export async function autopilotPullRequest(repoRoot, options = {}) {
       observed: [
         `exit_code=${run.exit_code}`,
         `head_sha=${run.head_sha ?? 'unknown'}`
-      ]
+      ],
+      // Autopilot executes the command itself and derives the status from the exit code,
+      // so the outcome is computed, not self-reported. It is marked as its own source
+      // rather than runner_direct: the command runs through a login shell, and the record
+      // carries no parsed counts, before/after tree sampling, or output hash.
+      evidenceReceipt: RUNNER_EVIDENCE_RECEIPT,
+      evidenceSource: 'autopilot_run',
+      computedObservation: {
+        producer: 'vibepro pr autopilot',
+        computed_keys: ['exit_code', 'head_sha'],
+        values: {
+          exit_code: String(run.exit_code),
+          head_sha: run.head_sha ?? null
+        },
+        run_artifact: toWorkspaceRelative(root, artifact),
+        output_metrics: 'exit_code_only'
+      }
     });
     operations.push({
       id: `verify_${command.kind}`,
@@ -3935,6 +3957,7 @@ function renderPrBody({ story, taskContext, git, fileGroups, latestStoryRun, sco
   const taskLine = taskContext
     ? `- Task: ${taskContext.task.id} ${taskContext.task.title ?? ''}`.trim()
     : null;
+  const acceptanceScopeSection = renderPrAcceptanceScope(prContext.acceptance_scope);
   const sourceLine = sourceFiles.length ? `- 実装: ${formatRepoPathList(sourceFiles)}` : null;
   const testLine = testFiles.length ? `- テスト: ${formatRepoPathList(testFiles)}` : null;
   const docLine = docFiles.length ? `- 設計/Story: ${formatRepoPathList(docFiles)}` : null;
@@ -3994,6 +4017,8 @@ ${narrativeSection ? `${narrativeSection.trim()}\n` : ''}
 ## 解決
 - ${solution}
 
+${acceptanceScopeSection}
+
 ## Release Notes
 
 ### Change Summary
@@ -4020,6 +4045,21 @@ ${verification}
 ## 詳細
 ${details}
 `;
+}
+
+function renderPrAcceptanceScope(acceptanceScope) {
+  const isTask = acceptanceScope?.source === 'task';
+  const source = isTask ? 'Task' : 'Story';
+  const criteria = normalizeAcceptanceCriteria(acceptanceScope?.acceptance_criteria);
+  const criterionLines = isTask && criteria.length > 0
+    ? criteria.map((criterion, index) => `${index + 1}. ${linkifyRepoPathsInText(criterion)}`).join('\n')
+    : '';
+  return `## 受入判定スコープ
+- 判定単位: ${source}
+- Story ID: ${acceptanceScope?.story_id ?? 'なし'}
+- Task ID: ${acceptanceScope?.task_id ?? 'なし'}
+- 対象受入基準: ${criteria.length}件
+${criterionLines}`;
 }
 
 function buildPrBodyStoryInterpretation({ requirementTitle, fileGroups }) {
@@ -5960,6 +6000,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   if (!storyDocMatchesStory(primaryStory, story)) {
     primaryStory = buildUnresolvedStorySource(story);
   }
+  const acceptanceScope = buildAcceptanceScope(story, primaryStory, taskContext);
   const storySourceIntegrity = buildStorySourceIntegrity(story, primaryStory, storyDocs);
   const architectureDecision = resolveArchitectureDecision(primaryStory, fileGroups);
   const typecheckCommand = await detectTypecheckCommand(repoRoot);
@@ -5990,8 +6031,8 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     storySource: primaryStory,
     inferredSpec
   });
-  const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, primaryStory, {
-    inferredSpec,
+  const e2eCoverage = await buildStoryE2eCoverage(repoRoot, story, acceptanceScope, {
+    inferredSpec: acceptanceScope.source === 'task' ? null : inferredSpec,
     verificationEvidence: boundVerificationEvidence
   });
   const specDrift = await readDrift(repoRoot, story.story_id);
@@ -6119,6 +6160,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
   const uiuxResponsiveA11yMatrix = await readResponsiveA11yMatrixForPr(repoRoot, story.story_id);
   const context = {
     story_source: primaryStory,
+    acceptance_scope: acceptanceScope,
     story_source_integrity: storySourceIntegrity,
     architecture_decision: architectureDecision,
     architecture_sources: architectureSources,
@@ -6177,6 +6219,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     repoRoot,
     story,
     storySource: primaryStory,
+    acceptanceScope,
     storySourceIntegrity,
     architectureDecision,
     requirementConsistency,
@@ -9920,7 +9963,10 @@ function classifyCodeTopologyImpactEvidence(codeTopologyContext) {
   })];
 }
 
-function classifyVerificationEvidenceItem(item) {
+// Exported alongside buildVerificationCommandSearchText: the corpus rule above is only worth
+// what it changes here, so the kinds a single record earns are asserted on this function
+// directly rather than reconstructed from a gate DAG.
+export function classifyVerificationEvidenceItem(item) {
   const searchResolution = resolveVerificationCommandSearchText(item);
   const text = appendCanonicalEvidenceTokens(searchResolution.text.toLowerCase());
   const command = String(item.command ?? '').trim();
@@ -11198,6 +11244,7 @@ function buildGateDag({
   repoRoot,
   story,
   storySource,
+  acceptanceScope = null,
   storySourceIntegrity = null,
   architectureDecision,
   requirementConsistency,
@@ -11235,8 +11282,8 @@ function buildGateDag({
   managedWorktreeGate = null,
   validationSequenceEvaluation = null
 }) {
-  const acceptanceCriteria = storySource.acceptance_criteria.length > 0
-    ? storySource.acceptance_criteria
+  const acceptanceCriteria = acceptanceScope?.acceptance_criteria?.length > 0
+    ? acceptanceScope.acceptance_criteria
     : ['Storyの受け入れ基準を明文化する'];
   const gates = buildVerificationGates({
     fileGroups,
@@ -11538,7 +11585,7 @@ function buildGateDag({
     id: `ac:${index + 1}`,
     type: 'acceptance_criterion',
     label: criterion,
-    status: storySource.acceptance_criteria.length > 0 ? 'present' : 'missing'
+    status: acceptanceScope?.acceptance_criteria?.length > 0 ? 'present' : 'missing'
   }));
 
   const edges = [
@@ -11754,7 +11801,9 @@ function buildGateDag({
       architecture_status: architectureGate.status,
       architecture_axis_quality_status: architectureAxisQuality.status,
       spec_status: specGate.status,
-      scenario_clauses: extractScenarioCoverageClauses(inferredSpec),
+      scenario_clauses: acceptanceScope?.source === 'task'
+        ? []
+        : extractScenarioCoverageClauses(inferredSpec),
       path_surface_matrix_status: pathSurfaceMatrixGate.status,
       journey_context_status: journeyContextGate?.status ?? null,
       design_ssot_reconciliation_status: designSsotGate.status,
@@ -12340,7 +12389,7 @@ function deriveArtifactRootCause(artifact) {
   return status;
 }
 
-function buildArtifactRemediationCommands(artifact, storyId = null) {
+export function buildArtifactRemediationCommands(artifact, storyId = null) {
   const storyArg = storyId ? shellQuote(storyId) : '<story-id>';
   if (artifact.artifact_type === 'verification_command') {
     const kindArg = artifact.kind ? shellQuote(artifact.kind) : '<kind>';
@@ -12353,7 +12402,12 @@ function buildArtifactRemediationCommands(artifact, storyId = null) {
     const scenarioArgs = (artifact.observation?.scenarios ?? [])
       .map((scenario) => ` --scenario ${shellQuote(scenario)}`)
       .join('');
+    // Keys the record path refuses from a caller are dropped rather than replayed: a
+    // runner-produced record carries evidence_source in observation.values, and reconstructing
+    // it as `--observed evidence_source=...` would emit a command `verify record` rejects on
+    // sight. The predicate is imported so there is one set, not a copy that can drift.
     const observedArgs = Object.entries(artifact.observation?.values ?? {})
+      .filter(([key]) => !isCallerForbiddenObservationKey(key))
       .map(([key, value]) => ` --observed ${shellQuote(`${key}=${value}`)}`)
       .join('');
     const strictFreshnessArg = artifact.content_binding?.mode === 'strict_head'
@@ -12712,10 +12766,9 @@ function isExecutableFailureModeEvidence(command, mode) {
   const scenarioAssertion = (command?.observation?.scenarios ?? [])
     .map((scenario) => String(scenario))
     .join('\n');
-  const observedValues = command?.observation?.values;
-  const observedAssertion = observedValues && typeof observedValues === 'object'
-    ? Object.entries(observedValues).map(([key, value]) => `${key}=${String(value)}`).join('\n')
-    : '';
+  const observedAssertion = observationSearchValuePairs(command?.observation?.values)
+    .map(([key, value]) => `${key}=${String(value)}`)
+    .join('\n');
   return scoreFailureModeEvidence(mode, scenarioAssertion) > 0
     || scoreFailureModeEvidence(mode, observedAssertion) > 0;
 }
@@ -12843,16 +12896,35 @@ function isCuratedJourneyItemHandled(item) {
   return ['resolved', 'accepted', 'answered', 'deferred'].includes(status);
 }
 
-function buildVerificationCommandSearchText(command) {
+// Exported as the corpus seam: what the evidence classifiers are allowed to read out of a
+// record is a property worth asserting directly, not only through the kinds it happens to
+// produce today.
+export function buildVerificationCommandSearchText(command) {
   return resolveVerificationCommandSearchText(command).text;
+}
+
+// observation.values has two halves. The outcome half — counts, exit code, timings, the head
+// the work sits on — states what the run found, and is what the evidence classifiers are
+// meant to read. The provenance half — the run artifact and log paths, the output and worktree
+// hashes, the during-run mutation verdicts, the declared limits — states how the record was
+// produced, and the runner writes it on every record it makes regardless of what was verified.
+// Matching evidence kinds against that half lets a record earn a kind from its own filenames:
+// `run_artifact` is `.vibepro/pr/<story-id>/verification-runs/<kind>.json`, so the `story-`
+// alternative in the runtime_path_evidence pattern matched every runner_direct record, and
+// `timeout_ms`/`output_limit_exceeded` sit one keyword away from doing the same for failure
+// modes. The caller-forbidden set is exactly the provenance half, so it is the boundary here
+// too; the predicate is imported rather than restated so one set governs both what a caller
+// may write into observation.values and what the classifiers may read out of it.
+function observationSearchValuePairs(values) {
+  if (!values || typeof values !== 'object') return [];
+  return Object.entries(values).filter(([key]) => !isCallerForbiddenObservationKey(key));
 }
 
 function resolveVerificationCommandSearchText(command) {
   if (['recorded', 'partial'].includes(command?.observation_check?.status)) {
     const observation = command?.observation ?? {};
-    const observedValues = observation.values && typeof observation.values === 'object'
-      ? Object.entries(observation.values).flatMap(([key, value]) => [key, String(value)])
-      : [];
+    const observedValues = observationSearchValuePairs(observation.values)
+      .flatMap(([key, value]) => [key, String(value)]);
     const structuredText = [
       ...(observation.targets ?? []),
       ...(observation.scenarios ?? []),
@@ -15584,31 +15656,153 @@ function assertStrictTargetFiles(taskContext, changedFiles, options) {
 }
 
 async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
-  const taskState = await readTaskState(repoRoot, storyId);
-  const task = (taskState.tasks ?? []).find((item) => item.id === taskId);
-  if (!task) throw new Error(`Task not found for PR prepare: ${taskId}`);
-  const group = groupId ? (task.target_groups ?? []).find((item) => item.id === groupId) : null;
-  if (groupId && !group) throw new Error(`Target group not found for PR prepare: ${groupId}`);
+  const { state: taskState, relativePath: taskStatePath } = await readTaskState(repoRoot, storyId);
+  const taskStateStoryId = typeof taskState?.story?.story_id === 'string'
+    ? taskState.story.story_id.trim()
+    : '';
+  if (!taskStateStoryId) {
+    throw taskPlanRepairError(
+      `Task state story_id is required for PR prepare: ${storyId}`,
+      taskStatePath
+    );
+  }
+  if (taskStateStoryId !== storyId) {
+    throw taskPlanRepairError(
+      `Task state story mismatch for PR prepare: expected ${storyId}, received ${taskStateStoryId}`,
+      taskStatePath
+    );
+  }
+  if (!Array.isArray(taskState.tasks)) {
+    throw taskPlanRepairError(
+      'Invalid Task state schema for PR prepare: tasks must be an array',
+      taskStatePath
+    );
+  }
+  if (taskState.tasks.some((item) => (
+    !item
+    || typeof item !== 'object'
+    || Array.isArray(item)
+    || typeof item.id !== 'string'
+    || item.id.trim().length === 0
+  ))) {
+    throw taskPlanRepairError(
+      'Invalid Task state schema for PR prepare: tasks must contain objects with non-empty id values',
+      taskStatePath
+    );
+  }
+  const task = taskState.tasks.find((item) => item.id === taskId);
+  if (!task) {
+    throw taskPlanRepairError(`Task not found for PR prepare: ${taskId}`, taskStatePath);
+  }
+  const targetGroups = task.target_groups ?? [];
+  if (!Array.isArray(targetGroups)) {
+    throw taskPlanRepairError(
+      'Invalid Task state schema for PR prepare: target_groups must be an array',
+      taskStatePath
+    );
+  }
+  if (targetGroups.some((item) => (
+    !item
+    || typeof item !== 'object'
+    || Array.isArray(item)
+    || typeof item.id !== 'string'
+    || item.id.trim().length === 0
+  ))) {
+    throw taskPlanRepairError(
+      'Invalid Task state schema for PR prepare: target_groups must contain objects with non-empty id values',
+      taskStatePath
+    );
+  }
+  const group = groupId ? targetGroups.find((item) => item.id === groupId) : null;
+  if (groupId && !group) {
+    throw taskPlanRepairError(`Target group not found for PR prepare: ${groupId}`, taskStatePath);
+  }
   const artifacts = resolveTaskArtifacts(repoRoot, storyId, taskId, groupId);
   return {
     story_id: storyId,
     task,
     group,
+    task_state_path: taskStatePath,
     source_run: taskState.source_run ?? null,
     artifacts: await filterExistingArtifacts(repoRoot, artifacts)
   };
 }
 
 async function readTaskState(repoRoot, storyId) {
-  const taskPath = path.join(getWorkspaceDir(repoRoot), 'stories', storyId, 'tasks', 'tasks.json');
+  const taskPath = await resolvePrTaskStatePath(repoRoot, storyId);
+  const relativePath = toWorkspaceRelative(repoRoot, taskPath);
   try {
-    return JSON.parse(await readFile(taskPath, 'utf8'));
+    return {
+      state: JSON.parse(await readFile(taskPath, 'utf8')),
+      relativePath
+    };
   } catch (error) {
     if (error.code === 'ENOENT') {
-      throw new Error(`Task state not found for PR prepare: ${toWorkspaceRelative(repoRoot, taskPath)}`);
+      throw taskPlanRepairError('Task state not found for PR prepare', relativePath);
     }
-    throw error;
+    throw taskPlanRepairError(
+      'Invalid Task state JSON for PR prepare',
+      relativePath,
+      error.message
+    );
   }
+}
+
+function taskPlanRepairError(detail, relativePath, cause = null) {
+  return new Error(
+    `${detail}: ${relativePath}. `
+    + `Repair the configured canonical Task plan and rerun vibepro pr prepare.`
+    + (cause ? ` Cause: ${cause}` : '')
+  );
+}
+
+export async function resolvePrTaskStatePath(repoRoot, storyId) {
+  const route = await resolveArtifactRoute(repoRoot, 'task_plan', { storyId });
+  return route.canonical.relative_path.endsWith('.json')
+    ? route.canonical.absolute_path
+    : path.join(getWorkspaceDir(repoRoot), 'stories', storyId, 'tasks', 'tasks.json');
+}
+
+function buildAcceptanceScope(story, storySource, taskContext) {
+  if (!taskContext) {
+    return {
+      source: 'story',
+      story_id: story.story_id,
+      task_id: null,
+      acceptance_criteria: normalizeAcceptanceCriteria(storySource?.acceptance_criteria)
+    };
+  }
+  if (taskContext.story_id !== story.story_id) {
+    throw new Error(
+      `Task acceptance scope story mismatch: expected ${story.story_id}, received ${taskContext.story_id}`
+    );
+  }
+  const acceptanceCriteria = normalizeAcceptanceCriteria(taskContext.task?.acceptance_criteria);
+  if (acceptanceCriteria.length === 0) {
+    throw taskPlanRepairError(
+      `Task acceptance criteria are required for PR prepare: ${taskContext.task?.id ?? 'unknown task'}`,
+      taskContext.task_state_path
+    );
+  }
+  return {
+    source: 'task',
+    story_id: story.story_id,
+    task_id: taskContext.task.id,
+    acceptance_criteria: acceptanceCriteria
+  };
+}
+
+function normalizeAcceptanceCriteria(criteria) {
+  if (!Array.isArray(criteria)) return [];
+  return criteria
+    .map((criterion) => {
+      if (typeof criterion === 'string') return criterion.trim();
+      if (criterion && typeof criterion === 'object') {
+        return String(criterion.text ?? criterion.statement ?? criterion.criterion ?? '').trim();
+      }
+      return '';
+    })
+    .filter(Boolean);
 }
 
 function resolveTaskArtifacts(repoRoot, storyId, taskId, groupId = null) {

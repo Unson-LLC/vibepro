@@ -22,7 +22,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
-import { recordVerificationEvidence } from './verification-evidence.js';
+import { isCallerForbiddenObservationKey, recordVerificationEvidence } from './verification-evidence.js';
 import { resolveAcceptedSpecFile } from './spec-store.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 
@@ -388,9 +388,19 @@ function resolveExitCode(command) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+// This replays a recorded record back through `verify record` without the runner's receipt, so
+// it is a caller like any other: keys the record path refuses from a caller are dropped rather
+// than replayed, the same rule buildArtifactRemediationCommands applies to the command it
+// prints. Today's detect filter only reaches records without an artifact, which the runner
+// never produces, so the drop is rarely exercised — but a record that carries provenance keys
+// without an artifact (hand-edited, or written by an older recording path) would otherwise make
+// the whole recipe fail on a `--observed` key parseObservedPairs rejects on sight. The predicate
+// is imported so there is one set, not a copy that can drift.
 function observedPairs(values) {
   if (!values || typeof values !== 'object') return [];
-  return Object.entries(values).map(([key, value]) => `${key}=${value}`);
+  return Object.entries(values)
+    .filter(([key]) => !isCallerForbiddenObservationKey(key))
+    .map(([key, value]) => `${key}=${value}`);
 }
 
 function isGenericUnboundRecord(command) {

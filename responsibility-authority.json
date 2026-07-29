@@ -540,6 +540,43 @@
       "unknown_policy": "block_or_review"
     },
     {
+      "id": "vibepro.verification.runner_direct_recording",
+      "primary_authority": {
+        "kind": "domain_contract",
+        "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-EV-001"
+      },
+      "supporting_authority": [
+        "docs/specs/story-vibepro-runner-direct-evidence.md",
+        "docs/management/stories/active/story-vibepro-runner-direct-evidence.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/verification-runner.js",
+          "src/ci-evidence.js",
+          "src/adjudication.js",
+          "test/verification-runner.test.js",
+          "test/adjudication.test.js",
+          "test/ci-evidence-import.test.js"
+        ],
+        "symbols": [
+          "RUNNER_EVIDENCE_RECEIPT",
+          "runner_direct",
+          "verify run",
+          "COMPUTED_OBSERVATION_KEYS",
+          "CALLER_FORBIDDEN_OBSERVATION_KEYS"
+        ],
+        "risk_surfaces": [
+          "core_workflow_state",
+          "verification_evidence"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
       "id": "vibepro.agent_review.surface_violation_ledger",
       "primary_authority": {
         "kind": "architecture",

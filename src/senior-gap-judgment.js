@@ -139,7 +139,9 @@ function buildIdealState({ story, prContext, targetArchitecture = null }) {
     story_id: story?.story_id ?? prContext?.story_source?.story_id ?? null,
     title: story?.title ?? prContext?.story_source?.title ?? prContext?.story_source?.requirement_title ?? null,
     story_source: prContext?.story_source?.path ?? prContext?.story_source?.story_id ?? null,
-    acceptance_criteria_count: prContext?.story_source?.acceptance_criteria?.length ?? 0,
+    acceptance_criteria_count: prContext?.acceptance_scope?.acceptance_criteria?.length
+      ?? prContext?.story_source?.acceptance_criteria?.length
+      ?? 0,
     engineering_route: prContext?.engineering_judgment?.route_type ?? null,
     active_judgment_axes: axes,
     required_gates: requiredGates,
