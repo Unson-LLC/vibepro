@@ -2,6 +2,7 @@
 story_id: story-vibepro-merge-binding-stale-stop-reason
 title: Clear stale decision-outcome-binding failure flags when rebinding succeeds
 status: active
+parent_design: vibepro-gate-decision-outcome-ledger
 reason: The alternative of recomputing the whole reconciliation block on every binding pass was rejected because other reconciliation reasons (delivery, canonical audit persistence) are owned by their own code paths; the compatible boundary is that applyDecisionOutcomeBinding only removes the failure marker it itself sets. Rollback is reverting the single function change; artifacts written with the stale flag remain valid and self-heal on the next successful binding pass.
 ---
 
