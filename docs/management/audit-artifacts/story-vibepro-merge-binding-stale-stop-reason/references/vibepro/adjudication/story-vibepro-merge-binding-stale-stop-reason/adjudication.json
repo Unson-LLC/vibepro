@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+  "updated_at": "2026-07-29T15:53:55.596Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "GDO-S-5 is exactly the required regression: one merge object, failed-then-successful sequence, stale flags cleared, foreign flags preserved; e2e AC:5 adds rerun idempotence. Unit file ran 17 pass / 0 fail; tree content identical at HEAD a584ceb0.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+        "task_id": null,
+        "acceptance_criteria": [
+          "When `applyDecisionOutcomeBinding` produces a non-failed binding (`bound` or",
+          "If no other reconciliation reasons remain, `reconciliation.status` becomes",
+          "`stop_reason` is cleared to `null` only when it was",
+          "Failure behavior is unchanged: a failed binding still sets",
+          "Regression test covers the failed-then-successful sequence on one merge"
+        ]
+      },
+      "acceptance_scope_fingerprint": "332c7413f3e191cf903b1eed12084ec4f52e02390126025febf3bfddfb71d3fa",
+      "recorded_at": "2026-07-29T15:53:55.591Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "GDO-S-2/GDO-S-3 and e2e AC:4 apply a failed binding to a clean merge and assert reconciliation_required, the appended reason, and the stop_reason; the failed branch is behaviorally unchanged. Source unchanged at new head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+        "task_id": null,
+        "acceptance_criteria": [
+          "When `applyDecisionOutcomeBinding` produces a non-failed binding (`bound` or",
+          "If no other reconciliation reasons remain, `reconciliation.status` becomes",
+          "`stop_reason` is cleared to `null` only when it was",
+          "Failure behavior is unchanged: a failed binding still sets",
+          "Regression test covers the failed-then-successful sequence on one merge"
+        ]
+      },
+      "acceptance_scope_fingerprint": "332c7413f3e191cf903b1eed12084ec4f52e02390126025febf3bfddfb71d3fa",
+      "recorded_at": "2026-07-29T15:53:52.083Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "All three sub-branches asserted in the e2e spec: cleared to null when self-set and no reasons remain; delivery_reconciliation_required when other reasons remain; foreign stop_reason untouched. Code guards on equality with decision_outcome_binding_failed. Unchanged at new head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+        "task_id": null,
+        "acceptance_criteria": [
+          "When `applyDecisionOutcomeBinding` produces a non-failed binding (`bound` or",
+          "If no other reconciliation reasons remain, `reconciliation.status` becomes",
+          "`stop_reason` is cleared to `null` only when it was",
+          "Failure behavior is unchanged: a failed binding still sets",
+          "Regression test covers the failed-then-successful sequence on one merge"
+        ]
+      },
+      "acceptance_scope_fingerprint": "332c7413f3e191cf903b1eed12084ec4f52e02390126025febf3bfddfb71d3fa",
+      "recorded_at": "2026-07-29T15:53:47.948Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Both branches asserted: reconciled with empty reasons when nothing else remains; mixed case with base_behind_remote stays reconciliation_required with the foreign reason preserved. Test files unchanged at new head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+        "task_id": null,
+        "acceptance_criteria": [
+          "When `applyDecisionOutcomeBinding` produces a non-failed binding (`bound` or",
+          "If no other reconciliation reasons remain, `reconciliation.status` becomes",
+          "`stop_reason` is cleared to `null` only when it was",
+          "Failure behavior is unchanged: a failed binding still sets",
+          "Regression test covers the failed-then-successful sequence on one merge"
+        ]
+      },
+      "acceptance_scope_fingerprint": "332c7413f3e191cf903b1eed12084ec4f52e02390126025febf3bfddfb71d3fa",
+      "recorded_at": "2026-07-29T15:53:44.890Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Verified at HEAD a584ceb0 (delta from 210502b9 is one parent_design frontmatter line). GDO-S-5 and e2e AC:1 apply a failed binding then a bound rebinding on the same merge object and assert decision_outcome_binding_failed is removed; the clearing branch covers bound and not_applicable. Unit suite reran in this worktree: 17/17 pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+        "task_id": null,
+        "acceptance_criteria": [
+          "When `applyDecisionOutcomeBinding` produces a non-failed binding (`bound` or",
+          "If no other reconciliation reasons remain, `reconciliation.status` becomes",
+          "`stop_reason` is cleared to `null` only when it was",
+          "Failure behavior is unchanged: a failed binding still sets",
+          "Regression test covers the failed-then-successful sequence on one merge"
+        ]
+      },
+      "acceptance_scope_fingerprint": "332c7413f3e191cf903b1eed12084ec4f52e02390126025febf3bfddfb71d3fa",
+      "recorded_at": "2026-07-29T15:53:41.268Z"
+    }
+  ]
+}
