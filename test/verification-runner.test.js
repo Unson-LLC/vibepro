@@ -1152,8 +1152,10 @@ test('the typecheck script checks every file rather than only the glob head', as
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-typecheck-script-'));
   await mkdir(path.join(root, 'bin'), { recursive: true });
   await mkdir(path.join(root, 'src'), { recursive: true });
+  await mkdir(path.join(root, 'scripts'), { recursive: true });
   await writeFile(path.join(root, 'bin', 'vibepro.js'), 'export const entry = 1;\n', 'utf8');
   await writeFile(path.join(root, 'src', 'a-good.js'), 'export const a = 1;\n', 'utf8');
+  await writeFile(path.join(root, 'scripts', 'a-good.mjs'), 'export const s = 1;\n', 'utf8');
 
   const run = async () => execFileAsync('sh', ['-c', script], { cwd: root })
     .then(() => 0)
@@ -1164,6 +1166,13 @@ test('the typecheck script checks every file rather than only the glob head', as
   // Broken, and deliberately not the first entry of the glob.
   await writeFile(path.join(root, 'src', 'z-broken.js'), 'const x = ;\n', 'utf8');
   assert.equal(await run(), 1, 'a broken file after the first must fail the script');
+  await rm(path.join(root, 'src', 'z-broken.js'));
+  assert.equal(await run(), 0, 'the fixture must return to clean before the next case');
+
+  // scripts/*.mjs is the last glob, so a break there proves the script does not
+  // stop after the earlier categories.
+  await writeFile(path.join(root, 'scripts', 'z-broken.mjs'), 'const x = ;\n', 'utf8');
+  assert.equal(await run(), 1, 'a broken file in the last glob must fail the script');
 
   await rm(root, { recursive: true, force: true });
 });
