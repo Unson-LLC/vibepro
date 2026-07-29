@@ -55,7 +55,7 @@
         ]
       },
       "first_seen_at": "2026-07-29T15:17:30.466Z",
-      "last_revised_at": "2026-07-29T15:32:22.515Z"
+      "last_revised_at": "2026-07-29T15:37:27.652Z"
     },
     {
       "id": "S-001",
@@ -106,7 +106,58 @@
         ]
       },
       "first_seen_at": "2026-07-29T15:17:30.466Z",
-      "last_revised_at": "2026-07-29T15:32:22.515Z"
+      "last_revised_at": "2026-07-29T15:37:27.652Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "When merge gate authorization is denied, executeMerge's existing fail-closed blocking behavior in src/merge-manager.js is unchanged by this story; the change only clears the stale decision_outcome_binding_failed markers after a non-failed binding pass.",
+      "inherited_behavior": {
+        "condition": "!gateAuthorization.allowed",
+        "classification": "inherited",
+        "files": [
+          "src/merge-manager.js"
+        ]
+      },
+      "rationale": "The gate authorization denial branch is an existing scenario adjacent to the changed code; it is inherited, not modified.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "Failure behavior is unchanged"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
+            "section": "Scope",
+            "text_snippet": "applyDecisionOutcomeBinding only"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/merge-manager.js",
+            "anchor": "gateAuthorization.allowed"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/merge-gate-authorization.test.js",
+            "case": "MWP-AC-3 malformed or critical waivers fail closed"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/**/*.test.js",
+            "must_cover": "fail closed"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T15:37:27.652Z",
+      "last_revised_at": "2026-07-29T15:37:27.652Z"
     }
   ],
   "diagrams": [
