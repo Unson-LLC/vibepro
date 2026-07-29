@@ -7229,8 +7229,26 @@
         "stale_review_hash": "needs_review",
         "accepted_adr_supersession_conflict": "block"
       },
-      "children": {},
-      "child_links": [],
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-release-0-2-0-beta-2.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-release-0-2-0-beta-2.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
       "source": "design-ssot.json"
     }
   ],
