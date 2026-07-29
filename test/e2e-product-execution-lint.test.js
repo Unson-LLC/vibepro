@@ -131,11 +131,12 @@ test('LINT-4 VET-S-5 an empty e2e directory fails rather than reporting a silent
   }
 });
 
-test('LINT-5 each of the three product-execution signals independently clears a file', () => {
+test('LINT-5 each product-execution signal independently clears a file', () => {
   const signalFixtures = {
     product_import: `import { thing } from '../../src/thing.js';\ntest('x', () => { thing(); });\n`,
     process_start: `import { execFileSync } from 'node:child_process';\ntest('x', () => { execFileSync('node', ['-e', '1']); });\n`,
-    filesystem_access: `import { readFileSync } from 'node:fs';\ntest('x', () => { readFileSync('package.json', 'utf8'); });\n`
+    filesystem_access: `import { readFileSync } from 'node:fs';\ntest('x', () => { readFileSync('package.json', 'utf8'); });\n`,
+    browser_automation: `import { test, expect } from '@playwright/test';\ntest('x', async () => { await expect(1).toBe(1); });\n`
   };
   assert.deepEqual(
     Object.keys(signalFixtures).sort(),
@@ -154,6 +155,50 @@ test('LINT-5 each of the three product-execution signals independently clears a 
     }
   }
 
+  assert.deepEqual(detectProductExecutionSignals(HISTORICAL_VACUOUS_FILE), []);
+});
+
+test('LINT-10 a nested directory under test/e2e is scanned, not silently skipped', () => {
+  // A gate that never reports clean on what it cannot see must not drop a
+  // whole subdirectory. Before this was fixed, test/e2e/<dir>/*.test.js was
+  // enumerated away and a vacuous file there read as clean.
+  const root = makeFixtureRoot({ 'story-real-main.test.js': REAL_BEHAVIOUR_FILE });
+  try {
+    mkdirSync(join(root, 'test', 'e2e', 'merge', 'deep'), { recursive: true });
+    writeFileSync(join(root, 'test', 'e2e', 'merge', 'deep', 'story-nested-main.test.js'), HISTORICAL_VACUOUS_FILE);
+
+    const listed = listE2eTestFiles(join(root, 'test', 'e2e'));
+    assert.equal(listed.length, 2, `nested file must be enumerated, saw ${JSON.stringify(listed)}`);
+    assert.ok(listed.some((entry) => entry.includes('story-nested-main.test.js')));
+
+    const { status, output } = runLint(root);
+    assert.equal(status, 1, 'a vacuous file in a subdirectory must fail the lint');
+    assert.match(output, /story-nested-main\.test\.js/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('LINT-11 product code reached through a helper, a subpath import or an alias clears the lint', () => {
+  // These shapes execute product behaviour but contain no literal ../src/ path.
+  // Rejecting them would make the lint a false-positive generator that a
+  // contributor could only satisfy by editing the lint itself.
+  const shapes = {
+    'via-helper': `import { withTempRepo } from './helpers/repo.js';\ntest('x', () => { withTempRepo(); });\n`,
+    'via-subpath': `import { thing } from '#src/thing.js';\ntest('x', () => { thing(); });\n`,
+    'via-alias': `import { thing } from '@/src/thing.js';\ntest('x', () => { thing(); });\n`,
+    'via-side-effect': `import '../../src/register.js';\ntest('x', () => {});\n`
+  };
+  for (const [name, content] of Object.entries(shapes)) {
+    assert.deepEqual(
+      detectProductExecutionSignals(content),
+      ['product_import'],
+      `${name} must be recognised as reaching product code`
+    );
+  }
+
+  // The widened signal must not weaken the tripwire: the historical shape,
+  // which imported nothing but node:test and node:assert, is still rejected.
   assert.deepEqual(detectProductExecutionSignals(HISTORICAL_VACUOUS_FILE), []);
 });
 

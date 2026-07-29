@@ -89,15 +89,28 @@ assert.match('activation_candidates activation_signals activation_precision', /a
 >
 > lintは19件が存在する状態では失敗するため、PR 2 を先に出すとCIが赤になる。逆順(PR 1 → PR 2)は各PR単体でgreenであることを実測済み。
 
-撤回の根拠は2点あり、いずれも実測に基づく。
+撤回の根拠は以下のとおり。1は未検証の観察、2と3は検証済みであり、
+2と3だけで撤回の判断は成立する。
 
-1. **分割の主動機が実測で否定された**: 下記 Dogfooding findings 1 は「削除主体のlaneは
-   `atomic_scope` を `accepted` にできず、`gate:pr_scope_judgment` を分割以外で閉じられない」
-   ことを分割の理由としていた。しかし削除のみのPR 1 相当の内容で `pr prepare` を実行しても
-   `gate:pr_scope_judgment` は `needs_split` のままであり、分割してもこのgateは閉じない。
-   つまり分割はこの問題を解決しないので、分割を選ぶ根拠にならない。
-2. **順序制約は単一PR化で消滅する**: 「lintは19件が存在する状態では失敗する」という制約は、
-   削除とlintを同一commit範囲で出荷すれば発生しない。分割した場合にのみ生じる制約だった。
+1. **分割の主動機は根拠として使えない(未検証)**: 下記 Dogfooding findings 1 は
+   「削除主体のlaneは `atomic_scope` を `accepted` にできず、`gate:pr_scope_judgment` を
+   分割以外で閉じられない」ことを分割の理由としていた。この主張は本Storyの成果物として
+   検証されていない。削除のみの構成で `pr prepare` を実行したartifactは
+   `.vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/` に永続化されておらず、
+   `split-plan.json` の `atomic_scope.status` は `not_requested` で、
+   atomic scopeはそもそも一度も要求されていない。
+   さらに単一PR化後の `needs_split` を実際に駆動しているのは
+   `mixed_repo_control_surface`(`.github/workflows/ci.yml` と `package.json`)であり、
+   これは単一PR化によって初めて生じたsignalである。
+   したがって「分割してもgateは閉じない」とは主張できず、この項目は撤回の根拠に含めない。
+   本項目はVibePro側の欠陥報告としてのみ残す。
+2. **順序制約は単一PR化で消滅する(検証済み)**: 「lintは19件が存在する状態では失敗する」
+   という制約は、削除とlintを同一commit範囲で出荷すれば発生しない。
+   分割した場合にのみ生じる制約だった。
+3. **分割ではVET-S-1が満たせない(検証済み)**: VET-S-1「test/e2e 配下に vacuous file が
+   0件になる」は、削除とlintによる強制が同一HEADで同時に成立して初めて満たされる不変条件で
+   あり、削除のみのPR 1 では成立しない。下記のacceptance coverage評価と合わせると、
+   分割はPR 1 をwaiverなしには出荷できない構成にする。
 
 加えて、Story全体のAcceptance CriteriaはStory単位で評価される
 (`buildStoryE2eAcceptanceCoverage` はStory markdownの `## Acceptance Criteria` 配下の
@@ -110,7 +123,7 @@ assert.match('activation_candidates activation_signals activation_precision', /a
 
 ## Dogfooding findings（VibePro本体の欠陥。本Storyでは修正せず別Storyに送る）
 
-1. **削除のみのlaneはatomic scopeを取得できない**: `buildAgentReviewOwnerMapEvidence()` はowner判定を `content_binding.surface_files` から行うが、`buildContentBinding()` は実在するファイルしかhashしないため、削除されたパスは永久に `uncovered_paths` に残る。結果として削除主体の変更は `atomic_scope` を `accepted` にできない。**訂正(2026-07-29)**: 当初これを「`gate:pr_scope_judgment` を分割以外の方法で閉じられない」と読み、分割の理由とした。しかし実測では分割しても `gate:pr_scope_judgment` は `needs_split` のままであり、このgateの解消は分割の有無に依存しない(理由付きdecision recordで解消する)。したがって本findingはVibePro側の欠陥報告としては有効だが、PR分割の根拠にはならない。上記 Delivery の撤回理由1を参照。
+1. **削除のみのlaneはatomic scopeを取得できない**: `buildAgentReviewOwnerMapEvidence()` はowner判定を `content_binding.surface_files` から行うが、`buildContentBinding()` は実在するファイルしかhashしないため、削除されたパスは永久に `uncovered_paths` に残る。結果として削除主体の変更は `atomic_scope` を `accepted` にできない。**訂正(2026-07-29)**: 当初これを「`gate:pr_scope_judgment` を分割以外の方法で閉じられない」と読み、分割の理由とした。しかしこの読みは本Storyでは検証していない。削除のみ構成の `pr prepare` artifactは残っておらず、`split-plan.json` の `atomic_scope.status` は `not_requested` である。単一PR化後に `needs_split` を駆動しているのは `mixed_repo_control_surface` であり、これは単一PR化で初めて生じたsignalなので、「分割の有無に依存しない」とも主張できない。本findingはVibePro側の欠陥報告としてのみ有効であり、PR分割の採否の根拠には使わない。実際のgate解消は理由付きdecision recordで行う。上記 Delivery の撤回根拠1を参照。
 2. **ディレクトリを `--inspection-input` に渡すと無言で捨てられる**: `buildContentBinding()` はディレクトリを `surface_files` にも `missing_files` にも入れないため、coordinatorは入力が無視されたことに気づけない。`verificationTargetCoversChangedPath()` はprefix一致を実装しており、ディレクトリ指定が効くように見えるのが誤解を強める。
 
 ## Non Goals

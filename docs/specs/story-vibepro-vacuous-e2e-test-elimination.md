@@ -61,9 +61,15 @@ VET-S-1 から VET-S-6 までを同一HEADで満たす。
 
 「lintは19ファイルが存在する状態では失敗する」という制約は、削除とlintを
 同一commit範囲に置けば発生しない。分割した場合にのみ生じる制約だった。
+加えて VET-S-1「test/e2e 配下に vacuous file が0件になる」は、削除とlintによる強制が
+同一HEADで同時に成立して初めて満たされる不変条件であり、削除のみのPR 1 では満たせない。
+Story全体のAcceptance CriteriaはStory単位で評価され繰り延べマーカーも無いため、
+分割するとPR 1 は VET-S-1 / VET-S-5 未達で `gate:e2e` を閉じられずwaiverが必要になる。
+
 分割のもう一方の根拠(削除のみのlaneは `atomic_scope` を取得できないので
-`gate:pr_scope_judgment` を分割でしか閉じられない)は実測で否定されている。
-分割しても同gateは `needs_split` のままで、解消は分割の有無に依存しない。
+`gate:pr_scope_judgment` を分割でしか閉じられない)は、本Storyでは検証していないため
+撤回の根拠に含めない。削除のみ構成の `pr prepare` artifactは残っておらず、
+`split-plan.json` の `atomic_scope.status` は `not_requested` である。
 詳細はStoryの Delivery 節を参照。
 
 ## 脅威モデル上の位置づけ

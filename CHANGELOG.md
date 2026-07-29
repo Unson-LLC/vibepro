@@ -7,14 +7,16 @@ All notable changes to VibePro will be documented in this file.
 - Remove 17 files under `test/e2e` that imported no product code, started no
   process, and touched no filesystem. Each asserted a locally-defined string
   against a regex built from that same string, so no product regression could
-  fail them, yet `node --test` counted them as passing e2e tests. Their Story
-  acceptance criteria are already executed against real git repositories and
-  real CLI runs by `test/cli-status-honesty.test.js`,
+  fail them, yet `node --test` counted them as passing e2e tests. No product
+  coverage is lost, because they covered no product branch to begin with.
+  Where an equivalent behavioural test already exists it is named in the commit
+  (`test/cli-status-honesty.test.js`,
   `test/engineering-judgment-activation-precision.test.js`,
   `test/managed-worktree-policy-resync.test.js`,
   `test/traceability-usage-report.test.js`, `test/vibepro-cli.test.js`, and the
-  real `-main.test.js` siblings. Two files covered branches nothing else
-  executed and were rewritten into behavioural tests instead of deleted.
+  real `-main.test.js` siblings); for the remainder there is nothing to
+  replace. Two files did cover branches nothing else executed, and those were
+  rewritten into behavioural tests instead of deleted.
 
 - Add `npm run lint:e2e-product-execution`
   (`scripts/lint-e2e-product-execution.mjs`), which fails when a `test/e2e`

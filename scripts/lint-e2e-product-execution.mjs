@@ -12,19 +12,25 @@
 // failures, because a lint that cannot see its subject must never report clean.
 
 import { readdirSync, readFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 export const E2E_TEST_FILE_PATTERN = /\.(spec|test)\.[cm]?[jt]sx?$/;
 
 // A file counts as executing product behaviour when it does at least one of:
-// import this repository's product code, start a process, or touch the
-// filesystem. These are the three signals the Story defines as Tier A.
+// resolve a module inside this repository, start a process, touch the
+// filesystem, or drive a browser. The first signal is deliberately "any
+// repository-internal specifier" rather than "a path containing src/": a test
+// that reaches product code through a shared helper, a subpath import (#src/x)
+// or a path alias (@/src/x) is executing product behaviour just as much as one
+// that imports src/ directly, and requiring a literal ../src/ would reject it.
+// Every one of the 17 files this Story removed imported nothing but node:test
+// and node:assert, so the widened signal still rejects all of them.
 export const PRODUCT_EXECUTION_SIGNALS = [
   {
     id: 'product_import',
-    description: 'imports repository product code (src/, scripts/, bin/)',
-    pattern: /['"][^'"]*(?:\.\.\/)+(?:src|scripts|bin)\/[^'"]*['"]/
+    description: 'resolves a module inside this repository (relative, # subpath, or @/ alias)',
+    pattern: /(?:from|import|require)\s*\(?\s*['"](?:\.{1,2}\/|#|@\/)[^'"]*['"]/
   },
   {
     id: 'process_start',
@@ -35,6 +41,11 @@ export const PRODUCT_EXECUTION_SIGNALS = [
     id: 'filesystem_access',
     description: 'reads or writes the filesystem',
     pattern: /node:fs|require\(\s*['"]fs(?:\/promises)?['"]\s*\)|['"]fs\/promises['"]|\b(?:readFile|readFileSync|writeFile|writeFileSync|mkdtemp|mkdtempSync|readdir|readdirSync|existsSync|rm|rmSync|mkdir|mkdirSync)\s*\(/
+  },
+  {
+    id: 'browser_automation',
+    description: 'drives a real browser or app under test',
+    pattern: /@playwright\/test|['"]playwright['"]|['"]puppeteer['"]|['"]cypress['"]|\bpage\.(?:goto|click|locator|fill)\s*\(|\bcy\.(?:visit|get)\s*\(/
   }
 ];
 
@@ -44,13 +55,31 @@ export function detectProductExecutionSignals(content) {
     .map((signal) => signal.id);
 }
 
+// Walks the directory tree rather than a single level. A nested directory that
+// went unscanned would be a silent blind spot inside a gate whose whole point
+// is that it never reports clean on something it did not look at.
 export function listE2eTestFiles(e2eDir, readdir = readdirSync) {
-  // Any failure to enumerate the directory is a lint failure, not an empty set.
-  // Returning [] here would let a moved or deleted directory read as "clean".
-  const entries = readdir(e2eDir);
-  return entries
-    .filter((name) => E2E_TEST_FILE_PATTERN.test(name))
-    .sort();
+  const found = [];
+  const walk = (absoluteDir, relativeDir) => {
+    // Any failure to enumerate a directory is a lint failure, not an empty set.
+    // Returning [] here would let a moved or deleted directory read as "clean".
+    const entries = readdir(absoluteDir, { withFileTypes: true });
+    for (const entry of entries) {
+      // Support both Dirent and plain-string readdir injections in tests.
+      const name = typeof entry === 'string' ? entry : entry.name;
+      const isDirectory = typeof entry === 'string'
+        ? false
+        : typeof entry.isDirectory === 'function' && entry.isDirectory();
+      const relativePath = relativeDir ? `${relativeDir}${sep}${name}` : name;
+      if (isDirectory) {
+        walk(join(absoluteDir, name), relativePath);
+        continue;
+      }
+      if (E2E_TEST_FILE_PATTERN.test(name)) found.push(relativePath);
+    }
+  };
+  walk(e2eDir, '');
+  return found.sort();
 }
 
 export function lintE2eProductExecution({
@@ -92,14 +121,16 @@ export function lintE2eProductExecution({
 
   if (violations.length > 0) {
     log(
-      `::error::${violations.length} e2e test file(s) execute no product behaviour ` +
-        '(no product import, no process start, no filesystem access). ' +
+      `::error::${violations.length} e2e test file(s) execute no product behaviour. ` +
         'They pass regardless of what the product does, so they inflate the e2e pass count without verifying anything: ' +
         violations.join(', ')
     );
     log(
-      'Fix by asserting on real behaviour: import the product module under test, run the CLI as a child process, ' +
-        'or exercise the code against a real working tree. Delete the file if another suite already covers its Story acceptance criteria.'
+      `A file clears this lint by doing any one of: ${PRODUCT_EXECUTION_SIGNALS.map((signal) => `${signal.id} (${signal.description})`).join('; ')}.`
+    );
+    log(
+      'Fix by asserting on real behaviour: import the module under test, run the CLI as a child process, ' +
+        'exercise the code against a real working tree, or drive the app. Delete the file if another suite already covers its Story acceptance criteria.'
     );
     return 1;
   }
