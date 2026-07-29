@@ -82,8 +82,10 @@ test('story-vibepro-review-surface-violation-ledger acceptance suite is fully gr
   const { stdout } = await contractRun;
   // Assert on the failure count, not the pass count: pinning an exact total
   // turns every future test added to the suite into an unrelated red.
-  assert.match(stdout, /ℹ fail 0/);
+  // The child's reporter differs by Node version and TTY: spec prints
+  // "ℹ fail 0" while tap prints "# fail 0" — accept either.
+  assert.match(stdout, /(?:ℹ|#) fail 0/);
   assert.doesNotMatch(stdout, /^not ok/m);
-  const passed = Number(/ℹ pass (\d+)/.exec(stdout)?.[1] ?? 0);
+  const passed = Number(/(?:ℹ|#) pass (\d+)/.exec(stdout)?.[1] ?? 0);
   assert.ok(passed >= 23, `expected at least 23 acceptance tests, saw ${passed}`);
 });
