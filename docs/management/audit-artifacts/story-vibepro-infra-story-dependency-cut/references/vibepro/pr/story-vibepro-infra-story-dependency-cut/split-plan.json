@@ -1,0 +1,347 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-infra-story-dependency-cut",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "automatic_recommendation": {
+    "status": "split_recommended",
+    "recommended_strategy": "split_by_lane_then_prepare"
+  },
+  "accepted_current_story_lineage": [],
+  "atomic_scope": {
+    "status": "not_requested",
+    "strategy": null,
+    "reason": null,
+    "review_facets": [],
+    "dependency_boundaries": [],
+    "missing_review_facets": [],
+    "missing_dependency_facets": [],
+    "invalid_dependency_boundaries": [],
+    "unsafe_scope_signals": [],
+    "unsafe_scope_reasons": [],
+    "source_ref": "docs/management/stories/active/story-vibepro-infra-story-dependency-cut.md"
+  },
+  "rationale": [
+    "3 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 5 changed files が一致し、83 related files を影響調査候補にした"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 5383,
+    "edge_count": 12059,
+    "matched_file_count": 5,
+    "related_file_count": 83,
+    "investigation_files": [
+      "src/adjudication.js",
+      "src/agent-harness-map.js",
+      "src/agent-review.js",
+      "src/architecture-readiness.js",
+      "src/artifact-routing.js",
+      "src/authorization-scoring.js",
+      "src/brainbase-importer.js",
+      "src/canonical-audit.js",
+      "src/change-risk-classifier.js",
+      "src/check-packs.js",
+      "src/checkpoint-manager.js",
+      "src/ci-evidence.js",
+      "src/cli.js",
+      "src/code-topology-provider.js",
+      "src/content-binding.js",
+      "src/decision-records.js",
+      "src/delivery-efficiency-guardrail.js",
+      "src/design-ssot.js",
+      "src/diagnostic-engine.js",
+      "src/diagram-requirement-resolver.js",
+      "src/doctor.js",
+      "src/environment-graph.js",
+      "src/evidence-depth-planner.js",
+      "src/evidence-reuse.js",
+      "src/execution-state.js",
+      "src/explore-evidence.js",
+      "src/flow-verifier.js",
+      "src/gate-outcome-ledger.js",
+      "src/git-fingerprint.js",
+      "src/graph-context.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "src/guard.js",
+        "matched_nodes": [
+          "src_guard_js",
+          "src_guard_readguardconfig",
+          "src_guard_classifyreleasesurface",
+          "src_guard_isvibeproinvocation",
+          "src_guard_matchprotectedpush",
+          "src_guard_checkguard",
+          "src_guard_parsepretooluseinput",
+          "src_guard_parseprepushrefs"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/workspace.js",
+          "test/guard.test.js"
+        ]
+      },
+      {
+        "file": "src/performance-evidence.js",
+        "matched_nodes": [
+          "src_performance_evidence_js",
+          "src_performance_evidence_defineperformancemetric",
+          "src_performance_evidence_recordperformancerun",
+          "src_performance_evidence_comparestoryperformance",
+          "src_performance_evidence_summarizestoryperformanceevidence",
+          "src_performance_evidence_renderperformancedefinesummary",
+          "src_performance_evidence_renderperformancerecordsummary",
+          "src_performance_evidence_renderperformanceevidencesummary"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/diagnostic-engine.js",
+          "src/pr-manager.js",
+          "src/workspace.js"
+        ]
+      },
+      {
+        "file": "src/pr-manager.js",
+        "matched_nodes": [
+          "src_pr_manager_js",
+          "src_pr_manager_createprprepareprogress",
+          "src_pr_manager_writefilewithtimeout",
+          "src_pr_manager_preparepullrequest",
+          "src_pr_manager_evaluategatereadiness",
+          "src_pr_manager_buildarchitecturereviewtemplate",
+          "src_pr_manager_buildhumanreviewtemplate",
+          "src_pr_manager_summarizereviewgate"
+        ],
+        "related_files": [
+          "src/adjudication.js",
+          "src/agent-review.js",
+          "src/architecture-readiness.js",
+          "src/artifact-routing.js",
+          "src/authorization-scoring.js",
+          "src/canonical-audit.js",
+          "src/change-risk-classifier.js",
+          "src/check-packs.js",
+          "src/checkpoint-manager.js",
+          "src/ci-evidence.js",
+          "src/cli.js",
+          "src/code-topology-provider.js"
+        ]
+      },
+      {
+        "file": "src/story-manager.js",
+        "matched_nodes": [
+          "src_story_manager_js",
+          "src_story_manager_addstory",
+          "src_story_manager_liststories",
+          "src_story_manager_selectstory",
+          "src_story_manager_archivestory",
+          "src_story_manager_getstoryruns",
+          "src_story_manager_getstorystatus",
+          "src_story_manager_createstoryreport"
+        ],
+        "related_files": [
+          "src/artifact-routing.js",
+          "src/brainbase-importer.js",
+          "src/cli.js",
+          "src/diagnostic-engine.js",
+          "src/graph-context.js",
+          "src/journey-map.js",
+          "src/nocodb-story-sync.js",
+          "src/playbook-exporter.js",
+          "src/pr-manager.js",
+          "src/story-catalog-generator.js",
+          "src/story-html.js",
+          "src/story-task-generator.js"
+        ]
+      },
+      {
+        "file": "src/workspace.js",
+        "matched_nodes": [
+          "src_workspace_js",
+          "src_workspace_initworkspace",
+          "src_workspace_readmanifest",
+          "src_workspace_writemanifest",
+          "src_workspace_getworkspacedir",
+          "src_workspace_isarchived",
+          "src_workspace_normalizeactivestories",
+          "src_workspace_toworkspacerelative"
+        ],
+        "related_files": [
+          "src/adjudication.js",
+          "src/agent-harness-map.js",
+          "src/agent-review.js",
+          "src/architecture-readiness.js",
+          "src/artifact-routing.js",
+          "src/brainbase-importer.js",
+          "src/canonical-audit.js",
+          "src/check-packs.js",
+          "src/ci-evidence.js",
+          "src/cli.js",
+          "src/decision-records.js",
+          "src/diagnostic-engine.js"
+        ]
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "same_pr_allowed",
+      "files": [
+        "docs/management/stories/active/story-vibepro-infra-story-dependency-cut.md",
+        "docs/specs/story-vibepro-infra-story-dependency-cut.md",
+        "docs/architecture/target-model.json"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 3,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-infra-story-dependency-cut-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "src/guard.js",
+        "src/performance-evidence.js",
+        "src/pr-manager.js",
+        "src/story-manager.js",
+        "src/workspace.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 5,
+      "graph_investigation_files": [
+        "src/adjudication.js",
+        "src/agent-harness-map.js",
+        "src/agent-review.js",
+        "src/architecture-readiness.js",
+        "src/artifact-routing.js",
+        "src/authorization-scoring.js",
+        "src/brainbase-importer.js",
+        "src/canonical-audit.js",
+        "src/change-risk-classifier.js",
+        "src/check-packs.js",
+        "src/checkpoint-manager.js",
+        "src/ci-evidence.js"
+      ],
+      "suggested_branch": "feat/vibepro-infra-story-dependency-cut-runtime-behavior"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "design-ssot.json"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 1,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-infra-story-dependency-cut-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "requirements-ssot",
+    "runtime-behavior",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 3,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false,
+      "requires_atomic_head_validation": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test --test-concurrency=2 test/architecture-conformance.test.js test/decision-records.test.js test/guard.test.js test/managed-worktree-policy-resync.test.js test/workspace-status.test.js test/story-discovery.test.js test/story-run-portfolio.test.js test/delivery-efficiency-guardrail.test.js",
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/30108852309/job/89532930846"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
+      "commands": [
+        "node --test --test-concurrency=2 test/architecture-conformance.test.js test/decision-records.test.js test/guard.test.js test/managed-worktree-policy-resync.test.js test/workspace-status.test.js test/story-discovery.test.js test/story-run-portfolio.test.js test/delivery-efficiency-guardrail.test.js",
+        "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/30108852309/job/89532930846"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-infra-story-dependency-cut-requirements-ssot with 3 files",
+      "command": "git switch -c feat/vibepro-infra-story-dependency-cut-requirements-ssot \"<base>\" && git add docs/management/stories/active/story-vibepro-infra-story-dependency-cut.md docs/specs/story-vibepro-infra-story-dependency-cut.md docs/architecture/target-model.json"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-infra-story-dependency-cut-runtime-behavior with 5 files",
+      "command": "git switch -c feat/vibepro-infra-story-dependency-cut-runtime-behavior \"<base>\" && git add src/guard.js src/performance-evidence.js src/pr-manager.js src/story-manager.js src/workspace.js"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-infra-story-dependency-cut-misc-follow-up with 1 files",
+      "command": "git switch -c feat/vibepro-infra-story-dependency-cut-misc-follow-up \"<base>\" && git add design-ssot.json"
+    }
+  ]
+}

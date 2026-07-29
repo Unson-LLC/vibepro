@@ -1,0 +1,48 @@
+{
+  "head_sha": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+  "agent_id": "story8_fix_rereview",
+  "status": "pass",
+  "summary": "The new fixture proves changed-finding multi-attempt convergence and current-HEAD evidence resolves both prior findings.",
+  "inspection": {
+    "targeted_tests": { "pass": 50, "fail": 0 },
+    "full_suite": { "pass": 1445, "fail": 0 },
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-review-finding-repair-loop.md",
+      "docs/architecture/story-vibepro-review-finding-repair-loop.md",
+      "docs/specs/story-vibepro-review-finding-repair-loop.vibepro.json",
+      "src/review-finding-repair-loop.js",
+      "src/cli.js",
+      "test/review-finding-repair-loop.test.js"
+    ]
+  },
+  "resolved_findings": {
+    "rfr-missing-successful-multi-attempt": "test/review-finding-repair-loop.test.js RFR-S-7 changed finding advances to attempt 2 and converges after a fresh pass",
+    "rfr-scenario-clause-e2e-overclaim": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json"
+  },
+  "acceptance_verdicts": {
+    "AC-1": "demonstrated",
+    "AC-2": "demonstrated",
+    "AC-3": "demonstrated",
+    "AC-4": "demonstrated",
+    "AC-5": "demonstrated",
+    "AC-6": "demonstrated",
+    "AC-7": "demonstrated"
+  },
+  "judgment_verdicts": {
+    "spine:intent": "judged_sound",
+    "spine:current_reality": "judged_sound",
+    "spine:invariants": "judged_sound",
+    "spine:boundaries": "judged_sound",
+    "spine:failure_modes": "judged_sound",
+    "spine:done_evidence": "judged_sound",
+    "axis:public_contract": "judged_sound",
+    "axis:execution_topology": "judged_sound",
+    "axis:scope_reviewability": "judged_sound",
+    "failure_mode:schema_failure": "judged_sound",
+    "failure_mode:retry_or_async_failure": "judged_sound",
+    "failure_mode:auth_denied": "judged_sound",
+    "failure_mode:persistence_failure": "judged_sound",
+    "failure_mode:evidence_lifecycle_regression": "judged_sound",
+    "failure_mode:workflow_state_regression": "judged_sound"
+  }
+}

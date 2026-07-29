@@ -1,0 +1,207 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-human-decision-checkpoint",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Final HEAD satisfies matching-decision binding, persisted type validation, restart-safe cursor, Story discovery, and strict-HEAD evidence.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "gate-evidence-artifact-head-contradiction",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/qa/human-decision-checkpoint/e2e-final.tap"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "gate-evidence-pending-decision-binding",
+      "disposition": "accepted",
+      "resolved_by": [
+        "src/human-decision-checkpoint.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "gate-evidence-persisted-type-validation",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/human-decision-checkpoint.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "gate-evidence-story-config-registration",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/config.json"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected final diff, Story/Architecture/Spec/config, decision and Guarded Run implementations, negative-path and acceptance tests, strict-HEAD artifacts; independently reran 3-test acceptance/migration and Story map.",
+    "evidence": ".vibepro/pr/story-vibepro-human-decision-checkpoint/verification-evidence.json",
+    "inputs": [
+      "src/human-decision-checkpoint.js",
+      "src/guarded-run-session.js",
+      "src/cli.js",
+      "test/human-decision-checkpoint.test.js",
+      "test/guarded-run-session.test.js",
+      "test/e2e/story-vibepro-human-decision-checkpoint-acceptance.spec.ts",
+      "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md",
+      "docs/architecture/story-vibepro-human-decision-checkpoint.md",
+      "docs/specs/vibepro-human-decision-checkpoint.md",
+      ".vibepro/config.json"
+    ]
+  },
+  "judgment_delta": [
+    "Prior binding, type, artifact freshness, and Story discovery concerns -> cleared by fail-closed source checks, executable regressions, current strict-HEAD artifacts, and live Story map discovery."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+    "expected_root": null,
+    "expected_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+    "current_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-human-decision-checkpoint",
+      "expected_root": null,
+      "expected_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "current_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-19T10:55:25.040Z",
+  "git_context": {
+    "head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+    "current_branch": "codex/story-vibepro-human-decision-checkpoint",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T10:55:25.030Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "preserve the recorded strict HEAD freshness policy during recovery"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "7f791922d25841dccb741e9bcd66d84f618a669c",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-human-decision-checkpoint.md",
+        "sha256": "162524fa83343d4c71c40cd8671538a1b5fa8949f7ce430ebb00f1420d99fd1a",
+        "size": 2640
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md",
+        "sha256": "e117d5cdaa82d34767d2504032ebeb15cfc7bca3e378802c8fc8b1b37b55633c",
+        "size": 3951
+      },
+      {
+        "path": "docs/specs/vibepro-human-decision-checkpoint.md",
+        "sha256": "d66cc556b93f721a3b183f9771f5fa0c70e604f97f5ec83a30781778627628c6",
+        "size": 2574
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "d3e0d7513ea63166a48f565f3ebf1b7194d1d3f10168e17b18319db5bb740f2d",
+        "size": 193308
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "15bcd6e8d90aa5bb3a74dd49b0ad1cefa775c5d5e088fe25af4383dec283cfa6",
+        "size": 68161
+      },
+      {
+        "path": "src/human-decision-checkpoint.js",
+        "sha256": "9fd9d36466a3e0dac94a53327e8615435b2a3f0bc14a2ca900640c99418006f7",
+        "size": 7539
+      },
+      {
+        "path": "test/e2e/story-vibepro-human-decision-checkpoint-acceptance.spec.ts",
+        "sha256": "00718f72daf3be7c125aefef5f6318bc6235cb8a55943d668731a659293c0e87",
+        "size": 3822
+      },
+      {
+        "path": "test/guarded-run-session.test.js",
+        "sha256": "7cd388b1c5da518a3accc15b034dd62bd49cdc39c11d6195ec827a91aa7ca032",
+        "size": 114315
+      },
+      {
+        "path": "test/human-decision-checkpoint.test.js",
+        "sha256": "858708dd198f7f9661a7eeeaf540841071a84e60393efa3a6d65bd6468c7b231",
+        "size": 10347
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "275724781e75a4bdd6f518d976fe5b9b37dc7ced81dfc7e40d0d0306d6b21901"
+  },
+  "source_fingerprint": "12b9f18f8d7cd21456719e9a7a3df0541ba6d35f47a3c9db563ac50c4fcddb8e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/gate_evidence_final",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "/root/gate_evidence_final",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-human-decision-checkpoint/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-human-decision-checkpoint/gate/lifecycle.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "/root/gate_evidence_final",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

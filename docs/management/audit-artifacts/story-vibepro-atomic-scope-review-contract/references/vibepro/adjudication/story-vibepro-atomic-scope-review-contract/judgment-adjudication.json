@@ -1,0 +1,1272 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-atomic-scope-review-contract",
+  "updated_at": "2026-07-23T11:04:33.415Z",
+  "events": [
+    {
+      "event_id": "850d913b-dd65-4ef8-b776-61cd311ff24b",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head Luna judge inspected the workflow contract, implementation, tests, and strict-head evidence and found this item sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:11.690Z"
+    },
+    {
+      "event_id": "8caa6340-e3b7-4b86-ac08-6b253c8a30cd",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head Luna judge inspected the workflow contract, implementation, tests, and strict-head evidence and found this item sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:12.021Z"
+    },
+    {
+      "event_id": "b9a3cdd6-f04c-4c9a-a7c3-694c8667e32b",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head Luna judge inspected the workflow contract, implementation, tests, and strict-head evidence and found this item sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:12.198Z"
+    },
+    {
+      "event_id": "e8f474e2-329a-4a2c-96ce-95afefb3c386",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head Luna judge inspected the workflow contract, implementation, tests, and strict-head evidence and found this item sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:12.390Z"
+    },
+    {
+      "event_id": "ac8f36e8-562b-4fe8-ace0-656d2b6f1222",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head Luna judge inspected the workflow contract, implementation, tests, and strict-head evidence and found this item sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:12.578Z"
+    },
+    {
+      "event_id": "5e55a2c9-659c-4a8f-be0a-0285e66c1743",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head Luna judge inspected the workflow contract, implementation, tests, and strict-head evidence and found this item sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:12.772Z"
+    },
+    {
+      "event_id": "623cc9d6-eafa-4001-82fd-fad535eeebeb",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head Luna judge inspected the workflow contract, implementation, tests, and strict-head evidence and found this item sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:12.959Z"
+    },
+    {
+      "event_id": "3c4dbdb8-e44d-48c5-bf9e-f93361beaad7",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head Luna judge inspected the workflow contract, implementation, tests, and strict-head evidence and found this item sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:13.149Z"
+    },
+    {
+      "event_id": "4cd0d815-8636-438f-b4d7-b9d2828b9911",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head Luna judge inspected the workflow contract, implementation, tests, and strict-head evidence and found this item sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:13.336Z"
+    },
+    {
+      "event_id": "59a23073-434b-471c-b525-18d890bef883",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head Luna judge inspected the workflow contract, implementation, tests, and strict-head evidence and found this item sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:13.527Z"
+    },
+    {
+      "event_id": "a0e16ac5-e76d-4358-8764-522331182249",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head Luna judge inspected the workflow contract, implementation, tests, and strict-head evidence and found this item sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:13.709Z"
+    },
+    {
+      "event_id": "b1d0a7cc-51f4-421c-b3e1-024e49bc9554",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head Luna judge inspected the workflow contract, implementation, tests, and strict-head evidence and found this item sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:13.960Z"
+    },
+    {
+      "event_id": "ca76f047-3327-4f41-9fb8-2d69a51b96a3",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head Luna judge inspected the workflow contract, implementation, tests, and strict-head evidence and found this item sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:14.151Z"
+    },
+    {
+      "event_id": "aa586ed1-16a7-43a3-82ea-8c77f9b406e2",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Current changed-path ownership and review-surface evidence is incomplete before final gate reviews.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:14.336Z"
+    },
+    {
+      "event_id": "60a8c508-907b-4b50-a6bd-0898723d43a1",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Atomic scope owner map is not yet verified because current-head gate_evidence and release_risk reviews are pending.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8cef-96a4-7740-ba8c-62321e2d177a",
+        "session_ref": "019f8cef-96a4-7740-ba8c-62321e2d177a"
+      },
+      "head_commit": "f38ce7ba7bb871f355037a9d7eac55fa9f30bd97",
+      "recorded_at": "2026-07-23T03:13:14.519Z"
+    },
+    {
+      "event_id": "be0b7bea-8470-4802-a16f-9505339947dd",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna current-head judgment found the item supported by typed contracts and executable replay evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:42:33.577Z"
+    },
+    {
+      "event_id": "4d6c2126-c944-4e22-a467-678c45e61bf0",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna current-head judgment found the item supported by typed contracts and executable replay evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:42:33.834Z"
+    },
+    {
+      "event_id": "526d949b-db9f-44ed-aa86-f6f6c752c0e3",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna current-head judgment found the item supported by typed contracts and executable replay evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:42:34.084Z"
+    },
+    {
+      "event_id": "8fff8cb4-ba86-4cae-a98c-fc920e267ed4",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna current-head judgment found the item supported by typed contracts and executable replay evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:42:34.365Z"
+    },
+    {
+      "event_id": "729f588c-9c9f-498c-ac58-a4a424043572",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna current-head judgment found the item supported by typed contracts and executable replay evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:42:34.621Z"
+    },
+    {
+      "event_id": "159014f5-954f-42d5-a2e2-7303d10d8b83",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna current-head judgment found the item supported by typed contracts and executable replay evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:42:34.921Z"
+    },
+    {
+      "event_id": "2d4888ac-0369-4bdb-a5a5-86e0027c5481",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna current-head judgment found the item supported by typed contracts and executable replay evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:42:35.147Z"
+    },
+    {
+      "event_id": "c52c8a41-7002-43de-a217-61fc48c42534",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna current-head judgment found the item supported by typed contracts and executable replay evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:42:35.435Z"
+    },
+    {
+      "event_id": "e5b56b56-4b86-4309-b7e0-30f0aed8fc8a",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna requires maintainer confirmation of real release rollback, current-head topology handoff, or 39-path reviewability before claiming soundness.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:42:35.800Z"
+    },
+    {
+      "event_id": "b398aba2-1dd9-4ef0-a49c-17a9c2062dd0",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna requires maintainer confirmation of real release rollback, current-head topology handoff, or 39-path reviewability before claiming soundness.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:42:36.092Z"
+    },
+    {
+      "event_id": "a1e19a31-9a8b-49b4-a218-c8b6b88236b8",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna requires maintainer confirmation of real release rollback, current-head topology handoff, or 39-path reviewability before claiming soundness.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:42:36.444Z"
+    },
+    {
+      "event_id": "97b060cb-b2c6-49e9-8ad0-779e5e413c6c",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head judgment found schema/current-head review evidence unresolved in its snapshot; remediation and a fresh replacement judgment are required.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:42:55.199Z"
+    },
+    {
+      "event_id": "c5f71e24-2944-4b25-9796-9f34f707c2b2",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna found this item not yet sound because its snapshot still showed unresolved schema/current-head review/release-readiness evidence; remediation and a fresh replacement judgment are required.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:43:03.107Z"
+    },
+    {
+      "event_id": "7d804906-0f1a-41a4-a555-be51c9289da7",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna found this item not yet sound because its snapshot still showed unresolved schema/current-head review/release-readiness evidence; remediation and a fresh replacement judgment are required.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:43:03.297Z"
+    },
+    {
+      "event_id": "3a365d1b-ad33-49b0-976f-9a213e5da242",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna found this item not yet sound because its snapshot still showed unresolved schema/current-head review/release-readiness evidence; remediation and a fresh replacement judgment are required.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:43:03.542Z"
+    },
+    {
+      "event_id": "37249006-af43-4fd1-ab99-cfa7f5cc0909",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Independent gpt-5.6-luna found this item not yet sound because its snapshot still showed unresolved schema/current-head review/release-readiness evidence; remediation and a fresh replacement judgment are required.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8db1-109d-71c0-8258-b0b896c987f6",
+        "session_ref": "019f6313-57a9-7831-ac09-000d36c8fc30"
+      },
+      "head_commit": "eea4888842e4325cb852a3064591aac5cdd452ff",
+      "recorded_at": "2026-07-23T06:43:03.729Z"
+    },
+    {
+      "event_id": "36e20f25-ddae-4b44-8737-2ff6367b887b",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head passing tests enforce executable structured target-bound failure-mode evidence and reject keyword-only evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8dec-388e-7693-b7b7-d58a5f9b8c09",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:50:50.738Z"
+    },
+    {
+      "event_id": "eb2fc02c-200d-4d27-9713-1dd3e67b665b",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Unit, integration, CLI, E2E, typecheck, and docs build evidence is current-head bound and covers the changed path surface.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8dec-388e-7693-b7b7-d58a5f9b8c09",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:50:50.926Z"
+    },
+    {
+      "event_id": "150f9226-36f2-4c70-955e-c5876dc3669f",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Typed atomic declarations, legacy split compatibility, contract-bound evidence, and public CLI replay are covered by current-head tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8dec-388e-7693-b7b7-d58a5f9b8c09",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:50:51.149Z"
+    },
+    {
+      "event_id": "007d2bf0-eea8-4ef9-9ba3-36f4c7715153",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Pre-merge rollback rehearsal passes, while canonical-main post-merge canary and release-owner operational observation remain a post-merge boundary.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8dec-388e-7693-b7b7-d58a5f9b8c09",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:50:51.336Z"
+    },
+    {
+      "event_id": "568116aa-bda6-43e9-a857-98b9dc6ef5e3",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Typed atomic scope is enforced at schema and validation boundaries with invalid input rejection, without conflating review governance with auth denial.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8dec-388e-7693-b7b7-d58a5f9b8c09",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:50:51.568Z"
+    },
+    {
+      "event_id": "f04b18e2-a53d-40a2-85ea-90f719b83bad",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Focused pre-merge rollback rehearsal passes; an actual revert of the not-yet-existing merge commit is correctly deferred to post-merge release ownership.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8dec-388e-7693-b7b7-d58a5f9b8c09",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:50:51.919Z"
+    },
+    {
+      "event_id": "53d8aebb-965a-4252-83e9-1efc9a14a072",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lifecycle identity, replacement, and artifact replay are tested, but current-head required review lifecycles still need closure.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8dec-388e-7693-b7b7-d58a5f9b8c09",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:50:52.221Z"
+    },
+    {
+      "event_id": "7685536c-ddb9-45ad-8fd3-4e67e6d7a74a",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lane graph and changed-path coverage are sound, but strict current-head review owner mapping still needs closure.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8dec-388e-7693-b7b7-d58a5f9b8c09",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:50:52.412Z"
+    },
+    {
+      "event_id": "dc1941f6-d328-4dc7-a0b7-32d21c154beb",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story purpose, user story, and fifteen acceptance criteria trace through Architecture, Spec, and changed implementation surfaces.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8df7-8056-73f3-b458-b36a367ce37f",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:56:29.942Z"
+    },
+    {
+      "event_id": "0fee759a-a6c6-42bc-9981-60ca36358e5d",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head CLI, E2E, and focused integration exercise owner lifecycle, path binding, and legacy fallback on the executable path.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8df7-8056-73f3-b458-b36a367ce37f",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:56:30.453Z"
+    },
+    {
+      "event_id": "f5b53113-9cf5-48de-b1de-f1385844b302",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fifteen Spec contracts and Architecture boundaries align with current-head unit, E2E, typecheck, and build evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8df7-8056-73f3-b458-b36a367ce37f",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:56:31.283Z"
+    },
+    {
+      "event_id": "adc3c939-0df0-40c0-bd59-b04f4d7b216e",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Scope, review ownership, verification, rollback, and release boundaries are explicit, with focused rollback rehearsal passing 4/4.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8df7-8056-73f3-b458-b36a367ce37f",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:56:32.038Z"
+    },
+    {
+      "event_id": "61d34989-81b4-4dd5-8b57-23021f88813d",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Unit and E2E evidence cover timed-out lifecycle and replacement recovery.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8df7-8056-73f3-b458-b36a367ce37f",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:56:32.572Z"
+    },
+    {
+      "event_id": "e61a0646-3365-4674-b829-b1421dfc62ba",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Tests reject malformed observed input, malformed JSON, and malformed TAP without inference, including explicit parse_failure coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8df7-8056-73f3-b458-b36a367ce37f",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:56:32.862Z"
+    },
+    {
+      "event_id": "dd3406a8-d3e9-4cef-80cd-ed915fb811fb",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Unit and E2E cover stale evidence, current-head binding, replacement lifecycle, and replay artifacts.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8df7-8056-73f3-b458-b36a367ce37f",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:56:33.390Z"
+    },
+    {
+      "event_id": "735f4226-94ff-4d0c-8933-a6b46b6826c8",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "E2E and validation sequencing cover stale, pending, over-green state and Gate DAG recomputation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8df7-8056-73f3-b458-b36a367ce37f",
+        "session_ref": null
+      },
+      "head_commit": "8724ae5484b72af5cc142d0c033b3a1196af620e",
+      "recorded_at": "2026-07-23T07:56:33.831Z"
+    },
+    {
+      "event_id": "f5253f9b-1a12-4940-bdcf-8289d11c5003",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story、Architecture、Spec、15件のAC、実装・E2Eが同一のatomic scope review contractを対象としている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:26.136Z"
+    },
+    {
+      "event_id": "b9b723e8-1de2-429c-a812-bc43d465112e",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "現HEADのE2Eでflow_replay、artifact_replay、scenario_clause_e2eを含む実行状態を確認できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:26.329Z"
+    },
+    {
+      "event_id": "44c108f1-0519-447b-9e52-c912283a2e25",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Typed atomic declaration、current-head owner、cumulative validation、target bindingがSpecとテストで拘束されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:26.528Z"
+    },
+    {
+      "event_id": "e0c8f81f-9a46-4431-bf35-b7e3e2382e82",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI、config、review lifecycle、verification evidence、rollbackを明示的なArchitecture/Spec境界として定義している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:26.671Z"
+    },
+    {
+      "event_id": "9b0d2b0b-a859-4818-b724-a48247ad0bd0",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "現行verification evidenceとTAP/E2Eでtimeout、parse、schema、evidence lifecycle、workflow stateを実行検証している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:26.832Z"
+    },
+    {
+      "event_id": "9ee7105b-69d7-49c5-a8ad-0080be0429e3",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "現HEADに紐づくunit、CI、E2E、build、typecheck証跡が存在し、主要failure modeも構造化観測されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:26.993Z"
+    },
+    {
+      "event_id": "41121f18-3c74-425f-b5b6-41752579b6da",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "公開CLI経路、legacy compatibility、出力契約を現行E2EとCIで確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:27.145Z"
+    },
+    {
+      "event_id": "86edebf6-bd87-48eb-94ba-caa18c9f994a",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "事前rollback rehearsalと手順は検証済みだが、canonical mainでのpost-merge canaryと実revert証跡は未取得。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:27.320Z"
+    },
+    {
+      "event_id": "2ddaccc5-6225-47c8-b64b-4ce8e642e5ba",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "lifecycle identity、HEAD binding、timeout/recovery、artifact replayは検証済みだが、gate reviewのcurrent-head再記録が必要。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:27.520Z"
+    },
+    {
+      "event_id": "3e936aa3-6fdb-418b-be98-88d56ffd2c11",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "41変更ファイルのlane/path-surfaceとatomic owner条件は確認できるが、current-head owner mapとgate evidenceの閉鎖が必要。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:27.693Z"
+    },
+    {
+      "event_id": "d64e0e1f-779e-46c0-b5a7-2a36f8a4d8d4",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "release、observability、support、rollbackの責任境界と事前rehearsalはあるが、post-merge運用証跡は未取得。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:27.867Z"
+    },
+    {
+      "event_id": "cbab9e44-2c35-4d2f-99a7-49b775908666",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "required review timeout、manual shutdown、replacement lifecycleをfail-closedに確認。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:28.191Z"
+    },
+    {
+      "event_id": "66258bd5-8273-4ab2-a7ed-f59325500527",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "現HEADのunit/E2Eでunsupported phaseやmalformed inputのreject動作を確認。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:28.511Z"
+    },
+    {
+      "event_id": "aa1a52f4-24ed-4544-b6d6-0460d77139be",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed reviewer outputとtyped atomic schema不正入力がpassへ昇格しない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:28.847Z"
+    },
+    {
+      "event_id": "9b8627f7-3784-41ce-852b-db6460fc3ec5",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "stale HEAD、open/running lifecycle、identity不一致をfail-closedで扱う。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:29.172Z"
+    },
+    {
+      "event_id": "000cd4dd-d2b0-49dc-9869-7e8a4adac8cd",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "validation sequenceがHEAD driftとfrozen binding不一致を拒否する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce",
+        "session_ref": "019f8e6e-4bd8-7a62-b41c-9ef8684bcfce"
+      },
+      "head_commit": "844a359837f063d0aa2dfe3648bf816ba6fb06f7",
+      "recorded_at": "2026-07-23T10:13:29.333Z"
+    },
+    {
+      "event_id": "6e9ee5c9-a0ac-46cd-9b00-81debc918512",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story、Architecture、Spec、実装、E2Eが同一契約を対象とする。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:30.480Z"
+    },
+    {
+      "event_id": "40124917-9277-446e-a3c1-2dee0a98912f",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "sequence全phaseとruntime reviewがcurrent HEADでpassed。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:30.650Z"
+    },
+    {
+      "event_id": "a6cf7a87-e9d6-4a81-91b2-51f7defa995f",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "typed scope、依存境界、owner binding、legacy互換を実証した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:30.824Z"
+    },
+    {
+      "event_id": "071c3fac-04de-4173-ae19-956197355595",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "unsafe scope、review lifecycle、rollback、legacy境界を明示しfail-closed。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:31.028Z"
+    },
+    {
+      "event_id": "9d821782-9e01-4aa2-9850-20d45b43f764",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "timeout、parse、schema、lifecycle、workflowの負経路を実証した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:31.230Z"
+    },
+    {
+      "event_id": "d37fa4cf-bdea-4b38-851c-0e141b654c45",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current-head E2E、unit 135/135、CI、build、typecheckがpass。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:31.410Z"
+    },
+    {
+      "event_id": "e309005a-8a65-481f-b9fe-9210f7fca53e",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "公開CLI、出力契約、legacy behavior、atomic rejectionを実行経路で確認。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:31.606Z"
+    },
+    {
+      "event_id": "f7b4a265-e29a-4eda-813c-52a8f2e8611e",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "pre-merge rehearsalはあるがcanonical main canaryと実release revertは未実施。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:31.785Z"
+    },
+    {
+      "event_id": "2df7bda0-a0c0-48fc-8c2c-289a1e0a5de2",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "lifecycle topologyは検証済みだが実運用topologyの最終判断は人間境界。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:31.975Z"
+    },
+    {
+      "event_id": "173d0b90-3042-469a-abb8-e8e4ff242556",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "42変更ファイルと複数laneの一貫したreviewabilityは人間判断を要する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:32.144Z"
+    },
+    {
+      "event_id": "4930e8af-9d9a-42ec-836e-bbc7113edec8",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "post-merge observability、support、実rollbackは人間運用判断を要する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:32.329Z"
+    },
+    {
+      "event_id": "92801276-d648-429c-a625-6f640b711bca",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "timeout後のclose、replacement start、recordをfail-closedで確認。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:32.592Z"
+    },
+    {
+      "event_id": "7d3d5618-ffb2-443e-afe9-8d601991e9ae",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "unsupported/malformed inputが明示エラーでrejectされる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:32.806Z"
+    },
+    {
+      "event_id": "baa5e034-c2c6-4da2-909c-444567afdcc5",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "incomplete、prose-only、disconnected typed payloadはacceptへ昇格しない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:33.010Z"
+    },
+    {
+      "event_id": "ef96712a-6f23-4ae6-890f-0abc5b30b3ef",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "open、stale、identity mismatch lifecycleを拒否しreplacement chainを保持する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:33.219Z"
+    },
+    {
+      "event_id": "1f5f4651-988b-47e6-a878-8bb35ce66c2c",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "不整合workflow stateをrejectまたはneeds_reviewとしstale evidenceをgreen扱いしない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b",
+        "session_ref": "019f8e9e-cc2c-7943-b4b5-f3f2a237751b"
+      },
+      "head_commit": "081a8dfcacea91920416d56248b2c4fb875af88c",
+      "recorded_at": "2026-07-23T11:04:33.414Z"
+    }
+  ]
+}

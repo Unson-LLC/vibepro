@@ -1,0 +1,378 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-managed-worktree-policy-resync",
+  "updated_at": "2026-07-21T16:16:08.485Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784650568478-ad618df4",
+      "story_id": "story-vibepro-managed-worktree-policy-resync",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "clean branch判定: 統合scopeを意図的に維持（現head再束縛）",
+      "reason": "needs_clean_branchは起票コミットと実装の同居に起因。doc正本の同一head要求と正規登録パターンにより1PRとする判断をgate:pr_scope_judgmentのdecisionと合わせて維持。現head 78982951で再記録",
+      "reviewer": "claude_code_coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+        "current_branch": "vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-21T16:16:08.458Z"
+      },
+      "recorded_at": "2026-07-21T16:16:08.484Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784650564779-24b78875",
+      "story_id": "story-vibepro-managed-worktree-policy-resync",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "scope_reviewability: 単一意図10ファイルで1レビュワーが一貫判断できる粒度（現head再束縛）",
+      "reason": "scope_reviewed: コアはsrc 2ファイル+テスト2ファイル、残りはStory/Spec/Architecture doc正本とcatalog登録で全てowner=platform。review_owner_map: responsibility contractとdesign rootで単一オーナー。旧記録がrebase前head束縛だったため現head 78982951で再記録",
+      "reviewer": "claude_code_coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+        "current_branch": "vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-21T16:16:04.771Z"
+      },
+      "recorded_at": "2026-07-21T16:16:04.781Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784650561860-e8ce7eeb",
+      "story_id": "story-vibepro-managed-worktree-policy-resync",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": ".vibepro/config.jsonのコミットはStory catalog正規登録であり診断artifactの持ち込みではない（現head再束縛）",
+      "reason": "コミット対象の.vibepro配下はconfig.jsonのみ（catalog登録+current_story_id切替）。診断evidence（diagnostics/pr/reviews等）は一切コミットしない。旧記録がrebase前head束縛だったため現head 78982951で再記録",
+      "reviewer": "claude_code_coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/decision-records.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+        "current_branch": "vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-21T16:16:01.853Z"
+      },
+      "recorded_at": "2026-07-21T16:16:01.862Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784650558103-eb3550c2",
+      "story_id": "story-vibepro-managed-worktree-policy-resync",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Bundled scope justification（現head再束縛）: Story起票+実装+doc正本は分離不能",
+      "reason": "scope_reviewed: 変更10ファイル・単一意図で1レビュワーが一貫して読める粒度。分離不能の根拠: Spec Gate/design_ssot_reconciliationがdoc正本を実装と同一headに要求、.vibepro/config.jsonのcatalog登録は起票コミットと同型の正規パターン。review_owner_map: コード・テストはresponsibility contract vibepro.managed_worktree.execution_locality (owner=platform)、docsはdesign root vibepro-managed-worktree-policy-resync (owner=platform)。split_plan確認済み。旧記録がrebase前head(c2857dd9)束縛だったため現head 78982951で再記録",
+      "reviewer": "claude_code_coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+        "current_branch": "vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-21T16:15:58.085Z"
+      },
+      "recorded_at": "2026-07-21T16:15:58.108Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784638421558-37d13342",
+      "story_id": "story-vibepro-managed-worktree-policy-resync",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "clean branch判定: Story起票+実装+doc正本の統合scopeを意図的に維持",
+      "reason": "scopeがneeds_clean_branchなのはStory起票コミット（catalog登録）と実装が同一ブランチにあるため。Spec Gate/design_ssot_reconciliationがdoc正本を実装と同一headに要求すること、catalog登録は起票コミット1f39cb3aと同型の正規パターンであることから分割せず1PRとする判断をgate:pr_scope_judgmentのdecisionと合わせて記録",
+      "reviewer": "claude_code_coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "1618ba03b744fdaa51aee08688c2d737d26c18ec",
+        "current_branch": "vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-21T12:53:41.549Z"
+      },
+      "recorded_at": "2026-07-21T12:53:41.561Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784637810265-68d9722e",
+      "story_id": "story-vibepro-managed-worktree-policy-resync",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "scope_reviewability: 単一意図8ファイルで1レビュワーが一貫判断できる粒度と判断",
+      "reason": "scope_reviewed: コード面は src/managed-worktree.js + test/managed-worktree-policy-resync.test.js の2ファイルのみ、残りはStory起票(catalog/story doc)とSpec/Architecture doc正本。review_owner_map: コードとテストは responsibility contract vibepro.managed_worktree.execution_locality (owner=platform)、docsは design root vibepro-managed-worktree-policy-resync (owner=platform) で単一オーナー。split不要の根拠はsplit-plan.jsonと gate:pr_scope_judgment のbundled-scope decisionに記録済み",
+      "reviewer": "claude_code_coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c2857dd9865aeaf9c862e82d225d4727ecaec7bc",
+        "current_branch": "vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-21T12:43:30.252Z"
+      },
+      "recorded_at": "2026-07-21T12:43:30.269Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784636215925-3b19bec7",
+      "story_id": "story-vibepro-managed-worktree-policy-resync",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": ".vibepro/config.json のコミットはStory catalog正規登録であり診断artifactの持ち込みではない",
+      "reason": "コミット対象の.vibepro配下は config.json のみ（Story catalog登録+current_story_id切替）。これはrepo正本としてgit管理されている登録パターン（起票コミット1f39cb3a と同型）で、診断evidence（diagnostics/pr/reviews等）は一切コミットしない。artifact policy: .vibepro診断artifactはuntrackedのまま保持し、PR bodyにも本decisionを明記する",
+      "reviewer": "claude_code_coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/decision-records.json",
+      "verification_evidence_summary": {
+        "count": 0,
+        "entries": []
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c2857dd9865aeaf9c862e82d225d4727ecaec7bc",
+        "current_branch": "vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-21T12:16:55.868Z"
+      },
+      "recorded_at": "2026-07-21T12:16:55.935Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784636189811-70f8010f",
+      "story_id": "story-vibepro-managed-worktree-policy-resync",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Bundled scope justification: Story起票(catalog+story doc)、実装+contract test、Architecture/Spec doc+design root登録は同一PRで分離不能",
+      "reason": "scope_reviewed: 変更は8ファイル・単一意図（managed worktree policy resync）で1レビュワーが一貫して読める粒度。分離不能の根拠: (1) Spec Gate/design_ssot_reconciliationが story doc・spec doc・design-ssot.json を実装と同一headに要求する、(2) .vibepro/config.jsonのStory catalog登録は起票コミット1f39cb3aと同じ正規登録パターンで、実装PRの文脈なしでは意味を持たない。review_owner_map: src/managed-worktree.js と test/managed-worktree-policy-resync.test.js は responsibility contract vibepro.managed_worktree.execution_locality (owner=platform) の owned_surfaces、docs/architecture・docs/specs・design-ssot.json は design root vibepro-managed-worktree-policy-resync (owner=platform)。split_plan: .vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json を確認し、コード面はsrc 1ファイル+test 1ファイルのみで分割レーン不要と判断",
+      "reviewer": "claude_code_coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 0,
+        "entries": []
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c2857dd9865aeaf9c862e82d225d4727ecaec7bc",
+        "current_branch": "vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-21T12:16:29.768Z"
+      },
+      "recorded_at": "2026-07-21T12:16:29.814Z"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "open": 0,
+    "by_type": {
+      "waiver": 4,
+      "needs_review": 4
+    },
+    "by_status": {
+      "accepted": 8
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784650568478-ad618df4",
+      "story_id": "story-vibepro-managed-worktree-policy-resync",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "clean branch判定: 統合scopeを意図的に維持（現head再束縛）",
+      "reason": "needs_clean_branchは起票コミットと実装の同居に起因。doc正本の同一head要求と正規登録パターンにより1PRとする判断をgate:pr_scope_judgmentのdecisionと合わせて維持。現head 78982951で再記録",
+      "reviewer": "claude_code_coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-managed-worktree-policy-resync/artifacts/managed-worktree-policy-resync.tap",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+        "current_branch": "vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-21T16:16:08.458Z"
+      },
+      "recorded_at": "2026-07-21T16:16:08.484Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/decision-records.json"
+}

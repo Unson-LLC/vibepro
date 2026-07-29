@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "summary": "Exact HEAD 1c2267aa resolves the pre-GitHub ordering defect without relaxing authority checks; current strict-HEAD evidence includes the 1757/1757 full suite.",
+  "inspection_summary": "Inspected merge-manager execution order, unchanged fail-closed reconciliation, the five-case non-dry-run regression, verification and QA artifacts, and both rejection and authorized production fixtures. Invalid authority persists a blocked artifact and returns with zero external command results.",
+  "inspection_inputs": [
+    "src/merge-manager.js",
+    "src/merge-gate-authorization.js",
+    "test/vibepro-cli.test.js",
+    ".vibepro/pr/story-vibepro-merge-waiver-propagation/verification-evidence.json",
+    ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+    ".vibepro/pr/story-vibepro-merge-waiver-propagation/pr-prepare.json"
+  ],
+  "judgment_delta": "Prior evidence was insufficient after release-risk review exposed external calls before rejection; final judgment is pass because HEAD 1c2267aa rejects before every external command, covers the invalid-authority matrix, preserves the authorized path, and has exact-HEAD full regression evidence.",
+  "findings": []
+}

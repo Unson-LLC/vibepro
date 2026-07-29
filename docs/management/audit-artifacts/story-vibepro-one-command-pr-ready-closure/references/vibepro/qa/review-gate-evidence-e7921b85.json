@@ -1,0 +1,56 @@
+{
+  "status": "needs_changes",
+  "summary": "Current-HEAD verification freshness and the responsibility/failure-mode blockers are resolved, and OCR-S-1 through OCR-S-7 have behavior-level proof. OCR-S-8 is still overclaimed as AC-8 E2E evidence because its executable coverage relies partly on hard-coded acceptance text and does not strictly assert PR #372 plus the pre-PR active-state boundary.",
+  "inspection_summary": "Inspected the gate_evidence request, Story, architecture/spec/test plan, production owner and guarded-run tests, workflow-heavy E2E, current verification ledger and verified QA artifacts, responsibility contract, gate DAG, pr-prepare blockers, and target-architecture conformance. Replayed a focused four-test negative-path command for runtime-cost invalid usage, malformed provider success, and malformed JSONL; all four passed. The refreshed unit record is strict-current-HEAD, names VIBE-CORE-COST-001, and records concrete targets, scenarios, and rejected/explicit outcomes. The regenerated Gate now passes both responsibility_authority and failure_mode_coverage. AC1-7 are supported by assertions over CLI selection, owner composition, managed-worktree commits, current-HEAD final prepare, forbidden authority seams, typed stop/resume behavior, and separate read-only review lifecycle. AC8 remains only partially non-circular: scenario:S-005 reads predecessor documents and the action plan, but omits the Autonomous Action DAG Story/PR #372 and accepts either active or completed for the closure Story and roadmap; the separate acceptance-coverage test only matches hard-coded strings, while its AC-8 header describes conformance rather than the Story's staged-closure criterion.",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-request-gate_evidence.md",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+    "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    "docs/contracts/vibepro-core-responsibilities.json",
+    "src/one-command-pr-ready-closure.js",
+    "src/guarded-run-session.js",
+    "src/agent-runtime-adapter.js",
+    "src/responsibility-authority.js",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/guarded-run-session.test.js",
+    "test/agent-runtime-adapter.test.js",
+    "test/session-efficiency-audit.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/gate-dag.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    ".vibepro/qa/expensive-verification-e7921b85.json",
+    ".vibepro/qa/e2e-e7921b85.json",
+    ".vibepro/qa/integration-e7921b85.json",
+    ".vibepro/qa/typecheck-e7921b85.json",
+    ".vibepro/qa/build-ledger-e7921b85.json",
+    ".vibepro/qa/conformance-e7921b85.json",
+    ".vibepro/qa/focused-runtime-cost-parse-e7921b85.json",
+    "node --test --test-name-pattern='unit_regression runtime cost telemetry|malformed success|malformed JSONL' test/agent-runtime-adapter.test.js test/session-efficiency-audit.test.js"
+  ],
+  "judgment_delta": [
+    "Old verification-ledger-current-head finding -> resolved because unit, integration, E2E, typecheck, and build records are strict-bound to e7921b8523cad9e36d08933fa767c4c7537df64c with verified artifacts.",
+    "Responsibility Authority and parse_failure blockers -> resolved because the focused unit record names VIBE-CORE-COST-001 and records concrete unit_regression, parse_failure, and negative_path observations; the regenerated gate DAG reports both gates passed.",
+    "AC1-8 claimed as non-circular E2E proof -> AC1-7 demonstrated by behavioral assertions, but AC8 remains not fully demonstrated because the only direct AC-8 marker is hard-coded and scenario:S-005 omits PR #372 and weakens the pre-PR active-state assertion."
+  ],
+  "findings": [
+    {
+      "id": "ac8-non-circular-staged-closure-proof",
+      "severity": "medium",
+      "title": "AC-8 is recorded as E2E-demonstrated without a non-circular staged-closure assertion",
+      "detail": "The E2E ledger records scenario_clause_e2e for AC-1 through AC-8, but the final acceptance-coverage test only matches hard-coded prose. The substantive scenario:S-005 reads the connector and review predecessor Stories but not story-vibepro-autonomous-action-dag.md, so it does not verify PR #372; it also accepts status active or completed for both the final Story and roadmap, which cannot prove OCR-S-8's pre-PR requirement that both remain active. Its file header additionally describes AC-8 as target-architecture conformance, while OCR-S-8 is the staged roadmap-closure contract. Therefore AC-8 cannot yet receive a demonstrated adjudication from the recorded E2E alone.",
+      "required_change": "Replace the hard-coded AC-8 marker with a stage-aware executable assertion. Before PR creation, read all three predecessor Story SSOTs and assert completed plus canonical PR #372/#377/#382, assert the final Story and parent roadmap are active, and assert the autonomous plan excludes pr_create, merge, and waiver. For the later focused closure commit, use separate post-PR evidence rather than weakening the pre-PR assertion to active-or-completed. Re-run the E2E artifact, overwrite the current-HEAD E2E verification record without overclaiming AC coverage, and rerun pr prepare/adjudication.",
+      "evidence": [
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts:1",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts:559",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts:595",
+        "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md:36",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json"
+      ]
+    }
+  ]
+}

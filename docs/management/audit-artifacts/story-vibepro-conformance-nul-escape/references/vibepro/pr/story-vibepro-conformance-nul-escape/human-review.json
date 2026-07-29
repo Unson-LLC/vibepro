@@ -1,0 +1,164 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-conformance-nul-escape",
+  "created_at": "2026-07-24T23:56:41.151Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 5 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-conformance-nul-escape/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-conformance-nul-escape/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-conformance-nul-escape/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-conformance-nul-escape/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADR不要: |"
+    },
+    "spec": {
+      "status": "inferred",
+      "required": true,
+      "reason": "2 clauses inferred from Story+Code+Test"
+    },
+    "decision_records": {
+      "total": 6,
+      "open": 0,
+      "by_type": {
+        "needs_review": 6
+      },
+      "by_status": {
+        "accepted": 6
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+          "expected_root": null,
+          "expected_head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+          "current_head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784935002455-4665efda",
+        "story_id": "story-vibepro-conformance-nul-escape",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:design_ssot_reconciliation",
+        "source_status": null,
+        "summary": "Story doc is a hand-written self-dogfood Story, not a design-system doc; Design SSOT registration not applicable for this 2-byte source-encoding fix",
+        "reason": "The single design lineage action item is the Story doc itself ([REDACTED:db670965346c]-vibepro-conformance-nul-escape.md) flagged as an unregistered changed design doc. It is the mandatory Story registration surface for the self-dogfood flow, not a design artifact: the change is a 2-byte source-encoding fix in src/architecture-conformance.js with no UI, design-token, or design-doc impact. Registering it in Design SSOT would be a category error; reviewed and accepted as not applicable.",
+        "reviewer": "佐藤圭吾",
+        "artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/scope-review.md",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/e2e-replay-artifact.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/typecheck-artifact.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-code-vibepro/a413907f-956a-47c0-91fa-e0143de14790/scratchpad/unit-status-artifact.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": true,
+          "hit_count": 1
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+            "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+            "expected_root": null,
+            "expected_head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+            "current_head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "56150b3d6024967399b8d9744c3d2a87baf7b9cd",
+          "current_branch": "claude/story-vibepro-conformance-nul-escape",
+          "dirty": true,
+          "status_fingerprint": "M .vibepro/config.json",
+          "recorded_at": "2026-07-24T23:16:42.449Z"
+        },
+        "recorded_at": "2026-07-24T23:16:42.456Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-24T23:56:36.992Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "branch": "claude/story-vibepro-conformance-nul-escape",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "c4c3ee556fe27c82586de22fba19ad8efa3b47d7",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -171,6 +171,8 @@ npx vibepro spec readiness /path/to/repo --id story-internal-beta --base <base-b
 npx vibepro spec write /path/to/repo --id story-internal-beta --final --input spec.json
 ```
 
+Story、Architecture、Accepted Spec、Task の正本をプロジェクト固有パスへ置く場合は、第二の編集可能な正本を作らず設定できます。[成果物出力ルーティング](docs/ja/guide/artifact-output-routing.md)を参照してください。
+
 探索中の仮説Specは `spec write --draft` で保存します。draftは実装やPR Gateの正本にはなりません。
 
 PR 証跡を生成します。

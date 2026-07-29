@@ -1,0 +1,306 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-pr-driven-continuous-release",
+  "updated_at": "2026-07-18T11:13:59.705Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784373239704-00fc0bfd",
+      "story_id": "story-vibepro-pr-driven-continuous-release",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Release operator path, observability, rollout and rollback are explicit",
+      "reason": "No normal operator action is required. PR Release Notes are projected automatically. GitHub Actions summary is the owner-visible observability surface for docs deploy, GitHub Release, npm version, dist-tags, retry and repair. Recovery reruns the serialized workflow or manual recovery entry; rollback disables automation, reverts docs, and restores Cloudflare without mutating published npm versions.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-pr-driven-continuous-release.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/pack.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/full-suite.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "280b250d9bcc0a24420b8824de2ea1ac0a35e1e9",
+        "current_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T11:13:59.702Z"
+      },
+      "recorded_at": "2026-07-18T11:13:59.705Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784373235524-fab5291d",
+      "story_id": "story-vibepro-pr-driven-continuous-release",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope reviewed as one coherent release pipeline",
+      "reason": "The PR has one owner-visible decision: project merged PR metadata deterministically to docs and, only for version increases, release the exact merge SHA. Workflow, parser, PR contract, manual, version, and tests are inseparable surfaces of that decision.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-pr-driven-continuous-release.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/pack.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/full-suite.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "280b250d9bcc0a24420b8824de2ea1ac0a35e1e9",
+        "current_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T11:13:55.523Z"
+      },
+      "recorded_at": "2026-07-18T11:13:55.524Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784373231333-f166c27d",
+      "story_id": "story-vibepro-pr-driven-continuous-release",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": "needs_evidence",
+      "summary": "Rollback and rollout plan is bounded for immutable npm releases",
+      "reason": "Disable the post-merge workflow, revert generated documentation commits, and restore Cloudflare last-known-good. Published npm versions are immutable and are never deleted or overwritten; recovery converges tags only after matching gitHead. Version-unchanged behavior stops after docs deployment, and focused tests cover beta upgrade plus mismatch rejection.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-pr-driven-continuous-release.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/pack.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/full-suite.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "280b250d9bcc0a24420b8824de2ea1ac0a35e1e9",
+        "current_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T11:13:51.331Z"
+      },
+      "recorded_at": "2026-07-18T11:13:51.333Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784373227423-2f35476d",
+      "story_id": "story-vibepro-pr-driven-continuous-release",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Bundled release transaction is intentional and scope_reviewed",
+      "reason": "PR template contract, deterministic projection, docs deployment, conditional GitHub/npm publication, version bump, documentation, and tests form one atomic release chain. Splitting repo-control workflow from source would temporarily create multiple publishers or an incomplete contract; one reviewer can audit the chain from merged PR metadata to public outputs.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-pr-driven-continuous-release.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/pack.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/full-suite.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "280b250d9bcc0a24420b8824de2ea1ac0a35e1e9",
+        "current_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T11:13:47.412Z"
+      },
+      "recorded_at": "2026-07-18T11:13:47.424Z"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "open": 0,
+    "by_type": {
+      "needs_review": 4
+    },
+    "by_status": {
+      "accepted": 4
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784373239704-00fc0bfd",
+      "story_id": "story-vibepro-pr-driven-continuous-release",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Release operator path, observability, rollout and rollback are explicit",
+      "reason": "No normal operator action is required. PR Release Notes are projected automatically. GitHub Actions summary is the owner-visible observability surface for docs deploy, GitHub Release, npm version, dist-tags, retry and repair. Recovery reruns the serialized workflow or manual recovery entry; rollback disables automation, reverts docs, and restores Cloudflare without mutating published npm versions.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-pr-driven-continuous-release.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/pack.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/full-suite.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "280b250d9bcc0a24420b8824de2ea1ac0a35e1e9",
+        "current_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-18T11:13:59.702Z"
+      },
+      "recorded_at": "2026-07-18T11:13:59.705Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-pr-driven-continuous-release/decision-records.json"
+}

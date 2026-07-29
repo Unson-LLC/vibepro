@@ -1,0 +1,182 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+  "stage": "implementation",
+  "role": "code_spec_alignment",
+  "status": "pass",
+  "summary": "Current HEAD implements every Story, Architecture, and Spec contract across state machine, CLI, CI import, PR Gate, persisted artifacts, and invalidation.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Traced all five Spec clauses through implementation branches, public CLI, CI trust boundary, PR Gate, legacy and fallback paths, canonical outputs, consumer tests, and current-head evidence.",
+    "evidence": ".vibepro/qa/story-vibepro-risk-adaptive-validation-sequencing/post-freeze-focused-29b87d38-results.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-risk-adaptive-validation-sequencing.md",
+      "docs/architecture/story-vibepro-risk-adaptive-validation-sequencing.md",
+      "docs/specs/story-vibepro-risk-adaptive-validation-sequencing.vibepro.json",
+      "src/validation-sequencing.js",
+      "src/ci-evidence.js",
+      "src/cli.js",
+      "src/pr-manager.js",
+      "test/validation-sequencing.test.js",
+      "test/ci-evidence-import.test.js",
+      "test/risk-adaptive-gate.test.js",
+      "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "Prior review was stale after the Architecture surface changed -> current-head inspection confirmed the delta is parent-design lineage only and does not alter the contract.",
+    "Happy-path-only concern -> fail-closed negative tests and full-regression exit 0 cover malformed, fallback, binding, review, CI receipt, coverage, and legacy paths."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+    "expected_root": null,
+    "expected_head_sha": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+    "current_head_sha": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+      "expected_root": null,
+      "expected_head_sha": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+      "current_head_sha": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-20T10:21:57.033Z",
+  "git_context": {
+    "head_sha": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+    "current_branch": "codex/story-vibepro-risk-adaptive-validation-sequencing",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-20T10:21:57.023Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Final PR code/spec alignment must bind to the frozen implementation head."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-risk-adaptive-validation-sequencing.md",
+        "sha256": "22124718721e0b2211f16e50e569fcad8c876273f66aba094118aec1829da5a6",
+        "size": 4053
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-risk-adaptive-validation-sequencing.md",
+        "sha256": "9bcc507a660cc704f551fa7d9cacc2386a6a6d3e33a3897ce87dfae682312fce",
+        "size": 4715
+      },
+      {
+        "path": "docs/specs/story-vibepro-risk-adaptive-validation-sequencing.vibepro.json",
+        "sha256": "ab035378077f79029e0bd5b44628a892480df9f2bc49be606a0cd70c15571bf3",
+        "size": 6005
+      },
+      {
+        "path": "src/ci-evidence.js",
+        "sha256": "a4de705955588837f80d46ec33dbeca84e2dd07f22d451ea71272bef868f6a8d",
+        "size": 13286
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "bf54e980e474607b38cb1284fb0d43f52f48233e9dc785fd1f5b06615a0e6172",
+        "size": 202551
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "df42d8d070f310f88892559c8e5a83fd742d558cb3efd069373c2ba6a87733ad",
+        "size": 653410
+      },
+      {
+        "path": "src/validation-sequencing.js",
+        "sha256": "42c1e4a2c2b6cdb0054e42e918268eab71cc962367572f82193f127ef5ca95c3",
+        "size": 27328
+      },
+      {
+        "path": "test/ci-evidence-import.test.js",
+        "sha256": "45a99593161a66a75a639e4997e1feebcbf81884735758c6787cd4bdd34d3e20",
+        "size": 14713
+      },
+      {
+        "path": "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+        "sha256": "958f23f61643bbd05ed281c27696279e23b07fd1e3648b0f8af242124929a434",
+        "size": 13759
+      },
+      {
+        "path": "test/risk-adaptive-gate.test.js",
+        "sha256": "6f4789affc81acc0b2017a13673adf857a198c7002b5342e8ed4dbe8b1709a8a",
+        "size": 89242
+      },
+      {
+        "path": "test/validation-sequencing.test.js",
+        "sha256": "69a01e9347a47989b74096987a888cb9ee253d2e117580f0ec6b93cbf32b1646",
+        "size": 27043
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "0caff4b95470e6b70314e5e5eab58369e96e3acd96a9eee89541e3245801b454"
+  },
+  "source_fingerprint": "0fb7e379038e14b4bb7abfdcc85f79020bf75ab6b06d9f67425ee7bf27ca1bdf",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f7d7f-e99b-7d11-b1de-c05f8ec20cff",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-risk-adaptive-validation-sequencing/implementation/transcript-code-spec-alignment-29b87d38.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-risk-adaptive-validation-sequencing/implementation/review-request-code_spec_alignment.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

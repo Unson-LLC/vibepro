@@ -1,0 +1,556 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-story-run-portfolio-controller",
+  "updated_at": "2026-07-21T02:33:25.632Z",
+  "events": [
+    {
+      "event_id": "61c2a79c-a753-4b32-b5ed-2b890f6dd822",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story intent and eight acceptance criteria map coherently to the public controller contract, Spec and focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_final",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:45:39.199Z"
+    },
+    {
+      "event_id": "bc3c65d1-a6de-4603-88c7-9bd816709129",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Existing Guarded Run child boundary, CLI paths, focused 86-test replay and 1463-test suite establish the current runtime reality.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_final",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:45:39.424Z"
+    },
+    {
+      "event_id": "2f39200e-110f-48f7-b07f-05152a3efda0",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec invariants for ordering, ownership, typed stops, promotion, locks and creation identity are implemented and negatively tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_final",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:45:39.660Z"
+    },
+    {
+      "event_id": "b04849d5-2d22-44bf-b7e3-9ea0f25264b1",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Portfolio, child Run, operator authority, promotion and attribution boundaries agree across Architecture, Spec, implementation and tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_final",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:45:39.871Z"
+    },
+    {
+      "event_id": "1be4b3c6-79e7-4176-a7b5-7d78b0fc536e",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Stopped states, concurrency, dead locks, publish gaps, historical Run adoption, contamination and unsafe promotion paths are fail-closed and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_final",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:45:40.117Z"
+    },
+    {
+      "event_id": "739f4984-3963-445d-a5ad-2c8ec3659d7b",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head focused 86/86 and full-suite 1463/1463 evidence covers flow replay, artifact replay and negative paths.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_final",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:45:40.397Z"
+    },
+    {
+      "event_id": "e004b6cc-bc4d-442c-983e-31de137e1176",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Portfolio CLI is additive, preserves the single-Story execute run contract, and tests JSON, human and typed error surfaces.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_final",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:45:40.634Z"
+    },
+    {
+      "event_id": "49eb7996-b961-4008-b1ff-9bf1f66a3521",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The accepted-followup premise conflicts with the current split-plan split_recommended result; reviewability requires explicit resolution rather than classifier acceptance.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_final",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:45:40.977Z"
+    },
+    {
+      "event_id": "5d533028-3a39-4249-894a-e729a2fb0939",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Portfolio and lock recovery paths parse persisted JSON, so parse failure exists and the not_required classifier premise is incorrect despite fail-closed tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_final",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:45:41.213Z"
+    },
+    {
+      "event_id": "5e9d78fe-6300-42e5-a0c4-5eb00fb63243",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Typed retry, async child creation, mutation and recovery locks, and publish-gap restart are central, so the not_required classifier premise is incorrect.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_final",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:45:41.429Z"
+    },
+    {
+      "event_id": "7bb1a6f3-618f-40d5-85d4-0b0966d043d5",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Foreign or missing evidence, review and session attribution is persisted as scope_contamination and blocks successor start.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_final",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:45:41.655Z"
+    },
+    {
+      "event_id": "71a4dbd9-28b3-4f76-b52b-de94c01d30ef",
+      "type": "premise_correction",
+      "item_id": "axis:scope_reviewability",
+      "corrects_verdict_id": "49eb7996-b961-4008-b1ff-9bf1f66a3521",
+      "wrong_premise": "Classifier treated accepted_followup as sufficient despite a split_recommended artifact.",
+      "corrected_premise": "The Story remains atomic only through an explicit evidence-backed split resolution: source, public CLI, child identity, persistence, Spec and tests jointly enforce one non-releasable invariant.",
+      "reason": "The classifier premise omitted the recorded split-resolution rationale and treated size heuristics as an independently releasable boundary.",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+          "sha256": "45996a071da814712eb28572e7db8a485dcb122c74bde362ca6ca18183dea8a3"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:48:03.989Z"
+    },
+    {
+      "event_id": "e21c1f27-0884-4ecf-b67d-b9545f6563f3",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "5d533028-3a39-4249-894a-e729a2fb0939",
+      "wrong_premise": "Classifier marked parse_failure not_required.",
+      "corrected_premise": "Persisted portfolio, mutation lock, recovery owner and candidate Run JSON parsing is a required fail-closed failure mode covered by corrupt-state tests.",
+      "reason": "The classifier premise missed indirect JSON.parse and persistence recovery paths.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/story-run-portfolio.test.js",
+          "sha256": "5e76205970bc54b070c68237a936d4666c4f26b910c81b97c75655e8386fedc6"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:48:04.251Z"
+    },
+    {
+      "event_id": "043be6b3-9b2e-496f-bcab-74935c4d21a1",
+      "type": "premise_correction",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "corrects_verdict_id": "5e9d78fe-6300-42e5-a0c4-5eb00fb63243",
+      "wrong_premise": "Classifier marked retry_or_async_failure not_required.",
+      "corrected_premise": "Typed retry, asynchronous child creation, mutation/recovery locks and publish-gap restart reconciliation are required failure modes covered by focused tests.",
+      "reason": "The classifier premise missed async orchestration and restart-safe retry semantics because they are encapsulated in the controller.",
+      "replacement_evidence": [
+        {
+          "artifact": "src/story-run-portfolio.js",
+          "sha256": "7753f923c506768987605b4ff2893c614824817ab7fdf189efa17d3e351f8038"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": "HEAD:c7243b24b52688013ef89262b0fa9c5e42375feb"
+      },
+      "head_commit": "c7243b24b52688013ef89262b0fa9c5e42375feb",
+      "recorded_at": "2026-07-20T23:48:04.615Z"
+    },
+    {
+      "event_id": "abc8c79b-e100-4868-ae3d-dd75e177655a",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "8 ACがcontroller contract、Spec invariants、CLI/negative testsへ具体的に対応し、one Story per Run・逐次実行・typed stop・promotion・cost・contamination・E2Eの意図を満たす。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_adjudicator",
+        "session_ref": "/root/story9_judgment_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:14.488Z"
+    },
+    {
+      "event_id": "0c6d9568-b9ac-4843-b577-966efdf3f842",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Guarded Run既存境界を実際に委譲し、92 focused testsと1469 suite（sandbox環境要因2件は同一テストisolated 2/2 pass）がruntime/pathを裏付ける。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_adjudicator",
+        "session_ref": "/root/story9_judgment_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:14.695Z"
+    },
+    {
+      "event_id": "50e4d7ca-c3de-4d96-b9c4-e48fbb3587e1",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "INV-SRP-1..8がvalidateLifecycleState、scope binding、lock/creation identity/promotionで実装され、semantic corruption・concurrency・publish-gap等で反証テスト済み。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_adjudicator",
+        "session_ref": "/root/story9_judgment_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:14.927Z"
+    },
+    {
+      "event_id": "7c1e681d-9aa5-4ac3-b7a6-9831a97e592f",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Portfolio、child Run、operator authority、artifact promotion、attribution境界がArchitecture・Spec・実装・テストで一致する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_adjudicator",
+        "session_ref": "/root/story9_judgment_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:15.157Z"
+    },
+    {
+      "event_id": "baa8c8ca-5b49-4b96-8361-d68f680f6af8",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed JSON/semantic corruption、lock owner/recovery、duplicate/concurrent mutation、publish gap、foreign Run、contamination、unsafe promotionをfail closedで直接検証する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_adjudicator",
+        "session_ref": "/root/story9_judgment_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:15.492Z"
+    },
+    {
+      "event_id": "c2b3464a-3d37-44a7-a641-90f88903ab55",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current-head-statusは92/92、full 1467/1469の2件はlisten/npm-cache環境制約でexact isolated rerun 2/2 pass。主要flow、artifact、negative pathをカバーする。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_adjudicator",
+        "session_ref": "/root/story9_judgment_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:15.706Z"
+    },
+    {
+      "event_id": "edb4847d-8d80-4d09-8f12-15d458e348d3",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "additive CLIで既存single-Story run契約を変更せず、JSON、human、error surfacesとschemaをテストしている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_adjudicator",
+        "session_ref": "/root/story9_judgment_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:16.018Z"
+    },
+    {
+      "event_id": "838820f8-9505-49a9-9927-044accb1f9a2",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "missing/foreign mutation、evidence、review、session attributionのscope_contamination永続化と後続Story停止をfocused testsが直接検証する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_adjudicator",
+        "session_ref": "/root/story9_judgment_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:17.100Z"
+    },
+    {
+      "event_id": "1d6ae308-e8cd-4e18-94f8-ef1aa9006426",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "既存premiseは技術的に分離・rollback可能なsource、CLI、persistence、docs、testsをindivisibleと扱うため不適切。正しいscope premiseへの訂正が必要。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_adjudicator",
+        "session_ref": "/root/story9_judgment_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:28.957Z"
+    },
+    {
+      "event_id": "c203e022-1967-4844-94be-01bd60a2b085",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Classifierのnot_requiredは誤り。永続JSON parseとsemantic validationは現実のfailure modeであり、直接corruption testsの対象である。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_adjudicator",
+        "session_ref": "/root/story9_judgment_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:29.202Z"
+    },
+    {
+      "event_id": "62ae58ce-66e0-40cd-b421-d6926248764a",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Classifierのnot_requiredは誤り。typed retry、async child creation、mutation/recovery locks、publish-gap restartはcontrollerの中心的failure modeである。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_judgment_adjudicator",
+        "session_ref": "/root/story9_judgment_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:29.451Z"
+    },
+    {
+      "event_id": "d30cb12a-cea3-4494-9e9d-56e6d3b0084d",
+      "type": "premise_correction",
+      "item_id": "axis:scope_reviewability",
+      "corrects_verdict_id": "1d6ae308-e8cd-4e18-94f8-ef1aa9006426",
+      "wrong_premise": "Classifier/旧correctionはsource、CLI、persistence、docs、testsをone non-releasable invariantとして不可分に扱った。",
+      "corrected_premise": "Components are technically separable and rollbackable; single Story delivery is justified by the controller dependency on child creation identity and cross-surface consistency, while reviewability is achieved through partitioned source, test, and documentation surfaces.",
+      "reason": "技術的不可分性ではなく、子Run identityを中心にした一貫した導入単位と、分割されたレビュー面をscope判断の根拠に訂正する。",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+          "sha256": "45996a071da814712eb28572e7db8a485dcb122c74bde362ca6ca18183dea8a3"
+        },
+        {
+          "artifact": "docs/specs/story-vibepro-story-run-portfolio-controller.md",
+          "sha256": "beee344fdf9ae88bcbd9b7821196a5be8d90242fb9bc58eea703961c13d62db9"
+        },
+        {
+          "artifact": "test/story-run-portfolio.test.js",
+          "sha256": "d1fffd88c1f5068a5b87d99e512c6c2c57b38f5046cf6c0ac28d857c57e056bc"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": "HEAD:32f343628a3d9b89e140b9b53d26be2d00d2e7ef"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:44.939Z"
+    },
+    {
+      "event_id": "bcb9ce18-b522-410b-bc16-744e794d6095",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "c203e022-1967-4844-94be-01bd60a2b085",
+      "wrong_premise": "Classifier marked parse_failure not_required.",
+      "corrected_premise": "Persisted portfolio, mutation lock, recovery owner and candidate Run JSON parsing plus parseable semantic corruption are required fail-closed failure modes covered by direct corruption tests.",
+      "reason": "永続JSONのsyntaxだけでなくsemantic lifecycle corruptionも現在のfocused testsが直接検証する。",
+      "replacement_evidence": [
+        {
+          "artifact": "src/story-run-portfolio.js",
+          "sha256": "66c27354e75452a7908aaf8e9f8d4e40d8986fe94634be70a956f2a26f477d86"
+        },
+        {
+          "artifact": "test/story-run-portfolio.test.js",
+          "sha256": "d1fffd88c1f5068a5b87d99e512c6c2c57b38f5046cf6c0ac28d857c57e056bc"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": "HEAD:32f343628a3d9b89e140b9b53d26be2d00d2e7ef"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:45.159Z"
+    },
+    {
+      "event_id": "fe91b319-37e3-42c6-8eba-485700a66438",
+      "type": "premise_correction",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "corrects_verdict_id": "62ae58ce-66e0-40cd-b421-d6926248764a",
+      "wrong_premise": "Classifier marked retry_or_async_failure not_required.",
+      "corrected_premise": "Typed retry, asynchronous child creation, mutation and recovery locks, creation-request idempotency and publish-gap restart reconciliation are required failure modes covered by focused tests.",
+      "reason": "controllerに内包される非同期作成と再開安全性を必須failure modeとして扱う。",
+      "replacement_evidence": [
+        {
+          "artifact": "src/story-run-portfolio.js",
+          "sha256": "66c27354e75452a7908aaf8e9f8d4e40d8986fe94634be70a956f2a26f477d86"
+        },
+        {
+          "artifact": "test/story-run-portfolio.test.js",
+          "sha256": "d1fffd88c1f5068a5b87d99e512c6c2c57b38f5046cf6c0ac28d857c57e056bc"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root",
+        "session_ref": "HEAD:32f343628a3d9b89e140b9b53d26be2d00d2e7ef"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:31:45.413Z"
+    },
+    {
+      "event_id": "471a1162-3a78-41a7-a16d-fb210f68cc50",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "d30cb12a-cea3-4494-9e9d-56e6d3b0084d",
+      "reason": "11-file diffは技術的分離と個別rollbackが可能。一方、restart-safe child creationはcreation_request_id、starting intent、scope binding、CLI/spec/testの公開契約に跨るため単一Storyの整合した導入単位として合理的で、レビュー面もsource、連携、focused tests、architecture/specに分割され追跡可能。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_correction_judge",
+        "session_ref": "/root/story9_correction_judge"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:33:25.004Z"
+    },
+    {
+      "event_id": "cc70ec6c-7904-4863-a5f4-e73b7d7c02f7",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "bcb9ce18-b522-410b-bc16-744e794d6095",
+      "reason": "readPortfolioはJSON parse、closed schema、lifecycle検証をfail-closedにし、lock/recovery owner parseもrecovery_required。malformed state/owners、parseable semantic corruption、corrupt Run candidateを直接テストしており訂正を裏付ける。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_correction_judge",
+        "session_ref": "/root/story9_correction_judge"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:33:25.236Z"
+    },
+    {
+      "event_id": "b0f65989-2927-4c09-8091-7ac5e76e8c81",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "fe91b319-37e3-42c6-8eba-485700a66438",
+      "reason": "deterministic creation_request identity、create-or-return、Portfolio/recovery mutex、owner token release検証が重複作成を防止し、concurrency、publish-gap restart、foreign identity、pre-create failure、typed retryの直接テストが訂正を裏付ける。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_correction_judge",
+        "session_ref": "/root/story9_correction_judge"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:33:25.632Z"
+    }
+  ]
+}

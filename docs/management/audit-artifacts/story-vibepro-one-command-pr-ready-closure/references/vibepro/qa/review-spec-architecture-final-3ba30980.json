@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "review_kind": "independent_spec_architecture_final",
+  "reviewed_head": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+  "base_ref": "origin/main",
+  "base_sha": "db8f0ef3f7d3cfcb2dc0d31504e40e01025293dd",
+  "overall_status": "pass",
+  "verdicts": {
+    "planning_spec/spec_consistency": {
+      "status": "pass",
+      "summary": "Story、canonical Spec、test plan、execution-topology replay は、guarded public command、typed stop/resume、current-HEAD final_prepare、外部副作用除外で整合する。Storyが要求するlatest-main conformance evidenceもdb8f0ef3基準へ更新済み。",
+      "evidence": [
+        "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+        "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+        "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+        "docs/specs/story-vibepro-one-command-pr-ready-closure-execution-topology-replay.md",
+        "node bin/vibepro.js architecture conformance . --json: current 86 violations (66 undeclared, 9 budget, 11 orphan)"
+      ],
+      "findings": []
+    },
+    "architecture_spec/spec_consistency": {
+      "status": "pass",
+      "summary": "Architectureのbaseline db8f0ef3=86（65 undeclared、9 budget、12 orphan）とcurrent=86（66 undeclared、9 budget、11 orphan）は最終スキャンと整合する。Specのfinal_prepare/current-HEAD契約とsource/test anchorsにも矛盾はない。",
+      "evidence": [
+        "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+        "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+        "node bin/vibepro.js architecture conformance . --json",
+        "node --test test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts test/one-command-pr-ready-closure.test.js: 20/20 pass"
+      ],
+      "findings": []
+    },
+    "planning_spec/architecture_boundary": {
+      "status": "pass",
+      "summary": "PlanningはCLIをouter composition root、guarded-run-sessionをdurable execution authority、one-command moduleをcallback-injected policy、independent-review orchestratorをreview lifecycle ownerとして固定する。Autonomous Action DAG、production runtime connectors、independent review orchestrationの先行実装を重複させない。",
+      "evidence": [
+        "Story predecessor list and implementation map: docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+        "Owner map: docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+        "Replay topology: docs/specs/story-vibepro-one-command-pr-ready-closure-execution-topology-replay.md"
+      ],
+      "findings": []
+    },
+    "architecture_spec/architecture_boundary": {
+      "status": "pass",
+      "summary": "cli -> guarded-run-session の一方向compositionを維持している。one-command policyはCLI/Gate/PR/connectorをimportせず、guarded-run-sessionは既存connectorとindependent review lifecycleを注入・再利用する。branch diffにはguarded-run-sessionからの追加cli参照がない。",
+      "evidence": [
+        "src/cli.js, src/guarded-run-session.js, src/one-command-pr-ready-closure.js, src/codex-runtime-bridge.js, src/agent-runtime-connectors.js, src/independent-review-orchestrator.js",
+        "git diff --unified=0 origin/main...HEAD -- src/guarded-run-session.js | rg '^\\+.*\\bcli\\b': no matches",
+        "Conformance still lists 9 run-session -> cli edges, but the refreshed baseline records them without a branch-added reverse-call diff."
+      ],
+      "findings": []
+    }
+  },
+  "rebase_integrity": {
+    "status": "pass",
+    "summary": "Final delta from 064dd1f6 is only the Architecture conformance baseline refresh. origin/main...HEAD passes git diff --check; no tracked working-tree changes were made by this review."
+  }
+}

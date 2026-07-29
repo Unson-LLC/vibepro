@@ -1,0 +1,348 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "updated_at": "2026-07-21T14:31:09.878Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784644269878-281df8c6",
+      "story_id": "story-vibepro-autonomous-action-dag",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_review",
+      "summary": "Autonomous DAG implementation remains one reviewable compatibility contract",
+      "reason": "The 18-file change is one closed compatibility contract: autonomous action planning, guarded execution, telemetry truthfulness, CLI exposure, tests, and authority registration must land together. Production connectors, review orchestration, and one-command closure remain separate child Stories, preserving rollback and review boundaries.",
+      "reviewer": "gate-blocker-analysis-terra",
+      "artifact": "docs/management/roadmaps/vibepro-autonomous-implementation-roadmap.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-typecheck-87434439.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-e2e-87434439.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-integration-87434439.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-unit-87434439.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/vibepro-version-stamp-bbbc2510.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "874344394f6da1f3263176f7cd58a0d289a5b776",
+        "current_branch": "codex/autonomous-action-dag-impl",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T14:31:09.877Z"
+      },
+      "recorded_at": "2026-07-21T14:31:09.878Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784643970958-427f652b",
+      "story_id": "story-vibepro-autonomous-action-dag",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_clean_branch",
+      "summary": "Keep the autonomous Action DAG foundation as one review unit; defer production connectors and review orchestration to their registered child Stories.",
+      "reason": "The 18 changed files implement one compatibility contract across Story, Architecture, Spec, runtime orchestration, CLI, persistence, and tests. The 19 focused commits are all descendants of the same Story rather than unrelated behavior. Splitting runtime state, profile fallback, HEAD rebinding, or final Gate semantics would make each PR internally incomplete; production connectors, independent review orchestration, and one-command closure remain explicitly separated child Stories.",
+      "reviewer": "gate-blocker-analysis-terra",
+      "artifact": "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/session-efficiency-audit-bbbc2510.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-e2e-bbbc2510.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/vibepro-version-stamp-bbbc2510.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-integration-runtime-bbbc2510.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-integration-bbbc2510.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+        "current_branch": "codex/autonomous-action-dag-impl",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T14:26:10.956Z"
+      },
+      "recorded_at": "2026-07-21T14:26:10.958Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784632899998-f5fc4216",
+      "story_id": "story-vibepro-autonomous-action-dag",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "Commit only repository configuration and Design SSOT; keep generated QA, review, and PR diagnostics uncommitted.",
+      "reason": "Tracked configuration registers Story and design ownership, while generated evidence is reproducible and remains under ignored .vibepro artifact storage.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-typecheck-c01a1fe4.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-e2e-c01a1fe4.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-integration-c01a1fe4.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-targeted.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c01a1fe43fdc3897d18cf9907e3988052c34f3e3",
+        "current_branch": "codex/autonomous-action-dag-impl",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T11:21:39.996Z"
+      },
+      "recorded_at": "2026-07-21T11:21:39.999Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784632897877-2fe25385",
+      "story_id": "story-vibepro-autonomous-action-dag",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Retain the coherent DAG implementation on one clean Story branch.",
+      "reason": "No unrelated product change is included; owner, runtime, CLI, tests, Spec, and rollback behavior form one atomic contract.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-typecheck-c01a1fe4.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-e2e-c01a1fe4.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-integration-c01a1fe4.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-targeted.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c01a1fe43fdc3897d18cf9907e3988052c34f3e3",
+        "current_branch": "codex/autonomous-action-dag-impl",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T11:21:37.872Z"
+      },
+      "recorded_at": "2026-07-21T11:21:37.877Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784632895887-18222332",
+      "story_id": "story-vibepro-autonomous-action-dag",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Bundled autonomous DAG foundation is one coherent runtime contract; the three downstream stories are decomposition and next-phase design docs, not implemented scope.",
+      "reason": "The runtime, CLI, contract tests, and acceptance docs jointly define one compatibility and rollback boundary; splitting them would remove executable traceability from the reviewed behavior.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-typecheck-c01a1fe4.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-e2e-c01a1fe4.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-integration-c01a1fe4.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-targeted.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "c01a1fe43fdc3897d18cf9907e3988052c34f3e3",
+        "current_branch": "codex/autonomous-action-dag-impl",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T11:21:35.886Z"
+      },
+      "recorded_at": "2026-07-21T11:21:35.888Z"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "open": 0,
+    "by_type": {
+      "needs_review": 5
+    },
+    "by_status": {
+      "accepted": 5
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784644269878-281df8c6",
+      "story_id": "story-vibepro-autonomous-action-dag",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_review",
+      "summary": "Autonomous DAG implementation remains one reviewable compatibility contract",
+      "reason": "The 18-file change is one closed compatibility contract: autonomous action planning, guarded execution, telemetry truthfulness, CLI exposure, tests, and authority registration must land together. Production connectors, review orchestration, and one-command closure remain separate child Stories, preserving rollback and review boundaries.",
+      "reviewer": "gate-blocker-analysis-terra",
+      "artifact": "docs/management/roadmaps/vibepro-autonomous-implementation-roadmap.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-typecheck-87434439.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-e2e-87434439.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-integration-87434439.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/autonomous-action-dag-unit-87434439.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/vibepro-version-stamp-bbbc2510.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "874344394f6da1f3263176f7cd58a0d289a5b776",
+        "current_branch": "codex/autonomous-action-dag-impl",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T14:31:09.877Z"
+      },
+      "recorded_at": "2026-07-21T14:31:09.878Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-autonomous-action-dag/decision-records.json"
+}

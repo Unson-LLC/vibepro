@@ -1,0 +1,1 @@
+{"status":"needs_changes","summary":"Preflight found current artifact refresh required before sequence freeze.","findings":[{"id":"current_evidence","severity":"medium","detail":"build/typecheck evidence needed refresh on current HEAD"}]}

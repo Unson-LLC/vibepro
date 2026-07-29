@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "summary": "release risk回帰なし。closed timeout predecessorのrecoveryとscope証跡分類はいずれも回帰テストで確認済みです。",
+  "inspection_summary": "HEAD diff、lifecycle分類、scope分類、実lifecycle形、focused testsを確認。",
+  "inspection_evidence": "src/agent-review.js:3154-3177; src/pr-manager.js:8609-8626; test/vibepro-cli.test.js:9817-9846,9945-9994; lifecycle test pass; scope test 1/1 pass.",
+  "inspection_inputs": [
+    "src/agent-review.js",
+    "src/pr-manager.js",
+    "test/vibepro-cli.test.js",
+    ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/lifecycle.json"
+  ],
+  "findings": []
+}

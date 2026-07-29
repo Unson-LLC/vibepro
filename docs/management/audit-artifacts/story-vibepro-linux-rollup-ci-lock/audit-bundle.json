@@ -1,0 +1,1067 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-linux-rollup-ci-lock",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-19T02:12:56.864Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [
+      "canonical_artifact_lines_exceeded",
+      "artifact_code_ratio_exceeded"
+    ],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:7b0f314f238eafdc48611690be5e94750c6cdb3cabbb15b8073fdf3dbf74bf9c",
+    "compressed_hash": "sha256:61478c6c519680a9b86655c8aaf3e7b86a622ff2f8b0ba15d912b8e82893823d",
+    "expanded_bytes": 17977,
+    "compressed_bytes": 3652,
+    "expanded_line_count": 472,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-linux-rollup-ci-lock",
+    "cost": {
+      "compressed_bytes": 3652,
+      "expanded_bytes": 17977,
+      "expanded_line_count": 472,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/351",
+    "merge_commit_sha": "fc2f2efebe8420ea4ff300f27ced8edd448c5fa3",
+    "merged_at": "2026-07-19T02:12:55Z",
+    "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...4d57b80973d64a428f4dc8f765b857fd3261e315"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 73,
+    "copied_reference_count": 59,
+    "unresolved_reference_count": 7,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-linux-rollup-ci-lock"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:7b0f314f238eafdc48611690be5e94750c6cdb3cabbb15b8073fdf3dbf74bf9c"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:6f1b61836b5b6a4c0228afed1d35b076169182720bcb74ca9ee88911051d42e4",
+      "audit_digest": "sha256:6f1b61836b5b6a4c0228afed1d35b076169182720bcb74ca9ee88911051d42e4",
+      "line_count": 205,
+      "raw_line_count": 205,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:8d02e57859ac2d8621b3ef6451f2a32645009a8a59c466876794aa5382f73eda",
+      "audit_digest": "sha256:1a32a15542cea700e9c71e8b1470ae3ed86c1028acb5e0c1c45b12e956c2bf6d",
+      "line_count": 5730,
+      "raw_line_count": 31211,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:938e75b9269609cf26ecca21f69a05e5dc2800230e563d7edb8bbee9d7f0b531",
+      "audit_digest": "sha256:1ce57b74291e11b55f8557bc34f739f66af7eb2cd8adad7002c1fd91f54f37e5",
+      "line_count": 2118,
+      "raw_line_count": 4715,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:263157a941e0e7099c74ce3693f5c1382c1af94b6ef250d7fb6cae865a9e7def",
+      "audit_digest": "sha256:1d9e1efc26249a4f64a69b4e63ebf90bf1cece6339dc870207467988a391c99b",
+      "line_count": 85,
+      "raw_line_count": 824,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:8ddcc1ab13988567a950e341ef4182089bf54d593c7e5ae41a0909f39989b3b5",
+      "audit_digest": "sha256:d0cdb1c9764297394ff40f1710f79251df8364ffbbe5198be5a7a5097e69c170",
+      "line_count": 2157,
+      "raw_line_count": 4793,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:29745758a38485ed3acc2887e863f46ede3935a38c0401c7614c3e1b5a880ed1",
+      "audit_digest": "sha256:29745758a38485ed3acc2887e863f46ede3935a38c0401c7614c3e1b5a880ed1",
+      "line_count": 386,
+      "raw_line_count": 386,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:8266be724359c2dfbc0fced4dc1d6a3785eb1d97a2399833cec37c7b104080f9",
+      "audit_digest": "sha256:5835b546510b5e4e42826e62dd7dc56108d0357953c638ab3bd8db38ee3bf9da",
+      "line_count": 70,
+      "raw_line_count": 585,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:e43272a8bd3f86e126c409f43d7b58c985607476758cf81dc135b7fd1ee0d5d2",
+      "audit_digest": "sha256:e43272a8bd3f86e126c409f43d7b58c985607476758cf81dc135b7fd1ee0d5d2",
+      "line_count": 59,
+      "raw_line_count": 59,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:f5c0e770a3ad4c20b8857fc2afd88bdc63309b6fa5961b94cc0245c09ce452ae",
+      "audit_digest": "sha256:f5c0e770a3ad4c20b8857fc2afd88bdc63309b6fa5961b94cc0245c09ce452ae",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:79b116a8f4bf32b92d5d83567976e5e5e11de4b4b8407e4457837ece9ae0986a",
+      "audit_digest": "sha256:79b116a8f4bf32b92d5d83567976e5e5e11de4b4b8407e4457837ece9ae0986a",
+      "line_count": 141,
+      "raw_line_count": 141,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:95fbaca52f37493275a7148f416f976c42dcaf001186a30d95a342f0085eab62",
+      "audit_digest": "sha256:95fbaca52f37493275a7148f416f976c42dcaf001186a30d95a342f0085eab62",
+      "line_count": 247,
+      "raw_line_count": 247,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:2699f9d5f0a3eeb93b6d458e460dc9a6a6db3b3140823c42c1e15b931dd566e6",
+      "audit_digest": "sha256:2699f9d5f0a3eeb93b6d458e460dc9a6a6db3b3140823c42c1e15b931dd566e6",
+      "line_count": 534,
+      "raw_line_count": 534,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-request-code_spec_alignment.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:6dd1b0c3f9ce727b2e898753cc19bfe9b71ec7bf40a9752b1ccf08d12659a2d8",
+      "audit_digest": "sha256:6dd1b0c3f9ce727b2e898753cc19bfe9b71ec7bf40a9752b1ccf08d12659a2d8",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-request-runtime_contract.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:52dee53294f05d39aeee8ab96d727b2834381c1e0fefcdaac595222820cfcbab",
+      "audit_digest": "sha256:52dee53294f05d39aeee8ab96d727b2834381c1e0fefcdaac595222820cfcbab",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-request-ux_completion.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:b4f2688757c1216068cff78716bcb8320cd3fb14115961224a1ac7a0db6eef63",
+      "audit_digest": "sha256:b4f2688757c1216068cff78716bcb8320cd3fb14115961224a1ac7a0db6eef63",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-result-code_spec_alignment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:a37583ea115f2be46eba1616f71d2d8255fecb5a07f44c96c8c3914f25e803de",
+      "audit_digest": "sha256:a37583ea115f2be46eba1616f71d2d8255fecb5a07f44c96c8c3914f25e803de",
+      "line_count": 140,
+      "raw_line_count": 140,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-result-runtime_contract.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:26a4276b3e3478414c1a0ea0da9d019b47ff0cb478637dedc69063a3485141e8",
+      "audit_digest": "sha256:26a4276b3e3478414c1a0ea0da9d019b47ff0cb478637dedc69063a3485141e8",
+      "line_count": 140,
+      "raw_line_count": 140,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-result-ux_completion.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:bd88f82d3885e9bcc9ac22cc4455001e34910d56450512251335d3a77c0f79ca",
+      "audit_digest": "sha256:bd88f82d3885e9bcc9ac22cc4455001e34910d56450512251335d3a77c0f79ca",
+      "line_count": 140,
+      "raw_line_count": 140,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/audit-replay-bundle.json.gz",
+      "digest": "sha256:8f8a11e2c416895b5cb6b1841ec3492ae753bcadb2c1c5094f5c1a047257cfdd",
+      "audit_digest": "sha256:8f8a11e2c416895b5cb6b1841ec3492ae753bcadb2c1c5094f5c1a047257cfdd",
+      "line_count": 1038,
+      "raw_line_count": 1038,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/gate-dag.json"
+    }
+  ],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/docs-build.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/evidence/story-vibepro-linux-rollup-ci-lock/docs-build.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/focused-tests.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/evidence/story-vibepro-linux-rollup-ci-lock/focused-tests.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/evidence/story-vibepro-linux-rollup-ci-lock/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/history/review-result-gate_evidence-2026-07-19T02-02-24.201Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/history/review-result-gate_evidence-2026-07-19T02-02-24.201Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/transcript-head4-gate-review2.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/transcript-head4-gate-review2.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-29-30.981Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-29-30.981Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-35-48.320Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-35-48.320Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-43-22.194Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-43-22.194Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-54-10.405Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-54-10.405Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-55-16.443Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-55-16.443Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-29-31.720Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-29-31.720Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-35-49.141Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-35-49.141Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-43-23.412Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-43-23.412Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-54-11.148Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-54-11.148Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-55-17.254Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-55-17.254Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-29-32.514Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-29-32.514Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-35-50.065Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-35-50.065Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-43-24.294Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-43-24.294Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-54-11.921Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-54-11.921Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-55-18.072Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-55-18.072Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-request-code_spec_alignment.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/reviews/implementation/review-request-code_spec_alignment.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-request-runtime_contract.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/reviews/implementation/review-request-runtime_contract.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-request-ux_completion.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/reviews/implementation/review-request-ux_completion.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-result-code_spec_alignment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/reviews/implementation/review-result-code_spec_alignment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-result-runtime_contract.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/reviews/implementation/review-result-runtime_contract.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-result-ux_completion.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/reviews/implementation/review-result-ux_completion.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-code-spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-code-spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-head4-code.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-head4-code.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-head4-runtime.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-head4-runtime.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-head4-ux.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-head4-ux.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-runtime.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-runtime.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-ux.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-ux.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-linux-rollup-ci-lock/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/stories/story-vibepro-linux-rollup-ci-lock/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-linux-rollup-ci-lock/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/stories/story-vibepro-linux-rollup-ci-lock/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/adjudication/story-vibepro-linux-rollup-ci-lock/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/diagnostics/2026-07-19T012153Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/docs-build.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/evidence/story-vibepro-linux-rollup-ci-lock/docs-build.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/focused-tests.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/evidence/story-vibepro-linux-rollup-ci-lock/focused-tests.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/evidence/story-vibepro-linux-rollup-ci-lock/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/pr/story-vibepro-linux-rollup-ci-lock/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/history/review-result-gate_evidence-2026-07-19T02-02-24.201Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/history/review-result-gate_evidence-2026-07-19T02-02-24.201Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/transcript-head4-gate-review2.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/gate/transcript-head4-gate-review2.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-29-30.981Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-29-30.981Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-35-48.320Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-35-48.320Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-43-22.194Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-43-22.194Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-54-10.405Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-54-10.405Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-55-16.443Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-code_spec_alignment-2026-07-19T01-55-16.443Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-29-31.720Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-29-31.720Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-35-49.141Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-35-49.141Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-43-23.412Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-43-23.412Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-54-11.148Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-54-11.148Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-55-17.254Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-runtime_contract-2026-07-19T01-55-17.254Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-29-32.514Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-29-32.514Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-35-50.065Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-35-50.065Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-43-24.294Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-43-24.294Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-54-11.921Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-54-11.921Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-55-18.072Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/history/review-result-ux_completion-2026-07-19T01-55-18.072Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-code-spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-code-spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-head4-code.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-head4-code.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-head4-runtime.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-head4-runtime.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-head4-ux.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-head4-ux.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-runtime.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-runtime.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-ux.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/transcript-ux.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-linux-rollup-ci-lock/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/stories/story-vibepro-linux-rollup-ci-lock/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-linux-rollup-ci-lock/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-linux-rollup-ci-lock/references/vibepro/stories/story-vibepro-linux-rollup-ci-lock/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 5841265
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-19T012153Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 970488
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 5588770
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-linux-rollup-ci-lock/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-linux-rollup-ci-lock/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    }
+  ]
+}

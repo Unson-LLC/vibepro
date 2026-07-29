@@ -1,0 +1,1 @@
+{"status":"pass","summary":"CLI/状態出力、legacy fallback、型付き停止、HEAD不一致fail-closed、final_prepare Gate SSOTを確認。","inspection_evidence":"E2E workflow replay exit 0; safe-action-orchestrator 57 pass","findings":[]}

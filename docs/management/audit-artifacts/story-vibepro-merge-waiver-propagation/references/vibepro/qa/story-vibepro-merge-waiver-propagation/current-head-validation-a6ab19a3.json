@@ -1,0 +1,34 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-waiver-propagation",
+  "head_sha": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+  "status": "pass",
+  "exit_code": 0,
+  "story_replay": {
+    "command": "node --test --test-name-pattern='story-vibepro-merge-waiver-propagation|MWP-AC' test/review-inspection-first.test.js test/vibepro-cli.test.js test/merge-gate-authorization.test.js test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts",
+    "tests_passed": 16,
+    "tests_failed": 0
+  },
+  "lifecycle_and_policy": {
+    "command": "node --test test/merge-gate-authorization.test.js test/review-inspection-first.test.js test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts",
+    "tests_passed": 29,
+    "tests_failed": 0
+  },
+  "cli_authority_rejection": {
+    "command": "node --test --test-name-pattern='story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied' test/vibepro-cli.test.js",
+    "tests_passed": 1,
+    "tests_failed": 0,
+    "cases": [
+      "omitted targets",
+      "current critical gate",
+      "stale pr-prepare status",
+      "same status with different routed Gate DAG",
+      "missing embedded Gate DAG"
+    ],
+    "github_called": false
+  },
+  "typecheck": {
+    "command": "npm run typecheck",
+    "status": "pass"
+  }
+}

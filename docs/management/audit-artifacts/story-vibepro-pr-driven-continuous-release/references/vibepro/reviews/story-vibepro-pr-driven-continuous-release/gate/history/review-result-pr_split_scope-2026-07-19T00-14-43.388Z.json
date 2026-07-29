@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-driven-continuous-release",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "23-file change is one atomic release unit; splitting would create broken intermediate states",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected origin/main...HEAD diff, Story Architecture Spec workflows scripts package version docs and tests; no Story-external changes; uppercase SCRIPT test-only delta adds no scope",
+    "evidence": null,
+    "inputs": [
+      "test/post-merge-release.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial split concern from repo-control and 23 files was resolved after dependency review showed all four lanes are not independently deployable"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "expected_head_sha": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+    "current_head_sha": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "actual_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "current_head_sha": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-19T00:14:43.388Z",
+  "git_context": {
+    "head_sha": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+    "current_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T00:14:43.386Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Independent re-review after CodeQL regression commit"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+    "surface_files": [
+      {
+        "path": "test/post-merge-release.test.js",
+        "sha256": "5304450a61b704effb39b2d43980a8c2ab4296985448998b629adf933b09ddd4",
+        "size": 14767
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "18b17cce8d55300e651accf1ec346e7d11006e1cdf9934357a88c1cb1b23634f"
+  },
+  "source_fingerprint": "766502bf499b606f639420bcc52e2b7eb5e8398670d310115d0549c54d0618f6",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "scope-review-6086",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-pr-driven-continuous-release/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "test/post-merge-release.test.js",
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

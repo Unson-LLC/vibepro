@@ -1,0 +1,35 @@
+{
+  "status": "needs_changes",
+  "summary": "aggregate preflightの全changed-path coverage実装とpr prepare自動注入は確認できたが、指定plan artifact欠落、受入テスト回帰、現行path-surface evidence不足によりpass不可。",
+  "findings": [
+    {
+      "severity": "P1",
+      "id": "validation_sequence_plan_artifact_missing",
+      "detail": "指定されたvalidation-sequence-plan.jsonは存在しない。state.jsonとpr-prepare.jsonから39パスは復元でき、git.changed_filesとの集合一致は確認できた。"
+    },
+    {
+      "severity": "P1",
+      "id": "regression_guard_acceptance_red",
+      "detail": "risk-adaptive validation sequencing acceptanceのAC-9が、空inspection unionの新fail-closedエラーにより期待文言へ到達せず失敗する。"
+    },
+    {
+      "severity": "P1",
+      "id": "path_surface_current_evidence_partial",
+      "detail": "current pr-prepareのgate:path_surface_matrixはpartial_surfaceで4行にcurrent evidenceがない。"
+    },
+    {
+      "severity": "P2",
+      "id": "parent_directory_binding_contract_gap",
+      "detail": "親directory coverageを許容する一方、content bindingとの組み合わせを検証するE2Eがない。"
+    },
+    {
+      "severity": "P2",
+      "id": "cli_prepare_integration_test_gap",
+      "detail": "CLI入力からplan保存、dirty pathを含む自動注入までの直接テストがない。"
+    }
+  ],
+  "agent_id": "019f8d30-5927-7973-abb1-6c5f5aeaf78f",
+  "model": "gpt-5.6-luna",
+  "reasoning_effort": "high",
+  "service_tier": "priority"
+}

@@ -1,0 +1,103 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "decision_id": "decision-1784426214576-0ef6ddd1",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The Story and four Spec clauses map the install artifact and projection repair to focused tests and three output surfaces. The independent code, runtime, and UX reviewers all passed the same atomic scope.",
+      "artifact": "docs/specs/vibepro-linux-rollup-ci-lock.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T02:02:32.012Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "decision_id": "decision-1784426213965-badca260",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "The exact optional package version matches Rollup 4.62.2. Reverting this atomic recovery restores the prior lock/projector state; there are no stored objects, schema migrations, feature gates, or downgrade state.",
+      "artifact": "docs/specs/vibepro-linux-rollup-ci-lock.md",
+      "activation_candidates": [
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T02:02:32.012Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "release_ops|changed_path:release_ops",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "decision_id": "decision-1784426213342-bff6daf7",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "No operator action is required. The merged-main workflow projects release notes, validates VitePress, deploys, and reports results in GitHub Actions. Rollback is a revert of this atomic commit followed by the same workflow; npm immutable publication behavior is unchanged.",
+      "artifact": ".github/workflows/post-merge-release.yml",
+      "activation_candidates": [
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T02:02:32.012Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:1455|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "decision_id": "decision-1784426214576-0ef6ddd1",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The Story and four Spec clauses map the install artifact and projection repair to focused tests and three output surfaces. The independent code, runtime, and UX reviewers all passed the same atomic scope.",
+      "artifact": "docs/specs/vibepro-linux-rollup-ci-lock.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:1455",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T02:06:44.017Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout|pr_route:mirror_sync",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "decision_id": "decision-1784426213965-badca260",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "The exact optional package version matches Rollup 4.62.2. Reverting this atomic recovery restores the prior lock/projector state; there are no stored objects, schema migrations, feature gates, or downgrade state.",
+      "artifact": "docs/specs/vibepro-linux-rollup-ci-lock.md",
+      "activation_candidates": [
+        "pr_route:mirror_sync",
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T02:06:44.017Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "release_ops|changed_path:release_ops|route:release_engineering",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "decision_id": "decision-1784426213342-bff6daf7",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "No operator action is required. The merged-main workflow projects release notes, validates VitePress, deploys, and reports results in GitHub Actions. Rollback is a revert of this atomic commit followed by the same workflow; npm immutable publication behavior is unchanged.",
+      "artifact": ".github/workflows/post-merge-release.yml",
+      "activation_candidates": [
+        "route:release_engineering",
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T02:06:44.017Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

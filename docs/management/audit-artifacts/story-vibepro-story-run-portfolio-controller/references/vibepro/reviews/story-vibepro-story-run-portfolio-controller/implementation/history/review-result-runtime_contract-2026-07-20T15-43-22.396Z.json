@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-story-run-portfolio-controller",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "needs_changes",
+  "summary": "Child Run creation could publish before Portfolio state and duplicate after crash.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "runtime-child-run-publish-gap",
+      "detail": "Run creation and Portfolio publication need restart reconciliation."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed HEAD 11794f66 source, tests, architecture and spec.",
+    "evidence": "focused regression 78/78 passed",
+    "inputs": [
+      "src/story-run-portfolio.js",
+      "test/story-run-portfolio.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Previous findings resolved; final status follows newly inspected crash and ownership boundaries."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+    "expected_head_sha": "1231a214ceb70f01a0ce900777020a53792c6b9b",
+    "current_head_sha": "1231a214ceb70f01a0ce900777020a53792c6b9b",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+      "branch": "codex/story-vibepro-story-run-portfolio-controller",
+      "actual_branch": "codex/story-vibepro-story-run-portfolio-controller",
+      "current_head_sha": "1231a214ceb70f01a0ce900777020a53792c6b9b",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-20T15:43:22.396Z",
+  "git_context": {
+    "head_sha": "1231a214ceb70f01a0ce900777020a53792c6b9b",
+    "current_branch": "codex/story-vibepro-story-run-portfolio-controller",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-20T15:43:22.386Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Third review bound to HEAD 11794f66"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "1231a214ceb70f01a0ce900777020a53792c6b9b",
+    "surface_files": [
+      {
+        "path": "src/story-run-portfolio.js",
+        "sha256": "8f0b9dbb544f63a6b7f6322ece606fb6c75cf738c4d93fb876b07a7633105308",
+        "size": 21537
+      },
+      {
+        "path": "test/story-run-portfolio.test.js",
+        "sha256": "2bfb9111b62d673a47420818fdfbca98dd919749b7e9b223198d7a114604c173",
+        "size": 19516
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "0c8207928fc5585ef13531f6a55d185b241bdd9859cc4280c29fffbdb098c3cc"
+  },
+  "source_fingerprint": "8cbc3ac62c70c8df350a868fb44c74ef8b87a2bc5232d51e2fef5341370270da",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f7d7f-e99b-7d11-b1de-c05f8ec20cff",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "019f7d7f-e99b-7d11-b1de-c05f8ec20cff",
+    "session_id": "019f7d7f-e99b-7d11-b1de-c05f8ec20cff",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-story-run-portfolio-controller/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "src/story-run-portfolio.js",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "019f7d7f-e99b-7d11-b1de-c05f8ec20cff",
+      "implementation_session_id": "codex-root-story9",
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

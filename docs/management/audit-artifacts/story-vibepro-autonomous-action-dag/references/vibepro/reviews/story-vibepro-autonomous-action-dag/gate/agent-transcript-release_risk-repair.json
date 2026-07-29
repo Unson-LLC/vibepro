@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "summary": "policy deny、非final pr_ready、再起動resume、typed stop再試行、legacy互換、Story固有E2Eをcurrent HEADで確認した。",
+  "inspection_summary": "4793e815の実装、Story、Spec、E2E、QA/typecheck artifactを確認した。",
+  "inspection_evidence": ".vibepro/qa/autonomous-action-dag-e2e-4793e815.json and autonomous-action-dag-typecheck-4793e815.json",
+  "judgment_delta": [
+    "policy禁止はrunner実行前にfail closedする。",
+    "final_prepareだけがpr_readyを返せる。",
+    "autonomous terminal stopは未完として再試行されlegacy契約は維持される。"
+  ],
+  "findings": []
+}

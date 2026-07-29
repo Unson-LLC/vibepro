@@ -1,0 +1,1 @@
+{"status":"pass","summary":"自律DAGのHEAD権威化、suffix再バインド、legacyフォールバックのunit/integration coverageは十分。","inspection_evidence":"HEAD bbbc25107e694eee5da4e1a2c628c6ed432cc597; node --test test/safe-action-orchestrator.test.js test/next-best-action-controller.test.js: 69/69 pass","findings":[]}

@@ -2,14 +2,20 @@ import { createHash, randomBytes as nodeRandomBytes } from 'node:crypto';
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
+import { RECOVERABLE_RUNTIME_STOP_CODES } from './guarded-stop-codes.js';
 import { startExecution as defaultStartExecution } from './execution-state.js';
 import { resolveGitIdentity as defaultResolveGitIdentity } from './git-identity.js';
+import { createHumanDecision, HumanDecisionError, resolveHumanDecision } from './human-decision-checkpoint.js';
+import { deriveDispatchIdentity } from './dispatch-identity.js';
 import {
   evaluateGateReadiness as defaultReadGateReadiness,
   preparePullRequest as defaultPreparePullRequest,
   safeAutopilotPullRequest as defaultSafeAutopilotPullRequest
 } from './pr-manager.js';
-import { runSafeActionPlan } from './safe-action-orchestrator.js';
+import { buildSafeActionPlan, runSafeActionPlan, selectSafeActionCandidate } from './safe-action-orchestrator.js';
+import { createDefaultAgentReviewOps, createGuardedIndependentReviewRunner, createReviewCheckpointPersister, recordGuardedRuntimeReview } from './independent-review-orchestrator.js';
+import { bindCurrentHeadFinalPrepare, createOneCommandPrReadyRunSessionOwners, persistOneCommandHumanDecision } from './one-command-pr-ready-closure.js';
+import { assertProviderIdentityUniqueness } from './run-lineage.js';
 import { refreshContextCapsuleForRun as defaultRefreshContextCapsule } from './run-context-capsule.js';
 import { getWorkspaceDir } from './workspace.js';
 
@@ -34,6 +40,7 @@ const RECOVERABLE_STATUSES = new Set([
   'blocked',
   'failed'
 ]);
+const ACTIVE_RUNTIME_DISPATCH_STATUSES = new Set(['queued', 'running', 'permission_wait']);
 const AUTHORITY_KINDS = new Set(['managed', 'repository', 'source_fallback']);
 const DEPENDENCY_KEYS = new Set([
   'now',
@@ -44,9 +51,15 @@ const DEPENDENCY_KEYS = new Set([
   'artifactIo',
   'resolveGitIdentity',
   'preparePullRequest',
-  'safeAutopilotPullRequest'
+  'safeAutopilotPullRequest',
+  'actionRunners',
+  'agentRuntimeCoordinator',
+  'recordAgentReview',
+  'agentReviewOps'
 ]);
+const AGENT_REVIEW_OP_KEYS = new Set(['prepare', 'authorize', 'start', 'close', 'record']);
 const ARTIFACT_IO_KEYS = new Set(['readFile', 'writeFile', 'rename', 'mkdir', 'readdir', 'rm']);
+const ACTION_RUNNER_KEYS = new Set(['diagnose', 'prepare_artifacts', 'implement', 'verify', 'review', 'repair', 'final_prepare']);
 
 const defaultArtifactIo = { readFile, writeFile, rename, mkdir, readdir, rm };
 
@@ -73,6 +86,8 @@ export class GuardedRunError extends Error {
 export function createGuardedRunSession(dependencies = {}) {
   assertClosedKeys(dependencies, DEPENDENCY_KEYS, 'guarded Run dependency');
   assertClosedKeys(dependencies.artifactIo ?? {}, ARTIFACT_IO_KEYS, 'guarded Run artifact I/O dependency');
+  assertClosedKeys(dependencies.actionRunners ?? {}, ACTION_RUNNER_KEYS, 'guarded Run action runner');
+  assertClosedKeys(dependencies.agentReviewOps ?? {}, AGENT_REVIEW_OP_KEYS, 'guarded Run Agent Review operation');
   const deps = {
     now: dependencies.now ?? (() => new Date()),
     randomBytes: dependencies.randomBytes ?? nodeRandomBytes,
@@ -82,6 +97,10 @@ export function createGuardedRunSession(dependencies = {}) {
     resolveGitIdentity: dependencies.resolveGitIdentity ?? defaultResolveGitIdentity,
     preparePullRequest: dependencies.preparePullRequest ?? defaultPreparePullRequest,
     safeAutopilotPullRequest: dependencies.safeAutopilotPullRequest ?? defaultSafeAutopilotPullRequest,
+    actionRunners: { ...(dependencies.actionRunners ?? {}) },
+    agentRuntimeCoordinator: dependencies.agentRuntimeCoordinator ?? null,
+    recordAgentReview: dependencies.recordAgentReview ?? null,
+    agentReviewOps: createDefaultAgentReviewOps(dependencies.agentReviewOps),
     artifactIo: { ...defaultArtifactIo, ...(dependencies.artifactIo ?? {}) }
   };
 
@@ -92,52 +111,395 @@ export function createGuardedRunSession(dependencies = {}) {
     resume: (repoRoot, options = {}) => resumeRun(deps, repoRoot, options),
     cancel: (repoRoot, options = {}) => cancelRun(deps, repoRoot, options),
     transition: (repoRoot, options = {}) => transitionRun(deps, repoRoot, options),
-    orchestrate: (repoRoot, options = {}) => orchestrateRun(deps, repoRoot, options)
+    orchestrate: (repoRoot, options = {}) => orchestrateRun(deps, repoRoot, options),
+    dispatchRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'dispatch'),
+    pollRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'poll'),
+    detachRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'detach'),
+    reconcileRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'reconcile'),
+    cancelRuntime: (repoRoot, options = {}) => mutateRuntimeDispatch(deps, repoRoot, options, 'cancel'),
+    recordRuntimeReview: (repoRoot, options = {}) => recordRuntimeReview(deps, repoRoot, options)
+  };
+}
+async function mutateRuntimeDispatch(deps, repoRoot, options, operation) {
+  if (!deps.agentRuntimeCoordinator) {
+    throw new GuardedRunError('runtime_unavailable', 'Guarded Run has no provider-neutral agent runtime coordinator');
+  }
+  const loaded = await loadSelectedRun(deps, repoRoot, options);
+  const dispatchAuthority = runtimeDispatchAuthority(loaded.state);
+  if (operation === 'dispatch' && dispatchAuthority.error) {
+    throw contractError('worktree_mismatch', dispatchAuthority.error, {
+      run_id: loaded.state.run_id,
+      expected_authority_kind: loaded.state.execution_context?.authority_kind ?? null
+    });
+  }
+  const authorityRoot = dispatchAuthority.root_realpath;
+  if (operation === 'dispatch' && options.request?.requirements?.managed_worktree !== authorityRoot) {
+    throw new GuardedRunError('worktree_mismatch', 'runtime dispatch must target the Guarded Run managed worktree', {
+      expected: authorityRoot,
+      actual: options.request?.requirements?.managed_worktree ?? null
+    });
+  }
+  const currentDispatch = operation === 'dispatch'
+    ? null
+    : (loaded.state.runtime_dispatches ?? []).find((item) => item.dispatch_id === options.dispatchId);
+  if (operation !== 'dispatch' && !currentDispatch) {
+    throw new GuardedRunError('runtime_dispatch_not_found', `runtime dispatch not found: ${options.dispatchId}`);
+  }
+  const identityBefore = await resolveIdentity(deps, authorityRoot, 'worktree_mismatch');
+  let runtimeState = loaded.state;
+  if (operation === 'dispatch' && identityBefore.head_sha !== loaded.state.current_head_sha) {
+    const candidateId = deriveDispatchIdentity({
+      run_id: loaded.state.run_id,
+      adapter_id: options.request?.adapter_id,
+      task_id: options.request?.task_id,
+      role: options.request?.role,
+      inspection_surface_hash: options.request?.inspection_surface_hash,
+      reviewer_identity: options.request?.reviewer_identity ?? null,
+      implementation_session_id: options.request?.implementation_session_id ?? null
+    });
+    const existing = (loaded.state.runtime_dispatches ?? []).find((item) => item.dispatch_id === candidateId);
+    if (!existing || options.request?.surface_unchanged_after_rebase !== true || existing.inspection_surface_hash !== options.request?.inspection_surface_hash) {
+      throw new GuardedRunError('stale_head', 'Runtime dispatch across a HEAD change requires an existing logical dispatch and an explicit unchanged-surface assertion', {
+        expected_head_sha: loaded.state.current_head_sha,
+        actual_head_sha: identityBefore.head_sha
+      });
+    }
+    runtimeState = { ...loaded.state, current_head_sha: identityBefore.head_sha };
+  }
+  if (currentDispatch?.role === 'review' && identityBefore.head_sha !== loaded.state.current_head_sha) {
+    throw new GuardedRunError('stale_head', 'Review runtime cannot continue after the authoritative worktree HEAD changes', {
+      expected_head_sha: loaded.state.current_head_sha,
+      actual_head_sha: identityBefore.head_sha
+    });
+  }
+  const providerIdentityRecords = await readPersistedProviderIdentityRecords(deps, loaded.authorityIdentity.root_realpath);
+  let result = operation === 'dispatch'
+    ? await dispatchRuntimeWithFallbacks(deps.agentRuntimeCoordinator, runtimeState, options.request, { providerIdentityRecords })
+    : await deps.agentRuntimeCoordinator[operation](loaded.state, options.dispatchId, { providerIdentityRecords });
+  const latest = await loadSelectedRun(deps, repoRoot, options);
+  if (operation !== 'cancel' && latest.state.status === 'cancelled' && loaded.state.status !== 'cancelled') {
+    let contained = result;
+    const latestDispatch = (latest.state.runtime_dispatches ?? [])
+      .find((item) => item.dispatch_id === result.dispatch?.dispatch_id);
+    if (latestDispatch && !ACTIVE_RUNTIME_DISPATCH_STATUSES.has(latestDispatch.status)) {
+      contained = { ...result, state: latest.state, dispatch: latestDispatch };
+    } else if (ACTIVE_RUNTIME_DISPATCH_STATUSES.has(result.dispatch?.status)) {
+      contained = await deps.agentRuntimeCoordinator.cancel(
+        operation === 'dispatch' ? result.state : latest.state,
+        result.dispatch.dispatch_id,
+        { providerIdentityRecords }
+      );
+    }
+    const terminalDispatch = contained.dispatch ?? result.dispatch ?? null;
+    const terminalState = terminalDispatch
+      ? {
+          ...latest.state,
+          runtime_dispatches: upsertRuntimeDispatch(latest.state.runtime_dispatches, terminalDispatch)
+        }
+      : latest.state;
+    await persistAuthorityThenMirror(
+      deps,
+      terminalState,
+      latest.authorityFile,
+      latest.mirrorFile,
+      `agent_runtime_${operation}_cancelled_run`
+    );
+    return { ...contained, state: terminalState, dispatch: terminalDispatch };
+  }
+  if (result.state.status !== loaded.state.status) {
+    const nextStatus = result.state.status;
+    result = {
+      ...result,
+      state: applyTransition(
+        { ...result.state, status: loaded.state.status, transitions: loaded.state.transitions },
+        nextStatus,
+        `agent_runtime_${operation}`,
+        toIso(deps.now()),
+        { stop_reason: result.state.stop_reason ?? null }
+      )
+    };
+  }
+  if ((operation === 'poll' || operation === 'reconcile') && result.dispatch?.role === 'implementation' && result.dispatch.status === 'completed') {
+    const actualIdentity = await resolveIdentity(deps, authorityRoot, 'worktree_mismatch');
+    if (result.dispatch.result?.head_sha !== actualIdentity.head_sha) {
+      throw new GuardedRunError('runtime_head_mismatch', 'Implementation result HEAD must match the authoritative managed worktree HEAD', {
+        reported_head_sha: result.dispatch.result?.head_sha ?? null,
+        actual_head_sha: actualIdentity.head_sha
+      });
+    }
+    const reboundLineage = result.dispatch.lineage
+      ? { ...result.dispatch.lineage, head_sha: actualIdentity.head_sha }
+      : null;
+    const reboundDispatch = reboundLineage
+      ? { ...result.dispatch, lineage: reboundLineage }
+      : result.dispatch;
+    result = {
+      ...result,
+      dispatch: reboundDispatch,
+      state: {
+        ...result.state,
+        current_head_sha: actualIdentity.head_sha,
+        runtime_dispatches: (result.state.runtime_dispatches ?? []).map((dispatch) =>
+          dispatch.dispatch_id === reboundDispatch.dispatch_id ? reboundDispatch : dispatch)
+      }
+    };
+  }
+  if ((operation === 'poll' || operation === 'reconcile') && !result.reused && result.dispatch?.status === 'completed' && result.dispatch.result?.usage_accounting) {
+    result = {
+      ...result,
+      state: {
+        ...result.state,
+        usage_accounting: mergeUsageAccounting(
+          loaded.state.usage_accounting,
+          result.dispatch.result.usage_accounting,
+          toIso(deps.now())
+        )
+      }
+    };
+  }
+  await persistAuthorityThenMirror(
+    deps,
+    result.state,
+    loaded.authorityFile,
+    loaded.mirrorFile,
+    `agent_runtime_${operation}`
+  );
+  return result;
+}
+
+function runtimeDispatchAuthority(state) {
+  const kind = state?.execution_context?.authority_kind;
+  const managed = state?.managed_worktree;
+  if (kind === 'managed') {
+    if (!managed?.path || !managed?.branch) {
+      return { root_realpath: null, error: 'Guarded Run managed worktree authority is incomplete' };
+    }
+    return { root_realpath: managed.path, branch: managed.branch, error: null };
+  }
+  if (kind === 'repository' || kind === 'source_fallback') {
+    if (!state?.execution_context?.root_realpath) {
+      return { root_realpath: null, error: 'Guarded Run repository authority is incomplete' };
+    }
+    return { root_realpath: state.execution_context.root_realpath, branch: null, error: null };
+  }
+  return { root_realpath: null, error: 'Guarded Run authority kind is incomplete' };
+}
+
+const FALLBACK_RUNTIME_STOP_CODES = new Set([
+  'runtime_unavailable',
+  'quota_exceeded',
+  'auth_denied',
+  'runtime_probe_timeout',
+  'review_readonly_unavailable'
+]);
+
+const COMPLETE_RECOVERY_STOP_CODES = new Set([
+  ...FALLBACK_RUNTIME_STOP_CODES,
+  'permission_wait',
+  'runtime_required'
+]);
+
+function completeRuntimeRecovery(state, stopReason) {
+  if (!stopReason || !COMPLETE_RECOVERY_STOP_CODES.has(stopReason.code)) return stopReason;
+  const details = stopReason.details ?? {};
+  const recovery = details.recovery ?? {};
+  const requiredCapabilities = [...(recovery.required_capabilities ?? details.required_capabilities ?? [])];
+  const missingCapabilities = [...(recovery.missing_capabilities ?? details.missing_capabilities ?? [])];
+  const provider = recovery.provider
+    ?? details.provider
+    ?? state.provider_fallbacks?.[0]
+    ?? 'unresolved';
+  const nextCommand = `vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${state.story_id} --run-id ${state.run_id} --until pr-ready`;
+  return {
+    ...stopReason,
+    details: {
+      ...details,
+      provider,
+      required_capabilities: requiredCapabilities,
+      missing_capabilities: missingCapabilities,
+      recovery: {
+        ...recovery,
+        action: 'resume_run',
+        story_id: state.story_id,
+        run_id: state.run_id,
+        provider,
+        required_capabilities: requiredCapabilities,
+        missing_capabilities: missingCapabilities,
+        condition: {
+          kind: 'runtime_available',
+          provider,
+          required_capabilities: requiredCapabilities,
+          missing_capabilities: missingCapabilities
+        },
+        next_command: nextCommand
+      }
+    }
   };
 }
 
+async function dispatchRuntimeWithFallbacks(coordinator, state, request, options = {}) {
+  const adapterIds = [...new Set([request?.adapter_id, ...(state.provider_fallbacks ?? [])])]
+    .filter((adapterId) => typeof adapterId === 'string' && adapterId.length > 0);
+  let currentState = state;
+  let result = null;
+  for (const adapterId of adapterIds) {
+    result = await coordinator.dispatch(currentState, { ...request, adapter_id: adapterId }, options);
+    currentState = result.state;
+    const fallbackAllowed = result.dispatch?.provider_run_id === null
+      && FALLBACK_RUNTIME_STOP_CODES.has(result.dispatch?.stop_reason?.code);
+    if (!fallbackAllowed) return result;
+  }
+  return result;
+}
+async function recordRuntimeReview(deps, repoRoot, options) {
+  return recordGuardedRuntimeReview({
+    deps,
+    repoRoot,
+    options,
+    loadRun: loadSelectedRun,
+    createError: (code, message) => new GuardedRunError(code, message),
+    now: () => toIso(deps.now()),
+    persistRun: (state, loaded) => persistAuthorityThenMirror(
+      deps,
+      state,
+      loaded.authorityFile,
+      loaded.mirrorFile,
+      'agent_runtime_review_recorded'
+    )
+  });
+}
 async function orchestrateRun(deps, repoRoot, options) {
   if (options.dryRun) {
     const identity = await resolveIdentity(deps, repoRoot, 'worktree_mismatch');
+    const profileResolution = resolveActionProfileDecision(options);
+    const previewPolicy = buildGuardedPolicy(options, toIso(deps.now()));
     const preview = {
       run_id: 'dry-run',
       story_id: requireStoryId(options.storyId),
       current_head_sha: identity.head_sha,
       status: 'running',
       attempt: 1,
-      action_journal: []
+      action_profile: profileResolution.effective,
+      provider_fallbacks: previewPolicy.provider_fallbacks,
+      ...(profileResolution.requested === 'autonomous' ? { action_profile_resolution: profileResolution } : {}),
+      action_journal: [],
+      next_best_action_decisions: []
     };
-    return runSafeActionPlan(preview, { dryRun: true });
+    const decision = selectControllerCheckpoint(preview, options);
+    return { ...(await runSafeActionPlan(preview, { dryRun: true })), decision };
   }
   const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
-  const result = await runSafeActionPlan(loaded.state, {
-    onProgress: async (progress) => {
-      const checkpoint = { ...loaded.state, action_journal: progress.action_journal };
-      await persistAuthorityThenMirror(
+  if (loaded.state.status === 'cancelled' || loaded.state.status === 'pr_ready' || loaded.state.status === 'waiting_for_human') {
+    return { plan: [], state: loaded.state };
+  }
+  const governedState = applyAutonomousFeaturePolicy(loaded.state, options);
+  const policyStop = evaluatePolicyStop(governedState, deps.now());
+  if (policyStop) {
+    const stopped = applyPolicyStop(governedState, policyStop, toIso(deps.now()));
+    await persistAuthorityThenMirror(deps, stopped, loaded.authorityFile, loaded.mirrorFile, 'guarded_policy_stop');
+    return { plan: [], state: stopped };
+  }
+  const previousDecision = governedState.next_best_action_decisions?.at(-1) ?? null;
+  const decision = selectControllerCheckpoint(governedState, options, previousDecision);
+  const resumePlan = buildResumeSafeActionPlan(governedState);
+  const decisionState = {
+    ...governedState,
+    iteration: governedState.iteration + 1,
+    next_best_action_decisions: [...(governedState.next_best_action_decisions ?? []), decision]
+  };
+  const controllerEnabled = process.env.VIBEPRO_NEXT_BEST_ACTION !== 'off';
+  if (!resumePlan && controllerEnabled && isEscapeDecision(decision)) {
+    const escaped = await applyControllerEscape(deps, loaded.state.execution_context.root_realpath, decisionState, decision, toIso(deps.now()));
+    await persistAuthorityThenMirror(deps, escaped, loaded.authorityFile, loaded.mirrorFile, 'next_best_action_escape');
+    return { plan: [decision.selected_action_id], decision, state: escaped };
+  }
+  await persistAuthorityThenMirror(
+    deps,
+    decisionState,
+    loaded.authorityFile,
+    loaded.mirrorFile,
+    'next_best_action_checkpoint'
+  );
+  const selectedPlan = resumePlan ?? (!controllerEnabled
+    ? undefined
+    : buildSelectedSafeActionPlan(decisionState, decision.selected_action_id));
+  let result;
+  try {
+    result = await runSafeActionPlan(decisionState, {
+      profile: decisionState.action_profile ?? 'legacy',
+      policyDeniedActionIds: options.policyDeniedActionIds,
+      plan: selectedPlan,
+      resolveCurrentHead: async () => (await resolveIdentity(
         deps,
-        checkpoint,
-        loaded.authorityFile,
-        loaded.mirrorFile,
-        'safe_action_checkpoint'
-      );
-    },
-    runners: {
-      pr_prepare: async () => {
-        const prepared = await deps.preparePullRequest(loaded.state.execution_context.root_realpath, {
-          storyId: loaded.state.story_id,
-          baseRef: options.baseRef
-        });
-        return { status: 'continue', artifact: prepared.artifacts?.json ?? null };
-      },
-      pr_autopilot_safe: async () => deps.safeAutopilotPullRequest(
         loaded.state.execution_context.root_realpath,
-        { storyId: loaded.state.story_id, baseRef: options.baseRef }
-      )
-    }
+        'worktree_mismatch'
+      )).head_sha,
+      onProgress: async (progress) => {
+        const persisted = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+          storyId: loaded.state.story_id,
+          runId: loaded.state.run_id
+        });
+        assertRunNotCancelled(persisted.state);
+        const checkpoint = {
+          ...persisted.state,
+          current_head_sha: progress.current_head_sha,
+          action_journal: progress.action_journal,
+          ...resumeCursorPatch(progress, decisionState)
+        };
+        await persistAuthorityThenMirror(
+          deps,
+          checkpoint,
+          loaded.authorityFile,
+          loaded.mirrorFile,
+          'safe_action_checkpoint'
+        );
+      },
+      onCheckpoint: createReviewCheckpointPersister({
+        loadRun: (state) => loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+          storyId: state.story_id, runId: state.run_id
+        }),
+        persist: async (selected, state) => {
+          const persisted = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+            storyId: state.story_id, runId: state.run_id
+          });
+          assertRunNotCancelled(persisted.state);
+          return persistAuthorityThenMirror(deps, state, selected.authorityFile,
+            selected.mirrorFile, 'safe_action_operation_checkpoint');
+        },
+        now: () => toIso(deps.now())
+      }),
+      runners: buildActionRunners(deps, { ...loaded, state: governedState }, options)
+    });
+  } catch (error) {
+    if (error?.code !== 'run_cancelled') throw error;
+    const cancelled = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+      storyId: loaded.state.story_id,
+      runId: loaded.state.run_id
+    });
+    return { plan: [], state: cancelled.state };
+  }
+  const persistedAfterOwners = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+    storyId: loaded.state.story_id,
+    runId: loaded.state.run_id
   });
-  let next = { ...loaded.state, action_journal: result.state.action_journal };
+  if (persistedAfterOwners.state.status === 'cancelled') {
+    return { plan: result.plan, state: persistedAfterOwners.state };
+  }
+  let next = {
+    ...persistedAfterOwners.state,
+    current_head_sha: result.state.current_head_sha,
+    action_journal: result.state.action_journal,
+    ...resumeCursorPatch(result.state, decisionState)
+  };
   let outcomeStatus = result.state.status;
   let outcomeStopReason = result.state.stop_reason;
+  if (outcomeStatus === 'waiting_for_human') {
+    const decision = await persistOneCommandHumanDecision({ repoRoot: loaded.state.execution_context.root_realpath, state: next, request: result.state.pending_decision_request,
+      now: deps.now, createDecision: createHumanDecision, isDecisionError: (error) => error instanceof HumanDecisionError
+    });
+    [next, outcomeStatus, outcomeStopReason] = [decision.state, decision.status, decision.stopReason];
+  }
+  outcomeStopReason = completeRuntimeRecovery(next, outcomeStopReason);
   const currentIdentity = await resolveIdentity(deps, loaded.state.execution_context.root_realpath, 'worktree_mismatch');
   if (currentIdentity.head_sha !== loaded.state.current_head_sha) {
     const reboundAt = toIso(deps.now());
@@ -212,11 +574,199 @@ async function orchestrateRun(deps, repoRoot, options) {
       };
     }
   }
-  if (outcomeStatus !== loaded.state.status) {
+  if (outcomeStatus !== next.status) {
     next = applyTransition(next, outcomeStatus, 'safe_action_orchestrator', toIso(deps.now()), { stop_reason: outcomeStopReason });
+  } else {
+    next = { ...next, stop_reason: outcomeStopReason };
   }
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'safe_action_orchestrator');
   return { plan: result.plan, state: next };
+}
+
+function buildActionRunners(deps, loaded, options) {
+  const repoRoot = loaded.state.execution_context.root_realpath;
+  const storyId = loaded.state.story_id;
+  const injected = deps.actionRunners;
+  const unavailable = (actionId) => async () => ({
+    status: 'waiting_for_runtime',
+    stop_reason: 'runtime_required',
+    summary: `${actionId} action owner is not connected`,
+    recovery: { missing_action_runner: actionId }
+  });
+  const defaults = createOneCommandPrReadyRunSessionOwners({
+    repoRoot, storyId, baseRef: options.baseRef, providerFallbacks: loaded.state.provider_fallbacks,
+    agentRuntimeCoordinator: deps.agentRuntimeCoordinator, readGateReadiness: deps.readGateReadiness, preparePullRequest: deps.preparePullRequest,
+    mutateRuntimeDispatch: (request, operation) => mutateRuntimeDispatch(deps, repoRoot, request, operation)
+  });
+  const autonomous = Object.fromEntries([...ACTION_RUNNER_KEYS].map((id) => [id, injected[id] ?? defaults[id] ?? unavailable(id)]));
+  if (!injected.review && deps.agentRuntimeCoordinator) {
+    autonomous.review = buildIndependentReviewRunner(deps, loaded, options);
+  }
+  if (injected.final_prepare) {
+    autonomous.final_prepare = bindCurrentHeadFinalPrepare({
+      owner: autonomous.final_prepare,
+      preparePullRequest: deps.preparePullRequest,
+      repoRoot,
+      storyId,
+      baseRef: options.baseRef
+    });
+  }
+  if ((loaded.state.action_profile ?? 'legacy') === 'autonomous') return autonomous;
+  return {
+    pr_prepare: async () => {
+      const prepared = await deps.preparePullRequest(repoRoot, { storyId, baseRef: options.baseRef });
+      return { status: 'continue', artifact: prepared.artifacts?.json ?? null };
+    },
+    pr_autopilot_safe: async () => deps.safeAutopilotPullRequest(repoRoot, { storyId, baseRef: options.baseRef })
+  };
+}
+function buildIndependentReviewRunner(deps, loaded, options) {
+  return async (context) => {
+    const selected = await loadSelectedRun(deps, loaded.state.execution_context.root_realpath, {
+      storyId: context.state.story_id,
+      runId: context.state.run_id
+    });
+    const repoRoot = selected.state.managed_worktree?.path
+      ?? selected.state.execution_context.root_realpath;
+    const runReview = createGuardedIndependentReviewRunner({
+      repoRoot, baseRef: options.baseRef, preparePullRequest: deps.preparePullRequest,
+      agentReviewOps: deps.agentReviewOps,
+      dispatchRuntime: (state, request) => mutateRuntimeDispatch(deps, repoRoot,
+        { storyId: state.story_id, runId: state.run_id, request }, 'dispatch'),
+      pollRuntime: (state, dispatchId) => mutateRuntimeDispatch(deps, repoRoot,
+        { storyId: state.story_id, runId: state.run_id, dispatchId }, 'poll'),
+      cancelRuntime: (state, dispatchId) => mutateRuntimeDispatch(deps, repoRoot,
+        { storyId: state.story_id, runId: state.run_id, dispatchId }, 'cancel'),
+      recordRuntimeReview: (state, dispatchId, review) => recordRuntimeReview(deps, repoRoot,
+        { storyId: state.story_id, runId: state.run_id, dispatchId, review }),
+      createError: (code, message) => new GuardedRunError(code, message)
+    });
+    return runReview({
+      ...context,
+      state: {
+        ...selected.state,
+        current_head_sha: context.state.current_head_sha,
+        action_journal: context.state.action_journal
+      }
+    });
+  };
+}
+function hasCompletedResumeCheckpoint(state, resumeNodeId) {
+  if (resumeNodeId == null) return false;
+  return state.action_journal.some((entry) => entry.node_id === resumeNodeId
+    && entry.input_head_sha === state.current_head_sha
+    && entry.status === 'completed');
+}
+function resumeCursorPatch(progress, source) {
+  if (progress.action_profile === 'autonomous'
+      && ['blocked', 'waiting_for_human', 'waiting_for_runtime', 'failed'].includes(progress.status)) {
+    const stoppedAction = progress.action_journal.findLast((entry) => entry.status === 'failed');
+    if (stoppedAction?.node_id) return { resume_from_node_id: stoppedAction.node_id };
+  }
+  if (!Object.hasOwn(source, 'resume_from_node_id')) return {};
+  return {
+    resume_from_node_id: hasCompletedResumeCheckpoint(progress, source.resume_from_node_id)
+      ? null
+      : source.resume_from_node_id
+  };
+}
+
+function buildResumeSafeActionPlan(state) {
+  if (state.resume_from_node_id == null) return null;
+  const plan = buildSafeActionPlan(state);
+  const start = plan.findIndex((action) => action.node_id === state.resume_from_node_id);
+  if (start < 0) {
+    throw contractError('invalid_resume_node', `Run cannot resume from unknown node: ${state.resume_from_node_id}.`, {
+      run_id: state.run_id,
+      resume_from_node_id: state.resume_from_node_id
+    });
+  }
+  return plan.slice(start);
+}
+
+function isEscapeDecision(decision) {
+  return ['ask', 'split', 'wait', 'stop', 'rediagnose'].includes(decision.selected_action_id);
+}
+
+function buildSelectedSafeActionPlan(state, actionId) {
+  const plan = buildSafeActionPlan(state);
+  const selectedIndex = plan.findIndex((action) => action.id === actionId);
+  return selectedIndex >= 0 ? plan.slice(selectedIndex) : plan;
+}
+
+function controllerEscapeResumeNode(state) {
+  return state.action_profile === 'autonomous' ? 'diagnose' : 'pr_prepare';
+}
+
+async function applyControllerEscape(deps, repoRoot, state, decision, timestamp) {
+  const actionId = decision.selected_action_id;
+  let humanDecision;
+  try {
+    humanDecision = await createHumanDecision(repoRoot, state, {
+      type: actionId === 'split' ? 'scope_split' : 'clarification',
+      question: `How should VibePro continue after the controller selected ${actionId}?`,
+      material_reason: `The autonomous controller stopped after repeated no progress and selected ${actionId}.`,
+      impact_scope: ['guarded_run', 'next_best_action'],
+      source_refs: [`run:${state.run_id}`, `controller_action:${actionId}`]
+    }, { now: deps.now });
+  } catch (error) {
+    if (!(error instanceof HumanDecisionError)) throw error;
+    throw contractError(error.code, error.message, error.details);
+  }
+  const stopReason = {
+    code: 'next_best_action_escape',
+    message: `Controller selected ${actionId} after repeated no progress.`,
+    details: {
+      recovery: {
+        required_actions: [`resolve controller escape action: ${actionId}`],
+        next_command: `vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${state.story_id} --run-id ${state.run_id} --decision ${humanDecision.decision_id} --answer <answer> --until pr-ready`
+      }
+    }
+  };
+  return applyTransition(state, 'waiting_for_human', 'next_best_action_escape', timestamp, {
+    stop_reason: stopReason,
+    pending_decision: {
+      decision_id: humanDecision.decision_id,
+      type: humanDecision.type,
+      artifact: path.join('.vibepro', 'executions', state.story_id, 'runs', state.run_id, 'decisions', `${humanDecision.decision_id}.json`),
+      stop_node_id: controllerEscapeResumeNode(state)
+    }
+  });
+}
+
+function selectControllerCheckpoint(state, options = {}, previousDecision = null) {
+  const explicitNoProgress = Number.isInteger(options.noProgressCount);
+  const base = {
+    checkpointReason: options.checkpointReason ?? 'run_started',
+    noProgressCount: explicitNoProgress ? options.noProgressCount : 0,
+    stateDelta: options.stateDelta,
+    metrics: options.actionMetrics,
+    escapeActionIds: options.escapeActionIds ?? [],
+    previousDecision
+  };
+  const probe = selectSafeActionCandidate(state, base);
+  if (explicitNoProgress) {
+    return selectSafeActionCandidate(state, {
+      ...base,
+      escapeActionIds: options.escapeActionIds
+        ?? (options.noProgressCount >= 2 ? ['rediagnose', 'split', 'ask', 'stop'] : [])
+    });
+  }
+  const unchangedCheckpoints = (state.next_best_action_decisions ?? [])
+    .slice()
+    .reverse()
+    .findIndex((item) => item.state_fingerprint !== probe.state_fingerprint);
+  const trailingMatches = unchangedCheckpoints === -1
+    ? (state.next_best_action_decisions ?? []).length
+    : unchangedCheckpoints;
+  const noProgressCount = trailingMatches > 0 ? trailingMatches + 1 : 0;
+  if (noProgressCount < 2) return probe;
+  return selectSafeActionCandidate(state, {
+    ...base,
+    checkpointReason: 'no_progress',
+    noProgressCount,
+    escapeActionIds: options.escapeActionIds ?? ['rediagnose', 'split', 'ask', 'stop']
+  });
 }
 
 function buildSystemActionEntry(state, actionId, inputHead, outputHead, timestamp, status = 'completed', summary = actionId) {
@@ -254,21 +804,119 @@ export function renderGuardedRunSummary(value) {
   const latestActionSummary = latestAction
     ? `${latestAction.action_id} (${latestAction.status}): ${latestAction.result_summary ?? 'no summary'}`
     : 'none';
+  const latestDecision = state.next_best_action_decisions?.at(-1);
+  const latestDecisionSummary = latestDecision
+    ? `${latestDecision.selected_action_id ?? 'none'} (${[
+        latestDecision.outcome,
+        latestDecision.selection_reason,
+        `checkpoint=${latestDecision.checkpoint_reason}`,
+        `no_progress=${latestDecision.no_progress_count}`
+      ].filter(Boolean).join('; ')})`
+    : 'none';
   const plannedActions = plan.length > 0
     ? plan.map((action) => `  - ${action.id} (${action.classification})`).join('\n')
     : '  none';
   const recovery = state.stop_reason?.details?.recovery;
-  const recoveryLines = recovery
+  const pendingDecision = state.pending_decision;
+  const now = Date.now();
+  const elapsedMs = state.created_at ? Math.max(0, now - new Date(state.created_at).getTime()) : null;
+  const automatedSteps = state.action_journal?.filter((entry) => entry.status === 'completed').length ?? 0;
+  const humanInterruptions = state.human_decision_journal?.length ?? 0;
+  const usage = state.usage_accounting ?? { total_tokens: null, cost_usd: null, status: 'unknown' };
+  const efficiency = deriveRunEfficiencyMetrics(state);
+  const fallbackNextCommand = state.execution_context?.root_realpath && state.story_id && state.run_id
+    ? `vibepro execute status ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${state.story_id} --run-id ${state.run_id}`
+    : 'Inspect the persisted Guarded Run state before taking another action.';
+  const recoveryDetailLines = recovery
     ? [
+        state.stop_reason?.details?.provider
+          ? `- provider: ${state.stop_reason.details.provider}`
+          : null,
+        ...(state.stop_reason?.details?.missing_capabilities?.length
+          ? [`- missing_capabilities: ${state.stop_reason.details.missing_capabilities.join(', ')}`]
+          : []),
+        recovery.action ? `- recovery_action: ${recovery.action}` : null,
+        ...(recovery.required_capabilities?.length
+          ? [`- required_capabilities: ${recovery.required_capabilities.join(', ')}`]
+          : []),
         ...(recovery.missing_kinds?.length ? [`- missing: ${recovery.missing_kinds.join(', ')}`] : []),
         ...(recovery.failed_kinds?.length ? [`- failed: ${recovery.failed_kinds.join(', ')}`] : []),
         ...(recovery.judgments?.length ? recovery.judgments.map((item) => `- judgment: ${item.kind ?? item.id ?? 'decision'} - ${item.reason ?? item.prompt ?? 'human decision required'}`) : []),
         ...(recovery.required_actions?.length ? recovery.required_actions.map((item) => `- required_action: ${item}`) : []),
         recovery.failure ? `- failure: ${recovery.failure}` : null,
-        recovery.next_command ? `- next_command: ${recovery.next_command}` : null
-      ].filter(Boolean).join('\n')
+        recovery.next_command
+          ? `- next_command: ${recovery.next_command}`
+          : recovery.action === 'resume_run' && state.execution_context?.root_realpath
+            ? `- next_command: vibepro execute resume ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${recovery.story_id ?? state.story_id} --run-id ${recovery.run_id ?? state.run_id} --until pr-ready`
+            : null
+      ].filter(Boolean)
+    : [];
+  const recoveryLines = recoveryDetailLines.length > 0
+    ? recoveryDetailLines.join('\n')
+    : ['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed'].includes(state.status)
+      ? `- next_command: ${fallbackNextCommand}`
+      : 'none';
+  const pendingDecisionLines = pendingDecision
+    ? [
+        `- decision_id: ${pendingDecision.decision_id ?? pendingDecision.id ?? 'unknown'}`,
+        `- question: ${pendingDecision.question ?? pendingDecision.prompt ?? 'human decision required'}`,
+        `- choices: ${Array.isArray(pendingDecision.choices) && pendingDecision.choices.length > 0 ? pendingDecision.choices.join(', ') : 'not provided'}`,
+        `- material_reason: ${pendingDecision.material_reason ?? 'not provided'}`,
+        `- impact_scope: ${Array.isArray(pendingDecision.impact_scope) && pendingDecision.impact_scope.length > 0 ? pendingDecision.impact_scope.join(', ') : 'not provided'}`,
+        `- source_refs: ${Array.isArray(pendingDecision.source_refs) && pendingDecision.source_refs.length > 0 ? pendingDecision.source_refs.join(', ') : 'not provided'}`,
+        `- resume_command: ${pendingDecision.resume_command ?? recovery?.next_command ?? fallbackNextCommand}`
+      ].join('\n')
     : 'none';
-  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}\n- iteration: ${state.iteration}\n- latest_action: ${latestActionSummary}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
+  const profileResolution = state.action_profile_resolution;
+  const profileSummary = profileResolution
+    ? `${profileResolution.requested} -> ${profileResolution.effective}${profileResolution.fallback_reason ? ` (${profileResolution.fallback_reason})` : ' (no fallback)'}`
+    : `${state.action_profile ?? 'legacy'} (no fallback)`;
+  return `# VibePro Guarded Run\n\n- run_id: ${state.run_id}\n- story_id: ${state.story_id}\n- target: ${state.target}\n- autonomy: ${state.autonomy_mode}\n- action_profile: ${profileSummary}\n- status: ${state.status}\n- stop_reason: ${stop}\n- binding: ${binding}\n- attempt: ${state.attempt}/${state.budget?.max_attempts ?? 'unknown'}\n- iteration: ${state.iteration}/${state.budget?.max_iterations ?? 'unknown'}\n- elapsed_ms: ${elapsedMs ?? 'unknown'}\n- active_ms: ${efficiency.active_ms ?? 'unknown'}\n- wait_ms: ${efficiency.wait_ms ?? 'unknown'}\n- trusted_pr_ready_ms: ${efficiency.trusted_pr_ready_ms ?? 'unknown'}\n- automated_steps: ${automatedSteps}\n- human_interruptions: ${humanInterruptions}\n- full_suite_runs: ${efficiency.full_suite_count ?? 'unknown'}\n- evidence_reuse: ${efficiency.evidence_reuse_count ?? 'unknown'}\n- evidence_invalidations: ${efficiency.evidence_invalidation_count ?? 'unknown'}\n- accepted_defects: ${efficiency.accepted_defect_count ?? 'unknown'}\n- risk_reductions: ${efficiency.risk_reduction_count ?? 'unknown'}\n- tokens: ${usage.total_tokens ?? 'unknown'}\n- cost_usd: ${usage.cost_usd ?? 'unknown'}\n- usage_status: ${usage.status ?? 'unknown'}\n- efficiency_basis: trusted_pr_ready+accepted_defects+risk_reductions_vs_active_wait_token_cost\n- deadline: ${state.deadline ?? 'unknown'}\n- latest_action: ${latestActionSummary}\n- next_best_action: ${latestDecisionSummary}\n\n## Pending Decision\n\n${pendingDecisionLines}\n\n## Planned Actions\n\n${plannedActions}\n\n## Recovery\n\n${recoveryLines}\n\n## Transitions\n\n${transitions || '  none'}\n`;
+}
+
+export function deriveRunEfficiencyMetrics(state) {
+  const transitions = state.transitions ?? [];
+  let activeMs = 0;
+  let waitMs = 0;
+  let hasDuration = false;
+  for (let index = 0; index < transitions.length; index += 1) {
+    const current = transitions[index];
+    const start = Date.parse(current.timestamp);
+    const end = Date.parse(transitions[index + 1]?.timestamp ?? state.updated_at);
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) continue;
+    hasDuration = true;
+    const duration = end - start;
+    if (current.to === 'running') activeMs += duration;
+    else if (['waiting_for_human', 'waiting_for_runtime', 'blocked', 'failed'].includes(current.to)) waitMs += duration;
+  }
+  const actions = state.action_journal;
+  const measuredCount = (metric) => {
+    if (!Array.isArray(actions)) return null;
+    const measurements = actions
+      .filter((entry) => entry.status === 'completed' && isPlainRecord(entry.measurements))
+      .map((entry) => entry.measurements[metric])
+      .filter((value) => Number.isInteger(value) && value >= 0);
+    return measurements.length > 0 ? measurements.reduce((total, value) => total + value, 0) : null;
+  };
+  const created = Date.parse(state.created_at);
+  const updated = Date.parse(state.updated_at);
+  return {
+    story_id: state.story_id,
+    run_id: state.run_id,
+    trusted_pr_ready_ms: state.status === 'pr_ready' && Number.isFinite(created) && Number.isFinite(updated)
+      ? Math.max(0, updated - created)
+      : null,
+    active_ms: hasDuration ? activeMs : null,
+    wait_ms: hasDuration ? waitMs : null,
+    total_tokens: state.usage_accounting?.total_tokens ?? null,
+    cost_usd: state.usage_accounting?.cost_usd ?? null,
+    full_suite_count: measuredCount('full_suite_count'),
+    evidence_reuse_count: measuredCount('evidence_reuse_count'),
+    evidence_invalidation_count: measuredCount('evidence_invalidation_count'),
+    human_interruption_count: Array.isArray(state.human_decision_journal) ? state.human_decision_journal.length : null,
+    accepted_defect_count: measuredCount('accepted_defect_count'),
+    risk_reduction_count: measuredCount('risk_reduction_count')
+  };
 }
 
 function shellQuoteCommandArg(value) {
@@ -322,6 +970,7 @@ async function createRun(deps, repoRoot, options) {
     });
   }
   const storyId = requireStoryId(options.storyId);
+  const creationRequestId = options.creationRequestId == null ? null : requireCreationRequestId(options.creationRequestId);
   const caller = await resolveIdentity(deps, repoRoot, 'worktree_mismatch');
   await assertRegisteredStory(deps, caller.root_realpath, storyId);
   const initialLegacy = await readLegacyState(deps, caller.root_realpath, storyId);
@@ -366,9 +1015,23 @@ async function createRun(deps, repoRoot, options) {
       binding = await resolveCreationBinding(deps, caller, legacy, { newlyBootstrapped: true });
     }
 
+    if (creationRequestId) {
+      const existing = await findRunByCreationRequest(deps, binding, caller, storyId, creationRequestId);
+      if (existing) return existing;
+    }
     const createdAt = toIso(deps.now());
     const runId = generateRunId(createdAt, deps.randomBytes);
-    const state = buildInitialState({ storyId, runId, createdAt, binding });
+    const profileResolution = resolveActionProfileDecision(options);
+    const state = buildInitialState({
+      storyId,
+      runId,
+      createdAt,
+      binding,
+      creationRequestId,
+      policy: buildGuardedPolicy(options, createdAt),
+      actionProfile: profileResolution.effective,
+      actionProfileResolution: profileResolution.requested === 'autonomous' ? profileResolution : null
+    });
     const authorityFile = getRunStatePath(binding.authority.root_realpath, storyId, runId);
     const mirrorFile = binding.mirror
       ? getRunStatePath(binding.mirror.root_realpath, storyId, runId)
@@ -378,6 +1041,49 @@ async function createRun(deps, repoRoot, options) {
   } finally {
     await deps.artifactIo.rm(lockPath, { recursive: true, force: true });
   }
+}
+
+async function findRunByCreationRequest(deps, binding, caller, storyId, creationRequestId) {
+  const runsRoot = getRunsRoot(binding.authority.root_realpath, storyId);
+  let entries;
+  try {
+    entries = await deps.artifactIo.readdir(runsRoot);
+  } catch (cause) {
+    if (cause.code === 'ENOENT' || cause.code === 'ENOTDIR') return null;
+    throw cause;
+  }
+  const matches = [];
+  for (const runId of entries.filter((entry) => RUN_ID_PATTERN.test(entry))) {
+    const file = getRunStatePath(binding.authority.root_realpath, storyId, runId);
+    const raw = await readOptionalFile(deps, file);
+    if (raw === null) {
+      throw contractError('creation_request_scan_blocked', 'A guarded Run disappeared while resolving a creation request identity.', {
+        story_id: storyId, creation_request_id: creationRequestId, run_id: runId, artifact: file, cause: 'run_state_missing'
+      });
+    }
+    let state;
+    try {
+      state = migrateRunState(JSON.parse(raw)).state;
+      await validateAuthorityBinding(deps, caller, state, binding.authority, {
+        storyId, runId, expectedAuthorityKind: binding.authorityKind
+      });
+    } catch (cause) {
+      if (cause instanceof SyntaxError || isGuardedRunError(cause)) {
+        throw contractError('creation_request_scan_blocked', 'A guarded Run cannot be validated while resolving a creation request identity.', {
+          story_id: storyId, creation_request_id: creationRequestId, run_id: runId, artifact: file,
+          cause: cause.code ?? cause.message
+        });
+      }
+      throw cause;
+    }
+    if (state.creation_request_id === creationRequestId) matches.push(state);
+  }
+  if (matches.length > 1) {
+    throw contractError('creation_request_ambiguous', 'Multiple guarded Runs share one creation request identity.', {
+      story_id: storyId, creation_request_id: creationRequestId, run_ids: matches.map((state) => state.run_id)
+    });
+  }
+  return matches[0] ?? null;
 }
 
 async function resolveCreationLockRoot(deps, caller, legacy) {
@@ -407,6 +1113,51 @@ function resolveRepositorySharedLockRoot(identity) {
 async function readRun(deps, repoRoot, options) {
   const loaded = await loadSelectedRun(deps, repoRoot, options);
   return loaded.state;
+}
+
+async function readPersistedProviderIdentityRecords(deps, repoRoot) {
+  const executionsRoot = path.join(getWorkspaceDir(repoRoot), 'executions');
+  let storyEntries;
+  try {
+    storyEntries = await deps.artifactIo.readdir(executionsRoot);
+  } catch (error) {
+    if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return [];
+    throw error;
+  }
+  const records = [];
+  for (const storyId of [...storyEntries].filter((entry) => typeof entry === 'string').sort()) {
+    const runsRoot = path.join(executionsRoot, storyId, 'runs');
+    let runEntries;
+    try {
+      runEntries = await deps.artifactIo.readdir(runsRoot);
+    } catch (error) {
+      if (error.code === 'ENOENT' || error.code === 'ENOTDIR') continue;
+      throw error;
+    }
+    for (const runId of [...runEntries].filter((entry) => RUN_ID_PATTERN.test(entry)).sort()) {
+      const artifact = getRunStatePath(repoRoot, storyId, runId);
+      const raw = await readOptionalFile(deps, artifact);
+      if (raw === null) {
+        throw contractError('provider_identity_scan_blocked', 'A persisted Run state disappeared during provider identity validation.', {
+          artifact
+        });
+      }
+      let state;
+      try {
+        state = migrateRunState(JSON.parse(raw)).state;
+      } catch (error) {
+        throw contractError('provider_identity_scan_blocked', 'A persisted Run state cannot be read during provider identity validation.', {
+          artifact,
+          cause: error.code ?? error.message
+        });
+      }
+      for (const dispatch of state.runtime_dispatches ?? []) {
+        records.push({ ...dispatch, source_artifact: artifact });
+      }
+    }
+  }
+  assertProviderIdentityUniqueness(records);
+  return records;
 }
 
 async function watchRun(deps, repoRoot, options) {
@@ -447,10 +1198,47 @@ async function resumeRun(deps, repoRoot, options) {
       to: 'running'
     });
   }
-  const next = applyTransition(loaded.state, 'running', 'operator_resume', toIso(deps.now()), {
+  const policyStop = evaluatePolicyStop(loaded.state, deps.now(), { nextAttempt: true });
+  if (policyStop) {
+    const stopped = applyPolicyStop(loaded.state, policyStop, toIso(deps.now()));
+    await persistAuthorityThenMirror(deps, stopped, loaded.authorityFile, loaded.mirrorFile, 'guarded_policy_stop');
+    return stopped;
+  }
+  enforceRetryPolicy(loaded.state, deps.now());
+  let resolvedDecision = null;
+  if (loaded.state.status === 'waiting_for_human') {
+    try {
+      resolvedDecision = await resolveHumanDecision(loaded.state.execution_context.root_realpath, loaded.state, {
+        decisionId: options.decisionId,
+        answer: options.answer,
+        answeredBy: options.answeredBy,
+        reflectedIn: options.reflectedIn
+      }, { now: deps.now, allowResolvedReplay: true });
+    } catch (error) {
+      if (!(error instanceof HumanDecisionError)) throw error;
+      throw contractError(error.code, error.message, error.details);
+    }
+  }
+  const resumedAt = toIso(deps.now());
+  const retryJournal = appendRetryAudit(loaded.state, resumedAt);
+  const next = applyTransition(loaded.state, 'running', 'operator_resume', resumedAt, {
     attempt: loaded.state.attempt + 1,
     stop_reason: null,
-    pending_decision: null
+    pending_decision: null,
+    resume_from_node_id: resolvedDecision
+      ? loaded.state.pending_decision?.stop_node_id ?? null
+      : loaded.state.resume_from_node_id ?? null,
+    human_decision_journal: resolvedDecision
+      ? [...(loaded.state.human_decision_journal ?? []), {
+          decision_id: resolvedDecision.decision_id,
+          answer: resolvedDecision.answer,
+          answered_by: resolvedDecision.answered_by,
+          answered_at: resolvedDecision.answered_at,
+          reflected_in: resolvedDecision.reflected_in,
+          stop_node_id: loaded.state.pending_decision?.stop_node_id ?? null
+        }]
+      : (loaded.state.human_decision_journal ?? []),
+    retry_journal: retryJournal
   });
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'run_resumed');
   return next;
@@ -474,15 +1262,27 @@ async function cancelRun(deps, repoRoot, options) {
     pending_decision: null
   });
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, 'terminal_transition');
-  return next;
+  let contained = next;
+  if (deps.agentRuntimeCoordinator) {
+    for (const dispatch of (loaded.state.runtime_dispatches ?? [])
+      .filter((item) => ACTIVE_RUNTIME_DISPATCH_STATUSES.has(item.status))) {
+      const result = await mutateRuntimeDispatch(deps, repoRoot, {
+        storyId: loaded.state.story_id,
+        runId: loaded.state.run_id,
+        dispatchId: dispatch.dispatch_id
+      }, 'cancel');
+      contained = result.state;
+    }
+  }
+  return contained;
 }
 
 async function transitionRun(deps, repoRoot, options) {
   const to = options.to;
   if (!STATUS_VALUES.has(to)) throw contractError('unknown_status', `Unknown Run status: ${to}.`, { status: to });
   const loaded = await loadSelectedRun(deps, repoRoot, options, { requireCurrentHead: true });
-  if (loaded.state.status === 'failed' && to === 'running') {
-    throw contractError('invalid_transition', 'A failed Run can return to running only through execute resume.', {
+  if (RECOVERABLE_STATUSES.has(loaded.state.status) && to === 'running') {
+    throw contractError('invalid_transition', `A ${loaded.state.status} Run can return to running only through execute resume.`, {
       run_id: loaded.state.run_id,
       from: loaded.state.status,
       to
@@ -509,14 +1309,36 @@ async function transitionRun(deps, repoRoot, options) {
       });
     }
   }
+  if (!isAllowedTransition(loaded.state.status, to, options.reason ?? 'run_transition')) {
+    throw contractError('invalid_transition', `Run cannot transition from ${loaded.state.status} to ${to}.`, {
+      run_id: loaded.state.run_id,
+      from: loaded.state.status,
+      to
+    });
+  }
   const timestamp = toIso(deps.now());
+  let pendingDecision = options.pendingDecision ?? loaded.state.pending_decision;
+  if (to === 'waiting_for_human') {
+    try {
+      const decision = await createHumanDecision(loaded.state.execution_context.root_realpath, loaded.state, pendingDecision, { now: deps.now });
+      pendingDecision = {
+        decision_id: decision.decision_id,
+        type: decision.type,
+        artifact: path.join('.vibepro', 'executions', loaded.state.story_id, 'runs', loaded.state.run_id, 'decisions', `${decision.decision_id}.json`),
+        stop_node_id: pendingDecision.stop_node_id ?? null
+      };
+    } catch (error) {
+      if (!(error instanceof HumanDecisionError)) throw error;
+      throw contractError(error.code, error.message, error.details);
+    }
+  }
   const next = applyTransition(loaded.state, to, options.reason ?? 'run_transition', timestamp, {
     stop_reason: RECOVERABLE_STATUSES.has(to)
       ? options.stopReason
       : (to === 'running' || to === 'pr_ready'
           ? null
           : (options.stopReason ?? loaded.state.stop_reason)),
-    pending_decision: options.pendingDecision ?? loaded.state.pending_decision
+    pending_decision: pendingDecision
   });
   if (next === loaded.state) return next;
   await persistAuthorityThenMirror(deps, next, loaded.authorityFile, loaded.mirrorFile, classifyCapsuleReason(next, options.reason));
@@ -778,21 +1600,33 @@ async function validateAuthorityBinding(deps, caller, state, authorityIdentity, 
   }
 }
 
-function buildInitialState({ storyId, runId, createdAt, binding }) {
+function buildInitialState({ storyId, runId, createdAt, binding, creationRequestId = null, policy, actionProfile = 'legacy', actionProfileResolution = null }) {
   return {
     schema_version: GUARDED_RUN_SCHEMA_VERSION,
     run_id: runId,
     story_id: storyId,
+    ...(creationRequestId ? { creation_request_id: creationRequestId } : {}),
     target: GUARDED_RUN_TARGET,
     autonomy_mode: GUARDED_AUTONOMY_MODE,
+    ...(actionProfile === 'legacy' ? {} : { action_profile: actionProfile }),
+    ...(actionProfileResolution ? { action_profile_resolution: actionProfileResolution } : {}),
     created_at: createdAt,
     updated_at: createdAt,
     status: 'running',
     stop_reason: null,
     attempt: 1,
     iteration: 0,
-    budget: { max_attempts: 1, max_iterations: 0 },
-    deadline: null,
+    budget: policy.budget,
+    deadline: policy.deadline,
+    retry_policy: policy.retry_policy,
+    provider_fallbacks: policy.provider_fallbacks,
+    usage_accounting: {
+      total_tokens: null,
+      cost_usd: null,
+      status: 'unknown',
+      source: null,
+      updated_at: null
+    },
     last_progress_at: createdAt,
     pending_decision: null,
     current_head_sha: binding.authority.head_sha,
@@ -803,6 +1637,9 @@ function buildInitialState({ storyId, runId, createdAt, binding }) {
     },
     managed_worktree: binding.managedWorktree,
     action_journal: [],
+    next_best_action_decisions: [],
+    human_decision_journal: [],
+    retry_journal: [],
     transitions: [{
       sequence: 1,
       from: null,
@@ -811,6 +1648,133 @@ function buildInitialState({ storyId, runId, createdAt, binding }) {
       timestamp: createdAt
     }]
   };
+}
+
+function buildGuardedPolicy(options, createdAt) {
+  const maxAttempts = positiveInteger(options.maxAttempts, 3, 'max_attempts');
+  const maxIterations = nonNegativeInteger(options.maxIterations, 12, 'max_iterations');
+  const maxDurationMs = positiveInteger(options.maxDurationMs, 3_600_000, 'max_duration_ms');
+  const maxTokens = nullablePositiveNumber(options.maxTokens, 'max_tokens');
+  const maxCostUsd = nullablePositiveNumber(options.maxCostUsd, 'max_cost_usd');
+  const retryBackoffMs = nonNegativeInteger(options.retryBackoffMs, 0, 'retry_backoff_ms');
+  const retryableStopCodes = options.retryableStopCodes ?? [
+    ...RECOVERABLE_RUNTIME_STOP_CODES,
+    'ci_pending', 'review_timeout', 'action_failed'
+  ];
+  const providerFallbacks = options.providerFallbacks ?? (isCanonicalAutonomousRequest(options) ? ['codex', 'claude-code'] : []);
+  if (retryableStopCodes.some((value) => typeof value !== 'string' || value.length === 0)
+      || providerFallbacks.some((value) => typeof value !== 'string' || value.length === 0)) {
+    throw contractError('invalid_policy', 'Retry codes and provider fallbacks must be non-empty strings.', {});
+  }
+  return {
+    budget: { max_attempts: maxAttempts, max_iterations: maxIterations, max_duration_ms: maxDurationMs, max_tokens: maxTokens, max_cost_usd: maxCostUsd },
+    deadline: new Date(new Date(createdAt).getTime() + maxDurationMs).toISOString(),
+    retry_policy: { retryable_stop_codes: [...new Set(retryableStopCodes)], backoff_ms: retryBackoffMs },
+    provider_fallbacks: [...new Set(providerFallbacks)]
+  };
+}
+
+function evaluatePolicyStop(state, now, options = {}) {
+  const at = now instanceof Date ? now : new Date(now);
+  const nextAttempt = state.attempt + (options.nextAttempt ? 1 : 0);
+  if (nextAttempt > state.budget.max_attempts) return typedPolicyStop('max_attempts_exceeded', state, { observed: nextAttempt, limit: state.budget.max_attempts });
+  if (state.iteration >= state.budget.max_iterations) return typedPolicyStop('max_iterations_exceeded', state, { observed: state.iteration, limit: state.budget.max_iterations });
+  if (state.deadline && at.getTime() >= new Date(state.deadline).getTime()) return typedPolicyStop('deadline_exceeded', state, { observed_at: at.toISOString(), deadline: state.deadline });
+  const usage = state.usage_accounting ?? {};
+  if (state.budget.max_tokens != null && usage.total_tokens != null && usage.total_tokens >= state.budget.max_tokens) return typedPolicyStop('token_budget_exceeded', state, { observed: usage.total_tokens, limit: state.budget.max_tokens });
+  if (state.budget.max_cost_usd != null && usage.cost_usd != null && usage.cost_usd >= state.budget.max_cost_usd) return typedPolicyStop('cost_budget_exceeded', state, { observed: usage.cost_usd, limit: state.budget.max_cost_usd });
+  return null;
+}
+
+function typedPolicyStop(code, state, details) {
+  return {
+    code,
+    message: `Guarded Run stopped by policy: ${code}.`,
+    details: {
+      ...details,
+      retryable: false,
+      recovery: { next_command: `vibepro execute status ${shellQuoteCommandArg(state.execution_context.root_realpath)} --story-id ${state.story_id} --run-id ${state.run_id}` }
+    }
+  };
+}
+
+function applyPolicyStop(state, stopReason, timestamp) {
+  if (state.status === 'blocked') {
+    return { ...state, stop_reason: stopReason, updated_at: timestamp };
+  }
+  return applyTransition(state, 'blocked', 'guarded_policy_stop', timestamp, { stop_reason: stopReason });
+}
+
+function appendRetryAudit(state, resumedAt) {
+  const journal = state.retry_journal ?? [];
+  if (state.status === 'waiting_for_human' || !state.stop_reason?.code) return journal;
+  const stoppedAtMs = Date.parse(state.updated_at);
+  const resumedAtMs = Date.parse(resumedAt);
+  const elapsedMs = Number.isFinite(stoppedAtMs) && Number.isFinite(resumedAtMs)
+    ? Math.max(0, resumedAtMs - stoppedAtMs)
+    : null;
+  const backoffMs = state.retry_policy?.backoff_ms ?? 0;
+  return [...journal, {
+    sequence: journal.length + 1,
+    stop_code: state.stop_reason.code,
+    retryable: state.retry_policy?.retryable_stop_codes?.includes(state.stop_reason.code) ?? false,
+    backoff_ms: backoffMs,
+    stopped_at: state.updated_at,
+    resumed_at: resumedAt,
+    elapsed_ms: elapsedMs,
+    backoff_satisfied: elapsedMs == null ? null : elapsedMs >= backoffMs,
+    resumed_by: 'operator'
+  }];
+}
+
+function enforceRetryPolicy(state, resumedAt) {
+  if (state.status === 'waiting_for_human' || !state.stop_reason?.code) return;
+  if (state.migration_compatibility?.retry_policy_enforcement === 'legacy_advisory') return;
+  const policyManaged = state.stop_reason.details?.retry_policy_scope === 'managed'
+    || state.retry_policy?.retryable_stop_codes?.includes(state.stop_reason.code)
+    || /^(runtime_|ci_|review_|action_)/.test(state.stop_reason.code);
+  if (!policyManaged) return;
+  const retryable = state.retry_policy?.retryable_stop_codes?.includes(state.stop_reason.code) ?? false;
+  if (!retryable) {
+    throw contractError('retry_not_allowed', `Stop ${state.stop_reason.code} is not retryable by the persisted policy.`, {
+      run_id: state.run_id,
+      stop_code: state.stop_reason.code,
+      retryable_stop_codes: state.retry_policy?.retryable_stop_codes ?? []
+    });
+  }
+  const stoppedAtMs = Date.parse(state.updated_at);
+  const resumedAtMs = Date.parse(toIso(resumedAt));
+  const backoffMs = state.retry_policy?.backoff_ms ?? 0;
+  const elapsedMs = Number.isFinite(stoppedAtMs) && Number.isFinite(resumedAtMs)
+    ? Math.max(0, resumedAtMs - stoppedAtMs)
+    : null;
+  if (elapsedMs == null || elapsedMs < backoffMs) {
+    throw contractError('retry_backoff_pending', 'The persisted retry backoff has not elapsed.', {
+      run_id: state.run_id,
+      stop_code: state.stop_reason.code,
+      backoff_ms: backoffMs,
+      elapsed_ms: elapsedMs,
+      retry_after_ms: elapsedMs == null ? backoffMs : backoffMs - elapsedMs
+    });
+  }
+}
+
+function positiveInteger(value, fallback, name) {
+  const resolved = value ?? fallback;
+  if (!Number.isInteger(resolved) || resolved < 1) throw contractError('invalid_policy', `${name} must be a positive integer.`, { field: name, value });
+  return resolved;
+}
+
+function nonNegativeInteger(value, fallback, name) {
+  const resolved = value ?? fallback;
+  if (!Number.isInteger(resolved) || resolved < 0) throw contractError('invalid_policy', `${name} must be a non-negative integer.`, { field: name, value });
+  return resolved;
+}
+
+function nullablePositiveNumber(value, name) {
+  if (value == null) return null;
+  if (!Number.isFinite(value) || value <= 0) throw contractError('invalid_policy', `${name} must be a positive number.`, { field: name, value });
+  return value;
 }
 
 function applyTransition(state, to, reason, timestamp, patch = {}) {
@@ -859,6 +1823,21 @@ function isAllowedTransition(from, to, reason) {
       || to === 'pr_ready';
   }
   return false;
+}
+
+function assertRunNotCancelled(state) {
+  if (state.status !== 'cancelled') return;
+  throw new GuardedRunError(
+    'run_cancelled',
+    'The guarded Run was cancelled while autonomous orchestration was active.',
+    { run_id: state.run_id }
+  );
+}
+
+function upsertRuntimeDispatch(dispatches = [], dispatch) {
+  const index = dispatches.findIndex((item) => item.dispatch_id === dispatch.dispatch_id);
+  if (index < 0) return [...dispatches, dispatch];
+  return dispatches.map((item, itemIndex) => itemIndex === index ? dispatch : item);
 }
 
 async function persistAuthorityThenMirror(deps, state, authorityFile, mirrorFile, capsuleReason) {
@@ -926,17 +1905,44 @@ async function parseAndMaybeQuarantine(deps, raw, filePath) {
 }
 
 function migrateRunState(state) {
-  if (state.schema_version === GUARDED_RUN_SCHEMA_VERSION) {
+  const legacyCurrentSchema = state.schema_version === GUARDED_RUN_SCHEMA_VERSION
+    && (!Object.prototype.hasOwnProperty.call(state, 'retry_policy')
+      || !Object.prototype.hasOwnProperty.call(state, 'provider_fallbacks')
+      || !Object.prototype.hasOwnProperty.call(state, 'usage_accounting')
+      || !Object.prototype.hasOwnProperty.call(state, 'retry_journal'));
+  if (state.schema_version === GUARDED_RUN_SCHEMA_VERSION && !legacyCurrentSchema) {
     validateRunShape(state);
     return { changed: false, state };
   }
-  if (state.schema_version !== undefined && state.schema_version !== '0.0.0' && state.schema_version !== '0.1.0') {
+  if (!legacyCurrentSchema && state.schema_version !== undefined && state.schema_version !== '0.0.0' && state.schema_version !== '0.1.0') {
     throw contractError('unsupported_schema', `Unsupported guarded Run schema: ${state.schema_version}.`, {
       run_id: state.run_id ?? null,
       schema_version: state.schema_version ?? null
     });
   }
-  const migrated = { ...state, schema_version: GUARDED_RUN_SCHEMA_VERSION, action_journal: state.action_journal ?? [] };
+  const migrated = {
+    ...state,
+    schema_version: GUARDED_RUN_SCHEMA_VERSION,
+    ...(state.action_profile && state.action_profile !== 'legacy' ? { action_profile: state.action_profile } : {}),
+    action_journal: state.action_journal ?? [],
+    next_best_action_decisions: state.next_best_action_decisions ?? [],
+    human_decision_journal: state.human_decision_journal ?? [],
+    retry_journal: state.retry_journal ?? [],
+    resume_from_node_id: state.resume_from_node_id ?? null,
+    budget: legacyCurrentSchema ? {
+      max_attempts: 3,
+      max_iterations: 12,
+      max_duration_ms: 3_600_000,
+      max_tokens: null,
+      max_cost_usd: null
+    } : state.budget,
+    retry_policy: state.retry_policy ?? { retryable_stop_codes: ['action_failed'], backoff_ms: 0 },
+    provider_fallbacks: state.provider_fallbacks ?? [],
+    usage_accounting: state.usage_accounting ?? { total_tokens: null, cost_usd: null, status: 'unknown', source: null, updated_at: null },
+    migration_compatibility: state.migration_compatibility ?? {
+      retry_policy_enforcement: 'legacy_advisory'
+    }
+  };
   validateRunShape(migrated);
   return { changed: true, state: migrated };
 }
@@ -965,11 +1971,13 @@ function validateRunShape(state) {
   }
   requireRunId(state.run_id);
   requireStoryId(state.story_id);
+  if (state.creation_request_id != null) requireCreationRequestId(state.creation_request_id);
   if (state.target !== GUARDED_RUN_TARGET || state.autonomy_mode !== GUARDED_AUTONOMY_MODE) {
     throw contractError('invalid_state', 'Guarded Run target or autonomy mode is invalid.', {
       run_id: state.run_id
     });
   }
+  requireActionProfile(state.action_profile ?? 'legacy');
   if (!STATUS_VALUES.has(state.status)) {
     throw contractError('unknown_status', `Unknown Run status: ${state.status}.`, {
       run_id: state.run_id,
@@ -981,6 +1989,45 @@ function validateRunShape(state) {
       || !Number.isInteger(state.budget?.max_attempts) || state.budget.max_attempts < 1
       || !Number.isInteger(state.budget?.max_iterations) || state.budget.max_iterations < 0) {
     throw contractError('invalid_state', 'Guarded Run counters or budget are invalid.', { run_id: state.run_id });
+  }
+  if (state.budget.max_duration_ms !== undefined && (!Number.isInteger(state.budget.max_duration_ms) || state.budget.max_duration_ms < 1)) {
+    throw contractError('invalid_state', 'Guarded Run duration budget is invalid.', { run_id: state.run_id });
+  }
+  for (const key of ['max_tokens', 'max_cost_usd']) {
+    if (state.budget[key] !== undefined && state.budget[key] !== null
+        && (!Number.isFinite(state.budget[key]) || state.budget[key] <= 0)) {
+      throw contractError('invalid_state', `Guarded Run ${key} is invalid.`, { run_id: state.run_id });
+    }
+  }
+  if (state.retry_policy !== undefined
+      && (!isPlainRecord(state.retry_policy)
+        || !Array.isArray(state.retry_policy.retryable_stop_codes)
+        || state.retry_policy.retryable_stop_codes.some((code) => typeof code !== 'string' || code.length === 0)
+        || !Number.isInteger(state.retry_policy.backoff_ms)
+        || state.retry_policy.backoff_ms < 0)) {
+    throw contractError('invalid_state', 'Guarded Run retry policy is invalid.', { run_id: state.run_id });
+  }
+  if (state.migration_compatibility !== undefined
+      && (!isPlainRecord(state.migration_compatibility)
+        || state.migration_compatibility.retry_policy_enforcement !== 'legacy_advisory')) {
+    throw contractError('invalid_state', 'Guarded Run migration compatibility marker is invalid.', { run_id: state.run_id });
+  }
+  if (state.retry_journal !== undefined && (!Array.isArray(state.retry_journal)
+      || state.retry_journal.some((entry) => !isPlainRecord(entry)
+        || !Number.isInteger(entry.sequence)
+        || typeof entry.stop_code !== 'string'
+        || typeof entry.retryable !== 'boolean'
+        || !Number.isInteger(entry.backoff_ms)
+        || (entry.elapsed_ms !== null && (!Number.isFinite(entry.elapsed_ms) || entry.elapsed_ms < 0))
+        || (entry.backoff_satisfied !== null && typeof entry.backoff_satisfied !== 'boolean')))) {
+    throw contractError('invalid_state', 'Guarded Run retry_journal is invalid.', { run_id: state.run_id });
+  }
+  if (state.provider_fallbacks !== undefined
+      && (!Array.isArray(state.provider_fallbacks) || state.provider_fallbacks.some((provider) => typeof provider !== 'string' || provider.length === 0))) {
+    throw contractError('invalid_state', 'Guarded Run provider fallbacks are invalid.', { run_id: state.run_id });
+  }
+  if (state.usage_accounting !== undefined && !validUsageAccounting(state.usage_accounting)) {
+    throw contractError('invalid_state', 'Guarded Run usage accounting is invalid.', { run_id: state.run_id });
   }
   if (!isIsoTimestamp(state.created_at) || !isIsoTimestamp(state.updated_at) || !isIsoTimestamp(state.last_progress_at)) {
     throw contractError('invalid_state', 'Guarded Run timestamps are invalid.', { run_id: state.run_id });
@@ -1014,6 +2061,24 @@ function validateRunShape(state) {
   if (!Array.isArray(state.action_journal)) {
     throw contractError('invalid_state', 'Guarded Run action journal is invalid.', { run_id: state.run_id });
   }
+  if (state.next_best_action_decisions !== undefined) {
+    if (!Array.isArray(state.next_best_action_decisions)
+        || state.next_best_action_decisions.some((decision) => !isBoundedDecisionRecord(decision))) {
+      throw contractError('invalid_state', 'Guarded Run next-best-action decision history is invalid.', {
+        run_id: state.run_id
+      });
+    }
+  }
+  if (state.human_decision_journal !== undefined
+      && (!Array.isArray(state.human_decision_journal)
+        || state.human_decision_journal.some((item) => !isPlainRecord(item)
+          || typeof item.decision_id !== 'string'
+          || typeof item.answer !== 'string'
+          || typeof item.answered_by !== 'string'
+          || !isIsoTimestamp(item.answered_at)
+          || !Array.isArray(item.reflected_in)))) {
+    throw contractError('invalid_state', 'Guarded Run human decision journal is invalid.', { run_id: state.run_id });
+  }
   for (const entry of state.action_journal) {
     if (!entry || typeof entry !== 'object'
         || typeof entry.action_id !== 'string'
@@ -1021,12 +2086,20 @@ function validateRunShape(state) {
         || typeof entry.input_head_sha !== 'string'
         || typeof entry.output_head_sha !== 'string'
         || typeof entry.idempotency_key !== 'string'
-        || !['completed', 'failed', 'forbidden'].includes(entry.status)
+        || !['completed', 'failed', 'forbidden', 'checkpoint'].includes(entry.status)
         || !isIsoTimestamp(entry.started_at)
         || !isIsoTimestamp(entry.completed_at)) {
       throw contractError('invalid_state', 'Guarded Run action journal contains an invalid entry.', {
         run_id: state.run_id
       });
+    }
+    if (entry.measurements !== undefined
+        && (!isPlainRecord(entry.measurements)
+          || Object.entries(entry.measurements).some(([key, value]) => ![
+            'full_suite_count', 'evidence_reuse_count', 'evidence_invalidation_count',
+            'accepted_defect_count', 'risk_reduction_count'
+          ].includes(key) || !Number.isInteger(value) || value < 0))) {
+      throw contractError('invalid_state', 'Guarded Run action journal measurements are invalid.', { run_id: state.run_id });
     }
   }
   for (let index = 0; index < state.transitions.length; index += 1) {
@@ -1066,6 +2139,111 @@ function validateRunShape(state) {
   if (state.pending_decision !== null && !isPlainRecord(state.pending_decision)) {
     throw contractError('invalid_state', 'Guarded Run pending_decision is invalid.', { run_id: state.run_id });
   }
+  if (state.resume_from_node_id !== undefined
+      && state.resume_from_node_id !== null
+      && typeof state.resume_from_node_id !== 'string') {
+    throw contractError('invalid_state', 'Guarded Run resume_from_node_id is invalid.', { run_id: state.run_id });
+  }
+}
+
+function validUsageAccounting(value) {
+  if (!isPlainRecord(value) || !['known', 'partial', 'unknown'].includes(value.status)) return false;
+  for (const key of ['total_tokens', 'cost_usd']) {
+    if (value[key] !== null && (!Number.isFinite(value[key]) || value[key] < 0)) return false;
+  }
+  return (value.source === null || typeof value.source === 'string')
+    && (value.updated_at === null || isIsoTimestamp(value.updated_at));
+}
+
+function mergeUsageAccounting(current, observed, timestamp) {
+  const currentTokens = current?.total_tokens;
+  const currentCost = current?.cost_usd;
+  const observedTokens = observed?.total_tokens;
+  const observedCost = observed?.cost_usd;
+  const totalTokens = observedTokens == null
+    ? (currentTokens ?? null)
+    : (currentTokens ?? 0) + observedTokens;
+  const costUsd = observedCost == null
+    ? (currentCost ?? null)
+    : Number(((currentCost ?? 0) + observedCost).toFixed(6));
+  const knownCount = Number(totalTokens !== null) + Number(costUsd !== null);
+  return {
+    total_tokens: totalTokens,
+    cost_usd: costUsd,
+    status: knownCount === 2 ? 'known' : knownCount === 1 ? 'partial' : 'unknown',
+    source: observed?.source ?? current?.source ?? null,
+    updated_at: knownCount > 0 ? timestamp : (current?.updated_at ?? null)
+  };
+}
+
+function requireCreationRequestId(value) {
+  if (typeof value !== 'string' || !/^portfolio-[0-9a-f]{24}$/.test(value)) {
+    throw contractError('invalid_creation_request_id', 'A valid Portfolio creation request identity is required.', { creation_request_id: value ?? null });
+  }
+  return value;
+}
+
+function isBoundedDecisionRecord(decision) {
+  const allowedKeys = new Set([
+    'schema_version', 'policy_version', 'checkpoint_reason', 'state_delta', 'state_fingerprint',
+    'no_progress_count', 'outcome', 'selected_action_id', 'selection_reason', 'selected_score',
+    'candidates', 'rejected', 'reused'
+  ]);
+  return Boolean(decision && typeof decision === 'object' && !Array.isArray(decision))
+    && Object.keys(decision).every((key) => allowedKeys.has(key))
+    && decision.schema_version === '0.1.0'
+    && typeof decision.policy_version === 'string'
+    && typeof decision.checkpoint_reason === 'string'
+    && typeof decision.state_fingerprint === 'string'
+    && Number.isInteger(decision.no_progress_count)
+    && typeof decision.outcome === 'string'
+    && (decision.selected_action_id === null || typeof decision.selected_action_id === 'string')
+    && typeof decision.selection_reason === 'string'
+    && (decision.selected_score === null || (typeof decision.selected_score === 'number' && Number.isFinite(decision.selected_score)))
+    && (!Object.hasOwn(decision, 'state_delta') || isBoundedJson(decision.state_delta))
+    && Array.isArray(decision.candidates)
+    && decision.candidates.every(isBoundedCandidate)
+    && Array.isArray(decision.rejected)
+    && decision.rejected.every(isBoundedRejection)
+    && (!Object.hasOwn(decision, 'reused') || typeof decision.reused === 'boolean')
+    && Buffer.byteLength(JSON.stringify(decision)) <= 16384;
+}
+
+function isBoundedCandidate(candidate) {
+  const keys = new Set(['action_id', 'classification', 'metrics', 'score']);
+  const metricKeys = new Set([
+    'expected_progress', 'uncertainty_reduction', 'risk_reduction', 'evidence_reuse', 'estimated_time',
+    'estimated_tokens_or_cost', 'invalidation_risk', 'rework_risk', 'confidence'
+  ]);
+  return isPlainRecord(candidate)
+    && Object.keys(candidate).every((key) => keys.has(key))
+    && typeof candidate.action_id === 'string'
+    && typeof candidate.classification === 'string'
+    && typeof candidate.score === 'number' && Number.isFinite(candidate.score)
+    && isPlainRecord(candidate.metrics)
+    && Object.keys(candidate.metrics).length === metricKeys.size
+    && Object.keys(candidate.metrics).every((key) => metricKeys.has(key))
+    && Object.values(candidate.metrics).every((value) => value === 'unknown' || (typeof value === 'number' && Number.isFinite(value)));
+}
+
+function isBoundedRejection(rejection) {
+  return isPlainRecord(rejection)
+    && Object.keys(rejection).every((key) => ['action_id', 'score', 'reason_code'].includes(key))
+    && Object.keys(rejection).length === 3
+    && typeof rejection.action_id === 'string'
+    && typeof rejection.score === 'number' && Number.isFinite(rejection.score)
+    && rejection.reason_code === 'lower_rank';
+}
+
+function isBoundedJson(value, depth = 0) {
+  if (depth > 8) return false;
+  if (value === null || typeof value === 'boolean' || typeof value === 'string') return true;
+  if (typeof value === 'number') return Number.isFinite(value);
+  if (Array.isArray(value)) return value.length <= 100 && value.every((item) => isBoundedJson(item, depth + 1));
+  if (!isPlainRecord(value)) return false;
+  const forbidden = /(transcript|chain[_-]?of[_-]?thought|hidden[_-]?reasoning|raw[_-]?(prompt|response|message))/i;
+  return Object.keys(value).length <= 100
+    && Object.entries(value).every(([key, item]) => !forbidden.test(key) && isBoundedJson(item, depth + 1));
 }
 
 async function selectLatestRunId(deps, location, caller, storyId) {
@@ -1262,6 +2440,45 @@ function requireStoryId(value) {
   return storyId;
 }
 
+function requireActionProfile(value) {
+  if (value !== 'legacy' && value !== 'autonomous') {
+    throw contractError('invalid_action_profile', 'Action profile must be legacy or autonomous.', {
+      action_profile: value ?? null
+    });
+  }
+  return value;
+}
+
+function resolveRequestedActionProfile(options = {}) {
+  return resolveActionProfileDecision(options).effective;
+}
+
+function resolveActionProfileDecision(options = {}) {
+  const requested = requireActionProfile(options.actionProfile ?? (isCanonicalAutonomousRequest(options) ? 'autonomous' : 'legacy'));
+  const disabled = requested === 'autonomous' && options.autonomousEnabled === false;
+  return {
+    requested,
+    effective: disabled ? 'legacy' : requested,
+    fallback_reason: disabled ? 'autonomous_feature_disabled' : null
+  };
+}
+
+function isCanonicalAutonomousRequest(options = {}) { return options.until === 'pr-ready' && (options.autonomy == null || options.autonomy === 'guarded'); }
+
+function applyAutonomousFeaturePolicy(state, options = {}) {
+  if ((state.action_profile ?? 'legacy') !== 'autonomous' || options.autonomousEnabled !== false) return state;
+  const { action_profile: _disabledProfile, ...legacyState } = state;
+  return {
+    ...legacyState,
+    action_profile_resolution: {
+      requested: 'autonomous',
+      effective: 'legacy',
+      fallback_reason: 'autonomous_feature_disabled'
+    },
+    resume_from_node_id: null
+  };
+}
+
 function requireRunId(value) {
   const runId = String(value ?? '').trim();
   if (!RUN_ID_PATTERN.test(runId)
@@ -1316,7 +2533,10 @@ function isTypedStopReason(value) {
       || typeof value.message !== 'string' || value.message.length === 0) {
     return false;
   }
-  return !Object.prototype.hasOwnProperty.call(value, 'details') || isPlainRecord(value.details);
+  if (!Object.prototype.hasOwnProperty.call(value, 'details')) return true;
+  if (!isPlainRecord(value.details)) return false;
+  return value.details.retry_policy_scope === undefined
+    || ['managed', 'manual'].includes(value.details.retry_policy_scope);
 }
 
 function serializeState(state) {

@@ -1,4 +1,6 @@
 import { localizedText } from './language.js';
+import { projectPublicPrMergeResult } from './merge-public-projection.js';
+import { resolveReconciliationAction } from './reconciliation-action.js';
 import { describeScanStatus } from './scan-status.js';
 
 export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitPlanPath, language = 'ja' }) {
@@ -8,6 +10,7 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
   const executionGate = preparation.pr_context.execution_gate ?? preparation.gate_status?.execution_gate ?? null;
   const agentReviews = preparation.pr_context.agent_reviews ?? null;
   const labels = prPrepareLabels(language);
+  const acceptanceScopeSection = renderAcceptanceScopePanel(preparation.pr_context.acceptance_scope, language);
   const cards = [
     metricCard(labels.scope, preparation.scope.status, preparation.scope.recommended_strategy),
     metricCard('Gate DAG', gateDag.overall_status, localizedText(language, {
@@ -54,6 +57,9 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
   );
   const fileGroups = renderFileGroups(preparation.file_groups, language);
   const graphSummary = renderGraphSummary(splitPlan.graph_context, language);
+  const scopeEvidence = renderCards(localizedText(language, { ja: 'スコープ判定証跡', en: 'Scope Decision Evidence' }),
+    (preparation.scope.reasons ?? []).map((reason) => ({ title: preparation.scope.status, detail: reason, tone: 'info' })));
+  const lineageEvidence = renderLineageEvidence(preparation.scope?.signals, language);
   const artifacts = renderKeyValueTable([
     ['PR body draft', bodyPath],
     ['Gate DAG HTML', gateDagPath],
@@ -83,6 +89,9 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
         ${flow}
       </section>
       ${risks}
+      ${acceptanceScopeSection}
+      ${scopeEvidence}
+      ${lineageEvidence}
       ${engineeringJudgmentSection}
       ${renderExecutionGatePanel(executionGate, language)}
       ${renderAgentReviewPanel(agentReviews, language, preparation.gate_status?.agent_review_minimal_recovery_plan)}
@@ -109,6 +118,35 @@ export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitP
       </section>
     `
   });
+}
+
+function renderAcceptanceScopePanel(acceptanceScope, language = 'ja') {
+  const isTask = acceptanceScope?.source === 'task';
+  const criteria = Array.isArray(acceptanceScope?.acceptance_criteria)
+    ? acceptanceScope.acceptance_criteria.filter((criterion) => typeof criterion === 'string' && criterion.trim())
+    : [];
+  const sourceLabel = isTask ? 'Task' : 'Story';
+  return `
+    <section data-acceptance-scope="${escapeAttr(acceptanceScope?.source ?? 'story')}">
+      <h2>${escapeHtml(localizedText(language, { ja: '受入判定スコープ', en: 'Acceptance Decision Scope' }))}</h2>
+      ${renderKeyValueTable([
+        [localizedText(language, { ja: '判定単位', en: 'Decision source' }), sourceLabel],
+        ['Story ID', acceptanceScope?.story_id ?? '-'],
+        ['Task ID', acceptanceScope?.task_id ?? localizedText(language, { ja: 'なし', en: 'None' })]
+      ])}
+      ${renderCards(
+        localizedText(language, {
+          ja: `対象受入基準 (${criteria.length}件)`,
+          en: `Acceptance criteria (${criteria.length})`
+        }),
+        criteria.map((criterion, index) => ({
+          title: `${index + 1}`,
+          detail: criterion,
+          tone: 'info'
+        }))
+      )}
+    </section>
+  `;
 }
 
 export function renderGateDagHtml(gateDag, options = {}) {
@@ -149,6 +187,7 @@ export function renderGateDagHtml(gateDag, options = {}) {
         meta: `${node.id} / ${node.status}`,
         tone: toneForStatus(node.status)
       })))}
+      ${renderLineageEvidence([{ accepted_current_story_lineage: gateDag.accepted_current_story_lineage }], options.language ?? 'ja')}
       <section>
         <h2>Visual DAG</h2>
         ${renderGateDagSvg(gateDag)}
@@ -188,6 +227,7 @@ export function renderSplitPlanHtml(splitPlan, options = {}) {
         ${metricCard('Cumulative Gates', splitPlan.stacked_gate_plan.summary.cumulative_gate_count, 'lanes')}
         ${metricCard('Final Validation', splitPlan.stacked_gate_plan.final_validation.required ? 'required' : 'not required', splitPlan.stacked_gate_plan.final_validation.trigger)}
       </section>
+      ${renderLineageEvidence([{ accepted_current_story_lineage: splitPlan.accepted_current_story_lineage }], options.language ?? 'ja')}
       <section>
         <h2>PR Lanes</h2>
         <div class="lane-board">${laneBoard}</div>
@@ -212,6 +252,23 @@ export function renderSplitPlanHtml(splitPlan, options = {}) {
       </section>
     `
   });
+}
+
+function renderLineageEvidence(signals, language = 'ja') {
+  const lineage = (signals ?? []).flatMap((signal) => Array.isArray(signal?.accepted_current_story_lineage)
+    ? signal.accepted_current_story_lineage
+    : []);
+  if (lineage.length === 0) return '';
+  const rows = lineage.flatMap((item, index) => [
+    [`lineage[${index}].reference`, item.reference],
+    [`lineage[${index}].commit_sha`, item.commit_sha],
+    [`lineage[${index}].parent_count`, item.parent_count],
+    [`lineage[${index}].source_ref`, item.source_ref],
+    [`lineage[${index}].target_ref`, item.target_ref],
+    [`lineage[${index}].remote_tracking_sha`, item.remote_tracking_sha],
+    [`lineage[${index}].basis`, item.basis]
+  ]);
+  return `<section><h2>${escapeHtml(localizedText(language, { ja: '受理したStory系譜', en: 'Accepted Story Lineage' }))}</h2>${renderKeyValueTable(rows)}</section>`;
 }
 
 export function renderPrCreateHtml(execution, options = {}) {
@@ -263,10 +320,25 @@ export function renderPrCreateHtml(execution, options = {}) {
 }
 
 export function renderPrMergeHtml(merge, options = {}) {
-  const results = merge.results.length === 0
-    ? [{ command: 'dry-run', exit_code: 0, stdout: '', stderr: '' }]
-    : merge.results;
+  const privatePersistenceDetails = merge.execution_state_sync?.persistence_error_details ?? null;
+  const privateRestoreErrors = Array.isArray(privatePersistenceDetails?.restore_errors)
+    ? privatePersistenceDetails.restore_errors
+    : [];
+  const publicPersistenceCode = /^[a-z0-9_]+$/i.test(privatePersistenceDetails?.code ?? '')
+    ? privatePersistenceDetails.code
+    : null;
+  merge = projectPublicPrMergeResult(merge);
   const language = options.language ?? merge.output?.language ?? 'ja';
+  const reconciliationAction = resolveReconciliationAction(merge);
+  const synchronizationDiagnostics = merge.execution_state_sync?.status === 'failed'
+    ? [
+        `sync_status: failed`,
+        'sync_reason: Execution-state synchronization failed after merge processing.',
+        `followup_persistence: ${merge.execution_state_sync.followup_persistence ?? 'unknown'}`,
+        ...(publicPersistenceCode ? [`persistence_code: ${publicPersistenceCode}`] : []),
+        `rollback: ${privateRestoreErrors.length > 0 ? 'incomplete' : 'complete_or_not_required'}`
+      ]
+    : [];
   return renderDocument({
     title: 'VibePro Execute Merge',
     reportType: 'pr-merge',
@@ -286,8 +358,20 @@ export function renderPrMergeHtml(merge, options = {}) {
         ${metricCard('Base', merge.base ?? '-', merge.pr?.base_ref_name ?? '-')}
         ${metricCard('Merge commit', merge.merge_commit_sha ?? '-', merge.merged_at ?? 'not merged')}
         ${metricCard('Checks', merge.pr?.checks?.length ?? 0, merge.preconditions?.checks_ready?.status ?? '-')}
+        ${metricCard('Delivery', merge.delivery?.status ?? 'unknown', merge.delivery?.source ?? '-')}
+        ${metricCard('Reconciliation', merge.reconciliation?.status ?? 'unknown', (merge.reconciliation?.reasons ?? []).join(', ') || 'no reasons')}
       </section>
       ${renderPrLifecycleFreshnessPanel(merge.artifact_freshness, language)}
+      <section>
+        <h2>Gate Authorization</h2>
+        ${renderKeyValueTable([
+          ['Allowed', merge.gate_authorization?.allowed ? 'yes' : 'no'],
+          ['Source', merge.gate_authorization?.source ?? 'none'],
+          ['Reason', merge.gate_authorization?.reason ?? '-'],
+          ['Waiver policy', merge.gate_authorization?.gate_override?.waiver_policy ?? '-'],
+          ['Critical unresolved gates', merge.gate_authorization?.gate_override?.critical_unresolved_gates?.length ?? '-']
+        ])}
+      </section>
       <section class="grid-2">
         <div>
           <h2>Preconditions</h2>
@@ -306,22 +390,19 @@ export function renderPrMergeHtml(merge, options = {}) {
           ${renderList(merge.warnings?.length ? merge.warnings : ['なし'])}
         </div>
       </section>
+      ${reconciliationAction ? `
+      <section>
+        <h2>Required Follow-up</h2>
+        ${renderList(reconciliationAction.commands)}
+      </section>` : ''}
+      ${synchronizationDiagnostics.length > 0 ? `
+      <section>
+        <h2>Synchronization and Rollback Diagnostics</h2>
+        ${renderList(synchronizationDiagnostics)}
+      </section>` : ''}
       <section>
         <h2>Check Rollup</h2>
         ${renderList((merge.pr?.checks ?? []).map((check) => `${check.name}: ${check.status}/${check.conclusion || '-'}`))}
-      </section>
-      <section>
-        <h2>Command Timeline</h2>
-        <div class="timeline">
-          ${results.map((item, index) => `
-            <article class="timeline-item" data-command-index="${index}">
-              <strong>${escapeHtml(item.command)}</strong>
-              <span class="${statusClass(item.exit_code === 0 ? 'pass' : 'failed')}">exit=${escapeHtml(item.exit_code)}</span>
-              ${item.stdout ? `<pre>${escapeHtml(item.stdout)}</pre>` : ''}
-              ${item.stderr ? `<pre>${escapeHtml(item.stderr)}</pre>` : ''}
-            </article>
-          `).join('')}
-        </div>
       </section>
     `
   });
@@ -1105,6 +1186,7 @@ function renderNodeGrid(nodes) {
       <p class="muted">${escapeHtml(node.id)} / ${escapeHtml(node.type)}</p>
       <p><span class="${statusClass(node.status ?? 'unknown')}">${escapeHtml(node.status ?? 'unknown')}</span></p>
       <p>${escapeHtml(node.reason ?? node.command ?? node.artifact ?? '-')}</p>
+      ${Array.isArray(node.reasons) && node.reasons.length > 0 ? renderList(node.reasons) : ''}
     </article>
   `).join('')}</div>`;
 }

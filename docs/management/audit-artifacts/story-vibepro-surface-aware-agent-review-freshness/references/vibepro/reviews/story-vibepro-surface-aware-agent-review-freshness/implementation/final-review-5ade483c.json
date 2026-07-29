@@ -1,0 +1,50 @@
+{
+  "status": "pass",
+  "summary": "Frozen HEAD 5ade483c preserves the reviewed runtime contract: gate_evidence and release_risk use content_surface by default, unchanged surfaces survive unrelated HEAD movement, affected or unresolved surfaces fail closed, and dirty fingerprint, inspection, provenance, lifecycle, legacy merge-delta, and explicit strict_head guarantees remain intact.",
+  "inspection_summary": "Independently inspected the current review request, full origin/main change surface, 6ed774dc-to-5ade483c delta, agent-review and content-binding control flow, Story/Architecture/Spec, current-HEAD verification evidence, gate result, and active authorized lifecycle. The only post-6ed774dc tracked change is the Story-local review-budget amendment; runtime source/spec/test bytes are unchanged.",
+  "inspection_evidence": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json records current frozen HEAD 5ade483c unit 39/39 and E2E 8/8; .vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/review-result-gate_evidence.json independently records a current-HEAD content_surface pass.",
+  "inspection_inputs": [
+    "git diff --stat origin/main...5ade483c1848edf56c1f0e11782cb616cc3281b2",
+    "git diff 6ed774dc77d187c42b894e2f073a50580c72e631..5ade483c1848edf56c1f0e11782cb616cc3281b2",
+    "src/agent-review.js",
+    "src/content-binding.js",
+    "test/content-scoped-evidence-freshness.test.js",
+    "test/review-inspection-first.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+    "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+    ".vibepro/config.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/review-request-runtime_contract.md",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/lifecycle.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/review-result-gate_evidence.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/final-review-5ade483c.json"
+  ],
+  "judgment_delta": [
+    "Initial concern that the new HEAD invalidated the prior runtime conclusion -> resolved because the only delta is a bounded Story-local max_subagent_count and rationale update; reviewed runtime source, Spec, and tests are byte-identical to the independently passed 6ed774dc surface.",
+    "Initial concern that current verification might still describe the prior HEAD -> resolved because focused 39/39 and E2E 8/8 entries are strict-head bound to 5ade483c with clean user and raw dirty fingerprints.",
+    "Initial concern that content_surface defaults could weaken fail-closed behavior -> resolved by the unchanged build/evaluateContentBinding and bindReviewResult order: missing, unbound, unreadable, hash mismatch, and dirty-fingerprint mismatch stale before reuse.",
+    "Initial concern that #381 legacy reuse or strict compatibility could be bypassed -> resolved because content-bound current results use hashes, unbound legacy HEAD changes reach evaluateMergeDeltaReviewReuse and fail closed on unresolved diffs or impacted files, while reasoned role and CLI strict_head still stale on any HEAD mismatch.",
+    "Initial concern that verification success could mask provenance or lifecycle regression -> resolved by current focused evidence covering inspection-first and lifecycle tests, the active lifecycle matching authorization 6b8617f3-24a0-47b5-a6d2-0ad27cc85a65, and the independent gate result retaining content_surface inspection inputs. The gate verdict corroborates but does not replace this runtime review."
+  ],
+  "findings": [],
+  "review_context": {
+    "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+    "stage": "implementation",
+    "role": "runtime_contract",
+    "review_kind": "final",
+    "head_sha": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+    "base_sha": "236937dfe33eb407f912086d54bfbd3d7d699874",
+    "dirty": false,
+    "agent_system": "codex",
+    "agent_id": "/root/sarf_final_review",
+    "agent_thread_id": "/root/sarf_final_review",
+    "agent_session_id": "/root/sarf_final_review",
+    "reviewer_identity": "separate_session",
+    "execution_mode": "parallel_subagent",
+    "lifecycle_id": "82689304-d5fc-4c14-90c8-6385422f8713",
+    "dispatch_authorization_id": "6b8617f3-24a0-47b5-a6d2-0ad27cc85a65"
+  }
+}

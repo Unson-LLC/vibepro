@@ -101,6 +101,48 @@ test('verify-status-artifact: passing record without artifact gets a generated, 
   assert.equal(command.artifact_check.status, 'verified');
 });
 
+// Round 15, architecture_boundary: the replay rebuilds `--observed` pairs from the recorded
+// observation and hands them to the record path without the runner's receipt, where a
+// provenance key is rejected on sight. A record carrying those keys with no artifact is not
+// something the runner produces, so the detect filter kept the throw out of reach — but a
+// hand-edited or older record in that shape would have failed the whole recipe on a key the
+// replay should simply drop.
+test('verify-status-artifact: provenance keys in the recorded observation are dropped from the replay, not fed back', async () => {
+  const root = await makeRepo();
+  const storyId = 'story-b';
+  await writeEvidence(root, storyId, [{
+    kind: 'unit',
+    status: 'pass',
+    command: 'npm test',
+    summary: 'unit passed',
+    artifact: null,
+    observation: {
+      targets: ['src/x.js'],
+      scenarios: ['ran unit'],
+      values: {
+        exit_code: '0',
+        tests: '12',
+        evidence_source: 'runner_direct',
+        run_artifact: `.vibepro/pr/${storyId}/verification-runs/unit.json`
+      }
+    },
+    executed_at: '2026-07-01T00:00:00.000Z'
+  }]);
+
+  const preflight = await runRecipePreflight(root, { storyId });
+  const result = findResult(preflight, 'verify-status-artifact');
+  assert.equal(result.action_taken, 'generated status artifact from recorded exit code');
+
+  const evidence = JSON.parse(await readFile(path.join(root, '.vibepro', 'pr', storyId, 'verification-evidence.json'), 'utf8'));
+  const command = evidence.commands.find((item) => item.kind === 'unit');
+  assert.equal(command.evidence_source, 'self_reported', 'a receipt-less replay stays self-reported');
+  assert.equal(command.observation.values.evidence_source, undefined, 'the replay must not re-assert the trust marker');
+  assert.equal(command.observation.values.run_artifact, undefined, 'the replay must not re-assert a provenance path');
+  // The outcome half is what the replay exists to preserve.
+  assert.equal(command.observation.values.tests, '12');
+  assert.equal(command.observation.values.exit_code, '0');
+});
+
 // RPA-S-2
 test('generic-token-clause-binding: all-generic record without a clause id yields a next_command naming the binding', async () => {
   const root = await makeRepo();

@@ -1,0 +1,68 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-import-based-conformance",
+  "updated_at": "2026-07-25T00:07:44.746Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Diffed the Story's own implementation commit against its immediate parent (git diff 7fbdf98c 3337d470 -- src/architecture-conformance.js src/cli.js): findBudgetViolations is byte-for-byte unchanged (0 diff lines touch it); orphan_file detection (assignments.orphans) is unchanged; stale_pattern detection logic is unchanged except the internal Set-key join separator between module name and pattern changed from an embedded NUL char (written as the JS escape \\0, same root NUL-byte-in-source-file issue fixed by the prior commit 7fbdf98c) to a literal space -- this is a same-side internal key-format change applied consistently to both the write side (matchedPatterns.add) and read side (matchedPatterns.has), so it changes no observable orphan/stale_pattern output, confirmed by the passing test 'files outside every module are orphans and unmatched patterns are stale'. src/cli.js has zero diff between these two commits, so the dry-run/--strict exit-code contract ('const exitCode = strict && result.summary.violation_count > 0 ? 2 : 0') is untouched, and the passing test 'integration e2e: cli conformance is dry-run by default and strict only via --strict' confirms exitCode 0 without --strict and 2 with --strict despite violations present. Also confirmed budget_violation tests ('file over default line budget...', 'growth beyond frozen baseline...', 'module max_files budget is enforced') all pass unchanged.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-evidence-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:07:44.741Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Code inspection: loadGraphContext (line 155) catches ENOENT specifically and returns {available:false, reason:...} without throwing -- only re-throws for other fs errors or JSON parse failure of an existing malformed graph.json. loadTargetModel (line 113) throws a fail-loud Error when the target model file is missing (ENOENT) or has invalid modules/status. runArchitectureConformance (line 39-44) throws immediately if collectScopeSource returns zero jsFiles for the model's scope_roots, which is the Story's claimed *new* fail-loud path (contract change, not continuation of TAC-AC-005). All three behaviors are exercised by passing tests: 'missing graph.json is optional context and does not fail the run' (asserts graph_context.available===false, edge_source still import_scan, violation_count 0 -- no throw), 'missing target model fails loud' (assert.rejects /target model が存在しない/), and 'scope_roots resolving to zero .js/.mjs/.cjs files fails loud instead of a silent zero-violation success' (assert.rejects /scope_roots.*配下に.*ファイルが見つからない/) -- all 3 passed in the 19/19 run. The Story text itself (frontmatter reason + AC-4 body) explicitly documents this as an intentional override of TAC-AC-005's 'graph.json missing = fail loud' contract, replaced by a new scope-empty fail-loud guard; the code and tests match that documented decision exactly.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-evidence-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:07:34.635Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Ran node bin/vibepro.js architecture conformance . --json against the real repository at current HEAD (not a tmp fixture) and inspected the produced .vibepro/architecture/conformance/conformance.json: edge_source is literally 'import_scan'; edge_source_note is present and confirmed single-line (EDGE_SOURCE_NOTE.split('\\n').length === 1) and states the migration reason (Graphify calls edges were mostly noise per PR #387, replaced by deterministic import/export/require scan). Confirmed the claimed breaking change: the produced JSON has no top-level 'graph' key ('graph' in j === false); it is replaced by import_scan{scanned_file_count,edge_count,unresolved_reference_count} and graph_context{available,node_count,calls_edge_count,note}, matching the Story's IBC-AC-003 description exactly. Grepped src/ and bin/ for 'architecture-conformance' and 'runArchitectureConformance'/'conformance.' usage: the only consumer of the returned result object is src/cli.js's 'architecture conformance' subcommand (which was not modified by this Story's commit per git diff 7fbdf98c..3337d470 -- src/cli.js, zero diff), and it does not read the removed 'graph' field, confirming no other consumer was broken by the shape change.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-evidence-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:07:24.146Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Code inspection: buildImportDependencyEdges (src/architecture-conformance.js:323-340) has an explicit guard 'if (!specifier.startsWith(\".\")) continue;' before any resolution attempt, so node:* builtins and bare npm package specifiers are excluded by construction, never entering resolveRelativeImport. Test 'buildImportDependencyEdges excludes node builtins and npm packages, includes only resolvable relative imports' constructs a file importing node:fs, chalk, and ./infra.js and asserts the resulting edge set contains only the relative ./infra.js edge (edges deepEqual to exactly one entry) with unresolvedReferenceCount 0 -- a direct behavioral demonstration, re-run via node --test test/architecture-conformance.test.js (19/19 pass) and separately confirmed with node -e against the exported function.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-evidence-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:07:15.261Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Read src/architecture-conformance.js in full: findDependencyViolations(line 342) takes only { importEdges, model, assignments } and never receives graph/graphContext -- graph_context is a wholly separate output field computed by loadGraphContext and never consumed by the violation-detection path. buildImportDependencyEdges (line 323) derives importEdges purely from extractImportSpecifiers, a regex scan over each src/bin .js/.mjs/.cjs file's actual source text for import...from, export...from, dynamic import(), and require() (STATIC_IMPORT_RE/EXPORT_FROM_RE/DYNAMIC_IMPORT_RE/REQUIRE_RE, lines 25-29), resolved to repo-relative files via resolveRelativeImport. Ran node --test test/architecture-conformance.test.js: 19/19 pass. The regression test 'graphify calls noise does not create a violation without a real import' constructs a graph.json with an infra->story calls edge that has no corresponding real import and asserts undeclared_dependency_count stays 0 -- this is a direct behavioral demonstration (not a string/field check) that Graphify calls edges are excluded from the judgment, matching IBC-AC-001's exact claim.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-adjudicator-evidence-ibc-r5",
+        "session_ref": null
+      },
+      "head_commit": "3337d4708f578575bc6cec14fa8c43e654281719",
+      "recorded_at": "2026-07-25T00:07:07.569Z"
+    }
+  ]
+}

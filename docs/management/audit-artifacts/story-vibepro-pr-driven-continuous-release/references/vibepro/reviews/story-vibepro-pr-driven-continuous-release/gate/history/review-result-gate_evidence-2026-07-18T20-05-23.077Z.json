@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-driven-continuous-release",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Merged fork PRs use the trusted post-merge path with immutable merge-SHA package binding",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed regenerated request, exact-HEAD evidence, workflow and spec diff, fork-trigger boundary, and independently ran 24 focused release tests",
+    "evidence": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/release-surfaces-ae0902f3.json",
+    "inputs": [
+      ".github/workflows/post-merge-release.yml"
+    ]
+  },
+  "judgment_delta": [
+    "Fork merges lacked write and secrets under pull_request -> resolved by pull_request_target with merged-main gating and no PR-head checkout"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "expected_head_sha": "ae0902f3df36091c8a78175509f01a915f5781da",
+    "current_head_sha": "ae0902f3df36091c8a78175509f01a915f5781da",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "actual_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "current_head_sha": "ae0902f3df36091c8a78175509f01a915f5781da",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T20:05:23.077Z",
+  "git_context": {
+    "head_sha": "ae0902f3df36091c8a78175509f01a915f5781da",
+    "current_branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T20:05:23.074Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "preserve exact HEAD freshness for release evidence"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ae0902f3df36091c8a78175509f01a915f5781da",
+    "surface_files": [
+      {
+        "path": ".github/workflows/post-merge-release.yml",
+        "sha256": "0a3aea2b251e68a615e05267bde9cbb22e43321713e9efc9b64f7e8f8e20b44d",
+        "size": 5353
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "287f5dd0dc4ae638f61390ca3e4580db73a9226a985af5d364c353927da85e0f"
+  },
+  "source_fingerprint": "aff33d84f6742f1d5be6370cfc5027d73b982c35cd2c3f911a2af63b9679a55a",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/gate_review_b86d",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/gate-review-ae0902f3-gate-evidence.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-pr-driven-continuous-release/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/evidence/story-vibepro-pr-driven-continuous-release/gate-review-ae0902f3-gate-evidence.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

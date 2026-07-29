@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-guarded-autonomy-hardening",
+      "decision_id": "decision-1784614490472-a80b32fb",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Independent pr_split_scope review found that policy schema, migration, runtime fallback, operator metrics, Portfolio attribution, and their evidence form one authority contract; splitting would create inconsistent intermediate HEADs and reduce traceability.",
+      "artifact": ".vibepro/reviews/story-vibepro-guarded-autonomy-hardening/gate/transcript-pr_split_scope-e6.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-21T06:15:10.112Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

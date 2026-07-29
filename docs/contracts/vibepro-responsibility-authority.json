@@ -46,6 +46,33 @@
       "evidence_requirements": [
         "unit_regression"
       ]
+    },
+    {
+      "id": "VIBE-RAR-003",
+      "statement": "Autonomous guarded runs must obtain action execution from the closed action-runner composition root; the orchestrator owns ordering and typed stops but must not execute arbitrary shell, merge, waiver, deploy, or synthesize review verdicts.",
+      "applies_to": {
+        "responsibility": "vibepro.guarded_run.autonomous_action_ownership",
+        "paths": [
+          "src/safe-action-orchestrator.js",
+          "src/guarded-run-session.js",
+          "src/next-best-action-controller.js"
+        ],
+        "symbols": [
+          "AUTONOMOUS_ACTION_REGISTRY",
+          "createGuardedRunSession",
+          "runGuardedRun"
+        ],
+        "risk_surfaces": [
+          "core_workflow_state",
+          "review_surface",
+          "api"
+        ]
+      },
+      "evidence_requirements": [
+        "unit_regression",
+        "workflow_replay",
+        "typecheck"
+      ]
     }
   ]
 }

@@ -1,0 +1,85 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-human-decision-checkpoint",
+  "generated_by": { "caller": "codex", "stage": "ai_synthesis" },
+  "clauses": [
+    {
+      "id": "C-HDC-1",
+      "type": "contract",
+      "statement": "Material clarification, scope split, waiver request, external side effect, and security boundary questions persist as typed, deduplicated, HEAD-bound decision artifacts with impact scope and optional Brainbase handoff reference.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 0 }, { "kind": "acceptance_criteria", "index": 1 }, { "kind": "acceptance_criteria", "index": 4 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-human-decision-checkpoint.md", "section": "Decision" }],
+        "code_refs": [{ "file": "src/human-decision-checkpoint.js", "anchor": "createHumanDecision" }],
+        "test_refs": [{ "file": "test/human-decision-checkpoint.test.js", "case": "HDC-S-1 HDC-S-2 duplicate material questions reuse one typed pending artifact" }]
+      },
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/human-decision-checkpoint.js", "must_contain": "HUMAN_DECISION_TYPES" }],
+        "test_pattern": [{ "file_glob": "test/human-decision-checkpoint.test.js", "must_contain": "HDC-S-1" }]
+      }
+    },
+    {
+      "id": "INV-HDC-2",
+      "type": "invariant",
+      "statement": "A waiting_for_human Run starts no further action and returns to running only after the matching pending decision for the same Story, Run, and HEAD is atomically resolved; the next orchestration consumes resume_from_node_id by executing the canonical Safe Action suffix from that stopped node.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 2 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-human-decision-checkpoint.md", "section": "Invariants" }],
+        "code_refs": [{ "file": "src/guarded-run-session.js", "anchor": "resumeRun" }],
+        "test_refs": [
+          { "file": "test/guarded-run-session.test.js", "case": "HDC-S-3 HDC-S-6 waiting Run resumes only after its typed decision is resolved" },
+          { "file": "test/guarded-run-session.test.js", "case": "HDC-S-3 waiting Run is side-effect free until the human decision is answered" },
+          { "file": "test/guarded-run-session.test.js", "case": "HDC-S-3 HDC-S-6 CLI resume answers a typed decision and continues the same Run" }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/guarded-run-session.js", "must_contain": "resolveHumanDecision" }],
+        "test_pattern": [{ "file_glob": "test/guarded-run-session.test.js", "must_contain": "decision_answer_required" }]
+      }
+    },
+    {
+      "id": "INV-HDC-3",
+      "type": "invariant",
+      "statement": "Critical gate waiver requests are never resolved through the checkpoint; evidence, split, or block remains required and PR, review override, and merge authority are unchanged.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 3 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-human-decision-checkpoint.md", "section": "Boundary" }],
+        "code_refs": [{ "file": "src/human-decision-checkpoint.js", "anchor": "critical_gate_waiver_forbidden" }],
+        "test_refs": [{ "file": "test/human-decision-checkpoint.test.js", "case": "HDC-S-4 critical gate waiver is rejected without resolving the artifact" }]
+      },
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/human-decision-checkpoint.js", "must_contain": "critical_gate_waiver_forbidden" }],
+        "test_pattern": [{ "file_glob": "test/human-decision-checkpoint.test.js", "must_contain": "critical gate waiver" }]
+      }
+    },
+    {
+      "id": "S-HDC-4",
+      "type": "scenario",
+      "statement": "After restart, decision index and the Run human decision journal reconstruct the question, answer, actor, timestamp, and reflected artifacts; duplicate creation repairs a missing index entry, malformed decision JSON fails typed without overwrite, and duplicate answers, stale HEAD, cancelled Run, and invalid types fail closed.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria", "index": 5 }, { "kind": "acceptance_criteria", "index": 6 }],
+        "architecture_refs": [{ "file": "docs/architecture/story-vibepro-human-decision-checkpoint.md", "section": "Invariants" }],
+        "code_refs": [{ "file": "src/human-decision-checkpoint.js", "anchor": "resolveHumanDecision" }, { "file": "src/guarded-run-session.js", "anchor": "human_decision_journal" }],
+        "test_refs": [{ "file": "test/human-decision-checkpoint.test.js", "case": "HDC-S-6 HDC-S-7 answer binds to Run and HEAD and records reflection targets" }]
+      },
+      "verifiable_by": {
+        "code_pattern": [{ "file_glob": "src/human-decision-checkpoint.js", "must_contain": "writeIndex" }],
+        "test_pattern": [{ "file_glob": "test/{human-decision-checkpoint,guarded-run-session}.test.js", "must_contain": "HDC-S-6" }]
+      }
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "entities": ["operator", "cli_input", "validation_boundary", "decision_artifact", "run_authority"],
+      "rationale": "Shows that untrusted decision input cannot mutate Run authority until type, size, identity, HEAD, pending state, and critical-waiver checks pass.",
+      "mermaid": "flowchart LR\n  Operator[Authenticated operator] --> CLI[execute resume]\n  Untrusted[Untrusted decision input] --> Validation[Type size Run Story HEAD pending validation]\n  CLI --> Validation\n  Validation -->|reject| NoMutation[No Run mutation]\n  Validation -->|accept| Decision[Atomic decision artifact]\n  Decision --> Journal[Run journal]\n  Journal --> Resume[Same Run resumes]\n  Critical[Critical gate waiver] -->|always reject| NoMutation"
+    },
+    {
+      "kind": "state",
+      "entities": ["running", "waiting_for_human", "resolved", "cancelled"],
+      "rationale": "Shows that artifact persistence precedes waiting and validated resolution precedes resumption.",
+      "mermaid": "stateDiagram-v2\n  running --> waiting_for_human: persist typed decision\n  waiting_for_human --> running: resolve same Run and HEAD\n  waiting_for_human --> cancelled: operator cancel\n  waiting_for_human --> waiting_for_human: invalid answer rejected"
+    }
+  ]
+}

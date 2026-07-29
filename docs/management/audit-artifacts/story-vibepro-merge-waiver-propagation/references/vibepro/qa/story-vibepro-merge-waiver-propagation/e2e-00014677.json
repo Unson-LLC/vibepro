@@ -1,0 +1,1 @@
+{"schema_version":"0.1.0","status":"pass","command":"node --test test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts test/merge-gate-authorization.test.js","exit_code":0,"head_sha":"00014677d51664005b8cd0be5aa0a1f7aab078d3","pass":6,"fail":0}

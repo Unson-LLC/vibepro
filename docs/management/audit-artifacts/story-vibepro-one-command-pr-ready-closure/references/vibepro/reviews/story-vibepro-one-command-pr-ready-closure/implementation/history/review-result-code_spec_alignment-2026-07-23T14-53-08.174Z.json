@@ -1,0 +1,156 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "implementation",
+  "role": "code_spec_alignment",
+  "status": "needs_changes",
+  "summary": "Capability stop recovery and production-shaped Run evidence are incomplete",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "OCR-SPEC-001",
+      "detail": "capability stop omits recovery boundary"
+    },
+    {
+      "severity": "high",
+      "id": "OCR-SPEC-002",
+      "detail": "available provider E2E does not persist full production-shaped Run lifecycle"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Compared capability-unavailable persistence and E2E evidence with S-OCR-5 and the production-shaped lifecycle requirement",
+    "evidence": "src/agent-runtime-adapter.js:536",
+    "inputs": [
+      "src/agent-runtime-adapter.js",
+      "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "Expected full spec coverage; found two release-blocking evidence and recovery gaps"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "4e645da34a6f84bba264f1663abbc26cfa5d57e3",
+    "current_head_sha": "4e645da34a6f84bba264f1663abbc26cfa5d57e3",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "4e645da34a6f84bba264f1663abbc26cfa5d57e3",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T11:59:07.093Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-23T14:53:08.174Z",
+  "git_context": {
+    "head_sha": "4e645da34a6f84bba264f1663abbc26cfa5d57e3",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T14:53:08.160Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "final frozen release candidate review"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "4e645da34a6f84bba264f1663abbc26cfa5d57e3",
+    "surface_files": [
+      {
+        "path": "src/agent-runtime-adapter.js",
+        "sha256": "ca75016c7bbc466cc612271bdf171358abfa9d74eeb040a371dce153a41b0ac0",
+        "size": 31753
+      },
+      {
+        "path": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+        "sha256": "a1d59e54f0d721f3f76cabff027ca3f70e0d3465a3a2244848818ceb9108d267",
+        "size": 4144
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "baccbcaad7699bbc3a03bf0eac0bb33135b2bc8245ae62cff803559d615c6ccc"
+  },
+  "source_fingerprint": "5b925ce69684be5f7113bd3e541a967c921cf6a98531408f24aba2dc247c675a",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "final-code-spec-4e645da3",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "/root/ocr_arch_b023",
+    "session_id": "final-code-spec-4e645da3",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/agent-transcript-code-spec-4e645da3.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/review-request-code_spec_alignment.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/agent-transcript-code-spec-4e645da3.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "final-code-spec-4e645da3",
+      "implementation_session_id": "root-one-command-pr-ready-closure",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "head_sha": "d8383707254c3cdfb084d4665c49e94b0fb195d9",
+  "agent_id": "/root/closure_acceptance_adjudicator",
+  "summary": "The guarded Run public contract, bounded Human Decision flow, typed stop/recovery, and explicit external-authority boundary are coherent.",
+  "inspection_evidence": [
+    "src/guarded-run-session.js",
+    "src/safe-action-orchestrator.js",
+    "test/guarded-run-session.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    ".vibepro/qa/one-command-runtime-e2e.json"
+  ],
+  "findings": []
+}

@@ -1,0 +1,147 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "planning_spec",
+  "role": "product_requirement",
+  "status": "needs_changes",
+  "summary": "One-command user outcome is mostly aligned, but implement may report completed without advancing managed HEAD, violating the promised implementation-commit contract.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "implementation-head-advance-contract-mismatch",
+      "detail": "src/one-command-pr-ready-closure.js permits implement completed with unchanged HEAD; enforce no_progress or a proven bounded no-op and add regression coverage."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/qa/review-current-planning-product_requirement-3da7bb24.json"
+  ],
+  "inspection": {
+    "summary": "Inspected Story acceptance, Architecture, Spec, tasks, production owner composition, public E2E and focused tests; found the exact same-HEAD implement branch unspecified and untested.",
+    "evidence": ".vibepro/qa/review-current-planning-product_requirement-3da7bb24.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md"
+    ]
+  },
+  "judgment_delta": [
+    "Expected mandatory implementation commit -> requireHeadAdvance=false accepts unchanged HEAD, so needs_changes despite observed happy-path real commit."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+    "current_head_sha": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "dirty": true,
+      "dirty_fingerprint": " M .vibepro/config.json",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M .vibepro/config.json",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T21:02:29.971Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-23T22:15:45.405Z",
+  "git_context": {
+    "head_sha": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "e73307d896f64f18f148df3cb2f23e8f2134cda635adfd52af4886abe8e12812",
+    "user_status_fingerprint_hash": "e73307d896f64f18f148df3cb2f23e8f2134cda635adfd52af4886abe8e12812",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T22:15:45.381Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 1 file(s)",
+    "recorded_head_sha": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "7ffb01b6a44e8d435c2acaaea40f398afd6624ddcc356aa0642791d3a1744491",
+        "size": 8067
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "60b2a8246bbfa50eb3d86b35b76e995e8795fa7ba659fecbf8394f4de1ec9f0e"
+  },
+  "source_fingerprint": "684fdc11b364ca2ed379aeeaf33a5c12b98564cc6ced121c83386fe0c3796a1e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/review_planning",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "/root/review_planning",
+    "session_id": "planning-product-e733",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/planning_spec/review-request-product_requirement.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/review-current-planning-product_requirement-3da7bb24.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "planning-product-e733",
+      "implementation_session_id": "one-command-implementation",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

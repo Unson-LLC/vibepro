@@ -1,0 +1,728 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-agent-runtime-adapters",
+  "updated_at": "2026-07-19T23:43:31.937Z",
+  "events": [
+    {
+      "event_id": "774e9fb2-6d17-4166-972a-718af22632da",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms spine:intent is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:35.625Z"
+    },
+    {
+      "event_id": "76bca52d-f724-45e8-b45c-0de1fd022e31",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms spine:current_reality is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:35.908Z"
+    },
+    {
+      "event_id": "0cd3309e-8d0f-42e1-844c-66e2146e1309",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms spine:invariants is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:36.185Z"
+    },
+    {
+      "event_id": "6dd2fefc-f527-41d4-978d-3b8e3ed38539",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms spine:boundaries is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:36.447Z"
+    },
+    {
+      "event_id": "e972ef73-e875-4fbd-a580-3a7090854f18",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms spine:failure_modes is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:36.724Z"
+    },
+    {
+      "event_id": "6f152604-07eb-461e-9e78-ec3d21918589",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms spine:done_evidence is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:36.999Z"
+    },
+    {
+      "event_id": "f64c432f-bc09-4fc6-8042-0fc3d46a9a41",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms axis:public_contract is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:37.278Z"
+    },
+    {
+      "event_id": "8eb75476-bd21-483f-b029-0edb101c84d0",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms axis:execution_topology is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:37.818Z"
+    },
+    {
+      "event_id": "1bb33454-f22d-4fa5-a893-a2e29e246197",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms axis:scope_reviewability is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:38.106Z"
+    },
+    {
+      "event_id": "aeea0986-a71a-4873-a17c-667e86452bf6",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms failure_mode:timeout is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:38.386Z"
+    },
+    {
+      "event_id": "35939471-d6db-4469-8c96-73e32fb7cf7a",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms failure_mode:parse_failure is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:38.669Z"
+    },
+    {
+      "event_id": "38e9e351-7a11-411b-9c5a-e83db59e77f4",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms failure_mode:provider_failure is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:38.948Z"
+    },
+    {
+      "event_id": "784f866a-bf4a-4f57-b73b-89d7c4005625",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms failure_mode:auth_denied is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:39.220Z"
+    },
+    {
+      "event_id": "28d65c3a-6ab1-4367-9fad-dcb450af3700",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms failure_mode:evidence_lifecycle_regression is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:39.495Z"
+    },
+    {
+      "event_id": "c703e14a-3ada-45bf-a904-44a75e3f394a",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final judgment confirms failure_mode:workflow_state_regression is coherent, traceable, fail-closed, and supported by current-head implementation and 124 passing focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_head_ac",
+        "session_ref": "/root/story6_final_head_ac"
+      },
+      "head_commit": "80f4809f7e8c8e36c17977a0f99708a2882f008a",
+      "recorded_at": "2026-07-19T12:33:39.782Z"
+    },
+    {
+      "event_id": "c4deb5b7-d3ed-465f-af65-d8f6438262df",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The implementation directly delivers provider-neutral guarded implementation and review runtime dispatch.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:47.654Z"
+    },
+    {
+      "event_id": "37fdabb8-0d56-4f0a-b527-b64cba7d00ee",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The design integrates with existing Guarded Run persistence, Gate review records and managed worktree authority.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:47.833Z"
+    },
+    {
+      "event_id": "c5c02ca5-8757-4c29-8584-440aaa5ab0af",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "HEAD binding, read-only review, separate identity, closed lifecycle and fail-closed completion invariants are enforced.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:48.018Z"
+    },
+    {
+      "event_id": "f7979634-ac42-4fb9-8a4c-7585b4339598",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Provider operations are isolated behind the adapter contract and review requirements are validated before side effects.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:48.199Z"
+    },
+    {
+      "event_id": "2e65633d-2aca-4d4f-9e93-930af883f9de",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Quota, auth, permission, timeout, malformed result, cancellation and orphan cases have typed outcomes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:48.379Z"
+    },
+    {
+      "event_id": "de8568ed-a0fe-41b9-b335-613eee8576cf",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head unit, integration and e2e evidence plus three independent gate reviews demonstrate completion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:48.560Z"
+    },
+    {
+      "event_id": "268264a7-23d1-47af-abf1-c0daa3beba4d",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The five-operation adapter contract and structured result schema are explicit and contract-tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:48.742Z"
+    },
+    {
+      "event_id": "3ad6307d-842c-464c-abd5-3b2c674940dc",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Authority-first persistence, deterministic dispatch ids and runtime containment form a sound topology.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:48.926Z"
+    },
+    {
+      "event_id": "254a1948-f33c-4420-ac72-0da13cd77988",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Source, bridge, SSOT and focused tests remain one cohesive and independently reviewable vertical slice.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:49.108Z"
+    },
+    {
+      "event_id": "24989056-0c00-4e0c-9514-112cfd8648e7",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Timeouts trigger dispatch-scoped containment and cannot silently complete.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:49.294Z"
+    },
+    {
+      "event_id": "db6abeff-5d3c-4295-ba2d-dee0e6b4d1db",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed provider results are rejected as invalid_runtime_result.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:49.476Z"
+    },
+    {
+      "event_id": "23dbd792-367b-43ae-9d2e-ae753f11798f",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Provider failures remain typed failures and cancellation containment is attempted.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:49.659Z"
+    },
+    {
+      "event_id": "8ec3bf8a-1990-4d81-871e-d96f87648728",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Auth denial becomes a resumable typed runtime stop before execution.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:49.838Z"
+    },
+    {
+      "event_id": "091635d4-f28a-4a9f-8c68-72e514d61ce7",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Review provenance is revalidated at the recording boundary and requires a closed lifecycle.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:50.020Z"
+    },
+    {
+      "event_id": "54e7c1f4-5ba7-400f-a1fd-2fbe5412e8fb",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Focused replay across Guarded Run, safe-action and next-best-action passes 126 tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "a8735db160e9425f7b6762f7c6720b19d5fe221f",
+      "recorded_at": "2026-07-19T23:35:50.201Z"
+    },
+    {
+      "event_id": "03ffa5c3-d7de-468b-8d2b-a3bd449f974f",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge spine:intent sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:29.307Z"
+    },
+    {
+      "event_id": "d86382e1-7290-42ed-af15-40a2955a25c7",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge spine:current_reality sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:29.486Z"
+    },
+    {
+      "event_id": "e2cccf13-1cdb-4b35-a505-c5cbef13a8c7",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge spine:invariants sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:29.669Z"
+    },
+    {
+      "event_id": "b86a9e8f-ab16-44b6-bf2e-4defd5802480",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge spine:boundaries sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:29.836Z"
+    },
+    {
+      "event_id": "4b6105a5-ef32-4433-92bc-618d8d68dee1",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge spine:failure_modes sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:30.055Z"
+    },
+    {
+      "event_id": "fa63bf5d-5310-4991-8980-5c7993490ce6",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge spine:done_evidence sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:30.243Z"
+    },
+    {
+      "event_id": "3cbd5692-1929-4b72-961b-91265501f6ce",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge axis:public_contract sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:30.420Z"
+    },
+    {
+      "event_id": "ad5a60a6-3e98-4fcd-b177-e00226138234",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge axis:execution_topology sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:30.609Z"
+    },
+    {
+      "event_id": "88b1fd4c-57b9-449f-92d5-9b4e50671aeb",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge axis:scope_reviewability sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:30.783Z"
+    },
+    {
+      "event_id": "fe06c358-72dd-4a3b-ac50-a77fa626fc92",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge failure_mode:timeout sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:30.966Z"
+    },
+    {
+      "event_id": "e3e2c85b-e281-4af7-ab18-e4be9a5de0e2",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge failure_mode:parse_failure sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:31.157Z"
+    },
+    {
+      "event_id": "bcbbf4cc-8ffe-4980-8e21-d3e3f27db47b",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge failure_mode:provider_failure sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:31.348Z"
+    },
+    {
+      "event_id": "fd8342a8-c92d-4854-adbb-a10b868c83fe",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge failure_mode:auth_denied sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:31.560Z"
+    },
+    {
+      "event_id": "1528af6b-d6d1-4d95-bca7-ee14b1a6c863",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge failure_mode:evidence_lifecycle_regression sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:31.768Z"
+    },
+    {
+      "event_id": "c65eaacb-4805-4e8c-8d58-ca22b77d9a95",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation, Story-specific acceptance replay, and independent gate reviews judge failure_mode:workflow_state_regression sound.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story6_final_review",
+        "session_ref": "/root/story6_final_review"
+      },
+      "head_commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "recorded_at": "2026-07-19T23:43:31.936Z"
+    }
+  ]
+}

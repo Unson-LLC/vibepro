@@ -112,7 +112,7 @@ test('DRES-SCENARIO-004 CLI end-to-end: vibepro decision record exposes verifica
     '--id', storyId,
     '--kind', 'unit',
     '--status', 'pass',
-    '--command', 'echo ok',
+    '--command', 'node --test test/decision-records.test.js --test-name-pattern DRES-SCENARIO-004',
     '--summary', 'e2e smoke unit pass'
   ], { encoding: 'utf8' });
 

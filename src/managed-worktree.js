@@ -6,6 +6,7 @@ import { promisify } from 'node:util';
 import { readDecisionRecordsIfExists } from './decision-records.js';
 import { MANIFEST_FILE, getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { collectGitStatusFingerprints } from './git-fingerprint.js';
+import { assertSafeStoryPathSegment } from './story-id.js';
 
 const execFileAsync = promisify(execFile);
 const VALID_MODES = new Set(['required', 'preferred', 'disabled']);
@@ -40,6 +41,7 @@ export async function ensureManagedWorktree(repoRoot, options = {}) {
 
   const storyId = options.storyId;
   if (!storyId) throw new Error('managed worktree requires storyId');
+  assertSafeStoryPathSegment(storyId, 'managed worktree requires a valid story id');
   const baseRef = options.baseRef ?? 'HEAD';
   const createdFromSha = await gitOptional(root, ['rev-parse', baseRef]);
   const shortId = buildShortId(storyId, createdFromSha || baseRef);
@@ -114,6 +116,7 @@ export async function buildPendingManagedWorktree(repoRoot, options = {}) {
 
   const storyId = options.storyId;
   if (!storyId) throw new Error('managed worktree requires storyId');
+  assertSafeStoryPathSegment(storyId, 'managed worktree requires a valid story id');
   const baseRef = options.baseRef ?? 'HEAD';
   const createdFromSha = await gitOptional(root, ['rev-parse', baseRef]);
   const shortId = buildShortId(storyId, createdFromSha || baseRef);
@@ -165,16 +168,31 @@ function buildUnavailableManagedWorktree({ mode, root, worktreePath, branch, bas
   };
 }
 
-export async function refreshManagedWorktree(repoRoot, managedWorktree) {
+export async function refreshManagedWorktree(repoRoot, managedWorktree, options = {}) {
   if (!managedWorktree?.path || managedWorktree.mode === 'disabled') return managedWorktree ?? null;
   const root = path.resolve(repoRoot);
   const worktreePath = path.resolve(managedWorktree.path);
   const existing = await findWorktree(root, worktreePath);
   const currentHeadSha = await gitOptional(worktreePath, ['rev-parse', 'HEAD']);
-  if (currentHeadSha || existing) await ensureManagedWorktreeGitExclude(worktreePath);
+  const exists = Boolean(currentHeadSha || existing);
+  if (exists && options.repairGitExclude !== false) {
+    await ensureManagedWorktreeGitExclude(worktreePath);
+  }
+  const policySync = exists
+    ? options.syncPolicy === false
+      ? await inspectWorktreePolicySections(managedWorktree.source_repo ?? root, worktreePath)
+        .catch((error) => withLastPolicySyncEvent(worktreePath, {
+          status: 'failed',
+          reason: normalizeErrorMessage(error),
+          sections_updated: []
+        }))
+      : await syncWorktreePolicySections(managedWorktree.source_repo ?? root, worktreePath)
+      // Fail-soft, but keep the durable audit stamp attached: a failed sync must not
+      // hide the last sync that actually happened before the failure.
+      .catch((error) => withLastPolicySyncEvent(worktreePath, { status: 'failed', reason: normalizeErrorMessage(error), sections_updated: [] }))
+    : { status: 'skipped', reason: 'managed worktree is missing', sections_updated: [] };
   const actualBranch = await gitOptional(worktreePath, ['branch', '--show-current']) || existing?.branch || null;
   const dirty = await collectDirty(worktreePath);
-  const exists = Boolean(currentHeadSha || existing);
   const branchMatch = isBranchMatch(actualBranch, managedWorktree.branch);
   const availableStatus = ['created', 'reused'].includes(managedWorktree.status)
     ? managedWorktree.status
@@ -192,7 +210,8 @@ export async function refreshManagedWorktree(repoRoot, managedWorktree) {
     dirty_fingerprint: dirty.fingerprint,
     raw_dirty: dirty.raw_dirty,
     raw_dirty_fingerprint: dirty.raw_fingerprint,
-    fingerprint_scope: dirty.fingerprint_scope
+    fingerprint_scope: dirty.fingerprint_scope,
+    policy_sync: policySync
   };
 }
 
@@ -314,6 +333,7 @@ export async function evaluateManagedWorktreeCommandContext(repoRoot, options = 
 }
 
 export async function readManagedExecutionState(repoRoot, storyId) {
+  assertSafeStoryPathSegment(storyId, 'managed execution requires a valid story id');
   const root = path.resolve(repoRoot);
   const localState = await readExecutionState(root, storyId);
   if (localState?.managed_worktree) return localState;
@@ -399,7 +419,8 @@ export function buildManagedWorktreeCommandBinding(context) {
       dirty_fingerprint: context.managed_worktree.dirty_fingerprint ?? null,
       raw_dirty: context.managed_worktree.raw_dirty ?? null,
       raw_dirty_fingerprint: context.managed_worktree.raw_dirty_fingerprint ?? context.managed_worktree.raw_fingerprint ?? null,
-      fingerprint_scope: context.managed_worktree.fingerprint_scope ?? null
+      fingerprint_scope: context.managed_worktree.fingerprint_scope ?? null,
+      policy_sync: context.managed_worktree.policy_sync ?? null
     } : null
   };
 }
@@ -410,8 +431,22 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
   const branchBound = worktreeAvailable && managedWorktree.branch && managedWorktree.branch_match !== false;
   const headBound = branchBound
     && (!expectedHeadSha || !managedWorktree.current_head_sha || managedWorktree.current_head_sha === expectedHeadSha);
-  const mergeReady = prMerge?.status === 'ready_to_merge' || prMerge?.status === 'merged';
-  const merged = prMerge?.status === 'merged' || Boolean(prMerge?.merged_at || prMerge?.merge_commit_sha);
+  const hasExplicitDelivery = typeof prMerge?.delivery?.status === 'string';
+  const deliveryObserved = ['merged', 'merged_externally'].includes(prMerge?.delivery?.status);
+  const legacyMerged = !hasExplicitDelivery && (
+    ['merged', 'merged_externally'].includes(prMerge?.status)
+    || Boolean(prMerge?.merged_at || prMerge?.merge_commit_sha)
+  );
+  const externalDelivery = prMerge?.delivery?.status === 'merged_externally';
+  const mergeReady = prMerge?.status === 'ready_to_merge'
+    || prMerge?.delivery?.status === 'merged'
+    || legacyMerged;
+  const merged = deliveryObserved || legacyMerged;
+  const deliveryTerminal = hasExplicitDelivery
+    ? deliveryObserved
+    : merged || ['merged', 'merged_externally', 'merged_reconciliation_required', 'failed'].includes(completionStatus);
+  const reconciliationStatus = prMerge?.reconciliation?.status ?? null;
+  const mergeFailure = prMerge?.status === 'failed';
   const nodes = [
     {
       id: 'story_selected',
@@ -488,10 +523,14 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
     },
     {
       id: 'implementation_complete',
-      status: completedPhases.length > 0 || ['ready_for_pr_create', 'pr_created'].includes(completionStatus) ? 'passed' : 'pending',
+      status: completedPhases.length > 0 || ['ready_for_pr_create', 'pr_created'].includes(completionStatus)
+        ? 'passed'
+        : deliveryObserved ? 'not_applicable' : 'pending',
       required: false,
       reason: completedPhases.length > 0 || ['ready_for_pr_create', 'pr_created'].includes(completionStatus)
         ? 'implementation has produced PR preparation or verification evidence'
+        : deliveryObserved
+          ? 'delivery was observed externally; local implementation evidence is not inferred from delivery'
         : 'implementation completion evidence has not been recorded yet'
     },
     {
@@ -502,42 +541,56 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
     },
     {
       id: 'agent_review_recorded',
-      status: completedPhases.includes('agent_review') || completionStatus === 'merged' ? 'passed' : 'pending',
+      status: completedPhases.includes('agent_review') ? 'passed' : 'pending',
       required: false,
-      reason: completedPhases.includes('agent_review') || completionStatus === 'merged'
+      reason: completedPhases.includes('agent_review')
         ? 'required agent review evidence is complete'
         : 'agent review is not complete yet'
     },
     {
       id: 'pr_prepare_ready',
-      status: completedPhases.includes('ready_for_pr_create') ? 'passed' : 'pending',
-      required: true,
-      reason: completedPhases.includes('ready_for_pr_create') ? 'Gate DAG is ready for PR creation' : 'PR prepare is not ready yet'
+      status: completedPhases.includes('ready_for_pr_create')
+        ? 'passed'
+        : deliveryObserved ? 'not_applicable' : 'pending',
+      required: !deliveryObserved,
+      reason: completedPhases.includes('ready_for_pr_create')
+        ? 'Gate DAG is ready for PR creation'
+        : deliveryObserved
+          ? 'delivery was observed externally; historical PR readiness is not inferred from delivery'
+          : 'PR prepare is not ready yet'
     },
     {
       id: 'pr_created',
-      status: ['pr_created', 'merged'].includes(completionStatus) ? 'passed' : 'pending',
+      status: ['pr_created', 'merged', 'merged_externally', 'merged_reconciliation_required', 'failed'].includes(completionStatus) || merged ? 'passed' : 'pending',
       required: true,
-      reason: ['pr_created', 'merged'].includes(completionStatus)
+      reason: ['pr_created', 'merged', 'merged_externally', 'merged_reconciliation_required', 'failed'].includes(completionStatus) || merged
         ? 'PR URL is recorded'
         : 'PR has not been created yet'
     },
     {
       id: 'merge_ready',
-      status: completionStatus === 'merged'
+      status: externalDelivery
+        ? 'not_applicable'
+        : merged
         ? 'passed'
         : mergeReady
           ? 'passed'
+          : hasExplicitDelivery
+            ? 'blocked'
           : prMerge?.status === 'blocked'
             ? 'blocked'
             : completionStatus === 'pr_created'
               ? 'pending'
               : 'not_applicable',
       required: false,
-      reason: completionStatus === 'merged'
+      reason: externalDelivery
+        ? 'External delivery was observed; historical merge readiness is not inferred from delivery'
+        : merged
         ? 'merge preconditions were satisfied before the recorded merge'
         : mergeReady
           ? 'execute merge preconditions were satisfied for the current PR'
+          : hasExplicitDelivery
+            ? `delivery is explicitly ${prMerge.delivery.status}; legacy merge fields are not authoritative`
           : prMerge?.status === 'blocked'
             ? prMerge.stop_reason ?? 'execute merge recorded blocking preconditions'
             : completionStatus === 'pr_created'
@@ -546,13 +599,41 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
     },
     {
       id: 'merged_or_closed',
-      status: merged ? 'passed' : completionStatus === 'pr_created' ? 'pending' : 'not_applicable',
+      status: merged
+        ? 'passed'
+        : hasExplicitDelivery
+          ? 'blocked'
+          : completionStatus === 'pr_created' ? 'pending' : 'not_applicable',
       required: false,
       reason: merged
         ? 'merge commit and merged_at are recorded'
+        : hasExplicitDelivery
+          ? `delivery is explicitly ${prMerge.delivery.status}; merge is not confirmed`
         : completionStatus === 'pr_created'
           ? 'PR is still open or merge result has not been recorded yet'
           : 'PR has not been created yet'
+    },
+    {
+      id: 'delivery_reconciliation',
+      status: mergeFailure || ['reconciliation_required', 'blocked'].includes(reconciliationStatus) || (hasExplicitDelivery && !deliveryObserved)
+        ? 'blocked'
+        : reconciliationStatus === 'reconciled'
+          ? 'passed'
+          : deliveryObserved
+            ? 'pending'
+            : 'not_applicable',
+      required: hasExplicitDelivery,
+      reason: mergeFailure
+        ? prMerge.stop_reason ?? 'post-delivery merge processing failed'
+        : ['reconciliation_required', 'blocked'].includes(reconciliationStatus)
+          ? (prMerge.reconciliation?.reasons ?? []).join(', ') || 'delivery evidence requires reconciliation'
+          : hasExplicitDelivery && !deliveryObserved
+            ? `delivery is explicitly ${prMerge.delivery.status}; reconciliation is required before merge can be trusted`
+          : reconciliationStatus === 'reconciled'
+            ? 'delivery and current evidence are reconciled'
+            : deliveryObserved
+              ? 'delivery is observed but reconciliation has not completed'
+              : 'delivery has not been observed'
     },
     {
       id: 'worktree_cleaned',
@@ -576,7 +657,8 @@ export function buildExecutionDag({ managedWorktree, completedPhases = [], compl
       ['pr_prepare_ready', 'pr_created'],
       ['pr_created', 'merge_ready'],
       ['merge_ready', 'merged_or_closed'],
-      ['merged_or_closed', 'worktree_cleaned']
+      ['merged_or_closed', 'delivery_reconciliation'],
+      ['delivery_reconciliation', 'worktree_cleaned']
     ].map(([from, to]) => ({ from, to }))
   };
 }
@@ -591,6 +673,7 @@ async function readConfig(repoRoot) {
 }
 
 async function readExecutionState(repoRoot, storyId) {
+  assertSafeStoryPathSegment(storyId, 'managed execution requires a valid story id');
   const filePath = path.join(getWorkspaceDir(repoRoot), 'executions', storyId, 'state.json');
   try {
     return JSON.parse(await readFile(filePath, 'utf8'));
@@ -606,6 +689,7 @@ async function readExecutionState(repoRoot, storyId) {
 }
 
 async function findLinkedExecutionState(repoRoot, storyId) {
+  assertSafeStoryPathSegment(storyId, 'managed execution requires a valid story id');
   const root = path.resolve(repoRoot);
   const rootRealpath = await canonicalPath(root);
   const output = await gitOptional(root, ['worktree', 'list', '--porcelain']);
@@ -646,6 +730,126 @@ function buildManagedWorktreeContextReason({
   return issues.join('; ');
 }
 
+// Policy sections are enforcement inputs (budgets, execution mode, routing) that must follow
+// the source repo config; everything else in the worktree copy stays a creation-time snapshot.
+const POLICY_CONFIG_SECTIONS = ['budgets', 'execution', 'artifact_routing', 'output'];
+const POLICY_SYNC_AUDIT_FILE = 'policy-sync.json';
+
+async function inspectWorktreePolicySections(sourceRepo, worktreePath) {
+  const source = await canonicalPath(sourceRepo);
+  const target = await canonicalPath(worktreePath);
+  if (source === target) {
+    return withLastPolicySyncEvent(worktreePath, {
+      status: 'skipped',
+      reason: 'source repo and managed worktree are the same checkout',
+      sections_updated: []
+    });
+  }
+  const sourceConfig = await readConfig(sourceRepo);
+  if (!sourceConfig) {
+    return withLastPolicySyncEvent(worktreePath, {
+      status: 'skipped',
+      reason: 'source repo has no .vibepro/config.json',
+      sections_updated: []
+    });
+  }
+  const targetPath = path.join(getWorkspaceDir(worktreePath), 'config.json');
+  let targetConfig = null;
+  try {
+    targetConfig = JSON.parse(await readFile(targetPath, 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  const sectionsUpdated = targetConfig
+    ? POLICY_CONFIG_SECTIONS.filter((section) =>
+        JSON.stringify(sourceConfig[section] ?? null) !== JSON.stringify(targetConfig[section] ?? null))
+    : POLICY_CONFIG_SECTIONS.filter((section) => sourceConfig[section] !== undefined);
+  return withLastPolicySyncEvent(worktreePath, {
+    status: sectionsUpdated.length > 0 ? 'needs_sync' : 'unchanged',
+    reason: sectionsUpdated.length > 0
+      ? 'policy sections differ from the source repo; a mutating command must resync them'
+      : 'policy sections already match the source repo config',
+    sections_updated: sectionsUpdated
+  });
+}
+
+async function syncWorktreePolicySections(sourceRepo, worktreePath) {
+  const source = await canonicalPath(sourceRepo);
+  const target = await canonicalPath(worktreePath);
+  if (source === target) {
+    return withLastPolicySyncEvent(worktreePath, { status: 'skipped', reason: 'source repo and managed worktree are the same checkout', sections_updated: [] });
+  }
+  const sourceConfig = await readConfig(sourceRepo);
+  if (!sourceConfig) {
+    return withLastPolicySyncEvent(worktreePath, { status: 'skipped', reason: 'source repo has no .vibepro/config.json', sections_updated: [] });
+  }
+  const targetPath = path.join(getWorkspaceDir(worktreePath), 'config.json');
+  let targetConfig = null;
+  try {
+    targetConfig = JSON.parse(await readFile(targetPath, 'utf8'));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
+  if (!targetConfig) {
+    await mkdir(path.dirname(targetPath), { recursive: true });
+    await writeFile(targetPath, `${JSON.stringify(sourceConfig, null, 2)}\n`);
+    const restored = {
+      status: 'synced',
+      reason: 'managed worktree config was missing; restored a full copy from the source repo',
+      sections_updated: POLICY_CONFIG_SECTIONS.filter((section) => sourceConfig[section] !== undefined)
+    };
+    await recordPolicySyncEvent(worktreePath, source, restored);
+    return withLastPolicySyncEvent(worktreePath, restored);
+  }
+  const updated = [];
+  for (const section of POLICY_CONFIG_SECTIONS) {
+    const sourceValue = sourceConfig[section];
+    if (JSON.stringify(sourceValue ?? null) === JSON.stringify(targetConfig[section] ?? null)) continue;
+    if (sourceValue === undefined) delete targetConfig[section];
+    else targetConfig[section] = sourceValue;
+    updated.push(section);
+  }
+  if (updated.length === 0) {
+    return withLastPolicySyncEvent(worktreePath, { status: 'unchanged', reason: 'policy sections already match the source repo config', sections_updated: [] });
+  }
+  await writeFile(targetPath, `${JSON.stringify(targetConfig, null, 2)}\n`);
+  const synced = { status: 'synced', reason: 'policy sections were resynced from the source repo config', sections_updated: updated };
+  await recordPolicySyncEvent(worktreePath, source, synced);
+  return withLastPolicySyncEvent(worktreePath, synced);
+}
+
+// A refresh can run more than once per CLI command (gate/context checks refresh before the
+// execution-state reconcile persists). Only the first refresh observes 'synced'; every later
+// diff sees already-equal configs and reports 'unchanged'. The audit event therefore must be
+// captured durably at sync time, in the worktree, so any later refresh can surface it as
+// policy_sync.last_event regardless of which call performed the actual write.
+async function recordPolicySyncEvent(worktreePath, sourceRepo, outcome) {
+  const auditPath = path.join(getWorkspaceDir(worktreePath), POLICY_SYNC_AUDIT_FILE);
+  try {
+    await mkdir(path.dirname(auditPath), { recursive: true });
+    await writeFile(auditPath, `${JSON.stringify({
+      schema_version: '0.1.0',
+      status: outcome.status,
+      sections_updated: outcome.sections_updated,
+      reason: outcome.reason,
+      source_repo: sourceRepo,
+      synced_at: new Date().toISOString()
+    }, null, 2)}\n`);
+  } catch {
+    // Audit stamping is best-effort; the sync itself already succeeded.
+  }
+}
+
+async function withLastPolicySyncEvent(worktreePath, outcome) {
+  try {
+    const raw = await readFile(path.join(getWorkspaceDir(worktreePath), POLICY_SYNC_AUDIT_FILE), 'utf8');
+    const event = JSON.parse(raw);
+    return { ...outcome, last_event: { status: event.status, sections_updated: event.sections_updated, synced_at: event.synced_at } };
+  } catch {
+    return outcome;
+  }
+}
+
 async function copyWorkspaceControlFiles(repoRoot, worktreePath) {
   const targetDir = getWorkspaceDir(worktreePath);
   await mkdir(targetDir, { recursive: true });
@@ -675,6 +879,7 @@ async function ensureManagedWorktreeGitExclude(worktreePath) {
     '# VibePro managed worktree control files',
     '/.vibepro/config.json',
     `/.vibepro/${MANIFEST_FILE}`,
+    `/.vibepro/${POLICY_SYNC_AUDIT_FILE}`,
     '/.vibepro/executions/'
   ];
 

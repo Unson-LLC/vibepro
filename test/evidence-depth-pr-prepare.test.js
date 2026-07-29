@@ -90,7 +90,7 @@ The auth permission boundary must reject unauthorized sessions.
   return root;
 }
 
-test('pr prepare summary depth writes plan/index but skips HTML and standalone Gate DAG dump', async () => {
+test('pr prepare summary depth writes plan/index and routed Gate canonical but skips HTML', async () => {
   const repo = await setupLowRiskRepo();
 
   const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-low-risk', '--base', 'main', '--json']);
@@ -109,7 +109,7 @@ test('pr prepare summary depth writes plan/index but skips HTML and standalone G
   assert.equal(await exists(path.join(prDir, 'pr-prepare.html')), false);
   assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), false);
   assert.equal(await exists(path.join(prDir, 'gate-dag.html')), false);
-  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), false);
+  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), true);
   assert.equal(await exists(path.join(prDir, 'split-plan.html')), false);
   const prBody = await readFile(path.join(prDir, 'pr-body.md'), 'utf8');
   assert.doesNotMatch(prBody, /story-low-risk\/gate-dag\.json/);
@@ -126,7 +126,7 @@ test('pr prepare summary depth writes plan/index but skips HTML and standalone G
   assert.equal(entry.latest_review_cockpit, null);
 });
 
-test('pr prepare summary depth removes stale full-surface artifacts from previous runs', async () => {
+test('pr prepare summary depth refreshes routed Gate canonical and removes stale full HTML surfaces', async () => {
   const repo = await setupLowRiskRepo();
 
   const fullResult = await runCli([
@@ -157,7 +157,7 @@ test('pr prepare summary depth removes stale full-surface artifacts from previou
   const plan = await readJson(path.join(prDir, 'evidence-plan.json'));
 
   assert.equal(plan.evidence_depth, 'summary');
-  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), false);
+  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), true);
   assert.equal(await exists(path.join(prDir, 'gate-dag.html')), false);
   assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), false);
   assert.equal(await exists(path.join(prDir, 'pr-prepare.html')), false);
@@ -216,7 +216,7 @@ test('pr prepare keeps high-risk default summary while recording targeted risk s
   assert.equal(plan.default_depth, 'summary');
   assert.equal(plan.evidence_depth, 'summary');
   assert.equal(plan.artifact_policy.write_full_gate_dag_dump, false);
-  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), false);
+  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), true);
   assert.ok(plan.risk_signals.some((signal) => signal.kind === 'risk_surface' && signal.value === 'auth_boundary'));
   assert.ok(plan.targeted_full_surfaces.some((surface) => surface.surface === 'auth_boundary'));
   assert.ok(prepare.evidence_plan.targeted_full_surfaces.some((surface) => surface.surface === 'auth_boundary'));
@@ -239,7 +239,7 @@ test('pr prepare focused view uses summary depth even for high-risk workflow', a
   assert.equal(plan.artifact_policy.write_html_reports, false);
   assert.equal(plan.artifact_policy.write_full_gate_dag_dump, false);
   assert.equal(prepare.evidence_plan.evidence_depth, 'summary');
-  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), false);
+  assert.equal(await exists(path.join(prDir, 'gate-dag.json')), true);
   assert.equal(await exists(path.join(prDir, 'review-cockpit.html')), false);
 });
 

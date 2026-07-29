@@ -1,0 +1,122 @@
+<!-- vibepro-projection story_id=story-vibepro-routing-profiles-rendered-projections feature_slug=routing-profiles-rendered-projections ownership=generated profile=feature_packet source=.vibepro/pr/story-vibepro-routing-profiles-rendered-projections/gate-dag.json source_sha256=d4f4d8cb80aa12329b62586b1b26b6a6cb104e408dd43edf18e9c82fd5d87360 renderer=gate_summary_markdown@1 direct_edit=false -->
+# Gate Summary
+
+- Status: needs_verification
+- Ready: unknown
+- Unresolved: 62
+
+## Gates
+
+- ac:1: present
+- ac:10: present
+- ac:11: present
+- ac:12: present
+- ac:13: present
+- ac:14: present
+- ac:2: present
+- ac:3: present
+- ac:4: present
+- ac:5: present
+- ac:6: present
+- ac:7: present
+- ac:8: present
+- ac:9: present
+- architecture: satisfied — ADRあり (docs/architecture/story-vibepro-routing-profiles-rendered-projections.md)
+- code: present
+- gate:agent_review: needs_review — 2 PR-final and 1 checkpoint agent review role(s) are missing, stale, or blocking; run the listed checkpoint/review commands and record their provenance.
+- gate:artifact_consistency: stale_evidence — 7 recorded verification/review artifact(s) are not bound to the current git state
+- gate:bug_physics_contradiction_feedback: passed — No evidence that the selected harness failed to reproduce the bug
+- gate:bug_physics_timing_single_shot_e2e_na: not_applicable — Typed N/A: single-shot E2E green is not proof for statistical timing bugs
+- gate:bug_physics_timing_violation_rate: needs_evidence — timing bugs require phase decomposition plus violation-rate/SLO or settle-contract evidence
+- gate:bug_physics_triage: needs_evidence — Active bug physics triage requires probe evidence before selecting a gate profile
+- gate:change_classification: passed — changed module has a large call-graph blast radius; PR/gate orchestration source changed; agent review lifecycle source changed; Story or diff contains workflow/state transition keywords; high blast-radius module changed (many call-graph dependents): src/cli.js, src/pr-manager.js, src/artifact-routing.js, src/story-manager.js
+- gate:common_judgment_spine: needs_evidence — Common judgment spine is missing evidence for: current_reality=needs_evidence, failure_modes=needs_evidence, done_evidence=needs_evidence
+- gate:dag_connectivity: passed — Every DAG node is reachable from story and can reach the final PR decision
+- gate:decision_record: passed — Decision records are captured; total=0, waivers=0, noise=0, secret_exposure=0
+- gate:definition_of_done: needs_evidence — Definition of Done is incomplete: Required Agent Review closed or not required
+- gate:design_diagrams: satisfied — 必須設計図が全て揃っている (flow, threat_model)
+- gate:design_input_judgment: passed — Design-input diagnosis was recorded before PR readiness: 2026-07-21T022140Z
+- gate:design_ssot_reconciliation: needs_review — 2 design lineage action item(s) need review before the PR can be treated as design-consistent.
+- gate:e2e: not_applicable — Typed N/A: timing bug physics requires violation-rate/SLO evidence; single-shot E2E green is not proof
+- gate:engineering_judgment_route: passed — Engineering judgment route selected: agent_workflow; DAG=agent_workflow_dag
+- gate:evidence_adjudication: needs_evidence — 14 clause(s) have no current-head adjudication verdict: AC-1, AC-2, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-9, AC-10, AC-11, AC-12, AC-13, AC-14. Run `vibepro adjudicate prepare`, dispatch an independent fresh-context subagent, and record verdicts with `vibepro adjudicate record`.
+- gate:evidence_coverage: needs_evidence — workflow_heavy release readiness requires scenario clauses plus flow replay evidence
+- gate:evidence_reuse_freshness: passed — Previous reusable evidence was stale and was not used as fresh.
+- gate:failure_mode_coverage: missing_coverage — 2 high-risk failure mode candidate(s) lack current verification evidence
+- gate:integration: passed — Shared resolver producer and negative integration paths pass on current HEAD; evidence: .vibepro/verification/story-vibepro-routing-profiles-rendered-projections/integration-current-head.json
+- gate:judgment_agent_workflow_context_acquisition: passed — agentが読むべきrepo/docs/log/graph/current stateを先に集める
+- gate:judgment_agent_workflow_delegation_policy: passed — どの段階でどのレビュー/サブエージェントを呼ぶかをDAGに置く
+- gate:judgment_agent_workflow_evidence_lifecycle: needs_evidence — Agent workflow route requires a current-bound recorded agent review with no unmet/stale/timed-out/blocked results, or an explicit waiver decision recorded against gate:judgment_agent_workflow_evidence_lifecycle, before PR creation
+- gate:judgment_agent_workflow_human_decision_contract: passed — 最後に人間が判断する問いと根拠をPRに出す
+- gate:judgment_agent_workflow_tool_boundary: passed — どのtool/agentがどの副作用を持つかを分離する
+- gate:judgment_axis_execution_topology: needs_evidence — execution_topology: process/thread/worker/agent/gate/retry/artifact lifecycleのつながりでdeadlockや証跡欠落が起きないか。 Missing evidence: artifact_replay, agent_review.
+- gate:judgment_axis_public_contract: passed — public_contract: この変更は外部利用者、CLI/API、設定、出力形式、またはPR本文契約を壊さないか。 Evidence matched: story_spec_traceability, contract_doc, topology_diagram, compat_or_output_test, semantic_invariant_test, focused_test, current_verification, runtime_path_evidence, e2e_runtime_path, flow_replay, scenario_clause_e2e, negative_path, negative_path_test, focused_test, current_verification, runtime_path_evidence, integration_runtime_path, flow_replay, negative_path, negative_path_test, split_plan, graph_impact_scope.
+- gate:judgment_axis_scope_reviewability: needs_evidence — scope_reviewability: このPRは1人のreviewerが一貫した判断として読める粒度か、分割すべきか。 Missing evidence: scope_reviewed, review_owner_map, decision_record.
+- gate:judgment_dag_adjudication: needs_evidence — 13 judgment item(s) have no current-head adjudication: spine:intent, spine:current_reality, spine:invariants, spine:boundaries, spine:failure_modes, spine:done_evidence, axis:public_contract, axis:execution_topology, axis:scope_reviewability, failure_mode:parse_failure, failure_mode:schema_failure, failure_mode:evidence_lifecycle_regression, failure_mode:workflow_state_regression. Run `vibepro adjudicate prepare --judgment`, dispatch an independent fresh-context subagent to walk the checklist, and record verdicts with `vibepro adjudicate record --judgment`.
+- gate:managed_worktree: needs_review — VibePro managed worktree execution state is missing
+- gate:network_contract: passed — No broken API client route contracts detected
+- gate:path_surface_matrix: passed — 2 path surface row(s) are covered or not critical for this route
+- gate:pr_body_contract: passed — PR body must use runtime_contract_review and expose the route-specific decision contract
+- gate:pr_freshness: passed — HEAD contains current origin/main; PR prepare artifacts are based on the latest resolved base ref
+- gate:pr_route_classification: passed — PR route selected: runtime_change; body template: runtime_contract_review
+- gate:pr_scope_judgment: needs_split — PR scope requires a split decision or explicit bundled-scope justification before PR creation
+- gate:production_path_matrix: needs_evidence — Story E2E coverage needs evidence: ac:2, ac:3, ac:4, ac:5, ac:6, ac:7, ac:8, ac:9, ac:10, ac:11, ac:12, ac:13, ac:14 must be covered by executable assertions in tests/e2e/story-vibepro-routing-profiles-rendered-projections-*.spec.ts or test/e2e/story-vibepro-routing-profiles-rendered-projections-*.spec.ts or e2e/story-vibepro-routing-profiles-rendered-projections-*.spec.ts; coverage_diagnostics lists inspected files, candidate test blocks, and miss reasons; use an explicit executable coverage marker if inference is unsafe
+- gate:release_confidence: needs_evidence — implementation may be consistent, but production workflow confidence is low
+- gate:requirement: passed — Story不変条件と変更コードの既知分岐に明確な矛盾は検出されていない (1件の旧キーワード互換解決(deprecated))
+- gate:responsibility_authority: needs_evidence — 6 required evidence item(s) missing for matched responsibility contract(s).
+- gate:review_inspection_required: needs_inspection — 4 high-risk review role(s) are missing inspection summary or evidence
+- gate:scope_boundary: not_declared — Story has no declared scope boundary (informational only; does not block PR creation).
+- gate:senior_gap_judgment: block — 5 critical gap(s) must be resolved before PR creation or merge.
+- gate:split_resolution: needs_review — Scope requires a split/clean-branch decision to be resolved or explicitly justified before PR creation
+- gate:story_source_integrity: passed — Resolved and changed Story documents match the selected Story, or no changed Story document needs binding.
+- gate:traceability_clause_coverage: passed — Every extracted AC/scenario clause has clause-specific test, review, or verification evidence
+- gate:unit: passed — 55 tests pass on current committed HEAD; evidence: .vibepro/verification/story-vibepro-routing-profiles-rendered-projections/unit-current-head.json
+- gate:validation_sequencing: needs_evidence — Validation sequence is incomplete: targeted_validation, preflight_review, code_frozen, expensive_verification, final_review, current_head_binding
+- gate:vibepro_artifact_policy: needs_review — .vibepro artifacts are diagnostic evidence; committing them requires an explicit artifact policy decision in the PR body
+- gate:workflow_flow_replay: needs_evidence — Story E2E coverage needs evidence: ac:2, ac:3, ac:4, ac:5, ac:6, ac:7, ac:8, ac:9, ac:10, ac:11, ac:12, ac:13, ac:14 must be covered by executable assertions in tests/e2e/story-vibepro-routing-profiles-rendered-projections-*.spec.ts or test/e2e/story-vibepro-routing-profiles-rendered-projections-*.spec.ts or e2e/story-vibepro-routing-profiles-rendered-projections-*.spec.ts; coverage_diagnostics lists inspected files, candidate test blocks, and miss reasons; use an explicit executable coverage marker if inference is unsafe
+- gate:workflow_state_machine: needs_evidence — workflow_heavy changes require explicit scenario clauses for state transitions
+- pr: pending — Unit / Integration / E2E Gateの証跡をPR本文で確認する
+- review:architecture_spec:regression_risk: stale — content-bound evidence surface changed: test/artifact-routing.test.js
+- review:dispatch_batch:architecture_spec: failed — Do not dispatch architecture_spec review batch until preflight blockers are resolved: regression_risk:git_stability
+- review:dispatch_batch:gate: failed — Do not dispatch gate review batch until preflight blockers are resolved: gate_evidence:git_stability, release_risk:git_stability
+- review:dispatch_batch:implementation: passed — All implementation role preflight checks passed and dispatch instructions are prepared
+- review:dispatch_batch:preview: passed — All preview role preflight checks passed and dispatch instructions are prepared
+- review:dispatch_batch:test_plan: passed — All test_plan role preflight checks passed and dispatch instructions are prepared
+- review:gate:gate_evidence: stale — review was recorded with a different user dirty worktree fingerprint
+- review:gate:release_risk: stale — review was recorded with a different user dirty worktree fingerprint
+- review:implementation:runtime_contract: passed — Runtime routing, containment, migration, and task canonical contracts pass.
+- review:implementation:ux_completion: passed — Human CLI authority surfaces and rollback UX are complete
+- review:join:architecture_spec: needs_review — Wait for all parallel architecture_spec reviews to close and record before dispatching the next review stage: regression_risk
+- review:join:gate: needs_review — Wait for all parallel gate reviews to close and record before dispatching the next review stage: gate_evidence, release_risk
+- review:join:implementation: passed — All parallel implementation agent review roles are closed and recorded for the current git state
+- review:join:preview: passed — All parallel preview agent review roles are closed and recorded for the current git state
+- review:join:test_plan: passed — All parallel test_plan agent review roles are closed and recorded for the current git state
+- review:preflight:architecture_spec:regression_risk: failed — content-bound evidence surface changed: test/artifact-routing.test.js
+- review:preflight:gate:gate_evidence: failed — review was recorded with a different user dirty worktree fingerprint
+- review:preflight:gate:release_risk: failed — review was recorded with a different user dirty worktree fingerprint
+- review:preflight:implementation:runtime_contract: passed — Current implementation:runtime_contract review already passed; do not dispatch a duplicate reviewer for the same git state
+- review:preflight:implementation:ux_completion: passed — Current implementation:ux_completion review already passed; do not dispatch a duplicate reviewer for the same git state
+- review:preflight:preview:human_usability: passed — Current preview:human_usability review already passed; do not dispatch a duplicate reviewer for the same git state
+- review:preflight:preview:network_runtime: passed — Current preview:network_runtime review already passed; do not dispatch a duplicate reviewer for the same git state
+- review:preflight:test_plan:e2e_ux: passed — Current test_plan:e2e_ux review already passed; do not dispatch a duplicate reviewer for the same git state
+- review:preflight:test_plan:gate_coverage: passed — Current test_plan:gate_coverage review already passed; do not dispatch a duplicate reviewer for the same git state
+- review:prepare:architecture_spec: passed — Policy-aware agent review dispatch instructions were generated
+- review:prepare:gate: passed — Policy-aware agent review dispatch instructions were generated
+- review:prepare:implementation: passed — Policy-aware agent review dispatch instructions were generated
+- review:prepare:preview: passed — Policy-aware agent review dispatch instructions were generated
+- review:prepare:test_plan: passed — Policy-aware agent review dispatch instructions were generated
+- review:preview:human_usability: passed — Routing authority and migration state are understandable in human CLI output
+- review:preview:network_runtime: passed — Local runtime and filesystem boundaries fail closed
+- review:record:architecture_spec:regression_risk: needs_review — content-bound evidence surface changed: test/artifact-routing.test.js
+- review:record:gate:gate_evidence: needs_review — review was recorded with a different user dirty worktree fingerprint
+- review:record:gate:release_risk: needs_review — review was recorded with a different user dirty worktree fingerprint
+- review:record:implementation:runtime_contract: passed — Recorded implementation:runtime_contract review for the current git state
+- review:record:implementation:ux_completion: passed — Recorded implementation:ux_completion review for the current git state
+- review:record:preview:human_usability: passed — Recorded preview:human_usability review for the current git state
+- review:record:preview:network_runtime: passed — Recorded preview:network_runtime review for the current git state
+- review:record:test_plan:e2e_ux: passed — Recorded test_plan:e2e_ux review for the current git state
+- review:record:test_plan:gate_coverage: passed — Recorded test_plan:gate_coverage review for the current git state
+- review:test_plan:e2e_ux: passed — Current-head E2E covers fresh checkout, legacy, fail-closed, and authority UX
+- review:test_plan:gate_coverage: passed — Story clauses and risks have exact-head focused evidence
+- spec: present — explicit Spec docs are present (docs/features/routing-profiles-rendered-projections/02_functional_spec.md)
+- story: present — Story source is present

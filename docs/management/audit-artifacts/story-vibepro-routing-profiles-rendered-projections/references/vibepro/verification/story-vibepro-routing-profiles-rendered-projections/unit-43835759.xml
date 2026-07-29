@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name="upgraded repository keeps legacy catalog Stories operable while the selected Story uses a named profile" time="0.009782" classname="test"/>
+	<testcase name="unconfigured repository preserves current artifact defaults" time="0.000886" classname="test"/>
+	<testcase name="named artifact-routing profile: schema 0.2 selects a complete profile from catalog authority" time="0.003652" classname="test"/>
+	<testcase name="named profile requires a complete matching Story mirror before writes" time="0.006772" classname="test"/>
+	<testcase name="catalog metadata authority and Story frontmatter conflict fail closed" time="0.003172" classname="test"/>
+	<testcase name="task JSON remains read authority after Markdown regeneration" time="0.011926" classname="test"/>
+	<testcase name="artifact resolve text and JSON expose ownership, canonical authority, profile, and renderer" time="0.020745" classname="test"/>
+	<testcase name="projection lineage hashes exact routed canonical bytes and migration classifies noop then update" time="0.028863" classname="test"/>
+	<testcase name="schema 0.1 generated projections retain legacy byte-copy overwrite compatibility" time="0.010031" classname="test"/>
+	<testcase name="migration classifies stale generated lineage metadata as update, not conflict" time="0.024606" classname="test"/>
+	<testcase name="named profiles reject unknown renderer contracts before writing" time="0.010435" classname="test"/>
+	<testcase name="schema 0.2 validates every profile is complete, including an unselected profile" time="0.014253" classname="test"/>
+	<testsuite name="schema 0.2 requires a non-empty canonical for every kind in selected and unselected profiles" time="0.033358" disabled="0" errors="0" tests="2" failures="0" skipped="0" hostname="Mac-mini.local">
+		<testcase name="feature_packet" time="0.027610" classname="test"/>
+		<testcase name="governance_packet" time="0.004864" classname="test"/>
+	</testsuite>
+	<testcase name="schema 0.2 rejects repository-global legacy artifacts instead of silently falling back" time="0.001483" classname="test"/>
+	<testcase name="projectArtifact preflights generated projections before canonical mutation" time="0.008011" classname="test"/>
+	<testcase name="directory canonical migration hashes the lineage source file" time="0.007120" classname="test"/>
+	<testcase name="directory projection may advance lineage to another file in the same canonical directory only" time="0.008082" classname="test"/>
+	<testcase name="directory migration refuses a lineage source symlink that escapes the repository" time="0.005199" classname="test"/>
+	<testcase name="Functional Spec renderer preserves actual statement origin diagram shape in code-point order" time="0.003045" classname="test"/>
+	<testcase name="human-owned and curated bytes are never overwritten and schema 0.2 never falls back to legacy metadata" time="0.005577" classname="test"/>
+	<testcase name="review gate and release views expose ownership and lineage to users" time="0.010577" classname="test"/>
+	<testcase name="custom nested feature routing expands stable variables" time="0.008192" classname="test"/>
+	<testcase name="tracked routing is restored and resolved in a fresh checkout" time="0.526876" classname="test"/>
+	<testcase name="fresh checkout resolves and renders complete feature and governance packet lifecycle surfaces" time="0.720542" classname="test"/>
+	<testcase name="unconfigured fresh checkout preserves legacy artifact defaults" time="0.558793" classname="test"/>
+	<testcase name="artifact routing guides document configuration, migration, compatibility, and rollback" time="0.001061" classname="test"/>
+	<testsuite name="routing fails closed for collisions, traversal, absolute paths, and unresolved variables" time="0.005318" disabled="0" errors="0" tests="4" failures="0" skipped="0" hostname="Mac-mini.local">
+		<testcase name="path_collision" time="0.001351" classname="test"/>
+		<testcase name="repository_traversal" time="0.000999" classname="test"/>
+		<testcase name="absolute_path" time="0.001070" classname="test"/>
+		<testcase name="unresolved_variable" time="0.001542" classname="test"/>
+	</testsuite>
+	<testcase name="malformed routing config fails closed before changing repository files" time="0.002081" classname="test"/>
+	<testcase name="projections must be explicitly machine generated" time="0.001518" classname="test"/>
+	<testcase name="migration dry-run reports moves and collisions without editing files" time="0.002844" classname="test"/>
+	<testcase name="migration dry-run blocks when source and destination contain different content" time="0.003903" classname="test"/>
+	<testcase name="task plan migration treats a manifest-bound generated legacy mirror as noop but unknown Markdown as conflict" time="0.010066" classname="test"/>
+	<testcase name="migration dry-run reports invalid routing as a blocked machine-readable plan" time="0.001505" classname="test"/>
+	<testcase name="write containment rejects a configured path through a symlink outside the repository" time="0.003081" classname="test"/>
+	<testcase name="architecture and accepted spec read and write the same configured canonical paths" time="0.010273" classname="test"/>
+	<testcase name="generated projections mirror canonical writes but are never selected as read authority" time="0.012532" classname="test"/>
+	<testcase name="unsafe projection fails before changing the canonical artifact" time="0.004498" classname="test"/>
+	<testcase name="accepted spec projection failure leaves canonical and history untouched" time="0.003044" classname="test"/>
+	<testcase name="story task projection failure creates neither task state nor task plan" time="0.002454" classname="test"/>
+	<testcase name="plan task projection failure leaves tasks and manifest routing fields untouched" time="0.279416" classname="test"/>
+	<testcase name="task plan writes its human-readable canonical to the configured feature packet" time="0.016889" classname="test"/>
+	<testcase name="task plan JSON writers honor a custom routed canonical instead of the legacy workspace path" time="0.028804" classname="test"/>
+	<testcase name="projections fail closed for artifact kinds without a centralized writer" time="0.003263" classname="test"/>
+	<testcase name="directory artifact routes cannot contain another artifact destination" time="0.002793" classname="test"/>
+	<testcase name="file artifact routes cannot be ancestors of directory artifact routes" time="0.002309" classname="test"/>
+	<testcase name="Story Architecture Spec Task Graphify Review Gate PR status migration use one profile" time="4.000396" classname="test"/>
+	<testcase name="named profile Graphify review and PR producers write only routed lifecycle paths" time="3.288273" classname="test"/>
+	<testcase name="story derive binds global Graphify import to the configured current Story under schema 0.2" time="0.015143" classname="test"/>
+	<testcase name="design-system derive binds Graphify evidence with --story-id" time="0.009787" classname="test"/>
+	<!-- tests 55 -->
+	<!-- suites 0 -->
+	<!-- pass 55 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 9932.982167 -->
+</testsuites>

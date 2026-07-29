@@ -1,0 +1,140 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-explicit-run-attribution-lineage",
+  "updated_at": "2026-07-21T12:22:44.484Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-11",
+      "verdict": "demonstrated",
+      "reason": "Graphify and docs demonstrate responsibility boundaries without raw graph metadata becoming authority.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:22:44.478Z"
+    },
+    {
+      "clause_id": "AC-10",
+      "verdict": "demonstrated",
+      "reason": "Focused unit, integration, E2E, typecheck, and independent tests pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:22:43.300Z"
+    },
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "The capsule reconstructs lifecycle lineage without transcript replay.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:22:42.025Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "The additive schema preserves legacy consumers through explicit fallback.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:22:40.752Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "External sessions remain ambiguous or unavailable without requiring Task splitting.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:22:39.727Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Non-attributed and replayed-context buckets are excluded from evidence-value conclusions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:22:38.618Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Accounting separates audit evidence, story docs, source, tests, replayed context, and unattributed exposure.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:22:37.528Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Audit output is Run-aware while Task or Thread IDs remain observational.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:22:36.423Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Verification artifacts propagate authoritative Run lineage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:22:35.446Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Append-only lineage and provider conflicts fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:22:34.364Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Authority envelope persists Story, Run, dispatch, worktree, and HEAD lineage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f848f-a274-78a0-a645-c09080a9af21",
+        "session_ref": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/transcript-3dd925c8-gate-evidence.md"
+      },
+      "head_commit": "3dd925c83a3cd52a8a586468d0e15c89785633be",
+      "recorded_at": "2026-07-21T12:22:33.284Z"
+    }
+  ]
+}

@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { resolveGraphifyArtifactFile } from './artifact-routing.js';
 import { promisify } from 'node:util';
 
 import { preparePullRequest } from './pr-manager.js';
@@ -89,7 +90,7 @@ export function renderArchitectureReadinessSummary(result) {
 async function buildArchitectureReadiness(repoRoot, { storyId, prPrepare }) {
   const [manifest, graphify, currentHead] = await Promise.all([
     readManifest(repoRoot).catch(() => null),
-    readGraphifySummary(repoRoot),
+    readGraphifySummary(repoRoot, storyId),
     getCurrentHead(repoRoot)
   ]);
   const latestRun = findLatestStoryRun(manifest, storyId);
@@ -128,7 +129,7 @@ async function buildArchitectureReadiness(repoRoot, { storyId, prPrepare }) {
     } : null,
     pr_prepare: prPrepare ? {
       created_at: prPrepare.created_at ?? null,
-      artifact: `.vibepro/pr/${storyId}/pr-prepare.json`,
+      artifact: prPrepare.artifact_refs?.['pr-prepare.json'] ?? `.vibepro/pr/${storyId}/pr-prepare.json`,
       gate_dag_status: gateDag?.overall_status ?? null
     } : null,
     next_actions: buildNextActions(checks, storyId)
@@ -222,8 +223,8 @@ function buildNextActions(checks, storyId) {
   return actions;
 }
 
-async function readGraphifySummary(repoRoot) {
-  const graphPath = path.join(getWorkspaceDir(repoRoot), 'graphify', 'graph.json');
+async function readGraphifySummary(repoRoot, storyId) {
+  const graphPath = await resolveGraphifyArtifactFile(repoRoot, storyId);
   try {
     const graph = JSON.parse(await readFile(graphPath, 'utf8'));
     const edges = Array.isArray(graph.edges) ? graph.edges : Array.isArray(graph.links) ? graph.links : [];

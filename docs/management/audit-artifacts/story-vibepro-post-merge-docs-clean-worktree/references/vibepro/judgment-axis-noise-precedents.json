@@ -1,0 +1,88 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "release_ops|changed_path:release_ops|route:release_engineering",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+      "decision_id": "decision-1784422197492-e7f61746",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "The Story documents rollout, rollback, observed failure, recovery summary, and the external Cloudflare credential precondition; npm and GitHub Release reconciliation are unchanged.",
+      "artifact": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+      "activation_candidates": [
+        "route:release_engineering",
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T00:52:46.444Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+      "decision_id": "decision-1784422196776-9e2569f3",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "The change is one additive ignore rule plus tests/docs; no stored state, feature gate, API, npm version, or migration changes.",
+      "artifact": "docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md",
+      "activation_candidates": [
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T00:52:46.444Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+      "decision_id": "decision-1784422632332-b32ef824",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "All six paths implement and prove one clean-source recovery boundary; independent pr_split_scope review passed at current HEAD.",
+      "artifact": "docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T00:57:25.391Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:1402|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+      "decision_id": "decision-1784422632332-b32ef824",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "All six paths implement and prove one clean-source recovery boundary; independent pr_split_scope review passed at current HEAD.",
+      "artifact": "docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:1402",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T01:13:57.253Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout|pr_route:mirror_sync",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+      "decision_id": "decision-1784422196776-9e2569f3",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "The change is one additive ignore rule plus tests/docs; no stored state, feature gate, API, npm version, or migration changes.",
+      "artifact": "docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md",
+      "activation_candidates": [
+        "pr_route:mirror_sync",
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T01:13:57.253Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

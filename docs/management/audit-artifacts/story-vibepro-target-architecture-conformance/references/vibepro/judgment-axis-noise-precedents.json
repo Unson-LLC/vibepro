@@ -1,0 +1,52 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "decision_id": "decision-1784686112261-59d627e5",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Diff is one intent (target architecture SSOT + conformance dry-run): conformance module, additive CLI branch, focused test file, target-model.json, story doc and config registration. Review owner is the vibepro repo owner; independent adjudication ruled axis:scope_reviewability judged_sound; no split needed",
+      "artifact": ".vibepro/adjudication/story-vibepro-target-architecture-conformance/judgment-adjudication.json",
+      "activation_candidates": [
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-22T02:09:36.085Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "data_state|changed_path:data_state",
+      "axis": "data_state",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "decision_id": "decision-1784686106585-08ae6280",
+      "source": "gate:judgment_axis_data_state",
+      "reason": "The change adds a read-only dry-run command: it reads target-model.json and graph.json without mutation and writes only its own regenerated artifact .[REDACTED:090eae625b84]/*. No migration, cache, query semantics, or replayable persistent state exists, so migration_plan/rollback_plan/idempotency_test/query_semantics_test are not applicable; idempotency of the artifact write itself is demonstrated by deterministic reruns (66 violations reproduced) and the independent judgment adjudication ruled axis:data_state judged_sound",
+      "artifact": ".vibepro/adjudication/story-vibepro-target-architecture-conformance/judgment-adjudication.json",
+      "activation_candidates": [
+        "changed_path:data_state"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-22T02:09:36.085Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "decision_id": "decision-1784686112261-59d627e5",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Diff is one intent (target architecture SSOT + conformance dry-run): conformance module, additive CLI branch, focused test file, target-model.json, story doc and config registration. Review owner is the vibepro repo owner; independent adjudication ruled axis:scope_reviewability judged_sound; no split needed",
+      "artifact": ".vibepro/adjudication/story-vibepro-target-architecture-conformance/judgment-adjudication.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-22T03:06:55.409Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

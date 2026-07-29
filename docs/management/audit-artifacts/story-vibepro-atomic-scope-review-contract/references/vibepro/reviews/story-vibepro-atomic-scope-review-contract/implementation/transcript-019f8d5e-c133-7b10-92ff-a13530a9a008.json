@@ -1,0 +1,41 @@
+{
+  "agent_id": "019f8d5e-c133-7b10-92ff-a13530a9a008",
+  "model": "gpt-5.6-luna",
+  "reasoning_effort": "high",
+  "service_tier": "priority",
+  "status": "needs_changes",
+  "summary": "Focused tests and expensive E2E pass, but current-head runtime-contract review cannot pass because required path-surface and failure-mode evidence is incomplete.",
+  "inspection_summary": "Read the full review request, origin/main...HEAD diff, Story, architecture, spec, runtime sources/tests, current verification artifacts, and expensive E2E TAP. Ran 70 focused tests; all passed. Worktree remained clean.",
+  "inspection_evidence": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-prepare.json; .vibepro/pr/story-vibepro-atomic-scope-review-contract/gate-dag.json; .vibepro/pr/story-vibepro-atomic-scope-review-contract/verification-evidence.json; .vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-c58152d5.tap",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/review-request-runtime_contract.md",
+    "git diff origin/main...HEAD",
+    "docs/management/stories/active/story-vibepro-atomic-scope-review-contract.md",
+    "docs/architecture/vibepro-atomic-scope-review-contract.md",
+    "docs/specs/story-vibepro-atomic-scope-review-contract.md",
+    "src/pr-manager.js",
+    "src/agent-review.js",
+    "src/content-binding.js",
+    "src/validation-sequencing.js",
+    "src/verification-evidence.js",
+    "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+    "node --test test/validation-sequencing.test.js test/verification-evidence-artifact-check.test.js test/verification-observation.test.js"
+  ],
+  "judgment_delta": [
+    "Initial concern that the expensive E2E established the complete runtime contract -> final conclusion: it is a verified one-test pass, but its recorded observation covers only the E2E and validation-sequencing surfaces.",
+    "Initial concern that focused regression tests closed the runtime risk -> final conclusion: 70 tests pass, but executable evidence is still missing for evidence_lifecycle_regression and workflow_state_regression.",
+    "Initial concern that atomic_single_pr scope was reviewable -> final conclusion: the current split plan remains rejected because the required current-head owner map is unverified."
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "runtime-contract-path-surface-evidence-missing",
+      "detail": "gate:path_surface_matrix remains partial_surface with four missing rows: changed_path_inventory, cli, and two review_surface rows. Current verification evidence does not bind all changed paths and output surfaces, including .vibepro/config.json, src/html-report.js, CLI documentation, and the broader source/test set. Record current-bound structured evidence for each affected surface or an auditable non-applicability decision, then rerun pr prepare."
+    },
+    {
+      "severity": "high",
+      "id": "runtime-contract-failure-mode-evidence-missing",
+      "detail": "gate:failure_mode_coverage remains missing_coverage for evidence_lifecycle_regression and workflow_state_regression. The passing E2E TAP and source/test mentions do not satisfy the executable evidence contract because the canonical observation has no explicit failure-mode scenario/assertion for these modes. Add current-head executable failure-path evidence or an auditable non-applicability decision, then rerun pr prepare."
+    }
+  ]
+}

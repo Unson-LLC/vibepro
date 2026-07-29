@@ -1,5 +1,6 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
+import { resolveGraphifyArtifactFile } from './artifact-routing.js';
 
 import { profileArchitecture } from './architecture-profiler.js';
 import { getPreset, resolvePresetId } from './presets.js';
@@ -181,7 +182,7 @@ export async function generateStoryCatalog(repoRoot, options = {}) {
     repoProfile,
     presetExplicit: Boolean(explicitPresetId)
   });
-  const graph = await readGraph(root);
+  const graph = await readGraph(root, currentStory?.story_id ?? 'story-catalog');
   const graphSummary = summarizeGraph(graph);
   const documentSignals = await collectDocumentSignals(root, files, activePreset);
   const productSurfaceResult = deriveProductSurfaceStories(fileSet, defaults, documentSignals, activePreset, {
@@ -2175,9 +2176,9 @@ async function readEvidence(repoRoot, manifest, fromRunId) {
   }
 }
 
-async function readGraph(repoRoot) {
+async function readGraph(repoRoot, storyId) {
   try {
-    return JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'graphify', 'graph.json'), 'utf8'));
+    return JSON.parse(await readFile(await resolveGraphifyArtifactFile(repoRoot, storyId), 'utf8'));
   } catch (error) {
     if (error.code === 'ENOENT') return null;
     throw error;

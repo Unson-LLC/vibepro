@@ -17,7 +17,7 @@ related_stories:
   - story-vibepro-agent-runtime-metrics
 reason: "alternatives considered: execute the first dependency-ready action, ask an LLM to reflect after every tool call, or rank typed candidate actions at material checkpoints using explicit value and cost factors; selected event-driven typed ranking. compatibility impact: the Safe Action registry and Gate DAG remain the authority for what may run, while the controller adds a recommendation and selection layer. rollback plan: disable ranking and return to dependency-order execution. boundary and scope: the controller chooses among already permitted actions and may choose ask, split, wait, or stop; it cannot create authority, waive gates, run forbidden commands, or expose hidden chain-of-thought. unknown time/token inputs remain unknown rather than zero. accepted followups: risk-adaptive validation sequencing and final hardening consume the decision records."
 created_at: 2026-07-16
-updated_at: 2026-07-16
+updated_at: 2026-07-19
 ---
 
 # 期待価値で次の一手を選ぶMeta Controller
@@ -46,6 +46,7 @@ updated_at: 2026-07-16
 - [ ] NBA-S-6: 高コストActionより先に同等以上の不確実性を安く下げる対象調査・targeted test・preflightがある場合、安い候補を推奨する。
 - [ ] NBA-S-7: 2回連続でmaterial progressが増えない場合、同じActionの無限反復ではなく再診断、split、human checkpoint、stopのいずれかへ遷移する。
 - [ ] NBA-S-8: decision recordは結論と入力指標だけを保持し、hidden chain-of-thoughtやraw transcriptを要求・保存しない。
+- [ ] NBA-S-9: `cancelled`または`pr_ready`の終端RunではControllerを再実行せず既存の終端状態を返し、`cancelled`への再cancelは冪等に同じ状態を返す。
 
 ## 依存関係・完了順
 

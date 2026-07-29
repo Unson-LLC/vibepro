@@ -1,0 +1,75 @@
+{
+  "status": "pass",
+  "summary": "Current HEAD cd0919ac66ae0db8c1114f6d5acec30044d37d20 satisfies the architecture_boundary contract. The final test correction makes the PR-ship stale-review fixture explicitly strict-head-bound, so it now tests the preserved override compatibility instead of contradicting the new content-surface default. Story, Architecture, Spec, runtime policy/content binding, fail-closed behavior, and aggregate review inputs remain aligned.",
+  "inspection_summary": "Independently reviewed the current review request and authorized lifecycle, all bounded aggregate handoff summaries, Story/Architecture/Spec and parent design lineage, the freshness-policy/result-binding/merge-delta implementation, content-binding build/evaluation, the amended CLI integration fixture, focused contract tests, legacy compatibility coverage, and the Story E2E matrix. The amended test passed alone at current HEAD; the current-HEAD verification artifact records the focused suite at 39/39; and the E2E matrix independently passed 8/8.",
+  "inspection_evidence": {
+    "current_head": "cd0919ac66ae0db8c1114f6d5acec30044d37d20",
+    "lifecycle_id": "72b6651a-8fd2-4654-b6d2-fb5e1d2ed62c",
+    "dispatch_authorization_id": "703e5519-f13a-4cc5-b10b-ca84457006e1",
+    "verification_artifact": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json",
+    "commands": [
+      {
+        "command": "node --test --test-name-pattern='pr ship dry-run restores Agent Review commands from explicitly strict stale role gates' test/vibepro-cli.test.js",
+        "result": "pass 1/1"
+      },
+      {
+        "command": "node --test test/content-scoped-evidence-freshness.test.js test/review-inspection-first.test.js",
+        "result": "current-HEAD verification artifact records pass 39/39; independent run completed without an inspectable final exit summary, so the artifact is the asserted aggregate evidence"
+      },
+      {
+        "command": "node --test test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+        "result": "pass 8/8"
+      },
+      {
+        "command": "git diff --check origin/main...HEAD",
+        "result": "pass"
+      }
+    ]
+  },
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/review-request-architecture_boundary.md",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/review-plan.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/parallel-dispatch.md",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/lifecycle.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/design-ssot-reconciliation.summary.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/senior-gap-judgment.summary.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/ref-topology.summary.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/decision-records.summary.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json",
+    ".vibepro/spec/story-vibepro-surface-aware-agent-review-freshness/spec.json",
+    ".vibepro/config.json",
+    "design-ssot.json",
+    "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+    "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+    "docs/specs/story-vibepro-content-scoped-evidence-freshness.md",
+    "src/agent-review.js",
+    "src/content-binding.js",
+    "test/content-scoped-evidence-freshness.test.js",
+    "test/review-inspection-first.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-content-scoped-evidence-freshness-main.test.js",
+    "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts"
+  ],
+  "judgment_delta": [
+    "Initial concern: changing the stale PR-ship fixture might merely force a pass and weaken the new default contract. Final judgment: the fixture now records gate_evidence with both --strict-head-binding and a reason, then changes HEAD and asserts the stale recovery path; it specifically proves SARF-INV-4 while other contract tests prove gate_evidence/release_risk default to content_surface.",
+    "Initial concern: an explicit strict override might bypass content binding or lose inspection/lifecycle guarantees. Final judgment: resolveReviewFreshnessPolicy requires a non-empty strict reason, buildContentBinding retains inspected surface metadata in strict_head mode, bindReviewResult stales on HEAD mismatch, and the fixture still records inspection summary/input, judgment delta, parallel-subagent provenance, and closure.",
+    "Initial concern under regression_guard: fixing one integration fixture could leave the existing content-surface, legacy merge-delta, dirty fingerprint, or fail-closed paths unverified. Final judgment: exact-current-HEAD focused evidence is 39/39, the strict fixture independently passes 1/1, and the current E2E matrix independently passes 8/8 across unchanged-surface reuse, changed-surface staleness, unresolved-diff failure, lifecycle/provenance, and strict override.",
+    "Initial concern under path_surface_coverage: the source policy, generated lineage, config/document contract, CLI recovery output, or gate artifact could diverge. Final judgment: Story/Architecture/Spec and parent design declare the same authority and rollback boundary; agent-review and content-binding preserve content_surface, legacy, and explicit strict branches; bounded aggregate inputs and current artifacts expose rather than suppress stale reasons and recovery commands."
+  ],
+  "findings": [],
+  "agent_provenance": {
+    "agent_system": "codex",
+    "execution_mode": "parallel_subagent",
+    "reviewer_identity": "separate_session",
+    "agent_id": "/root/sarf_preflight_review",
+    "agent_thread_id": "/root/sarf_preflight_review",
+    "agent_session_id": "/root/sarf_preflight_review",
+    "lifecycle_id": "72b6651a-8fd2-4654-b6d2-fb5e1d2ed62c",
+    "dispatch_authorization_id": "703e5519-f13a-4cc5-b10b-ca84457006e1",
+    "started_at": "2026-07-23T21:55:41.592Z",
+    "reviewed_head_sha": "cd0919ac66ae0db8c1114f6d5acec30044d37d20",
+    "reviewed_surface_digest": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574"
+  }
+}

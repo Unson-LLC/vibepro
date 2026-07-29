@@ -1,0 +1,188 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "implementation",
+  "role": "code_spec_alignment",
+  "status": "pass",
+  "summary": "Selected schema 0.2 route reconciliation aligns with OCR-S-9 and INV-OCR-7",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/qa/review-code_spec_alignment-a9109350.json"
+  ],
+  "inspection": {
+    "summary": "Compared origin/main diff with Story Architecture Spec Task execution-state route resolution and focused unit E2E coverage",
+    "evidence": ".vibepro/qa/review-code_spec_alignment-a9109350.json",
+    "inputs": [
+      "src/execution-state.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial route ownership concern -> pass because selected canonical templates drive scoped synchronization and 56 focused tests pass"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "managed branch mismatch: expected vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8, found vibepro/story-vibepro-one-command-pr-ready-closure-reconcile-routing",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "a9109350819af99df22448d6ed8bd75adf611e36",
+    "current_head_sha": "a9109350819af99df22448d6ed8bd75adf611e36",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-reconcile-routing",
+      "current_head_sha": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-24T09:08:04.147Z"
+        }
+      }
+    }
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "managed branch mismatch: expected vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8, found vibepro/story-vibepro-one-command-pr-ready-closure-reconcile-routing",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "expected_head_sha": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "current_head_sha": "a9109350819af99df22448d6ed8bd75adf611e36",
+      "managed_worktree": {
+        "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+        "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+        "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+        "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-reconcile-routing",
+        "current_head_sha": "a9109350819af99df22448d6ed8bd75adf611e36",
+        "dirty": false,
+        "dirty_fingerprint": "clean",
+        "raw_dirty": false,
+        "raw_dirty_fingerprint": "clean",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ],
+          "user_includes": [
+            ".vibepro/config.json"
+          ]
+        },
+        "policy_sync": {
+          "status": "unchanged",
+          "reason": "policy sections already match the source repo config",
+          "sections_updated": [],
+          "last_event": {
+            "status": "synced",
+            "sections_updated": [
+              "budgets"
+            ],
+            "synced_at": "2026-07-24T09:08:04.147Z"
+          }
+        }
+      }
+    }
+  ],
+  "recorded_at": "2026-07-24T13:01:43.411Z",
+  "git_context": {
+    "head_sha": "a9109350819af99df22448d6ed8bd75adf611e36",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-reconcile-routing",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T13:01:43.407Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 1 file(s)",
+    "recorded_head_sha": "a9109350819af99df22448d6ed8bd75adf611e36",
+    "surface_files": [
+      {
+        "path": "src/execution-state.js",
+        "sha256": "c4d1a504fc36be746a88808576d1fc9b1e6cbf7134398d82f196cb07cdd9a5e8",
+        "size": 78535
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "5aabfbae851002a5fe1cf50b8d48baa69a16013ffbf030328189bd03959dd8a3"
+  },
+  "source_fingerprint": "f11626dc22d8606b192615337ebac653e380dae4a1cd8550d3640b02f9a156ef",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/review_code_spec_a910",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "high",
+    "cost_tier": "low",
+    "thread_id": "/root/review_code_spec_a910",
+    "session_id": "/root/review_code_spec_a910",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/review-code_spec_alignment-a9109350.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/review-request-code_spec_alignment.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/review-code_spec_alignment-a9109350.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "/root/review_code_spec_a910",
+      "implementation_session_id": "/root",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

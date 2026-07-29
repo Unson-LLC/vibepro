@@ -1,0 +1,717 @@
+{
+  "schema_version": "0.1.0",
+  "tool": "vibepro",
+  "workspace": ".vibepro",
+  "output": {
+    "language": "ja"
+  },
+  "execution": {
+    "managed_worktree": "preferred"
+  },
+  "agent_reviews": {
+    "defaults": {
+      "validation_sequence_owns_checkpoints": true
+    }
+  },
+  "artifact_routing": {
+    "schema_version": "0.2.0",
+    "artifacts": {},
+    "profiles": {
+      "feature_packet": {
+        "artifacts": {
+          "story": {
+            "canonical": "docs/management/stories/active/{story_id}.md",
+            "ownership": "curated"
+          },
+          "architecture": {
+            "canonical": "docs/architecture/{story_id}.md",
+            "ownership": "curated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/04_technical_delta.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "architecture_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "accepted_spec": {
+            "canonical": ".vibepro/spec/{story_id}/spec.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/02_functional_spec.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "functional_spec_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "task_plan": {
+            "canonical": ".vibepro/stories/{story_id}/tasks/tasks.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/06_tasks.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "tasks_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "graphify": {
+            "canonical": ".vibepro/graphify",
+            "ownership": "generated"
+          },
+          "evidence": {
+            "canonical": ".vibepro/evidence/{story_id}",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/07_evidence.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "evidence_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "test_plan": {
+            "canonical": ".vibepro/test-plans/{story_id}.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/05_test_plan.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "test_plan_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "review": {
+            "canonical": ".vibepro/reviews/{story_id}",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/08_review.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "review_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "gate": {
+            "canonical": ".vibepro/pr/{story_id}/gate-dag.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/09_gate.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "gate_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "pr": {
+            "canonical": ".vibepro/pr/{story_id}/pr-prepare.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/features/{feature_slug}/10_release.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "release_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "governance_packet": {
+        "artifacts": {
+          "story": {
+            "canonical": "docs/management/stories/active/{story_id}.md",
+            "ownership": "curated"
+          },
+          "architecture": {
+            "canonical": "docs/architecture/{story_id}.md",
+            "ownership": "curated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/architecture.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "architecture_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "accepted_spec": {
+            "canonical": ".vibepro/spec/{story_id}/spec.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/functional-spec.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "functional_spec_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "task_plan": {
+            "canonical": ".vibepro/stories/{story_id}/tasks/tasks.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/tasks.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "tasks_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "graphify": {
+            "canonical": ".vibepro/graphify",
+            "ownership": "generated"
+          },
+          "evidence": {
+            "canonical": ".vibepro/evidence/{story_id}",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/evidence.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "evidence_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "test_plan": {
+            "canonical": ".vibepro/test-plans/{story_id}.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/test-plan.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "test_plan_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "review": {
+            "canonical": ".vibepro/reviews/{story_id}",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/review.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "review_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "gate": {
+            "canonical": ".vibepro/pr/{story_id}/gate-dag.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/gate.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "gate_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          },
+          "pr": {
+            "canonical": ".vibepro/pr/{story_id}/pr-prepare.json",
+            "ownership": "generated",
+            "projections": [
+              {
+                "path": "docs/governance/{feature_slug}/release.md",
+                "ownership": "generated",
+                "renderer": {
+                  "id": "release_summary_markdown",
+                  "version": "1"
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "budgets": {
+    "pr_artifact_bytes": 16384,
+    "delivery_efficiency": {
+      "max_elapsed_ms": 2700000,
+      "max_observed_work_ms": 900000,
+      "max_active_wait_ms": 1200000,
+      "max_tool_wait_ms": 1200000,
+      "max_total_tokens": null,
+      "max_fresh_input_tokens": 8000000,
+      "max_cost_usd": null,
+      "max_subagent_count": 6,
+      "max_agent_consumption_ms": 1800000,
+      "max_repair_batches": 3,
+      "max_expensive_verification_count": 1,
+      "max_review_dispatches_by_role": {
+        "architecture": 1,
+        "implementation": 1,
+        "runtime": 1,
+        "security": 1
+      },
+      "require_known_attribution": false
+    },
+    "delivery_efficiency_by_story": {
+      "story-vibepro-merge-waiver-propagation": {
+        "max_subagent_count": 9,
+        "amendment_reason": "The delivery requires three implementation roles and three distinct gate roles. One bounded replacement pass consumed the remaining three lifecycle slots after concrete implementation findings. The user explicitly approved raising this Story-only cap from six to nine on 2026-07-23. Reuse the same three lightweight agents for the required gate roles, and permit no further budget amendment or replacement loop."
+      },
+      "story-vibepro-trusted-delivery-efficiency-guardrail": {
+        "max_subagent_count": 21,
+        "max_agent_consumption_ms": 3300000,
+        "amendment_reason": "Six review lifecycles predate pre-spawn authorization and 19 recorded lifecycle runs exhausted the prior Story-local allowance before final closure. User explicitly authorized merge completion on 2026-07-22. Allow only the two current-HEAD gate-evidence and release-risk lifecycles plus fresh-context evidence and judgment adjudication, collected in one lightweight provider run with one bounded 600000 ms consumption allowance; no other review dispatch is permitted, and default Story budgets remain unchanged."
+      },
+      "story-vibepro-independent-review-orchestration": {
+        "max_elapsed_ms": null,
+        "max_observed_work_ms": null,
+        "max_active_wait_ms": null,
+        "max_tool_wait_ms": null,
+        "max_subagent_count": 22,
+        "max_agent_consumption_ms": null,
+        "amendment_reason": "Historical repair and stale lifecycle time predates the final frozen HEAD and exhausted duration and aggregate agent-consumption limits. User explicitly authorized merge completion on 2026-07-22. Disable only historical time dimensions and allow only the current-HEAD architecture-boundary, gate-evidence, and release-risk lifecycles plus fresh-context adjudication with lightweight agents; dispatch-count limits remain enforced, and default Story budgets remain unchanged."
+      }
+    }
+  },
+  "brainbase": {
+    "stories": [
+      {
+        "story_id": "story-vibepro-merge-waiver-propagation",
+        "title": "PR作成時の監査可能なGate waiverをexecute mergeへ安全に伝播する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-22",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-artifact-output-routing",
+        "title": "成果物の正本出力先をリポジトリ設定で一意に制御する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-19",
+        "due_at": null,
+        "category": "dev"
+      },
+      {
+        "story_id": "story-vibepro-routing-profiles-rendered-projections",
+        "title": "Story別routing profileとlineage付きprojectionでfeature packetを正本化する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "dev",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "routing-profiles-rendered-projections"
+      },
+      {
+        "story_id": "story-vibepro-session-attribution-boundary-guard",
+        "title": "Session cost attributionを構造的なworktree境界に限定する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-18",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-human-decision-checkpoint",
+        "title": "実行を止める重要判断だけを永続化して再開するHuman Checkpoint",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-15",
+        "due_at": null,
+        "category": "product"
+      },
+      {
+        "story_id": "story-vibepro-agent-runtime-adapters",
+        "title": "実装・Reviewを委譲するProvider-neutral Agent Runtime Adapter",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-15",
+        "due_at": null,
+        "category": "platform"
+      },
+      {
+        "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+        "title": "高シグナル確認を先行するRisk-adaptive Validation Sequencing",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-16",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-review-finding-repair-loop",
+        "title": "Review findingを実装修正へ戻すBounded Repair Loop",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-15",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-story-run-portfolio-controller",
+        "title": "複数Storyを混載しないStory Run Portfolio Controller",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-16",
+        "due_at": null,
+        "category": "product"
+      },
+      {
+        "story_id": "story-vibepro-guarded-autonomy-hardening",
+        "title": "Guarded Autonomyを予算・独立Review・成果指標で本番運用可能にする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "product"
+      },
+      {
+        "story_id": "story-vibepro-autonomous-implementation-closure-roadmap",
+        "title": "自律実装の実行プレーンを1コマンドPR-readyへ接続する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "architecture"
+      },
+      {
+        "story_id": "story-vibepro-autonomous-action-dag",
+        "title": "Guarded Runを完全な型付き自律Action DAGへ拡張する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "architecture"
+      },
+      {
+        "story_id": "story-vibepro-production-runtime-connectors",
+        "title": "Agent Runtime Adapterへproduction connectorを接続する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "platform"
+      },
+      {
+        "story_id": "story-vibepro-independent-review-orchestration",
+        "title": "Required Reviewを独立agentへ自動dispatchして記録する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-one-command-pr-ready-closure",
+        "title": "1コマンド自律実装を実Runtime E2Eで閉じる",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+        "title": "Summary depthのCanonical Audit Replayを欠損なく引き継ぐ",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-explicit-run-attribution-lineage",
+        "title": "Thread分離に依存せずRun lineageでstory attributionを確定する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "product",
+        "judgment_ssot": "docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json",
+        "gate_evidence_ssot": "docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json#/gate_evidence",
+        "validation_sequence_state": ".vibepro/validation-sequencing/story-vibepro-explicit-run-attribution-lineage/state.json",
+        "task_plan_source": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+        "reviewability_evidence": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
+        "reviewability_authority": "current_independent_pr_split_scope_result",
+        "split_plan_authority": "advisory_only",
+        "pr_decision": "one_pr",
+        "pr_decision_rationale": "The owned changes form one coherent Run-attribution contract with no independently reviewable boundary."
+      },
+      {
+        "story_id": "story-vibepro-content-scoped-evidence-reuse-key",
+        "title": "Evidence reuse keyをhead束縛からcontent surface束縛へ移す",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-trusted-delivery-efficiency-guardrail",
+        "title": "Trusted PR-readyまでの総コストを制御するDelivery Efficiency Guardrail",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality",
+        "performanceMetrics": [
+          {
+            "schema_version": "0.1.0",
+            "metricId": "review-wait",
+            "userStory": "Agent Reviewの品質を維持しながらReview待機wall-clockを削減したい",
+            "readinessKind": "system_internal",
+            "startCondition": {
+              "description": "Storyの最初のReview lifecycleがstartされる",
+              "kind": "custom"
+            },
+            "completionCondition": {
+              "description": "当該Storyのrequired Review lifecycleが全てterminalになる",
+              "kind": "custom"
+            },
+            "intermediateMarkers": [],
+            "timeoutMs": 30000,
+            "failureClassifications": [
+              "blocked",
+              "needs_review",
+              "timeout",
+              "auth_required",
+              "resource_unavailable",
+              "unknown"
+            ],
+            "evidenceSources": [
+              {
+                "type": "manual_observation",
+                "description": "manual_observation"
+              }
+            ],
+            "comparisonPolicy": {
+              "mode": "before_after",
+              "beforeLabel": "before",
+              "afterLabel": "after",
+              "statistic": "p50_p90_max",
+              "compareOnlySameCompletionCondition": true
+            }
+          },
+          {
+            "schema_version": "0.1.0",
+            "metricId": "observed-work",
+            "userStory": "Storyに関連する実作業とtool waitの観測時間を削減したい",
+            "readinessKind": "system_internal",
+            "startCondition": {
+              "description": "Storyに関連する最初のtoken、tool、agent eventが観測される",
+              "kind": "custom"
+            },
+            "completionCondition": {
+              "description": "Trusted PR-readyまたは型付き停止までの関連event集計が完了する",
+              "kind": "api_completed"
+            },
+            "intermediateMarkers": [],
+            "timeoutMs": 30000,
+            "failureClassifications": [
+              "blocked",
+              "needs_review",
+              "timeout",
+              "auth_required",
+              "resource_unavailable",
+              "unknown"
+            ],
+            "evidenceSources": [
+              {
+                "type": "manual_observation",
+                "description": "manual_observation"
+              }
+            ],
+            "comparisonPolicy": {
+              "mode": "before_after",
+              "beforeLabel": "before",
+              "afterLabel": "after",
+              "statistic": "p50_p90_max",
+              "compareOnlySameCompletionCondition": true
+            }
+          },
+          {
+            "schema_version": "0.1.0",
+            "metricId": "trusted-pr-ready-elapsed",
+            "userStory": "Trusted PR-readyまでの総経過時間を、品質Gateを維持したまま短縮したい",
+            "readinessKind": "system_internal",
+            "startCondition": {
+              "description": "Story Runが作成され、最初のmutating actionを開始できる",
+              "kind": "custom"
+            },
+            "completionCondition": {
+              "description": "current HEADでrequired Gateが通りready_for_pr_create=trueになる、または型付き停止になる",
+              "kind": "custom"
+            },
+            "intermediateMarkers": [],
+            "timeoutMs": 30000,
+            "failureClassifications": [
+              "blocked",
+              "needs_review",
+              "timeout",
+              "auth_required",
+              "resource_unavailable",
+              "unknown"
+            ],
+            "evidenceSources": [
+              {
+                "type": "manual_observation",
+                "description": "manual_observation"
+              }
+            ],
+            "comparisonPolicy": {
+              "mode": "before_after",
+              "beforeLabel": "before",
+              "afterLabel": "after",
+              "statistic": "p50_p90_max",
+              "compareOnlySameCompletionCondition": true
+            }
+          }
+        ]
+      },
+      {
+        "story_id": "story-vibepro-managed-worktree-policy-resync",
+        "title": "Managed worktreeのポリシーconfigを凍結させず親repoから再同期する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-target-architecture-conformance",
+        "title": "Target Architecture SSOTとconformance dry-runを導入する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-22",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-node20-e2e-ts-ci-visibility",
+        "title": "Node 20 CIレーンのe2e .ts spec偽passを可視化しNode 22+必須ゲートで実行する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-22",
+        "due_at": null
+      },
+      {
+        "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+        "title": "Canonical auditがreview root直下のstory-level state fileでmergeを失敗させないようにする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-22",
+        "due_at": null,
+        "category": "quality"
+      }
+    ],
+    "current_story_id": "story-vibepro-merge-waiver-propagation"
+  }
+}

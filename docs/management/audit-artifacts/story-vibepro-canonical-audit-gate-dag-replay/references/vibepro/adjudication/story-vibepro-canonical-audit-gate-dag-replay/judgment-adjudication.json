@@ -1,0 +1,526 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+  "updated_at": "2026-07-21T08:40:35.074Z",
+  "events": [
+    {
+      "event_id": "0ff30a1e-321b-494f-97de-399508394719",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "StoryのUser Value、4つのAcceptance Criteria、Non Goalsが、summary-depth代替契約、incomplete時のfail-closed、full-depth互換、malformed JSONのfail-fastを具体化しており、実装差分と直接対応している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:01:28.526Z"
+    },
+    {
+      "event_id": "758ce98b-d15c-47db-88dc-712cbc8e9376",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "機械判定はchanged-file/Graphify情報しか認識していないが、current HEADには実際のpromotion経路のfocused runtime evidenceがあり、15件が通過している。runtime/path evidenceが無いという前提が誤っている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:01:28.817Z"
+    },
+    {
+      "event_id": "89a6ad89-9461-4e44-98e0-f09b07b3322d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "ArchitectureとSpecがsummary/full両経路、fail-closed、既存bundle schema非変更を境界として定義し、focused testsが完全代替、不完全代替、full Gate DAG、malformed JSONをそれぞれ検証している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:01:29.145Z"
+    },
+    {
+      "event_id": "ecabc498-4b3f-4084-aaeb-4c702e2a9e2e",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "変更はcanonical audit inventoryと参照解決入力に限定され、planner、Gate DAG生成、圧縮、hash、merge persistenceは非変更。差分もinventory/helper周辺に収まり、既存idempotent persistence testsも通過している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:01:29.482Z"
+    },
+    {
+      "event_id": "247259bd-037a-4597-961d-5669ad44f960",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "focused testsは不完全な代替でsource_missing、handoff replay blocked、unresolved countを確認し、malformed evidence-plan/decision-indexでSyntaxErrorを確認している。failure mode evidenceが存在しないという分類前提が誤っている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:01:29.789Z"
+    },
+    {
+      "event_id": "42fe7e02-1ef7-4880-9478-cce775f041df",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "current HEADに直接のartifact replay testsとcurrent-head-bound unit evidenceがあり、summary完全系、不完全系、full-depth、parse failureを実行している。ラベル文字列の不在をdone evidence欠如とした分類が不適切。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:01:30.223Z"
+    },
+    {
+      "event_id": "eb729f35-0959-4d53-a861-51d142b008b9",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "summary-depthでは明示的skipと代替artifact集合を要求し、不完全なら従来のgate_dag欠損としてfail closed、full-depthでは物理gate_dagを従来どおり収録する。focused testsが各出力契約を確認している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:01:30.837Z"
+    },
+    {
+      "event_id": "d738c6a4-cd8d-4445-9316-76677bb07adf",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "永続schemaやmigrationは変更せず、canonical bundleへ収録するartifact inventoryだけを切り替える。full/compact persistence、dedupe、regenerationの9 testsとsummary incomplete時のblocked replay検証がある。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:01:31.377Z"
+    },
+    {
+      "event_id": "fc531e88-e24d-40c2-adf6-8f88875bc717",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "5 commitsはStory、実装、設計SSOT、parse failure、fail-closed証明という同一intentの積み上げで、実質的な変更面はcanonical-audit.jsとfocused testに集中し、一貫してレビュー可能。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:01:31.847Z"
+    },
+    {
+      "event_id": "5b2eb412-c531-419b-8cde-9fb50d7cce46",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "parse_failureは実契約上必要。evidence-plan.jsonとdecision-index.jsonの両方についてmalformed JSON時にpromotionがSyntaxErrorでrejectされるfocused testsがcurrent HEADで通過している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:01:32.575Z"
+    },
+    {
+      "event_id": "e507da60-a40e-4798-9b2a-7d55abb75ad6",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "完全なsummary代替ではgate_dagのmissing/unresolvedを除去して代替artifactを保存し、不完全な代替ではgate_dag参照をsource_missingとして保持してhandoff replayをblockedにする。full-depth収録とidempotent persistenceも検証済み。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:01:32.973Z"
+    },
+    {
+      "event_id": "b6866894-c301-48f4-b34d-4220104e9609",
+      "type": "premise_correction",
+      "item_id": "spine:current_reality",
+      "corrects_verdict_id": "758ce98b-d15c-47db-88dc-712cbc8e9376",
+      "wrong_premise": "runtime/path evidence is absent",
+      "corrected_premise": "current HEAD includes focused runtime promotion tests and current-head-bound verification evidence",
+      "reason": "The classifier omitted existing runtime path evidence; replace the premise with the directly executed canonical promotion tests.",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "sha256": "6ffe537e44c9826f575eeafdf2cab7c3332dd2adfea5d7394d118e87edf220ef"
+        },
+        {
+          "artifact": "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "sha256": "44193f4e4f327af43cb846c9b3f280285cda89bf1c4ea4b46da1d2a448ff7d2c"
+        },
+        {
+          "artifact": "test/canonical-audit-self-contained.test.js",
+          "sha256": "48888f647cc0ec722be2f8afe794ef06a360b22b2cbba609c84b70598af8b37c"
+        },
+        {
+          "artifact": "test/canonical-audit-idempotent-persistence.test.js",
+          "sha256": "fb9b473a1755f11a9dbe97b1eff9fee6bf945535d896bf278f8a25d8e59edfcd"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:02:02.093Z"
+    },
+    {
+      "event_id": "d08b0d27-495a-4c42-bd91-3dd4c5e5adec",
+      "type": "premise_correction",
+      "item_id": "spine:failure_modes",
+      "corrects_verdict_id": "247259bd-037a-4597-961d-5669ad44f960",
+      "wrong_premise": "artifact replay failure-mode evidence is absent",
+      "corrected_premise": "focused tests demonstrate source_missing and blocked replay for incomplete substitutes plus SyntaxError for malformed substitute JSON",
+      "reason": "The classifier omitted current-head failure-mode evidence; replace it with the focused negative-path tests.",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "sha256": "6ffe537e44c9826f575eeafdf2cab7c3332dd2adfea5d7394d118e87edf220ef"
+        },
+        {
+          "artifact": "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "sha256": "44193f4e4f327af43cb846c9b3f280285cda89bf1c4ea4b46da1d2a448ff7d2c"
+        },
+        {
+          "artifact": "test/canonical-audit-self-contained.test.js",
+          "sha256": "48888f647cc0ec722be2f8afe794ef06a360b22b2cbba609c84b70598af8b37c"
+        },
+        {
+          "artifact": "test/canonical-audit-idempotent-persistence.test.js",
+          "sha256": "fb9b473a1755f11a9dbe97b1eff9fee6bf945535d896bf278f8a25d8e59edfcd"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:02:02.447Z"
+    },
+    {
+      "event_id": "9b4111a2-92bc-4dde-b053-b2894413af19",
+      "type": "premise_correction",
+      "item_id": "spine:done_evidence",
+      "corrects_verdict_id": "42fe7e02-1ef7-4880-9478-cce775f041df",
+      "wrong_premise": "done evidence is absent because expected label strings are absent",
+      "corrected_premise": "current-head-bound unit and integration evidence execute the actual summary, incomplete, full-depth, parse-failure, and persistence paths",
+      "reason": "Evidence sufficiency must be based on executed behavior and artifacts rather than label-string presence.",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/management/stories/active/story-vibepro-canonical-audit-gate-dag-replay.md",
+          "sha256": "6ffe537e44c9826f575eeafdf2cab7c3332dd2adfea5d7394d118e87edf220ef"
+        },
+        {
+          "artifact": "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+          "sha256": "44193f4e4f327af43cb846c9b3f280285cda89bf1c4ea4b46da1d2a448ff7d2c"
+        },
+        {
+          "artifact": "test/canonical-audit-self-contained.test.js",
+          "sha256": "48888f647cc0ec722be2f8afe794ef06a360b22b2cbba609c84b70598af8b37c"
+        },
+        {
+          "artifact": "test/canonical-audit-idempotent-persistence.test.js",
+          "sha256": "fb9b473a1755f11a9dbe97b1eff9fee6bf945535d896bf278f8a25d8e59edfcd"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:02:02.779Z"
+    },
+    {
+      "event_id": "f826ddd8-c20b-4778-89ad-53ddb16690bf",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "b6866894-c301-48f4-b34d-4220104e9609",
+      "reason": "Replacement hashes match; Story and Spec map to focused promotion tests, and verification evidence is strict-head-bound with passing unit and integration runs.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/correction_judge_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:04:34.948Z"
+    },
+    {
+      "event_id": "65100c2f-6164-4d36-b48a-a3cbeb89d9d5",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "d08b0d27-495a-4c42-bd91-3dd4c5e5adec",
+      "reason": "Focused tests prove incomplete substitutes retain missing gate_dag and blocked replay, and both malformed substitute JSON paths reject with SyntaxError.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/correction_judge_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:04:35.465Z"
+    },
+    {
+      "event_id": "635fa59c-b3c5-403d-bffa-0874622fc613",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "9b4111a2-92bc-4dde-b053-b2894413af19",
+      "reason": "Executed behavior covers complete summary replay, incomplete fail-closed, full-depth capture, malformed JSON paths, and persistence/replay; independent rerun passed 24/24.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/correction_judge_b7f_light",
+        "session_ref": null
+      },
+      "head_commit": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "recorded_at": "2026-07-21T08:04:36.115Z"
+    },
+    {
+      "event_id": "7866e39f-0e63-467a-b021-f195dd4c0f5b",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Four ACs map directly to implementation and executable CAGR scenarios.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:42.967Z"
+    },
+    {
+      "event_id": "15da5ef8-27e5-42b3-aebe-dce9ae7088ce",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current promotion and replay paths are observed by the current-HEAD 26/26 E2E artifact.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:43.089Z"
+    },
+    {
+      "event_id": "74b95ea9-dc4e-4475-a516-54b6d456ca65",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Complete substitute, incomplete fail-closed, full DAG, and parse propagation invariants are specified and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:43.213Z"
+    },
+    {
+      "event_id": "b292a48c-8dab-4af6-b85b-d74c0d748457",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Change is bounded to canonical audit inventory and reference filtering; planner, persistence, compression, and hash contracts remain unchanged.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:43.338Z"
+    },
+    {
+      "event_id": "fb9eec95-b483-4f74-925b-664d21479c90",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Incomplete substitute remains missing/source_missing/blocked and malformed JSON stops promotion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:43.463Z"
+    },
+    {
+      "event_id": "651c21cd-785c-4267-955b-4033415d75d4",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current HEAD has strict-bound unit 15/15, integration 9/9, and verified E2E 26/26 evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:43.587Z"
+    },
+    {
+      "event_id": "0c54202e-aabb-4328-a9f6-14865f923aeb",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Summary output is intentionally extended while full physical gate DAG and fail-closed output contracts remain compatible.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:43.711Z"
+    },
+    {
+      "event_id": "710781c6-271e-4d44-a537-94bfcfada651",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No database or migration change; deterministic bundle persistence and replay regression tests pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:43.837Z"
+    },
+    {
+      "event_id": "776e9384-ba63-4389-b86f-b04b39844ba5",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Focused helper, regression tests, and single Story design/spec form one coherent review surface.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:43.962Z"
+    },
+    {
+      "event_id": "a75e4ebd-2054-46ab-9003-adf127912e5c",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Two tests corrupt evidence-plan and decision-index independently and assert SyntaxError propagation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:44.089Z"
+    },
+    {
+      "event_id": "6a96555c-c7a1-4674-991d-692ba3f2ab88",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Only complete substitutes suppress missing gate DAG; incomplete summaries remain blocked, full-depth stays physical, and persisted replay passes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:31:44.225Z"
+    },
+    {
+      "event_id": "6e4677ca-2091-4e74-99e4-eabb17d87c6e",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Canonical promotion topology remains synchronous and bounded: complete summaries replace only physical gate_dag inventory, incomplete summaries remain source_missing and blocked, full-depth retains physical DAG, parse errors abort, and current-head 26/26 replay plus idempotency and CI evidence pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudicate_bb7_light",
+        "session_ref": null
+      },
+      "head_commit": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+      "recorded_at": "2026-07-21T08:40:35.073Z"
+    }
+  ]
+}

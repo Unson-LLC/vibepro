@@ -1,0 +1,1 @@
+{"status":"pass","summary":"Gate到達条件と改ざん防止の回帰カバレッジは十分。","inspection_evidence":"safe-action-orchestrator 57 pass; E2E 1 pass; guarded-run-session 104 pass","findings":[]}

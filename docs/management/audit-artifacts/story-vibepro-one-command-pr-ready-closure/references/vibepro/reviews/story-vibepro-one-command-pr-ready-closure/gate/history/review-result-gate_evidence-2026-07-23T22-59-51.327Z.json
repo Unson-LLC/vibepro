@@ -1,0 +1,207 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "AC8 repair passes, but E2E evidence counts a circular hard-coded acceptance-prose test and overclaims scope",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "e2e-hard-coded-acceptance-marker",
+      "detail": "Remove or replace the hard-coded acceptance prose test, rerun E2E with truthful substantive count/scope, and rebind Gate/adjudication"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/qa/review-gate-evidence-e7ce2b31.json"
+  ],
+  "inspection": {
+    "summary": "Inspected current gate request, AC8 repair, Story/Spec/source/E2E, all five strict current-head verification kinds, validation phases, authority/failure gates and conformance; four substantive scenarios pass but fifth test only matches hard-coded prose",
+    "evidence": ".vibepro/qa/review-gate-evidence-e7ce2b31.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+      "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+      "docs/management/stories/active/story-vibepro-production-runtime-connectors.md",
+      "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
+      "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+      "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+      "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+      "src/one-command-pr-ready-closure.js",
+      "src/guarded-run-session.js",
+      "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "Prior AC8 gap resolved; exact-head verification, validation and conformance pass; remaining fifth E2E marker is circular and makes persisted scope overstated"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "e7ce2b312147c3f10bd2c1b56b1586151cc2c51d",
+    "current_head_sha": "e7ce2b312147c3f10bd2c1b56b1586151cc2c51d",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "e7ce2b312147c3f10bd2c1b56b1586151cc2c51d",
+      "dirty": true,
+      "dirty_fingerprint": " M .vibepro/config.json",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M .vibepro/config.json",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T21:02:29.971Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-23T22:59:51.327Z",
+  "git_context": {
+    "head_sha": "e7ce2b312147c3f10bd2c1b56b1586151cc2c51d",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "8be6e00841071e369d51254ec5b78b1c68a792a307b847de88e2178118479034",
+    "user_status_fingerprint_hash": "8be6e00841071e369d51254ec5b78b1c68a792a307b847de88e2178118479034",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T22:59:51.313Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "gate evidence must bind every current HEAD evidence claim"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "e7ce2b312147c3f10bd2c1b56b1586151cc2c51d",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "3af6fa873c76a9dc17abc4a50da29feb54419dc9e1e4e96922ebed4206c758e2",
+        "size": 10278
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+        "sha256": "a37f60a716453e67453caaa312fe53cd558d048023403411ac33f43277d51f27",
+        "size": 3613
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+        "sha256": "9d77fec7531ce57f04e6c2a029fe98a9d95b3467a9f35ba94b01d50d805e9ae0",
+        "size": 3854
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-independent-review-orchestration.md",
+        "sha256": "496053804ae4f9386f85ed4f94e90c25502007d15b74e5b5e001eaf060928c67",
+        "size": 3504
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "7ffb01b6a44e8d435c2acaaea40f398afd6624ddcc356aa0642791d3a1744491",
+        "size": 8067
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-production-runtime-connectors.md",
+        "sha256": "e634bf40fd6758696bb0c70527fa13e776792f66fa96f7e905c0db2735836dae",
+        "size": 2490
+      },
+      {
+        "path": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+        "sha256": "f9cb691b06654c6e1e8dc0c8893427a5658d2994fbd3e2e641e48289b66f0da8",
+        "size": 8326
+      },
+      {
+        "path": "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+        "sha256": "dcea6e542dc6b1039b19dface31d404bedb0b00df39e3cfb0fba4a9a20e1582e",
+        "size": 11885
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "c1748f041318218de03d95e29fa60ea4bb45484aa8758f9b574c3a8d5a638e8f",
+        "size": 115080
+      },
+      {
+        "path": "src/one-command-pr-ready-closure.js",
+        "sha256": "0a2803f953b02cec3b522fedb73b1dfb7a9734b6e1b9e00131d0ed54e7743ad2",
+        "size": 28336
+      },
+      {
+        "path": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+        "sha256": "ee541197f1384223154361930c0123ed7b5b1421094551002d976d9bd25a6835",
+        "size": 29194
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "a50777d31d2c3c84c9691c9688aeec46cc9f29607a575698390a0f59b6eb092b"
+  },
+  "source_fingerprint": "d09f86f4509e22a8134a09e26fce2d956a5739e6e08ee4647fe49e5d1fdcf7d7",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "review-gate-evidence-e7ce2b31-final",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "/root/review_arch_spec",
+    "session_id": "review-gate-evidence-e7ce2b31-final",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/review-gate-evidence-e7ce2b31.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/review-gate-evidence-e7ce2b31.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "review-gate-evidence-e7ce2b31-final",
+      "implementation_session_id": "closure-implementation-session-e7ce2b31",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

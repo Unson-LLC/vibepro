@@ -1,0 +1,24 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|changed_files:18|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+      "decision_id": "decision-1784541997377-95dde9b0",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "State machine, CLI, CI import, PR Gate, tests, and docs form one rollback unit; splitting would create an unusable partial contract",
+      "artifact": "docs/management/stories/active/story-vibepro-risk-adaptive-validation-sequencing.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:18",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-20T10:06:40.363Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

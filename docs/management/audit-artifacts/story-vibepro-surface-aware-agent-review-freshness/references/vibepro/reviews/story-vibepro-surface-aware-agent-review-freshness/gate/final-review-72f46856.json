@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "reviewer": "/root/current_gate_review",
+  "head_sha": "72f4685623eaa73d17bf10d1d9058ce7947a5b57",
+  "lifecycle_id": "32432376-3524-422c-82ac-30bc7efc4edb",
+  "summary": "gate_evidence/release_riskのsurface-aware契約、fail-closed条件、dirty fingerprint、inspection input、agent provenance、review lifecycle、明示strict overrideを確認。b5229ef以降は承認済みStory-local budget設定だけで、実装・Story・Spec・test surfaceは不変。",
+  "evidence": [
+    "focused tests 39/39 pass",
+    "AC-specific Story E2E 8/8 pass",
+    "git diff b5229ef644cefebd4b1b38b2ee06553483f0adba..72f4685623eaa73d17bf10d1d9058ce7947a5b57 is limited to .vibepro/config.json"
+  ],
+  "findings": []
+}

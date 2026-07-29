@@ -1,0 +1,191 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-infra-story-dependency-cut",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Pure relocation refactor cutting workspace-infra->story import edges (guard.js, managed-worktree.js, managed-worktree-gate.js no longer cross into story-manager.js/decision-records.js); verified behavior-preserving via direct source read, repo-wide grep for stray call sites, and 5 targeted test files all passing. No injected instructions found in Story/Spec/decision-record text.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read full diff (git diff origin/main..HEAD) for target-model.json, story-manager.js, workspace.js, guard.js, performance-evidence.js, pr-manager.js; confirmed decision-records.js real import/consumer graph; confirmed normalizeActiveStories/isArchived move is byte-identical logic; grepped repo for stray imports (none found); ran 5 targeted tests (all pass); cross-checked conformance.json edges",
+    "evidence": ".vibepro/architecture/conformance/conformance.json",
+    "inputs": [
+      "src/decision-records.js",
+      "src/workspace.js",
+      "src/story-manager.js",
+      "src/guard.js",
+      "src/performance-evidence.js",
+      "src/pr-manager.js",
+      "docs/architecture/target-model.json",
+      "test/architecture-conformance.test.js",
+      "test/decision-records.test.js",
+      "test/guard.test.js",
+      "test/managed-worktree-policy-resync.test.js",
+      "test/story-discovery.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: decision-records.js reassignment to workspace-infra could create a new undeclared-dependency regression via its run-context-capsule.js (run-session module) import -> Verified: this edge was already undeclared under story's allowed_dependencies pre-PR (workspace-infra->run-session is a pre-existing violation via unrelated files); reassignment does not create a new zero-to-nonzero module pair, satisfying AC-003.",
+    "Initial concern: AC-001 claims 46->43 edge reduction but measured conformance.json shows 46->45 -> Verified the 3 specifically named real edges are gone by direct source read; residual discrepancy is graphify's self-documented non-deterministic call-attribution noise (Spec IDC-S-002), already transparently flagged as out of scope rather than hidden."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-infra-story-dependency-cut",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-infra-story-dependency-cut",
+    "expected_root": null,
+    "expected_head_sha": "b36d1ee1e0f0454707f9bd7ac4cd763ef13a46a5",
+    "current_head_sha": "b36d1ee1e0f0454707f9bd7ac4cd763ef13a46a5",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-infra-story-dependency-cut",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-infra-story-dependency-cut",
+      "expected_root": null,
+      "expected_head_sha": "b36d1ee1e0f0454707f9bd7ac4cd763ef13a46a5",
+      "current_head_sha": "b36d1ee1e0f0454707f9bd7ac4cd763ef13a46a5",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-24T15:44:53.022Z",
+  "git_context": {
+    "head_sha": "b36d1ee1e0f0454707f9bd7ac4cd763ef13a46a5",
+    "current_branch": "claude/story-vibepro-infra-story-dependency-cut",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T15:44:52.998Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 12 file(s)",
+    "recorded_head_sha": "b36d1ee1e0f0454707f9bd7ac4cd763ef13a46a5",
+    "surface_files": [
+      {
+        "path": "docs/architecture/target-model.json",
+        "sha256": "55fc10da8110d92b097825855e1e918ec8843903682ff39b0de8bbc4bfae7b06",
+        "size": 8282
+      },
+      {
+        "path": "src/decision-records.js",
+        "sha256": "050489ff7501154e09c64dd64ed4207383e676267e48280dbf16333f3cd0db84",
+        "size": 12017
+      },
+      {
+        "path": "src/guard.js",
+        "sha256": "957da549741026af3d54b5aef6bf3f53dc2b77aad4c6ceb973f473ae7e31b5e4",
+        "size": 15745
+      },
+      {
+        "path": "src/performance-evidence.js",
+        "sha256": "127256876f70bf3c150737592e91a2d570e90cdf76857e74a436738146227c7e",
+        "size": 31347
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "050d1f278449025e3cbc4407366372b4e9dda8e5bf4715697559e122af4caa43",
+        "size": 702950
+      },
+      {
+        "path": "src/story-manager.js",
+        "sha256": "9d2c8f5c2270e18117bc8450429d64e3aec9cf451b5f4284391c194bc4bc9043",
+        "size": 96779
+      },
+      {
+        "path": "src/workspace.js",
+        "sha256": "bdfbbd57f61bd35e8ac3f8e34689994b5a394b40ab2e38cebf686bee2aff58d4",
+        "size": 5573
+      },
+      {
+        "path": "test/architecture-conformance.test.js",
+        "sha256": "bf764ce4db81a99ad80ce814773d44099ba60ffde2ebee246f27582ac69e3ec3",
+        "size": 9493
+      },
+      {
+        "path": "test/decision-records.test.js",
+        "sha256": "7ffc994da1e918a1352ea40b2cfb6665a6f8427d6d4143eda3f02e6c81a514b7",
+        "size": 7055
+      },
+      {
+        "path": "test/guard.test.js",
+        "sha256": "55e8df1d7b86891d42cfdc1078174f4265ef9701ac9a29b4a2a556ecfc59156b",
+        "size": 13123
+      },
+      {
+        "path": "test/managed-worktree-policy-resync.test.js",
+        "sha256": "9293d604234eda7d1f199623abb7a8127f9b5f73b4bafe0e0dcb89873a7d9d21",
+        "size": 13687
+      },
+      {
+        "path": "test/story-discovery.test.js",
+        "sha256": "c8fc63ec19802f7fad15c38f9b080387d527083a5f43a5ff5f9c2d4978028c4f",
+        "size": 13116
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "10843a507f7939209d8dcf265d5f690705606ccff64acbdb8ecf2d9584e1867c"
+  },
+  "source_fingerprint": "7e64c3d301b8a8024997615a6a9934a73b1f97aee04ad74769e4845e1264dad5",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a44eaa3855c11eeec",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": "a44eaa3855c11eeec-subagent",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a44eaa3855c11eeec.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-infra-story-dependency-cut/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent returned final verdict JSON in the same Agent tool call (agentId a44eaa3855c11eeec), no further turns spawned",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a44eaa3855c11eeec-subagent",
+      "implementation_session_id": "c22a9134-8f86-46bc-ab42-6faec0ea73c4",
+      "source": "unverified_session_ids"
+    }
+  },
+  "agent_usage": null
+}

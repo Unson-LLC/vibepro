@@ -1,0 +1,1 @@
+{"status":"pass","summary":"最終HEADでも単一PRのscopeは妥当","inspection_summary":"追加はfeature-disable fallbackとdependency fail-closed契約に限定","inspection_evidence":"git diff 4793e815...d4a9d70d","judgment_delta":["追加分は同一DAG foundationの回帰防止で分割不要"],"findings":[]}

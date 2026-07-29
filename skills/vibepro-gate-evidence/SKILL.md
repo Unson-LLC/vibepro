@@ -34,6 +34,9 @@ Touching any file listed in a review's inspected surface (even a Story doc) afte
 
 ## Verification Evidence
 
+- **Prefer `vibepro verify run . --id <id> --kind <kind> -- <command...>` over `verify record` for anything runnable locally.** VibePro executes the command itself and writes the outcome: status from the exit code, test counts parsed from the real output, head sha before/after, duration, and a SHA-256 of stdout. `--status` is rejected, and any `--observed` key the runner computes — every fact it computes is in one asserted set — is overwritten with the computed value and kept as a visible `observation_overrides` diff. Records carry `evidence_source: runner_direct`; `pr autopilot` records `autopilot_run` (VibePro-executed, but shell-run and exit-code-only), `verify import-ci` records `ci_import`, and `verify record` stays `self_reported`.
+- The runner reruns leave a real artifact diff (timestamps, duration, stdout hash), which is what makes "I reran it" checkable instead of assertable. It also strips `NODE_TEST_CONTEXT` from the child env — inherited, it makes `node --test` exit 0 having run nothing.
+- `verify run` exits non-zero when the executed command fails, and still records the failing run honestly. Read its warnings before treating a pass as coverage: `counts_trivial` / `counts_not_parsed` mean the record proves the command did not fail, not how much it checked.
 - `vibepro verify record` overwrites per `--kind`. A throwaway `--command "echo test"` destroys the real record for that kind.
 - Prefer structured observations: `--target <path>`, `--scenario <text>`, `--observed key=value`. Evidence classification matches the **observation text**, not the summary. Put markers like `scenario_clause_e2e: spec clause S-001 ...` directly in `--scenario`, using the registered Spec's clause id scheme.
 - Evidence strength: a matching kind alone is `supporting` and does not satisfy judgment-spine gates. Attach a real status artifact generated from the actual exit code (`{"status":"pass","exit_code":0}`) via `--artifact` to reach `quality=verified` / `strength=strong`.
@@ -42,9 +45,11 @@ Touching any file listed in a review's inspected surface (even a Story doc) afte
 
 ## Agent Review Lifecycle
 
-Order per role: `review prepare` → `review start` (with the **real** subagent id) → dispatch the subagent → `review close --close-reason completed` → `review record --agent-closed`.
+Order per role: `review prepare` → `review authorize` (model, risk closure, freeze, Story-wide budget) → dispatch only when authorized → `review start --dispatch-authorization <id>` (with the **real** subagent id) → `review close --close-reason completed` → `review record --agent-closed`.
 
-- Started with a placeholder id? Repair: `close --close-reason replaced` → `start` with the real id → `close completed` → `record`.
+- Never spawn first and authorize later. An authorization stop means no subagent is started. Active reservations count against the Story budget, preventing parallel coordinators from overbooking it.
+
+- Started with a placeholder id? Repair: `close --close-reason replaced` → obtain a fresh authorization → `start` with the real id and authorization → `close completed` → `record`.
 - Always pass `--inspection-input <ref>` listing the real source, test, Story, Spec, contract, or config files inspected. A review-request path or generated `.vibepro` artifact alone is not a content surface. Keep the list honest and minimal — every listed file that later changes makes the review stale.
 - Do not append `--strict-head-binding` to every review. Configured strict roles apply automatically; a deliberate override must include `--strict-head-reason <text>`.
 - `vibepro review repair <repo> --story-id <id>` generates the prepare→start→close→record command sequence for incomplete review evidence.
@@ -98,6 +103,7 @@ Start from `vibepro pr prepare --summary-json` or `--view <readiness|blocking-ga
 
 - "I'll record the evidence now and commit the docs after." The commit invalidates every record; finalize the tree first.
 - "The tests passed, so the gate should accept the record." Kind match without a real status artifact stays `supporting`; judgment-spine gates need `strength=strong`.
+- "I'll hand-write the status artifact so the cross-check passes." Then the check compares one piece of agent prose with another. Use `verify run` and let the execution write it.
 - "A quick manual review note will satisfy the review gate." Required Agent Review needs the full lifecycle with subagent provenance, `--agent-closed`, and inspection inputs.
 - "Rewording the summary should clear the gate." Gates match observation text and artifacts; add verifiable facts, not phrasing.
 - "I'll write the Spec first so the gates are ready." `spec write` validates that code_refs/test_refs exist; register it after or with implementation.

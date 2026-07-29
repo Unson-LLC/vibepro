@@ -1,0 +1,23 @@
+
+> vibepro@0.2.0-beta.1 docs:build
+> npm run docs:cli:check && node scripts/build-public-manual.mjs && npm run docs:build:check
+
+
+> vibepro@0.2.0-beta.1 docs:cli:check
+> node scripts/generate-cli-reference.mjs --check
+
+
+  vitepress v1.6.4
+
+- building client + server bundles...
+[32m✓[0m building client + server bundles...
+- rendering pages...
+[32m✓[0m rendering pages...
+- generating sitemap...
+[32m✓[0m generating sitemap...
+build complete in 4.04s.
+
+> vibepro@0.2.0-beta.1 docs:build:check
+> node scripts/check-public-manual-build.mjs
+
+Public manual build contract: pass (219 files)

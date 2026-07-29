@@ -1,0 +1,127 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-delivery-reconciliation-state",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Final corrected-head gate evidence review passed",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Re-read evidence after replacing invalid Playwright invocation; confirmed node --test E2E 11/11, regression 292/292, typecheck and integration coverage.",
+    "evidence": "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts",
+    "inputs": [
+      "test/execution-state.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Invalid E2E command finding -> pass after valid current-head 11/11 and 292/292 evidence."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+    "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+    "expected_root": null,
+    "expected_head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+    "current_head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+      "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+      "expected_root": null,
+      "expected_head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "current_head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-24T05:07:08.304Z",
+  "git_context": {
+    "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+    "current_branch": "codex/story-vibepro-delivery-reconciliation-state-clean",
+    "dirty": false,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "6540340ae9d03b5f609470e451202d931393db86fd11a66632864256dc1c28fd",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/",
+        "docs/features/delivery-reconciliation-state/08_review.md",
+        "docs/features/delivery-reconciliation-state/09_gate.md",
+        "docs/features/delivery-reconciliation-state/10_release.md"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T05:07:08.208Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Final corrected HEAD review after executable evidence closure"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+    "surface_files": [
+      {
+        "path": "test/execution-state.test.js",
+        "sha256": "3ff70708d35b92c54499522843f05d33b8d8f5b0208286fcd9c969a44d3c1d6b",
+        "size": 85680
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "1d8e8eafd1e6eb622082e58554510a0c3af1c4095cd8f872da63da074704a02b"
+  },
+  "source_fingerprint": "b0b7d7f65b1b7bba04d2a0bd716988dfb65837b6ff6ab5ff40bdf1a8f230e6c2",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f9248-d6c7-7983-bee3-fa5dfa9685fd",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "019f9248-d6c7-7983-bee3-fa5dfa9685fd",
+    "session_id": "019f9248-d6c7-7983-bee3-fa5dfa9685fd",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcript-019f9248-ad4b4469-gate-evidence.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcript-019f9248-ad4b4469-gate-evidence.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "019f9248-d6c7-7983-bee3-fa5dfa9685fd",
+      "implementation_session_id": "019f6d60-d0be-7c93-8223-c6065bcb5da4",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

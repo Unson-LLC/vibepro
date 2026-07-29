@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: scenario:S-001 available-provider regression persists one production-shaped Run lifecycle
+ok 1 - scenario:S-001 available-provider regression persists one production-shaped Run lifecycle
+  ---
+  duration_ms: 3404.977291
+  type: 'test'
+  ...
+# Subtest: scenario:S-002 typed stop and resume matrix executes independently of unit imports
+ok 2 - scenario:S-002 typed stop and resume matrix executes independently of unit imports
+  ---
+  duration_ms: 3.975041
+  type: 'test'
+  ...
+# Subtest: scenario:S-004 public guarded Run CLI persists typed stops across resume, render, and cancel
+ok 3 - scenario:S-004 public guarded Run CLI persists typed stops across resume, render, and cancel
+  ---
+  duration_ms: 1844.506417
+  type: 'test'
+  ...
+# Subtest: scenario:S-005 roadmap closure keeps external authority explicit and predecessor evidence canonical
+ok 4 - scenario:S-005 roadmap closure keeps external authority explicit and predecessor evidence canonical
+  ---
+  duration_ms: 1.681417
+  type: 'test'
+  ...
+# Subtest: story-vibepro-one-command-pr-ready-closure acceptance coverage
+ok 5 - story-vibepro-one-command-pr-ready-closure acceptance coverage
+  ---
+  duration_ms: 0.294791
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5414.388459

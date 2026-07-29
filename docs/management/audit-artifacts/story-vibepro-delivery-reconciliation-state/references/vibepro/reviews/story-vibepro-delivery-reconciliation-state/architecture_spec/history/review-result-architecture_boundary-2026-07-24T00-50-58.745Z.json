@@ -1,0 +1,207 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-delivery-reconciliation-state",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "Local-current and canonical-fallback authority boundaries are consistent and all recovery findings are resolved",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "DRS-REG-001",
+      "disposition": "accepted",
+      "resolved_by": [
+        "src/reconciliation-action.js src/usage-report.js test/traceability-usage-report.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "DRS-REG-002",
+      "disposition": "accepted",
+      "resolved_by": [
+        "src/execution-state.js test/execution-state.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "DRS-REG-003",
+      "disposition": "accepted",
+      "resolved_by": [
+        "src/usage-report.js test/traceability-usage-report.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected Story, Architecture, Spec, local and canonical PR artifact aggregation, reconciliation actions, execution-state precedence, four related test files, and current strict-head verification evidence; reviewer rerun passed 97/97",
+    "evidence": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/architecture_spec/transcripts/019f9196-3661-7020-a890-f0896c46e1cc.md",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-delivery-reconciliation-state.md",
+      "docs/architecture/story-vibepro-delivery-reconciliation-state.md",
+      "docs/specs/vibepro-delivery-reconciliation-state.md",
+      "src/reconciliation-action.js",
+      "src/usage-report.js",
+      "src/execution-state.js",
+      "src/canonical-audit.js",
+      "test/traceability-usage-report.test.js",
+      "test/execution-state.test.js",
+      "test/delivery-reconciliation-state.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Prior mixed-authority needs_changes is now pass because local PR authority wins at Story and artifact-kind scope, the counterexample is executable, and canonical-only behavior remains covered"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+    "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+    "expected_root": null,
+    "expected_head_sha": "28d40f42b892cc63e5cc587488162a8ab8cf7039",
+    "current_head_sha": "28d40f42b892cc63e5cc587488162a8ab8cf7039",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+      "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+      "expected_root": null,
+      "expected_head_sha": "28d40f42b892cc63e5cc587488162a8ab8cf7039",
+      "current_head_sha": "28d40f42b892cc63e5cc587488162a8ab8cf7039",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-24T00:50:58.745Z",
+  "git_context": {
+    "head_sha": "28d40f42b892cc63e5cc587488162a8ab8cf7039",
+    "current_branch": "codex/story-vibepro-delivery-reconciliation-state-focused",
+    "dirty": false,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "b03c1e1d1654d68110e78814e766d8b572191b075436ad1482009823c12bd5e3",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/",
+        "docs/features/delivery-reconciliation-state/08_review.md"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T00:50:58.730Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "architecture recovery behavior must match the exact reviewed HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "28d40f42b892cc63e5cc587488162a8ab8cf7039",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-delivery-reconciliation-state.md",
+        "sha256": "9f5fad8ac193baac71eaae4386e50cbfec5856b1a89925ef145ea3e0ecde7c4f",
+        "size": 10821
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-delivery-reconciliation-state.md",
+        "sha256": "5722d2f4209746424e8a3f2c09ea634353482fd63ac8d57b63c43b00b3177a81",
+        "size": 14746
+      },
+      {
+        "path": "docs/specs/vibepro-delivery-reconciliation-state.md",
+        "sha256": "763fbe7db86553c5f824f3b65a490658c54ab1725848b01bbbc8568c05e01382",
+        "size": 13989
+      },
+      {
+        "path": "src/canonical-audit.js",
+        "sha256": "54217a27bfcdc7f23058bf9f1e711211af4fe45e0eec279daab8bbe68c82d5e1",
+        "size": 111914
+      },
+      {
+        "path": "src/execution-state.js",
+        "sha256": "5030e2b8388d893c92c7cda662ab5d0cbc0c68f140fa9ae2859cae0dbdc005cf",
+        "size": 78391
+      },
+      {
+        "path": "src/reconciliation-action.js",
+        "sha256": "2c7b61353281669951eca6cb62c9d7d06705ea5c2c775ddbfd69397c0cd93ec7",
+        "size": 1921
+      },
+      {
+        "path": "src/usage-report.js",
+        "sha256": "3c041b11ce1f4ef42057f7d69b5b6c2357f47026a45a42c7f4c199fe77039c12",
+        "size": 104192
+      },
+      {
+        "path": "test/delivery-reconciliation-state.test.js",
+        "sha256": "590bec46cfa30d9f0c696aab94891a404283da1ddb1d571f7729bd81b2bf2524",
+        "size": 5946
+      },
+      {
+        "path": "test/execution-state.test.js",
+        "sha256": "3ff70708d35b92c54499522843f05d33b8d8f5b0208286fcd9c969a44d3c1d6b",
+        "size": 85680
+      },
+      {
+        "path": "test/traceability-usage-report.test.js",
+        "sha256": "9d6aa31839e4b91af2c0dee058cd26d293648922c6403ef33b1f5cf18c3e830b",
+        "size": 43995
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "be1bf659fb0616e6d38b0b9482b2588077bc59739a0b872373f4342d95b11c48"
+  },
+  "source_fingerprint": "03e617afc6a5c1d9013652d88c091ecdee743479f5cedd7db3dc68e97eb30301",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f9196-3661-7020-a890-f0896c46e1cc",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "019f9196-3661-7020-a890-f0896c46e1cc",
+    "session_id": "019f9196-3661-7020-a890-f0896c46e1cc",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/architecture_spec/transcripts/019f9196-3661-7020-a890-f0896c46e1cc.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/architecture_spec/transcripts/019f9196-3661-7020-a890-f0896c46e1cc.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "019f9196-3661-7020-a890-f0896c46e1cc",
+      "implementation_session_id": "019f6d60-d0be-7c93-8223-c6065bcb5da4",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

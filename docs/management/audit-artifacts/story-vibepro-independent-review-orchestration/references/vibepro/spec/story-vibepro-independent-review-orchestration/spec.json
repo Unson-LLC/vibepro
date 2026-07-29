@@ -1,0 +1,291 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-independent-review-orchestration",
+  "clauses": [
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "Guarded Run review action executes the required review stages serially and each stage's roles concurrently through the independent review owner.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ref": "IRO-S-1"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-independent-review-orchestration.md"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/independent-review-orchestrator.js",
+            "anchor": "orchestrateIndependentReview"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/independent-review-orchestrator.test.js"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-22T05:42:45.295Z",
+      "last_revised_at": "2026-07-22T13:14:22.066Z"
+    },
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "Review dispatch remains read-only and requires reviewer identity and session provenance separate from implementation.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ref": "IRO-S-2"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/agent-runtime-adapter.js",
+            "anchor": "review_identity_not_separate"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/agent-runtime-adapter.test.js"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-22T05:42:45.295Z",
+      "last_revised_at": "2026-07-22T13:14:22.066Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Restart reuses persisted prepare, authorize, start, dispatch, poll, close, and record checkpoints and does not repeat completed operations.",
+      "inherited_behavior": {
+        "condition": "completed checkpoint exists for the deterministic stage, role, and operation key",
+        "classification": "unchanged",
+        "files": [
+          "src/guarded-run-session.js",
+          "src/safe-action-orchestrator.js"
+        ]
+      },
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ref": "IRO-S-3"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/safe-action-orchestrator.js",
+            "anchor": "result.checkpoint"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/safe-action-orchestrator.test.js"
+          },
+          {
+            "file": "test/independent-review-orchestrator.test.js"
+          },
+          {
+            "file": "test/guarded-run-session.test.js"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-22T05:42:45.295Z",
+      "last_revised_at": "2026-07-22T13:14:22.066Z",
+      "inherited_behaviors": [
+        {
+          "condition": "loaded.state.status === 'cancelled' || loaded.state.status === 'pr_ready' || loaded.state.status === 'waiting_for_human'",
+          "classification": "unchanged",
+          "files": [
+            "src/guarded-run-session.js"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "Runtime review transport preserves only the existing pass, needs_changes, and block statuses plus the existing finding and inspection evidence shape.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ref": "IRO-S-4"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/agent-runtime-adapter.js",
+            "anchor": "normalizeReviewResult"
+          },
+          {
+            "file": "src/agent-runtime-connectors.js",
+            "anchor": "inspection_summary"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/agent-runtime-connectors.test.js"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-22T05:42:45.295Z",
+      "last_revised_at": "2026-07-22T13:14:22.066Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "Runtime, authentication, timeout, malformed result, and invalid provenance outcomes stop with a typed non-pass status.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ref": "IRO-S-5"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/independent-review-orchestrator.js",
+            "anchor": "TERMINAL_STOP_CODES"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/independent-review-orchestrator.test.js"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-22T05:42:45.295Z",
+      "last_revised_at": "2026-07-22T13:14:22.066Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "Parallel success, needs_changes, block, same-session rejection, and restart are covered by executable contract tests.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ref": "IRO-S-6"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/independent-review-orchestrator.test.js"
+          },
+          {
+            "file": "test/guarded-run-session.test.js"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-22T05:42:45.295Z",
+      "last_revised_at": "2026-07-22T13:14:22.066Z"
+    },
+    {
+      "id": "C-003",
+      "type": "contract",
+      "statement": "A needs_changes review completes the review action and flows into the existing canonical repair action without introducing another verdict schema.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ref": "IRO-S-7"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/independent-review-orchestrator.js",
+            "anchor": "independent review requested changes"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/independent-review-orchestrator.test.js"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-22T05:42:45.295Z",
+      "last_revised_at": "2026-07-22T13:14:22.066Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "The implementation stays inside run-session and runtime adapter boundaries, adds no CLI reverse call, and does not increase the adjudicated conformance baseline.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "ref": "IRO-S-8"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-independent-review-orchestration.md"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/independent-review-orchestrator.js",
+            "anchor": "no CLI"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-22T05:42:45.295Z",
+      "last_revised_at": "2026-07-22T13:14:22.066Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "The production Guarded Run review workflow state transition moves prepared to authorized to running to closed to recorded, then replays the persisted dispatch and action-journal checkpoint without duplicate external work.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "other",
+            "ref": "S-003"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-independent-review-orchestration.md"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/guarded-run-session.js",
+            "anchor": "buildIndependentReviewRunner"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts"
+          },
+          {
+            "file": "test/guarded-run-session.test.js"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-22T12:06:24.264Z",
+      "last_revised_at": "2026-07-22T13:14:22.066Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart LR\n  Implementation[Implementation runtime] --> Provenance[Current HEAD provenance]\n  Provenance --> ReviewDispatch[Read-only separate review runtime]\n  ReviewDispatch --> Verdict[pass needs_changes block]\n  Mutable[Writable or same-session result] --> Reject[Typed non-pass stop]\n  Stale[Stale HEAD or malformed evidence] --> Reject\n  Provider[Provider schema retry or async failure] --> Reject\n  Reject -. blocks .-> Verdict",
+      "rationale": "Only current-HEAD, read-only, separately identified review runtimes can write an Agent Review verdict; mutable, stale, same-session, malformed, provider, schema, retry, and asynchronous failures fail closed."
+    }
+  ],
+  "open_questions": [],
+  "generated_at": "2026-07-22T12:50:59.354Z",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": "2026-07-22T12:50:59.354Z"
+}

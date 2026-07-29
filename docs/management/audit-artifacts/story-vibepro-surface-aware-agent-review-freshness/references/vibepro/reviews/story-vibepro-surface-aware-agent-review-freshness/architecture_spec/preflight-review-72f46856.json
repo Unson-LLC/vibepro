@@ -1,0 +1,14 @@
+{
+  "status": "needs_changes",
+  "reviewer": "/root/sarf_preflight_review",
+  "head_sha": "72f4685623eaa73d17bf10d1d9058ce7947a5b57",
+  "lifecycle_id": "3d5a93a9-2430-492e-9f34-a8b344e8f194",
+  "summary": "Implementation boundary and tests are sound, but the formal Spec artifact referenced two missing Architecture section anchors.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "SARF-ARCH-001",
+      "detail": "S-001 and S-002 reference Freshness State Machine and Fail-closed Boundaries, but those headings were absent from the tracked Architecture document."
+    }
+  ]
+}

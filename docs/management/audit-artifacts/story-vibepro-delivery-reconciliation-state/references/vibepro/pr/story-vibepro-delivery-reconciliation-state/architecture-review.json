@@ -1,0 +1,55 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-delivery-reconciliation-state",
+  "created_at": "2026-07-24T05:28:40.804Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/story-vibepro-delivery-reconciliation-state.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-delivery-reconciliation-state.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/story-vibepro-delivery-reconciliation-state.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-cli-status-honesty.md, docs/specs/vibepro-delivery-reconciliation-state.json, docs/specs/vibepro-delivery-reconciliation-state.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-24T05:28:37.146Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "branch": "codex/story-vibepro-delivery-reconciliation-state-clean",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "118b68091b296f6bb8c4414cfc5eadb69ed73dc0",
+      "origin_main_relation": "ahead",
+      "dirty": true,
+      "dirty_summary": [
+        "?? docs/features/delivery-reconciliation-state/"
+      ]
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

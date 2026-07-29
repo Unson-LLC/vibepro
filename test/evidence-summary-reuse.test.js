@@ -133,6 +133,63 @@ test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index an
   assert.match(renderUsageReport(report), /cumulative_full_generation_count=1/);
 });
 
+test('GDL-S-6 review, pr prepare, and usage report preserve one bounded projection with stable and collision selectors', async () => {
+  const repo = await setupReuseRepo();
+  for (const role of ['runtime_contract', 'code_spec_alignment']) {
+    assert.equal((await runCli([
+      'review', 'record', repo,
+      '--id', STORY_ID,
+      '--stage', 'implementation',
+      '--role', role,
+      '--status', 'needs_changes',
+      '--summary', `${role} found the shared boundary defect`,
+      '--finding', 'medium:shared-boundary:defect reproduced at the shared boundary',
+      '--agent-system', 'codex',
+      '--execution-mode', 'parallel_subagent',
+      '--agent-id', `fixture-${role}`,
+      '--agent-closed',
+      '--json'
+    ])).exitCode, 0);
+  }
+  assert.equal((await runCli([
+    'review', 'record', repo,
+    '--id', STORY_ID,
+    '--stage', 'test_plan',
+    '--role', 'gate_coverage',
+    '--status', 'needs_changes',
+    '--summary', 'gate coverage found a separate stable defect',
+    '--finding', 'medium:stable-gate-gap:one independently addressable gate gap',
+    '--agent-system', 'codex',
+    '--execution-mode', 'parallel_subagent',
+    '--agent-id', 'fixture-stable-gate-gap',
+    '--agent-closed',
+    '--json'
+  ])).exitCode, 0);
+
+  const prepared = await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const prSummary = prepared.result.preparation.decision_outcome_summary;
+  const collisionEntries = prSummary.entries.filter((entry) => entry.decision_trace_id === null);
+  assert.ok(prSummary.entries.some((entry) => entry.decision_trace_id));
+  assert.equal(collisionEntries.length, 2);
+  assert.ok(collisionEntries.every((entry) => entry.collision_group && entry.trace_source_ref));
+
+  const review = await runCli([
+    'review', 'prepare', repo, '--id', STORY_ID,
+    '--stage', 'gate', '--role', 'gate_evidence', '--json'
+  ]);
+  assert.equal(review.exitCode, 0);
+  const reviewSummary = review.result.plan.evidence_reuse.decision_outcome_summary;
+  const usage = await createUsageReport(repo, { language: 'ja' });
+  const usageSummary = usage.decision_outcomes.find((entry) => entry.story_id === STORY_ID);
+
+  assert.deepEqual(reviewSummary, prSummary);
+  assert.deepEqual(usageSummary, prSummary);
+  assert.equal(reviewSummary.total_count, prSummary.total_count);
+  assert.equal(reviewSummary.ledger_path, prSummary.ledger_path);
+  assert.equal(reviewSummary.ledger_digest, prSummary.ledger_digest);
+});
+
 test('EDL-S2 confirmed no-change evidence is counted as unused rather than unconfirmed', () => {
   const ledger = buildArtifactValueLedger({
     storyId: STORY_ID,
@@ -237,6 +294,9 @@ test('ESR-CONTRACT-005 review prepare rejects stale reuse when verification evid
   assert.match(staleRequest, /current_verification_evidence_updated_at: 2026-06-23T12:00:00\.000Z/);
   assert.match(staleRequest, /verification_summary_fingerprint/);
   assert.doesNotMatch(staleRequest, /preferred_order: \.vibepro\/pr\/story-evidence-reuse\/evidence-reuse\.json/);
+  assert.ok(staleReview.result.plan.evidence_reuse.decision_outcome_summary);
+  assert.match(staleRequest, /Decision Outcome Ledger Summary/);
+  assert.match(staleRequest, /- ledger: \.vibepro\/pr\/story-evidence-reuse\/decision-outcome-ledger\.json/);
 
   assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
   assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);

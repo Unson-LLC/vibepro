@@ -1,0 +1,150 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-managed-worktree-policy-resync",
+  "stage": "preview",
+  "role": "human_usability",
+  "status": "pass",
+  "summary": "実CLI（bin/vibepro.js）を4つの使い捨てfixture repoで駆動し、policy_syncの全状態（synced/unchanged/skipped/failed/not_recorded/disabled）がデフォルトtext出力で人間に読める・失敗が見逃せない（headline suffix+reason行）・復旧後にsyncedへ戻ることを目視確認。low findings 2件（warning面の狭さ=AC文言スコープ内、pre-existing crash=base commitでbyte-identical確認）はnon-blockingでfollow-up起票済み",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "4つのfixture repoでexecute start/status/next・verify recordを実CLI駆動し、初回sync/no-op resync/worktree config破損のfail-soft failed+headline flag/復旧synced/worktree内呼び出し(MWPR-S-5)/missing-worktree skipped/disabled-mode not_recorded/--json shapeを網羅観測。9/9テストpass。src両ファイルのdiff全読、buildManagedWorktreeCommandWarningの全call site（agent-review/verification-evidence/decision-records/task-manager）のcross-surface整合確認。corrupt-parent-config crashをpre-story base commitの別worktreeで再現しregressionでないことを証明",
+    "evidence": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/verification-evidence.json",
+    "inputs": [
+      "src/managed-worktree.js",
+      "src/execution-state.js",
+      "test/managed-worktree-policy-resync.test.js",
+      "test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js",
+      "docs/management/stories/active/story-vibepro-managed-worktree-policy-resync.md"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern: 内部監査plumbingが実際に人間の読むCLI textへ届くか、単一refresh化がstatus/last_event不一致の混乱を生まないか -> pass because 実CLI駆動で単一コマンドのsynced即表示を確認（当初の見かけ上の不一致は自身のスクリプトの2回呼びが原因と特定）、失敗は見逃し不可能、全状態とMWPR-S-5がdocumentedどおり動作"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-managed-worktree-policy-resync/.worktrees/vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-managed-worktree-policy-resync/.worktrees/vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+    "expected_root": "/Users/ksato/workspace/code/.worktrees/vibepro-managed-worktree-policy-resync/.worktrees/vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+    "expected_head_sha": "78982951496abee40e54e05001139098241e3f8a",
+    "current_head_sha": "78982951496abee40e54e05001139098241e3f8a",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/.worktrees/vibepro-managed-worktree-policy-resync",
+      "path": "/Users/ksato/workspace/code/.worktrees/vibepro-managed-worktree-policy-resync/.worktrees/vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+      "branch": "vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+      "actual_branch": "vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+      "current_head_sha": "78982951496abee40e54e05001139098241e3f8a",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M .vibepro/config.json",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": []
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-21T15:59:04.523Z",
+  "git_context": {
+    "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+    "current_branch": "vibepro/story-vibepro-managed-worktree-policy-resync-30pnn9",
+    "dirty": false,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "b7c70ae2661b1c4d2d78354daba0407aa2b4b153bc856356852f9d9f8bdc13bf",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T15:59:04.448Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "78982951496abee40e54e05001139098241e3f8a",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-managed-worktree-policy-resync.md",
+        "sha256": "4b9e70afaf65f1af5e682034257d76a9c6d49981aa4f2716b4a864f04bdf129d",
+        "size": 4518
+      },
+      {
+        "path": "src/execution-state.js",
+        "sha256": "e7b79eca5f8491f22d3e0b57b217fac72a0eddf5fd2a6af47cdb2c9582b99f59",
+        "size": 42018
+      },
+      {
+        "path": "src/managed-worktree.js",
+        "sha256": "34cc537bb9f7e3c5263e68d4546c0805549c0641822421d6ffcba1877ade854c",
+        "size": 36090
+      },
+      {
+        "path": "test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js",
+        "sha256": "8973373dd87eed2e96e6884fbc4223842b31274b7b4ea2a2b7352fdd6291daee",
+        "size": 7381
+      },
+      {
+        "path": "test/managed-worktree-policy-resync.test.js",
+        "sha256": "d9b82700fb668f2ca605519181a6bb237d072afce733a887199cbcbba71f6aaa",
+        "size": 8831
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "ff6b222c5dce23331fdf4686259399cd6ee5ac24652c8c634d83d1657757ef41"
+  },
+  "source_fingerprint": "0fd78967b049926ab0a995ae292ac78061d8bc9ecd040ed81338386a751ddcda",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-preview-human-78982951",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-managed-worktree-policy-resync/preview/transcript-human_usability.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-managed-worktree-policy-resync/preview/review-request-human_usability.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

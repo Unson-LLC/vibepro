@@ -1,0 +1,244 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-decision-index-v1",
+  "planner_version": "0.1.0",
+  "story_id": "story-vibepro-linux-rollup-ci-lock",
+  "created_at": "2026-07-19T02:12:35.131Z",
+  "evidence_depth": "summary",
+  "targeted_full_surfaces": [
+    {
+      "surface": "test_coverage",
+      "reason": "risk surface detected",
+      "source": "change_classification",
+      "gate": null
+    },
+    {
+      "surface": "agent_workflow",
+      "reason": "high-risk engineering judgment route detected",
+      "source": "engineering_judgment",
+      "gate": null
+    }
+  ],
+  "git": {
+    "base_ref": "origin/main",
+    "head_ref": "HEAD",
+    "head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+    "changed_file_count": 12
+  },
+  "file_groups": {
+    "story_docs": 1,
+    "architecture_docs": 1,
+    "specifications": 2,
+    "policy_docs": 0,
+    "responsibility_authority_metadata": 0,
+    "contract_metadata": 0,
+    "source": 1,
+    "tests": 1,
+    "repo_control": 2,
+    "vibepro_artifacts": 0,
+    "other": 4
+  },
+  "scope": {
+    "status": "needs_clean_branch",
+    "recommended_strategy": "clean_branch_or_split_pr",
+    "reasons": [
+      "repo制御ファイルやagent設定が差分に含まれている",
+      "baseからのcommitが 2 件あり、Story外の変更混入を確認する必要がある"
+    ]
+  },
+  "gate_summary": {
+    "overall_status": "ready_for_review",
+    "ready_for_pr_create": true,
+    "unresolved_gate_count": 0,
+    "critical_unresolved_gate_count": 0,
+    "unresolved_gates": [],
+    "critical_unresolved_gates": []
+  },
+  "engineering_judgment": {
+    "route_type": "agent_workflow",
+    "route_dag": "agent_workflow_dag",
+    "confidence": 0.82,
+    "signals": [
+      "surface:agent_or_gate_workflow",
+      "risk_profile:light"
+    ],
+    "active_axis_count": 4,
+    "active_axes": [
+      "public_contract",
+      "rollback_sensitive",
+      "scope_reviewability",
+      "release_ops"
+    ],
+    "judgment_axes": [
+      {
+        "axis": "public_contract",
+        "status": "active_passed",
+        "reason": "pr_route:config_or_agent_policy; file_group:contract_docs; text:public_contract"
+      },
+      {
+        "axis": "rollback_sensitive",
+        "status": "active_accepted_followup",
+        "reason": "changed_surface:rollback_or_rollout"
+      },
+      {
+        "axis": "security_boundary",
+        "status": "inactive",
+        "reason": "No security_boundary signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context"
+      },
+      {
+        "axis": "data_state",
+        "status": "inactive",
+        "reason": "No data_state signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context"
+      },
+      {
+        "axis": "execution_topology",
+        "status": "inactive",
+        "reason": "execution_topology has only text-derived candidates; suppressing activation until a changed-path, route, scope, docs, network-contract, or risk-surface corroboration exists"
+      },
+      {
+        "axis": "ux_surface",
+        "status": "inactive",
+        "reason": "No ux_surface signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context"
+      },
+      {
+        "axis": "performance_semantic",
+        "status": "inactive",
+        "reason": "No performance_semantic signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context"
+      },
+      {
+        "axis": "scope_reviewability",
+        "status": "active_accepted_followup",
+        "reason": "scope:needs_clean_branch; mixed_surface:repo_control_with_product_change; graphify:related_files"
+      },
+      {
+        "axis": "release_ops",
+        "status": "active_passed",
+        "reason": "changed_path:release_ops"
+      }
+    ]
+  },
+  "risk_signals": [
+    {
+      "kind": "risk_surface",
+      "value": "test_coverage",
+      "source": "change_classification"
+    },
+    {
+      "kind": "engineering_route",
+      "value": "agent_workflow",
+      "source": "engineering_judgment"
+    }
+  ],
+  "pr_route": {
+    "route_type": "config_or_agent_policy",
+    "required_gates": [
+      "repo_control_boundary",
+      "split_resolution",
+      "pr_body_contract"
+    ],
+    "signals": [
+      "file_group:repo_control",
+      "scope:needs_clean_branch"
+    ]
+  },
+  "traceability_clause_coverage": {
+    "clause_count": 5,
+    "acceptance_criteria_count": 4,
+    "scenario_clause_count": 1,
+    "mapped_count": 5,
+    "weakly_mapped_count": 0,
+    "unmapped_count": 0,
+    "examples": []
+  },
+  "split_plan": {
+    "status": "split_recommended",
+    "recommended_strategy": "split_by_lane_then_prepare",
+    "reasons": []
+  },
+  "evidence_reuse": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-evidence-summary-reuse-v1",
+    "story_id": "story-vibepro-linux-rollup-ci-lock",
+    "evidence_key": "evk_a60630f5c9701e58c1faedf0a55c23c1",
+    "status": "hit",
+    "reason": "evidence_key_match",
+    "stale_reasons": [],
+    "fresh_use_allowed": true,
+    "used_as_fresh": false,
+    "gate_status": "passed",
+    "artifact_value_ledger": {
+      "status": "present",
+      "model": "vibepro-artifact-value-ledger-v1",
+      "head_binding_status": "current_head_bound",
+      "artifact_count": 4,
+      "decision_bound_count": 4,
+      "decision_changed_count": 0,
+      "decision_change_unconfirmed_count": 4,
+      "unused_artifact_count": 0,
+      "linked_consumer_count": 4,
+      "session_attribution_status": "not_collected_in_pr_prepare",
+      "session_attribution_confidence": "none",
+      "total_token_estimate": 256
+    },
+    "session_attribution_ledger": {
+      "status": "not_collected_in_pr_prepare",
+      "model": "vibepro-session-attribution-ledger-v1",
+      "confidence": "none",
+      "reason": "PR prepare did not receive Codex session attribution; downstream usage mentions must not be treated as clean product-value adoption.",
+      "session_count": 0,
+      "unattributed_count": 0
+    },
+    "verification_summary_fingerprint": "sha256:cd1c2dd2b64e82b2cd54189e45c5604d740e61a8bcfb5bf2b26e5474869bb7f7",
+    "verification_evidence_updated_at": "2026-07-19T02:12:14.242Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "integration",
+        "executed_at": "2026-07-19T02:12:14.242Z",
+        "git_recorded_at": "2026-07-19T02:12:14.231Z"
+      },
+      {
+        "kind": "e2e",
+        "executed_at": "2026-07-19T02:04:41.866Z",
+        "git_recorded_at": "2026-07-19T02:04:41.856Z"
+      },
+      {
+        "kind": "build",
+        "executed_at": "2026-07-19T01:57:52.725Z",
+        "git_recorded_at": "2026-07-19T01:57:52.717Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-07-19T01:57:51.954Z",
+        "git_recorded_at": "2026-07-19T01:57:51.947Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-07-19T01:57:50.472Z",
+        "git_recorded_at": "2026-07-19T01:57:50.464Z"
+      }
+    ],
+    "full_evidence": {
+      "status": "reused",
+      "generation_count": 1,
+      "generation_count_scope": "same_evidence_key",
+      "same_key_generation_count": 1,
+      "cumulative_generation_count": 17,
+      "digest": "sha256:ad02d27b9c3aca3203e3207e7a6e8a1f33ee075fa078102c850c15eb2ac0533c",
+      "reference": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-index.json"
+    },
+    "summary_artifacts": {
+      "evidence_reuse": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/evidence-reuse.json",
+      "evidence_plan": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/evidence-plan.json",
+      "decision_index": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-index.json",
+      "pr_prepare": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/pr-prepare.json",
+      "gate_dag": null
+    }
+  },
+  "senior_gap_judgment": {
+    "status": "passed_with_residual_risk",
+    "gap_count": 3,
+    "blocking_gap_count": 0,
+    "residual_risk_count": 3,
+    "followup_count": 3
+  }
+}

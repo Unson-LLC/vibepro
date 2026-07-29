@@ -1,0 +1,6 @@
+{
+  "status": "needs_changes",
+  "summary": "Focused tests passed, but resume cursor consumption and resolved replay index repair were not crash-safe.",
+  "head_sha": "9283d38bd32175edff830a94f869ecc400160d44",
+  "findings": ["resume-cursor-cleared-before-action-checkpoint", "resolved-replay-skips-index-self-repair"]
+}

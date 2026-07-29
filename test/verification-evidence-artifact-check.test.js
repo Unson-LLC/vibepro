@@ -143,6 +143,60 @@ test('JSONでないartifactの場合_unrecognizedとして記録されブロッ�
   assert.equal(command.artifact_check.status, 'unrecognized');
 });
 
+test('TAPのplanとsummaryが一致する成功artifactは_verifiedとして記録される', async () => {
+  const repo = await makeWorkspaceRepo();
+  await writeFile(path.join(repo, 'tap-results.txt'), [
+    'TAP version 13',
+    'ok 1 - first',
+    'ok 2 - second',
+    '1..2',
+    '# tests 2',
+    '# pass 2',
+    '# fail 0',
+    ''
+  ].join('\n'));
+
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a', kind: 'unit', status: 'pass', command: 'node --test', artifact: 'tap-results.txt'
+  });
+
+  const command = latestCommand(result);
+  assert.equal(command.artifact_check.status, 'verified');
+  assert.equal(command.artifact_check.format, 'tap');
+  assert.equal(command.observation.values.tests, '2');
+});
+
+test('TAPのnot okはpass申告と矛盾する', async () => {
+  const repo = await makeWorkspaceRepo();
+  await writeFile(path.join(repo, 'tap-results.txt'), [
+    'TAP version 13',
+    'not ok 1 - failed',
+    '1..1',
+    '# tests 1',
+    '# pass 0',
+    '# fail 1',
+    ''
+  ].join('\n'));
+
+  await assert.rejects(
+    recordVerificationEvidence(repo, {
+      storyId: 'story-a', kind: 'unit', status: 'pass', command: 'node --test', artifact: 'tap-results.txt'
+    }),
+    /contradicts artifact/
+  );
+});
+
+test('malformed TAPは推測せず_unrecognizedとして記録される', async () => {
+  const repo = await makeWorkspaceRepo();
+  await writeFile(path.join(repo, 'tap-results.txt'), 'TAP version 13\nok 1 - missing plan\n');
+
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a', kind: 'unit', status: 'pass', command: 'node --test test/example.test.js', artifact: 'tap-results.txt'
+  });
+
+  assert.equal(latestCommand(result).artifact_check.status, 'unrecognized');
+});
+
 test('pass申告でartifact未指定の場合_artifact_checkがmissingとして記録される', async () => {
   const repo = await makeWorkspaceRepo();
 
@@ -155,6 +209,107 @@ test('pass申告でartifact未指定の場合_artifact_checkがmissingとして�
 
   const command = latestCommand(result);
   assert.equal(command.artifact_check.status, 'missing');
+});
+
+test('integration passはgit diffのようなinspection-only commandを拒否する', async () => {
+  const repo = await makeWorkspaceRepo();
+
+  await assert.rejects(
+    recordVerificationEvidence(repo, {
+      storyId: 'story-a',
+      kind: 'integration',
+      status: 'pass',
+      command: 'git diff --name-only origin/main...HEAD'
+    }),
+    /inspection-only or arbitrary command is not valid passing evidence/
+  );
+  assert.equal(await evidenceFileExists(repo, 'story-a'), false);
+});
+
+test('integration passはtrueやechoの任意commandを拒否する', async () => {
+  const repo = await makeWorkspaceRepo();
+  for (const command of ['true', 'echo passed']) {
+    await assert.rejects(recordVerificationEvidence(repo, {
+      storyId: 'story-a', kind: 'integration', status: 'pass', command
+    }), /arbitrary command is not valid passing evidence/);
+  }
+});
+
+test('unit e2e typecheck passも任意commandを拒否する', async () => {
+  const repo = await makeWorkspaceRepo();
+  for (const kind of ['unit', 'e2e', 'typecheck']) {
+    await assert.rejects(
+      recordVerificationEvidence(repo, {
+        storyId: 'story-test', kind, status: 'pass', command: 'echo passed'
+      }),
+      new RegExp(`recognized executable ${kind} check`)
+    );
+  }
+});
+
+test('build passは名前空間付きpackage scriptを実行可能なbuild checkとして受理する', async () => {
+  const repo = await makeWorkspaceRepo();
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-docs-build',
+    kind: 'build',
+    status: 'pass',
+    command: 'npm run docs:build'
+  });
+
+  assert.equal(latestCommand(result).command, 'npm run docs:build');
+  assert.equal(latestCommand(result).status, 'pass');
+});
+
+test('passing evidenceはrecognized prefix後のshell control operatorを拒否する', async () => {
+  const repo = await makeWorkspaceRepo();
+  for (const command of [
+    'node --test test/unit.test.js; echo forged',
+    'npm test && true',
+    'npx playwright test | tee result.log',
+    'npm run integration > result.log'
+  ]) {
+    await assert.rejects(
+      recordVerificationEvidence(repo, {
+        storyId: 'story-shell-injection', kind: 'unit', status: 'pass', command
+      }),
+      /single executable command/
+    );
+  }
+});
+
+test('passing evidenceはverification kindと異なるscriptを拒否する', async () => {
+  const repo = await makeWorkspaceRepo();
+  await assert.rejects(recordVerificationEvidence(repo, {
+    storyId: 'story-kind-mismatch', kind: 'e2e', status: 'pass', command: 'npm test'
+  }), /recognized executable e2e check/);
+  await assert.rejects(recordVerificationEvidence(repo, {
+    storyId: 'story-kind-mismatch', kind: 'integration', status: 'pass', command: 'npm run unit'
+  }), /recognized executable integration check/);
+  await assert.rejects(recordVerificationEvidence(repo, {
+    storyId: 'story-kind-mismatch',
+    kind: 'unit',
+    status: 'pass',
+    command: 'node --test --test-force-exit test/e2e/story-main.spec.ts'
+  }), /recognized executable unit check/);
+  await assert.rejects(recordVerificationEvidence(repo, {
+    storyId: 'story-kind-mismatch',
+    kind: 'unit',
+    status: 'pass',
+    command: 'node --test test/integration/runtime.test.js'
+  }), /recognized executable unit check/);
+});
+
+test('integration passは実行可能なintegration test commandを受理する', async () => {
+  const repo = await makeWorkspaceRepo();
+
+  const result = await recordVerificationEvidence(repo, {
+    storyId: 'story-a',
+    kind: 'integration',
+    status: 'pass',
+    command: 'node --test test/integration/runtime.test.js'
+  });
+
+  assert.equal(latestCommand(result).command, 'node --test test/integration/runtime.test.js');
 });
 
 test('fail申告と失敗artifactが一致する場合_verifiedとして記録される', async () => {

@@ -1,0 +1,1 @@
+{"agent_id":"aad-bb-regression","head_sha":"bbbc25107e694eee5da4e1a2c628c6ed432cc597","status":"pass","summary":"No regression blocker; production resolver and legacy path remain valid.","findings":[]}

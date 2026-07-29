@@ -1,0 +1,1 @@
+{"agent_id":"aad-e2-gate-coverage","head_sha":"e2fc3e319e30511276c41276a23152e2841923b1","status":"pass","summary":"All seven nodes and four typed stop classes plus final_prepare denial and recovery are covered.","inspection_evidence":"Current-head QA, test matrix, E2E replay, and Gate SSOT inspected.","findings":[]}

@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Repository fix is release-safe; public deployment remains conditional on Cloudflare credentials",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected release workflow, deploy guard, ignore boundary, Story and Specs, package lock, current evidence, and reran focused release and deploy tests.",
+    "evidence": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-0230e583.json",
+    "inputs": [
+      ".gitignore",
+      "test/post-merge-release.test.js",
+      "docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md"
+    ]
+  },
+  "judgment_delta": [
+    "Ignoring exact node_modules output preserves all tracked and other untracked clean-source checks; release ordering is unchanged; actual public deploy remains pending external credentials."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+    "expected_root": null,
+    "expected_head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+    "current_head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+      "expected_root": null,
+      "expected_head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+      "current_head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-19T00:52:25.358Z",
+  "git_context": {
+    "head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+    "current_branch": "vibepro/story-vibepro-post-merge-docs-clean-worktree",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T00:52:25.347Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Independent risk review inspected exact recovery commit"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "0230e5836034bf428754c4f3f4f5dae83fc0a9ee",
+    "surface_files": [
+      {
+        "path": ".gitignore",
+        "sha256": "271a6ea6421e77f751e42c18b747a8b83f19d35586d5da1dee9679fad85b4c33",
+        "size": 136
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-post-merge-docs-clean-worktree.md",
+        "sha256": "e0f42a67b1804d0c5888144cf2fe97c02d99025764831fa92e6b574d0403916d",
+        "size": 2330
+      },
+      {
+        "path": "test/post-merge-release.test.js",
+        "sha256": "223bf31e4e7c7e9beb5edb6e888d365312f047b5eb6692b1619fffc787d4c561",
+        "size": 14986
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "1249400f2007bed05cf1538d268d9a80b1d3c79d506e8ce92c1bb331d0f22b79"
+  },
+  "source_fingerprint": "afdb85f364de6ea4b0afb1be788b0a73b57f9319843e62494bf162f4dc8c2869",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "docs_recovery_release_risk",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-post-merge-docs-clean-worktree/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

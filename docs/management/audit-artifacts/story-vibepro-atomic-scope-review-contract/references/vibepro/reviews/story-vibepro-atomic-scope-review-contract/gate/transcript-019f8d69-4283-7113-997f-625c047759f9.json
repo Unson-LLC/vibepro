@@ -1,0 +1,14 @@
+{
+  "agent_id": "019f8d69-4283-7113-997f-625c047759f9",
+  "model": "gpt-5.6-luna",
+  "reasoning_effort": "high",
+  "status": "block",
+  "summary": "Release operations are incomplete: rollout, rollback trigger and command, owner-visible observability, and support escalation are missing.",
+  "findings": [
+    "release-ops-rollback-instruction-missing",
+    "release-ops-rollout-and-release-note-missing",
+    "release-ops-observability-evidence-missing",
+    "atomic-compatibility-rollback-verification-incomplete",
+    "atomic-release-readiness-blocked"
+  ]
+}

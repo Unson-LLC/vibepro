@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-symlinked-bin-entrypoint",
+  "updated_at": "2026-07-25T05:00:02.390Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Two tests jointly exercise all three named failure modes with real assertions: 'rejects import and missing entrypoint input' covers import/undefined/unresolvable-path cases; 'rejects a dangling symlink without throwing' creates a real dangling symlink and confirms false without an uncaught exception. Inspected isDirectExecution's implementation: the only path to false for a truthy, non-matching argvEntry is the catch block after realpathSync throws, confirming the catch path (not just the early return) is genuinely exercised by the dangling-symlink case.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-round1-symlink-entrypoint",
+        "session_ref": null
+      },
+      "head_commit": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+      "recorded_at": "2026-07-25T05:00:02.387Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "The 'module import alone does not execute the CLI' test spawns a subprocess that only imports the module and asserts empty stdout/stderr and exit 0. Independently confirmed process.argv has no argv[1] under this exact node --input-type=module --eval import shape (so isDirectExecution's early !argvEntry return prevents main), and confirmed via direct invocation that if main() ran it would print several KB of help text, so the empty-stdout pass is real evidence of non-execution, not a superficial check.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-round1-symlink-entrypoint",
+        "session_ref": null
+      },
+      "head_commit": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+      "recorded_at": "2026-07-25T04:59:55.704Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Ran node --test test/bin-entrypoint.test.js; the 'version executes identically through the real entrypoint and a symlink' test spawns the real bin/vibepro.js with argv ['version'] and a freshly created file symlink to it with the same argv via spawnSync, asserting matching exit code 0 and matching stdout content. This is a genuine black-box process-level check that actually invokes the version subcommand through both paths, not a string/field existence check.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-round1-symlink-entrypoint",
+        "session_ref": null
+      },
+      "head_commit": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+      "recorded_at": "2026-07-25T04:59:29.698Z"
+    }
+  ]
+}

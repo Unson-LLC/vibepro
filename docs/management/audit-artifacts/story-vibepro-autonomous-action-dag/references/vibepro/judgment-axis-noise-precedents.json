@@ -1,0 +1,108 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|changed_files:18|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-autonomous-action-dag",
+      "decision_id": "decision-1784643970958-427f652b",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18 changed files implement one compatibility contract across Story, Architecture, Spec, runtime orchestration, CLI, persistence, and tests. The 19 focused commits are all descendants of the same Story rather than unrelated behavior. Splitting runtime state, profile fallback, HEAD rebinding, or final Gate semantics would make each PR internally incomplete; production connectors, independent review orchestration, and one-command closure remain explicitly separated child Stories.",
+      "artifact": "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:18",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-21T14:26:20.959Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:19|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-autonomous-action-dag",
+      "decision_id": "decision-1784643970958-427f652b",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18 changed files implement one compatibility contract across Story, Architecture, Spec, runtime orchestration, CLI, persistence, and tests. The 19 focused commits are all descendants of the same Story rather than unrelated behavior. Splitting runtime state, profile fallback, HEAD rebinding, or final Gate semantics would make each PR internally incomplete; production connectors, independent review orchestration, and one-command closure remain explicitly separated child Stories.",
+      "artifact": "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:19",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-21T14:27:39.543Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:202|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-autonomous-action-dag",
+      "decision_id": "decision-1784644269878-281df8c6",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18-file change is one closed compatibility contract: autonomous action planning, guarded execution, telemetry truthfulness, CLI exposure, tests, and authority registration must land together. Production connectors, review orchestration, and one-command closure remain separate child Stories, preserving rollback and review boundaries.",
+      "artifact": "docs/management/roadmaps/vibepro-autonomous-implementation-roadmap.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:202",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-21T14:58:31.487Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:21|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-autonomous-action-dag",
+      "decision_id": "decision-1784644269878-281df8c6",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18-file change is one closed compatibility contract: autonomous action planning, guarded execution, telemetry truthfulness, CLI exposure, tests, and authority registration must land together. Production connectors, review orchestration, and one-command closure remain separate child Stories, preserving rollback and review boundaries.",
+      "artifact": "docs/management/roadmaps/vibepro-autonomous-implementation-roadmap.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:21",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-21T15:55:52.356Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:101|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-autonomous-action-dag",
+      "decision_id": "decision-1784644269878-281df8c6",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18-file change is one closed compatibility contract: autonomous action planning, guarded execution, telemetry truthfulness, CLI exposure, tests, and authority registration must land together. Production connectors, review orchestration, and one-command closure remain separate child Stories, preserving rollback and review boundaries.",
+      "artifact": "docs/management/roadmaps/vibepro-autonomous-implementation-roadmap.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:101",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-21T16:46:37.109Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:322|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-autonomous-action-dag",
+      "decision_id": "decision-1784644269878-281df8c6",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 18-file change is one closed compatibility contract: autonomous action planning, guarded execution, telemetry truthfulness, CLI exposure, tests, and authority registration must land together. Production connectors, review orchestration, and one-command closure remain separate child Stories, preserving rollback and review boundaries.",
+      "artifact": "docs/management/roadmaps/vibepro-autonomous-implementation-roadmap.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:322",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-21T23:53:10.285Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

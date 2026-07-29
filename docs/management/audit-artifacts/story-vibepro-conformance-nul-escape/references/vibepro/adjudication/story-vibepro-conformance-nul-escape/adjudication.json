@@ -1,0 +1,56 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-conformance-nul-escape",
+  "updated_at": "2026-07-24T23:55:52.478Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Re-executed at HEAD: plain grep -c matchedPatterns returned 3 with exit 0 and no binary-file suppression; file(1) classifies the file as UTF-8 text (origin/main version is binary from the 2 raw NULs). Directly observed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0566591a77282bfa",
+        "session_ref": "subagent-a0566591a77282bfa"
+      },
+      "head_commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "recorded_at": "2026-07-24T23:55:52.475Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Judge ran node --test test/architecture-conformance.test.js at HEAD aa22e2d2: 12 pass / 0 fail, exit 0. Fresh local run at the rebased head is the demonstrating evidence; story-owned file content is byte-identical across the rebase.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0566591a77282bfa",
+        "session_ref": "subagent-a0566591a77282bfa"
+      },
+      "head_commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "recorded_at": "2026-07-24T23:55:51.761Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "git diff --text origin/main..HEAD shows exactly the two composite-key sites changed from raw NUL to the \\0 escape and nothing else. Runtime byte-identity verified two ways: node one-liner confirms \\0 in a template literal yields U+0000 with no octal ambiguity (followed by $), and the replay test imports HEAD and origin/main raw-NUL modules side by side, asserts the original still carries 2 NULs, and deepStrictEquals their output on 7859 real files plus a negative stale probe.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0566591a77282bfa",
+        "session_ref": "subagent-a0566591a77282bfa"
+      },
+      "head_commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "recorded_at": "2026-07-24T23:55:51.148Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Judge re-verified at HEAD aa22e2d2: byte scan of src/architecture-conformance.js found nul_count=0, while origin/main blob has exactly 2 NUL bytes at offsets 7944/8164. Directly observed, not inferred from test names.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0566591a77282bfa",
+        "session_ref": "subagent-a0566591a77282bfa"
+      },
+      "head_commit": "aa22e2d29472828117652e75423abf34173b4555",
+      "recorded_at": "2026-07-24T23:55:50.476Z"
+    }
+  ]
+}

@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-conformance-nul-escape",
+  "ledger_path": ".vibepro/pr/story-vibepro-conformance-nul-escape/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_baad61339b543711071fd90ee64795a0c90fb573a20cfdacd1874c73997796ab"
+  },
+  "parent_revision_fingerprint": "3ad9d2f648efb4bc2bb0f8061cdf478c2ff56d598af09aee03f0415d5ae4c5f7",
+  "revision_fingerprint": "99ab11070a3db0fe00cd0126caa587f5fc7785a209e7afaa84c0b06f8964d5ff",
+  "trace": {
+    "decision_trace_id": "dt_baad61339b543711071fd90ee64795a0c90fb573a20cfdacd1874c73997796ab",
+    "collision_group": null,
+    "trace_source_ref": "tsr_94222267c84b57360bba7eacf7921ba912c4c07dcf87ac3e8d7fa30939bf6fc2",
+    "normalized_subject_key": "finding:ci-integration-evidence-pre-rebase-head",
+    "source_identity": {
+      "source_kind": "linked_sources",
+      "source_ref": ".vibepro/reviews/story-vibepro-conformance-nul-escape/gate/review-result-gate_evidence.json,.vibepro/reviews/story-vibepro-conformance-nul-escape/gate/review-result-gate_evidence.json",
+      "native_id": "ci-integration-evidence-pre-rebase-head,ci-integration-evidence-pre-rebase-head",
+      "digest": "e79ff5cb2c270037380c81834816a58973b6c57549296def7e5ade537665916e",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "aa22e2d29472828117652e75423abf34173b4555",
+    "parent_revision_fingerprint": "3ad9d2f648efb4bc2bb0f8061cdf478c2ff56d598af09aee03f0415d5ae4c5f7",
+    "revision_fingerprint": "99ab11070a3db0fe00cd0126caa587f5fc7785a209e7afaa84c0b06f8964d5ff",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_baad61339b543711071fd90ee64795a0c90fb573a20cfdacd1874c73997796ab"
+        },
+        "parent_revision_fingerprint": "663ef8c32e827ca433eb4727acdd25d8f0611edfe21c37807cefeca524a2d340"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "observed",
+      "value": {
+        "severity": "low",
+        "id": "ci-integration-evidence-pre-rebase-head",
+        "detail": "Integration CI import (test (22) SUCCESS) is bound to pre-rebase head 3dbc7eb8, visible as unbound in the artifact; vibepro verify import-ci must be re-run against CI at the rebased head before execute merge"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-conformance-nul-escape/gate/review-result-gate_evidence.json",
+          "source_head_sha": "aa22e2d29472828117652e75423abf34173b4555",
+          "source_digest": "59e61b4f1f924d396d6a004b06cfa99ef77ccf7b07b3bfc216909d714dece29b",
+          "native_id": "ci-integration-evidence-pre-rebase-head"
+        }
+      ]
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "observed",
+      "value": {
+        "detected_by": "gate_evidence",
+        "stage": "gate",
+        "detected_head_sha": "aa22e2d29472828117652e75423abf34173b4555"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-conformance-nul-escape/gate/review-result-gate_evidence.json",
+          "source_head_sha": "aa22e2d29472828117652e75423abf34173b4555",
+          "source_digest": "59e61b4f1f924d396d6a004b06cfa99ef77ccf7b07b3bfc216909d714dece29b",
+          "native_id": "ci-integration-evidence-pre-rebase-head"
+        }
+      ]
+    },
+    "disposition": {
+      "status": "observed",
+      "value": {
+        "finding_id": "ci-integration-evidence-pre-rebase-head",
+        "disposition": "accepted",
+        "resolved_by": [],
+        "reason": "re-import is the immediate next step once CI completes at the rebased head",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-conformance-nul-escape/gate/review-result-gate_evidence.json",
+          "source_head_sha": "aa22e2d29472828117652e75423abf34173b4555",
+          "source_digest": "a5bdfc79253d4f83e71fb603014494a9e48d344bd5ffde2b5f497657b2fbf827",
+          "native_id": "ci-integration-evidence-pre-rebase-head"
+        }
+      ]
+    },
+    "decision": {
+      "status": "observed",
+      "value": {
+        "finding_id": "ci-integration-evidence-pre-rebase-head",
+        "disposition": "accepted",
+        "resolved_by": [],
+        "reason": "re-import is the immediate next step once CI completes at the rebased head",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-conformance-nul-escape/gate/review-result-gate_evidence.json",
+          "source_head_sha": "aa22e2d29472828117652e75423abf34173b4555",
+          "source_digest": "a5bdfc79253d4f83e71fb603014494a9e48d344bd5ffde2b5f497657b2fbf827",
+          "native_id": "ci-integration-evidence-pre-rebase-head"
+        }
+      ]
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 389,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/389",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "2edb825a50f248211b2d00a279797a2cf8578b6d",
+        "status": "merged",
+        "merged_at": "2026-07-24T23:56:53Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-conformance-nul-escape/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

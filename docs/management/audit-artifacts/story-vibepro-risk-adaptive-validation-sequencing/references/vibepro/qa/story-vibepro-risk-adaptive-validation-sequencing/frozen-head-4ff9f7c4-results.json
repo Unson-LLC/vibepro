@@ -1,0 +1,10 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "success": true,
+  "total": 46,
+  "pass": 46,
+  "fail": 0,
+  "head_sha": "4ff9f7c469d63d54eb502d736b968eb867fb2730",
+  "command": "node --test --test-concurrency=2 test/validation-sequencing.test.js test/ci-evidence-import.test.js test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts"
+}

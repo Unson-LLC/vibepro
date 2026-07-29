@@ -1,0 +1,132 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-review-finding-repair-loop",
+  "created_at": "2026-07-20T14:47:45.911Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-review-finding-repair-loop/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-review-finding-repair-loop/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-review-finding-repair-loop/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-review-finding-repair-loop/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-review-finding-repair-loop.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-review-finding-repair-loop.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 11,
+      "open": 0,
+      "by_type": {
+        "needs_review": 6,
+        "waiver": 5
+      },
+      "by_status": {
+        "accepted": 11
+      },
+      "warnings": [],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784557682343-7fddc7b8",
+        "story_id": "story-vibepro-review-finding-repair-loop",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:senior_gap_judgment",
+        "source_status": "needs_review",
+        "summary": "Current-head senior gaps are explicitly reviewed and accepted",
+        "reason": "The remaining generated gaps are scope/design follow-ups already covered by current accepted decisions, 7/7 demonstrated ACs, 15/15 sound judgments, current responsibility authority, and a closed independent pass review.",
+        "reviewer": "codex-coordinator",
+        "artifact": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-metadata-rereview.json",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+              "type": "e2e",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [],
+        "git_context": {
+          "head_sha": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+          "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-20T14:28:02.342Z"
+        },
+        "recorded_at": "2026-07-20T14:28:02.343Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-20T14:47:43.524Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-review-finding-repair-loop-work"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-review-finding-repair-loop-work/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-review-finding-repair-loop-work/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "branch": "codex/story-vibepro-review-finding-repair-loop",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "2db5a17e99a88eb2115e52d6212859faff48387e",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

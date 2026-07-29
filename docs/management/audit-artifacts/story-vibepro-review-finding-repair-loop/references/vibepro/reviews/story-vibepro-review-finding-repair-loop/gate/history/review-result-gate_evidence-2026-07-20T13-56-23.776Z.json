@@ -1,0 +1,144 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-review-finding-repair-loop",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "AC-7 multi-attempt convergence coverage is incomplete",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "rfr-missing-successful-multi-attempt",
+      "detail": "Add attempt 1 needs_changes, changed finding and HEAD, attempt 2 repair, and convergence test"
+    },
+    {
+      "severity": "medium",
+      "id": "rfr-scenario-clause-e2e-overclaim",
+      "detail": "Re-record scenario_clause_e2e only after the successful multi-attempt fixture exists"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected Story, architecture, Spec, main...HEAD diff, repair-loop implementation, CLI wiring, focused tests, canonical verification and pr-prepare artifacts; reran 49 focused tests.",
+    "evidence": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+    "inputs": [
+      "test/review-finding-repair-loop.test.js",
+      "src/review-finding-repair-loop.js",
+      "docs/specs/story-vibepro-review-finding-repair-loop.vibepro.json"
+    ]
+  },
+  "judgment_delta": [
+    "Fresh evidence and dispatch safety passed; apparent AC-7 completion changed to needs_changes because no successful second-attempt convergence fixture exists."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-review-finding-repair-loop-work",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-review-finding-repair-loop-work",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-review-finding-repair-loop-work",
+    "expected_head_sha": "3fc9e8094580daf2b5481117dd0e9ff6cc8f1696",
+    "current_head_sha": "3fc9e8094580daf2b5481117dd0e9ff6cc8f1696",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-review-finding-repair-loop-work",
+      "branch": "codex/story-vibepro-review-finding-repair-loop",
+      "actual_branch": "codex/story-vibepro-review-finding-repair-loop",
+      "current_head_sha": "3fc9e8094580daf2b5481117dd0e9ff6cc8f1696",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-20T13:56:23.776Z",
+  "git_context": {
+    "head_sha": "3fc9e8094580daf2b5481117dd0e9ff6cc8f1696",
+    "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-20T13:56:23.769Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "gate evidence is head-bound"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "3fc9e8094580daf2b5481117dd0e9ff6cc8f1696",
+    "surface_files": [
+      {
+        "path": "docs/specs/story-vibepro-review-finding-repair-loop.vibepro.json",
+        "sha256": "5be3c30d8bba79261d0a2c55719b4d10a3fa5b918333c134b9fe8ac3af19a4ac",
+        "size": 4474
+      },
+      {
+        "path": "src/review-finding-repair-loop.js",
+        "sha256": "01de4aaa860e7e3575ec17e6553f1a705ae5b0272a4bb4d503c991d4f6345203",
+        "size": 22427
+      },
+      {
+        "path": "test/review-finding-repair-loop.test.js",
+        "sha256": "7c1630c112047e364070d1a6cbb7e4f228fd239af80e608d0adbd6bde5dc7e92",
+        "size": 17560
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "420b9fdefa15b14caed021e4b9de8cc7b2221a5f6b0c16f0178fce4ae0def1c3"
+  },
+  "source_fingerprint": "1c667a22a372cd40eaea6a68230128023116f2563a01aa11fa78488d2a5ad4f2",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "story8_final_review",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-final-review.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-final-review.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

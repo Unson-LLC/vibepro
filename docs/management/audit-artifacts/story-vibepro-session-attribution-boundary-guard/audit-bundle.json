@@ -1,0 +1,1771 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-attribution-boundary-guard",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-21T18:13:56.992Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:2387c150dd945e9fad661705b57e65d105c3012d39fa36ecca408a8f47e2149a",
+    "compressed_hash": "sha256:88bb8de947d01b2b840b883c9323d91c8520413422ecc86dbeeb98450ac4287d",
+    "expanded_bytes": 19134,
+    "compressed_bytes": 3751,
+    "expanded_line_count": 498,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-session-attribution-boundary-guard",
+    "cost": {
+      "compressed_bytes": 3751,
+      "expanded_bytes": 19134,
+      "expanded_line_count": 498,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/345",
+    "merge_commit_sha": "60524f51fe7c76ba3f06e82161bb043afcc22b04",
+    "merged_at": "2026-07-21T18:13:55Z",
+    "current_head_sha": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...afd5a8ac37491afde0963cc2b0fc4493c8becd82"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 142,
+    "copied_reference_count": 128,
+    "unresolved_reference_count": 6,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-session-attribution-boundary-guard"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:2387c150dd945e9fad661705b57e65d105c3012d39fa36ecca408a8f47e2149a"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:68122d4d10085167e3ef5665289210c7bae745262bf3a41459c2bcc9db29739c",
+      "audit_digest": "sha256:68122d4d10085167e3ef5665289210c7bae745262bf3a41459c2bcc9db29739c",
+      "line_count": 205,
+      "raw_line_count": 205,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:bd4f770491ecb9d27d045c9ad1f7e806a11ac01c64d5f8732b012a8fd9e89f2a",
+      "audit_digest": "sha256:9c0b67bf3f2f147be3d37967027a528f4a8048a5bd78140da8c76cd736bdfc1f",
+      "line_count": 5288,
+      "raw_line_count": 35093,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:ada4fee3839483476f68806d1be21eaa3af009c97823ce6703aaa163d753980c",
+      "audit_digest": "sha256:23a06acfede8f33e60a0353feb7692a45a1f20c9d4fb77657a41d4492e5a2e0a",
+      "line_count": 1532,
+      "raw_line_count": 4168,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:9451e12ad1b9d079ade3d9e17bc6c0b13b306bdbb2abf2a1ef44917681fae8fb",
+      "audit_digest": "sha256:af9c82720c40b674ab5a82b603c6b9bcf3a8145447b60f6d15400a732492df14",
+      "line_count": 47,
+      "raw_line_count": 639,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:fb0b03ebbb2ddc5fba23dbdb4089aab474178f8db3e2ed153204e077b63d0b19",
+      "audit_digest": "sha256:9e79f64c887e9503d3f413a5ec2bc604d9c295901f7d21af973cf4c594d60bc0",
+      "line_count": 1569,
+      "raw_line_count": 4244,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:09fe4b73b7df2fbf6f37424054ec5af0f07c31a56cd679a868af80fd10fa21b4",
+      "audit_digest": "sha256:09fe4b73b7df2fbf6f37424054ec5af0f07c31a56cd679a868af80fd10fa21b4",
+      "line_count": 579,
+      "raw_line_count": 579,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:ec7eaf6cbff4a581f1997ad140ff52f0b01fcdc72af762506775f9793c3e1e5d",
+      "audit_digest": "sha256:e7b47d86acf930bf5ce8b87e415723c65335e94d90702d083c3bdce797684421",
+      "line_count": 143,
+      "raw_line_count": 961,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:ca1f43c7350c1e357dd6b2da9e0644fbe63071b3ad43ac704b6a3e3eecfd0af9",
+      "audit_digest": "sha256:ca1f43c7350c1e357dd6b2da9e0644fbe63071b3ad43ac704b6a3e3eecfd0af9",
+      "line_count": 262,
+      "raw_line_count": 262,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:85993532df17dfb1d0868df5d7720f097275a91cb99fade1c75e9e926626a958",
+      "audit_digest": "sha256:85993532df17dfb1d0868df5d7720f097275a91cb99fade1c75e9e926626a958",
+      "line_count": 274,
+      "raw_line_count": 274,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:25ddc59976c3ca96821d0172986e810d45ab11f7a1d6f54fbd819e540ad4e482",
+      "audit_digest": "sha256:25ddc59976c3ca96821d0172986e810d45ab11f7a1d6f54fbd819e540ad4e482",
+      "line_count": 484,
+      "raw_line_count": 484,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/review-request-architecture_boundary.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:8c1e1c113ad6d7b940ea96f9766fc43ddcf7f1a3a0cbd363b343a3f5cf624ab4",
+      "audit_digest": "sha256:8c1e1c113ad6d7b940ea96f9766fc43ddcf7f1a3a0cbd363b343a3f5cf624ab4",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/review-result-architecture_boundary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:f95b736a5f4aa5a1cca9ce916b6c1d6cb4ddfb6c2e6350896f3d8ff4f1e03645",
+      "audit_digest": "sha256:f95b736a5f4aa5a1cca9ce916b6c1d6cb4ddfb6c2e6350896f3d8ff4f1e03645",
+      "line_count": 232,
+      "raw_line_count": 232,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:e896a094e2b2fcb3b39f6eb9350ed3bcee4b3234597f860121ed01b0b6ac4670",
+      "audit_digest": "sha256:e896a094e2b2fcb3b39f6eb9350ed3bcee4b3234597f860121ed01b0b6ac4670",
+      "line_count": 742,
+      "raw_line_count": 742,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:8b5ef47cbd7e3a2098b685c45330d0cae4885199b1f7ee46ad195a7b235fc2bc",
+      "audit_digest": "sha256:8b5ef47cbd7e3a2098b685c45330d0cae4885199b1f7ee46ad195a7b235fc2bc",
+      "line_count": 384,
+      "raw_line_count": 384,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:5277c383736bb296b66c8de90f6e549535b0a30908f45124e1defc8906591db4",
+      "audit_digest": "sha256:5277c383736bb296b66c8de90f6e549535b0a30908f45124e1defc8906591db4",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:a411a53ab56fd0d0674abd09e4b46e63c2aa29f13ba452cc1a02e266fc443527",
+      "audit_digest": "sha256:a411a53ab56fd0d0674abd09e4b46e63c2aa29f13ba452cc1a02e266fc443527",
+      "line_count": 214,
+      "raw_line_count": 214,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:45a6c4a4d2e122670f9289c72065eeed0e24d43d5c6b6eb5ee07fd9b338ba363",
+      "audit_digest": "sha256:45a6c4a4d2e122670f9289c72065eeed0e24d43d5c6b6eb5ee07fd9b338ba363",
+      "line_count": 619,
+      "raw_line_count": 619,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:5dca0b8996438e3e1c4a921e08c3ad98edddfa2acf18d67fc8ecc9cd9e3055d5",
+      "audit_digest": "sha256:5dca0b8996438e3e1c4a921e08c3ad98edddfa2acf18d67fc8ecc9cd9e3055d5",
+      "line_count": 309,
+      "raw_line_count": 309,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/review-request-runtime_contract.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:21abadeb7656035b868753d87e55a5514acd5a7b36395ce25dec5d67734fc53d",
+      "audit_digest": "sha256:21abadeb7656035b868753d87e55a5514acd5a7b36395ce25dec5d67734fc53d",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/review-result-runtime_contract.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:fdc3f05aa55e4f7d7bc07141b877e311c25c952cc8b67e36d7c7902a93106c51",
+      "audit_digest": "sha256:fdc3f05aa55e4f7d7bc07141b877e311c25c952cc8b67e36d7c7902a93106c51",
+      "line_count": 208,
+      "raw_line_count": 208,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:09b9773855009c2aed4136b0ad7d0094bab00cf32027539ffb881ebea29611ff",
+      "audit_digest": "sha256:09b9773855009c2aed4136b0ad7d0094bab00cf32027539ffb881ebea29611ff",
+      "line_count": 528,
+      "raw_line_count": 528,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/ci-evidence/CodeQL.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/ci-evidence/CodeQL.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/expensive-verification-785eff5c.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/expensive-verification-785eff5c.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/expensive-verification-b6c66dac.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/expensive-verification-b6c66dac.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/targeted-validation-afd5.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/targeted-validation-afd5.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-session-attribution-boundary-guard/cli-e2e.status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/qa/story-vibepro-session-attribution-boundary-guard/cli-e2e.status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-session-attribution-boundary-guard/integration.status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/qa/story-vibepro-session-attribution-boundary-guard/integration.status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-session-attribution-boundary-guard/session-audit.status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/qa/story-vibepro-session-attribution-boundary-guard/session-audit.status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-session-attribution-boundary-guard/typecheck.status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/qa/story-vibepro-session-attribution-boundary-guard/typecheck.status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture/architecture-agent-019f833f-7115-7a71-845d-eb88bcec5d85.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture/architecture-agent-019f833f-7115-7a71-845d-eb88bcec5d85.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f82e4.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f82e4.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f834c.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f834c.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f835f.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f835f.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8374-r2.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8374-r2.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8374-r3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8374-r3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8374.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8374.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f83b7-7c95-7191-9f67-c576a99ea2dd.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f83b7-7c95-7191-9f67-c576a99ea2dd.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f83ca-6314-7bf1-86b4-a319eeb29b98.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f83ca-6314-7bf1-86b4-a319eeb29b98.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f83d9-88bb-7cb2-aede-01a2a8fc9fb1.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f83d9-88bb-7cb2-aede-01a2a8fc9fb1.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8401-3982-7092-8b38-39d61ac82d3b.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8401-3982-7092-8b38-39d61ac82d3b.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f849c-a47d-77e2-9e42-149fea8a25bf.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f849c-a47d-77e2-9e42-149fea8a25bf.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f84a5-830c-7b03-91e1-5983681501a9.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f84a5-830c-7b03-91e1-5983681501a9.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f84b0-bd00-7471-9ff7-b021a35d5dcb.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f84b0-bd00-7471-9ff7-b021a35d5dcb.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f84ca-8d92-7613-8acb-1b7513db8cfb.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f84ca-8d92-7613-8acb-1b7513db8cfb.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8569-c5f2-7a10-93a2-c7a69b3267f4.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8569-c5f2-7a10-93a2-c7a69b3267f4.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8588-952d-7cd1-8d27-0da03b9fe733.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8588-952d-7cd1-8d27-0da03b9fe733.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f85bf-7f9a-7c90-86f9-1ff180a5d855.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f85bf-7f9a-7c90-86f9-1ff180a5d855.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T04-23-51.456Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T04-23-51.456Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T06-38-57.139Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T06-38-57.139Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T06-39-34.520Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T06-39-34.520Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T06-40-25.897Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T06-40-25.897Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T07-00-14.008Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T07-00-14.008Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T07-03-20.124Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T07-03-20.124Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T07-05-14.372Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T07-05-14.372Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T08-16-17.536Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T08-16-17.536Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T08-30-39.654Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T08-30-39.654Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T08-49-30.138Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T08-49-30.138Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T09-38-54.653Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T09-38-54.653Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T09-40-08.084Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T09-40-08.084Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-24-41.832Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-24-41.832Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-38-33.571Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-38-33.571Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-48-19.025Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-48-19.025Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-48-42.634Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-48-42.634Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T13-12-20.945Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T13-12-20.945Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-13-58.873Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-13-58.873Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-45-32.587Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-45-32.587Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-45-57.716Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-45-57.716Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-43-10.676Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-43-10.676Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/review-request-architecture_boundary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/reviews/architecture_spec/review-request-architecture_boundary.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/review-result-architecture_boundary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/reviews/architecture_spec/review-result-architecture_boundary.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f82d4.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f82d4.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f833e-dbd5-7f21-8bcd-35a6e6b80748.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f833e-dbd5-7f21-8bcd-35a6e6b80748.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f83b5-0c8a-7610-9356-25ef7533a8c4.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f83b5-0c8a-7610-9356-25ef7533a8c4.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f83c8-0bc6-75e2-a694-ba48c96dc609.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f83c8-0bc6-75e2-a694-ba48c96dc609.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f857e-af58-79f2-b381-094dc0d1eebc.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f857e-af58-79f2-b381-094dc0d1eebc.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f85d1-4c0a-7593-9b1f-a521ae3ea0cf.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f85d1-4c0a-7593-9b1f-a521ae3ea0cf.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T05-32-27.497Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T05-32-27.497Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T08-31-41.108Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T08-31-41.108Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T09-11-42.788Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T09-11-42.788Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-31-30.389Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-31-30.389Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-39-33.010Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-39-33.010Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-51-12.456Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-51-12.456Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-51-34.856Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-51-34.856Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T13-09-17.883Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T13-09-17.883Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T13-17-23.224Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T13-17-23.224Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T15-24-18.280Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T15-24-18.280Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T15-24-36.488Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T15-24-36.488Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T04-06-50.879Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T04-06-50.879Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T08-12-36.493Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T08-12-36.493Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T08-27-49.828Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T08-27-49.828Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T16-30-50.608Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T16-30-50.608Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T18-06-48.158Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T18-06-48.158Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T06-48-38.785Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T06-48-38.785Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T07-36-35.248Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T07-36-35.248Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T07-38-22.849Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T07-38-22.849Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T08-23-29.993Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T08-23-29.993Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T08-37-34.697Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T08-37-34.697Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T10-42-26.282Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T10-42-26.282Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T13-01-12.523Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T13-01-12.523Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T13-16-38.164Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T13-16-38.164Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T16-21-21.307Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T16-21-21.307Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T16-52-48.558Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T16-52-48.558Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T17-50-29.941Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T17-50-29.941Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/review-request-runtime_contract.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/reviews/implementation/review-request-runtime_contract.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/review-result-runtime_contract.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/reviews/implementation/review-result-runtime_contract.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8368.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8368.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8395-r2.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8395-r2.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8395.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8395.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f83bf-e4e4-7671-b8c0-86ea21a142b9.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f83bf-e4e4-7671-b8c0-86ea21a142b9.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8440-b65b-7a91-81d8-62fd9d650aeb.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8440-b65b-7a91-81d8-62fd9d650aeb.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f84bd-7a30-71b0-ae96-9a8d97061217.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f84bd-7a30-71b0-ae96-9a8d97061217.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f84cf-b29e-77b0-a2cc-2117fd27be4a.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f84cf-b29e-77b0-a2cc-2117fd27be4a.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8575-530a-7c81-a9ad-4753d63af11f.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8575-530a-7c81-a9ad-4753d63af11f.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8592-7d47-7423-afca-7ad0b002a308.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8592-7d47-7423-afca-7ad0b002a308.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f85c7-8e22-7411-bc1b-0cb812cfd3df.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f85c7-8e22-7411-bc1b-0cb812cfd3df.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-final-agent-019f83cc-cc5c-7b53-9a57-0905296ec58c.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-final-agent-019f83cc-cc5c-7b53-9a57-0905296ec58c.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-session-attribution-boundary-guard/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/stories/story-vibepro-session-attribution-boundary-guard/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-session-attribution-boundary-guard/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/stories/story-vibepro-session-attribution-boundary-guard/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-session-attribution-boundary-guard/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/validation-sequencing/story-vibepro-session-attribution-boundary-guard/state.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-session-attribution-boundary-guard/tests.xml",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/verification/story-vibepro-session-attribution-boundary-guard/tests.xml",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/diagnostics/2026-07-21T084008Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/ci-evidence/CodeQL.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/ci-evidence/CodeQL.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/expensive-verification-785eff5c.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/expensive-verification-785eff5c.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/expensive-verification-b6c66dac.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/expensive-verification-b6c66dac.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/targeted-validation-afd5.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/pr/story-vibepro-session-attribution-boundary-guard/targeted-validation-afd5.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-session-attribution-boundary-guard/cli-e2e.status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/qa/story-vibepro-session-attribution-boundary-guard/cli-e2e.status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-session-attribution-boundary-guard/integration.status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/qa/story-vibepro-session-attribution-boundary-guard/integration.status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-session-attribution-boundary-guard/session-audit.status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/qa/story-vibepro-session-attribution-boundary-guard/session-audit.status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/story-vibepro-session-attribution-boundary-guard/typecheck.status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/qa/story-vibepro-session-attribution-boundary-guard/typecheck.status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture/architecture-agent-019f833f-7115-7a71-845d-eb88bcec5d85.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture/architecture-agent-019f833f-7115-7a71-845d-eb88bcec5d85.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f82e4.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f82e4.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f834c.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f834c.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f835f.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f835f.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8374-r2.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8374-r2.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8374-r3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8374-r3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8374.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8374.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f83b7-7c95-7191-9f67-c576a99ea2dd.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f83b7-7c95-7191-9f67-c576a99ea2dd.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f83ca-6314-7bf1-86b4-a319eeb29b98.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f83ca-6314-7bf1-86b4-a319eeb29b98.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f83d9-88bb-7cb2-aede-01a2a8fc9fb1.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f83d9-88bb-7cb2-aede-01a2a8fc9fb1.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8401-3982-7092-8b38-39d61ac82d3b.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8401-3982-7092-8b38-39d61ac82d3b.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f849c-a47d-77e2-9e42-149fea8a25bf.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f849c-a47d-77e2-9e42-149fea8a25bf.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f84a5-830c-7b03-91e1-5983681501a9.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f84a5-830c-7b03-91e1-5983681501a9.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f84b0-bd00-7471-9ff7-b021a35d5dcb.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f84b0-bd00-7471-9ff7-b021a35d5dcb.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f84ca-8d92-7613-8acb-1b7513db8cfb.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f84ca-8d92-7613-8acb-1b7513db8cfb.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8569-c5f2-7a10-93a2-c7a69b3267f4.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8569-c5f2-7a10-93a2-c7a69b3267f4.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8588-952d-7cd1-8d27-0da03b9fe733.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f8588-952d-7cd1-8d27-0da03b9fe733.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f85bf-7f9a-7c90-86f9-1ff180a5d855.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/architecture-boundary-agent-019f85bf-7f9a-7c90-86f9-1ff180a5d855.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T04-23-51.456Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T04-23-51.456Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T06-38-57.139Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T06-38-57.139Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T06-39-34.520Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T06-39-34.520Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T06-40-25.897Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T06-40-25.897Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T07-00-14.008Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T07-00-14.008Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T07-03-20.124Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T07-03-20.124Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T07-05-14.372Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T07-05-14.372Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T08-16-17.536Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T08-16-17.536Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T08-30-39.654Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T08-30-39.654Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T08-49-30.138Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T08-49-30.138Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T09-38-54.653Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T09-38-54.653Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T09-40-08.084Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T09-40-08.084Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-24-41.832Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-24-41.832Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-38-33.571Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-38-33.571Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-48-19.025Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-48-19.025Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-48-42.634Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T12-48-42.634Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T13-12-20.945Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T13-12-20.945Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-13-58.873Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-13-58.873Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-45-32.587Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-45-32.587Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-45-57.716Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-45-57.716Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-43-10.676Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-43-10.676Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f82d4.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f82d4.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f833e-dbd5-7f21-8bcd-35a6e6b80748.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f833e-dbd5-7f21-8bcd-35a6e6b80748.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f83b5-0c8a-7610-9356-25ef7533a8c4.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f83b5-0c8a-7610-9356-25ef7533a8c4.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f83c8-0bc6-75e2-a694-ba48c96dc609.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f83c8-0bc6-75e2-a694-ba48c96dc609.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f857e-af58-79f2-b381-094dc0d1eebc.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f857e-af58-79f2-b381-094dc0d1eebc.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f85d1-4c0a-7593-9b1f-a521ae3ea0cf.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/gate-evidence-agent-019f85d1-4c0a-7593-9b1f-a521ae3ea0cf.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T05-32-27.497Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T05-32-27.497Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T08-31-41.108Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T08-31-41.108Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T09-11-42.788Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T09-11-42.788Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-31-30.389Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-31-30.389Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-39-33.010Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-39-33.010Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-51-12.456Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-51-12.456Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-51-34.856Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T11-51-34.856Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T13-09-17.883Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T13-09-17.883Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T13-17-23.224Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T13-17-23.224Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T15-24-18.280Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T15-24-18.280Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T15-24-36.488Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-18T15-24-36.488Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T04-06-50.879Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T04-06-50.879Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T08-12-36.493Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T08-12-36.493Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T08-27-49.828Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T08-27-49.828Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T16-30-50.608Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T16-30-50.608Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T18-06-48.158Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/history/review-result-gate_evidence-2026-07-21T18-06-48.158Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T06-48-38.785Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T06-48-38.785Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T07-36-35.248Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T07-36-35.248Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T07-38-22.849Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T07-38-22.849Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T08-23-29.993Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T08-23-29.993Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T08-37-34.697Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T08-37-34.697Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T10-42-26.282Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T10-42-26.282Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T13-01-12.523Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T13-01-12.523Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T13-16-38.164Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T13-16-38.164Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T16-21-21.307Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T16-21-21.307Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T16-52-48.558Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T16-52-48.558Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T17-50-29.941Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/history/review-result-runtime_contract-2026-07-21T17-50-29.941Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8368.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8368.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8395-r2.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8395-r2.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8395.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8395.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f83bf-e4e4-7671-b8c0-86ea21a142b9.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f83bf-e4e4-7671-b8c0-86ea21a142b9.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8440-b65b-7a91-81d8-62fd9d650aeb.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8440-b65b-7a91-81d8-62fd9d650aeb.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f84bd-7a30-71b0-ae96-9a8d97061217.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f84bd-7a30-71b0-ae96-9a8d97061217.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f84cf-b29e-77b0-a2cc-2117fd27be4a.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f84cf-b29e-77b0-a2cc-2117fd27be4a.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8575-530a-7c81-a9ad-4753d63af11f.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8575-530a-7c81-a9ad-4753d63af11f.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8592-7d47-7423-afca-7ad0b002a308.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f8592-7d47-7423-afca-7ad0b002a308.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f85c7-8e22-7411-bc1b-0cb812cfd3df.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-agent-019f85c7-8e22-7411-bc1b-0cb812cfd3df.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-final-agent-019f83cc-cc5c-7b53-9a57-0905296ec58c.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/reviews/story-vibepro-session-attribution-boundary-guard/implementation/runtime-contract-final-agent-019f83cc-cc5c-7b53-9a57-0905296ec58c.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-session-attribution-boundary-guard/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/stories/story-vibepro-session-attribution-boundary-guard/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-session-attribution-boundary-guard/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/stories/story-vibepro-session-attribution-boundary-guard/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-session-attribution-boundary-guard/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/validation-sequencing/story-vibepro-session-attribution-boundary-guard/state.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-session-attribution-boundary-guard/tests.xml",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-attribution-boundary-guard/references/vibepro/verification/story-vibepro-session-attribution-boundary-guard/tests.xml",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 6266723
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T084008Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 974125
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 6049867
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-session-attribution-boundary-guard/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-session-attribution-boundary-guard/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    }
+  ]
+}

@@ -1,0 +1,92 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-review-finding-repair-loop",
+  "updated_at": "2026-07-20T14:45:09.575Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Focused scenarios cover one-fix, attempt-2 convergence, human stop, no-progress, and stale evidence; 59/59 pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:09.574Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Repeated fingerprints without HEAD progress and attempt exhaustion stop no_progress.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:09.361Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Convergence requires a closed independent same-role current-head rereview.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:09.156Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Canonical verification and pr-prepare evidence must match current HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:08.947Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Boundary-sensitive blocks stop at an explicit Human Checkpoint.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:08.743Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Repairable findings create bounded tasks with acceptance, code, and test scopes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:08.534Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Original review remains immutable and attempts append finding and disposition snapshots.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "story8-frontmatter-rereview",
+        "session_ref": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-frontmatter-rereview.json"
+      },
+      "head_commit": "0a3aa7a50dee2fe3d9c561e1c20bda82fd8eeb6f",
+      "recorded_at": "2026-07-20T14:45:08.344Z"
+    }
+  ]
+}

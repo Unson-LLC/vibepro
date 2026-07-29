@@ -36,6 +36,6 @@ vibepro review status . --id <story-id> --stage gate
 
 Valid review statuses are `pass`, `needs_changes`, and `block`. A passing review must name an existing non-`.vibepro` source, test, Story, Spec, contract, or config as an inspection input; generated `.vibepro` artifacts alone do not define an inspection surface.
 
-Normal roles are content-surface-bound by default: later commits preserve the review while its inspected surface is unchanged, and changes to that surface make it stale. `gate_evidence`, `release_risk`, role policies with a reason, and `--strict-head-binding --strict-head-reason <reason>` remain strict HEAD-bound and become stale after any commit. Fix accepted findings, re-verify, and repeat only the reviews invalidated by the final tree.
+Reviews, including `gate_evidence` and `release_risk`, are content-surface-bound by default: later commits preserve the review while its inspected surface is unchanged, and changes to that surface make it stale. A role-specific `strict_head` policy with a reason, or `--strict-head-binding --strict-head-reason <reason>`, remains HEAD-bound and becomes stale after any commit. Fix accepted findings, re-verify, and repeat only the reviews invalidated by the final tree.
 
 Adjudication is a separate independent judgment. Use `adjudicate prepare` and `adjudicate record` for clause-by-clause demonstration and senior-judgment items after the implementation and evidence are final.

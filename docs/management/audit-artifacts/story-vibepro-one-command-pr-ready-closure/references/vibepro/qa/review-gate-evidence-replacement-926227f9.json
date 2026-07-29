@@ -1,0 +1,65 @@
+{
+  "schema_version": "0.1.0",
+  "review_type": "gate:gate_evidence:replacement",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "head_sha": "926227f945878299770448a03966c17dfa70158d",
+  "status": "pass",
+  "summary": "Both previously blocking Gate evidence findings are resolved at exact HEAD 926227f9. Canonical validation sequencing is passed and ready_for_final_gate with no blocking phases or invalidations. Responsibility Authority is passed with zero missing evidence, and the runtime-cost telemetry responsibility now matches unit_regression under VIBE-CORE-COST-001 using the exact 288-test command and fingerprint.",
+  "finding_resolutions": [
+    {
+      "finding_id": "validation-sequencing-invalidated",
+      "gate_id": "gate:validation_sequencing",
+      "status": "resolved",
+      "evidence": [
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: pr_context.validation_sequencing.evaluation.status=passed",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: ready_for_final_gate=true, blocking_phases=[], next_required_action=null",
+        ".vibepro/validation-sequencing/story-vibepro-one-command-pr-ready-closure/state.json: targeted_validation, preflight_review, code_frozen, expensive_verification, and final_review all status=passed at 926227f945878299770448a03966c17dfa70158d",
+        ".vibepro/validation-sequencing/story-vibepro-one-command-pr-ready-closure/state.json: invalidations=[] and frozen_binding matches the combined unit command fingerprint 0c46dc88f81ec8c9b48f375d07cb7f492687975dd682447b9da562ebb0ef6d2b"
+      ],
+      "ordering_assessment": "The canonical sequence owner accepted the phase chain and reports it complete. The later targeted_validation recorded_at reflects a same-HEAD, same-fingerprint evidence refresh; it did not invalidate the already frozen downstream phases, and the final persisted evaluation has no ordering blocker."
+    },
+    {
+      "finding_id": "responsibility-authority-unit-regression-missing",
+      "gate_id": "gate:responsibility_authority",
+      "status": "resolved",
+      "evidence": [
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: pr_context.responsibility_authority.status=passed, missing_evidence_count=0, stale_evidence_count=0",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: vibepro.runtime_cost.telemetry_ingestion evidence_status=passed and missing_evidence=[]",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: matched contract clause VIBE-CORE-COST-001 includes unit_regression, integration_runtime_path, and negative_path",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json: exact-head unit observation includes 'unit_regression VIBE-CORE-COST-001', tests=288, passed=288, failed=0",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json: strict-head binding records 926227f945878299770448a03966c17dfa70158d and fingerprint 0c46dc88f81ec8c9b48f375d07cb7f492687975dd682447b9da562ebb0ef6d2b"
+      ]
+    }
+  ],
+  "regression_assessment": {
+    "status": "pass",
+    "reason": "The evidence refresh preserves the exact combined 288-test command, exact fingerprint, strict current-HEAD binding, runtime-cost source/test surface, 4/4 E2E evidence, and the previously verified conformance result. No production implementation edit was required for either Gate repair.",
+    "unit_command": "node --test test/agent-runtime-adapter.test.js test/guarded-run-session.test.js test/independent-review-orchestrator.test.js test/one-command-pr-ready-closure.test.js test/safe-action-orchestrator.test.js test/scope-boundary-gate.test.js test/session-efficiency-audit.test.js",
+    "unit_result": {
+      "tests": 288,
+      "passed": 288,
+      "failed": 0,
+      "test_fingerprint": "0c46dc88f81ec8c9b48f375d07cb7f492687975dd682447b9da562ebb0ef6d2b"
+    },
+    "expensive_verification_command": "node --test test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "expensive_verification_result": {
+      "tests": 4,
+      "passed": 4,
+      "failed": 0
+    }
+  },
+  "findings": [],
+  "inspection_inputs": [
+    ".vibepro/qa/review-gate-evidence-926227f9.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+    ".vibepro/validation-sequencing/story-vibepro-one-command-pr-ready-closure/state.json",
+    ".vibepro/qa/expensive-verification-926227f9.json",
+    ".vibepro/qa/e2e-926227f9.json",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/architecture_spec/review-result-architecture_boundary.json",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/review-result-runtime_contract.json",
+    "docs/contracts/vibepro-core-responsibilities.json",
+    "test/session-efficiency-audit.test.js",
+    "src/session-efficiency-audit.js"
+  ]
+}

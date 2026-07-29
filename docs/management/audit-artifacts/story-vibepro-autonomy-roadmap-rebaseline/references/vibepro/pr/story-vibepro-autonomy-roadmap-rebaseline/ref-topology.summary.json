@@ -2,13 +2,13 @@
   "schema_version": "0.1.0",
   "kind": "artifact_summary",
   "source_artifact": "ref-topology.json",
-  "source_bytes": 56905,
-  "source_content_hash": "sha256:ed2291068ccd08a7de5209e05fc000b465b17cb89a47a1eef4881723f8432672",
+  "source_bytes": 61557,
+  "source_content_hash": "sha256:7fe5dd108e1b9d985701fdb809bc25c4cd96980d6a864a20e052403dd1a42f49",
   "conclusion": {
     "status_fields": {},
     "top_level_counts": {
       "remotes_count": 1,
-      "branches_count": 175
+      "branches_count": 189
     }
   },
   "highlights": [],

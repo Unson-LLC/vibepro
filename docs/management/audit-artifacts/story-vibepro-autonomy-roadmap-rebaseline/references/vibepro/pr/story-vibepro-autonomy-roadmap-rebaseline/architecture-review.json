@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
-  "created_at": "2026-07-18T03:18:13.712Z",
+  "created_at": "2026-07-19T03:39:54.649Z",
   "status": "satisfied",
   "required": true,
   "architecture_decision": "ADRあり (docs/architecture/vibepro-autonomy-roadmap-rebaseline.md)",
@@ -22,22 +22,22 @@
   },
   "toolchain": {
     "schema_version": "0.1.0",
-    "collected_at": "2026-07-18T03:18:12.255Z",
+    "collected_at": "2026-07-19T03:39:52.498Z",
     "package": {
       "name": "vibepro",
-      "version": "0.2.0-beta.0",
-      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline"
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj"
     },
     "cli": {
-      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline/bin/vibepro.js",
-      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline/src/runtime-info.js"
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj/src/runtime-info.js"
     },
     "source_git": {
       "is_git_repo": true,
-      "commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
-      "branch": "codex/story-vibepro-autonomy-roadmap-rebaseline",
+      "commit": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+      "branch": "vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj",
       "origin_url": "https://github.com/Unson-LLC/vibepro.git",
-      "origin_main_commit": "a8629f5fbe6a3ca9a6cd0d96d2d74fde170c0b48",
+      "origin_main_commit": "846d36bc73d00133bf6983310f3ed0c1b20fe9f4",
       "origin_main_relation": "ahead",
       "dirty": false,
       "dirty_summary": []

@@ -1,0 +1,6 @@
+{
+  "status": "pass",
+  "head": "c01a1fe4",
+  "command": "npm run typecheck",
+  "artifact_version": "0.2.0-beta.1"
+}

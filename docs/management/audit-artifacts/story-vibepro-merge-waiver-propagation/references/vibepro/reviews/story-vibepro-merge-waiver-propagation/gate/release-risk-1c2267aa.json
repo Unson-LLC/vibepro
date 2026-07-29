@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "summary": "Prior release block is resolved at 1c2267aa: invalid gate authority returns gate_not_ready before git fetch or gh pr view, and the non-dry-run regression proves no GitHub call.",
+  "inspection_summary": "The repair adds an early non-dry-run authorization stop immediately after dry-run handling and before external command execution. The regression uses a failing gh shim and asserts dry_run=false, gate_not_ready, zero command results, and no shim log across invalid authority classes.",
+  "inspection_inputs": [
+    "src/merge-manager.js",
+    "test/vibepro-cli.test.js",
+    ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+    ".vibepro/pr/story-vibepro-merge-waiver-propagation/verification-evidence.json"
+  ],
+  "judgment_delta": "Changed from block to pass: at a6ab19a rejection followed git fetch and gh pr view; at 1c2267aa rejection is enforced at the pre-external-command boundary and current-HEAD full-suite evidence is present.",
+  "findings": []
+}

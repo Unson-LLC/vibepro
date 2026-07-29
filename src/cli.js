@@ -5,6 +5,19 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, initWorkspace } from './workspace.js';
+import {
+  buildValidationSequencePlan,
+  createValidationSequenceState,
+  evaluateValidationSequence,
+  fingerprintValidationCommand,
+  invalidateValidationSequence,
+  readValidationSequence,
+  readFinalReviewProvenance,
+  recordValidationPhase,
+  validatePreflightReviewEvidence,
+  validateValidationPhaseEvidence,
+  writeValidationSequence
+} from './validation-sequencing.js';
 import { prepareAdjudication, prepareJudgmentAdjudication, recordAdjudication, recordJudgmentAdjudication, recordPremiseCorrection } from './adjudication.js';
 import { checkGuard, guardStatus, installGuard, parsePrePushRefs, parsePreToolUseInput, readGuardConfig, uninstallGuard } from './guard.js';
 import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
@@ -19,6 +32,7 @@ import {
   renderExploreStatusSummary
 } from './explore-evidence.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
+import { ArtifactRoutingError, buildArtifactMigrationPlan, resolveArtifactRoute, resolveArtifactRoutes } from './artifact-routing.js';
 import { deriveEnvironmentGraph, renderEnvironmentGraphSummary } from './environment-graph.js';
 import { runDiagnosis } from './diagnostic-engine.js';
 import {
@@ -100,17 +114,26 @@ import {
   renderPerformanceRecordSummary
 } from './performance-evidence.js';
 import {
+  authorizeAgentReviewDispatch,
   closeAgentReviewLifecycle,
   getAgentReviewStatus,
   prepareAgentReview,
   recordAgentReview,
   renderAgentReviewLifecycleCloseSummary,
+  renderAgentReviewDispatchAuthorizationSummary,
   renderAgentReviewLifecycleStartSummary,
   renderAgentReviewPrepareSummary,
   renderAgentReviewRecordSummary,
   renderAgentReviewStatusSummary,
   startAgentReviewLifecycle
 } from './agent-review.js';
+import {
+  dispatchFindingRepairFromRepo,
+  getFindingRepairStatus,
+  planFindingRepair,
+  pollFindingRepairFromRepo,
+  recordFindingRepair
+} from './review-finding-repair-loop.js';
 import { listCheckpointStages, renderCheckpointSummary, runCheckpoint } from './checkpoint-manager.js';
 import {
   getExecutionNext,
@@ -132,7 +155,21 @@ import {
   renderGuardedRunError,
   renderGuardedRunSummary
 } from './guarded-run-session.js';
-import { executeMerge, renderPrMergeSummary } from './merge-manager.js';
+import { composeProductionRuntimeDependencies } from './agent-runtime-connectors.js';
+import { createCodexGuardedRunBridge } from './codex-runtime-bridge.js';
+import {
+  StoryRunPortfolioError,
+  createStoryRunPortfolioController,
+  renderStoryRunPortfolioError,
+  renderStoryRunPortfolioSummary
+} from './story-run-portfolio.js';
+import {
+  executeMerge,
+  persistMergeFollowupState,
+  persistMergeRecoveryState,
+  projectPublicPrMergeResult,
+  renderPrMergeSummary
+} from './merge-manager.js';
 import {
   assertManagedWorktreeCommandAllowed,
   buildManagedWorktreeCommandBinding,
@@ -154,12 +191,15 @@ import { renderFlowVerificationSummary, runFlowVerification } from './flow-verif
 import { renderVisualVerificationSummary, runVisualVerification } from './visual-verifier.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
 import { importCiEvidence, renderCiImportSummary } from './ci-evidence.js';
+import { renderVerificationRunSummary, runVerificationCommand } from './verification-runner.js';
 import {
   getDecisionStatus,
   recordDecision,
   renderDecisionRecordSummary,
   renderDecisionStatusSummary
 } from './decision-records.js';
+import { OutcomeCommandError, recordOutcome, refreshOutcome, requireOutcomeStoryId } from './outcome-manager.js';
+import { sanitizeDiagnostic } from './managed-command-executor.js';
 import { buildSpecFingerprint } from './spec-fingerprint.js';
 import {
   exportStoryEngineeringPlaybook,
@@ -182,6 +222,10 @@ import {
   writeDraftArchitecture,
   writeFinalArchitecture
 } from './architecture-store.js';
+import {
+  renderConformanceMarkdown,
+  runArchitectureConformance
+} from './architecture-conformance.js';
 import {
   readInferredSpec,
   stabilizeClauseIds,
@@ -301,14 +345,26 @@ Review record migration:
   VibePro intentionally fails closed instead of accepting legacy assertion-only pass records.
 
 Guarded Run sessions:
-  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--dry-run]
+  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--autonomy guarded] [--action-profile legacy|autonomous] [--disable-autonomous-actions] [--max-attempts <n>] [--max-iterations <n>] [--max-duration-ms <ms>] [--max-tokens <n>] [--max-cost-usd <usd>] [--retry-backoff-ms <ms>] [--retryable-stop-codes <csv>] [--provider-fallbacks <csv>] [--dry-run]
+  vibepro execute runtime-dispatch <repo> --story-id <id> --run-id <id> --request <json-file> [--json]
+  vibepro execute runtime-poll <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
+  vibepro execute runtime-reconcile <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
+  vibepro execute runtime-ingest <repo> --story-id <id> --run-id <id> --dispatch-id <id> --event <json-file> [--json]
       Create a resumable guarded Run targeting pr_ready. This does not merge or waive gates.
-      Without --until this command only persists state. --until pr-ready executes only allowlisted repo-local Actions and never dispatches agents.
+      Without --until this command only persists state. --until pr-ready defaults to the closed autonomous Action DAG and guarded agent execution.
+      The default provider order is codex then claude-code. Explicit legacy/profile/provider overrides remain supported.
+      PR creation, merge, waiver, and material external side effects always remain explicit human operations. --disable-autonomous-actions audibly falls back to legacy.
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
       Read one explicit Run. Without --run-id, execute status keeps the legacy status contract.
   vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
+  vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>] [--disable-autonomous-actions]
       Observe, resume, or cancel a Run. Omission selects the newest Run only when every candidate validates.
       resume accepts --until pr-ready to retry only incomplete allowlisted Actions after an explicit resume.
+  vibepro execute portfolio-create <repo> --portfolio-id <id> --stories <story-id,...> [--mode sequential]
+  vibepro execute portfolio-status|portfolio-advance <repo> --portfolio-id <id>
+  vibepro execute portfolio-decide <repo> --portfolio-id <id> --story-id <id> --decision continue|skip|retry --policy-type <type> --reason <text>
+  vibepro execute portfolio-promote <repo> --portfolio-id <id> --source-story-id <id> --consumer-story-id <id> --artifact <path> [--digest <sha256>] --reason <text>
+      Coordinate isolated one-Story Runs sequentially; stopped entries require an explicit typed decision.
       watch returns one current snapshot and exits; it does not stream.
       Guarded commands accept only --target pr_ready; rejected candidates require an explicit --run-id.
   vibepro execute watch <repo> --story-id <id> --run-id <run-id> --repair-linked-copy
@@ -397,7 +453,7 @@ Usage:
   vibepro audit replay [repo] --story-id <id> [--json]
   vibepro audit memory preflight [repo] --memory <path> [--fallback-last-run <iso>|--fallback-hours <n>] [--now <iso>] [--json]
   vibepro audit memory commit [repo] --memory <path> --last-run <iso> --window-start <iso> --window-end <iso> [--note <text>] [--now <iso>] [--json]
-  vibepro audit session-cost [repo] --story-id <id> [--session-id <id>|auto] [--infer-session] [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
+  vibepro audit session-cost [repo] --story-id <id> [--run-id <id>] [--session-id <id>|auto] [--infer-session] [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
   vibepro skills list [--json]
@@ -416,7 +472,7 @@ Usage:
   vibepro check list
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--base-url <url>] [--public-dir <dir>] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
   vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
-  vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
+  vibepro design-system derive [repo] --id <ds-id> [--story-id <story-id>] [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
   vibepro design-system ingest-design-md [repo] --id <ds-id> --file <file> [--product <name>] [--json]
@@ -440,10 +496,15 @@ Usage:
   vibepro uiux prepare [repo] --id <story-id> [--design-system-id <id>] [--base <ref>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
+  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
-  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--json]
+  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
+  vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
+  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]
+  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]
+  Outcome workflow: usage report --json -> choose trace/collision, parent revision, and one eligible source -> outcome record -> outcome refresh. Zero sources require current trace-specific verification evidence or an accepted waiver before rerunning pr prepare/report; multiple sources require an explicit --source from the bounded report; stale parents require a fresh report.
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
   vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
@@ -455,8 +516,10 @@ Usage:
   vibepro guard uninstall [repo]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review repair [repo] [--story-id <id>] [--dry-run] [--json]
-  vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
-  vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
+  vibepro review finding-repair <plan|dispatch|poll|record|status> [repo] --id <story-id> --stage <stage> --role <role> [--review <file> --acceptance-clause <id> --code-scope <path> --test-scope <path>] [--result <file>] [--adapter <id> --capability <name> --timeout-ms <n> --managed-worktree <path>] [--max-attempts <n>] [--json]
+  vibepro review authorize [repo] --id <story-id> --stage <stage> --role <role> --review-kind preflight|final --closes-risk <risk> --expected-judgment-delta <text> [--reusable-evidence <ref>] [--freeze <source|spec|test|review_surface>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--timeout-ms <ms>] [--json]
+  vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-thread-id <id>] [--agent-session-id <id>] [--dispatch-authorization <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
+  vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--cancellation-confirmed] [--close-evidence <ref>] [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
@@ -482,6 +545,8 @@ Usage:
   vibepro story derive [repo] [--from-run <run-id>] [--run-graphify] [--from <graphify-out>] [--preset <id>] [--json]
   vibepro story map [repo] [--json]
   vibepro story plan [repo] [--limit <n>] [--json]
+  vibepro artifacts resolve [repo] --id <story-id> [--feature-slug <slug>] [--json]
+  vibepro artifacts migrate [repo] --id <story-id> --dry-run [--feature-slug <slug>] [--json]
   vibepro playbook export [repo] --id <story-id> [--format markdown|json] [--output <path>] [--language ja|en] [--json]
   vibepro journey derive [repo] [--id <journey-id>] [--json]
   vibepro journey handoff [repo] [--id <journey-id>] [--json]
@@ -501,6 +566,7 @@ Usage:
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
+  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--strict] [--json]
   vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
@@ -548,14 +614,26 @@ risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止め�
       PR作成後のmerge可否を監査し、GitHub merge結果をVibePro artifactへ記録します。
 
 Guarded Runセッション:
-  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--dry-run]
+  vibepro execute run <repo> --story-id <id> [--until pr-ready] [--autonomy guarded] [--action-profile legacy|autonomous] [--disable-autonomous-actions] [--max-attempts <n>] [--max-iterations <n>] [--max-duration-ms <ms>] [--max-tokens <n>] [--max-cost-usd <usd>] [--retry-backoff-ms <ms>] [--retryable-stop-codes <csv>] [--provider-fallbacks <csv>] [--dry-run]
+  vibepro execute runtime-dispatch <repo> --story-id <id> --run-id <id> --request <json-file> [--json]
+  vibepro execute runtime-poll <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
+  vibepro execute runtime-reconcile <repo> --story-id <id> --run-id <id> --dispatch-id <id> [--json]
+  vibepro execute runtime-ingest <repo> --story-id <id> --run-id <id> --dispatch-id <id> --event <json-file> [--json]
       pr_readyを目標に、再開可能なguarded Runを作成します。mergeやGate waiverは行いません。
-      --until 未指定時は状態の永続化だけを行います。--until pr-ready 指定時はallowlist済みrepo-local Actionだけを実行し、agentは起動しません。
+      --until未指定時は状態だけを永続化します。--until pr-readyは閉じた自律Action DAGとguarded agent実行を既定で選びます。
+      providerの既定順はcodex→claude-codeです。明示的なlegacy/profile/provider指定は維持されます。
+      PR作成、merge、waiver、重大な外部副作用は必ず人間の明示操作に残ります。--disable-autonomous-actionsは監査可能な形でlegacyへフォールバックします。
   vibepro execute status <repo> --story-id <id> --run-id <run-id>
       指定したRunを読みます。--run-idを省略したexecute statusは従来のstatus契約を維持します。
   vibepro execute watch|resume|cancel <repo> --story-id <id> [--run-id <run-id>]
+  vibepro execute resume <repo> --story-id <id> --run-id <run-id> --decision <id> --answer <text> [--answered-by <actor>] [--reflected-in <csv>] [--disable-autonomous-actions]
       Runを監視・再開・取消します。省略時は全候補が妥当な場合だけ決定的な順序で最新Runを選びます。
       resumeは--until pr-readyを受け付け、明示的な再開後に未完了のallowlist済みActionだけを再試行します。
+  vibepro execute portfolio-create <repo> --portfolio-id <id> --stories <story-id,...> [--mode sequential]
+  vibepro execute portfolio-status|portfolio-advance <repo> --portfolio-id <id>
+  vibepro execute portfolio-decide <repo> --portfolio-id <id> --story-id <id> --decision continue|skip|retry --policy-type <type> --reason <text>
+  vibepro execute portfolio-promote <repo> --portfolio-id <id> --source-story-id <id> --consumer-story-id <id> --artifact <path> [--digest <sha256>] --reason <text>
+      1 Run = 1 Storyを保ったまま逐次実行し、停止したStoryの継続・skip・retryには型付き判断を要求します。
       watchは現在値を1回返して終了するsnapshotです。streamingは行いません。
       guarded commandの--targetはpr_readyだけを受け付け、棄却候補があれば明示的な--run-idを要求します。
   vibepro execute watch <repo> --story-id <id> --run-id <run-id> --repair-linked-copy
@@ -652,7 +730,7 @@ Usage:
   vibepro audit replay [repo] --story-id <id> [--json]
   vibepro audit memory preflight [repo] --memory <path> [--fallback-last-run <iso>|--fallback-hours <n>] [--now <iso>] [--json]
   vibepro audit memory commit [repo] --memory <path> --last-run <iso> --window-start <iso> --window-end <iso> [--note <text>] [--now <iso>] [--json]
-  vibepro audit session-cost [repo] --story-id <id> [--session-id <id>|auto] [--infer-session] [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
+  vibepro audit session-cost [repo] --story-id <id> [--run-id <id>] [--session-id <id>|auto] [--infer-session] [--codex-home <path>] [--automation-memory <path>] [--window-start <iso>] [--window-end <iso>] [--base <ref>] [--head <ref>] [--json]
   vibepro trace backfill [repo] [--story-id <id>] [--dry-run] [--json]
   vibepro trace declare [repo] --story-id <id> --lifecycle declared_not_started|unknown [--reason <text>] [--json]
   vibepro skills list [--json]
@@ -671,7 +749,7 @@ Usage:
   vibepro check list
   vibepro check <ui|security|performance|architecture|pr-readiness|launch-readiness|agent-harness|public-discovery|self-dogfood|oss-readiness|regression-risk|all> [repo] [--run-id <id>] [--story-id <id>] [--base <ref>] [--head <ref>] [--measure] [--include-harness] [--include-public-discovery] [--base-url <url>] [--public-dir <dir>] [--top <n>] [--coverage-file <path>] [--fail-on-findings] [--json]
   vibepro design-system init [repo] --id <ds-id> --product <name> [--json]
-  vibepro design-system derive [repo] --id <ds-id> [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
+  vibepro design-system derive [repo] --id <ds-id> [--story-id <story-id>] [--product <name>] [--route <path>] [--routes <csv>] [--brief <text>] [--brief-file <path>] [--from-code] [--run-graphify] [--base-url <url>] [--json]
   vibepro design-system ingest [repo] --id <ds-id> --bundle <file> [--product <name>] [--json]
   vibepro design-system ingest-brief [repo] --id <ds-id> --brief-file <path> [--json]
   vibepro design-system ingest-design-md [repo] --id <ds-id> --file <file> [--product <name>] [--json]
@@ -695,10 +773,15 @@ Usage:
   vibepro uiux prepare [repo] --id <story-id> [--design-system-id <id>] [--base <ref>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
+  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
-  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--json]
+  vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
+  vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
   vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
+  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]
+  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]
+  Outcome workflow: usage report --json -> choose trace/collision, parent revision, and one eligible source -> outcome record -> outcome refresh. Zero sources require current trace-specific verification evidence or an accepted waiver before rerunning pr prepare/report; multiple sources require an explicit --source from the bounded report; stale parents require a fresh report.
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
   vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
@@ -710,8 +793,9 @@ Usage:
   vibepro guard uninstall [repo]
   vibepro review prepare [repo] --id <story-id> --stage <stage> [--role <role>] [--roles <csv>] [--json]
   vibepro review repair [repo] [--story-id <id>] [--dry-run] [--json]
-  vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
-  vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--close-evidence <ref>] [--json]
+  vibepro review authorize [repo] --id <story-id> --stage <stage> --role <role> --review-kind preflight|final --closes-risk <risk> --expected-judgment-delta <text> [--reusable-evidence <ref>] [--freeze <source|spec|test|review_surface>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--timeout-ms <ms>] [--json]
+  vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-thread-id <id>] [--agent-session-id <id>] [--dispatch-authorization <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
+  vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--cancellation-confirmed] [--close-evidence <ref>] [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro execute <run|status|watch|resume|cancel|start|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--run-id <id>] [--target pr_create|pr_ready] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
@@ -745,6 +829,7 @@ Usage:
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
+  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--strict] [--json]
   vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
@@ -760,7 +845,7 @@ export const TOP_LEVEL_COMMANDS = [
   'version', 'help', 'init', 'config', 'doctor', 'status', 'usage', 'graph', 'env',
   'harness', 'skills', 'codex', 'brainbase', 'pr', 'story', 'task',
   'playbook', 'journey', 'execute',
-  'decision', 'verify', 'review', 'adjudicate', 'guard', 'checkpoint', 'gate', 'spec', 'report',
+  'decision', 'outcome', 'verify', 'review', 'adjudicate', 'guard', 'checkpoint', 'gate', 'spec', 'report',
   'audit', 'design-modernize', 'design-system', 'design-ssot', 'uiux', 'explore', 'performance',
   'workspace'
 ];
@@ -945,6 +1030,7 @@ export async function runCli(argv, io = {}) {
       const repoRoot = rest[0] ?? process.cwd();
       const sourceDir = getOption(rest, '--from');
       const result = await importGraphifyArtifacts(repoRoot, {
+        storyId: getOption(rest, '--id') ?? 'story-default',
         sourceDir,
         runGraphify: hasFlag(rest, '--run-graphify'),
         env: io.env
@@ -1072,6 +1158,7 @@ export async function runCli(argv, io = {}) {
       if (subcommand === 'session-cost') {
         const result = await collectSessionEfficiencyAudit(repoRoot, {
           storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
+          runId: getOption(rest, '--run-id'),
           sessionId: getOption(rest, '--session-id') ?? getOption(rest, '--thread-id') ?? defaultSessionId(io.env),
           inferSession: hasFlag(rest, '--infer-session') || getOption(rest, '--session-id') === 'auto',
           codexHome: getOption(rest, '--codex-home'),
@@ -1165,6 +1252,7 @@ export async function runCli(argv, io = {}) {
           fromCode: hasFlag(rest, '--from-code'),
           runGraphify: hasFlag(rest, '--run-graphify'),
           graphifyOut: getOption(rest, '--from'),
+          storyId: getOption(rest, '--story-id'),
           language
         });
         write(stdout, hasFlag(rest, '--json')
@@ -1538,9 +1626,46 @@ export async function runCli(argv, io = {}) {
     if (command === 'verify') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
+      // `verify run` takes the command to execute after `--`; option lookups (including the
+      // help probe) must never reach into that argv or a `--help` in the executed command
+      // would hijack the CLI.
+      const separatorIndex = rest.indexOf('--');
+      const verifyArgs = separatorIndex === -1 ? rest : rest.slice(0, separatorIndex);
+      const runArgv = separatorIndex === -1 ? [] : rest.slice(separatorIndex + 1);
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(verifyArgs, '--help') || hasFlag(verifyArgs, '-h')) {
+        write(stdout, renderHelp(getOption(verifyArgs, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'run') {
+        const storyId = getOption(verifyArgs, '--id') ?? getOption(verifyArgs, '--story-id');
+        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'verify run'
+        });
+        const result = await runVerificationCommand(repoRoot, {
+          storyId,
+          kind: getOption(verifyArgs, '--kind'),
+          status: getOption(verifyArgs, '--status'),
+          summary: getOption(verifyArgs, '--summary'),
+          targets: getOptions(verifyArgs, '--target'),
+          scenarios: getOptions(verifyArgs, '--scenario'),
+          observed: getOptions(verifyArgs, '--observed'),
+          timeoutMs: getOption(verifyArgs, '--timeout-ms'),
+          maxOutputBytes: getOption(verifyArgs, '--max-output-bytes'),
+          strictHeadBinding: hasFlag(verifyArgs, '--strict-head-binding'),
+          argv: runArgv,
+          env: io.env,
+          managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
+          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
+        });
+        await reconcileExecutionState(repoRoot, {
+          storyId: result.story_id,
+          target: 'pr_create'
+        }).catch(() => null);
+        write(stdout, hasFlag(verifyArgs, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderVerificationRunSummary(result));
+        return { exitCode: result.status === 'pass' ? 0 : 1, command, subcommand, result };
       }
       if (subcommand === 'flow') {
         const storyId = getOption(rest, '--id');
@@ -1639,6 +1764,7 @@ export async function runCli(argv, io = {}) {
           storyId,
           pr: getOption(rest, '--pr'),
           checks: getOptions(rest, '--check'),
+          coverage: getOptions(rest, '--coverage'),
           env: io.env,
           managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
           managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
@@ -1656,12 +1782,137 @@ export async function runCli(argv, io = {}) {
       return { exitCode: 1, command };
     }
 
+    if (command === 'sequence') {
+      const subcommand = rest[0];
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderSequenceHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+      if (!storyId) throw new Error('sequence requires --id <story-id>');
+      const headSha = getOption(rest, '--head') ?? await resolveGitHead(repoRoot);
+      let state;
+      if (subcommand === 'plan') {
+        const commandValue = getOption(rest, '--command');
+        const targets = getOptions(rest, '--target');
+        const plan = buildValidationSequencePlan({
+          storyId,
+          riskProfile: getOption(rest, '--risk-profile') ?? 'light',
+          riskSurfaces: getOptions(rest, '--surface'),
+          inspectionInputs: getOptions(rest, '--inspection-input')
+        });
+        state = createValidationSequenceState({
+          plan,
+          headSha,
+          testFingerprint: getOption(rest, '--test-fingerprint') ?? (commandValue ? fingerprintValidationCommand(commandValue, targets) : null),
+          verificationCommand: commandValue
+        });
+      } else {
+        state = await readValidationSequence(repoRoot, storyId);
+        if (!state) throw new Error(`validation sequence not planned for ${storyId}; run vibepro sequence plan first`);
+        if (subcommand === 'record') {
+          const proposed = state.proposed_binding ?? {};
+          const phase = getOption(rest, '--phase');
+          const evidence = getOption(rest, '--evidence');
+          let reviewProvenance = phase === 'final_review'
+            ? await readFinalReviewProvenance(repoRoot, evidence)
+            : null;
+          const status = getOption(rest, '--status') ?? 'passed';
+          const preflightEvidence = phase === 'preflight_review' && ['passed', 'dispositioned'].includes(status)
+            ? await validatePreflightReviewEvidence(repoRoot, evidence, {
+              storyId,
+              headSha,
+              roles: state.plan?.preflight_roles ?? [],
+              reviews: state.plan?.preflight_reviews ?? [],
+              requiredInspectionInputs: state.plan?.preflight_required_inspection_inputs ?? []
+            })
+            : null;
+          if (preflightEvidence) reviewProvenance = preflightEvidence.reviewProvenance;
+          const evidenceValidation = preflightEvidence?.evidenceValidation ?? (status === 'passed' && ['targeted_validation', 'expensive_verification'].includes(phase)
+            ? await validateValidationPhaseEvidence(repoRoot, evidence, {
+                storyId,
+                phase,
+                headSha,
+                verificationCommand: getOption(rest, '--command') ?? proposed.verification_command,
+                testFingerprint: getOption(rest, '--test-fingerprint') ?? proposed.test_fingerprint,
+                notBefore: phase === 'expensive_verification' ? state.phases?.code_frozen?.recorded_at : null
+              })
+            : null);
+          state = recordValidationPhase(state, {
+            phase,
+            status,
+            headSha,
+            testFingerprint: getOption(rest, '--test-fingerprint') ?? proposed.test_fingerprint,
+            verificationCommand: getOption(rest, '--command') ?? proposed.verification_command,
+            evidence,
+            evidenceValidation,
+            reviewProvenance,
+            findings: getOptions(rest, '--finding').map((id) => ({ id })),
+            dispositions: getOptions(rest, '--disposition').map(parseValidationDisposition),
+            reason: getOption(rest, '--reason'),
+            source: getOption(rest, '--source') ?? 'local'
+          });
+        } else if (subcommand === 'invalidate') {
+          state = invalidateValidationSequence(state, {
+            changedSurfaces: getOptions(rest, '--surface'),
+            changedFiles: getOptions(rest, '--file'),
+            reason: getOption(rest, '--reason') ?? 'working tree mutated'
+          });
+        } else if (subcommand !== 'status') {
+          throw new Error(`Unknown sequence command: ${subcommand ?? ''}`);
+        }
+      }
+      if (subcommand !== 'status') await writeValidationSequence(repoRoot, state);
+      const result = { state, evaluation: evaluateValidationSequence(state, { currentHeadSha: headSha }) };
+      write(stdout, `${JSON.stringify(result, null, 2)}\n`);
+      return { exitCode: 0, command, subcommand, result };
+    }
+
     if (command === 'review') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || (subcommand !== 'finding-repair' && (hasFlag(rest, '--help') || hasFlag(rest, '-h')))) {
         write(stdout, renderHelp(getOption(rest, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'finding-repair') {
+        const action = rest[1];
+        const repairRepoRoot = rest[2] && !rest[2].startsWith('--') ? rest[2] : process.cwd();
+        const options = {
+          storyId: getOption(rest, '--id') ?? getOption(rest, '--story-id'),
+          stage: getOption(rest, '--stage'), role: getOption(rest, '--role')
+        };
+        await assertManagedWorktreeCommandAllowed(repairRepoRoot, {
+          storyId: options.storyId, commandName: `review finding-repair ${action ?? ''}`
+        });
+        if (!action || action === '--help' || action === '-h' || hasFlag(rest.slice(2), '--help') || hasFlag(rest.slice(2), '-h')) {
+          write(stdout, 'Usage: vibepro review finding-repair <plan|dispatch|poll|record|status> [repo] --id <story-id> --stage <stage> --role <role>\n\nplan: create a bounded plan from --review. dispatch/poll: run via the injected Agent Runtime coordinator. record: consume --result plus canonical verification/pr-prepare artifacts. status: show state and next action.\n');
+          return { exitCode: 0, command, subcommand, action: 'help' };
+        }
+        let result;
+        if (action === 'plan') result = await planFindingRepair(repairRepoRoot, {
+          ...options, reviewPath: getOption(rest, '--review'), maxAttempts: parseNumberOption(rest, '--max-attempts') ?? 3,
+          acceptanceClause: getOption(rest, '--acceptance-clause'), codeScope: getOptions(rest, '--code-scope'),
+          testScope: getOptions(rest, '--test-scope')
+        });
+        else if (action === 'dispatch') result = await dispatchFindingRepairFromRepo(repairRepoRoot, {
+          ...options, runtimeCoordinator: io.findingRepairRuntimeCoordinator,
+          runState: io.findingRepairRunState ?? { story_id: options.storyId, runtime_dispatches: [] },
+          adapterId: getOption(rest, '--adapter'), implementationIdentity: getOption(rest, '--implementation-identity'),
+          requirements: { capabilities: getOptions(rest, '--capability'), timeout_ms: parseNumberOption(rest, '--timeout-ms') ?? 600000,
+            managed_worktree: getOption(rest, '--managed-worktree') ?? repairRepoRoot }
+        });
+        else if (action === 'poll') result = await pollFindingRepairFromRepo(repairRepoRoot, {
+          ...options, runtimeCoordinator: io.findingRepairRuntimeCoordinator
+        });
+        else if (action === 'record') result = await recordFindingRepair(repairRepoRoot, {
+          ...options, resultPath: getOption(rest, '--result')
+        });
+        else if (action === 'status') result = await getFindingRepairStatus(repairRepoRoot, options);
+        else throw new Error(`Unknown review finding-repair command: ${action ?? ''}`);
+        write(stdout, `${JSON.stringify(hasFlag(rest, '--json') ? result : result.summary, null, 2)}\n`);
+        return { exitCode: 0, command, subcommand, action, result };
       }
       if (subcommand === 'prepare') {
         const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
@@ -1687,6 +1938,36 @@ export async function runCli(argv, io = {}) {
           : renderAgentReviewPrepareSummary(result));
         return { exitCode: 0, command, subcommand, result };
       }
+      if (subcommand === 'authorize') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'review authorize'
+        });
+        const result = await authorizeAgentReviewDispatch(repoRoot, {
+          storyId,
+          stage: getOption(rest, '--stage'),
+          role: getOption(rest, '--role'),
+          reviewKind: getOption(rest, '--review-kind'),
+          closesRisks: getOptions(rest, '--closes-risk'),
+          expectedJudgmentDelta: getOption(rest, '--expected-judgment-delta'),
+          reusableEvidence: getOptions(rest, '--reusable-evidence'),
+          freeze: [
+            ...getOptions(rest, '--freeze'),
+            ...parseCsvOption(rest, '--freeze')
+          ],
+          agentModel: getOption(rest, '--agent-model'),
+          agentReasoningEffort: getOption(rest, '--agent-reasoning-effort'),
+          agentCostTier: getOption(rest, '--agent-cost-tier'),
+          allowModelPolicyOverride: hasFlag(rest, '--allow-model-policy-override'),
+          modelPolicyOverrideReason: getOption(rest, '--model-policy-override-reason') ?? getOption(rest, '--override-reason') ?? getOption(rest, '--reason'),
+          timeoutMs: getOption(rest, '--timeout-ms')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderAgentReviewDispatchAuthorizationSummary(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
       if (subcommand === 'start') {
         const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
         await assertManagedWorktreeCommandAllowed(repoRoot, {
@@ -1709,7 +1990,16 @@ export async function runCli(argv, io = {}) {
           modelPolicyOverrideReason: getOption(rest, '--model-policy-override-reason') ?? getOption(rest, '--override-reason') ?? getOption(rest, '--reason'),
           timeoutMs: getOption(rest, '--timeout-ms'),
           replacementFor: getOption(rest, '--replacement-for'),
-          lifecycleId: getOption(rest, '--lifecycle-id')
+          lifecycleId: getOption(rest, '--lifecycle-id'),
+          dispatchAuthorization: getOption(rest, '--dispatch-authorization'),
+          reviewKind: getOption(rest, '--review-kind'),
+          closesRisks: getOptions(rest, '--closes-risk'),
+          expectedJudgmentDelta: getOption(rest, '--expected-judgment-delta'),
+          reusableEvidence: getOptions(rest, '--reusable-evidence'),
+          freeze: [
+            ...getOptions(rest, '--freeze'),
+            ...parseCsvOption(rest, '--freeze')
+          ]
         });
         await reconcileExecutionState(repoRoot, {
           storyId: result.lifecycle.story_id,
@@ -1734,7 +2024,8 @@ export async function runCli(argv, io = {}) {
           agentId: getOption(rest, '--agent-id'),
           lifecycleId: getOption(rest, '--lifecycle-id'),
           closeReason: getOption(rest, '--close-reason'),
-          closeEvidence: getOption(rest, '--close-evidence')
+          closeEvidence: getOption(rest, '--close-evidence'),
+          cancellationConfirmed: hasFlag(rest, '--cancellation-confirmed')
         });
         await reconcileExecutionState(repoRoot, {
           storyId: result.lifecycle.story_id,
@@ -2069,6 +2360,60 @@ export async function runCli(argv, io = {}) {
       return { exitCode: 1, command };
     }
 
+    if (command === 'outcome') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h') {
+        write(stdout, renderOutcomeHelp(null, getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (!['record', 'refresh'].includes(subcommand)) {
+        write(stderr, `Unknown outcome command: ${subcommand ?? ''}\n\n${renderOutcomeHelp(null, getOption(rest, '--language'))}`);
+        return { exitCode: 1, command };
+      }
+      if (hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderOutcomeHelp(subcommand, getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand };
+      }
+      const storyId = requireOutcomeStoryId(
+        getOption(rest, '--id'),
+        `outcome ${subcommand} requires --id <story-id>`
+      );
+      await assertManagedWorktreeCommandAllowed(repoRoot, { storyId, commandName: `outcome ${subcommand}` });
+      if (subcommand === 'record') {
+        const valueJson = getOption(rest, '--value-json');
+        let parsedValue;
+        try {
+          parsedValue = valueJson == null ? undefined : JSON.parse(valueJson);
+        } catch {
+          throw new OutcomeCommandError('outcome_value_json_invalid', '--value-json must contain valid JSON');
+        }
+        const result = await recordOutcome(repoRoot, {
+          storyId,
+          traceId: getOption(rest, '--trace'),
+          collisionGroup: getOption(rest, '--collision-group'),
+          traceSourceRef: getOption(rest, '--trace-source-ref'),
+          parentRevision: getOption(rest, '--parent-revision'),
+          status: getOption(rest, '--status'),
+          producer: getOption(rest, '--producer'),
+          source: getOption(rest, '--source'),
+          value: parsedValue,
+          reason: getOption(rest, '--reason')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderOutcomeCommandResult(result, { subcommand }));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'refresh') {
+        const result = await refreshOutcome(repoRoot, { storyId, baseRef: getOption(rest, '--base') });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderOutcomeCommandResult(result, { subcommand }));
+        return { exitCode: 0, command, subcommand, result };
+      }
+    }
+
     if (command === 'checkpoint') {
       const stage = rest[0] && !rest[0].startsWith('--') ? rest[0] : null;
       const repoIndex = stage ? 1 : 0;
@@ -2142,6 +2487,7 @@ export async function runCli(argv, io = {}) {
         storyId: getOption(rest, '--story-id') ?? getOption(rest, '--id'),
         target: getOption(rest, '--target') ?? 'pr_create',
         baseRef: getOption(rest, '--base'),
+        pr: getOption(rest, '--pr'),
         branchName: getOption(rest, '--branch'),
         worktreePath: getOption(rest, '--worktree-path'),
         taskId: getOption(rest, '--task'),
@@ -2152,11 +2498,28 @@ export async function runCli(argv, io = {}) {
         runId: hasFlag(rest, '--run-id') ? (getOption(rest, '--run-id') ?? '') : null,
         repairLinkedCopy: hasFlag(rest, '--repair-linked-copy'),
         until: getOption(rest, '--until'),
-        dryRun: hasFlag(rest, '--dry-run')
+        dryRun: hasFlag(rest, '--dry-run'),
+        decisionId: getOption(rest, '--decision'),
+        answer: getOption(rest, '--answer'),
+        answeredBy: getOption(rest, '--answered-by'),
+        reflectedIn: getOption(rest, '--reflected-in')?.split(',').map((item) => item.trim()).filter(Boolean) ?? [],
+        autonomy: getOption(rest, '--autonomy'),
+        actionProfile: getOption(rest, '--action-profile'),
+        autonomousEnabled: hasFlag(rest, '--disable-autonomous-actions') ? false : undefined,
+        maxAttempts: parseNumberOption(rest, '--max-attempts'),
+        maxIterations: parseNumberOption(rest, '--max-iterations'),
+        maxDurationMs: parseNumberOption(rest, '--max-duration-ms'),
+        maxTokens: parseNumberOption(rest, '--max-tokens'),
+        maxCostUsd: parseNumberOption(rest, '--max-cost-usd'),
+        retryBackoffMs: parseNumberOption(rest, '--retry-backoff-ms'),
+        retryableStopCodes: getOption(rest, '--retryable-stop-codes')?.split(',').map((item) => item.trim()).filter(Boolean),
+        providerFallbacks: getOption(rest, '--provider-fallbacks')?.split(',').map((item) => item.trim()).filter(Boolean)
       };
       const knownExecuteSubcommands = new Set([
         'run', 'status', 'watch', 'resume', 'cancel',
-        'start', 'next', 'reconcile', 'merge'
+        'runtime-dispatch', 'runtime-poll', 'runtime-reconcile', 'runtime-ingest',
+        'start', 'next', 'reconcile', 'merge',
+        'portfolio-create', 'portfolio-status', 'portfolio-advance', 'portfolio-decide', 'portfolio-promote'
       ]);
       if (runOptions.repairLinkedCopy
           && knownExecuteSubcommands.has(subcommand)
@@ -2176,10 +2539,63 @@ export async function runCli(argv, io = {}) {
           || subcommand === 'watch'
           || subcommand === 'resume'
           || subcommand === 'cancel'
+          || subcommand === 'runtime-dispatch'
+          || subcommand === 'runtime-poll'
+          || subcommand === 'runtime-reconcile'
+          || subcommand === 'runtime-ingest'
           || (subcommand === 'status' && hasFlag(rest, '--run-id'))) {
         const jsonOutput = hasFlag(rest, '--json');
-        const guardedRun = createGuardedRunSession(io.guardedRunDependencies ?? {});
+        const bridge = io.codexSubagentHost
+          ? createCodexGuardedRunBridge({
+            repoRoot,
+            host: io.codexSubagentHost,
+            now: io.guardedRunDependencies?.now,
+            env: io.env ?? process.env,
+            guardedRunDependencies: io.guardedRunDependencies ?? {},
+            recordAgentReview: io.guardedRunDependencies?.recordAgentReview ?? recordAgentReview
+          })
+          : null;
+        await bridge?.ready;
+        const guardedRun = bridge?.session ?? createGuardedRunSession(composeProductionRuntimeDependencies(
+            io.guardedRunDependencies ?? {},
+            { env: io.env ?? process.env }
+          ));
         try {
+          if (subcommand.startsWith('runtime-') && !bridge) {
+            throw new GuardedRunError(
+              'runtime_unavailable',
+              'Codex runtime commands require VIBEPRO_CODEX_HOST_MODULE or an embedded codexSubagentHost'
+            );
+          }
+          const guardedPolicyFlags = [
+            '--autonomy', '--max-attempts', '--max-iterations', '--max-duration-ms',
+            '--max-tokens', '--max-cost-usd', '--retry-backoff-ms',
+            '--retryable-stop-codes', '--provider-fallbacks'
+          ];
+          const offPathPolicyFlags = subcommand === 'run'
+            ? []
+            : guardedPolicyFlags.filter((flag) => hasFlag(rest, flag));
+          if (offPathPolicyFlags.length > 0) {
+            throw new GuardedRunError(
+              'policy_options_not_supported',
+              'Guarded autonomy policy options are supported only by execute run.',
+              { command: `execute ${subcommand}`, unsupported_options: offPathPolicyFlags, supported_command: 'execute run' }
+            );
+          }
+          if (subcommand !== 'run' && hasFlag(rest, '--action-profile')) {
+            throw new GuardedRunError(
+              'action_profile_not_supported',
+              '--action-profile is supported only by execute run.',
+              { command: `execute ${subcommand}`, supported_command: 'execute run' }
+            );
+          }
+          if (!['run', 'resume'].includes(subcommand) && hasFlag(rest, '--disable-autonomous-actions')) {
+            throw new GuardedRunError(
+              'autonomous_feature_option_not_supported',
+              '--disable-autonomous-actions is supported only by execute run and execute resume.',
+              { command: `execute ${subcommand}`, supported_commands: ['execute run', 'execute resume'] }
+            );
+          }
           if (hasFlag(rest, '--target') && executionOptions.target !== 'pr_ready') {
             throw new GuardedRunError(
               'invalid_target',
@@ -2190,7 +2606,56 @@ export async function runCli(argv, io = {}) {
           if ((subcommand === 'run' || subcommand === 'resume') && runOptions.until && runOptions.until !== 'pr-ready') {
             throw new GuardedRunError('invalid_until', 'Guarded Run supports only --until pr-ready.', { until: runOptions.until });
           }
-          const result = subcommand === 'run'
+          if (runOptions.autonomy && runOptions.autonomy !== 'guarded') {
+            throw new GuardedRunError('invalid_autonomy', 'Guarded Run supports only --autonomy guarded.', { autonomy: runOptions.autonomy });
+          }
+          if (runOptions.actionProfile && !['legacy', 'autonomous'].includes(runOptions.actionProfile)) {
+            throw new GuardedRunError(
+              'invalid_action_profile',
+              'Guarded Run supports only --action-profile legacy or autonomous.',
+              { action_profile: runOptions.actionProfile, supported_profiles: ['legacy', 'autonomous'] }
+            );
+          }
+          let runtimeRequest = null;
+          if (subcommand === 'runtime-dispatch') {
+            const requestPath = getOption(rest, '--request');
+            if (!requestPath) throw new GuardedRunError('runtime_request_required', 'runtime-dispatch requires --request <json-file>');
+            try {
+              runtimeRequest = JSON.parse(await readFile(path.resolve(requestPath), 'utf8'));
+            } catch (error) {
+              throw new GuardedRunError('runtime_request_invalid', `Cannot read runtime request: ${error.message}`, { request_path: requestPath });
+            }
+          }
+          let runtimeEvent = null;
+          if (subcommand === 'runtime-ingest') {
+            const eventPath = getOption(rest, '--event');
+            if (!eventPath) throw new GuardedRunError('runtime_event_required', 'runtime-ingest requires --event <json-file>');
+            try {
+              runtimeEvent = JSON.parse(await readFile(path.resolve(eventPath), 'utf8'));
+            } catch (error) {
+              throw new GuardedRunError('runtime_event_invalid', `Cannot read runtime event: ${error.message}`, { event_path: eventPath });
+            }
+          }
+          const runtimeOptions = {
+            storyId: executionOptions.storyId,
+            runId: runOptions.runId,
+            dispatchId: getOption(rest, '--dispatch-id'),
+            request: runtimeRequest
+          };
+          const result = subcommand === 'runtime-dispatch'
+            ? await guardedRun.dispatchRuntime(repoRoot, runtimeOptions)
+            : subcommand === 'runtime-poll'
+              ? await guardedRun.pollRuntime(repoRoot, runtimeOptions)
+            : subcommand === 'runtime-reconcile'
+              ? await guardedRun.reconcileRuntime(repoRoot, runtimeOptions)
+              : subcommand === 'runtime-ingest'
+                ? await bridge.ingestCompletion({
+                  story_id: executionOptions.storyId,
+                  run_id: runOptions.runId,
+                  dispatch_id: runtimeOptions.dispatchId,
+                  event: runtimeEvent
+                })
+                : subcommand === 'run'
             ? runOptions.until
               ? runOptions.dryRun
                 ? await guardedRun.orchestrate(repoRoot, runOptions)
@@ -2207,7 +2672,9 @@ export async function runCli(argv, io = {}) {
                   ? runOptions.until
                     ? await guardedRun.orchestrate(repoRoot, {
                         ...runOptions,
-                        runId: (await guardedRun.resume(repoRoot, runOptions)).run_id
+                        runId: (await guardedRun.status(repoRoot, runOptions)).status === 'running'
+                          ? runOptions.runId
+                          : (await guardedRun.resume(repoRoot, runOptions)).run_id
                       })
                     : await guardedRun.resume(repoRoot, runOptions)
                   : await guardedRun.cancel(repoRoot, runOptions);
@@ -2223,6 +2690,50 @@ export async function runCli(argv, io = {}) {
           return { exitCode: 2, command, subcommand, result: error.toJSON() };
         }
       }
+      if (subcommand?.startsWith('portfolio-')) {
+        const jsonOutput = hasFlag(rest, '--json');
+        const controller = createStoryRunPortfolioController(io.storyRunPortfolioDependencies ?? {});
+        const portfolioOptions = {
+          portfolioId: getOption(rest, '--portfolio-id'),
+          storyIds: getOption(rest, '--stories')?.split(',').map((item) => item.trim()).filter(Boolean),
+          mode: getOption(rest, '--mode'),
+          storyId: getOption(rest, '--story-id'),
+          decision: getOption(rest, '--decision'),
+          policyType: getOption(rest, '--policy-type'),
+          reason: getOption(rest, '--reason'),
+          decisionId: getOption(rest, '--human-decision-id'),
+          answer: getOption(rest, '--answer'),
+          answeredBy: getOption(rest, '--answered-by'),
+          reflectedIn: getOption(rest, '--reflected-in')?.split(',').map((item) => item.trim()).filter(Boolean),
+          sourceStoryId: getOption(rest, '--source-story-id'),
+          consumerStoryId: getOption(rest, '--consumer-story-id'),
+          artifactPath: getOption(rest, '--artifact'),
+          digest: getOption(rest, '--digest'),
+          rawTranscript: hasFlag(rest, '--raw-transcript')
+        };
+        try {
+          const operation = subcommand.slice('portfolio-'.length);
+          const result = operation === 'create'
+            ? await controller.create(repoRoot, portfolioOptions)
+            : operation === 'status'
+              ? await controller.status(repoRoot, portfolioOptions)
+              : operation === 'advance'
+                ? await controller.advance(repoRoot, portfolioOptions)
+                : operation === 'decide'
+                  ? await controller.decide(repoRoot, portfolioOptions)
+                  : operation === 'promote'
+                    ? await controller.promote(repoRoot, portfolioOptions)
+                    : null;
+          if (!result) throw new StoryRunPortfolioError('unknown_portfolio_command', `Unknown Portfolio command: ${subcommand}.`);
+          write(stdout, jsonOutput ? `${JSON.stringify(result, null, 2)}\n` : renderStoryRunPortfolioSummary(result));
+          return { exitCode: 0, command, subcommand, result };
+        } catch (error) {
+          if (!(error instanceof StoryRunPortfolioError)) throw error;
+          const payload = error.toJSON();
+          write(stderr, jsonOutput ? `${JSON.stringify(payload, null, 2)}\n` : renderStoryRunPortfolioError(error));
+          return { exitCode: 2, command, subcommand, result: payload };
+        }
+      }
       if (subcommand === 'start') {
         const result = await startExecution(repoRoot, executionOptions);
         write(stdout, hasFlag(rest, '--json')
@@ -2231,7 +2742,46 @@ export async function runCli(argv, io = {}) {
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'status') {
-        const result = await getExecutionStatus(repoRoot, executionOptions);
+        let result;
+        try {
+          result = await getExecutionStatus(repoRoot, executionOptions);
+        } catch (error) {
+          if (!String(error?.message ?? '').startsWith('execution state JSON is corrupt:')) throw error;
+          const corruptState = {
+            ok: false,
+            error: {
+              code: 'execution_state_corrupt',
+              status: 'quarantined',
+              story_id: executionOptions.storyId,
+              message: error.message,
+              recovery: {
+                start_command: `vibepro execute start ${repoRoot} --story-id ${executionOptions.storyId}`
+              }
+            }
+          };
+          write(stderr, hasFlag(rest, '--json')
+            ? `${JSON.stringify(corruptState, null, 2)}\n`
+            : `${corruptState.error.message} Run ${corruptState.error.recovery.start_command} to create a clean state.\n`);
+          return { exitCode: 1, command, subcommand, result: corruptState };
+        }
+        if (!result.found) {
+          const missingState = {
+            ok: false,
+            error: {
+              code: 'execution_state_missing',
+              status: 'not_found',
+              story_id: executionOptions.storyId,
+              message: `Execution state is missing for ${executionOptions.storyId}.`,
+              recovery: {
+                start_command: `vibepro execute start ${repoRoot} --story-id ${executionOptions.storyId}`
+              }
+            }
+          };
+          write(stderr, hasFlag(rest, '--json')
+            ? `${JSON.stringify(missingState, null, 2)}\n`
+            : `${missingState.error.message} Run ${missingState.error.recovery.start_command} before querying status.\n`);
+          return { exitCode: 1, command, subcommand, result: missingState };
+        }
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.state, null, 2)}\n`
           : renderExecutionStateSummary(result));
@@ -2251,7 +2801,13 @@ export async function runCli(argv, io = {}) {
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result.state ?? result, null, 2)}\n`
           : result.state ? renderExecutionStateSummary(result) : renderExecutionReconcileAllSummary(result));
-        return { exitCode: 0, command, subcommand, result };
+        const reconciledState = result.state ?? result;
+        const unresolved = hasFlag(rest, '--all-merged')
+          ? (result.stories ?? []).some((story) => story.after_status !== 'merged')
+          : reconciledState.completion_status === 'failed'
+            || (Boolean(reconciledState.reconciliation?.status)
+              && reconciledState.reconciliation.status !== 'reconciled');
+        return { exitCode: unresolved ? 2 : 0, command, subcommand, result };
       }
       if (subcommand === 'merge') {
         const storyId = executionOptions.storyId ?? await resolveSelectedStoryId(repoRoot, 'execute merge');
@@ -2259,7 +2815,8 @@ export async function runCli(argv, io = {}) {
           storyId,
           commandName: 'execute merge'
         });
-        const result = await executeMerge(repoRoot, {
+        const runExecuteMerge = io.executeMerge ?? executeMerge;
+        const result = await runExecuteMerge(repoRoot, {
           ...executionOptions,
           storyId,
           strategy: getOption(rest, '--strategy'),
@@ -2275,16 +2832,113 @@ export async function runCli(argv, io = {}) {
           dryRun: hasFlag(rest, '--dry-run'),
           env: io.env
         });
+        // The returned merge may contain canonical-audit metadata calculated
+        // after the last local pr-merge write. Use the persisted local artifact
+        // as the CAS baseline when available so a real public invocation can
+        // append sync-failure guidance without mistaking its own finalization
+        // delta for a concurrent operator write.
+        let expectedMergeBeforeExecutionStateSync = structuredClone(
+          result.execution_state_sync_baseline ?? result.merge
+        );
+        const persistedMergePath = result.artifacts?.pr_merge_json ?? null;
+        if (!result.execution_state_sync_baseline && persistedMergePath) {
+          try {
+            expectedMergeBeforeExecutionStateSync = JSON.parse(await readFile(
+              path.resolve(repoRoot, persistedMergePath),
+              'utf8'
+            ));
+          } catch {
+            // Preserve the returned merge as a conservative fallback. The
+            // follow-up CAS will still fail closed if the artifact differs.
+          }
+        }
+        let executionStateSyncFailure = null;
+        try {
+          const syncExecutionState = io.updateExecutionStateFromPrMerge ?? updateExecutionStateFromPrMerge;
+          await syncExecutionState(repoRoot, result, {
+            target: executionOptions.target,
+            baseRef: executionOptions.baseRef,
+            storyId
+          });
+        } catch (error) {
+          executionStateSyncFailure = 'Execution-state synchronization failed after merge processing.';
+          const executionStateSyncError = serializeCliError(error);
+          const retainedPrSelector = result.merge.pr?.url
+            ?? result.merge.pr?.selector
+            ?? result.merge.delivery?.pr_url
+            ?? result.merge.pr_url
+            ?? null;
+          result.merge.execution_state_sync = {
+            status: 'failed',
+            reason: executionStateSyncFailure,
+            error: executionStateSyncError,
+            recovery_command: `vibepro execute reconcile . --story-id ${storyId} --base ${executionOptions.baseRef ?? result.merge.base ?? 'main'}${retainedPrSelector ? ` --pr ${retainedPrSelector}` : ''}`
+          };
+          result.merge.reconciliation_action = {
+            status: 'required',
+            reason: 'execution_state_sync_failed',
+            commands: [result.merge.execution_state_sync.recovery_command]
+          };
+          result.merge.reconciliation = {
+            status: 'reconciliation_required',
+            reasons: [...new Set([...(result.merge.reconciliation?.reasons ?? []), 'execution_state_sync_failed'])],
+            evaluated_at: new Date().toISOString(),
+            head_sha: result.merge.current_head_sha ?? null
+          };
+          result.merge.stop_reason = 'execution_state_sync_failed';
+          const persistFollowup = (
+            process.env.NODE_ENV === 'test'
+            && process.env.VIBEPRO_TEST_FORCE_MERGE_FOLLOWUP_FAILURE === '1'
+          )
+            ? async () => {
+                const error = new Error('injected canonical merge follow-up persistence failure');
+                error.code = 'merge_followup_test_failure';
+                throw error;
+              }
+            : (io.persistMergeFollowupState ?? persistMergeFollowupState);
+          try {
+            await persistFollowup(repoRoot, {
+              storyId,
+              merge: result.merge,
+              expectedMerge: expectedMergeBeforeExecutionStateSync
+            });
+            result.merge.execution_state_sync.followup_persistence = 'persisted';
+          } catch (persistenceError) {
+            result.merge.execution_state_sync.followup_persistence = 'failed';
+            result.merge.execution_state_sync.persistence_error = persistenceError.message;
+            result.merge.execution_state_sync.persistence_error_details = serializeCliError(persistenceError);
+            const persistRecovery = io.persistMergeRecoveryState ?? persistMergeRecoveryState;
+            try {
+              const recoveryMerge = structuredClone(result.merge);
+              recoveryMerge.execution_state_sync.recovery_persistence = 'persisted_local';
+              await persistRecovery(repoRoot, {
+                storyId,
+                merge: recoveryMerge,
+                expectedMerge: expectedMergeBeforeExecutionStateSync
+              });
+              result.merge.execution_state_sync.recovery_persistence = 'persisted_local';
+            } catch (recoveryPersistenceError) {
+              result.merge.execution_state_sync.recovery_persistence = 'failed';
+              result.merge.execution_state_sync.recovery_persistence_error = recoveryPersistenceError.message;
+              result.merge.execution_state_sync.recovery_persistence_error_details = serializeCliError(recoveryPersistenceError);
+            }
+            executionStateSyncFailure = 'Execution-state synchronization and follow-up persistence failed after merge processing.';
+          }
+          write(stderr, `${executionStateSyncFailure}\n`);
+        }
         write(stdout, hasFlag(rest, '--json')
-          ? `${JSON.stringify(result.merge, null, 2)}\n`
+          ? `${JSON.stringify(projectPublicPrMergeResult(result), null, 2)}\n`
           : renderPrMergeSummary(result));
-        await updateExecutionStateFromPrMerge(repoRoot, result, {
-          target: executionOptions.target,
-          baseRef: executionOptions.baseRef,
-          storyId
-        }).catch(() => null);
         return {
-          exitCode: result.merge.status === 'blocked' ? 2 : result.merge.status === 'failed' ? 1 : 0,
+          exitCode: executionStateSyncFailure
+            ? 1
+            : result.merge.status === 'failed'
+            ? 1
+            : result.merge.reconciliation?.status === 'reconciliation_required'
+              ? 2
+              : result.merge.status === 'blocked'
+                ? 2
+                : 0,
           command,
           subcommand,
           result
@@ -2493,6 +3147,7 @@ export async function runCli(argv, io = {}) {
         const story = await selectStory(repoRoot, getOption(rest, '--id'));
         write(stdout, `Story selected: ${story.story_id}\n`);
         const graph = await importGraphifyArtifacts(repoRoot, {
+          storyId: story.story_id,
           sourceDir: getOption(rest, '--from'),
           runGraphify: hasFlag(rest, '--run-graphify'),
           env: io.env
@@ -2512,7 +3167,22 @@ export async function runCli(argv, io = {}) {
       if (subcommand === 'derive') {
         let graph = null;
         if (hasFlag(rest, '--run-graphify') || getOption(rest, '--from')) {
+          const explicitStoryId = getOption(rest, '--id');
+          let deriveStoryId = explicitStoryId;
+          if (!deriveStoryId) {
+            const storyContext = await listStories(repoRoot, { includeArchived: false });
+            deriveStoryId = storyContext.current_story_id ?? storyContext.stories[0]?.story_id ?? 'story-default';
+            const graphifyRoute = await resolveArtifactRoute(repoRoot, 'graphify', { storyId: deriveStoryId });
+            if (deriveStoryId === 'story-default' && /\{(?:story_id|feature_slug)\}/.test(graphifyRoute.canonical.template)) {
+              throw new ArtifactRoutingError(
+                'unstable_routing_context',
+                'story derive requires --id when the Graphify canonical uses {story_id} or {feature_slug}',
+                { kind: 'graphify', template: graphifyRoute.canonical.template }
+              );
+            }
+          }
           graph = await importGraphifyArtifacts(repoRoot, {
+            storyId: deriveStoryId,
             sourceDir: getOption(rest, '--from'),
             runGraphify: hasFlag(rest, '--run-graphify'),
             env: io.env
@@ -2822,6 +3492,7 @@ export async function runCli(argv, io = {}) {
           pr: getOption(rest, '--pr'),
           importCi: hasFlag(rest, '--import-ci'),
           ciChecks: getOptions(rest, '--check'),
+          ciCoverage: getOptions(rest, '--coverage'),
           dryRun: hasFlag(rest, '--dry-run'),
           env: io.env
         });
@@ -2945,6 +3616,33 @@ export async function runCli(argv, io = {}) {
       return { exitCode: 0, command, result };
     }
 
+    if (command === 'artifacts') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      const storyId = getOption(rest, '--id');
+      if (!storyId) throw new Error('--id <story-id> is required for artifacts commands');
+      const options = { storyId, featureSlug: getOption(rest, '--feature-slug') };
+      if (subcommand === 'resolve') {
+        const result = await resolveArtifactRoutes(repoRoot, options);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderArtifactRoutes(result));
+        return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'migrate') {
+        if (!hasFlag(rest, '--dry-run')) {
+          throw new Error('artifacts migrate currently requires --dry-run; tracked files are never moved implicitly');
+        }
+        const result = await buildArtifactMigrationPlan(repoRoot, options);
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderArtifactMigrationPlan(result));
+        return { exitCode: result.status === 'blocked' ? 2 : 0, command, subcommand, result };
+      }
+      write(stderr, `Unknown artifacts command: ${subcommand ?? ''}\n\n${renderHelp()}`);
+      return { exitCode: 1, command, subcommand };
+    }
+
     if (command === 'architecture') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
@@ -2969,6 +3667,19 @@ export async function runCli(argv, io = {}) {
         return { exitCode: result.readiness.status === 'ready' ? 0 : 2, command, subcommand, result };
       }
 
+      if (subcommand === 'conformance') {
+        const result = await runArchitectureConformance(repoRoot, {
+          modelPath: getOption(rest, '--model'),
+          graphPath: getOption(rest, '--graph')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderConformanceMarkdown(result));
+        const strict = hasFlag(rest, '--strict');
+        const exitCode = strict && result.summary.violation_count > 0 ? 2 : 0;
+        return { exitCode, command, subcommand, result };
+      }
+
       if (subcommand === 'write') {
         if (!storyId) throw new Error('--id <story-id> is required for architecture write');
         const inputPath = getOption(rest, '--input');
@@ -2985,7 +3696,7 @@ export async function runCli(argv, io = {}) {
         const readiness = final
           ? await assertArchitectureReadinessForFinal(repoRoot, storyId)
           : null;
-        const outputPath = getOption(rest, '--output') ?? defaultArchitectureFinalPath(storyId);
+        const outputPath = getOption(rest, '--output');
         const artifact = draft
           ? await writeDraftArchitecture(repoRoot, storyId, raw)
           : await writeFinalArchitecture(repoRoot, storyId, raw, { outputPath });
@@ -3225,9 +3936,243 @@ export async function runCli(argv, io = {}) {
     write(stderr, `Unknown command: ${command}\n\n${renderHelp()}`);
     return { exitCode: 1, command };
   } catch (error) {
-    write(stderr, `${error.message}\n`);
+    if (error instanceof OutcomeCommandError) {
+      write(stderr, hasFlag(argv, '--json')
+        ? `${JSON.stringify(serializeOutcomeCommandError(error), null, 2)}\n`
+        : renderOutcomeCommandError(error));
+    } else if (hasFlag(argv, '--json')) {
+      write(stderr, `${JSON.stringify(buildCliErrorPayload(error), null, 2)}\n`);
+    } else {
+      write(stderr, `${error.message}\n`);
+    }
     return { exitCode: 1, command };
   }
+}
+
+function parseValidationDisposition(value) {
+  const separator = String(value).indexOf(':');
+  if (separator <= 0 || separator === String(value).length - 1) {
+    throw new Error(`sequence record --disposition must be finding-id:status, got: ${value}`);
+  }
+  const status = String(value).slice(separator + 1);
+  const terminalStatuses = new Set(['accepted', 'rejected', 'duplicate', 'deferred', 'false_positive', 'resolved']);
+  if (!terminalStatuses.has(status)) {
+    throw new Error(`sequence record --disposition status must be terminal (${[...terminalStatuses].join('|')}), got: ${status}`);
+  }
+  return {
+    finding_id: String(value).slice(0, separator),
+    status
+  };
+}
+
+function renderArtifactRoutes(result) {
+  const lines = [`Artifact routes resolved for ${result.variables.story_id}:`, `Profile: ${result.profile ?? 'legacy'}; metadata source: ${result.metadata_source ?? 'derived'}`, `Variables: story_id=${result.variables.story_id}; feature_slug=${result.variables.feature_slug}`];
+  for (const [kind, route] of Object.entries(result.routes ?? {})) {
+    lines.push(`- ${kind}: ownership=${route.canonical.ownership ?? 'legacy'}; canonical=${route.canonical.relative_path}; canonical-writer=${route.canonical_writer ?? route.writer ?? 'owner'}; read-authority=${route.canonical.relative_path}`);
+    for (const projection of route.projections ?? []) {
+      lines.push(`  projection: ownership=${projection.ownership ?? (projection.generated ? 'generated' : 'legacy')}; path=${projection.relative_path}; renderer=${projection.renderer ? `${projection.renderer.id}@${projection.renderer.version}` : '-'}`);
+    }
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+function renderArtifactMigrationPlan(result) {
+  const lines = [
+    `Artifact migration plan for ${result.story_id}: ${result.status}`,
+    `Profile: ${result.profile ?? 'legacy'}; feature_slug=${result.feature_slug ?? '-'}`,
+    `Profile change: ${result.profile_change?.from ?? 'legacy'} -> ${result.profile_change?.to ?? result.profile ?? 'legacy'}; required=${result.profile_change?.required ? 'yes' : 'no'}; reason=${result.profile_change?.reason ?? '-'}`,
+    `Dry run: ${result.dry_run ? 'yes' : 'no'}; edits performed: ${result.edits_performed}`
+  ];
+  for (const item of result.items ?? []) {
+    lines.push(`- ${item.kind}: action=${item.action}; reason=${item.reason ?? '-'}; collision=${item.collision ? 'yes' : 'no'}; ownership=${item.ownership ?? 'legacy'}; canonical-writer=${item.canonical_writer ?? '-'}; renderer=${item.renderer ?? '-'}; route=${item.source ?? '-'} -> ${item.destination ?? '-'}`);
+    for (const projection of item.projection_items ?? []) {
+      lines.push(`  projection: action=${projection.action}; reason=${projection.reason ?? '-'}; ownership=${projection.ownership ?? 'legacy'}; renderer=${projection.renderer ?? '-'}; path=${projection.path}`);
+    }
+  }
+  for (const unresolved of result.unresolved ?? []) {
+    lines.push(`- blocked: ${unresolved.code}: ${unresolved.message}`);
+  }
+  for (const risk of result.overwrite_risks ?? []) {
+    lines.push(`- overwrite-risk: ${risk.code}: ${risk.message}; path=${risk.path}`);
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+export function buildCliErrorPayload(error) {
+  return {
+    ok: false,
+    error: serializeCliError(error)
+  };
+}
+
+function serializeCliError(error, seen = new Set()) {
+  if (!(error instanceof Error)) {
+    return {
+      message: String(error),
+      code: null,
+      cause: null,
+      cause_details: null,
+      restore_error: null,
+      restore_errors: []
+    };
+  }
+  if (seen.has(error)) {
+    return {
+      message: error.message,
+      code: error.code ?? null,
+      cause: '[circular error cause]',
+      cause_details: null,
+      restore_error: error.restore_error ?? null,
+      restore_errors: error.restore_errors ?? []
+    };
+  }
+  seen.add(error);
+  const cause = error.cause instanceof Error ? error.cause : null;
+  return {
+    message: error.message,
+    code: error.code ?? null,
+    cause: cause?.message ?? null,
+    cause_details: cause ? serializeCliError(cause, seen) : null,
+    restore_error: error.restore_error ?? null,
+    restore_errors: error.restore_errors ?? []
+  };
+}
+
+export function serializeOutcomeCommandError(error) {
+  return sanitizeOutcomeErrorValue(error.toJSON());
+}
+
+function sanitizeOutcomeErrorValue(value) {
+  if (Array.isArray(value)) return value.map(sanitizeOutcomeErrorValue);
+  if (typeof value === 'string') return sanitizeDiagnostic(value, { maxBytes: 4096 });
+  if (!value || typeof value !== 'object') return value;
+  return Object.fromEntries(Object.entries(value)
+    .filter(([key]) => ![
+      'stdout', 'stderr', 'output', 'command', 'commands', 'args', 'env',
+      'results', 'worktree_path', 'primary'
+    ].includes(key))
+    .map(([key, child]) => [key, sanitizeOutcomeErrorValue(child)]));
+}
+
+export function renderOutcomeCommandError(error) {
+  const safeError = serializeOutcomeCommandError(error);
+  const details = safeError;
+  const sources = details.eligible_outcome_sources;
+  const lines = [`${safeError.error_id}: ${safeError.message}`];
+  if (details.ledger_path) lines.push(`ledger: ${details.ledger_path} digest=${details.ledger_digest ?? 'unknown'}`);
+  if (Array.isArray(details.candidates)) {
+    lines.push(`trace candidates: total=${details.candidate_count ?? details.candidates.length} returned=${details.candidates.length} omitted=${details.omitted_count ?? 0} truncated=${details.truncated === true}`);
+    for (const candidate of details.candidates) {
+      const selector = candidate.decision_trace_id
+        ? `trace=${candidate.decision_trace_id}`
+        : `collision-group=${candidate.collision_group} trace-source-ref=${candidate.trace_source_ref}`;
+      lines.push(`- ${selector} parent-revision=${candidate.parent_revision_fingerprint}`);
+    }
+  }
+  if (sources) {
+    lines.push(`eligible sources: total=${sources.total_count ?? 0} returned=${sources.returned_count ?? sources.entries?.length ?? 0} omitted=${sources.omitted_count ?? 0} truncated=${sources.truncated === true}`);
+    for (const source of sources.entries ?? []) lines.push(`- ${source.ref} (${source.kind}, digest=${source.digest})`);
+  }
+  if (details.verification_failure) lines.push(`authority verification: ${details.verification_failure}`);
+  if (details.persistence) lines.push(...renderPersistenceFailure(details.persistence));
+  if (details.ledger_postcondition) {
+    lines.push(`ledger postcondition: status=${details.ledger_postcondition.status ?? 'unknown'} expected-digest=${details.ledger_postcondition.expected_digest ?? 'unknown'} observed-digest=${details.ledger_postcondition.observed_digest ?? 'unknown'}`);
+  }
+  if (details.reconciliation) {
+    lines.push(`reconciliation: status=${details.reconciliation.status ?? 'unknown'} artifact-status=${details.reconciliation.artifact_status ?? 'unknown'} artifact=${details.reconciliation.artifact_path ?? 'unknown'}`);
+  }
+  if (details.original_error) {
+    lines.push(`original failure: code=${details.original_error.code ?? 'unknown'} message=${details.original_error.message ?? 'unknown'}`);
+    if (details.original_error.persistence) {
+      lines.push(...renderPersistenceFailure(details.original_error.persistence)
+        .map((line) => `original ${line}`));
+    }
+    if (details.original_error.ledger_postcondition) {
+      lines.push(`original ledger postcondition: status=${details.original_error.ledger_postcondition.status ?? 'unknown'} expected-digest=${details.original_error.ledger_postcondition.expected_digest ?? 'unknown'} observed-digest=${details.original_error.ledger_postcondition.observed_digest ?? 'unknown'}`);
+    }
+    if (details.original_error.reconciliation) {
+      lines.push(`original reconciliation: status=${details.original_error.reconciliation.status ?? 'unknown'} artifact-status=${details.original_error.reconciliation.artifact_status ?? 'unknown'} artifact=${details.original_error.reconciliation.artifact_path ?? 'unknown'}`);
+    }
+  }
+  if (details.recovery) lines.push(`recovery: ${details.recovery}`);
+  return `${lines.join('\n')}\n`;
+}
+
+export function renderOutcomeCommandResult(result, { subcommand } = {}) {
+  const lines = [
+    `outcome ${subcommand ?? 'command'}: ${result.status ?? 'completed'}`,
+    `story: ${result.story_id ?? 'unknown'}`
+  ];
+  if (subcommand === 'record') {
+    const selector = result.resolved_selector ?? {};
+    if (selector.decision_trace_id) lines.push(`trace: ${selector.decision_trace_id}`);
+    else if (selector.collision_group || selector.trace_source_ref) {
+      lines.push(`trace: collision-group=${selector.collision_group ?? 'unknown'} source-ref=${selector.trace_source_ref ?? 'unknown'}`);
+    }
+    lines.push(`parent revision: ${result.parent_revision_fingerprint ?? 'unknown'}`);
+    lines.push(`observation: ${result.artifact_path ?? 'unknown'} digest=${result.artifact_digest ?? 'unknown'}`);
+    lines.push(`producer: ${result.producer ?? 'unknown'}`);
+    if (result.resolved_source) {
+      lines.push(`source: ${result.resolved_source.ref ?? 'unknown'} kind=${result.resolved_source.kind ?? 'unknown'} digest=${result.resolved_source.digest ?? 'unknown'}`);
+    }
+  } else if (subcommand === 'refresh') {
+    lines.push(`ledger: ${result.ledger_path ?? 'unknown'} digest=${result.ledger_digest ?? 'unknown'}`);
+    lines.push(`observations: ${result.observation_count ?? 0}`);
+    lines.push(`canonical bundle: ${result.canonical_bundle ?? 'unknown'}`);
+    if (result.persistence) {
+      lines.push(`persistence: status=${result.persistence.status ?? 'unknown'} commit=${result.persistence.commit_sha ?? 'unknown'}`);
+    }
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+function renderPersistenceFailure(persistence) {
+  const primary = persistence.primary ?? {};
+  const failure = primary.failure ?? persistence.failure ?? {};
+  const postcondition = persistence.push_postcondition ?? {};
+  const cleanup = persistence.cleanup ?? {};
+  const lines = [
+    `persistence: status=${persistence.status ?? 'unknown'} reason=${persistence.reason ?? 'unknown'} pushed=${persistence.pushed === true}`
+  ];
+  if (persistence.primary) {
+    lines.push(`primary failure: status=${primary.status ?? 'unknown'} reason=${primary.reason ?? 'unknown'} stage=${failure.stage ?? 'unknown'} command-status=${failure.status ?? 'unknown'} kind=${failure.failure_kind ?? 'unknown'}`);
+  }
+  lines.push(
+    `push postcondition: status=${postcondition.status ?? 'not_checked'} remote-sha=${postcondition.remote_sha ?? 'unknown'}`,
+    `cleanup: status=${cleanup.status ?? 'unknown'} attempted=${cleanup.attempted === true} removed=${cleanup.removed === true}`
+  );
+  lines.push(`recovery: ${persistenceRecoveryGuidance(persistence)}`);
+  return lines;
+}
+
+function persistenceRecoveryGuidance(persistence) {
+  const actions = [];
+  const postcondition = persistence.push_postcondition?.status;
+  const cleanup = persistence.cleanup ?? {};
+  if (postcondition === 'indeterminate') actions.push('verify the remote branch before retrying');
+  else if (persistence.pushed === true || postcondition === 'applied') actions.push('treat the canonical revision as applied and do not replay the push');
+  else actions.push(`resolve ${persistence.primary?.reason ?? persistence.reason ?? 'the persistence failure'} and retry outcome refresh`);
+  if (cleanup.attempted === true && cleanup.removed !== true) {
+    actions.push('inspect and remove the temporary worktree if it remains');
+  }
+  return actions.join('; ');
+}
+
+function renderOutcomeHelp(subcommand = null, language = null) {
+  const english = normalizeOutputLanguage(language) === 'en';
+  if (subcommand === 'record') {
+    return english
+      ? `VibePro outcome record\n\nUsage:\n  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]\n\nStatus inputs:\n  observed requires --value-json <json>.\n  not_applicable requires --reason <text>.\n\nFlow:\n  vibepro usage report . --json -> choose trace/collision, parent revision, and one eligible source -> vibepro outcome record -> vibepro outcome refresh\n`
+      : `VibePro outcome record\n\n使い方:\n  vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]\n\nstatusごとの必須入力:\n  observed には --value-json <json> が必要です。\n  not_applicable には --reason <text> が必要です。\n\n操作フロー:\n  vibepro usage report . --json -> trace/collision、parent revision、eligible sourceを1つ選択 -> vibepro outcome record -> vibepro outcome refresh\n`;
+  }
+  if (subcommand === 'refresh') {
+    return english
+      ? `VibePro outcome refresh\n\nUsage:\n  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]\n\nEffect:\n  Rebuilds the decision outcome ledger and persists a canonical revision after verified merge authority.\n\nOperator flow:\n  Inspect bounded selectors and the ledger digest with vibepro usage report . --json or vibepro pr prepare . --story-id <story-id> --view gate-evidence. Record an observation with vibepro outcome record, then run outcome refresh. Verify the routed pr-create.json, pr-merge.json, and decision-outcome-ledger.json artifacts when merge authority is rejected.\n\nResults:\n  promoted: a new canonical revision was pushed.\n  already_present: the canonical revision was already present.\n  reconciliation_required: verify the canonical revision and rerun this command.\n\nRecovery and rollback:\n  Follow the bounded recovery field on failure. Verify the remote postcondition before retrying; restore the reported recovery snapshot when rollback is incomplete.\n`
+      : `VibePro outcome refresh\n\n使い方:\n  vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]\n\n作用:\n  検証済みmerge authorityに基づきdecision outcome ledgerを再構築し、canonical revisionを永続化します。\n\n操作フロー:\n  vibepro usage report . --json または vibepro pr prepare . --story-id <story-id> --view gate-evidence でbounded selectorとledger digestを確認し、vibepro outcome recordで観測を記録してからoutcome refreshを実行します。merge authorityが拒否された場合はrouted pr-create.json、pr-merge.json、decision-outcome-ledger.jsonを確認します。\n\n結果:\n  promoted: 新しいcanonical revisionをpushしました。\n  already_present: canonical revisionは既に存在します。\n  reconciliation_required: canonical revisionを確認して、このコマンドを再実行してください。\n\n復旧とrollback:\n  失敗時はboundedなrecovery欄に従います。再実行前にremote postconditionを確認し、rollback未完了時は表示されたrecovery snapshotから復元してください。\n`;
+  }
+  return english
+    ? `VibePro Outcome\n\nCommands:\n  vibepro outcome record   Record a downstream outcome observation.\n  vibepro outcome refresh  Rebuild and persist the canonical outcome revision.\n\nRun a command with --help for its exact options.\n`
+    : `VibePro Outcome\n\nコマンド:\n  vibepro outcome record   downstream outcome observationを記録します。\n  vibepro outcome refresh  canonical outcome revisionを再構築して永続化します。\n\n各コマンドの正確なオプションは --help で確認できます。\n`;
 }
 
 function resolveDiagnosisPhaseOption(args) {
@@ -3261,6 +4206,11 @@ function renderAuditMemoryResult(result) {
 
 function renderHelp(language = null) {
   return normalizeOutputLanguage(language) === 'en' ? HELP_EN : HELP_JA;
+}
+
+function renderSequenceHelp(language = null) {
+  if (normalizeOutputLanguage(language) === 'en') return `VibePro validation sequence\n\nUsage:\n  vibepro sequence plan [repo] --id <story-id> --risk-profile <profile> --surface <surface> --inspection-input <changed-path> --command <cmd> [--test-fingerprint <sha>]\n  vibepro sequence record [repo] --id <story-id> --phase <phase> [--status <status>] [--source <local|ci_import|agent_review>] [--evidence <artifact>] [--finding <id>] [--disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive>]\n  vibepro sequence invalidate [repo] --id <story-id> [--surface <surface>] [--file <path>] --reason <text>\n  vibepro sequence status [repo] --id <story-id>\n\nPhase order:\n  targeted_validation -> preflight_review -> code_frozen -> expensive_verification -> final_review\n\nFor targeted_validation and post-freeze expensive_verification, run vibepro verify record with --artifact, --target, --scenario, --observed test_fingerprint=<sha>, --observed validation_phase=<phase>, and --strict-head-binding; then pass .vibepro/pr/<story-id>/verification-evidence.json to sequence record. Preflight requires a closed, passing canonical Agent Review for a planned role whose inspection inputs cover every planned changed path, not self-observed review metadata. final_review requires --source agent_review and a canonical current-head review result. sequence status returns the producer command first and follow_up_command second.\n`;
+  return `VibePro validation sequence\n\n使い方:\n  vibepro sequence plan [repo] --id <story-id> --risk-profile <profile> --surface <surface> --inspection-input <changed-path> --command <cmd> [--test-fingerprint <sha>]\n  vibepro sequence record [repo] --id <story-id> --phase <phase> [--status <status>] [--source <local|ci_import|agent_review>] [--evidence <artifact>] [--finding <id>] [--disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive>]\n  vibepro sequence invalidate [repo] --id <story-id> [--surface <surface>] [--file <path>] --reason <text>\n  vibepro sequence status [repo] --id <story-id>\n\n実行順:\n  targeted_validation -> preflight_review -> code_frozen -> expensive_verification -> final_review\n\ntargeted_validationとfreeze後のexpensive_verificationでは、vibepro verify recordへ--artifact・--target・--scenario・--observed test_fingerprint=<sha>・--observed validation_phase=<phase>・--strict-head-bindingを渡し、その後に正規verification-evidenceをsequence recordへ渡します。preflightには自己申告metadataではなく、計画済みchanged pathを全件coverするinspection inputsを持つ、計画済みroleのclose済みpassing Agent Reviewが必要です。sequence statusは証拠生成commandを先に、follow_up_commandを次に返します。\n`;
 }
 
 function renderCheckpointList(result) {
@@ -3467,6 +4417,11 @@ function buildStartupOptions(args) {
 
 function write(stream, text) {
   if (stream) stream.write(text);
+}
+
+async function resolveGitHead(repoRoot) {
+  const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repoRoot, encoding: 'utf8' });
+  return stdout.trim();
 }
 
 async function readStdin(stream) {

@@ -1,0 +1,40 @@
+{
+  "agent_system": "claude_code",
+  "agent_id": "claude-arch-regression-686a8596",
+  "subagent_session_id": "ade6445479b23b6b3",
+  "model": "claude-sonnet-5",
+  "execution_mode": "parallel_subagent",
+  "dispatched_by": "claude_code_coordinator",
+  "review_rounds": [
+    {
+      "head_sha": "686a8596",
+      "status": "block",
+      "findings": [
+        {
+          "id": "regression-policy-sync-audit-masked-by-gate-call",
+          "severity": "high",
+          "detail": "実CLIコマンド（decision record / review record等）ではassertManagedWorktreeCommandAllowed（gate/context check）のrefreshが先に走って実際の同期書き込みを行い、その後のreconcileExecutionState→buildExecutionStateのrefreshが収束済みconfigをdiffしてunchangedを永続化するため、syncedイベントが監査trail（state.json）から消える。standalone再現スクリプトで実証。buildManagedWorktreeCommandBindingはgate出力からpolicy_syncをwhitelist-strippingしており、同期イベントはどこにも表面化しない。"
+        },
+        {
+          "id": "path_surface_coverage-fake-e2e-spec",
+          "severity": "high",
+          "detail": "test/e2e/...-main.spec.tsの全assertionがhardcoded文字列のincludes/matchで、src/を一切importせず実装が壊れていてもpassする。pr-bodyがこれをproduction path評価証拠として過大表示。"
+        }
+      ]
+    },
+    {
+      "head_sha": "fed325a0",
+      "status": "pass",
+      "summary": "Both prior block findings are resolved with reproduced evidence. Finding 1: syncWorktreePolicySections now durably stamps every real sync to worktree-side .vibepro/policy-sync.json via recordPolicySyncEvent and every refresh reads it back as policy_sync.last_event; buildManagedWorktreeCommandBinding no longer strips policy_sync. Reviewer re-ran own standalone repro replaying the decision record/review record CLI ordering against fed325a0: persisted execution state shows policy_sync.last_event={status:'synced',sections_updated:['budgets']} surviving the second refresh's 'unchanged' diff. Finding 2: the .spec.ts header now discloses it is a traceability-pin marker matching a pre-existing repo convention (independently verified against story-vibepro-cli-status-honesty-main.spec.ts), and a new real composed-flow e2e test exists which fails against the pre-fix source with a concrete TypeError (proven by temporary checkout of pre-fix src).",
+      "verification": "shipped tests 7/7; broader suite incl. managed-worktree gate/execution-dag e2e + decision-records 24/24; typecheck pass; pre-fix failure of the new e2e test proven at 686a8596; independent standalone repro confirms last_event survives and gate binding output carries policy_sync",
+      "findings": [],
+      "judgment_delta": "block -> pass because both findings were independently re-verified against the actual fix rather than taken on the coordinator's word"
+    },
+    {
+      "head_sha": "78982951",
+      "status": "pass",
+      "summary": "Delta fed325a0..78982951 is display-layer only plus additive test coverage: formatManagedWorktreeSummary renders policy_sync into the default text summary (no other parser consumer via grep), and two new tests close the buildManagedWorktreeGate call-site gap and the default-output surface gap. Re-ran relevant suite 26/26 pass + typecheck pass.",
+      "judgment_delta": "pass(fed325a0) -> pass(78982951) because the diff only adds read-only text rendering of already-audited policy_sync data and two new passing tests closing a previously-unverified call site and surface; no sync/audit logic changed"
+    }
+  ]
+}

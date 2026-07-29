@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
+import { resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
 const READINESS_SCHEMA_VERSION = '0.1.0';
@@ -111,12 +112,13 @@ async function collectReadinessContext(root, { storyId, designSystemId }) {
   const visualHypothesis = await readTextArtifact(root, [
     path.join('.vibepro', 'design-modernize', storyId, 'visual-hypothesis-prompts.md')
   ], 'visual_hypothesis_prompts');
+  const prPreparePath = await resolvePrArtifactFile(root, storyId, 'pr-prepare.json');
   const prPrepare = await readJsonArtifact(root, [
-    path.join('.vibepro', 'pr', storyId, 'pr-prepare.json')
+    path.relative(root, prPreparePath)
   ], 'pr_prepare');
   const gateDag = await resolveGateDagArtifact(root, storyId, prPrepare);
   const verificationEvidence = await readJsonArtifact(root, [
-    path.join('.vibepro', 'pr', storyId, 'verification-evidence.json')
+    path.relative(root, await resolvePrArtifactFile(root, storyId, 'verification-evidence.json'))
   ], 'verification_evidence');
   const flowVerification = await resolveFlowVerificationArtifact(root, storyId, verificationEvidence);
   const visualQa = await findLatestManifestRun(root, 'visual_qa_runs', 'visual_residual_json');
@@ -620,9 +622,8 @@ async function findLatestManifestRun(root, runKey, artifactKey) {
 }
 
 async function resolveGateDagArtifact(root, storyId, prPrepare) {
-  const direct = await readJsonArtifact(root, [
-    path.join('.vibepro', 'pr', storyId, 'gate-dag.json')
-  ], 'gate_dag');
+  const gatePath = await resolveGateArtifactFile(root, storyId);
+  const direct = await readJsonArtifact(root, [path.relative(root, gatePath)], 'gate_dag');
   if (direct.status !== 'missing') return direct;
   const embeddedGateDag = prPrepare.data?.pr_context?.gate_dag ?? prPrepare.data?.gate_dag ?? null;
   if (embeddedGateDag && typeof embeddedGateDag === 'object') {

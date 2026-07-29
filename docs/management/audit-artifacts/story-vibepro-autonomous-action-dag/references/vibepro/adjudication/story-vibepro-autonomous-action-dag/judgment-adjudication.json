@@ -1,0 +1,1664 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "updated_at": "2026-07-21T23:48:05.915Z",
+  "events": [
+    {
+      "event_id": "f511ba9f-4f39-4b5b-8df5-211f418c6f12",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudication found spine:intent sound against the Story, Architecture, Spec, code, and current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:03.381Z"
+    },
+    {
+      "event_id": "22667d59-0516-462b-98b7-1aeaf4d37b1b",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudication found spine:current_reality sound against the Story, Architecture, Spec, code, and current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:03.577Z"
+    },
+    {
+      "event_id": "0a688adc-7a19-40f6-8322-e0a61bd856a9",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudication found spine:invariants sound against the Story, Architecture, Spec, code, and current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:03.772Z"
+    },
+    {
+      "event_id": "7a031140-1779-46cd-a858-185c108a754c",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudication found spine:boundaries sound against the Story, Architecture, Spec, code, and current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:03.965Z"
+    },
+    {
+      "event_id": "e12383b2-2122-446f-973c-17b067c4e8f6",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudication found spine:failure_modes sound against the Story, Architecture, Spec, code, and current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:04.158Z"
+    },
+    {
+      "event_id": "e98f33ac-abe2-496f-9726-1f49b8432a69",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudication found spine:done_evidence sound against the Story, Architecture, Spec, code, and current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:04.377Z"
+    },
+    {
+      "event_id": "4eccab26-cda9-4f06-88ac-9210d06ac682",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudication found axis:public_contract sound against the Story, Architecture, Spec, code, and current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:04.561Z"
+    },
+    {
+      "event_id": "f6fa1af6-5462-4670-8a73-a52e8ac0ad9b",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudication found axis:scope_reviewability sound against the Story, Architecture, Spec, code, and current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:04.736Z"
+    },
+    {
+      "event_id": "457930af-5de2-4f32-8b60-233e1103a6f2",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudication found failure_mode:parse_failure sound against the Story, Architecture, Spec, code, and current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:04.938Z"
+    },
+    {
+      "event_id": "dd529d34-e5bb-40bb-80a8-cce3bb04ce53",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudication found failure_mode:provider_failure sound against the Story, Architecture, Spec, code, and current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:05.136Z"
+    },
+    {
+      "event_id": "aa2e32b8-38e6-49f4-a23f-b1a3fc2c11f4",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudication found failure_mode:evidence_lifecycle_regression sound against the Story, Architecture, Spec, code, and current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:05.337Z"
+    },
+    {
+      "event_id": "290bc24b-2918-404e-a34e-0a14bc4b28f6",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudication found failure_mode:workflow_state_regression sound against the Story, Architecture, Spec, code, and current-head evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:05.546Z"
+    },
+    {
+      "event_id": "0e87083f-363b-4e04-ac15-fbc91f9c25d2",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story AC-1..7 match the closed autonomous DAG implementation and safety boundary",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": "e2fc3e319e30511276c41276a23152e2841923b1"
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T12:59:34.201Z"
+    },
+    {
+      "event_id": "7b535367-7bb0-429a-ad1a-5e26c412db6e",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "orchestration owner injection checkpoint persistence Gate recheck and current-head evidence are concrete",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": "e2fc3e319e30511276c41276a23152e2841923b1"
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T12:59:34.389Z"
+    },
+    {
+      "event_id": "770447b8-e270-4d32-a4a3-9e3220c19a48",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "closed registry typed stops HEAD checkpoints terminal pr_ready fallback and artifact journaling are exercised",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": "e2fc3e319e30511276c41276a23152e2841923b1"
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T12:59:34.650Z"
+    },
+    {
+      "event_id": "ef3b143e-c8e1-4ed1-998f-9a95939f551e",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "composition-only closed owner map excludes shell merge waiver deploy and provider wiring",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": "e2fc3e319e30511276c41276a23152e2841923b1"
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T12:59:34.921Z"
+    },
+    {
+      "event_id": "a83f3f0d-c655-4da0-81eb-e35409bf4d81",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "missing runner forged plan policy stop restart HEAD rebind and Gate rejection are tested",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": "e2fc3e319e30511276c41276a23152e2841923b1"
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T12:59:35.163Z"
+    },
+    {
+      "event_id": "35ed9a83-a47d-46cb-bc3f-926318c48f5e",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current authority evidence records 172 focused passes E2E replay and typecheck",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": "e2fc3e319e30511276c41276a23152e2841923b1"
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T12:59:35.472Z"
+    },
+    {
+      "event_id": "ab2a5db1-4364-47ec-8be4-d5119a270b2a",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI profile controls legacy default fail-closed validation and human plus JSON outcomes are tested",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": "e2fc3e319e30511276c41276a23152e2841923b1"
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T12:59:35.706Z"
+    },
+    {
+      "event_id": "acc9a174-d5a1-4839-82ac-908e21868cf3",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "single coherent DAG vertical slice with docs implementation and focused tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": "e2fc3e319e30511276c41276a23152e2841923b1"
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T12:59:35.979Z"
+    },
+    {
+      "event_id": "137683ff-3fcc-498d-87dd-814c0b3d4cd3",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "AAD adds no parser or JSON extraction behavior; scanner candidate is outside changed contract",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": "e2fc3e319e30511276c41276a23152e2841923b1"
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T12:59:36.202Z"
+    },
+    {
+      "event_id": "de945840-12fc-407c-9815-cead488ecdb8",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "production provider wiring is an explicit non-goal and missing owner is a typed runtime stop",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": "e2fc3e319e30511276c41276a23152e2841923b1"
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T12:59:36.460Z"
+    },
+    {
+      "event_id": "335eeb37-5d96-42da-a504-4ff2873968c7",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "HEAD-bound journal suffix rebinding restart idempotency and Gate SSOT are verified",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": "e2fc3e319e30511276c41276a23152e2841923b1"
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T12:59:36.678Z"
+    },
+    {
+      "event_id": "a9d7fa99-4dba-4bbc-881f-a85b9acff5cb",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "all nodes typed stops invalid terminal continue and forbidden combinations fail closed",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": "e2fc3e319e30511276c41276a23152e2841923b1"
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T12:59:36.926Z"
+    },
+    {
+      "event_id": "a1c17fd1-f7f2-4321-a4ca-8958fbed80ed",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "137683ff-3fcc-498d-87dd-814c0b3d4cd3",
+      "wrong_premise": "AAD introduces parser or JSON extraction behavior",
+      "corrected_premise": "AAD consumes typed injected owner results and introduces no parser or JSON extraction surface",
+      "reason": "changed-path and contract inspection show this classifier candidate is outside the Story boundary",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/specs/story-vibepro-autonomous-action-dag.md",
+          "sha256": "e6618c76496b0c3ffe51b8d6c72f0b703c0541563184a72dda6d26eaf3b88a0d"
+        },
+        {
+          "artifact": "src/safe-action-orchestrator.js",
+          "sha256": "9d96ea0d4e31e962dfab2e2488d09d4b7b59d8e385fb7d57de9801294de13b82"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": null
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T13:03:23.807Z"
+    },
+    {
+      "event_id": "903f7e4d-dfd5-47d2-8de5-eeda5b0afa7e",
+      "type": "premise_correction",
+      "item_id": "failure_mode:provider_failure",
+      "corrects_verdict_id": "de945840-12fc-407c-9815-cead488ecdb8",
+      "wrong_premise": "AAD adds a production provider or network owner adapter",
+      "corrected_premise": "Production owner wiring is explicitly out of scope and missing owners stop as typed waiting_for_runtime",
+      "reason": "Story boundary and implementation prove composition-only injected owner ports",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+          "sha256": "41f96ff16a2f2a88720c4a31b31ca5c5c44f6289380af63421c389f0b4668913"
+        },
+        {
+          "artifact": "src/guarded-run-session.js",
+          "sha256": "12b66caaaf9f18840993d1609bb35131e2dde691912db6fe1e60ea650144de57"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "aad-judgment-e2",
+        "session_ref": null
+      },
+      "head_commit": "e2fc3e319e30511276c41276a23152e2841923b1",
+      "recorded_at": "2026-07-21T13:03:24.071Z"
+    },
+    {
+      "event_id": "be2fb1ec-a27a-4d27-907c-4d3414188e8d",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story typed DAG fail-closed legacy compatibility and owner boundary directly match implementation",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:07:14.997Z"
+    },
+    {
+      "event_id": "24468c92-646c-4949-85a4-a495fe697052",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "real worktree HEAD resolution persisted checkpoint and Gate recheck paths are directly inspected",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:07:29.729Z"
+    },
+    {
+      "event_id": "711a64a1-52ee-4426-ad1f-e0b21da22b81",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "closed registry dependency HEAD authority typed stops and final_prepare-only readiness are executable contracts",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:07:29.950Z"
+    },
+    {
+      "event_id": "f5e98c7b-0564-49be-abb0-24167b399137",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "arbitrary shell merge waiver deploy and production provider wiring remain outside the DAG",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:07:30.175Z"
+    },
+    {
+      "event_id": "d1e69794-1404-4387-961a-1fad3ba9e1bf",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "forged HEAD unknown plan policy denial missing owner Gate failure and restart paths are tested",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:07:30.396Z"
+    },
+    {
+      "event_id": "02ee6628-5208-41ec-b319-41e841a8f07c",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current-head strict unit integration E2E and typecheck evidence exercises positive and negative paths",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:07:30.617Z"
+    },
+    {
+      "event_id": "60871e12-2c19-4aea-809d-8239d568af69",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "new CLI options are explicit while default legacy profile and existing run behavior remain compatible",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:07:30.843Z"
+    },
+    {
+      "event_id": "20f5e1bb-1cfe-4714-94aa-242799e0dc8e",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "the change surface is one vertical autonomous DAG contract with its docs and tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:07:31.068Z"
+    },
+    {
+      "event_id": "a050c759-414e-4560-b10a-4df3771c43b5",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current-head Gate re-evaluation prevents stale or runner-reported green state from becoming pr_ready",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:07:31.299Z"
+    },
+    {
+      "event_id": "363ad2eb-21d7-4744-bbd8-4d39798b59cf",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "checkpoint profile and HEAD binding preserve restart idempotency and typed stop state",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:07:31.536Z"
+    },
+    {
+      "event_id": "18ae233d-41eb-477c-b0eb-33a398fb2529",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "classifier premise assumes a parser risk not introduced by this Story",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:07:51.876Z"
+    },
+    {
+      "event_id": "07afa1f6-a101-4b2f-ac70-04e5ba4051f3",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "classifier premise assumes a production provider call explicitly deferred from this Story",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:07:52.102Z"
+    },
+    {
+      "event_id": "855b23ef-5953-4397-b16f-5fe12338121d",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "18ae233d-41eb-477c-b0eb-33a398fb2529",
+      "wrong_premise": "AAD introduces parser or structured input parsing failure risk",
+      "corrected_premise": "AAD changes orchestration and checkpointing but introduces no parser or new input syntax",
+      "reason": "classifier premise is outside the implemented Story surface",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+          "sha256": "cb547d2c6fcbb38c044d2aa6cadddc58fb75ddaf234c3a87d5e47747dfb75323"
+        },
+        {
+          "artifact": "src/safe-action-orchestrator.js",
+          "sha256": "c7ae93f23acbfadd6dadb5791927f4d9651f6ed4929db99b5249b81935e7a450"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": null
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:08:01.168Z"
+    },
+    {
+      "event_id": "4990c4fe-8cea-4de6-aecd-74690166b49b",
+      "type": "premise_correction",
+      "item_id": "failure_mode:provider_failure",
+      "corrects_verdict_id": "07afa1f6-a101-4b2f-ac70-04e5ba4051f3",
+      "wrong_premise": "AAD adds a production provider or network adapter",
+      "corrected_premise": "production provider wiring is deferred and missing injected owners typed-stop",
+      "reason": "classifier premise is outside the implemented Story surface",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+          "sha256": "cb547d2c6fcbb38c044d2aa6cadddc58fb75ddaf234c3a87d5e47747dfb75323"
+        },
+        {
+          "artifact": "src/guarded-run-session.js",
+          "sha256": "12b66caaaf9f18840993d1609bb35131e2dde691912db6fe1e60ea650144de57"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "judgment-aad-bbbc-light",
+        "session_ref": null
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:08:01.388Z"
+    },
+    {
+      "event_id": "3532e92f-b141-45c2-9da4-980b3d4551e2",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": "855b23ef-5953-4397-b16f-5fe12338121d",
+      "reason": "independent judge confirms no parser or JSON extraction path is introduced by the orchestration-only diff",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "corrected-premise-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:09:37.494Z"
+    },
+    {
+      "event_id": "4cc9613b-45b6-43b8-bf7d-dfc87f41ed85",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": "4990c4fe-8cea-4de6-aecd-74690166b49b",
+      "reason": "independent judge confirms provider wiring is deferred and missing owners typed-stop",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "corrected-premise-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:09:37.719Z"
+    },
+    {
+      "event_id": "c171f2f1-de1f-41c4-9627-615b83eb6553",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "3532e92f-b141-45c2-9da4-980b3d4551e2",
+      "wrong_premise": "The classifier treats parse_failure as a changed runtime failure mode",
+      "corrected_premise": "No parser or extraction surface changed; parse_failure is not applicable to this Story",
+      "reason": "independent re-adjudication confirms classifier premise is outside this Story",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+          "sha256": "cb547d2c6fcbb38c044d2aa6cadddc58fb75ddaf234c3a87d5e47747dfb75323"
+        },
+        {
+          "artifact": "src/safe-action-orchestrator.js",
+          "sha256": "c7ae93f23acbfadd6dadb5791927f4d9651f6ed4929db99b5249b81935e7a450"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "correction-aad-bbbc-second-light",
+        "session_ref": null
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:11:39.573Z"
+    },
+    {
+      "event_id": "c130b740-a7e6-47d7-ba44-dd41050eac5b",
+      "type": "premise_correction",
+      "item_id": "failure_mode:provider_failure",
+      "corrects_verdict_id": "4cc9613b-45b6-43b8-bf7d-dfc87f41ed85",
+      "wrong_premise": "The classifier treats provider_failure as a changed runtime failure mode",
+      "corrected_premise": "No provider adapter is wired; production connectors are deferred and missing owner typed-stops",
+      "reason": "independent re-adjudication confirms classifier premise is outside this Story",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+          "sha256": "cb547d2c6fcbb38c044d2aa6cadddc58fb75ddaf234c3a87d5e47747dfb75323"
+        },
+        {
+          "artifact": "src/guarded-run-session.js",
+          "sha256": "12b66caaaf9f18840993d1609bb35131e2dde691912db6fe1e60ea650144de57"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "correction-aad-bbbc-second-light",
+        "session_ref": null
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:11:40.327Z"
+    },
+    {
+      "event_id": "4137d5ee-75a1-4ccd-9cfe-f6b76700d442",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": "c171f2f1-de1f-41c4-9627-615b83eb6553",
+      "reason": "independent judge confirms corrected no-parser premise and matching frozen file hashes",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "independent-correction-judge-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:11:51.025Z"
+    },
+    {
+      "event_id": "fddc14e4-e002-43a6-a5c3-a94030c3e2ed",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": "c130b740-a7e6-47d7-ba44-dd41050eac5b",
+      "reason": "independent judge confirms corrected deferred-provider premise and typed missing-owner stop",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "independent-correction-judge-aad-bbbc-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/judgment-agent-transcript-bbbc2510.json"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:11:51.441Z"
+    },
+    {
+      "event_id": "83e1abe2-6cb9-4a91-8e99-68aa81a6548f",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "4137d5ee-75a1-4ccd-9cfe-f6b76700d442",
+      "wrong_premise": "autonomous Action DAG introduces a parser or JSON extraction failure surface",
+      "corrected_premise": "this Story introduces no parser or JSON extraction; it validates a closed Action registry, typed runner results, and authoritative HEAD only",
+      "reason": "Story, Spec, implementation, and tests bound parser behavior outside the current change surface",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+          "sha256": "cb547d2c6fcbb38c044d2aa6cadddc58fb75ddaf234c3a87d5e47747dfb75323"
+        },
+        {
+          "artifact": "docs/specs/story-vibepro-autonomous-action-dag.md",
+          "sha256": "ede42c15f4dda9e86ae0464d4f02d8827c6dd42c8d13de3d918750cdc40f538e"
+        },
+        {
+          "artifact": "src/safe-action-orchestrator.js",
+          "sha256": "c7ae93f23acbfadd6dadb5791927f4d9651f6ed4929db99b5249b81935e7a450"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "correction-operator-aad-bbbc-final",
+        "session_ref": null
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:18:20.953Z"
+    },
+    {
+      "event_id": "72341f4a-d6d1-43b9-ac39-36363ff46131",
+      "type": "premise_correction",
+      "item_id": "failure_mode:provider_failure",
+      "corrects_verdict_id": "fddc14e4-e002-43a6-a5c3-a94030c3e2ed",
+      "wrong_premise": "this Story wires a production provider whose invocation can fail",
+      "corrected_premise": "production provider wiring is owned by story-vibepro-production-runtime-connectors; this Story types an unconnected owner as waiting_for_runtime missing_action_runner",
+      "reason": "Story boundary, Spec, guarded session implementation, and tests prove deferred ownership plus fail-closed typed stop",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+          "sha256": "cb547d2c6fcbb38c044d2aa6cadddc58fb75ddaf234c3a87d5e47747dfb75323"
+        },
+        {
+          "artifact": "docs/specs/story-vibepro-autonomous-action-dag.md",
+          "sha256": "ede42c15f4dda9e86ae0464d4f02d8827c6dd42c8d13de3d918750cdc40f538e"
+        },
+        {
+          "artifact": "src/guarded-run-session.js",
+          "sha256": "12b66caaaf9f18840993d1609bb35131e2dde691912db6fe1e60ea650144de57"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "correction-operator-aad-bbbc-final",
+        "session_ref": null
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:18:21.172Z"
+    },
+    {
+      "event_id": "89146829-6233-459c-a04d-65aa31ccee75",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "83e1abe2-6cb9-4a91-8e99-68aa81a6548f",
+      "reason": "independent judge accepts the corrected no-parser premise: the current Story adds only closed Action orchestration, typed results, and authoritative HEAD validation",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "corrected-premise-judge-aad-bbbc",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/corrected-premise-judge-bbbc.txt"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:18:37.796Z"
+    },
+    {
+      "event_id": "7d044018-1dfa-4170-a047-44e45fdfcfdc",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "72341f4a-d6d1-43b9-ac39-36363ff46131",
+      "reason": "independent judge accepts deferred production-provider ownership and the current typed waiting_for_runtime missing_action_runner boundary",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "corrected-premise-judge-aad-bbbc",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/corrected-premise-judge-bbbc.txt"
+      },
+      "head_commit": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+      "recorded_at": "2026-07-21T14:18:38.048Z"
+    },
+    {
+      "event_id": "cbfdfdf3-25b8-4581-b47e-8baefc6bff1a",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The seven acceptance clauses map directly to the closed DAG design, implementation, and Spec.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-87434439",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/transcript-87434439.md"
+      },
+      "head_commit": "874344394f6da1f3263176f7cd58a0d289a5b776",
+      "recorded_at": "2026-07-21T14:36:39.678Z"
+    },
+    {
+      "event_id": "32d617b7-08a3-434c-8d8f-11d1edc715ff",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Guarded Run replay demonstrates registry execution, journaling, HEAD rebinding, and final state behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-87434439",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/transcript-87434439.md"
+      },
+      "head_commit": "874344394f6da1f3263176f7cd58a0d289a5b776",
+      "recorded_at": "2026-07-21T14:36:40.008Z"
+    },
+    {
+      "event_id": "90494393-1e5f-45c7-99fc-026e98c6c36f",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Closed registry, typed results, authoritative HEAD, profile separation, and fail-closed invariants align across docs, code, and tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-87434439",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/transcript-87434439.md"
+      },
+      "head_commit": "874344394f6da1f3263176f7cd58a0d289a5b776",
+      "recorded_at": "2026-07-21T14:36:40.350Z"
+    },
+    {
+      "event_id": "ab9e36f7-2b20-41a4-94d7-6f2ff5e1eb33",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Orchestrator, composition root, existing owners, and deferred production connectors have explicit coherent boundaries.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-87434439",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/transcript-87434439.md"
+      },
+      "head_commit": "874344394f6da1f3263176f7cd58a0d289a5b776",
+      "recorded_at": "2026-07-21T14:36:40.716Z"
+    },
+    {
+      "event_id": "1cd22bd2-1826-404f-9f63-aa2dcb6ec728",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Forged input, unknown profile or action, missing runner, policy denial, HEAD spoof, and terminal stops are tested safely.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-87434439",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/transcript-87434439.md"
+      },
+      "head_commit": "874344394f6da1f3263176f7cd58a0d289a5b776",
+      "recorded_at": "2026-07-21T14:36:41.035Z"
+    },
+    {
+      "event_id": "25a4f469-d310-4f47-b83f-183627fff6e3",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-HEAD unit, integration, E2E, typecheck, and version-stamp evidence is present.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-87434439",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/transcript-87434439.md"
+      },
+      "head_commit": "874344394f6da1f3263176f7cd58a0d289a5b776",
+      "recorded_at": "2026-07-21T14:36:41.416Z"
+    },
+    {
+      "event_id": "59bd7671-6c3b-4dcb-bed5-bbd988531c90",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Legacy behavior is compatible while CLI options, invalid input rejection, and disable fallback are tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-87434439",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/transcript-87434439.md"
+      },
+      "head_commit": "874344394f6da1f3263176f7cd58a0d289a5b776",
+      "recorded_at": "2026-07-21T14:36:41.753Z"
+    },
+    {
+      "event_id": "e571f2b4-6cff-439d-a77a-52073e853c5e",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change is one autonomous DAG composition-port contract; production connectors and later closure are separate child Stories.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-87434439",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/transcript-87434439.md"
+      },
+      "head_commit": "874344394f6da1f3263176f7cd58a0d289a5b776",
+      "recorded_at": "2026-07-21T14:36:42.149Z"
+    },
+    {
+      "event_id": "200b1015-b398-4627-9e1e-f0e7f2afaeec",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Controller input, state delta bounds, and forbidden raw context are validated and rejected safely.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-87434439",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/transcript-87434439.md"
+      },
+      "head_commit": "874344394f6da1f3263176f7cd58a0d289a5b776",
+      "recorded_at": "2026-07-21T14:36:42.556Z"
+    },
+    {
+      "event_id": "e9aba2cf-eee1-4181-bf3f-847124ee48e5",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Missing or unavailable owners cannot fabricate success and stop with a typed runtime state.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-87434439",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/transcript-87434439.md"
+      },
+      "head_commit": "874344394f6da1f3263176f7cd58a0d289a5b776",
+      "recorded_at": "2026-07-21T14:36:42.913Z"
+    },
+    {
+      "event_id": "2a7e5cf9-8f39-497c-a42c-d531ccb531bd",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "final_prepare is restricted to current-HEAD Gate SSOT and journals bounded evidence references.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-87434439",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/transcript-87434439.md"
+      },
+      "head_commit": "874344394f6da1f3263176f7cd58a0d289a5b776",
+      "recorded_at": "2026-07-21T14:36:43.299Z"
+    },
+    {
+      "event_id": "50c9eda4-957e-49f2-986e-d220dfbfb90b",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Terminal transitions, resume cursor, HEAD rebinding, and idempotency are covered by contract and replay tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-87434439",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/transcript-87434439.md"
+      },
+      "head_commit": "874344394f6da1f3263176f7cd58a0d289a5b776",
+      "recorded_at": "2026-07-21T14:36:43.652Z"
+    },
+    {
+      "event_id": "1127fec5-6f52-4bee-ac4b-b92f2f360c60",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story intent is realized by the closed DAG and guarded pr_ready target without broadening merge or waiver authority.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "1b2cd266d928b0460e42dece2ad8c6281fb4489c",
+      "recorded_at": "2026-07-21T16:52:40.489Z"
+    },
+    {
+      "event_id": "16d55b5d-08e9-4b8c-80bf-74ac6df12938",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current runtime paths were inspected through focused workflow replay and persisted Run and Portfolio behavior at final HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "1b2cd266d928b0460e42dece2ad8c6281fb4489c",
+      "recorded_at": "2026-07-21T16:52:41.136Z"
+    },
+    {
+      "event_id": "41feaaa7-1778-49c0-88d6-6e7d040afec8",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Closed action types, authoritative HEAD, owner validation, typed stops, and one Story per Run are enforced in code and tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "1b2cd266d928b0460e42dece2ad8c6281fb4489c",
+      "recorded_at": "2026-07-21T16:52:41.473Z"
+    },
+    {
+      "event_id": "38c0037d-32d7-46b7-8dec-e1e765f6c0b0",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Merge, waiver, deploy, arbitrary shell, and production connector effects remain outside the autonomous action boundary.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "1b2cd266d928b0460e42dece2ad8c6281fb4489c",
+      "recorded_at": "2026-07-21T16:52:41.810Z"
+    },
+    {
+      "event_id": "5621a3a1-f35a-4a87-84b8-0fec021f2c19",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed state, unknown owner, dependency denial, provider absence, lock contention, and stale HEAD paths are explicitly tested fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "1b2cd266d928b0460e42dece2ad8c6281fb4489c",
+      "recorded_at": "2026-07-21T16:52:42.294Z"
+    },
+    {
+      "event_id": "4374711b-6f64-47ba-865f-cf7011684bd3",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-head focused tests, typecheck, build stamp, traceability, and independent reviews provide direct completion evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "1b2cd266d928b0460e42dece2ad8c6281fb4489c",
+      "recorded_at": "2026-07-21T16:52:42.922Z"
+    },
+    {
+      "event_id": "ec2c51b5-66fb-4770-995b-0912d9559f02",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI profile and disable fallback are additive while legacy behavior and closed typed output remain compatible.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "1b2cd266d928b0460e42dece2ad8c6281fb4489c",
+      "recorded_at": "2026-07-21T16:52:43.567Z"
+    },
+    {
+      "event_id": "6749bfbd-c20e-4e3f-9db9-c07eea41ebd1",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff is one coherent autonomous DAG closure with explicit deferred connector boundary and linked roadmap context.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "1b2cd266d928b0460e42dece2ad8c6281fb4489c",
+      "recorded_at": "2026-07-21T16:52:44.048Z"
+    },
+    {
+      "event_id": "7bb29337-d4e9-4469-88bc-7349efc66ee4",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed JSON and unsupported persisted state are rejected with typed failures rather than normalized silently.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "1b2cd266d928b0460e42dece2ad8c6281fb4489c",
+      "recorded_at": "2026-07-21T16:52:44.720Z"
+    },
+    {
+      "event_id": "dd6ff1a0-68bd-4aa4-b0fe-1759b456e992",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Missing runner or provider produces a typed stop and cannot advance the DAG or report pr_ready.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "1b2cd266d928b0460e42dece2ad8c6281fb4489c",
+      "recorded_at": "2026-07-21T16:52:45.171Z"
+    },
+    {
+      "event_id": "84acccb0-e03f-44cb-a959-8a5e6f47918a",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final prepare remains the authority and evidence or review lifecycle regressions cannot manufacture pr_ready.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "1b2cd266d928b0460e42dece2ad8c6281fb4489c",
+      "recorded_at": "2026-07-21T16:52:45.660Z"
+    },
+    {
+      "event_id": "2ba7b245-c2bd-4319-885d-837926c2df07",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "State transitions, resume suffix, terminal handling, and lock recovery are validated against stale or over-green states.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "1b2cd266d928b0460e42dece2ad8c6281fb4489c",
+      "recorded_at": "2026-07-21T16:52:46.021Z"
+    },
+    {
+      "event_id": "21556401-2a57-4f6a-a18a-3f3edec4e219",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review found spine:intent sound against the actual implementation, architecture, specification, focused tests, and authority-only final delta; no unsupported premise or uncovered regression was identified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "b2ca52a5-revalidation"
+      },
+      "head_commit": "b2ca52a5b54de3bb1515fc7bbe7771b00e7f306d",
+      "recorded_at": "2026-07-21T17:11:09.904Z"
+    },
+    {
+      "event_id": "40186b21-29f6-45bf-8b5e-504fa090b800",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review found spine:current_reality sound against the actual implementation, architecture, specification, focused tests, and authority-only final delta; no unsupported premise or uncovered regression was identified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "b2ca52a5-revalidation"
+      },
+      "head_commit": "b2ca52a5b54de3bb1515fc7bbe7771b00e7f306d",
+      "recorded_at": "2026-07-21T17:11:11.387Z"
+    },
+    {
+      "event_id": "7a3aea8a-d061-4165-8c3e-5a44a2eea762",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review found spine:invariants sound against the actual implementation, architecture, specification, focused tests, and authority-only final delta; no unsupported premise or uncovered regression was identified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "b2ca52a5-revalidation"
+      },
+      "head_commit": "b2ca52a5b54de3bb1515fc7bbe7771b00e7f306d",
+      "recorded_at": "2026-07-21T17:11:12.959Z"
+    },
+    {
+      "event_id": "11ad6b79-4e7c-4fba-a142-064ce28913d4",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review found spine:boundaries sound against the actual implementation, architecture, specification, focused tests, and authority-only final delta; no unsupported premise or uncovered regression was identified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "b2ca52a5-revalidation"
+      },
+      "head_commit": "b2ca52a5b54de3bb1515fc7bbe7771b00e7f306d",
+      "recorded_at": "2026-07-21T17:11:14.465Z"
+    },
+    {
+      "event_id": "41ffcc15-9a94-4c5c-9b4f-3634ed7a6437",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review found spine:failure_modes sound against the actual implementation, architecture, specification, focused tests, and authority-only final delta; no unsupported premise or uncovered regression was identified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "b2ca52a5-revalidation"
+      },
+      "head_commit": "b2ca52a5b54de3bb1515fc7bbe7771b00e7f306d",
+      "recorded_at": "2026-07-21T17:11:15.533Z"
+    },
+    {
+      "event_id": "9826c32b-8547-4606-b674-37056c2d5707",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review found spine:done_evidence sound against the actual implementation, architecture, specification, focused tests, and authority-only final delta; no unsupported premise or uncovered regression was identified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "b2ca52a5-revalidation"
+      },
+      "head_commit": "b2ca52a5b54de3bb1515fc7bbe7771b00e7f306d",
+      "recorded_at": "2026-07-21T17:11:17.082Z"
+    },
+    {
+      "event_id": "6eb3a37f-04e4-4885-88bc-e9dc1672ad15",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review found axis:public_contract sound against the actual implementation, architecture, specification, focused tests, and authority-only final delta; no unsupported premise or uncovered regression was identified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "b2ca52a5-revalidation"
+      },
+      "head_commit": "b2ca52a5b54de3bb1515fc7bbe7771b00e7f306d",
+      "recorded_at": "2026-07-21T17:11:18.278Z"
+    },
+    {
+      "event_id": "e674a915-3d32-4ec7-b716-bb4b9f4ea72b",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review found axis:scope_reviewability sound against the actual implementation, architecture, specification, focused tests, and authority-only final delta; no unsupported premise or uncovered regression was identified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "b2ca52a5-revalidation"
+      },
+      "head_commit": "b2ca52a5b54de3bb1515fc7bbe7771b00e7f306d",
+      "recorded_at": "2026-07-21T17:11:19.926Z"
+    },
+    {
+      "event_id": "c1b10165-577d-4ba8-80e2-8ef123bd866d",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review found failure_mode:parse_failure sound against the actual implementation, architecture, specification, focused tests, and authority-only final delta; no unsupported premise or uncovered regression was identified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "b2ca52a5-revalidation"
+      },
+      "head_commit": "b2ca52a5b54de3bb1515fc7bbe7771b00e7f306d",
+      "recorded_at": "2026-07-21T17:11:21.761Z"
+    },
+    {
+      "event_id": "71e897c7-02a8-4ed4-afc7-30f0608d39d8",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review found failure_mode:provider_failure sound against the actual implementation, architecture, specification, focused tests, and authority-only final delta; no unsupported premise or uncovered regression was identified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "b2ca52a5-revalidation"
+      },
+      "head_commit": "b2ca52a5b54de3bb1515fc7bbe7771b00e7f306d",
+      "recorded_at": "2026-07-21T17:11:22.999Z"
+    },
+    {
+      "event_id": "d4d18383-77a5-4836-aca8-2c27fdce8d62",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review found failure_mode:evidence_lifecycle_regression sound against the actual implementation, architecture, specification, focused tests, and authority-only final delta; no unsupported premise or uncovered regression was identified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "b2ca52a5-revalidation"
+      },
+      "head_commit": "b2ca52a5b54de3bb1515fc7bbe7771b00e7f306d",
+      "recorded_at": "2026-07-21T17:11:24.288Z"
+    },
+    {
+      "event_id": "b1a55cbc-7333-4b8f-aa88-52fa3cbe5084",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-HEAD review found failure_mode:workflow_state_regression sound against the actual implementation, architecture, specification, focused tests, and authority-only final delta; no unsupported premise or uncovered regression was identified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/adjudication_audit",
+        "session_ref": "b2ca52a5-revalidation"
+      },
+      "head_commit": "b2ca52a5b54de3bb1515fc7bbe7771b00e7f306d",
+      "recorded_at": "2026-07-21T17:11:26.258Z"
+    },
+    {
+      "event_id": "d5d4eabe-e081-4678-9418-3cb431e310cb",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The implementation preserves the stated guarded autonomous execution intent.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:47:55.370Z"
+    },
+    {
+      "event_id": "0a1f26c6-326f-40b4-ab11-dab942656df0",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current runtime ownership and repository authority are represented accurately.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:47:56.093Z"
+    },
+    {
+      "event_id": "4e112d97-292c-44fc-842b-cf6c69d8ad00",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Closed registry, fail-closed execution, and merge/waiver exclusions remain invariant.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:47:56.985Z"
+    },
+    {
+      "event_id": "149b6de5-53d6-4216-b1a5-733a38422d23",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Composition ports and deferred production connectors have explicit ownership boundaries.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:47:57.961Z"
+    },
+    {
+      "event_id": "e4a0b769-3dda-4df3-8a15-a1ff0fbe54dc",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Typed stops cover dependency, policy, provider, parse, HEAD, and owner failures.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:47:58.709Z"
+    },
+    {
+      "event_id": "c6924dce-a4c4-43b1-9f7f-1894566b1249",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-HEAD 199/199 tests and bound review evidence substantiate completion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:47:59.636Z"
+    },
+    {
+      "event_id": "74967932-53a9-4672-b638-ab9806480110",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Public Action DAG and compatibility contracts are explicit and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:48:00.715Z"
+    },
+    {
+      "event_id": "5993a44c-9b35-42ff-be5d-5f549d38d685",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story remains reviewable through focused docs, implementation surfaces, and contract tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:48:01.721Z"
+    },
+    {
+      "event_id": "271e218f-3c6f-4495-9018-cd7537668a2e",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Parse failures are classified and fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:48:02.728Z"
+    },
+    {
+      "event_id": "87eda77b-d147-4de7-8d0b-14881a7a549f",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Provider failures produce typed stops without unsafe continuation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:48:03.783Z"
+    },
+    {
+      "event_id": "59139f74-4296-4a61-845b-77378dbbd96e",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Evidence lifecycle regression is covered by current-HEAD validation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:48:05.051Z"
+    },
+    {
+      "event_id": "6e9021ce-4732-4f6e-a8c9-0c9b3a092cf6",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Workflow state regression is covered by current-HEAD validation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:48:05.914Z"
+    }
+  ]
+}

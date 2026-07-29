@@ -1,0 +1,176 @@
+{
+  "schema_version": "0.1.0",
+  "review_type": "implementation:code_spec_alignment",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "head_sha": "926227f945878299770448a03966c17dfa70158d",
+  "status": "pass",
+  "summary": "All six Spec clauses are implemented by the referenced current-HEAD production boundaries and are backed by positive and fail-closed tests. The public guarded command selects the closed seven-action DAG, implementation and repair require a real managed-worktree HEAD advance, typed stops persist and resume without over-green continuation, needs_changes replays verification and independent review on the repaired HEAD, and only final_prepare can return pr_ready after a current-HEAD Gate prepare reports ready. PR create, merge, waiver, deploy, publish, and other material external effects remain outside autonomous authority.",
+  "inspection_summary": {
+    "clauses_reviewed": 6,
+    "clauses_passed": 6,
+    "code_refs_reviewed": 16,
+    "missing_code_refs": [],
+    "findings_count": 0,
+    "production_owner": "src/one-command-pr-ready-closure.js#createOneCommandPrReadyActionOwners",
+    "composition_owner": "src/guarded-run-session.js#createGuardedRunSession",
+    "public_entrypoint": "src/cli.js#runCli"
+  },
+  "judgment_delta": {
+    "initial": "Needs direct inspection because the Spec points partly to composition seams while the new policy implementation is owned by src/one-command-pr-ready-closure.js, and because predecessor runtime/review files also appear in the branch diff.",
+    "final": "Pass. The referenced composition seams resolve to the new run-session policy owner, all anchors exist, predecessor connector and independent-review ownership is reused rather than duplicated, and executable tests cover both successful convergence and negative authority/freshness paths."
+  },
+  "clause_assessments": [
+    {
+      "clause_id": "C-OCR-1",
+      "status": "pass",
+      "assessment": "The canonical --until pr-ready guarded request selects the autonomous profile, whose exact persisted action order is diagnose, prepare_artifacts, implement, verify, review, repair, final_prepare. Default provider order is codex then claude-code; explicit profile and provider choices remain represented in Run state and resolution metadata.",
+      "code_evidence": [
+        "src/guarded-run-session.js#resolveActionProfileDecision",
+        "src/safe-action-orchestrator.js#buildSafeActionPlan",
+        "src/one-command-pr-ready-closure.js#ONE_COMMAND_DEFAULT_PROVIDERS",
+        "src/cli.js#actionProfile"
+      ],
+      "test_evidence": [
+        "test/one-command-pr-ready-closure.test.js: default provider order and objectives",
+        "test/guarded-run-session.test.js: public guarded default, compatibility profile, and bilingual help",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts: S-001"
+      ]
+    },
+    {
+      "clause_id": "INV-OCR-2",
+      "status": "pass",
+      "assessment": "runSafeActionPlan rejects pr_ready from every autonomous action except final_prepare. The production final_prepare owner compares prepared HEAD with authoritative Run HEAD and requires gate_status.ready_for_pr_create=true; injected owners receive the same current-HEAD wrapper.",
+      "code_evidence": [
+        "src/safe-action-orchestrator.js#runSafeActionPlan",
+        "src/guarded-run-session.js#buildActionRunners",
+        "src/one-command-pr-ready-closure.js#bindCurrentHeadFinalPrepare"
+      ],
+      "test_evidence": [
+        "test/one-command-pr-ready-closure.test.js: current-HEAD verification and final-prepare outcomes",
+        "test/guarded-run-session.test.js: only current-head Gate readiness reaches pr_ready",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts: S-001 final repaired-HEAD preparation"
+      ]
+    },
+    {
+      "clause_id": "INV-OCR-3",
+      "status": "pass",
+      "assessment": "AUTONOMOUS_REGISTRY contains no PR-create, merge, waiver, deploy, publish, or external-effect action. Human-decision validation rejects critical waiver authority, and runtime objectives explicitly prohibit these operations. CLI help routes PR creation and merge to separate human commands.",
+      "code_evidence": [
+        "src/safe-action-orchestrator.js#AUTONOMOUS_REGISTRY",
+        "src/human-decision-checkpoint.js#createHumanDecision",
+        "src/one-command-pr-ready-closure.js#buildImplementationObjective",
+        "src/cli.js"
+      ],
+      "test_evidence": [
+        "test/one-command-pr-ready-closure.test.js: every external authority seam is rejected without invocation",
+        "test/guarded-run-session.test.js: source surface excludes waiver and merge imports",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts: S-005 forbidden action assertions"
+      ]
+    },
+    {
+      "clause_id": "S-OCR-4",
+      "status": "pass",
+      "assessment": "The Run session persists typed stops and an exact resume cursor, validates the bounded seven-field human decision, journals the accepted answer and reflected_in paths, and re-enters prepare_artifacts. Cancellation commits terminal authority before containment and stale dispatch completion cannot resume the suffix. No-progress, verification, quota, timeout, CI-pending, malformed-state, and review-convergence failures are fail-closed.",
+      "code_evidence": [
+        "src/guarded-run-session.js#createGuardedRunSession",
+        "src/human-decision-checkpoint.js#createHumanDecision",
+        "src/safe-action-orchestrator.js#runSafeActionPlan",
+        "src/guarded-stop-codes.js#RECOVERABLE_RUNTIME_STOP_CODES",
+        "src/one-command-pr-ready-closure.js#runtimeActionResult"
+      ],
+      "test_evidence": [
+        "test/guarded-run-session.test.js: cancellation race, typed resume, malformed decision, timeout, and persisted-state cases",
+        "test/one-command-pr-ready-closure.test.js: bounded decision, no-progress, verification, timeout, and convergence cases",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts: S-002 and S-004"
+      ]
+    },
+    {
+      "clause_id": "S-OCR-5",
+      "status": "pass",
+      "assessment": "Production runtime dispatch remains owned by createProductionRuntimeConnectors, while review remains owned by createGuardedIndependentReviewRunner with distinct implementation/reviewer provenance and read-only authorization. Missing capability stops before mutation with provider, capability, and recovery context. needs_changes triggers a real repair HEAD advance and replay from verify; repaired HEAD invalidates prior review checkpoints.",
+      "code_evidence": [
+        "src/agent-runtime-connectors.js#createProductionRuntimeConnectors",
+        "src/independent-review-orchestrator.js#createGuardedIndependentReviewRunner",
+        "src/one-command-pr-ready-closure.js#createOneCommandPrReadyActionOwners"
+      ],
+      "test_evidence": [
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts: S-001 and S-002",
+        "test/independent-review-orchestrator.test.js: repaired HEAD invalidates prior operation checkpoint",
+        "test/guarded-run-session.test.js: production independent-review lifecycle and repaired-HEAD rebind"
+      ]
+    },
+    {
+      "clause_id": "S-OCR-6",
+      "status": "pass",
+      "assessment": "The closure owner composes the merged runtime and review modules rather than defining replacement connectors or review lifecycle services. CI import, merge execution, and canonical audit promotion remain separate explicit post-PR owners and are not members of the autonomous action registry. Story and roadmap evidence treats PR #372, #377, and #382 as predecessor delivery.",
+      "code_evidence": [
+        "src/guarded-run-session.js#createGuardedRunSession",
+        "src/ci-evidence.js#importCiEvidence",
+        "src/merge-manager.js#executeMerge",
+        "src/canonical-audit.js#promoteCanonicalAuditArtifacts"
+      ],
+      "test_evidence": [
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts: S-005",
+        "test/guarded-run-session.test.js: closure source-surface authority regression",
+        "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md: OCR-T-5"
+      ]
+    }
+  ],
+  "critical_checks": [
+    {
+      "id": "real_head_advance",
+      "status": "pass",
+      "reason": "Implementation, missing-artifact creation, and repair pass requireHeadAdvance=true. A completed runtime result whose authoritative output HEAD equals input HEAD stops as no_progress; a reported HEAD different from the repository-resolved HEAD is rejected."
+    },
+    {
+      "id": "typed_stops_and_resume",
+      "status": "pass",
+      "reason": "Runtime unavailable, auth, permission, quota, timeout, verification failure, no progress, CI pending, review block, malformed decision, and cancellation are represented as typed non-green states. Resume uses persisted Run authority, retry policy, pending decision, and action cursor."
+    },
+    {
+      "id": "managed_worktree_authority",
+      "status": "pass",
+      "reason": "Runtime requirements bind managed_worktree to execution_context.root_realpath. Completion is rebound through resolveCurrentHead, and mismatched reported HEAD is fail-closed."
+    },
+    {
+      "id": "review_repair_rebind",
+      "status": "pass",
+      "reason": "needs_changes alone authorizes bounded automated repair. Successful repair advances HEAD and requests replay_from_action_id=verify, causing verification, fresh independent review, and final preparation on the repaired surface."
+    },
+    {
+      "id": "current_head_pr_prepare",
+      "status": "pass",
+      "reason": "Only final_prepare can emit pr_ready, and both the production owner and injected-owner wrapper require prepared_head_sha to equal authoritative current_head_sha plus ready_for_pr_create=true."
+    },
+    {
+      "id": "human_only_external_authority",
+      "status": "pass",
+      "reason": "PR create, merge, waiver, deploy, publish, and material external effects are absent from the autonomous registry and explicitly prohibited in delegated runtime objectives. CI import and execute merge remain separate commands."
+    }
+  ],
+  "findings": [],
+  "inspection_inputs": [
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+    "src/one-command-pr-ready-closure.js",
+    "src/guarded-run-session.js",
+    "src/safe-action-orchestrator.js",
+    "src/human-decision-checkpoint.js",
+    "src/guarded-stop-codes.js",
+    "src/agent-runtime-connectors.js",
+    "src/independent-review-orchestrator.js",
+    "src/ci-evidence.js",
+    "src/merge-manager.js",
+    "src/canonical-audit.js",
+    "src/cli.js",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/guarded-run-session.test.js",
+    "test/independent-review-orchestrator.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    ".vibepro/qa/verification-evidence.json",
+    ".vibepro/qa/adjudication-judgment-926227f9.json",
+    ".vibepro/qa/conformance-926227f9.json"
+  ]
+}

@@ -1,0 +1,212 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "updated_at": "2026-07-24T14:59:26.338Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "The exact-head delta in `src/execution-state.js` resolves managed and source selected-Story PR routes from the schema 0.2 canonical template and removes the synthetic ownership probe. The OCR-S-9 E2E plus artifact-routing and execution-state tests verify post-merge sync for both states, rejection of unregistered fallback/probe routes, compatibility for registered legacy routes, and fail-closed rollback.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:26.336Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "The Story and Architecture explicitly treat merged PRs #372, #377, and #382 as predecessors and exclude reimplementation of connectors and independent-review orchestration. Git object `926227f` shows both the selected Story and parent roadmap were active in the initial candidate; `.vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-merge.json` separately records later PR #385 merge/CI closure, preserving the pre-PR criterion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:26.078Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "The dedicated production-shaped S-001 fixture reaches trusted PR-ready after implementation, verification, independent review, repair, and evidence rebind. The real dogfood Run `run-20260724T130916Z-7c409e4b` demonstrates the permitted alternative contractual typed stop (`orphaned_agent`, followed by bounded max-iterations recovery guidance) against an actual provider dispatch.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:25.784Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "The available-capability S-001 path proves a production-shaped real git implementation commit and a distinct independent review/repair lifecycle. The persisted dogfood Run at `.vibepro/executions/story-vibepro-one-command-pr-ready-closure/runs/run-20260724T130916Z-7c409e4b/state.json` records the real Codex provider identity/capability and a typed `orphaned_agent` stop with resume guidance without an output-HEAD mutation; exact-head tests cover both available and incapable branches.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:25.556Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "The exact-head targeted suite passes the S-002/S-004 matrix for success, resume, human decision, verification failure, repair convergence, no-progress, quota, timeout, CI pending, and cancellation. `.vibepro/qa/sequence-targeted-e3c7d93b.json` records 124 tests, 124 pass, 0 fail.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:25.313Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "INV-OCR-3 and the Architecture's Action Ownership table keep merge, critical waiver, and material external side effects outside autonomous execution. The S-005 E2E verifies the explicit external-authority checkpoint, while the command stops at PR-ready and never invokes merge or waiver.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:25.055Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "INV-OCR-2 and the final_prepare implementation require the current-HEAD `pr-prepare.json` readiness bit before entering `pr_ready`. The S-001 E2E asserts the persisted final prepare is bound to the resulting HEAD and has `ready_for_pr_create=true`; stale or non-ready prepare cases remain typed stops in the exact-head 124/124 suite.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:24.701Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "The production-owner E2E scenario `S-001 public guarded Run closes an available provider path through repair to PR-ready` exercises a real managed git worktree, implementation commit, verification, independent needs_changes review, repair commit, re-verification, re-review, and final prepare. The incapable-provider and typed pre-mutation paths are covered by the same exact-head targeted suite, which passed 124/124 tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:24.396Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "The Story, Architecture, and C-OCR-1 define the public command `vibepro execute run . --story-id <id> --until pr-ready --autonomy guarded`, its guarded authority boundary, and typed stops. The exact-head targeted run in `.vibepro/qa/sequence-targeted-e3c7d93b.json` passes the public-CLI scenarios, including the help/contract assertions that reject the obsolete 'does not start agent' description.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/review_arch_e3c7",
+        "session_ref": "/root/review_arch_e3c7"
+      },
+      "head_commit": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "recorded_at": "2026-07-24T14:59:24.135Z"
+    },
+    {
+      "clause_id": "OCR-S-8",
+      "verdict": "demonstrated",
+      "reason": "Current canonical Story, Architecture, and Spec now define only pre-PR staged closure as OCR-S-8: PR #372, #377, and #382 are the predecessor SSOT evidence; the closure Story and parent roadmap are both active at this initial candidate; and source/topology inspection shows composition of, not replacement for, connector and review owners. PR creation, CI import, the focused completion commit, rebind, rereview, CI re-import, execute merge, and post-merge confirmation are explicitly segregated into a Post-PR Delivery Closure Record and are not pre-PR prerequisites. This removes the previous circular acceptance premise.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:36.337Z"
+    },
+    {
+      "clause_id": "OCR-S-7",
+      "verdict": "demonstrated",
+      "reason": "The Story's real CLI dogfood Run is a contract-permitted terminal: it remains in one persisted Run and stops before implementation mutation with runtime_unavailable, the selected claude-code provider, missing workspace_write capability, and the recovery boundary. The dedicated fixture independently reaches pr_ready through the public production-owner path.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:36.190Z"
+    },
+    {
+      "clause_id": "OCR-S-6",
+      "verdict": "demonstrated",
+      "reason": "The available-capability branch is now regression-protected by the public-CLI production-owner S-001 path: real implementation and repair commits are recorded, review runs use distinct read-only identities and closed lifecycles, and review provenance is rebound to the live current Run/HEAD immediately before dispatch. The incapable-provider alternative is independently demonstrated by real CLI dogfood that persisted runtime_unavailable, provider, missing workspace_write capability, and a same-Run recovery command before mutation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:36.055Z"
+    },
+    {
+      "clause_id": "OCR-S-5",
+      "verdict": "demonstrated",
+      "reason": "The exact-head E2E and focused suites exercise success, restart/resume, seven-field human decision, verification failure, needs_changes repair convergence, no progress, quota, timeout, CI pending, cancellation, and stale-dispatch containment. The E2E artifact is 5/5 and the targeted validation is 287/287 at the adjudicated HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:35.922Z"
+    },
+    {
+      "clause_id": "OCR-S-4",
+      "verdict": "demonstrated",
+      "reason": "The autonomous plan ends at final_prepare and has no pr_create, merge, waiver, deploy, or publication node. Material ambiguity is transported as a bounded Human Decision and persisted only by guarded-run-session. Public help and executable S-005 assertions retain PR creation, merge, waiver, and material external effects as explicit human operations.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:35.790Z"
+    },
+    {
+      "clause_id": "OCR-S-3",
+      "verdict": "demonstrated",
+      "reason": "The production final_prepare owner compares the prepared artifact's Git HEAD with the real managed-worktree HEAD and returns pr_ready only for gate_status.ready_for_pr_create=true. Stale-head, CI-pending, forged-ready, and positive current-head cases are covered by current-HEAD focused tests; S-001 confirms the persisted final prepare is completed on the repaired HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:35.658Z"
+    },
+    {
+      "clause_id": "OCR-S-2",
+      "verdict": "demonstrated",
+      "reason": "Scenario S-001 now enters through the public runCli execute-run command and supplies no custom implement, repair, or review action runners. The same production run-session owners selected by the CLI create two real managed-worktree Git commits, run verification twice, dispatch the shipped independent-review lifecycle twice with needs_changes then pass, and finish final_prepare on the repaired HEAD. The exact-head E2E record reports all seven required observations true and 5/5 passing.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:35.520Z"
+    },
+    {
+      "clause_id": "OCR-S-1",
+      "verdict": "demonstrated",
+      "reason": "The current public English and Japanese execute help describes a resumable guarded Run, the autonomous Action DAG default, typed stopping boundaries, and the explicit human-only PR-create, merge, waiver, and material-external-effect boundary. The prior claim that the command does not start an agent is absent, and public-help regression tests verify both locales.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/closure_adjudicate_3da7",
+        "session_ref": ".vibepro/qa/adjudication-3da7bb24.json"
+      },
+      "head_commit": "3da7bb249c8ac1212f53f26bf06432fb1d7d6071",
+      "recorded_at": "2026-07-23T21:41:35.383Z"
+    }
+  ]
+}

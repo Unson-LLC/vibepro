@@ -3,6 +3,7 @@ import { access, readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import { discoverPrArtifactStoryIds, readArtifactRoutingConfig, resolveGateArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 
 const execFileAsync = promisify(execFile);
@@ -126,6 +127,17 @@ async function collectHumanArtifactFiles(dir) {
 }
 
 async function scanStoryGateArtifacts(repoRoot, workspaceDir, options = {}) {
+  if (options.storyId) {
+    return scanResolvedStoryGateArtifacts(repoRoot, options.storyId);
+  }
+  const configuredStoryIds = await readConfiguredStoryIds(repoRoot);
+  const routedStoryIds = await discoverPrArtifactStoryIds(repoRoot);
+  const storyIds = [...new Set([...configuredStoryIds, ...routedStoryIds])];
+  if (storyIds.length > 0) {
+    return (await Promise.all(storyIds.map((storyId) => scanResolvedStoryGateArtifacts(repoRoot, storyId)))).flat();
+  }
+  const { routing } = await readArtifactRoutingConfig(repoRoot);
+  if (routing?.artifacts?.pr) return [];
   const prDir = path.join(workspaceDir, 'pr');
   if (!(await exists(prDir))) return [];
   const entries = await readdir(prDir, { withFileTypes: true });
@@ -144,7 +156,7 @@ async function scanStoryGateArtifacts(repoRoot, workspaceDir, options = {}) {
     const hasGateDag = await exists(gateDagPath);
     const hasCreate = await exists(createPath);
     const hasSummaryGateContract = hasPrepare && !hasGateDag
-      ? await hasSummaryDepthFinalGateContract(storyPrDir, storyId)
+      ? await hasSummaryDepthFinalGateContract(repoRoot, storyId)
       : false;
     if (hasVerification && (!hasPrepare || (!hasGateDag && !hasSummaryGateContract))) {
       findings.push({
@@ -210,9 +222,82 @@ async function scanStoryGateArtifacts(repoRoot, workspaceDir, options = {}) {
   return findings;
 }
 
-async function hasSummaryDepthFinalGateContract(storyPrDir, storyId) {
-  const evidencePlan = await readJson(path.join(storyPrDir, 'evidence-plan.json'));
-  const decisionIndex = await readJson(path.join(storyPrDir, 'decision-index.json'));
+async function scanResolvedStoryGateArtifacts(repoRoot, storyId) {
+  const verificationPath = await resolvePrArtifactFile(repoRoot, storyId, 'verification-evidence.json');
+  const preparePath = await resolvePrArtifactFile(repoRoot, storyId, 'pr-prepare.json');
+  const gateDagPath = await resolveGateArtifactFile(repoRoot, storyId);
+  const createPath = await resolvePrArtifactFile(repoRoot, storyId, 'pr-create.json');
+  const storyPrDir = path.dirname(preparePath);
+  const hasVerification = await exists(verificationPath);
+  const hasPrepare = await exists(preparePath);
+  const hasGateDag = await exists(gateDagPath);
+  const hasCreate = await exists(createPath);
+  const findings = [];
+  const hasSummaryGateContract = hasPrepare && !hasGateDag
+    ? await hasSummaryDepthFinalGateContract(repoRoot, storyId)
+    : false;
+  if (hasVerification && (!hasPrepare || (!hasGateDag && !hasSummaryGateContract))) {
+    findings.push({
+      id: `self_dogfood.final_gate_missing.${storyId}`,
+      severity: 'high',
+      gate_effect: 'review',
+      story_id: storyId,
+      path: toWorkspaceRelative(repoRoot, storyPrDir),
+      detail: hasPrepare
+        ? 'Verification evidence and pr-prepare.json exist, but neither the configured gate artifact nor the summary-depth decision-index contract is present. Do not treat verify record as completion.'
+        : 'Verification evidence exists, but final pr-prepare/gate artifacts are missing. Do not treat verify record as completion.',
+      required_action: `Run \`vibepro pr prepare . --story-id ${storyId} --base <base-ref>\` after recording verification evidence.`
+    });
+  }
+  let gateDag = null;
+  if (hasGateDag) {
+    gateDag = await readJson(gateDagPath);
+    if (!gateDag) {
+      findings.push({
+        id: `self_dogfood.invalid_gate_dag.${storyId}`,
+        severity: 'critical', gate_effect: 'block', story_id: storyId,
+        path: toWorkspaceRelative(repoRoot, gateDagPath),
+        detail: 'The configured gate artifact is not valid JSON.',
+        required_action: 'Regenerate the gate artifact with vibepro pr prepare.'
+      });
+    } else if (gateDag.overall_status !== 'ready_for_review') {
+      findings.push({
+        id: `self_dogfood.unresolved_gate_dag.${storyId}`,
+        severity: isCriticalGateDag(gateDag) ? 'critical' : 'medium',
+        gate_effect: isCriticalGateDag(gateDag) ? 'block' : 'review',
+        story_id: storyId,
+        path: toWorkspaceRelative(repoRoot, gateDagPath),
+        detail: `Final configured gate artifact is ${gateDag.overall_status}; unresolved required gates remain.`,
+        required_action: 'Resolve required gates, split scope, or record an auditable non-critical waiver through vibepro pr create.'
+      });
+    }
+  }
+  if (hasCreate) {
+    const prCreate = await readJson(createPath);
+    const gate = prCreate?.execution?.gate_dag?.overall_status
+      ?? prCreate?.gate_dag?.overall_status
+      ?? gateDag?.overall_status
+      ?? null;
+    const gateOverrideAllowed = isAuditableGateOverride(prCreate?.execution?.gate_override)
+      || isAuditableGateOverride(prCreate?.gate_override);
+    if (gate && gate !== 'ready_for_review' && !gateOverrideAllowed) {
+      findings.push({
+        id: `self_dogfood.pr_create_without_gate_override.${storyId}`,
+        severity: 'critical',
+        gate_effect: 'block',
+        story_id: storyId,
+        path: toWorkspaceRelative(repoRoot, createPath),
+        detail: `PR create evidence exists while the configured gate artifact is ${gate} and no VibePro waiver was recorded.`,
+        required_action: 'Use vibepro pr create so unresolved gates and waiver reasons are captured.'
+      });
+    }
+  }
+  return findings;
+}
+
+async function hasSummaryDepthFinalGateContract(repoRoot, storyId) {
+  const evidencePlan = await readJson(await resolvePrArtifactFile(repoRoot, storyId, 'evidence-plan.json'));
+  const decisionIndex = await readJson(await resolvePrArtifactFile(repoRoot, storyId, 'decision-index.json'));
   if (!evidencePlan || !decisionIndex) return false;
   if (evidencePlan.evidence_depth !== 'summary' || decisionIndex.evidence_depth !== 'summary') return false;
   if (decisionIndex.story_id && decisionIndex.story_id !== storyId) return false;
@@ -308,6 +393,30 @@ function hasEscapedNewlinePrBody(body) {
 }
 
 async function findMatchingPrCreateEvidence(repoRoot, workspaceDir, currentPr, options = {}) {
+  if (options.storyId) {
+    const createPath = await resolvePrArtifactFile(repoRoot, options.storyId, 'pr-create.json');
+    if (!(await exists(createPath))) return null;
+    const prCreate = await readJson(createPath);
+    return isValidPrCreateEvidence(prCreate, currentPr) && matchesCurrentPr(prCreate, currentPr)
+      ? { story_id: options.storyId, path: toWorkspaceRelative(repoRoot, createPath), evidence: prCreate }
+      : null;
+  }
+  const configuredStoryIds = await readConfiguredStoryIds(repoRoot);
+  const routedStoryIds = await discoverPrArtifactStoryIds(repoRoot);
+  const storyIds = [...new Set([...configuredStoryIds, ...routedStoryIds])];
+  if (storyIds.length > 0) {
+    for (const storyId of storyIds) {
+      const createPath = await resolvePrArtifactFile(repoRoot, storyId, 'pr-create.json');
+      if (!(await exists(createPath))) continue;
+      const prCreate = await readJson(createPath);
+      if (isValidPrCreateEvidence(prCreate, currentPr) && matchesCurrentPr(prCreate, currentPr)) {
+        return { story_id: storyId, path: toWorkspaceRelative(repoRoot, createPath), evidence: prCreate };
+      }
+    }
+    return null;
+  }
+  const { routing } = await readArtifactRoutingConfig(repoRoot);
+  if (routing?.artifacts?.pr) return null;
   const prDir = path.join(workspaceDir, 'pr');
   if (!(await exists(prDir))) return null;
   const entries = await readdir(prDir, { withFileTypes: true });
@@ -323,6 +432,16 @@ async function findMatchingPrCreateEvidence(repoRoot, workspaceDir, currentPr, o
     }
   }
   return null;
+}
+
+async function readConfiguredStoryIds(repoRoot) {
+  try {
+    const config = await readJson(path.join(repoRoot, '.vibepro', 'config.json'));
+    return [...new Set((config?.brainbase?.stories ?? []).map((story) => story?.story_id ?? story?.id).filter(Boolean))];
+  } catch (error) {
+    if (error.code === 'ENOENT') return [];
+    throw error;
+  }
 }
 
 function isValidPrCreateEvidence(prCreate, currentPr) {

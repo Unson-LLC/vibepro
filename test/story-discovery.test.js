@@ -31,6 +31,22 @@ async function captureRunCli(args, options = {}) {
   return { ...result, stdout, stderr };
 }
 
+test('autonomous implementation closure exposes completed status in the canonical catalog and roadmap', async () => {
+  const repo = process.cwd();
+  const storyId = 'story-vibepro-autonomous-implementation-closure-roadmap';
+  const config = JSON.parse(await readFile(path.join(repo, '.vibepro', 'config.json'), 'utf8'));
+  const catalogStory = config.brainbase.stories.find((story) => story.story_id === storyId);
+  const roadmap = await readFile(
+    path.join(repo, 'docs', 'management', 'stories', 'active', `${storyId}.md`),
+    'utf8'
+  );
+
+  assert.equal(catalogStory?.status, 'completed');
+  assert.match(roadmap, /^status:\s*completed$/m);
+  assert.match(roadmap, /PR #385/);
+  assert.match(roadmap, /PR #386/);
+});
+
 test('inferSourceKind classifies docs/user_stories/* as story', () => {
   assert.equal(inferSourceKind('docs/user_stories/active/US-002.md'), 'story');
   assert.equal(inferSourceKind('docs/user_stories/US-002.md'), 'story');

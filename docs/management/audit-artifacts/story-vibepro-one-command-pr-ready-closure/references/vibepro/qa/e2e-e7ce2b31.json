@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "head_sha": "e7ce2b312147c3f10bd2c1b56b1586151cc2c51d",
+  "tests": 5,
+  "passed": 5,
+  "failed": 0,
+  "observed": {
+    "public_cli": true,
+    "production_action_owners": true,
+    "implementation_commit": true,
+    "independent_review_needs_changes": true,
+    "repair_commit": true,
+    "fresh_independent_review_pass": true,
+    "current_head_final_prepare": true,
+    "typed_stop_resume_matrix": true,
+    "pre_pr_predecessor_prs": [372, 377, 382],
+    "pre_pr_story_status": "active",
+    "pre_pr_roadmap_status": "active",
+    "forbidden_autonomous_actions_absent": ["pr_create", "merge", "waiver"]
+  },
+  "command": "node --test test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+}

@@ -23,7 +23,7 @@ test('story-vibepro-guarded-run-session-contract acceptance and scenario replay'
   assert.match(result.stdout, /# fail 0\b/, 'focused contract and process-replay suites must have no failures');
 
   const ac1 = 'AC-1 execute run creates a Run with run_id, story_id, target, and autonomy_mode; disabled managed-worktree mode uses the source repository as repository authority';
-  assert.match(result.stdout, /repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable/, ac1);
+  assert.match(result.stdout, /repository Run persists guarded defaults and repeated cancel is byte-stable/, ac1);
 
   const ac2 = 'AC-2 state persists status, stop_reason, attempt, iteration, budget, deadline, last_progress_at, current_head_sha, and pending_decision; malformed nullable fields and missing typed recovery reasons fail without mutation';
   assert.match(result.stdout, /nullable state unions reject canonical and predecessor values without mutation/, ac2);
@@ -72,7 +72,7 @@ test('story-vibepro-guarded-run-session-contract acceptance and scenario replay'
   assert.match(result.stdout, /existing mutation commits once across mirror failure and explicit repair/, scenario2);
 
   const scenario4 = 'S-004 watch returns authoritative ordered transitions and repeated cancellation is byte-for-byte unchanged after recognized migration';
-  assert.match(result.stdout, /repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable/, scenario4);
+  assert.match(result.stdout, /repository Run persists guarded defaults and repeated cancel is byte-stable/, scenario4);
 
   const scenario5 = 'S-005 recognized predecessor migration changes only schema_version, validates source-fallback authority, and synchronizes managed authority before mirror';
   assert.match(result.stdout, /migration changes schema only, corrupt state is quarantined, and future schema is preserved/, scenario5);

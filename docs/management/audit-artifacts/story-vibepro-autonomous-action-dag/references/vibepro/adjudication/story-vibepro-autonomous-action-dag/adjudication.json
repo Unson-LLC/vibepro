@@ -1,0 +1,176 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "updated_at": "2026-07-21T23:47:54.256Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Journal stores owner artifact references, missing owners stop as waiting_for_runtime, and production wiring remains outside this Story boundary.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:47:54.254Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "All seven nodes, typed terminal stops, transitions, and forbidden combinations are covered by current-HEAD tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:47:53.306Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Legacy profile, disable path, migration, requested/effective profile, and fallback reason persistence remain compatible.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:47:52.556Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Typed result vocabulary is enforced and only final_prepare may produce pr_ready from Gate SSOT.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:47:51.876Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Run/node/HEAD idempotency, checkpoint resume, authoritative repository HEAD checks, suffix rebind, and bounded Portfolio reacquire are demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:47:50.874Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Dependency, policy, unknown-action, and forged-plan paths stop before any runner executes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:47:50.079Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Closed seven-node Action registry and canonical runner map are implemented and exercised by current-HEAD contract tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudication_audit",
+        "session_ref": "/root/adjudication_audit"
+      },
+      "head_commit": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "recorded_at": "2026-07-21T23:47:48.970Z"
+    },
+    {
+      "clause_id": "AAD-S-7",
+      "verdict": "demonstrated",
+      "reason": "Independent adjudication found AAD-S-7 demonstrated by current-head implementation and verification evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:03.185Z"
+    },
+    {
+      "clause_id": "AAD-S-6",
+      "verdict": "demonstrated",
+      "reason": "Independent adjudication found AAD-S-6 demonstrated by current-head implementation and verification evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:02.992Z"
+    },
+    {
+      "clause_id": "AAD-S-5",
+      "verdict": "demonstrated",
+      "reason": "Independent adjudication found AAD-S-5 demonstrated by current-head implementation and verification evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:02.787Z"
+    },
+    {
+      "clause_id": "AAD-S-4",
+      "verdict": "demonstrated",
+      "reason": "Independent adjudication found AAD-S-4 demonstrated by current-head implementation and verification evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:02.586Z"
+    },
+    {
+      "clause_id": "AAD-S-3",
+      "verdict": "demonstrated",
+      "reason": "Independent adjudication found AAD-S-3 demonstrated by current-head implementation and verification evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:02.392Z"
+    },
+    {
+      "clause_id": "AAD-S-2",
+      "verdict": "demonstrated",
+      "reason": "Independent adjudication found AAD-S-2 demonstrated by current-head implementation and verification evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:02.197Z"
+    },
+    {
+      "clause_id": "AAD-S-1",
+      "verdict": "demonstrated",
+      "reason": "Independent adjudication found AAD-S-1 demonstrated by current-head implementation and verification evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "adjudicate-aad-final-light",
+        "session_ref": ".vibepro/adjudication/story-vibepro-autonomous-action-dag/agent-transcript-final.json"
+      },
+      "head_commit": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+      "recorded_at": "2026-07-21T10:37:02.016Z"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "status": "pass",
+  "summary": "PASS: Exact-HEAD Gate evidence is fresh, command-backed, and complete for this review stage. The runtime_contract inspection-path defect was corrected on unchanged HEAD e3c7d93b with real test paths, empty missing_files, strict-head binding, strong separate-session provenance, and a closed lifecycle. Remaining adjudication is intentional next-stage ordering, not an evidence defect.",
+  "inspection_summary": "Reviewed exact frozen HEAD e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01, all 18 changed paths, the current verification ledger and TAP artifacts, validation sequencing, architecture-boundary and runtime-contract review records, schema-v2/legacy/rollback implementation paths, conformance parity, the older pr-prepare snapshot, and adjudication stage state. Independently reran the five focused schema-v2, configured-route, legacy/rollback, and authority-sync tests: 5 passed, 0 failed. Verification is strict-head-bound and the latest full suite is 2028/2028, while current and origin/main conformance both remain 85 total / 65 undeclared / 9 budget / 11 orphan. Remediation verification confirmed the canonical runtime_contract result now records test/execution-state.test.js, test/one-command-pr-ready-closure.test.js, and test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts; all exist, their hashes are bound to unchanged HEAD, content_binding.missing_files is empty, and separate-session closed-lifecycle provenance remains strong. The older pr-prepare predates both the latest unit evidence and this remediation and must be regenerated after current gate roles and adjudication; that stage ordering does not weaken the inspected evidence.",
+  "inspection_evidence": ".vibepro/qa/review-gate-evidence-e3c7d93b.json",
+  "inspection_inputs": [
+    "AGENTS.md",
+    "skills/vibepro-human-review/SKILL.md",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-request-gate_evidence.md",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+    ".vibepro/validation-sequencing/story-vibepro-one-command-pr-ready-closure/state.json",
+    ".vibepro/qa/npm-test-e3c7d93b.json",
+    ".vibepro/qa/npm-test-e3c7d93b.tap",
+    ".vibepro/qa/sequence-targeted-e3c7d93b.json",
+    ".vibepro/qa/sequence-targeted-e3c7d93b.tap",
+    ".vibepro/qa/focused-e3c7d93b.tap",
+    ".vibepro/qa/e2e-one-command-e3c7d93b.tap",
+    ".vibepro/qa/integration-execution-state-e3c7d93b.tap",
+    ".vibepro/qa/integration-gate-ledger-e3c7d93b.tap",
+    ".vibepro/qa/typecheck-e3c7d93b.log",
+    ".vibepro/qa/docs-e3c7d93b.log",
+    ".vibepro/qa/review-architecture-boundary-e3c7d93b.json",
+    ".vibepro/qa/review-runtime-contract-e3c7d93b.json",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/architecture_spec/review-result-architecture_boundary.json",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/review-result-runtime_contract.json",
+    ".vibepro/qa/conformance-e3c7d93b-fresh.json",
+    ".vibepro/qa/conformance-origin-main-6222d118-fresh.json",
+    ".vibepro/adjudication/story-vibepro-one-command-pr-ready-closure/adjudication.json",
+    ".vibepro/adjudication/story-vibepro-one-command-pr-ready-closure/judgment-adjudication.json",
+    "git diff origin/main...e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+    "src/execution-state.js",
+    "test/execution-state.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "node --test --test-reporter=tap --test-name-pattern='schema 0.2|configured PR route|legacy.*route|artifact sync|post-merge authority sync' test/execution-state.test.js test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts (5 pass, 0 fail)",
+    "git diff --check",
+    "cmp -s CLAUDE.md AGENTS.md"
+  ],
+  "judgment_delta": [
+    "Initial concern: the latest pr-prepare reports parse_failure/schema_failure and common-judgment gaps -> those entries are not a current evidence contradiction because pr-prepare was written at 14:40:46Z before the strict-head unit evidence at 14:41:13Z and the sequence update at 14:41:15Z; rerun/adjudication stage ordering can recalculate them.",
+    "Initial concern: the route fix might prove only the schema-v2 happy path -> the production diff preserves the existing transaction and flat-route branch, the new catalog fixture would fail under the synthetic probe implementation, focused schema-v2/configured-route/rollback tests pass 5/5, targeted tests pass 124/124, and the full suite passes 2028/2028.",
+    "Initial concern: current-HEAD evidence might worsen architecture or omit output surfaces -> strict-head verification covers the selected route, managed/source state and PR artifact outputs, current and baseline conformance are identical at 85/65/9/11, and the architecture review records no CLI reverse dependency.",
+    "Initial expectation: the closed current-HEAD runtime_contract review would complete the evidence chain -> initial inspection found two nonexistent aliases in its inspection inputs and missing_files, so gate-evidence-runtime-review-missing-inputs correctly required remediation. On unchanged exact HEAD, the independent runtime reviewer directly reinspected the actual three test paths and re-recorded them strict-head; all exist, content_binding.missing_files is empty, the separate-session lifecycle remains closed, and the defect is resolved."
+  ],
+  "resolved_findings": [
+    {
+      "severity": "medium",
+      "id": "gate-evidence-runtime-review-missing-inputs",
+      "resolution": "Resolved on unchanged exact HEAD e3c7d93b: the independent runtime reviewer reinspected and recorded test/execution-state.test.js, test/one-command-pr-ready-closure.test.js, and test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts; canonical strict-head content_binding.missing_files is empty."
+    }
+  ],
+  "findings": [],
+  "reviewed_head": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01"
+}

@@ -1,0 +1,190 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-docs-only-evidence-profile",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "docs-only default depth is ordered above the pre-existing high-risk escalation, so a high-risk docs-only change drops from full to summary and becomes compaction-eligible, contradicting the architecture doc's risk-escalation-intact claim; docs/ build and deploy config (docs/.vitepress, docs/public/_headers) is classified as docs; .vibepro/config.json policy is filed as an evidence artifact without being surfaced; compact docs-only re-measurement is asserted but untested",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read the real diff (git diff origin/main...HEAD, 16 files) and the touched sources rather than generated .vibepro artifacts, then ran read-only probes of buildCanonicalEvidenceCostSummary with riskProfile security and with trigger signals, which showed evidence_depth summary where the pre-change formula yields full; confirmed merge authorization does not read diff stats, the budget-scope split is additive, and legacy bundles without budget_scope are handled on every read path",
+    "evidence": "src/evidence-cost-budget.js persistence-depth chain; src/docs-only-change.js:78-99 classifier ordering and :163-179 conservative branches; src/merge-manager.js:330-346,411-425 preconditions, :497-508 post-merge recovery, :1678-1750 containment loop; src/canonical-audit.js:1039-1046,1788,1807,1857; src/usage-report.js:1441-1442,1469-1471; probe output 'post-change: summary within_budget docs_only ratio=1.389' vs 'pre-change would be: full'; probe 'git rev-parse <missing-sha>^1' exit=128",
+    "inputs": [
+      "src/docs-only-change.js",
+      "src/evidence-cost-budget.js",
+      "src/evidence-depth-planner.js",
+      "src/canonical-audit.js",
+      "src/merge-manager.js",
+      "src/usage-report.js",
+      "test/docs-only-evidence-profile.test.js",
+      "test/merge-diff-base-preservation.test.js",
+      "test/canonical-audit-self-contained.test.js",
+      "docs/architecture/story-vibepro-docs-only-evidence-profile.md",
+      ".gitignore",
+      "package.json"
+    ]
+  },
+  "judgment_delta": [
+    "lean pass -> needs_changes because a read-only probe showed docs-only ordered above high-risk escalation downgrades full to summary for missing_artifact / waived-gate / security-profile docs changes, which no test covers and which the architecture doc explicitly denies"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb",
+    "expected_root": null,
+    "expected_head_sha": "51172db724956f490cfafb7b529b1e337ba3bc8b",
+    "current_head_sha": "51172db724956f490cfafb7b529b1e337ba3bc8b",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb",
+      "expected_root": null,
+      "expected_head_sha": "51172db724956f490cfafb7b529b1e337ba3bc8b",
+      "current_head_sha": "51172db724956f490cfafb7b529b1e337ba3bc8b",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-25T13:18:22.660Z",
+  "git_context": {
+    "head_sha": "51172db724956f490cfafb7b529b1e337ba3bc8b",
+    "current_branch": "claude/story-vibepro-docs-only-evidence-profile-scoped",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-25T13:18:22.585Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 12 file(s)",
+    "recorded_head_sha": "51172db724956f490cfafb7b529b1e337ba3bc8b",
+    "surface_files": [
+      {
+        "path": ".gitignore",
+        "sha256": "ab3a469fd81522bc8b9accec59724b0ba9ad19fa1c9ea6d1e3aa8b93e394f412",
+        "size": 159
+      },
+      {
+        "path": "docs/architecture/story-vibepro-docs-only-evidence-profile.md",
+        "sha256": "8b84ed52aca946ef2623e44c9fdb6b2a58a5fc19d817ec2045dfd8de1b068501",
+        "size": 7962
+      },
+      {
+        "path": "package.json",
+        "sha256": "bf64750f28d70b64ab051fdf87c04437aa840193129b06bacef36ebd50e4210e",
+        "size": 1748
+      },
+      {
+        "path": "src/canonical-audit.js",
+        "sha256": "a804cce6561d8670c0ea2b7395d447563fd417c180cdae9628aae8aa93153959",
+        "size": 117188
+      },
+      {
+        "path": "src/docs-only-change.js",
+        "sha256": "af61a130c024bc2cf012619f1e2575d4b44fdcb47e4969a5807993d1c5e0f669",
+        "size": 9399
+      },
+      {
+        "path": "src/evidence-cost-budget.js",
+        "sha256": "3077a2797fd1b09b4d6ba9f75676463fc9b60d721ac0ecfc5b603efdec5f9a7a",
+        "size": 16636
+      },
+      {
+        "path": "src/evidence-depth-planner.js",
+        "sha256": "1d705b5bb4060f380754f4cdc8839ad50db4ee2a24735ece2460635c188526b4",
+        "size": 17595
+      },
+      {
+        "path": "src/merge-manager.js",
+        "sha256": "91cba8ccbc8d8d27eb3a6160e30cc986bf5fca49172bf9b976c937dd11a06ea9",
+        "size": 81681
+      },
+      {
+        "path": "src/usage-report.js",
+        "sha256": "d4e1b0c638723bd0961fedcd4c820069876d72e7873066110ddd4cc5f039434a",
+        "size": 108047
+      },
+      {
+        "path": "test/canonical-audit-self-contained.test.js",
+        "sha256": "e0f780259eed88f9e315287ec21b35e9a3e1858a1aa388980bdf2773b942b1de",
+        "size": 48800
+      },
+      {
+        "path": "test/docs-only-evidence-profile.test.js",
+        "sha256": "bd7c3ce9cb20096adc01ada64a6cd23c680ce8061d378103346dac244924468d",
+        "size": 13863
+      },
+      {
+        "path": "test/merge-diff-base-preservation.test.js",
+        "sha256": "0bf6fdc4b81e44698961d7e4b1168dde90602e079a2efa00266c7c970cc18653",
+        "size": 6210
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "9743df38398fe3053c4cfcb1aa47e1eedfe77b4a47a4c5b9413a080d439f80f2"
+  },
+  "source_fingerprint": "5bb5a6d5060c7d7a22e2e7c49f87fa2997ba4b220b3aea2a25227e9635d28647",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "aa975a1207f3a4967",
+    "agent_role": null,
+    "model": "claude-opus-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "aa975a1207f3a4967",
+    "session_id": "aa975a1207f3a4967",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-docs-only-evidence-profile/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "Agent tool run aa975a1207f3a4967 returned verdict JSON as its final message and terminated",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "aa975a1207f3a4967",
+      "implementation_session_id": "6b8ab19a-0859-4231-be55-6517b2b232c4",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

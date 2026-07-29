@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-next-best-action-controller",
+      "decision_id": "decision-1784427648254-09be74e2",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 12-file diff is one coherent Story-to-Architecture-to-Spec-to-controller integration lane with direct focused and E2E coverage; splitting would sever the public contract from its runtime and tests.",
+      "artifact": ".vibepro/reviews/story-vibepro-next-best-action-controller/final-judgment-c2536e99.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T02:20:54.342Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "head_sha": "e7ce2b312147c3f10bd2c1b56b1586151cc2c51d",
+  "test_fingerprint": "0c46dc88f81ec8c9b48f375d07cb7f492687975dd682447b9da562ebb0ef6d2b",
+  "tests": 288,
+  "passed": 288,
+  "failed": 0,
+  "validation_phase": "expensive_verification",
+  "command": "node --test test/agent-runtime-adapter.test.js test/guarded-run-session.test.js test/independent-review-orchestrator.test.js test/one-command-pr-ready-closure.test.js test/safe-action-orchestrator.test.js test/scope-boundary-gate.test.js test/session-efficiency-audit.test.js"
+}

@@ -1,0 +1,306 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "updated_at": "2026-07-24T06:10:19.248Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784873419248-2b4d8a16",
+      "story_id": "story-vibepro-one-command-pr-ready-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_data_state",
+      "source_status": null,
+      "summary": "Versioned run-session state migration, rollback, idempotency, and query/replay semantics are demonstrated on current HEAD",
+      "reason": "migration_plan: persisted Run artifacts remain additive/versioned and legacy state is normalized on read without destructive migration. rollback_plan: reverting this focused PR leaves prior readers and prior run artifacts valid because new fields and actions are additive and fail closed. idempotency_test: focused and public CLI E2E cover resume, retry, no-progress, repair convergence, duplicate-safe action progression, and current-HEAD evidence rebind. query_semantics_test: status/watch/resume select persisted runs deterministically and replay the canonical state through the run-session owner; targeted 290/290, integration 64/64, and public CLI E2E 4/4 pass on HEAD 3ba30980. No database schema, cache-key, or user-data migration is introduced.",
+      "reviewer": "codex-primary",
+      "artifact": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/targeted-064dd1f6.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/e2e-3ba30980-post-freeze.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/runtime-cost-integration-064dd1f6.tap",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/build-3ba30980.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/typecheck-064dd1f6.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+        "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T06:10:19.245Z"
+      },
+      "recorded_at": "2026-07-24T06:10:19.248Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784832849129-52dad4d9",
+      "story_id": "story-vibepro-one-command-pr-ready-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "One-command closure remains one coherent review unit inside run-session boundaries",
+      "reason": "The Story changes one public command contract, one persisted Run state machine, and its focused tests/docs; splitting would sever the current-HEAD repair and review lifecycle proof. Runtime connectors and independent review orchestration remain prior merged dependencies and are not reimplemented.",
+      "reviewer": "codex-primary",
+      "artifact": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/one-command-targeted-unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/one-command-typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/one-command-runtime-e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/one-command-integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "d445b8f908fc57afcc686e1dbfa8ff4bdbc01f69",
+        "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-23T18:54:09.128Z"
+      },
+      "recorded_at": "2026-07-23T18:54:09.129Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784827692185-81b18612",
+      "story_id": "story-vibepro-one-command-pr-ready-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Keep the One-command PR-ready Closure implementation, its Story/Architecture/Spec/tests, and lifecycle reconciliation in one focused PR",
+      "reason": "The changed runtime owner, adapters, managed-run lifecycle, independent-review repair/rebind, executable acceptance E2E, and final roadmap reconciliation form one inseparable closure contract. Splitting code from Story/spec/test would leave either an unregistered production path or unverifiable acceptance surface. The already merged Production Runtime Connectors and Independent Review Orchestration are only reconciled in lifecycle docs and are not reimplemented. Reviewer ownership remains separable by gate role, rollback is the focused PR, and external merge/waiver/deploy/publish remain explicit human actions.",
+      "reviewer": "codex-coordinator",
+      "artifact": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/one-command-targeted-unit.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/one-command-typecheck.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/one-command-typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/one-command-conformance.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "639878a940ae797d11ea087f9332729ea6dd601e",
+        "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-23T17:28:12.182Z"
+      },
+      "recorded_at": "2026-07-23T17:28:12.185Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784800718397-b577d2e8",
+      "story_id": "story-vibepro-one-command-pr-ready-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "Track only .vibepro/config.json as the canonical Story registration; generated diagnostics, verification, reviews, and PR artifacts remain ignored operational evidence.",
+      "reason": "The repository contract requires hand-written Stories to be registered in tracked .vibepro/config.json. No generated .vibepro evidence artifact is included in the Git change surface.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/one-command-full-suite.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/one-command-runtime-e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/one-command-conformance.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/one-command-conformance.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/one-command-typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "9bad9a8c2f56e307562154d67833f503ee7d5a64",
+        "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-07-23T09:58:38.394Z"
+      },
+      "recorded_at": "2026-07-23T09:58:38.397Z"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "open": 0,
+    "by_type": {
+      "needs_review": 4
+    },
+    "by_status": {
+      "accepted": 4
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784873419248-2b4d8a16",
+      "story_id": "story-vibepro-one-command-pr-ready-closure",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_data_state",
+      "source_status": null,
+      "summary": "Versioned run-session state migration, rollback, idempotency, and query/replay semantics are demonstrated on current HEAD",
+      "reason": "migration_plan: persisted Run artifacts remain additive/versioned and legacy state is normalized on read without destructive migration. rollback_plan: reverting this focused PR leaves prior readers and prior run artifacts valid because new fields and actions are additive and fail closed. idempotency_test: focused and public CLI E2E cover resume, retry, no-progress, repair convergence, duplicate-safe action progression, and current-HEAD evidence rebind. query_semantics_test: status/watch/resume select persisted runs deterministically and replay the canonical state through the run-session owner; targeted 290/290, integration 64/64, and public CLI E2E 4/4 pass on HEAD 3ba30980. No database schema, cache-key, or user-data migration is introduced.",
+      "reviewer": "codex-primary",
+      "artifact": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/qa/targeted-064dd1f6.tap",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/e2e-3ba30980-post-freeze.tap",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/runtime-cost-integration-064dd1f6.tap",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/build-3ba30980.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/typecheck-064dd1f6.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+        "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-24T06:10:19.245Z"
+      },
+      "recorded_at": "2026-07-24T06:10:19.248Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/decision-records.json"
+}

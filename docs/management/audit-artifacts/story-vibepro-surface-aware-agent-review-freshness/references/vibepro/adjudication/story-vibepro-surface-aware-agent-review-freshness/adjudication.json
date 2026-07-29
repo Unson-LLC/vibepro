@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+  "updated_at": "2026-07-23T22:19:58.892Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "Current-head evidence records focused tests 39/39 and the eight-clause E2E matrix 8/8, with all required reuse and stale scenarios.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:19:58.889Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Content-surface, legacy merge-delta, and explicit strict_head paths remain compatible and separately covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:19:50.265Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Dirty fingerprint, inspection input, strong separate-session provenance, authorization, and closed lifecycle remain mandatory during reuse.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:19:42.851Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "gate_evidence and release_risk default to content_surface; reasoned role policy and CLI strict_head overrides remain stale on HEAD change.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:19:35.961Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Control flow and tests fail closed for unbound or missing surfaces, hash mismatch, and unresolved legacy changed-files.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:19:27.758Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Role-specific regressions change projection lineage or release-impact inputs and stale only the affected role.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:19:21.378Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Current tests demonstrate reuse after rebase, merge, or unrelated HEAD change when inspection and release-impact surface hashes match.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:19:15.316Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Current E2E and focused tests show unrelated main advance leaves gate_evidence and release_risk current when the branch review surface is unchanged.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/current_adjudication",
+        "session_ref": "/root/current_adjudication"
+      },
+      "head_commit": "2411506a2ffdbe98d28776fcc5af44fd4e823f06",
+      "recorded_at": "2026-07-23T22:19:08.572Z"
+    }
+  ]
+}

@@ -1,0 +1,172 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "built-in strict_head exception is removed; current rebase, stale, fail-closed, strict override, dirty fingerprint, inspection, provenance and lifecycle paths pass",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected policy resolution, content binding, merge-delta evaluation, Story/Architecture/Spec/guides and current focused tests at f98038ac.",
+    "evidence": "E2E 1/1 pass and focused 4/4 pass on f98038ac; current verification evidence has clean fingerprints and content-surface binding.",
+    "inputs": [
+      "src/agent-review.js",
+      "src/content-binding.js",
+      "test/content-scoped-evidence-freshness.test.js",
+      "test/review-inspection-first.test.js",
+      "test/vibepro-cli.test.js",
+      "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.test.js",
+      "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+      "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+      "docs/specs/vibepro-surface-aware-agent-review-freshness.md"
+    ]
+  },
+  "judgment_delta": [
+    "Concern that removing built-in strict roles weakened legacy/fail-closed behavior -> source and live tests showed missing/hash/dirty/diff/provenance/lifecycle failures remain stale while unchanged surfaces reuse"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "f98038ac1bb2a016f1ec8a1012fbb5ad803b361b",
+    "current_head_sha": "f98038ac1bb2a016f1ec8a1012fbb5ad803b361b",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "f98038ac1bb2a016f1ec8a1012fbb5ad803b361b",
+      "current_head_sha": "f98038ac1bb2a016f1ec8a1012fbb5ad803b361b",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-23T17:18:27.800Z",
+  "git_context": {
+    "head_sha": "f98038ac1bb2a016f1ec8a1012fbb5ad803b361b",
+    "current_branch": "codex/story-vibepro-surface-aware-agent-review-freshness",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T17:18:27.768Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 9 file(s)",
+    "recorded_head_sha": "f98038ac1bb2a016f1ec8a1012fbb5ad803b361b",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+        "sha256": "32472dceff1dc3fa92f5a29f82263cb1168422b1988fae6942b77b84aa98ce12",
+        "size": 1742
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+        "sha256": "7fae525f8f1e20af4ebfff37d8b10be1cccfa93d6305417263b629e798e6210a",
+        "size": 4924
+      },
+      {
+        "path": "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+        "sha256": "387bb01a64b9f1434457a9142edf0c7ee1180197062f86ed09fe7db3ea0f8230",
+        "size": 2170
+      },
+      {
+        "path": "src/agent-review.js",
+        "sha256": "f2ac38170bd3e919fa7b7c0d12e94d89438931bb0f89ee86e1484eded2062617",
+        "size": 184563
+      },
+      {
+        "path": "src/content-binding.js",
+        "sha256": "795232311861842f9663b4b4d902d30edeab4ac7ff05759b9dfff626736b5d10",
+        "size": 8208
+      },
+      {
+        "path": "test/content-scoped-evidence-freshness.test.js",
+        "sha256": "55074519d27c012d7134041a1d089a74baa027326e271937897465916e67ed66",
+        "size": 38042
+      },
+      {
+        "path": "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.test.js",
+        "sha256": "b1bf9017474fbd578b8740f2bd0cb8ebaf0f7892e4eb0f15efd8c0c9c0b0eca2",
+        "size": 1498
+      },
+      {
+        "path": "test/review-inspection-first.test.js",
+        "sha256": "4572b146f15943ce110d61437949755f9a19a2dbf037867d46b52a911c0aa778",
+        "size": 38608
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "8f76f695305270405cdb93a91aa7dc900bf55c44589604a308cd404f6b3f76e2",
+        "size": 1193860
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "41ce12b300406e75c58883ceb1011fcb520cb56379b9781e664ea8e431245d34"
+  },
+  "source_fingerprint": "0a8bbefdbdeeccd64b19b09328dc0874ac2a1a9f1554fec433bd627856a6d23b",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/gate_evidence_review",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": null,
+    "thread_id": "/root/gate_evidence_review",
+    "session_id": "/root/gate_evidence_review",
+    "tool_call_id": null,
+    "transcript_artifact": "collaboration:/root/gate_evidence_review",
+    "request_artifact": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "collaboration final JSON received and agent status completed",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "/root/gate_evidence_review",
+      "implementation_session_id": "019f8577-e163-7e60-a064-59155c860501",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

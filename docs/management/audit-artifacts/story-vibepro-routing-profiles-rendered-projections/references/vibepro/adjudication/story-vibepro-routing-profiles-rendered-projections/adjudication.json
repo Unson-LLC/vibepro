@@ -1,0 +1,176 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "updated_at": "2026-07-21T18:23:14.423Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-14",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:14.422Z"
+    },
+    {
+      "clause_id": "AC-13",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:14.276Z"
+    },
+    {
+      "clause_id": "AC-12",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:14.149Z"
+    },
+    {
+      "clause_id": "AC-11",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:14.023Z"
+    },
+    {
+      "clause_id": "AC-10",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:13.868Z"
+    },
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:13.741Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:13.609Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:13.479Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:13.356Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:13.228Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:13.097Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:12.954Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:12.814Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "b4def95a changes only the fresh-checkout test harness: a tmp fixture-local graphify executable is prepended to the child CLI PATH, accepts only update ., writes deterministic graph output, and the test asserts the canonical imported graph. Production Graphify remains untouched/fail-closed; routing/profile contracts and lifecycle implementation are unchanged. Current Node 22 E2E passed 3/3.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "terra-adjudication-current-b4def95a",
+        "session_ref": "/private/tmp/vibepro-adjudication-current-b4def95a.md"
+      },
+      "head_commit": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+      "recorded_at": "2026-07-21T18:23:12.683Z"
+    }
+  ]
+}

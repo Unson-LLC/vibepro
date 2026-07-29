@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "final owner fail-closed fix preserves compatibility",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "reviewed regression_blast_radius; risk_surfaces=regression_blast_radius",
+    "evidence": null,
+    "inputs": [
+      "src/guarded-run-session.js",
+      "src/safe-action-orchestrator.js",
+      "test/guarded-run-session.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "no blocking findings"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+    "expected_head_sha": "a3b7b1b93d54260c67a1e23a8c7b5eaac701bb30",
+    "current_head_sha": "a3b7b1b93d54260c67a1e23a8c7b5eaac701bb30",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-autonomous-action-dag-impl",
+      "branch": "codex/autonomous-action-dag-impl",
+      "actual_branch": "codex/autonomous-action-dag-impl",
+      "current_head_sha": "a3b7b1b93d54260c67a1e23a8c7b5eaac701bb30",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-21T12:21:29.793Z",
+  "git_context": {
+    "head_sha": "a3b7b1b93d54260c67a1e23a8c7b5eaac701bb30",
+    "current_branch": "codex/autonomous-action-dag-impl",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T12:21:29.740Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "current-head regression review after final owner correction"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "a3b7b1b93d54260c67a1e23a8c7b5eaac701bb30",
+    "surface_files": [
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "bff0a169589501b0c8ddfc3b11b04208694362cbd24ce5929d2102bd0267912d",
+        "size": 105027
+      },
+      {
+        "path": "src/safe-action-orchestrator.js",
+        "sha256": "5c2a29559c783f65efa8ed93757d59e8869f0a5395a401d3fc8957d93a61d113",
+        "size": 14896
+      },
+      {
+        "path": "test/guarded-run-session.test.js",
+        "sha256": "7b04b822f5e43063fb5d5fe5f401cc2a7901f9d49d619ae9fa77f9174adf52a2",
+        "size": 169240
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "e62a6a8f815b251cadc6844b85930305fbb9cefdf43d99b9ebeb96b3d0ff8120"
+  },
+  "source_fingerprint": "9846dd69867b9cb83e72f77ed15d903d5705dbc70df4c818f2e5627fc2dfb7dd",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "aad-a3-regression-light",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-autonomous-action-dag/architecture_spec/agent-transcript-regression_risk-a3.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-autonomous-action-dag/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-autonomous-action-dag/architecture_spec/agent-transcript-regression_risk-a3.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

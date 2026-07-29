@@ -1,0 +1,13 @@
+{
+  "status": "block",
+  "summary": "AC-9は修正済み。review時点のdirty selector、旧pr-prepare path-surface snapshot、reviewer側E2E未完了によりblock。",
+  "confirmed": [
+    "39 inspection inputs exist and match the planned union",
+    "AC-9 acceptance passes",
+    "aggregate fail-closed and CLI contract tests pass"
+  ],
+  "agent_id": "019f8d3e-4514-74a1-8cbe-f4f3b27baa39",
+  "model": "gpt-5.6-luna",
+  "reasoning_effort": "high",
+  "service_tier": "priority"
+}

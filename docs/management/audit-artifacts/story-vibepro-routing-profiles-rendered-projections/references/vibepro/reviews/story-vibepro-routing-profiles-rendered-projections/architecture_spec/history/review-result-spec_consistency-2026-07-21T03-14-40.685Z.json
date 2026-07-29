@@ -1,0 +1,139 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "architecture_spec",
+  "role": "spec_consistency",
+  "status": "needs_changes",
+  "summary": "Spec statement欠落、profile数、feature_slug lineage、migration、fresh checkout証跡が不足。",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "functional-spec-content-loss",
+      "detail": "Spec statement欠落、profile数、feature_slug lineage、migration、fresh checkout証跡が不足。"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "git diff、Architecture、final Spec、全consumer callsite、routing testsと生成projectionをread-only照合した。",
+    "evidence": null,
+    "inputs": [
+      "src/artifact-routing.js",
+      "test/artifact-routing.test.js",
+      "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md"
+    ]
+  },
+  "judgment_delta": [
+    "targeted tests passから、境界assertionと実生成物の不整合を確認してneeds_changesへ変更。"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue-359",
+    "actual_root": "/private/tmp/vibepro-issue-359",
+    "expected_root": null,
+    "expected_head_sha": "37a83f5e5bb217f4184c090f4b6a7c0d1eaa07c4",
+    "current_head_sha": "37a83f5e5bb217f4184c090f4b6a7c0d1eaa07c4",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue-359",
+      "actual_root": "/private/tmp/vibepro-issue-359",
+      "expected_root": null,
+      "expected_head_sha": "37a83f5e5bb217f4184c090f4b6a7c0d1eaa07c4",
+      "current_head_sha": "37a83f5e5bb217f4184c090f4b6a7c0d1eaa07c4",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T03:14:40.685Z",
+  "git_context": {
+    "head_sha": "37a83f5e5bb217f4184c090f4b6a7c0d1eaa07c4",
+    "current_branch": "codex/issue-359-routing-profiles-projections",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "41609cc5f007a071bb99de29c5fca8e5098bd6cf04ac97419c510aca10b6897a",
+    "user_status_fingerprint_hash": "026df774b08847aa0aa90fc712efe0e5519bd5c87d3c1dc8104965889d6014ad",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T03:14:40.676Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "37a83f5e5bb217f4184c090f4b6a7c0d1eaa07c4",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
+        "sha256": "a8e3d417c26418d2a7fbd76b3fff8d23ce84e878558fa41ede77ca983ec29ea3",
+        "size": 10823
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "a5170cf7d8778f0ad4ce5711b61c8b14cc6bfa476a58a496940c0bbbee9b6630",
+        "size": 28049
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "3469e425049f81cba832235f2829ffa96037ba477e7cdd662cbe95e3402181dc",
+        "size": 30669
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "b9e4d3e4a0bd02b0bdc8b51c73179c875e3a41d9662fbc04fc56102071836a03"
+  },
+  "source_fingerprint": "2cae5322e5b7527f3af94673edeb476161b136e107dce97e7ddacff3e02f4663",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "issue359-archspec-spec",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/spec_consistency-result.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-spec_consistency.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

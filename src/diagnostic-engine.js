@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { projectArtifact } from './artifact-routing.js';
 
 import { scanApiBoundary } from './api-boundary-scanner.js';
 import { profileArchitecture } from './architecture-profiler.js';
@@ -43,6 +44,7 @@ import {
   summarizeStoryPerformanceEvidence
 } from './performance-evidence.js';
 import { assertOutputLanguage, resolveOutputLanguage } from './language.js';
+import { resolveGraphifyArtifactFile } from './artifact-routing.js';
 
 export async function runDiagnosis(repoRoot, options = {}) {
   await initWorkspace(repoRoot);
@@ -52,11 +54,11 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const runDir = path.join(getWorkspaceDir(root), 'diagnostics', runId);
   await mkdir(runDir, { recursive: true });
 
-  const graphPath = path.join(getWorkspaceDir(root), 'graphify', 'graph.json');
-  const graph = JSON.parse(await readFile(graphPath, 'utf8'));
   const config = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'config.json'), 'utf8'));
   const language = options.language ? assertOutputLanguage(options.language) : resolveOutputLanguage(config);
   const { currentStory } = resolveStoryContext(config);
+  const graphPath = await resolveGraphifyArtifactFile(root, currentStory.story_id);
+  const graph = JSON.parse(await readFile(graphPath, 'utf8'));
   const manifest = await readManifest(root);
   const toolchain = await collectRuntimeInfo();
   const { evidence, graphIndex } = await buildEvidence(root, graph, runId, currentStory, config);
@@ -115,6 +117,7 @@ export async function runDiagnosis(repoRoot, options = {}) {
   const specDriftPath = path.join(runDir, 'spec-drift.md');
 
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
+  await projectArtifact(repoRoot, 'evidence', { storyId: currentStory.story_id, content: evidence, writeCanonical: true, canonicalFileName: 'evidence.json' });
   await writeFile(summaryPath, renderSummary({ runId, evidence, findings }));
   await writeFile(riskPath, renderRiskRegister({
     runId,

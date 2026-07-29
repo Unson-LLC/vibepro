@@ -1,0 +1,16 @@
+{
+  "agent_id": "terra-low-architecture-boundary-8a1f",
+  "model": "gpt-5.6-terra",
+  "reasoning_effort": "low",
+  "status": "pass",
+  "summary": "The public story diagnose producer is the Evidence writer; verify record remains PR-scoped. Artifact routing remains fail-closed.",
+  "findings": [],
+  "inspection_inputs": [
+    "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
+    "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+    "src/diagnostic-engine.js",
+    "src/artifact-routing.js",
+    "src/verification-evidence.js"
+  ],
+  "judgment_delta": "No blocking boundary finding after tracing the actual public producer and routing preflight."
+}

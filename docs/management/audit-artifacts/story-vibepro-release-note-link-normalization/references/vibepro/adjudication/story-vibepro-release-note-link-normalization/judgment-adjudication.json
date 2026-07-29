@@ -1,0 +1,424 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-release-note-link-normalization",
+  "updated_at": "2026-07-19T04:28:58.515Z",
+  "events": [
+    {
+      "event_id": "1447de5a-830b-4734-b07d-b6ce8fb09e0b",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Storyの目的、対象、ACが具体的で追跡可能",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7893-6424-7232-a6ef-4cddc7e1702d",
+        "session_ref": "019f7893-6424-7232-a6ef-4cddc7e1702d"
+      },
+      "head_commit": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "recorded_at": "2026-07-19T04:17:32.722Z"
+    },
+    {
+      "event_id": "2eef952c-5140-4ba7-a1b3-e9eb28211c8e",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "PR350の壊れた相対解決と修正後release surfaceが対応",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7893-6424-7232-a6ef-4cddc7e1702d",
+        "session_ref": "019f7893-6424-7232-a6ef-4cddc7e1702d"
+      },
+      "head_commit": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "recorded_at": "2026-07-19T04:17:32.947Z"
+    },
+    {
+      "event_id": "a260f105-ffb1-43d0-b533-bcebbf5aea1b",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "top-level section不変条件をcontainer headingが破りnested malformed syntaxも変更",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7893-6424-7232-a6ef-4cddc7e1702d",
+        "session_ref": "019f7893-6424-7232-a6ef-4cddc7e1702d"
+      },
+      "head_commit": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "recorded_at": "2026-07-19T04:17:33.185Z"
+    },
+    {
+      "event_id": "c7160370-089c-46a2-bd65-d98a78f9f32f",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "block parserのcontainer階層を捨てinline側もrendererと異なる文法を採用",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7893-6424-7232-a6ef-4cddc7e1702d",
+        "session_ref": "019f7893-6424-7232-a6ef-4cddc7e1702d"
+      },
+      "head_commit": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "recorded_at": "2026-07-19T04:17:33.431Z"
+    },
+    {
+      "event_id": "814348e5-e631-4b0a-a283-8d3fdda4d6ee",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "container headingとnested linkの誤投影経路が未検証で再現",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7893-6424-7232-a6ef-4cddc7e1702d",
+        "session_ref": "019f7893-6424-7232-a6ef-4cddc7e1702d"
+      },
+      "head_commit": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "recorded_at": "2026-07-19T04:17:33.671Z"
+    },
+    {
+      "event_id": "ac0c2f50-6a17-40c6-80cd-0272608c0e6c",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "focused testsはpassするが境界欠陥が残りdone evidenceは不十分",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7893-6424-7232-a6ef-4cddc7e1702d",
+        "session_ref": "019f7893-6424-7232-a6ef-4cddc7e1702d"
+      },
+      "head_commit": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "recorded_at": "2026-07-19T04:17:33.898Z"
+    },
+    {
+      "event_id": "55efc7db-d229-470e-8111-9764a2373b1c",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "quotedまたはlisted headingが正式release sectionを置換し得る",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7893-6424-7232-a6ef-4cddc7e1702d",
+        "session_ref": "019f7893-6424-7232-a6ef-4cddc7e1702d"
+      },
+      "head_commit": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "recorded_at": "2026-07-19T04:17:34.127Z"
+    },
+    {
+      "event_id": "3fb22dc2-4c91-4455-8987-5d94554ae9aa",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "schemaやstored stateはなく実装revertと絶対URL再投影で回復可能",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7893-6424-7232-a6ef-4cddc7e1702d",
+        "session_ref": "019f7893-6424-7232-a6ef-4cddc7e1702d"
+      },
+      "head_commit": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "recorded_at": "2026-07-19T04:17:34.370Z"
+    },
+    {
+      "event_id": "a481037e-1e59-47f6-8d81-2cfcc7661303",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "split-planは3分割推奨だが一体レビュー判断が旧HEADに拘束",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7893-6424-7232-a6ef-4cddc7e1702d",
+        "session_ref": "019f7893-6424-7232-a6ef-4cddc7e1702d"
+      },
+      "head_commit": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "recorded_at": "2026-07-19T04:17:34.608Z"
+    },
+    {
+      "event_id": "0fbc4dbe-a13b-44e2-848d-c30f85fb555e",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "既存post-merge経路、観測点、失敗時停止、rollbackが明示",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7893-6424-7232-a6ef-4cddc7e1702d",
+        "session_ref": "019f7893-6424-7232-a6ef-4cddc7e1702d"
+      },
+      "head_commit": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "recorded_at": "2026-07-19T04:17:34.852Z"
+    },
+    {
+      "event_id": "bdff5518-4257-4ce3-8163-3306de14f9a6",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "parserとscannerの意味的不一致による2つの誤出力経路を再現",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7893-6424-7232-a6ef-4cddc7e1702d",
+        "session_ref": "019f7893-6424-7232-a6ef-4cddc7e1702d"
+      },
+      "head_commit": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "recorded_at": "2026-07-19T04:17:35.085Z"
+    },
+    {
+      "event_id": "bf86696a-2a3c-4ee2-9ef6-9cb6911cd8b3",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "純粋な文字列処理で外部providerを呼ばず非該当境界が妥当",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7893-6424-7232-a6ef-4cddc7e1702d",
+        "session_ref": "019f7893-6424-7232-a6ef-4cddc7e1702d"
+      },
+      "head_commit": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "recorded_at": "2026-07-19T04:17:35.323Z"
+    },
+    {
+      "event_id": "4606e968-7b91-496e-bec2-1bf408a1d2c9",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "release projectorのみの差分でreview lifecycleコードを変更しない",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7893-6424-7232-a6ef-4cddc7e1702d",
+        "session_ref": "019f7893-6424-7232-a6ef-4cddc7e1702d"
+      },
+      "head_commit": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "recorded_at": "2026-07-19T04:17:35.559Z"
+    },
+    {
+      "event_id": "daead892-47ef-4717-b9dd-ae2ae7a1cb00",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "incident、target links、ACが実装とテストへ明確にtraceする",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f789d-fa05-7940-a60b-d493827d71e7",
+        "session_ref": "019f789d-fa05-7940-a60b-d493827d71e7"
+      },
+      "head_commit": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "recorded_at": "2026-07-19T04:28:55.399Z"
+    },
+    {
+      "event_id": "0eef7cf8-cd9c-41d0-bb6d-c5dde8b18560",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "PR350の失敗機序と日英CHANGELOG投影replayが具体的である",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f789d-fa05-7940-a60b-d493827d71e7",
+        "session_ref": "019f789d-fa05-7940-a60b-d493827d71e7"
+      },
+      "head_commit": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "recorded_at": "2026-07-19T04:28:55.644Z"
+    },
+    {
+      "event_id": "bca2ea99-026c-452b-bb04-48da6f2a2027",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "top-level VitePress renderer初期化が全subcommandへ波及し非投影path不変条件を破る",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f789d-fa05-7940-a60b-d493827d71e7",
+        "session_ref": "019f789d-fa05-7940-a60b-d493827d71e7"
+      },
+      "head_commit": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "recorded_at": "2026-07-19T04:28:55.899Z"
+    },
+    {
+      "event_id": "ebd15afe-681b-4747-a50a-29e30f4e4453",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "projection専用とする設計に反しparser初期化がplan、publish-npm、release-body境界を越える",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f789d-fa05-7940-a60b-d493827d71e7",
+        "session_ref": "019f789d-fa05-7940-a60b-d493827d71e7"
+      },
+      "head_commit": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "recorded_at": "2026-07-19T04:28:56.145Z"
+    },
+    {
+      "event_id": "7df9fc10-77c2-4c6c-b9e4-db4967dd549c",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "renderer初期化失敗とcanonical GitHub provider failureの分析と証跡がない",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f789d-fa05-7940-a60b-d493827d71e7",
+        "session_ref": "019f789d-fa05-7940-a60b-d493827d71e7"
+      },
+      "head_commit": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "recorded_at": "2026-07-19T04:28:56.418Z"
+    },
+    {
+      "event_id": "ff63c558-14c9-4ad0-883c-357ae96e17c5",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "current-head readinessが未完で独立review条件が閉じていない",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f789d-fa05-7940-a60b-d493827d71e7",
+        "session_ref": "019f789d-fa05-7940-a60b-d493827d71e7"
+      },
+      "head_commit": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "recorded_at": "2026-07-19T04:28:56.714Z"
+    },
+    {
+      "event_id": "4e725b58-0ac1-422c-b099-8246afe36877",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "shared workflow CLIの非projection commandがVitePress初期化に依存する契約回帰を未検証",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f789d-fa05-7940-a60b-d493827d71e7",
+        "session_ref": "019f789d-fa05-7940-a60b-d493827d71e7"
+      },
+      "head_commit": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "recorded_at": "2026-07-19T04:28:56.961Z"
+    },
+    {
+      "event_id": "5285f124-f4b0-4593-950e-d2669f48aec4",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "StoryとArchitectureのrollback手順が不一致で旧projector再投影によりbroken relative linkを再生成し得る",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f789d-fa05-7940-a60b-d493827d71e7",
+        "session_ref": "019f789d-fa05-7940-a60b-d493827d71e7"
+      },
+      "head_commit": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "recorded_at": "2026-07-19T04:28:57.242Z"
+    },
+    {
+      "event_id": "4399ac58-17bf-455c-9c37-ab8da9190bba",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "decisionがbranch差分にないgenerated release pagesへ依存しcurrent-head review unitを確立しない",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f789d-fa05-7940-a60b-d493827d71e7",
+        "session_ref": "019f789d-fa05-7940-a60b-d493827d71e7"
+      },
+      "head_commit": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "recorded_at": "2026-07-19T04:28:57.455Z"
+    },
+    {
+      "event_id": "a7ff8a3c-1b38-4eb8-8d30-aeb38d238638",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "supportとrollback routeが不完全でrelease-ops decisionもcurrent HEADへ未更新",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f789d-fa05-7940-a60b-d493827d71e7",
+        "session_ref": "019f789d-fa05-7940-a60b-d493827d71e7"
+      },
+      "head_commit": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "recorded_at": "2026-07-19T04:28:57.725Z"
+    },
+    {
+      "event_id": "12dfda29-0520-497a-ad58-a50a49ceb50b",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed destination、invalid Unicode、code/container境界、rejected nested linkを保持継続する",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f789d-fa05-7940-a60b-d493827d71e7",
+        "session_ref": "019f789d-fa05-7940-a60b-d493827d71e7"
+      },
+      "head_commit": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "recorded_at": "2026-07-19T04:28:57.992Z"
+    },
+    {
+      "event_id": "3748df21-6709-45d1-8008-4822bf3ea309",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "hard-coded GitHub/raw provider、default branch、availabilityへ依存するためnot_required前提が誤り",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f789d-fa05-7940-a60b-d493827d71e7",
+        "session_ref": "019f789d-fa05-7940-a60b-d493827d71e7"
+      },
+      "head_commit": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "recorded_at": "2026-07-19T04:28:58.242Z"
+    },
+    {
+      "event_id": "f0fd5662-73ab-48d8-8cf6-94b90c224154",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "lifecycle実装は変更せずstale evidenceをreadinessが正しく拒否する",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f789d-fa05-7940-a60b-d493827d71e7",
+        "session_ref": "019f789d-fa05-7940-a60b-d493827d71e7"
+      },
+      "head_commit": "129f72252cf7e4372196b20215bb94b82cd7118c",
+      "recorded_at": "2026-07-19T04:28:58.514Z"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "head_sha": "d8383707254c3cdfb084d4665c49e94b0fb195d9",
+  "agent_id": "/root/ocr_runtime_639_final",
+  "summary": "The prior runtime evidence HEAD-binding finding is resolved. Five QA artifacts and the latest strict-head verification records resolve to the frozen HEAD.",
+  "inspection_evidence": [
+    ".vibepro/qa/one-command-targeted-unit.json: 272 passed, 0 failed",
+    ".vibepro/qa/one-command-integration.json: 4 passed, 0 failed",
+    ".vibepro/qa/one-command-runtime-e2e.json: 18 passed, 0 failed",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json"
+  ],
+  "findings": []
+}

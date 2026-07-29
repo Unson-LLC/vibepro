@@ -1,0 +1,34 @@
+TAP version 13
+# Subtest: OCR-S-5 operator cancel contains an active implementation dispatch and wins a stale orchestration poll
+ok 1 - OCR-S-5 operator cancel contains an active implementation dispatch and wins a stale orchestration poll
+  ---
+  duration_ms: 634.955917
+  type: 'test'
+  ...
+# Subtest: SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop
+ok 2 - SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop
+  ---
+  duration_ms: 431.289541
+  type: 'test'
+  ...
+# Subtest: NBA-S-7 production orchestration persists an escape decision after two no-progress checkpoints
+ok 3 - NBA-S-7 production orchestration persists an escape decision after two no-progress checkpoints
+  ---
+  duration_ms: 500.299584
+  type: 'test'
+  ...
+# Subtest: HDC-S-3 resumed orchestration preserves its cursor across an action failure and restart
+ok 4 - HDC-S-3 resumed orchestration preserves its cursor across an action failure and restart
+  ---
+  duration_ms: 762.4485
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2556.70625

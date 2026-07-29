@@ -1,0 +1,55 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-attribution-boundary-guard",
+  "created_at": "2026-07-21T18:12:13.670Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADRあり (docs/architecture/vibepro-session-attribution-boundary-guard.md)",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-session-attribution-boundary-guard.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADRあり (docs/architecture/vibepro-session-attribution-boundary-guard.md)"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-session-attribution-boundary-guard.md, docs/specs/story-vibepro-session-attribution-boundary-guard.vibepro.json)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-21T18:12:10.203Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "branch": "codex/story-vibepro-session-attribution-boundary-guard-clean",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "eb193c3abdd08935bce472ce2ece6310207be7bb",
+      "origin_main_relation": "ahead",
+      "dirty": true,
+      "dirty_summary": [
+        "M .vibepro/config.json"
+      ]
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "head": "0230e583",
+  "focused_tests": 19,
+  "typecheck": "pass",
+  "docs_build": "pass",
+  "docs_files": 192,
+  "observed_failure": "GitHub Actions run 29667127450 reached the deploy script with node_modules untracked because repository ignore rules did not exclude it.",
+  "verified_recovery": "The versioned .gitignore excludes node_modules while the deploy step keeps npm ci after pulling final main, preserving both clean-source and dependency alignment.",
+  "external_runtime_precondition": "Cloudflare credentials were empty in run 29667127450 and must be configured before public deployment can be demonstrated."
+}

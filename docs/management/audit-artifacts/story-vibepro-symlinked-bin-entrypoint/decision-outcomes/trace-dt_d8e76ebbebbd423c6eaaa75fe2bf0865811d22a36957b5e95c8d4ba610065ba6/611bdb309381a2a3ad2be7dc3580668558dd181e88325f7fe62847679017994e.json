@@ -1,0 +1,125 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-symlinked-bin-entrypoint",
+  "ledger_path": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_d8e76ebbebbd423c6eaaa75fe2bf0865811d22a36957b5e95c8d4ba610065ba6"
+  },
+  "parent_revision_fingerprint": "06c40e1a0723f64ee9caf15dcf55a77cd647728a8bee4c0063f46221b1812a4c",
+  "revision_fingerprint": "611bdb309381a2a3ad2be7dc3580668558dd181e88325f7fe62847679017994e",
+  "trace": {
+    "decision_trace_id": "dt_d8e76ebbebbd423c6eaaa75fe2bf0865811d22a36957b5e95c8d4ba610065ba6",
+    "collision_group": null,
+    "trace_source_ref": "tsr_f32030d8f020c2c417eefc84d36a6a6a86e4db0fda9830fa56dc21665cb5308c",
+    "normalized_subject_key": "finding:test-coverage-symlink-chain-and-relative-target",
+    "source_identity": {
+      "source_kind": "review_finding",
+      "source_ref": ".vibepro/reviews/story-vibepro-symlinked-bin-entrypoint/test_plan/review-result-unit_integration.json",
+      "native_id": "test-coverage-symlink-chain-and-relative-target",
+      "digest": "ae1cb226afd3857b6785778dab24fb0672dd26dbff533e613d25f8c967171ce7",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+    "parent_revision_fingerprint": "06c40e1a0723f64ee9caf15dcf55a77cd647728a8bee4c0063f46221b1812a4c",
+    "revision_fingerprint": "611bdb309381a2a3ad2be7dc3580668558dd181e88325f7fe62847679017994e",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_d8e76ebbebbd423c6eaaa75fe2bf0865811d22a36957b5e95c8d4ba610065ba6"
+        },
+        "parent_revision_fingerprint": "ea776ebcc26abb2883038e2b5d11a446f2100a52db9cf41ca36fa1af17c07038"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "observed",
+      "value": {
+        "severity": "low",
+        "id": "test-coverage-symlink-chain-and-relative-target",
+        "detail": "No test covers a symlink chain (symlink to a symlink) or a relative-target symlink, only an absolute-target single-hop symlink; risk is low since realpathSync's multi-hop/relative resolution is native Node behavior, not custom logic."
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-symlinked-bin-entrypoint/test_plan/review-result-unit_integration.json",
+          "source_head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+          "source_digest": "ae1cb226afd3857b6785778dab24fb0672dd26dbff533e613d25f8c967171ce7",
+          "native_id": "test-coverage-symlink-chain-and-relative-target"
+        }
+      ]
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "observed",
+      "value": {
+        "detected_by": "unit_integration",
+        "stage": "test_plan",
+        "detected_head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-symlinked-bin-entrypoint/test_plan/review-result-unit_integration.json",
+          "source_head_sha": "32cdec869c9c4cc2bd4e0ccbb788637c32815916",
+          "source_digest": "ae1cb226afd3857b6785778dab24fb0672dd26dbff533e613d25f8c967171ce7",
+          "native_id": "test-coverage-symlink-chain-and-relative-target"
+        }
+      ]
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 361,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/361",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "49e55e805a47c0ec78bf6a4f39fdadf5e1b79c7c",
+        "status": "merged",
+        "merged_at": "2026-07-25T05:13:50Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

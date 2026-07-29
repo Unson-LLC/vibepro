@@ -22,11 +22,37 @@ Do not assume that a command documented from current `main` exists in an older i
 
 Verification evidence and ordinary reviews use content-surface binding by default,
 so an unrelated commit does not invalidate evidence when every inspected file is
-unchanged. High-risk roles such as `gate_evidence` and `release_risk` remain
-strictly head-bound, and callers can request strict binding explicitly.
+unchanged. `gate_evidence` and `release_risk` use the same content-surface
+default; repositories and callers can retain strict binding for a genuinely
+commit-wide high-risk role through a reasoned role policy or CLI override.
 Finalize the intended review surface, commit, record verification and independent
 review, then run `pr prepare` and `pr create`. After CI completes, import it,
 refresh preparation and the existing PR, then merge through `execute merge`.
+
+### Delivery reconciliation operations
+
+The release operator owns reconciliation until the execution state reports a
+reconciled delivery. Observe it with:
+
+```bash
+vibepro execute status . --story-id <story-id> --json
+```
+
+Exit `0` means a valid state was read; inspect its reconciliation fields to
+decide whether follow-up is required. Exit `1` is reserved for a missing or
+corrupt state; stdout remains empty on that failed query and stderr contains
+either a structured JSON error (`--json`) or an operator-facing message.
+Recover a delivered but unreconciled Story with:
+
+```bash
+vibepro execute reconcile . --story-id <story-id> --base <base-ref> --pr <url-or-number>
+```
+
+If no execution state exists yet, use `vibepro execute start` before querying it.
+Reconciliation never rolls back an observed provider delivery. Rollback is
+limited to local execution or canonical-audit persistence state: preserve the
+delivery fact, retain the failed reason and recovery command, repair the local
+or canonical artifact, then rerun `execute reconcile`.
 
 ## Canonical Audit and ROI
 

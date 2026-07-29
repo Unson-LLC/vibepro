@@ -41,13 +41,13 @@ updated_at: 2026-07-15
 
 ## Acceptance Criteria
 
-- [ ] ARA-S-1: core workflowはprovider固有APIを直接参照せず、共通Adapter contractだけに依存する。
-- [ ] ARA-S-2: runtime能力をprobeし、要件を満たさない場合は実行前に`waiting_for_runtime`で停止する。
-- [ ] ARA-S-3: 実装結果はchanged files、HEAD、test suggestion、completion statusを持つ構造化resultとして回収される。
-- [ ] ARA-S-4: Review adapterはparallel subagent provenanceとclosed lifecycleを既存Gateへ記録できる。
-- [ ] ARA-S-5: cancel/timeout後に孤立agentを残さず、再開時に二重起動しない。
-- [ ] ARA-S-6: adapter失敗はGate passや実装完了へ暗黙変換されない。
-- [ ] ARA-S-7: fake adapterによるsuccess、quota、timeout、cancel、separate reviewerのcontract testがある。
+- [x] ARA-S-1: core workflowはprovider固有APIを直接参照せず、共通Adapter contractだけに依存する。
+- [x] ARA-S-2: runtime能力をprobeし、要件を満たさない場合は実行前に`waiting_for_runtime`で停止する。
+- [x] ARA-S-3: 実装結果はchanged files、HEAD、test suggestion、completion statusを持つ構造化resultとして回収される。
+- [x] ARA-S-4: Review adapterはparallel subagent provenanceとclosed lifecycleを既存Gateへ記録できる。
+- [x] ARA-S-5: cancel/timeout後に孤立agentを残さず、再開時に二重起動しない。
+- [x] ARA-S-6: adapter失敗はGate passや実装完了へ暗黙変換されない。
+- [x] ARA-S-7: fake adapterによるsuccess、quota、timeout、cancel、separate reviewerのcontract testがある。
 
 ## 依存関係・完了順
 

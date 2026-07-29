@@ -1,0 +1,40 @@
+{
+  "head_sha": "926227f945878299770448a03966c17dfa70158d",
+  "stage": "test_plan",
+  "role": "unit_integration",
+  "status": "pass",
+  "summary": "The exact-HEAD unit and integration plan covers the successful one-command path and the required invalid-input, timeout, provider, retry/async, evidence/workflow/PR/review lifecycle, runtime-cost, managed-worktree, and human-authority regressions with behavioral assertions rather than marker-only checks.",
+  "findings": [],
+  "inspection_evidence": ".vibepro/qa/review-test-plan-unit-926227f9.json",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/test_plan/review-request-unit_integration.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "test/agent-runtime-adapter.test.js",
+    "test/guarded-run-session.test.js",
+    "test/independent-review-orchestrator.test.js",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/safe-action-orchestrator.test.js",
+    "test/scope-boundary-gate.test.js",
+    "test/session-efficiency-audit.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    ".vibepro/qa/expensive-verification-926227f9.json",
+    ".vibepro/qa/integration-926227f9.json",
+    ".vibepro/qa/e2e-926227f9.json",
+    ".vibepro/qa/typecheck-926227f9.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/traceability.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    "node --test --test-name-pattern='same HEAD|needs_changes repair|final_prepare|material ambiguity|provider fallback|cancel|legacy profile' test/one-command-pr-ready-closure.test.js test/guarded-run-session.test.js test/independent-review-orchestrator.test.js",
+    "git diff --check origin/main...HEAD"
+  ],
+  "inspection_summary": "Mapped OCR-T-1 through OCR-T-5 to the seven-file targeted unit command, integration subset, and public managed-worktree E2E. Success is covered through the canonical public CLI and production-owner DAG. Invalid and malformed inputs fail closed across runtime result parsing, Human Decision descriptors, transition metadata, persisted Run/review state, IDs, plans, action metadata, and provider contracts. Probe/start/status/result timeout paths require containment before retry; provider unavailability, auth, permission, quota, capability absence, process failure, and malformed completion remain typed non-green outcomes. Retry and asynchronous regressions cover idempotent dispatch, backoff policy, restart/resume, reservation-before-dispatch, interrupted review polling, terminal cancellation winning stale completion, and orphan containment. Evidence/workflow/PR/review lifecycle regressions cover HEAD-changing suffix invalidation, stale or forged HEAD rejection, current-HEAD-only pr_ready, verification failure persistence, repair re-review, separate read-only review identity, lifecycle closure, and serial review barriers. Runtime-cost unit_regression is directly asserted by agent-runtime-adapter telemetry normalization and invalid-usage fail-closed tests; the current Responsibility Authority Gate reports all five matched contracts passed. Managed-worktree authority, source/mirror commit order, linked-worktree identity, bootstrap locking, and non-mutating failure paths are covered. External authority is negatively tested at owner, action-plan, source-import, public-help, and E2E surfaces. Exact-HEAD evidence records 288/288 targeted unit tests, 4/4 integration tests, 4/4 public E2E tests with AC 8/8, and a separate focused 16/16 runtime-contract rerun.",
+  "judgment_delta": [
+    "Initial concern that evidence labels such as timeout or provider_failure might not correspond to executable cases -> resolved by concrete adapter and Guarded Run tests for probe/start/status/result deadlines, containment, orphaning, capability/auth/quota/permission stops, fallback order, and same-Run recovery.",
+    "Initial concern that retry/async tests might ignore crash and stale-completion races -> resolved by reservation-before-dispatch, stable idempotency keys, restart reuse, interrupted poll resume, bounded backoff, cancellation-first authority, and stale completion rejection.",
+    "Initial concern that unit_regression runtime-cost coverage was missing from responsibility evidence -> resolved by the explicit agent-runtime-adapter telemetry normalization/invalid-usage test, inclusion in the 288-test exact-HEAD command, and the current Responsibility Authority Gate passing all matched contracts.",
+    "Initial concern that evidence, workflow, PR, and review lifecycle claims relied only on happy-path E2E -> resolved by unit assertions for changed-HEAD invalidation, forged/stale HEAD rejection, Gate-only pr_ready, verification blocking, needs_changes repair and fresh re-review, separate read-only identity, lifecycle closure, and serial stage barriers.",
+    "Initial concern that managed worktree or human authority boundaries were incompletely covered -> resolved by real temporary-Git E2E commits plus linked-worktree/bootstrap/mirror failure tests and negative spies/import checks proving PR creation, merge, waiver, deploy, publish, and material external effects cannot enter the autonomous plan.",
+    "Regression guard and path-surface coverage -> satisfied across autonomous and legacy profiles, public JSON/human/help/status/resume/cancel surfaces, provider fallbacks, generated verification/traceability/Gate artifacts, exact-HEAD 288/288 unit, 4/4 integration, 4/4 E2E with AC 8/8, and focused 16/16 rerun."
+  ]
+}

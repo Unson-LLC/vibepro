@@ -1,0 +1,106 @@
+{
+  "schema_version": "1.0",
+  "review_kind": "architecture_preflight",
+  "reviewed_head": "ce89e4589ba8c96a418249cd2f9aa673acea646b",
+  "base_ref": "origin/main",
+  "base_sha": "6222d118315e7001abcbdc786aca932e48c58232",
+  "status": "needs_changes",
+  "risk_surfaces": [
+    "core_workflow_state",
+    "gate_orchestration"
+  ],
+  "summary": "The schema 0.2 selected-Story PR-route implementation preserves the intended execution-state owner, run-session boundary, CLI dependency direction, predecessor ownership, and bounded review budget. The Architecture document's conformance evidence is still bound to an obsolete base SHA and obsolete counts, so this current-HEAD preflight requires a focused evidence-freshness correction before pass.",
+  "inspection_inputs": [
+    ".vibepro/config.json",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/management/architecture/architecture-vibepro-one-command-pr-ready-closure.md",
+    "docs/management/specs/spec-vibepro-one-command-pr-ready-closure.md",
+    "docs/management/test-plans/test-plan-vibepro-one-command-pr-ready-closure.md",
+    "src/execution-state.js",
+    "test/execution-state.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "git diff origin/main...HEAD",
+    ".vibepro/qa/targeted-status-ce89e458.json",
+    ".vibepro/qa/targeted-ce89e458.tap",
+    ".vibepro/qa/conformance-origin-main-6222d118-fresh.json",
+    "/tmp/vibepro-arch-preflight-ce89e458-conformance.json"
+  ],
+  "diff_scope": {
+    "required_files_only": true,
+    "changed_file_count": 8,
+    "source_files_changed": [
+      "src/execution-state.js"
+    ],
+    "source_diff": {
+      "insertions": 10,
+      "deletions": 6
+    },
+    "diff_check": "pass"
+  },
+  "verdicts": {
+    "schema_0_2_selected_story_pr_route_authority": {
+      "status": "pass",
+      "judgment": "managedWorktreeArtifactLocations resolves the PR route once for state.story_id, derives directory scope from the selected canonical route template, and no longer fabricates a second probe Story. Story-scoped templates copy the selected route directory; flat legacy routes retain the explicit lifecycle-file compatibility path."
+    },
+    "run_session_canonical_boundary": {
+      "status": "pass",
+      "judgment": "The change remains inside execution-state reconciliation and does not move route selection, guarded run-session, merge authority, or lifecycle ownership. Fresh current and base conformance outputs both report 85 total findings with 65 undeclared, 9 budget, and 11 orphan findings."
+    },
+    "no_new_reverse_call_to_cli": {
+      "status": "pass",
+      "judgment": "The only production source change imports and calls artifact-routing helpers; it adds no CLI import or reverse call. The pre-existing run-session-to-CLI conformance finding remains 9 edges in both the fetched base and current HEAD."
+    },
+    "no_duplicate_predecessor_ownership": {
+      "status": "pass",
+      "judgment": "No changes were made to agent-runtime-connectors, independent-review-orchestrator, CLI, guarded-run-session, or the one-command owner. The new logic reuses execution-state's existing post-merge reconciliation boundary rather than reintroducing Production Runtime Connectors or Independent Review Orchestration."
+    },
+    "bounded_review_budget": {
+      "status": "pass",
+      "judgment": "The story override raises the aggregate subagent cap from the recorded 166 historical slots to 178 and grants one remaining slot to each named lifecycle role, for exactly 12 aggregate reserve slots. It does not widen global defaults or add a waiver. Count and role caps remain dispatch-bounding even though time, work, wait, and agent-consumption dimensions are null."
+    },
+    "architecture_evidence_freshness": {
+      "status": "needs_changes",
+      "judgment": "The Architecture document still cites base db8f... and 86 total findings, including 66 undeclared and 12 base orphan findings. The requested base is 6222d118315e7001abcbdc786aca932e48c58232, and fresh base/current artifacts both report 85 total with 65 undeclared, 9 budget, and 11 orphan findings."
+    }
+  },
+  "findings": [
+    {
+      "id": "ARCH-PREFLIGHT-001",
+      "severity": "medium",
+      "status": "needs_changes",
+      "title": "Architecture conformance evidence is bound to an obsolete base",
+      "evidence": [
+        "docs/management/architecture/architecture-vibepro-one-command-pr-ready-closure.md cites base db8f... and 86 total findings",
+        ".vibepro/qa/conformance-origin-main-6222d118-fresh.json reports base 6222d118315e7001abcbdc786aca932e48c58232 with 85 total, 65 undeclared, 9 budget, and 11 orphan findings",
+        "/tmp/vibepro-arch-preflight-ce89e458-conformance.json reports current HEAD with the same 85/65/9/11 counts"
+      ],
+      "required_change": "Update the Architecture conformance paragraph to the fetched base SHA 6222d118315e7001abcbdc786aca932e48c58232 and the fresh 85/65/9/11 base/current counts, retaining the supported conclusion that no new reverse dependency was introduced, then rerun this current-HEAD architecture preflight."
+    }
+  ],
+  "verification_evidence": [
+    {
+      "command": "node --test test/execution-state.test.js test/artifact-routing.test.js test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts test/e2e/story-vibepro-execute-merge-command-flow.spec.ts",
+      "status": "pass",
+      "tests": 124,
+      "passed": 124,
+      "failed": 0,
+      "head": "ce89e4589ba8c96a418249cd2f9aa673acea646b"
+    },
+    {
+      "command": "git diff --check origin/main...HEAD",
+      "status": "pass"
+    },
+    {
+      "command": "node bin/vibepro.js architecture conformance . --json",
+      "status": "pass",
+      "artifact": "/tmp/vibepro-arch-preflight-ce89e458-conformance.json",
+      "finding_counts": {
+        "total": 85,
+        "undeclared": 65,
+        "budget": 9,
+        "orphan": 11
+      }
+    }
+  ],
+  "boundary_note": "This is an architecture-role preflight for the reviewed content surface. It is not overall PR Gate authorization and does not establish delivery, merge, or runtime closure."
+}

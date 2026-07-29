@@ -1,0 +1,71 @@
+{
+  "schema_version": "0.1.0",
+  "tool": "vibepro",
+  "workspace": ".vibepro",
+  "output": {
+    "language": "ja"
+  },
+  "execution": {
+    "managed_worktree": "preferred"
+  },
+  "artifact_routing": {
+    "schema_version": "0.1.0",
+    "artifacts": {}
+  },
+  "budgets": {
+    "pr_artifact_bytes": 16384
+  },
+  "brainbase": {
+    "stories": [
+      {
+        "story_id": "story-vibepro-artifact-output-routing",
+        "title": "成果物の正本出力先をリポジトリ設定で一意に制御する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-19",
+        "due_at": null,
+        "category": "dev"
+      },
+      {
+        "story_id": "story-vibepro-human-decision-checkpoint",
+        "title": "実行を止める重要判断だけを永続化して再開するHuman Checkpoint",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-15",
+        "due_at": null,
+        "category": "product"
+      },
+      {
+        "story_id": "story-vibepro-agent-runtime-adapters",
+        "title": "実装・Reviewを委譲するProvider-neutral Agent Runtime Adapter",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-15",
+        "due_at": null,
+        "category": "platform"
+      },
+      {
+        "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+        "title": "高シグナル確認を先行するRisk-adaptive Validation Sequencing",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-16",
+        "due_at": null,
+        "category": "quality"
+      }
+    ],
+    "current_story_id": "story-vibepro-risk-adaptive-validation-sequencing"
+  }
+}

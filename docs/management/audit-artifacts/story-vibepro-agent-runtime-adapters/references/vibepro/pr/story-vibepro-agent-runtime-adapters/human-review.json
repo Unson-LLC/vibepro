@@ -1,0 +1,163 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-agent-runtime-adapters",
+  "created_at": "2026-07-19T23:48:19.525Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-agent-runtime-adapters/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-agent-runtime-adapters/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-agent-runtime-adapters/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-agent-runtime-adapters/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-agent-runtime-adapters.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-agent-runtime-adapters.vibepro.json, docs/specs/vibepro-agent-runtime-adapters.md)"
+    },
+    "decision_records": {
+      "total": 8,
+      "open": 0,
+      "by_type": {
+        "needs_review": 8
+      },
+      "by_status": {
+        "accepted": 8
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+          "expected_root": null,
+          "expected_head_sha": "2800e8be37dca4e26c52873898b152f865433524",
+          "current_head_sha": "2800e8be37dca4e26c52873898b152f865433524",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784504765699-cfce9fca",
+        "story_id": "story-vibepro-agent-runtime-adapters",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:split_resolution",
+        "source_status": "needs_review",
+        "summary": "No further split is required for Story 6",
+        "reason": "The final delta is Story-local traceability and capability enforcement inside the same runtime boundary, with independent split review passing at the exact head.",
+        "reviewer": "codex",
+        "artifact": "docs/architecture/story-vibepro-agent-runtime-adapters.md",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": ".vibepro/qa/agent-runtime-adapters/targeted-tests.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/agent-runtime-adapters/targeted-tests.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/qa/agent-runtime-adapters/targeted-tests.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+            "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+            "expected_root": null,
+            "expected_head_sha": "2800e8be37dca4e26c52873898b152f865433524",
+            "current_head_sha": "2800e8be37dca4e26c52873898b152f865433524",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "2800e8be37dca4e26c52873898b152f865433524",
+          "current_branch": "codex/story-vibepro-agent-runtime-adapters",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-19T23:46:05.698Z"
+        },
+        "recorded_at": "2026-07-19T23:46:05.699Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-19T23:48:17.971Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "2800e8be37dca4e26c52873898b152f865433524",
+      "branch": "codex/story-vibepro-agent-runtime-adapters",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "ec4889ed8d9f27d6743b1ef12f73dcd358b42a3f",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -1,0 +1,929 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-gate-outcome-ledger-v3",
+  "updated_at": "2026-07-22T06:10:44.218Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:senior_gap_judgment|needs_review|passed|2026-07-22T06:09:27.901Z|2026-07-22T06:10:44.202Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T06:09:27.901Z",
+      "resolved_at": "2026-07-22T06:10:44.202Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f05f9b2401655828445858c7dc717f83d55017db",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/ja/reference/cli.md",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "docs/reference/cli.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:responsibility_authority|needs_evidence|passed|2026-07-22T06:09:27.901Z|2026-07-22T06:10:44.202Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T06:09:27.901Z",
+      "resolved_at": "2026-07-22T06:10:44.202Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f05f9b2401655828445858c7dc717f83d55017db",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/ja/reference/cli.md",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "docs/reference/cli.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:senior_gap_judgment|block|passed|2026-07-22T03:06:55.460Z|2026-07-22T04:31:43.636Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "block",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T03:06:55.460Z",
+      "resolved_at": "2026-07-22T04:31:43.636Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-22T03:06:55.460Z|2026-07-22T04:31:43.636Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T03:06:55.460Z",
+      "resolved_at": "2026-07-22T04:31:43.636Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:artifact_consistency|stale_evidence|passed|2026-07-22T03:06:55.460Z|2026-07-22T04:31:43.636Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T03:06:55.460Z",
+      "resolved_at": "2026-07-22T04:31:43.636Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:definition_of_done|needs_evidence|passed|2026-07-22T03:06:55.460Z|2026-07-22T04:31:43.636Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T03:06:55.460Z",
+      "resolved_at": "2026-07-22T04:31:43.636Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:agent_review|needs_review|passed|2026-07-22T03:06:55.460Z|2026-07-22T04:31:43.636Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T03:06:55.460Z",
+      "resolved_at": "2026-07-22T04:31:43.636Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|review:join:gate|needs_review|passed|2026-07-22T03:06:55.460Z|2026-07-22T04:31:43.636Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T03:06:55.460Z",
+      "resolved_at": "2026-07-22T04:31:43.636Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|review:record:gate:gate_evidence|needs_review|passed|2026-07-22T03:06:55.460Z|2026-07-22T04:31:43.636Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T03:06:55.460Z",
+      "resolved_at": "2026-07-22T04:31:43.636Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|review:preflight:gate:gate_evidence|failed|passed|2026-07-22T03:06:55.460Z|2026-07-22T04:31:43.636Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "review:preflight:gate:gate_evidence",
+      "gate_type": "agent_review_dispatch_preflight_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T03:06:55.460Z",
+      "resolved_at": "2026-07-22T04:31:43.636Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|review:dispatch_batch:gate|failed|passed|2026-07-22T03:06:55.460Z|2026-07-22T04:31:43.636Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T03:06:55.460Z",
+      "resolved_at": "2026-07-22T04:31:43.636Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:split_resolution|needs_review|passed|2026-07-22T03:06:55.460Z|2026-07-22T04:31:43.636Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:split_resolution",
+      "gate_type": "split_resolution_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T03:06:55.460Z",
+      "resolved_at": "2026-07-22T04:31:43.636Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-07-22T03:06:55.460Z|2026-07-22T04:31:43.636Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T03:06:55.460Z",
+      "resolved_at": "2026-07-22T04:31:43.636Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "b0e8a92e290f3cf17c3475094c15b62c689ece0d",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:responsibility_authority|needs_evidence|passed|2026-07-22T02:09:36.428Z|2026-07-22T03:06:55.460Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T02:09:36.428Z",
+      "resolved_at": "2026-07-22T03:06:55.460Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "4e0480e07298ab80ff049f925ede39026c1908bc",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:design_ssot_reconciliation|needs_review|passed|2026-07-22T02:09:36.428Z|2026-07-22T03:06:55.460Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:design_ssot_reconciliation",
+      "gate_type": "design_ssot_reconciliation_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T02:09:36.428Z",
+      "resolved_at": "2026-07-22T03:06:55.460Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "4e0480e07298ab80ff049f925ede39026c1908bc",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:evidence_adjudication|needs_evidence|passed|2026-07-22T02:05:39.197Z|2026-07-22T02:09:36.428Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T02:05:39.197Z",
+      "resolved_at": "2026-07-22T02:09:36.428Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:vibepro_artifact_policy|needs_review|passed|2026-07-22T02:05:39.197Z|2026-07-22T02:09:36.428Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:vibepro_artifact_policy",
+      "gate_type": "vibepro_artifact_policy_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T02:05:39.197Z",
+      "resolved_at": "2026-07-22T02:09:36.428Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:judgment_axis_scope_reviewability|needs_evidence|passed|2026-07-22T02:05:39.197Z|2026-07-22T02:09:36.428Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:judgment_axis_scope_reviewability",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T02:05:39.197Z",
+      "resolved_at": "2026-07-22T02:09:36.428Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:judgment_axis_data_state|needs_evidence|accepted_followup|2026-07-22T02:05:39.197Z|2026-07-22T02:09:36.428Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:judgment_axis_data_state",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "accepted_followup",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T02:05:39.197Z",
+      "resolved_at": "2026-07-22T02:09:36.428Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:common_judgment_spine|needs_evidence|passed|2026-07-22T02:05:39.197Z|2026-07-22T02:09:36.428Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T02:05:39.197Z",
+      "resolved_at": "2026-07-22T02:09:36.428Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:judgment_dag_adjudication|needs_evidence|passed|2026-07-22T01:54:33.365Z|2026-07-22T02:05:39.197Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T01:54:33.365Z",
+      "resolved_at": "2026-07-22T02:05:39.197Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:definition_of_done|needs_evidence|passed|2026-07-22T01:54:33.365Z|2026-07-22T02:05:39.197Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T01:54:33.365Z",
+      "resolved_at": "2026-07-22T02:05:39.197Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:agent_review|needs_review|passed|2026-07-22T01:54:33.365Z|2026-07-22T02:05:39.197Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T01:54:33.365Z",
+      "resolved_at": "2026-07-22T02:05:39.197Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|review:join:gate|needs_review|passed|2026-07-22T01:54:33.365Z|2026-07-22T02:05:39.197Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T01:54:33.365Z",
+      "resolved_at": "2026-07-22T02:05:39.197Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|review:record:gate:gate_evidence|needs_review|passed|2026-07-22T01:54:33.365Z|2026-07-22T02:05:39.197Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T01:54:33.365Z",
+      "resolved_at": "2026-07-22T02:05:39.197Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|review:gate:gate_evidence|missing|passed|2026-07-22T01:54:33.365Z|2026-07-22T02:05:39.197Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "review:gate:gate_evidence",
+      "gate_type": "agent_review_role_gate",
+      "previous_status": "missing",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T01:54:33.365Z",
+      "resolved_at": "2026-07-22T02:05:39.197Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|review:prepare:gate|needs_review|passed|2026-07-22T01:54:33.365Z|2026-07-22T02:05:39.197Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "review:prepare:gate",
+      "gate_type": "agent_review_prepare_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T01:54:33.365Z",
+      "resolved_at": "2026-07-22T02:05:39.197Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|review:dispatch_batch:gate|needs_review|passed|2026-07-22T01:54:33.365Z|2026-07-22T02:05:39.197Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T01:54:33.365Z",
+      "resolved_at": "2026-07-22T02:05:39.197Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-07-22T01:54:33.365Z|2026-07-22T02:05:39.197Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T01:54:33.365Z",
+      "resolved_at": "2026-07-22T02:05:39.197Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-22T01:48:24.375Z|2026-07-22T01:52:29.900Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T01:48:24.375Z",
+      "resolved_at": "2026-07-22T01:52:29.900Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:integration|needs_evidence|passed|2026-07-22T01:48:24.375Z|2026-07-22T01:52:29.900Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:integration",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "verification_command",
+          "command": "node bin/vibepro.js architecture conformance . --json",
+          "status": "pass",
+          "recorded_at": "2026-07-22T01:51:30.540Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T01:48:24.375Z",
+      "resolved_at": "2026-07-22T01:52:29.900Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-architecture-conformance|gate:judgment_axis_public_contract|needs_evidence|passed|2026-07-22T01:48:24.375Z|2026-07-22T01:52:29.900Z",
+      "story_id": "story-vibepro-target-architecture-conformance",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-22T01:48:24.375Z",
+      "resolved_at": "2026-07-22T01:52:29.900Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+        "changed_files": [
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+          "src/architecture-conformance.js",
+          "src/cli.js",
+          "test/architecture-conformance.test.js"
+        ]
+      }
+    }
+  ]
+}

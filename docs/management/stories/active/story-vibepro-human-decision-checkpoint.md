@@ -1,6 +1,8 @@
 ---
 story_id: story-vibepro-human-decision-checkpoint
-parent_design: vibepro-autonomy-roadmap-rebaseline
+parent_design:
+  - vibepro-autonomy-roadmap-rebaseline
+  - vibepro-human-decision-checkpoint
 vibepro_story_id: story-vibepro-autonomy-roadmap-rebaseline
 title: 実行を止める重要判断だけを永続化して再開するHuman Checkpoint
 status: active
@@ -41,10 +43,10 @@ updated_at: 2026-07-15
 
 - [ ] HDC-S-1: 同じ根拠から派生した質問は重複排除され、material reasonと影響範囲を伴う。
 - [ ] HDC-S-2: `clarification`、`scope_split`、`waiver_request`、`external_side_effect`、`security_boundary`を型付きdecisionとして扱う。
-- [ ] HDC-S-3: 回答待ちRunは副作用を開始せず、回答後は停止nodeから再開する。
+- [ ] HDC-S-3: 回答待ちRunは副作用を開始せず、回答後は停止nodeをRun cursorとして永続化し、次のorchestrationがそのnodeから再開してcursorを消費する。
 - [ ] HDC-S-4: critical gateのwaiver回答は受理せず、evidence、split、blockを要求する。
 - [ ] HDC-S-5: Brainbase由来handoffがある場合、VibeProはその参照を保持し、上流意図を独自に再定義しない。
-- [ ] HDC-S-6: 回答と反映先がdecision indexおよびRun journalから再構成できる。
+- [ ] HDC-S-6: 回答と反映先がdecision indexおよびRun journalから再構成でき、indexの部分失敗はdecision artifactから自己修復できる。
 - [ ] HDC-S-7: duplicate、stale HEAD、cancelled Run、invalid decision typeのテストがある。
 
 ## 依存関係・完了順

@@ -22,8 +22,9 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
-import { recordVerificationEvidence } from './verification-evidence.js';
-import { getSpecFile } from './spec-store.js';
+import { isCallerForbiddenObservationKey, recordVerificationEvidence } from './verification-evidence.js';
+import { resolveAcceptedSpecFile } from './spec-store.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 
 export const PREFLIGHT_SCHEMA_VERSION = '0.1.0';
 
@@ -141,12 +142,11 @@ const verifyStatusArtifactRecipe = {
     };
   },
   async fix({ repoRoot, storyId, detection }) {
-    const artifactDir = path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'preflight-artifacts');
-    await mkdir(artifactDir, { recursive: true });
     const artifacts = [];
     for (const command of detection.targets) {
       const exitCode = resolveExitCode(command);
-      const artifactPath = path.join(artifactDir, `${command.kind}-status.json`);
+      const artifactPath = await resolvePrArtifactFile(repoRoot, storyId, path.join('preflight-artifacts', `${command.kind}-status.json`));
+      await mkdir(path.dirname(artifactPath), { recursive: true });
       await writeFile(artifactPath, `${JSON.stringify({ status: 'pass', exit_code: exitCode }, null, 2)}\n`);
       await recordVerificationEvidence(repoRoot, {
         storyId,
@@ -366,11 +366,11 @@ async function readJsonIfExists(filePath) {
 }
 
 async function readVerificationEvidence(repoRoot, storyId) {
-  return readJsonIfExists(path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'verification-evidence.json'));
+  return readJsonIfExists(await resolvePrArtifactFile(repoRoot, storyId, 'verification-evidence.json'));
 }
 
 async function readDecisionRecords(repoRoot, storyId) {
-  const records = await readJsonIfExists(path.join(getWorkspaceDir(repoRoot), 'pr', storyId, 'decision-records.json'));
+  const records = await readJsonIfExists(await resolvePrArtifactFile(repoRoot, storyId, 'decision-records.json'));
   return Array.isArray(records?.decisions) ? records.decisions : [];
 }
 
@@ -388,9 +388,19 @@ function resolveExitCode(command) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+// This replays a recorded record back through `verify record` without the runner's receipt, so
+// it is a caller like any other: keys the record path refuses from a caller are dropped rather
+// than replayed, the same rule buildArtifactRemediationCommands applies to the command it
+// prints. Today's detect filter only reaches records without an artifact, which the runner
+// never produces, so the drop is rarely exercised — but a record that carries provenance keys
+// without an artifact (hand-edited, or written by an older recording path) would otherwise make
+// the whole recipe fail on a `--observed` key parseObservedPairs rejects on sight. The predicate
+// is imported so there is one set, not a copy that can drift.
 function observedPairs(values) {
   if (!values || typeof values !== 'object') return [];
-  return Object.entries(values).map(([key, value]) => `${key}=${value}`);
+  return Object.entries(values)
+    .filter(([key]) => !isCallerForbiddenObservationKey(key))
+    .map(([key, value]) => `${key}=${value}`);
 }
 
 function isGenericUnboundRecord(command) {
@@ -403,7 +413,7 @@ function isGenericUnboundRecord(command) {
 }
 
 async function resolveContractClauseId(repoRoot, storyId) {
-  const spec = await readJsonIfExists(getSpecFile(repoRoot, storyId));
+  const spec = await readJsonIfExists(await resolveAcceptedSpecFile(repoRoot, storyId));
   const specClauses = Array.isArray(spec?.clauses)
     ? spec.clauses.filter((clause) => clause?.type === 'contract' && clause?.id).map((clause) => clause.id)
     : [];
@@ -521,7 +531,7 @@ export function extractSpecDocDiagramKinds(raw) {
 }
 
 async function readFinalSpecDiagramKinds(repoRoot, storyId) {
-  const spec = await readJsonIfExists(getSpecFile(repoRoot, storyId));
+  const spec = await readJsonIfExists(await resolveAcceptedSpecFile(repoRoot, storyId));
   if (!Array.isArray(spec?.diagrams)) return [];
   return [...new Set(spec.diagrams.map((diagram) => diagram?.kind).filter(Boolean))];
 }

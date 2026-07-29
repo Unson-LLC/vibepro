@@ -1,0 +1,148 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-atomic-scope-review-contract",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "needs_changes",
+  "summary": "aggregate preflight path coverage must bind to the full changed-path union",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "aggregate_preflight_path_union_missing",
+      "detail": "representative design/runtime/test inputs can pass without covering every changed path or generated lane"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "reviewed gate_orchestration,review_lifecycle; risk_surfaces=gate_orchestration,review_lifecycle; found aggregate changed-path coverage gap",
+    "evidence": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d00-54bf-71e0-884d-bfc22582fd1e.md",
+    "inputs": [
+      "docs/architecture/vibepro-atomic-scope-review-contract.md",
+      "src/validation-sequencing.js",
+      "src/pr-manager.js",
+      "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "pass-leaning due to fail-closed lifecycle -> needs_changes because aggregate preflight accepts representative paths instead of full changed-path union"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+    "actual_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+    "expected_root": null,
+    "expected_head_sha": "75eff03a8b9c9d1c7056cd6012b27b0c8d8fed57",
+    "current_head_sha": "75eff03a8b9c9d1c7056cd6012b27b0c8d8fed57",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+      "actual_root": "/private/tmp/vibepro-atomic-scope-review-contract-recovered",
+      "expected_root": null,
+      "expected_head_sha": "75eff03a8b9c9d1c7056cd6012b27b0c8d8fed57",
+      "current_head_sha": "75eff03a8b9c9d1c7056cd6012b27b0c8d8fed57",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-23T03:38:21.349Z",
+  "git_context": {
+    "head_sha": "75eff03a8b9c9d1c7056cd6012b27b0c8d8fed57",
+    "current_branch": "codex/story-vibepro-atomic-scope-review-contract-v2",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T03:38:21.334Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "workflow-heavy preflight boundary review"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "75eff03a8b9c9d1c7056cd6012b27b0c8d8fed57",
+    "surface_files": [
+      {
+        "path": "docs/architecture/vibepro-atomic-scope-review-contract.md",
+        "sha256": "f64d2300a810f006188d988293921ebb2129989c739c79e9047961b579ed7bb0",
+        "size": 7847
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "be51353d269c429eacd6bc78893da9ba3048246bf11dfe5b5ad189a34d5686cc",
+        "size": 697876
+      },
+      {
+        "path": "src/validation-sequencing.js",
+        "sha256": "49e13b81ae7ea1acead25f829bfe40e550fa3ebec5cc37912340af5802d73b8c",
+        "size": 31021
+      },
+      {
+        "path": "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+        "sha256": "6ce095799ff8815298fe624b244c169b6e9bd22725491856206c673fa3d50087",
+        "size": 27111
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "772d29bbf2a4be76cf97c282ad73c295d7fe617b93515955f44a506fc965ea93"
+  },
+  "source_fingerprint": "d53f49b869eba578a7764d1b6f2b3e624ec1fc6ba8b43336dd77d51af0ef892f",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f8d00-54bf-71e0-884d-bfc22582fd1e",
+    "agent_role": null,
+    "model": "gpt-5.6-luna",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "019f8d00-54bf-71e0-884d-bfc22582fd1e",
+    "session_id": "019f8d00-54bf-71e0-884d-bfc22582fd1e",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d00-54bf-71e0-884d-bfc22582fd1e.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d00-54bf-71e0-884d-bfc22582fd1e.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "019f8d00-54bf-71e0-884d-bfc22582fd1e",
+      "implementation_session_id": "019f6313-57a9-7831-ac09-000d36c8fc30",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

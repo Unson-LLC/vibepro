@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "decision_id": "decision-1784557661122-864afde8",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "All six focused commits and seven changed files implement one Story 8 contract spanning SSOT, runtime, CLI docs, and tests; independent review found the slice coherent and no Story-external file is present.",
+      "artifact": ".vibepro/pr/story-vibepro-review-finding-repair-loop/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-20T14:27:48.495Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "execution_topology|changed_path:execution_topology|surface:workflow_or_agent|text:execution_topology",
+      "axis": "execution_topology",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "decision_id": "decision-1784557659566-a9f78c1e",
+      "source": "gate:judgment_axis_execution_topology",
+      "reason": "The current independent review, architecture, crash-safe dispatch tests, and 1445-pass suite cover worker, retry, artifact, and evidence lifecycle topology; missing agent_review is a derived projection mismatch.",
+      "artifact": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-metadata-rereview.json",
+      "activation_candidates": [
+        "surface:workflow_or_agent",
+        "changed_path:execution_topology",
+        "text:execution_topology"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-20T14:27:48.495Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

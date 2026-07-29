@@ -1,0 +1,93 @@
+{
+  "schema_version": "0.1.0",
+  "review_type": "gate:gate_evidence",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "reviewed_head_sha": "e64469202935397c70b215d3ef069f10809128a1",
+  "status": "needs_changes",
+  "summary": "The frozen HEAD has strong exact-head regression, sequencing, strict-review, traceability, and conformance evidence, but the mandatory evidence package is not yet sufficient for Gate closure. Independent exact-head evidence adjudication marks AC-2, AC-4, AC-5, AC-6, and AC-7 not demonstrated, and direct inspection confirms material gaps between the checked Story claims and the supplied E2E/dogfood evidence. This is an evidence verdict, not a source-code regression verdict.",
+  "findings": [
+    {
+      "id": "GE-001",
+      "severity": "high",
+      "title": "The one-command available-provider evidence starts after two required actions are already satisfied",
+      "detail": "OCR-S-2 requires one public command to create the managed worktree and prepare missing artifacts when needed. S-001 manually runs git worktree add, writes a legacy execution state with managed_worktree.status=created, and stubs readGateReadiness with missing_artifacts=[] before invoking execute run. The test demonstrates implementation, repair, rereview, and final_prepare composition, but not one-command worktree creation or missing-artifact preparation.",
+      "evidence": [
+        "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md:30",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts:30",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts:54",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts:187"
+      ],
+      "required_change": "Add production-shaped public-CLI evidence that begins without a managed worktree and with a diagnosed missing artifact, then proves the canonical owners create/prepare them before implementation; otherwise narrow the checked Story claim and Spec/test-plan contract."
+    },
+    {
+      "id": "GE-002",
+      "severity": "high",
+      "title": "The checked E2E matrix does not demonstrate persisted decision and verification-failure recovery",
+      "detail": "OCR-S-5 claims success, resume, human decision, verification failure, repair convergence, no-progress, quota, timeout, CI pending, and cancel as an E2E matrix. The human-decision and verification-failure assertions directly invoke prepare_artifacts/verify action-owner functions. The separate public-run E2E persists and resumes runtime_unavailable, but its next verification_failed result is produced by an injected action runner and is not corrected and resumed through verification. Therefore the persisted guarded-Run transition contract is not demonstrated for these matrix rows.",
+      "evidence": [
+        "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md:33",
+        "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md:79",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts:330",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts:486"
+      ],
+      "required_change": "Exercise human-decision persistence/resume and verification-failure correction/resume through the public guarded Run, or reduce the Story's checked E2E claim to the transitions actually covered."
+    },
+    {
+      "id": "GE-003",
+      "severity": "high",
+      "title": "The real dogfood typed stop omits required provider and recovery fields",
+      "detail": "OCR-S-6 and the test plan require a capability-deficient production smoke to bind provider, missing capability, recovery boundary, and typed stop to the Run. Run run-20260723T121501Z-793c40ad persists stop_reason.details.missing_capabilities only; provider is present separately as runtime_dispatches[].adapter_id and the resume boundary only as resume_from_node_id. The required typed-stop contract itself is therefore incomplete.",
+      "evidence": [
+        "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md:34",
+        "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md:116",
+        ".vibepro/executions/story-vibepro-one-command-pr-ready-closure/runs/run-20260723T121501Z-793c40ad/state.json"
+      ],
+      "required_change": "Persist provider identity and an explicit recovery/resume condition inside the typed stop details, rerun the real dogfood smoke, and bind the refreshed artifact to the frozen HEAD."
+    },
+    {
+      "id": "GE-004",
+      "severity": "high",
+      "title": "Trusted PR-ready and external-side-effect evidence is weaker than the checked claims",
+      "detail": "OCR-S-7's PR-ready fixture is deterministic production-shaped evidence, not a real-provider execution: it manually creates the worktree and injects both runtime results and ready_for_pr_create=true. The actual dogfood run reaches a typed stop, but that stop is incomplete under OCR-S-6. Separately, AC-4 has a useful negative unit boundary for named PR/merge/waiver/deploy/publish seams, yet no available-provider observation or enforceable runtime control proves that an implementation provider cannot perform another material external side effect; the provider objective is the only visible restriction.",
+      "evidence": [
+        "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md:32",
+        "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md:35",
+        "test/one-command-pr-ready-closure.test.js:352",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts:30",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts:197"
+      ],
+      "required_change": "After closing GE-001 and GE-003, record evidence that satisfies the Story's Trusted PR-ready-or-valid-typed-stop branch. Also bind material external-side-effect prevention to an enforceable runtime authority/capability boundary or narrow the claim to the named prohibited seams actually enforced."
+    }
+  ],
+  "inspection_summary": "Regression guard passes at exact HEAD: unit 288/288, integration 4/4, E2E 4/4 with declared AC mapping, typecheck, and build-equivalent validation are green. All five validation-sequencing phases are passed with the same frozen HEAD/test fingerprint. Architecture-boundary, runtime-contract, and release-risk reviews pass at the frozen HEAD. Target conformance improves origin/main baseline violations from 81 to 80 and adds no run-session-to-CLI reverse dependency. Path-surface coverage across Story, roadmap, Architecture, Spec, test plan, run-session owner, CLI, runtime connectors, independent review owner, unit tests, production-shaped E2E, real dogfood state, verification evidence, traceability, and bounded Gate artifacts was inspected. However, the exact-head evidence adjudicator reports only AC-1, AC-3, and AC-8 demonstrated; direct inspection confirms the five not-demonstrated acceptance claims above. The 2026-07-24T01:02:51Z pr-prepare snapshot and its evidence-reuse section are stale and were not treated as fresh evidence; a final pr prepare rerun remains necessary only after these substantive gaps and all current-head records are closed.",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-request-gate_evidence.md",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+    ".vibepro/traceability/story-vibepro-one-command-pr-ready-closure/traceability.json",
+    ".vibepro/validation-sequencing/story-vibepro-one-command-pr-ready-closure/state.json",
+    ".vibepro/qa/unit-e6446920.json",
+    ".vibepro/qa/integration-e6446920.json",
+    ".vibepro/qa/e2e-e6446920.json",
+    ".vibepro/qa/typecheck-e6446920.json",
+    ".vibepro/qa/build-e6446920.json",
+    ".vibepro/qa/review-architecture-e6446920.json",
+    ".vibepro/qa/review-runtime-e6446920.json",
+    ".vibepro/qa/review-release-risk-e6446920.json",
+    ".vibepro/executions/story-vibepro-one-command-pr-ready-closure/runs/run-20260723T121501Z-793c40ad/state.json",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    "src/one-command-pr-ready-closure.js",
+    "src/guarded-run-session.js",
+    "src/agent-runtime-connectors.js",
+    "src/independent-review-orchestrator.js",
+    "src/cli.js",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/guarded-run-session.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+  ],
+  "judgment_delta": "Initial bounded Gate inspection found stale canonical responsibility/failure-mode/review bindings. Later exact-head evidence closed unit_regression, parse_failure, validation sequencing, strict architecture/runtime/release-risk review, and conformance concerns, which would otherwise support pass. The final judgment remains needs_changes because the newly completed independent exact-head evidence adjudication identifies five not-demonstrated acceptance claims, and direct source/artifact inspection confirms those are substantive path-surface gaps rather than stale metadata."
+}

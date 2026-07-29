@@ -40,6 +40,19 @@ async function makeStoryRepo() {
   await git(repo, ['remote', 'add', 'origin', remote]);
   await git(repo, ['push', '-u', 'origin', 'main']);
   await git(repo, ['push', '-u', 'origin', 'feature/pr-readiness']);
+  const authorityUrl = 'https://github.example.test/unson/vibepro.git';
+  await git(repo, ['config', `url.${remote}.insteadOf`, authorityUrl]);
+  await git(repo, ['remote', 'set-url', 'origin', authorityUrl]);
+  const start = await runCli([
+    'execute',
+    'start',
+    repo,
+    '--story-id',
+    storyId,
+    '--base',
+    'main'
+  ]);
+  assert.equal(start.exitCode, 0);
   return repo;
 }
 

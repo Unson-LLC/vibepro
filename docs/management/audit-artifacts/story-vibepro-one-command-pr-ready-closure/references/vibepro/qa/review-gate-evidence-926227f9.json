@@ -1,0 +1,98 @@
+{
+  "schema_version": "0.1.0",
+  "review_type": "gate:gate_evidence",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "head_sha": "926227f945878299770448a03966c17dfa70158d",
+  "status": "needs_changes",
+  "summary": "The circular acceptance-marker finding is resolved and the exact-head behavioral evidence is credible: E2E is 4/4 with AC-1 through AC-8 bound to substantive assertions, focused unit verification is 288/288, integration is 4/4, typecheck passes, acceptance and judgment adjudications cover 8/8 and 16/16, and target conformance improves origin/main from 81 to 80 violations without a new run-session-to-CLI reverse dependency. The current canonical pr-prepare artifact nevertheless cannot support PR-ready closure because validation sequencing is invalidated and Responsibility Authority still lacks required unit_regression evidence.",
+  "inspection_summary": "Independently compared origin/main...HEAD, inspected the four production-shaped E2E scenarios and their negative-path assertions, checked the exact-head verification ledger and QA artifacts, reviewed both adjudication artifacts and the architecture-boundary review, and then reconciled those claims against the canonical pr-prepare validation_sequencing and responsibility_authority states. The implementation and repair-path surface are covered, but two current Gate evidence obligations remain non-green.",
+  "judgment_delta": "Initial judgment: likely pass because the prior marker-only E2E was removed and all supplied exact-head test, adjudication, architecture, and conformance artifacts were green. Final judgment: needs_changes because canonical pr-prepare contradicts the claimed completed validation lifecycle: all validation phases are invalidated, and the matched runtime-cost responsibility is missing unit_regression evidence.",
+  "lenses": [
+    "regression_guard",
+    "path_surface_coverage"
+  ],
+  "resolved_prior_finding": {
+    "finding_id": "e2e-hard-coded-acceptance-marker",
+    "status": "resolved",
+    "reason": "The marker-only fifth test is absent. The current E2E contains four substantive scenarios, and AC markers are attached to assertions over autonomous profile selection, current-HEAD readiness, implementation and repair commits, managed-worktree confinement, typed stops, predecessor SSOT state, and forbidden autonomous actions. The exact-head artifact reports 4/4 and 8/8 acceptance coverage."
+  },
+  "findings": [
+    {
+      "id": "validation-sequencing-invalidated",
+      "gate_id": "gate:validation_sequencing",
+      "severity": "blocking",
+      "category": "artifact_consistency",
+      "summary": "Canonical validation sequencing is not complete at the reviewed HEAD.",
+      "evidence": [
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: pr_context.validation_sequencing.evaluation.status=needs_evidence",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: pr_context.validation_sequencing.evaluation.ready_for_final_gate=false",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: targeted_validation, preflight_review, code_frozen, expensive_verification, and final_review are all invalidated because the current change-risk classification differs from the persisted plan",
+        ".vibepro/validation-sequencing/story-vibepro-one-command-pr-ready-closure/state.json"
+      ],
+      "required_change": "Regenerate the risk-adaptive validation plan for the current classification and replay the required phases through final_review on the exact current HEAD. Then rerun pr prepare and verify ready_for_final_gate=true. A standalone exact-head test artifact does not override the canonical invalidated sequence state."
+    },
+    {
+      "id": "responsibility-authority-unit-regression-missing",
+      "gate_id": "gate:responsibility_authority",
+      "severity": "blocking",
+      "category": "required_gate_evidence",
+      "summary": "Responsibility Authority is missing the required unit_regression evidence for runtime-cost telemetry ingestion.",
+      "evidence": [
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: pr_context.responsibility_authority.status=needs_evidence",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: missing_evidence_count=1",
+        "Matched responsibility vibepro.runtime_cost.telemetry_ingestion has evidence_status=missing and missing_evidence=[unit_regression]"
+      ],
+      "required_change": "Record current-head verification with the scenario/evidence key required to satisfy unit_regression for vibepro.runtime_cost.telemetry_ingestion, then rerun pr prepare and confirm gate:responsibility_authority passes."
+    }
+  ],
+  "checks": [
+    {
+      "id": "regression_guard",
+      "status": "needs_changes",
+      "reason": "Behavioral regression proof is strong, including 288/288 unit, 4/4 integration, 4/4 E2E, and typecheck pass, but the canonical validation lifecycle that makes those results Gate-authoritative is invalidated."
+    },
+    {
+      "id": "path_surface_coverage",
+      "status": "pass",
+      "reason": "The closure production paths, managed-worktree flow, review/repair replay, typed negative stops, current-HEAD final preparation, human-only authority exclusions, and runtime-cost audit surface are all represented in focused tests. The remaining issues are evidence registration and sequencing, not an uncovered implementation path."
+    },
+    {
+      "id": "target_architecture_conformance",
+      "status": "pass",
+      "reason": "Exact-head conformance uses origin/main@118b68091b296f6bb8c4414cfc5eadb69ed73dc0, improves violation count from 81 to 80, and records new_run_session_cli_reverse_dependency=false."
+    },
+    {
+      "id": "acceptance_and_judgment_adjudication",
+      "status": "pass",
+      "reason": "Fresh-context artifacts adjudicate AC-1 through AC-8 as demonstrated and all 16 judgment items as sound with direct executable evidence for classifier gaps."
+    }
+  ],
+  "inspected_inputs": [
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-request-gate_evidence.md",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+    ".vibepro/validation-sequencing/story-vibepro-one-command-pr-ready-closure/state.json",
+    ".vibepro/qa/e2e-926227f9.json",
+    ".vibepro/qa/expensive-verification-926227f9.json",
+    ".vibepro/qa/integration-926227f9.json",
+    ".vibepro/qa/typecheck-926227f9.json",
+    ".vibepro/qa/build-ledger-926227f9.json",
+    ".vibepro/qa/conformance-926227f9.json",
+    ".vibepro/qa/adjudication-acceptance-926227f9.json",
+    ".vibepro/qa/adjudication-judgment-926227f9.json",
+    ".vibepro/qa/review-architecture-boundary-926227f9.json",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/guarded-run-session.test.js",
+    "test/session-efficiency-audit.test.js",
+    "src/one-command-pr-ready-closure.js",
+    "src/guarded-run-session.js",
+    "src/independent-review-orchestrator.js",
+    "src/agent-runtime-connectors.js",
+    "src/cli.js",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "origin/main@118b68091b296f6bb8c4414cfc5eadb69ed73dc0"
+  ]
+}

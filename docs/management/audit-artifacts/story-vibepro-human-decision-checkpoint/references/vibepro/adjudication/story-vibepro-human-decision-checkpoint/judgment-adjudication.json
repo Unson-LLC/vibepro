@@ -1,0 +1,456 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-human-decision-checkpoint",
+  "updated_at": "2026-07-19T10:53:16.184Z",
+  "events": [
+    {
+      "event_id": "45d826d5-836e-491d-a480-2dc5c13e3c64",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Typed material decisions stop safely, deduplicate on one HEAD, and remain answerable after HEAD changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:08.345Z"
+    },
+    {
+      "event_id": "a9e981da-2f11-4fac-baca-f4e53c9b8826",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final-HEAD evidence covers create-resolve-create, cross-HEAD reapproval, cursor, failure, restart, and repair.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:08.606Z"
+    },
+    {
+      "event_id": "6c5e56d3-fe8d-4beb-806d-024a7cf2fc9d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Artifact-before-wait, answer-before-resume, immutable evidence, HEAD identity, and checkpoint-before-clear align.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:08.877Z"
+    },
+    {
+      "event_id": "448eb91d-1763-4f70-90b7-cac89d226988",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Persistence, Run authority, CLI transport, Brainbase references, gates, and merge authority remain separated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:09.151Z"
+    },
+    {
+      "event_id": "009971f4-2011-40bf-a354-6158dd147f07",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed JSON, stale and changed HEADs, duplicates, cancellation, repair, failure, and restart are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:09.410Z"
+    },
+    {
+      "event_id": "65dcd076-38b1-4789-8d9e-1092dbc35c97",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final HEAD has 74 focused passes and three independent passing reviews.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:09.668Z"
+    },
+    {
+      "event_id": "0f09c8f8-2013-4d97-8c03-6bc43d6b80c2",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI changes are additive, typed errors fail closed, and documented cursor and decision contracts match code.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:09.950Z"
+    },
+    {
+      "event_id": "da48893f-8fc9-486e-929a-9f30882048c2",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Persistence, waiting, answer, cursor, CLI, and recovery form one coherent contract.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:10.216Z"
+    },
+    {
+      "event_id": "e0ce0f69-8b95-48da-88d7-2c603f95d344",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed persisted JSON fails typed and remains inspectable with focused coverage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:10.471Z"
+    },
+    {
+      "event_id": "34eeb1fb-767e-4786-80ff-7cc02eaafa2f",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No external provider or network dependency is introduced.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:10.740Z"
+    },
+    {
+      "event_id": "69d99d2a-ca53-4e2c-ae6e-52a33d74dd93",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No authentication provider or authorization grant is introduced.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:11.015Z"
+    },
+    {
+      "event_id": "05a8c99a-9ff8-4136-8244-7a36d014335c",
+      "type": "verdict",
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Atomic writes, artifact scanning, index repair, and restart coverage preserve state.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:11.327Z"
+    },
+    {
+      "event_id": "027fe7ee-1e92-4048-8b32-0900fc1de744",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Resolved decision evidence is immutable and reconstructable; gate lifecycle code is unchanged.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:11.606Z"
+    },
+    {
+      "event_id": "b396eaa4-4586-4d90-9ed3-df30988619a2",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Waiting, resume, HEAD changes, failures, historical checkpoints, and cursor consumption are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story5_adjudication_final",
+        "session_ref": null
+      },
+      "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3",
+      "recorded_at": "2026-07-19T10:15:11.869Z"
+    },
+    {
+      "event_id": "40d2c1a7-a1e0-40fe-8ecc-e17adc979f46",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story intent maps coherently to typed decisions, waiting suppression, same-Run resume and AC replay.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:12.872Z"
+    },
+    {
+      "event_id": "c06dd951-6467-4a59-b4cf-b68a74c889a7",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Actual Guarded Run transition, CLI resume, restart and persisted artifact paths are executed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:13.131Z"
+    },
+    {
+      "event_id": "d13cbbbb-86ee-4cc1-a333-5d80148cf65c",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "All six architecture invariants have matching fail-closed implementation and tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:13.375Z"
+    },
+    {
+      "event_id": "11c3b3f7-e3f5-4dab-b40e-3e1f9e83b3ad",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Persistence, Run lifecycle and CLI transport ownership remain separated from Gate and merge approval.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:13.618Z"
+    },
+    {
+      "event_id": "49371fed-3d1c-4141-95b9-a498b6cbf4e5",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed, missing, stale, mismatched, cancelled, critical, crash and unknown-node paths are addressed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:13.885Z"
+    },
+    {
+      "event_id": "1be59d0f-9fbe-4ce6-bfb8-f805deb066bb",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Final HEAD artifacts show 76 focused and 3 acceptance/migration tests passing.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:14.143Z"
+    },
+    {
+      "event_id": "45dc7b6c-0d43-451a-99c7-dc443b10ef8f",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CLI additions and state migration are additive and predecessor contracts remain covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:14.409Z"
+    },
+    {
+      "event_id": "8f972352-c6b6-4301-9cfd-c5749b1f2258",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff is one coherent checkpoint vertical slice with clear ownership and AC trace.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:14.666Z"
+    },
+    {
+      "event_id": "1759d0fe-0c83-430b-9f89-6bf7bfe9ce6c",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "JSON parse failure is typed, fail-closed, non-mutating and directly tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:14.921Z"
+    },
+    {
+      "event_id": "0d9a6c5e-7960-4e06-8e5b-c2d75f078d5d",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No new external provider or network dependency exists; handoff is opaque.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:15.165Z"
+    },
+    {
+      "event_id": "7c1c19aa-eb4d-40b3-94db-45a8b04dbe1e",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Existing local authority is preserved and cross-boundary state changes fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:15.417Z"
+    },
+    {
+      "event_id": "fecf28e9-e94e-40c4-a9cc-5d498ebae908",
+      "type": "verdict",
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Atomic writes, index rebuild, malformed preservation and restart recovery address persistence failure.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:15.659Z"
+    },
+    {
+      "event_id": "69c854a2-247f-4cbd-a9e2-19c231107b3a",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Execution decision records cannot green Gate evidence or bypass critical waiver and merge review.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:15.912Z"
+    },
+    {
+      "event_id": "d7c9b703-b3d9-4fb0-9e70-cbe9eec77964",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Waiting, resume, cursor, failure, restart and completed-checkpoint transitions are directly tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/judgment_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:16.183Z"
+    }
+  ]
+}

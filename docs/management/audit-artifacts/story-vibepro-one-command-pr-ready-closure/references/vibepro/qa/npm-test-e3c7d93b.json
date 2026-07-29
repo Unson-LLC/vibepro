@@ -1,0 +1,13 @@
+{
+  "status": "pass",
+  "command": "npm test",
+  "tests": 2028,
+  "pass": 2028,
+  "fail": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "todo": 0,
+  "duration_ms": 1267868.415542,
+  "source_artifact": ".vibepro/qa/npm-test-e3c7d93b.tap",
+  "head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01"
+}

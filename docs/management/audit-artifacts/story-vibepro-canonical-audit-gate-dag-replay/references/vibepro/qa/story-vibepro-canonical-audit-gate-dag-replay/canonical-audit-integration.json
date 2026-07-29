@@ -1,0 +1,12 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+  "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/canonical-audit-idempotent-persistence.test.js",
+  "tests": 9,
+  "passed": 9,
+  "failed": 0,
+  "summary": "Full and compact canonical persistence, dedupe, replay, and regeneration behavior passed."
+}

@@ -1,0 +1,1 @@
+{"status":"pass","summary":"JSON／人間向け出力は進捗、型付き停止、fallback、復旧操作、pr_ready境界を可視化。","evidence":"E2E 1 pass; Guarded Run 104 pass","findings":[]}

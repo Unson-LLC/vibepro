@@ -1,0 +1,171 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "created_at": "2026-07-21T23:53:59.258Z",
+  "updated_at": "2026-07-21T23:54:31.434Z",
+  "plan": {
+    "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+    "story_id": "story-vibepro-autonomous-action-dag",
+    "required": true,
+    "risk_profile": "workflow_heavy",
+    "risk_surfaces": [
+      "core_workflow_state",
+      "regression_blast_radius",
+      "service_orchestration",
+      "test_coverage"
+    ],
+    "preflight_roles": [
+      "architecture_boundary"
+    ],
+    "preflight_reviews": [
+      {
+        "stage": "architecture_spec",
+        "role": "architecture_boundary",
+        "surfaces": [
+          "core_workflow_state"
+        ]
+      }
+    ],
+    "preflight_surfaces": [
+      "core_workflow_state"
+    ],
+    "phases": [
+      "targeted_validation",
+      "preflight_review",
+      "code_frozen",
+      "expensive_verification",
+      "final_review"
+    ]
+  },
+  "frozen_binding": {
+    "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+    "test_fingerprint": "d083aed127e504c1350032a66b21733cb795efba8ede754684bb5062f33a7994",
+    "verification_command": "node --test test/e2e/story-vibepro-autonomous-action-dag-main.spec.js test/guarded-run-session.test.js test/next-best-action-controller.test.js test/safe-action-orchestrator.test.js test/story-run-portfolio.test.js"
+  },
+  "phases": {
+    "targeted_validation": {
+      "status": "passed",
+      "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-autonomous-action-dag/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-21T23:54:08.412Z",
+      "binding": {
+        "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+        "test_fingerprint": "d083aed127e504c1350032a66b21733cb795efba8ede754684bb5062f33a7994",
+        "verification_command": "node --test test/e2e/story-vibepro-autonomous-action-dag-main.spec.js test/guarded-run-session.test.js test/next-best-action-controller.test.js test/safe-action-orchestrator.test.js test/story-run-portfolio.test.js"
+      }
+    },
+    "preflight_review": {
+      "status": "passed",
+      "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-autonomous-action-dag/architecture_spec/review-result-architecture_boundary.json"
+      ],
+      "record_type": "advisory_preflight",
+      "findings": [],
+      "dispositions": [],
+      "satisfies_final_review": false,
+      "recorded_at": "2026-07-21T23:54:09.311Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-autonomous-action-dag",
+        "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "architecture_boundary",
+        "stage": "architecture_spec",
+        "inspection_summary": "core_workflow_stateを含む差分と現HEAD回帰を確認; risk_surfaces=core_workflow_state",
+        "inspection_inputs": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+          "docs/architecture/story-vibepro-autonomous-action-dag.md",
+          "docs/specs/story-vibepro-autonomous-action-dag.md",
+          "src/safe-action-orchestrator.js",
+          "src/guarded-run-session.js",
+          "src/story-run-portfolio.js"
+        ]
+      },
+      "binding": {
+        "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+        "test_fingerprint": "d083aed127e504c1350032a66b21733cb795efba8ede754684bb5062f33a7994",
+        "verification_command": "node --test test/e2e/story-vibepro-autonomous-action-dag-main.spec.js test/guarded-run-session.test.js test/next-best-action-controller.test.js test/safe-action-orchestrator.test.js test/story-run-portfolio.test.js"
+      }
+    },
+    "code_frozen": {
+      "status": "passed",
+      "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "reason": null,
+      "evidence": [],
+      "recorded_at": "2026-07-21T23:54:09.649Z",
+      "binding": {
+        "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+        "test_fingerprint": "d083aed127e504c1350032a66b21733cb795efba8ede754684bb5062f33a7994",
+        "verification_command": "node --test test/e2e/story-vibepro-autonomous-action-dag-main.spec.js test/guarded-run-session.test.js test/next-best-action-controller.test.js test/safe-action-orchestrator.test.js test/story-run-portfolio.test.js"
+      }
+    },
+    "expensive_verification": {
+      "status": "passed",
+      "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-autonomous-action-dag/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-21T23:54:30.896Z",
+      "binding": {
+        "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+        "test_fingerprint": "d083aed127e504c1350032a66b21733cb795efba8ede754684bb5062f33a7994",
+        "verification_command": "node --test test/e2e/story-vibepro-autonomous-action-dag-main.spec.js test/guarded-run-session.test.js test/next-best-action-controller.test.js test/safe-action-orchestrator.test.js test/story-run-portfolio.test.js"
+      }
+    },
+    "final_review": {
+      "status": "passed",
+      "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-autonomous-action-dag/implementation/review-result-runtime_contract.json"
+      ],
+      "source": "agent_review",
+      "recorded_at": "2026-07-21T23:54:31.434Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-autonomous-action-dag",
+        "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "runtime_contract",
+        "stage": "implementation",
+        "inspection_summary": "reviewed final frozen-HEAD runtime contract and 199/199 current-head regression evidence",
+        "inspection_inputs": [
+          "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+          "docs/architecture/story-vibepro-autonomous-action-dag.md",
+          "docs/specs/story-vibepro-autonomous-action-dag.md",
+          "src/safe-action-orchestrator.js",
+          "src/guarded-run-session.js",
+          "src/story-run-portfolio.js",
+          "test/e2e/story-vibepro-autonomous-action-dag-main.spec.js"
+        ]
+      },
+      "binding": {
+        "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+        "test_fingerprint": "d083aed127e504c1350032a66b21733cb795efba8ede754684bb5062f33a7994",
+        "verification_command": "node --test test/e2e/story-vibepro-autonomous-action-dag-main.spec.js test/guarded-run-session.test.js test/next-best-action-controller.test.js test/safe-action-orchestrator.test.js test/story-run-portfolio.test.js"
+      }
+    }
+  },
+  "proposed_binding": {
+    "head_sha": "5de00643982bc5c1253701fd8d8abdbb6b4ca435",
+    "test_fingerprint": "d083aed127e504c1350032a66b21733cb795efba8ede754684bb5062f33a7994",
+    "verification_command": "node --test test/e2e/story-vibepro-autonomous-action-dag-main.spec.js test/guarded-run-session.test.js test/next-best-action-controller.test.js test/safe-action-orchestrator.test.js test/story-run-portfolio.test.js"
+  },
+  "invalidations": []
+}

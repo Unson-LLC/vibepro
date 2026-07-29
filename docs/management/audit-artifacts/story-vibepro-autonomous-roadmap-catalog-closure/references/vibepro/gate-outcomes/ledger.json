@@ -1,0 +1,1146 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-gate-outcome-ledger-v3",
+  "updated_at": "2026-07-24T17:05:53.715Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:senior_gap_judgment|needs_review|passed|2026-07-24T17:05:30.541Z|2026-07-24T17:05:53.711Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T17:05:30.541Z",
+      "resolved_at": "2026-07-24T17:05:53.711Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-24T17:05:30.541Z|2026-07-24T17:05:53.711Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T17:05:30.541Z",
+      "resolved_at": "2026-07-24T17:05:53.711Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:judgment_dag_adjudication|needs_evidence|passed|2026-07-24T17:01:02.876Z|2026-07-24T17:05:30.541Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T17:01:02.876Z",
+      "resolved_at": "2026-07-24T17:05:30.541Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:evidence_adjudication|needs_evidence|passed|2026-07-24T17:01:02.876Z|2026-07-24T17:05:30.541Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T17:01:02.876Z",
+      "resolved_at": "2026-07-24T17:05:30.541Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:artifact_consistency|stale_evidence|passed|2026-07-24T17:01:02.876Z|2026-07-24T17:05:30.541Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T17:01:02.876Z",
+      "resolved_at": "2026-07-24T17:05:30.541Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-07-24T17:01:02.876Z|2026-07-24T17:05:30.541Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T17:01:02.876Z",
+      "resolved_at": "2026-07-24T17:05:30.541Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-24T16:33:47.817Z|2026-07-24T16:59:20.442Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:33:47.817Z",
+      "resolved_at": "2026-07-24T16:59:20.442Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2cdfed79a229632dc6104b8f50747ce6f87b67a0",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:senior_gap_judgment|needs_review|passed|2026-07-24T16:19:10.113Z|2026-07-24T16:23:38.450Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:19:10.113Z",
+      "resolved_at": "2026-07-24T16:23:38.450Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:split_resolution|needs_review|passed|2026-07-24T16:19:10.113Z|2026-07-24T16:23:38.450Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:split_resolution",
+      "gate_type": "split_resolution_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:19:10.113Z",
+      "resolved_at": "2026-07-24T16:23:38.450Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:judgment_axis_scope_reviewability|needs_evidence|accepted_followup|2026-07-24T16:19:10.113Z|2026-07-24T16:23:38.450Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:judgment_axis_scope_reviewability",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "accepted_followup",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:19:10.113Z",
+      "resolved_at": "2026-07-24T16:23:38.450Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:judgment_dag_adjudication|needs_evidence|passed|2026-07-24T16:15:02.344Z|2026-07-24T16:18:55.907Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:15:02.344Z",
+      "resolved_at": "2026-07-24T16:18:55.907Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:evidence_adjudication|needs_evidence|passed|2026-07-24T16:15:02.344Z|2026-07-24T16:18:55.907Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:15:02.344Z",
+      "resolved_at": "2026-07-24T16:18:55.907Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:artifact_consistency|stale_evidence|passed|2026-07-24T16:15:02.344Z|2026-07-24T16:18:55.907Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:15:02.344Z",
+      "resolved_at": "2026-07-24T16:18:55.907Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-07-24T16:15:02.344Z|2026-07-24T16:18:55.907Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:15:02.344Z",
+      "resolved_at": "2026-07-24T16:18:55.907Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "969aa9fb9d6941aa11dd0bf4706850e754a55571",
+        "changed_files": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:judgment_dag_adjudication|needs_evidence|passed|2026-07-24T16:03:13.361Z|2026-07-24T16:08:40.996Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:03:13.361Z",
+      "resolved_at": "2026-07-24T16:08:40.996Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0943ea303d310079962848dfb6f0d53df1835ab6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:evidence_adjudication|needs_evidence|passed|2026-07-24T16:03:13.361Z|2026-07-24T16:08:40.996Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:03:13.361Z",
+      "resolved_at": "2026-07-24T16:08:40.996Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0943ea303d310079962848dfb6f0d53df1835ab6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-24T16:03:13.361Z|2026-07-24T16:08:40.996Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:03:13.361Z",
+      "resolved_at": "2026-07-24T16:08:40.996Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0943ea303d310079962848dfb6f0d53df1835ab6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:artifact_consistency|stale_evidence|passed|2026-07-24T16:03:13.361Z|2026-07-24T16:08:40.996Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:03:13.361Z",
+      "resolved_at": "2026-07-24T16:08:40.996Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0943ea303d310079962848dfb6f0d53df1835ab6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:definition_of_done|needs_evidence|passed|2026-07-24T16:03:13.361Z|2026-07-24T16:08:40.996Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:03:13.361Z",
+      "resolved_at": "2026-07-24T16:08:40.996Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0943ea303d310079962848dfb6f0d53df1835ab6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:unit|needs_evidence|passed|2026-07-24T16:03:13.361Z|2026-07-24T16:08:40.996Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:unit",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:03:13.361Z",
+      "resolved_at": "2026-07-24T16:08:40.996Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0943ea303d310079962848dfb6f0d53df1835ab6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-07-24T16:03:13.361Z|2026-07-24T16:08:40.996Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:03:13.361Z",
+      "resolved_at": "2026-07-24T16:08:40.996Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0943ea303d310079962848dfb6f0d53df1835ab6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:judgment_axis_public_contract|needs_evidence|passed|2026-07-24T16:03:13.361Z|2026-07-24T16:08:40.996Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:03:13.361Z",
+      "resolved_at": "2026-07-24T16:08:40.996Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0943ea303d310079962848dfb6f0d53df1835ab6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:design_diagrams|needs_evidence|satisfied|2026-07-24T16:00:03.249Z|2026-07-24T16:03:10.589Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:design_diagrams",
+      "gate_type": "design_diagrams_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "satisfied",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T16:00:03.249Z",
+      "resolved_at": "2026-07-24T16:03:10.589Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "3dc4d9a987d9b272336e6309184dc02df9d8f1fd",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:judgment_axis_public_contract|needs_evidence|passed|2026-07-24T15:54:56.260Z|2026-07-24T15:57:43.970Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:54:56.260Z",
+      "resolved_at": "2026-07-24T15:57:43.970Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "4189798242c19e7a51d19ba90c4625af38891630",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json",
+          "test/story-discovery.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:judgment_dag_adjudication|needs_evidence|passed|2026-07-24T15:53:16.927Z|2026-07-24T15:54:29.979Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:53:16.927Z",
+      "resolved_at": "2026-07-24T15:54:29.979Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "4108412c9d112d2df3c3a510122c9a4dc63981c9",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-24T15:47:02.522Z|2026-07-24T15:49:08.254Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:47:02.522Z",
+      "resolved_at": "2026-07-24T15:49:08.254Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:judgment_dag_adjudication|needs_evidence|passed|2026-07-24T15:43:33.521Z|2026-07-24T15:46:46.988Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:43:33.521Z",
+      "resolved_at": "2026-07-24T15:46:46.988Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:evidence_adjudication|needs_evidence|passed|2026-07-24T15:43:33.521Z|2026-07-24T15:46:46.988Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:43:33.521Z",
+      "resolved_at": "2026-07-24T15:46:46.988Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:artifact_consistency|stale_evidence|passed|2026-07-24T15:43:33.521Z|2026-07-24T15:46:46.988Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:43:33.521Z",
+      "resolved_at": "2026-07-24T15:46:46.988Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-07-24T15:43:33.521Z|2026-07-24T15:46:46.988Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:43:33.521Z",
+      "resolved_at": "2026-07-24T15:46:46.988Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "873ed59ee7d7ce747fbdf50b291210f68aea2000",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:judgment_dag_adjudication|needs_evidence|passed|2026-07-24T15:32:02.710Z|2026-07-24T15:40:53.163Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:32:02.710Z",
+      "resolved_at": "2026-07-24T15:40:53.163Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:evidence_adjudication|needs_evidence|passed|2026-07-24T15:32:02.710Z|2026-07-24T15:40:53.163Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:32:02.710Z",
+      "resolved_at": "2026-07-24T15:40:53.163Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-24T15:30:48.870Z|2026-07-24T15:32:02.710Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:30:48.870Z",
+      "resolved_at": "2026-07-24T15:32:02.710Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:artifact_consistency|stale_evidence|passed|2026-07-24T15:30:48.870Z|2026-07-24T15:32:02.710Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:30:48.870Z",
+      "resolved_at": "2026-07-24T15:32:02.710Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:vibepro_artifact_policy|needs_review|passed|2026-07-24T15:30:48.870Z|2026-07-24T15:32:02.710Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:vibepro_artifact_policy",
+      "gate_type": "vibepro_artifact_policy_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:30:48.870Z",
+      "resolved_at": "2026-07-24T15:32:02.710Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:design_ssot_reconciliation|needs_review|passed|2026-07-24T15:28:48.827Z|2026-07-24T15:30:45.379Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:design_ssot_reconciliation",
+      "gate_type": "design_ssot_reconciliation_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:28:48.827Z",
+      "resolved_at": "2026-07-24T15:30:45.379Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:story_source_integrity|story_source_mismatch|passed|2026-07-24T15:28:48.827Z|2026-07-24T15:30:45.379Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:story_source_integrity",
+      "gate_type": "story_source_integrity_gate",
+      "previous_status": "story_source_mismatch",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:28:48.827Z",
+      "resolved_at": "2026-07-24T15:30:45.379Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fbb1710721f3b7d06db9cd794116f83367019ed0",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-autonomous-roadmap-catalog-closure|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-24T15:27:02.680Z|2026-07-24T15:28:48.827Z",
+      "story_id": "story-vibepro-autonomous-roadmap-catalog-closure",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "rewording_only",
+      "classification": "resolving_diff_contains_only_documentation_or_story_text",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-24T15:27:02.680Z",
+      "resolved_at": "2026-07-24T15:28:48.827Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "0848d8506fab5885722952f6b86b0eb5eed313fc",
+        "changed_files": [
+          "docs/architecture/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md",
+          "docs/management/stories/active/story-vibepro-autonomous-roadmap-catalog-closure.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure-test-plan.md",
+          "docs/specs/story-vibepro-autonomous-roadmap-catalog-closure.vibepro.json"
+        ]
+      }
+    }
+  ]
+}

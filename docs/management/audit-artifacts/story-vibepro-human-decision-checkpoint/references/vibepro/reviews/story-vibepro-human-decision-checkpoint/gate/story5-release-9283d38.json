@@ -1,0 +1,6 @@
+{
+  "status": "needs_changes",
+  "summary": "Release required crash-safe resume cursor ordering and resolved decision index self-repair.",
+  "head_sha": "9283d38bd32175edff830a94f869ecc400160d44",
+  "findings": ["release-risk-resume-cursor-premature-consumption", "release-risk-resolved-index-replay-not-repaired"]
+}

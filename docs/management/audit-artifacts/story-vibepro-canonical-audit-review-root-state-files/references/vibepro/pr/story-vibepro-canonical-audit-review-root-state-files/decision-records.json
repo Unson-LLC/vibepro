@@ -1,0 +1,432 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+  "updated_at": "2026-07-22T07:09:36.692Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+      "expected_root": null,
+      "expected_head_sha": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+      "current_head_sha": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784704176690-054b369c",
+      "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "No split: the PR is one coherent lane (canonical audit promotion tolerance) and its registration artifacts; blast radius is one function with two callers inside the same module",
+      "reason": "split-plan lanes beyond the primary change contain only story registration and lineage docs that must land with the fix for gate traceability. A clean-branch split would not reduce review load.",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/integration-typecheck-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/unit-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+          "expected_root": null,
+          "expected_head_sha": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+          "current_head_sha": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+        "current_branch": "claude/affectionate-heisenberg-36d68d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T07:09:36.681Z"
+      },
+      "recorded_at": "2026-07-22T07:09:36.692Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784704174757-e71db8bc",
+      "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Bundled scope justified: single-intent bugfix (canonical audit review-root state file tolerance) plus its mandatory VibePro registration artifacts (Story doc, config registration, design-ssot lineage, spec mirror); splitting the registration from the fix would leave either an unreviewable fix or dangling registration",
+      "reason": "One code file + one test file carry the behavior change; all other files are the Story's own registration/traceability surface required by the self-dogfood flow. No unrelated decisions are bundled.",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/unit-test-status.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/integration-typecheck-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/unit-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+          "expected_root": null,
+          "expected_head_sha": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+          "current_head_sha": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+        "current_branch": "claude/affectionate-heisenberg-36d68d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T07:09:34.745Z"
+      },
+      "recorded_at": "2026-07-22T07:09:34.760Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784704064923-fbb72b00",
+      "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Single-reviewer scope: one intent (tolerate story-level review state files in canonical audit) across src/canonical-audit.js + its test file + Story/config/design-ssot registration; review owner map: src/canonical-audit.js and test/canonical-audit-self-contained.test.js are owned by the vibepro core evidence-lifecycle surface (docs/contracts/vibepro-core-responsibilities.json VIBE-CORE-EV-001); no split needed",
+      "reason": "Blast radius is one function (safeReaddirDirectories) with two callers, both inside canonical audit promotion; Graphify shows 2 changed / 13 related files with no runtime consumers outside merge-time promotion. All other changes are the mandatory story registration artifacts. A single reviewer can read the diff as one consistent decision.",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/unit-test-status.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/integration-typecheck-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/unit-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+          "expected_root": null,
+          "expected_head_sha": "773ff262775baaa02f60f4162c25057bc9cf2b02",
+          "current_head_sha": "773ff262775baaa02f60f4162c25057bc9cf2b02",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "773ff262775baaa02f60f4162c25057bc9cf2b02",
+        "current_branch": "claude/affectionate-heisenberg-36d68d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T07:07:44.912Z"
+      },
+      "recorded_at": "2026-07-22T07:07:44.925Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784704062266-ad21a11c",
+      "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": null,
+      "summary": "Public contract unchanged: the fix relaxes an internal readdir classification inside canonical audit promotion; CLI commands, flags, output schemas, and PR body contract in docs/reference/cli.md are untouched",
+      "reason": "Backward-compatible: previously-succeeding trees (stage dirs + *-final.md only) promote identically; the change only stops rejecting state files that the shipped review authorize flow itself writes. The fail-loud ENOTDIR contract for a stage replaced by an extensionless file is preserved and re-verified by the existing regression test and the promotion replay. docs/reference/cli.md required no edits (contract surface diff is empty).",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/integration-typecheck-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/unit-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+          "expected_root": null,
+          "expected_head_sha": "773ff262775baaa02f60f4162c25057bc9cf2b02",
+          "current_head_sha": "773ff262775baaa02f60f4162c25057bc9cf2b02",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "773ff262775baaa02f60f4162c25057bc9cf2b02",
+        "current_branch": "claude/affectionate-heisenberg-36d68d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T07:07:42.249Z"
+      },
+      "recorded_at": "2026-07-22T07:07:42.268Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784704059594-2ff76bba",
+      "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": "Committing .vibepro/config.json is intentional: hand-written Stories must be registered in brainbase.stories[] to be resolvable by story diagnose / pr prepare; no diagnostic evidence artifacts are committed",
+      "reason": "The only .vibepro file in this PR is config.json, whose brainbase.stories[] registration is the documented registration route for hand-written Stories (CLAUDE.md Self-Dogfood Quickstart step 2). Diagnostic artifacts (pr/, reviews/, evidence/, spec/) remain untracked.",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/integration-typecheck-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/unit-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+          "expected_root": null,
+          "expected_head_sha": "773ff262775baaa02f60f4162c25057bc9cf2b02",
+          "current_head_sha": "773ff262775baaa02f60f4162c25057bc9cf2b02",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "773ff262775baaa02f60f4162c25057bc9cf2b02",
+        "current_branch": "claude/affectionate-heisenberg-36d68d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T07:07:39.585Z"
+      },
+      "recorded_at": "2026-07-22T07:07:39.596Z"
+    }
+  ],
+  "summary": {
+    "total": 5,
+    "open": 0,
+    "by_type": {
+      "waiver": 2,
+      "needs_review": 3
+    },
+    "by_status": {
+      "accepted": 5
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+        "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+        "expected_root": null,
+        "expected_head_sha": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+        "current_head_sha": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784704176690-054b369c",
+      "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "No split: the PR is one coherent lane (canonical audit promotion tolerance) and its registration artifacts; blast radius is one function with two callers inside the same module",
+      "reason": "split-plan lanes beyond the primary change contain only story registration and lineage docs that must land with the fix for gate traceability. A clean-branch split would not reduce review load.",
+      "reviewer": "claude_code",
+      "artifact": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/integration-typecheck-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/unit-test-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.claude/worktrees/affectionate-heisenberg-36d68d",
+          "expected_root": null,
+          "expected_head_sha": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+          "current_head_sha": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+        "current_branch": "claude/affectionate-heisenberg-36d68d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-22T07:09:36.681Z"
+      },
+      "recorded_at": "2026-07-22T07:09:36.692Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-canonical-audit-review-root-state-files/decision-records.json"
+}

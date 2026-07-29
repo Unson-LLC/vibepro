@@ -1,0 +1,967 @@
+{
+  "schema_version": "0.1.0",
+  "mode": "dry_run",
+  "model": {
+    "path": "docs/architecture/target-model.json",
+    "status": "draft",
+    "adjudicated_by": null,
+    "module_count": 16
+  },
+  "advisory_notice": "target model は未裁定(draft)。violation は参考値であり、モデル裁定後に確定する。",
+  "graph": {
+    "path": ".vibepro/graphify/graph.json",
+    "node_count": 5265,
+    "dependency_edge_count": 1324
+  },
+  "summary": {
+    "violation_count": 80,
+    "undeclared_dependency_count": 66,
+    "budget_violation_count": 5,
+    "orphan_file_count": 9,
+    "stale_pattern_count": 0,
+    "module_file_counts": {
+      "cli": 5,
+      "workspace-infra": 15,
+      "graph": 3,
+      "story": 8,
+      "task": 2,
+      "architecture": 5,
+      "spec": 6,
+      "evidence": 11,
+      "review": 5,
+      "gate-pr": 14,
+      "run-session": 11,
+      "scanners": 17,
+      "diagnosis": 7,
+      "uiux-design": 9,
+      "reporting": 4,
+      "skills": 1
+    }
+  },
+  "violations": [
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
+      "to_module": "story",
+      "edge_count": 44,
+      "example_edges": [
+        "src/managed-worktree.js -> src/decision-records.js (calls)",
+        "src/managed-worktree-gate.js -> src/decision-records.js (calls)",
+        "src/workspace.js -> src/nocodb-story-sync.js (calls)"
+      ],
+      "summary": "workspace-infra -> story は宣言されていない依存 (44 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
+      "to_module": "cli",
+      "edge_count": 40,
+      "example_edges": [
+        "src/managed-worktree.js -> src/cli.js (calls)",
+        "src/managed-worktree.js -> src/cli.js (calls)",
+        "src/managed-worktree.js -> src/cli.js (calls)"
+      ],
+      "summary": "workspace-infra -> cli は宣言されていない依存 (40 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
+      "to_module": "task",
+      "edge_count": 30,
+      "example_edges": [
+        "src/workspace.js -> src/task-manager.js (calls)",
+        "src/workspace.js -> src/task-manager.js (calls)",
+        "src/workspace.js -> src/task-manager.js (calls)"
+      ],
+      "summary": "workspace-infra -> task は宣言されていない依存 (30 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "uiux-design",
+      "to_module": "cli",
+      "edge_count": 28,
+      "example_edges": [
+        "src/design-ssot.js -> src/cli.js (calls)",
+        "src/design-ssot.js -> src/cli.js (calls)",
+        "src/design-ssot.js -> src/cli.js (calls)"
+      ],
+      "summary": "uiux-design -> cli は宣言されていない依存 (28 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
+      "to_module": "uiux-design",
+      "edge_count": 25,
+      "example_edges": [
+        "src/workspace.js -> src/journey-map.js (calls)",
+        "src/workspace.js -> src/journey-map.js (calls)",
+        "src/workspace.js -> src/journey-map.js (calls)"
+      ],
+      "summary": "workspace-infra -> uiux-design は宣言されていない依存 (25 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "review",
+      "to_module": "cli",
+      "edge_count": 24,
+      "example_edges": [
+        "src/review-repair.js -> src/cli.js (calls)",
+        "src/review-repair.js -> src/cli.js (calls)",
+        "src/agent-review.js -> src/cli.js (calls)"
+      ],
+      "summary": "review -> cli は宣言されていない依存 (24 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
+      "to_module": "gate-pr",
+      "edge_count": 23,
+      "example_edges": [
+        "src/managed-worktree.js -> src/pr-manager.js (calls)",
+        "src/managed-worktree-gate.js -> src/pr-manager.js (calls)",
+        "src/managed-worktree-gate.js -> src/pr-manager.js (calls)"
+      ],
+      "summary": "workspace-infra -> gate-pr は宣言されていない依存 (23 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "evidence",
+      "to_module": "cli",
+      "edge_count": 23,
+      "example_edges": [
+        "src/visual-verifier.js -> src/cli.js (calls)",
+        "src/visual-verifier.js -> src/cli.js (calls)",
+        "src/performance-evidence.js -> src/cli.js (calls)"
+      ],
+      "summary": "evidence -> cli は宣言されていない依存 (23 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
+      "to_module": "run-session",
+      "edge_count": 19,
+      "example_edges": [
+        "src/execution-state.js -> src/guarded-run-session.js (calls)",
+        "src/run-lineage.js -> src/agent-runtime-adapter.js (calls)",
+        "src/run-lineage.js -> src/agent-runtime-adapter.js (calls)"
+      ],
+      "summary": "workspace-infra -> run-session は宣言されていない依存 (19 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "gate-pr",
+      "to_module": "cli",
+      "edge_count": 19,
+      "example_edges": [
+        "src/pr-manager.js -> src/cli.js (calls)",
+        "src/pr-manager.js -> src/cli.js (calls)",
+        "src/pr-manager.js -> src/cli.js (calls)"
+      ],
+      "summary": "gate-pr -> cli は宣言されていない依存 (19 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "run-session",
+      "to_module": "gate-pr",
+      "edge_count": 13,
+      "example_edges": [
+        "src/human-decision-checkpoint.js -> src/canonical-audit.js (calls)",
+        "src/human-decision-checkpoint.js -> src/canonical-audit.js (calls)",
+        "src/run-context-capsule.js -> src/canonical-audit.js (calls)"
+      ],
+      "summary": "run-session -> gate-pr は宣言されていない依存 (13 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "spec",
+      "to_module": "cli",
+      "edge_count": 13,
+      "example_edges": [
+        "src/spec-store.js -> src/cli.js (calls)",
+        "src/spec-store.js -> src/cli.js (calls)",
+        "src/spec-store.js -> src/cli.js (calls)"
+      ],
+      "summary": "spec -> cli は宣言されていない依存 (13 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
+      "to_module": "review",
+      "edge_count": 11,
+      "example_edges": [
+        "src/managed-worktree-gate.js -> src/agent-review.js (calls)",
+        "src/git-fingerprint.js -> src/agent-review.js (calls)",
+        "src/git-fingerprint.js -> src/agent-review.js (calls)"
+      ],
+      "summary": "workspace-infra -> review は宣言されていない依存 (11 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "evidence",
+      "to_module": "gate-pr",
+      "edge_count": 10,
+      "example_edges": [
+        "src/performance-evidence.js -> src/pr-manager.js (calls)",
+        "src/verification-evidence.js -> src/content-binding.js (calls)",
+        "src/verification-evidence.js -> src/pr-manager.js (calls)"
+      ],
+      "summary": "evidence -> gate-pr は宣言されていない依存 (10 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "run-session",
+      "to_module": "cli",
+      "edge_count": 9,
+      "example_edges": [
+        "src/guarded-run-session.js -> src/cli.js (calls)",
+        "src/guarded-run-session.js -> src/cli.js (calls)",
+        "src/guarded-run-session.js -> src/cli.js (calls)"
+      ],
+      "summary": "run-session -> cli は宣言されていない依存 (9 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "run-session",
+      "to_module": "review",
+      "edge_count": 8,
+      "example_edges": [
+        "src/run-context-capsule.js -> src/agent-review.js (calls)",
+        "src/run-context-capsule.js -> src/agent-review.js (calls)",
+        "src/run-context-capsule.js -> src/agent-review.js (calls)"
+      ],
+      "summary": "run-session -> review は宣言されていない依存 (8 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "spec",
+      "to_module": "gate-pr",
+      "edge_count": 8,
+      "example_edges": [
+        "src/spec-store.js -> src/pr-manager.js (calls)",
+        "src/spec-store.js -> src/report-validator.js (calls)",
+        "src/spec-store.js -> src/playbook-exporter.js (calls)"
+      ],
+      "summary": "spec -> gate-pr は宣言されていない依存 (8 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "review",
+      "to_module": "gate-pr",
+      "edge_count": 8,
+      "example_edges": [
+        "src/agent-review.js -> src/pr-manager.js (calls)",
+        "src/agent-review.js -> src/content-binding.js (calls)",
+        "src/agent-review.js -> src/validation-sequencing.js (calls)"
+      ],
+      "summary": "review -> gate-pr は宣言されていない依存 (8 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
+      "to_module": "reporting",
+      "edge_count": 8,
+      "example_edges": [
+        "src/workspace.js -> src/usage-report.js (calls)",
+        "src/workspace.js -> src/usage-report.js (calls)",
+        "src/workspace.js -> src/usage-report.js (calls)"
+      ],
+      "summary": "workspace-infra -> reporting は宣言されていない依存 (8 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "diagnosis",
+      "to_module": "cli",
+      "edge_count": 7,
+      "example_edges": [
+        "src/diagnostic-engine.js -> src/runtime-info.js (calls)",
+        "src/diagnostic-engine.js -> src/cli.js (calls)",
+        "src/check-packs.js -> src/cli.js (calls)"
+      ],
+      "summary": "diagnosis -> cli は宣言されていない依存 (7 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "diagnosis",
+      "to_module": "spec",
+      "edge_count": 7,
+      "example_edges": [
+        "src/diagnostic-engine.js -> src/spec-store.js (calls)",
+        "src/diagnostic-engine.js -> src/spec-drift.js (calls)",
+        "src/diagnostic-engine.js -> src/spec-drift.js (calls)"
+      ],
+      "summary": "diagnosis -> spec は宣言されていない依存 (7 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "story",
+      "to_module": "reporting",
+      "edge_count": 7,
+      "example_edges": [
+        "src/story-html.js -> src/html-report.js (calls)",
+        "src/story-html.js -> src/html-report.js (calls)",
+        "src/story-html.js -> src/html-report.js (calls)"
+      ],
+      "summary": "story -> reporting は宣言されていない依存 (7 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "reporting",
+      "to_module": "cli",
+      "edge_count": 6,
+      "example_edges": [
+        "src/session-efficiency-audit.js -> src/cli.js (calls)",
+        "src/session-efficiency-audit.js -> src/cli.js (calls)",
+        "src/session-efficiency-audit.js -> src/cli.js (calls)"
+      ],
+      "summary": "reporting -> cli は宣言されていない依存 (6 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "run-session",
+      "to_module": "story",
+      "edge_count": 6,
+      "example_edges": [
+        "src/run-context-capsule.js -> src/decision-records.js (calls)",
+        "src/run-context-capsule.js -> src/decision-records.js (calls)",
+        "src/run-context-capsule.js -> src/story-run-portfolio.js (calls)"
+      ],
+      "summary": "run-session -> story は宣言されていない依存 (6 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "diagnosis",
+      "to_module": "gate-pr",
+      "edge_count": 6,
+      "example_edges": [
+        "src/check-packs.js -> src/pr-manager.js (calls)",
+        "src/requirement-consistency.js -> src/pr-manager.js (calls)",
+        "src/requirement-consistency.js -> src/pr-manager.js (calls)"
+      ],
+      "summary": "diagnosis -> gate-pr は宣言されていない依存 (6 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "story",
+      "to_module": "cli",
+      "edge_count": 5,
+      "example_edges": [
+        "src/brainbase-importer.js -> src/cli.js (calls)",
+        "src/decision-records.js -> src/cli.js (calls)",
+        "src/decision-records.js -> src/cli.js (calls)"
+      ],
+      "summary": "story -> cli は宣言されていない依存 (5 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "scanners",
+      "to_module": "graph",
+      "edge_count": 4,
+      "example_edges": [
+        "src/regression-risk-scanner.js -> src/graph-context.js (calls)",
+        "src/regression-risk-scanner.js -> src/graph-context.js (calls)",
+        "src/regression-risk-scanner.js -> src/graph-context.js (calls)"
+      ],
+      "summary": "scanners -> graph は宣言されていない依存 (4 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "architecture",
+      "to_module": "cli",
+      "edge_count": 4,
+      "example_edges": [
+        "src/architecture-store.js -> src/cli.js (calls)",
+        "src/architecture-store.js -> src/cli.js (calls)",
+        "src/architecture-conformance.js -> src/cli.js (calls)"
+      ],
+      "summary": "architecture -> cli は宣言されていない依存 (4 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "gate-pr",
+      "to_module": "uiux-design",
+      "edge_count": 4,
+      "example_edges": [
+        "src/pr-manager.js -> src/journey-map.js (calls)",
+        "src/pr-manager.js -> src/journey-map.js (calls)",
+        "src/pr-manager.js -> src/journey-map.js (calls)"
+      ],
+      "summary": "gate-pr -> uiux-design は宣言されていない依存 (4 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
+      "to_module": "architecture",
+      "edge_count": 4,
+      "example_edges": [
+        "src/workspace.js -> src/architecture-readiness.js (calls)",
+        "src/workspace.js -> src/architecture-readiness.js (calls)",
+        "src/workspace.js -> src/architecture-readiness.js (calls)"
+      ],
+      "summary": "workspace-infra -> architecture は宣言されていない依存 (4 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "scanners",
+      "to_module": "diagnosis",
+      "edge_count": 3,
+      "example_edges": [
+        "src/network-contract-scanner.js -> src/diagnostic-engine.js (calls)",
+        "src/network-contract-scanner.js -> src/check-packs.js (calls)",
+        "src/regression-risk-scanner.js -> src/check-packs.js (calls)"
+      ],
+      "summary": "scanners -> diagnosis は宣言されていない依存 (3 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "scanners",
+      "to_module": "gate-pr",
+      "edge_count": 3,
+      "example_edges": [
+        "src/network-contract-scanner.js -> src/pr-manager.js (calls)",
+        "src/regression-risk-scanner.js -> src/pr-manager.js (calls)",
+        "src/scan-status.js -> src/pr-manager.js (calls)"
+      ],
+      "summary": "scanners -> gate-pr は宣言されていない依存 (3 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "reporting",
+      "to_module": "run-session",
+      "edge_count": 3,
+      "example_edges": [
+        "src/delivery-efficiency-guardrail.js -> src/run-context-capsule.js (calls)",
+        "src/delivery-efficiency-guardrail.js -> src/run-context-capsule.js (calls)",
+        "src/session-efficiency-audit.js -> src/run-context-capsule.js (calls)"
+      ],
+      "summary": "reporting -> run-session は宣言されていない依存 (3 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "diagnosis",
+      "to_module": "evidence",
+      "edge_count": 3,
+      "example_edges": [
+        "src/diagnostic-engine.js -> src/performance-evidence.js (calls)",
+        "src/diagnostic-engine.js -> src/performance-evidence.js (calls)",
+        "src/check-packs.js -> src/performance-measurer.js (calls)"
+      ],
+      "summary": "diagnosis -> evidence は宣言されていない依存 (3 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
+      "to_module": "evidence",
+      "edge_count": 3,
+      "example_edges": [
+        "src/managed-worktree-gate.js -> src/verification-evidence.js (calls)",
+        "src/workspace.js -> src/ci-evidence.js (calls)",
+        "src/workspace.js -> src/ci-evidence.js (calls)"
+      ],
+      "summary": "workspace-infra -> evidence は宣言されていない依存 (3 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "evidence",
+      "to_module": "story",
+      "edge_count": 3,
+      "example_edges": [
+        "src/visual-verifier.js -> src/story-manager.js (calls)",
+        "src/performance-evidence.js -> src/story-manager.js (calls)",
+        "src/performance-evidence.js -> src/story-manager.js (calls)"
+      ],
+      "summary": "evidence -> story は宣言されていない依存 (3 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "evidence",
+      "to_module": "uiux-design",
+      "edge_count": 3,
+      "example_edges": [
+        "src/visual-verifier.js -> src/uiux-prepare.js (calls)",
+        "src/flow-verifier.js -> src/uiux-prepare.js (calls)",
+        "src/verification-evidence.js -> src/uiux-prepare.js (calls)"
+      ],
+      "summary": "evidence -> uiux-design は宣言されていない依存 (3 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "uiux-design",
+      "to_module": "gate-pr",
+      "edge_count": 3,
+      "example_edges": [
+        "src/design-ssot.js -> src/pr-manager.js (calls)",
+        "src/design-ssot.js -> src/pr-manager.js (calls)",
+        "src/uiux-flow-map.js -> src/pr-manager.js (calls)"
+      ],
+      "summary": "uiux-design -> gate-pr は宣言されていない依存 (3 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "review",
+      "to_module": "uiux-design",
+      "edge_count": 3,
+      "example_edges": [
+        "src/agent-review.js -> src/uiux-prepare.js (calls)",
+        "src/agent-review.js -> src/uiux-prepare.js (calls)",
+        "src/adjudication.js -> src/journey-map.js (calls)"
+      ],
+      "summary": "review -> uiux-design は宣言されていない依存 (3 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "graph",
+      "to_module": "cli",
+      "edge_count": 3,
+      "example_edges": [
+        "src/graphify-adapter.js -> src/cli.js (calls)",
+        "src/environment-graph.js -> src/cli.js (calls)",
+        "src/environment-graph.js -> src/cli.js (calls)"
+      ],
+      "summary": "graph -> cli は宣言されていない依存 (3 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "graph",
+      "to_module": "story",
+      "edge_count": 3,
+      "example_edges": [
+        "src/graph-context.js -> src/story-manager.js (calls)",
+        "src/graph-context.js -> src/story-manager.js (calls)",
+        "src/graph-context.js -> src/story-manager.js (calls)"
+      ],
+      "summary": "graph -> story は宣言されていない依存 (3 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
+      "to_module": "spec",
+      "edge_count": 3,
+      "example_edges": [
+        "src/workspace.js -> src/pre-spec-readiness.js (calls)",
+        "src/workspace.js -> src/pre-spec-readiness.js (calls)",
+        "src/workspace.js -> src/pre-spec-readiness.js (calls)"
+      ],
+      "summary": "workspace-infra -> spec は宣言されていない依存 (3 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "story",
+      "to_module": "task",
+      "edge_count": 2,
+      "example_edges": [
+        "src/brainbase-importer.js -> src/story-task-generator.js (calls)",
+        "src/story-manager.js -> src/task-manager.js (calls)"
+      ],
+      "summary": "story -> task は宣言されていない依存 (2 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "architecture",
+      "to_module": "diagnosis",
+      "edge_count": 2,
+      "example_edges": [
+        "src/architecture-profiler.js -> src/diagnostic-engine.js (calls)",
+        "src/architecture-profiler.js -> src/check-packs.js (calls)"
+      ],
+      "summary": "architecture -> diagnosis は宣言されていない依存 (2 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "run-session",
+      "to_module": "uiux-design",
+      "edge_count": 2,
+      "example_edges": [
+        "src/run-context-capsule.js -> src/design-ssot.js (calls)",
+        "src/run-context-capsule.js -> src/journey-map.js (calls)"
+      ],
+      "summary": "run-session -> uiux-design は宣言されていない依存 (2 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "story",
+      "to_module": "uiux-design",
+      "edge_count": 2,
+      "example_edges": [
+        "src/story-html.js -> src/uiux-prepare.js (calls)",
+        "src/story-html.js -> src/uiux-prepare.js (calls)"
+      ],
+      "summary": "story -> uiux-design は宣言されていない依存 (2 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "scanners",
+      "to_module": "skills",
+      "edge_count": 2,
+      "example_edges": [
+        "src/agent-harness-scanner.js -> src/skills-manager.js (calls)",
+        "src/agent-harness-scanner.js -> src/skills-manager.js (calls)"
+      ],
+      "summary": "scanners -> skills は宣言されていない依存 (2 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "scanners",
+      "to_module": "cli",
+      "edge_count": 2,
+      "example_edges": [
+        "src/agent-harness-scanner.js -> src/cli.js (calls)",
+        "src/agent-harness-scanner.js -> src/cli.js (calls)"
+      ],
+      "summary": "scanners -> cli は宣言されていない依存 (2 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "review",
+      "to_module": "run-session",
+      "edge_count": 2,
+      "example_edges": [
+        "src/review-finding-repair-loop.js -> src/agent-runtime-adapter.js (calls)",
+        "src/review-finding-repair-loop.js -> src/agent-runtime-adapter.js (calls)"
+      ],
+      "summary": "review -> run-session は宣言されていない依存 (2 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "story",
+      "to_module": "gate-pr",
+      "edge_count": 2,
+      "example_edges": [
+        "src/decision-records.js -> src/pr-manager.js (calls)",
+        "src/decision-records.js -> src/pr-manager.js (calls)"
+      ],
+      "summary": "story -> gate-pr は宣言されていない依存 (2 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "gate-pr",
+      "to_module": "run-session",
+      "edge_count": 2,
+      "example_edges": [
+        "src/pr-manager.js -> src/guarded-run-session.js (calls)",
+        "src/canonical-audit.js -> src/guarded-run-session.js (calls)"
+      ],
+      "summary": "gate-pr -> run-session は宣言されていない依存 (2 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "gate-pr",
+      "to_module": "architecture",
+      "edge_count": 2,
+      "example_edges": [
+        "src/pr-manager.js -> src/architecture-readiness.js (calls)",
+        "src/pr-manager.js -> src/code-topology-provider.js (calls)"
+      ],
+      "summary": "gate-pr -> architecture は宣言されていない依存 (2 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "workspace-infra",
+      "to_module": "graph",
+      "edge_count": 2,
+      "example_edges": [
+        "src/workspace.js -> src/environment-graph.js (calls)",
+        "src/workspace.js -> src/environment-graph.js (calls)"
+      ],
+      "summary": "workspace-infra -> graph は宣言されていない依存 (2 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "architecture",
+      "to_module": "story",
+      "edge_count": 1,
+      "example_edges": [
+        "src/architecture-profiler.js -> src/story-catalog-generator.js (calls)"
+      ],
+      "summary": "architecture -> story は宣言されていない依存 (1 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "run-session",
+      "to_module": "spec",
+      "edge_count": 1,
+      "example_edges": [
+        "src/run-context-capsule.js -> src/spec-fingerprint.js (calls)"
+      ],
+      "summary": "run-session -> spec は宣言されていない依存 (1 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "diagnosis",
+      "to_module": "task",
+      "edge_count": 1,
+      "example_edges": [
+        "src/diagnostic-engine.js -> src/story-task-generator.js (calls)"
+      ],
+      "summary": "diagnosis -> task は宣言されていない依存 (1 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "scanners",
+      "to_module": "evidence",
+      "edge_count": 1,
+      "example_edges": [
+        "src/regression-risk-scanner.js -> src/coverage-report.js (calls)"
+      ],
+      "summary": "scanners -> evidence は宣言されていない依存 (1 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "review",
+      "to_module": "reporting",
+      "edge_count": 1,
+      "example_edges": [
+        "src/review-repair.js -> src/usage-report.js (calls)"
+      ],
+      "summary": "review -> reporting は宣言されていない依存 (1 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "reporting",
+      "to_module": "scanners",
+      "edge_count": 1,
+      "example_edges": [
+        "src/html-report.js -> src/scan-status.js (calls)"
+      ],
+      "summary": "reporting -> scanners は宣言されていない依存 (1 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "diagnosis",
+      "to_module": "review",
+      "edge_count": 1,
+      "example_edges": [
+        "src/requirement-consistency.js -> src/adjudication.js (calls)"
+      ],
+      "summary": "diagnosis -> review は宣言されていない依存 (1 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "architecture",
+      "to_module": "gate-pr",
+      "edge_count": 1,
+      "example_edges": [
+        "src/architecture-store.js -> src/playbook-exporter.js (calls)"
+      ],
+      "summary": "architecture -> gate-pr は宣言されていない依存 (1 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "evidence",
+      "to_module": "review",
+      "edge_count": 1,
+      "example_edges": [
+        "src/verification-evidence.js -> src/agent-review.js (calls)"
+      ],
+      "summary": "evidence -> review は宣言されていない依存 (1 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "uiux-design",
+      "to_module": "graph",
+      "edge_count": 1,
+      "example_edges": [
+        "src/design-system.js -> src/graphify-adapter.js (calls)"
+      ],
+      "summary": "uiux-design -> graph は宣言されていない依存 (1 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "graph",
+      "to_module": "evidence",
+      "edge_count": 1,
+      "example_edges": [
+        "src/graph-context.js -> src/coverage-report.js (calls)"
+      ],
+      "summary": "graph -> evidence は宣言されていない依存 (1 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "run-session",
+      "to_module": "scanners",
+      "edge_count": 1,
+      "example_edges": [
+        "src/agent-runtime-adapter.js -> src/public-discovery-scanner.js (calls)"
+      ],
+      "summary": "run-session -> scanners は宣言されていない依存 (1 edges)"
+    },
+    {
+      "kind": "undeclared_dependency",
+      "severity": "review",
+      "from_module": "uiux-design",
+      "to_module": "story",
+      "edge_count": 1,
+      "example_edges": [
+        "src/journey-map.js -> src/story-manager.js (calls)"
+      ],
+      "summary": "uiux-design -> story は宣言されていない依存 (1 edges)"
+    },
+    {
+      "kind": "budget_violation",
+      "severity": "review",
+      "file": "src/agent-review.js",
+      "line_count": 3835,
+      "limit": 3657,
+      "baseline": true,
+      "summary": "src/agent-review.js は baseline (3657行) を超過して成長した (3835行)"
+    },
+    {
+      "kind": "budget_violation",
+      "severity": "review",
+      "file": "src/canonical-audit.js",
+      "line_count": 2703,
+      "limit": 2688,
+      "baseline": true,
+      "summary": "src/canonical-audit.js は baseline (2688行) を超過して成長した (2703行)"
+    },
+    {
+      "kind": "budget_violation",
+      "severity": "review",
+      "file": "src/cli.js",
+      "line_count": 4007,
+      "limit": 3930,
+      "baseline": true,
+      "summary": "src/cli.js は baseline (3930行) を超過して成長した (4007行)"
+    },
+    {
+      "kind": "budget_violation",
+      "severity": "review",
+      "file": "src/guarded-run-session.js",
+      "line_count": 2557,
+      "limit": 2382,
+      "baseline": true,
+      "summary": "src/guarded-run-session.js は baseline (2382行) を超過して成長した (2557行)"
+    },
+    {
+      "kind": "budget_violation",
+      "severity": "review",
+      "file": "src/pr-manager.js",
+      "line_count": 15614,
+      "limit": 14922,
+      "baseline": true,
+      "summary": "src/pr-manager.js は baseline (14922行) を超過して成長した (15614行)"
+    },
+    {
+      "kind": "orphan_file",
+      "severity": "review",
+      "file": "src/agent-completion-inbox.js",
+      "summary": "src/agent-completion-inbox.js はtarget modelのどのモジュールにも属していない"
+    },
+    {
+      "kind": "orphan_file",
+      "severity": "review",
+      "file": "src/codex-runtime-bridge.js",
+      "summary": "src/codex-runtime-bridge.js はtarget modelのどのモジュールにも属していない"
+    },
+    {
+      "kind": "orphan_file",
+      "severity": "review",
+      "file": "src/codex-runtime-output-contract.js",
+      "summary": "src/codex-runtime-output-contract.js はtarget modelのどのモジュールにも属していない"
+    },
+    {
+      "kind": "orphan_file",
+      "severity": "review",
+      "file": "src/codex-subagent-host-worker.js",
+      "summary": "src/codex-subagent-host-worker.js はtarget modelのどのモジュールにも属していない"
+    },
+    {
+      "kind": "orphan_file",
+      "severity": "review",
+      "file": "src/codex-subagent-host.js",
+      "summary": "src/codex-subagent-host.js はtarget modelのどのモジュールにも属していない"
+    },
+    {
+      "kind": "orphan_file",
+      "severity": "review",
+      "file": "src/codex-subagent-runtime-adapter.js",
+      "summary": "src/codex-subagent-runtime-adapter.js はtarget modelのどのモジュールにも属していない"
+    },
+    {
+      "kind": "orphan_file",
+      "severity": "review",
+      "file": "src/dispatch-identity.js",
+      "summary": "src/dispatch-identity.js はtarget modelのどのモジュールにも属していない"
+    },
+    {
+      "kind": "orphan_file",
+      "severity": "review",
+      "file": "src/merge-gate-authorization.js",
+      "summary": "src/merge-gate-authorization.js はtarget modelのどのモジュールにも属していない"
+    },
+    {
+      "kind": "orphan_file",
+      "severity": "review",
+      "file": "src/review-inspection-inputs.js",
+      "summary": "src/review-inspection-inputs.js はtarget modelのどのモジュールにも属していない"
+    }
+  ],
+  "artifacts": {
+    "json": ".vibepro/architecture/conformance/conformance.json",
+    "markdown": ".vibepro/architecture/conformance/conformance.md"
+  }
+}

@@ -1,0 +1,170 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "implementation",
+  "role": "ux_completion",
+  "status": "pass",
+  "summary": "production human decisionは到達可能で、7-field descriptor、human/JSON、resume contractを保持する。",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "ux-human-decision-public-contract-lost",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/guarded-run-session.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    },
+    {
+      "finding_id": "ux-production-human-decision-unreachable",
+      "disposition": "accepted",
+      "resolved_by": [
+        "test/one-command-pr-ready-closure.test.js"
+      ],
+      "reason": null,
+      "inferred_from_resolution": true
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "現行public CLI、human/JSON、resume、authority境界、legacy互換を独立照合しfocused 15件を実行した。",
+    "evidence": "human/CLI/resume focused 9/9 pass; production decision and authority 5/5 pass; safe action 1/1 pass; diff check pass",
+    "inputs": [
+      "src/one-command-pr-ready-closure.js",
+      "src/guarded-run-session.js",
+      "src/cli.js",
+      "test/guarded-run-session.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "production到達不能とpublic contract欠落の懸念から、bounded material classifier、全7項目表示、exact resume永続化により解消"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "d08f42d88a99624bcff4efd8520e55ce2aee8748",
+    "current_head_sha": "d08f42d88a99624bcff4efd8520e55ce2aee8748",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "d08f42d88a99624bcff4efd8520e55ce2aee8748",
+      "dirty": true,
+      "dirty_fingerprint": " M design-ssot.json\n M docs/architecture/target-model.json\n M docs/management/stories/active/story-vibepro-independent-review-orchestration.md\n M docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md\n M docs/management/stories/active/story-vibepro-production-runtime-connectors.md\n M src/agent-runtime-adapter.js\n M src/agent-runtime-connectors.js\n M src/cli.js\n M src/guarded-run-session.js\n M src/independent-review-orchestrator.js\n M src/safe-action-orchestrator.js\n M src/task-manager.js\n M test/guarded-run-session.test.js\n M test/independent-review-orchestrator.test.js\n M test/safe-action-orchestrator.test.js\n M test/scope-boundary-gate.test.js\n?? docs/architecture/story-vibepro-one-command-pr-ready-closure.md\n?? docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md\n?? docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json\n?? src/one-command-pr-ready-closure.js\n?? test/one-command-pr-ready-closure.test.js",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M .vibepro/config.json\n M design-ssot.json\n M docs/architecture/target-model.json\n M docs/management/stories/active/story-vibepro-independent-review-orchestration.md\n M docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md\n M docs/management/stories/active/story-vibepro-production-runtime-connectors.md\n M src/agent-runtime-adapter.js\n M src/agent-runtime-connectors.js\n M src/cli.js\n M src/guarded-run-session.js\n M src/independent-review-orchestrator.js\n M src/safe-action-orchestrator.js\n M src/task-manager.js\n M test/guarded-run-session.test.js\n M test/independent-review-orchestrator.test.js\n M test/safe-action-orchestrator.test.js\n M test/scope-boundary-gate.test.js\n?? docs/architecture/story-vibepro-one-command-pr-ready-closure.md\n?? docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md\n?? docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json\n?? src/one-command-pr-ready-closure.js\n?? test/one-command-pr-ready-closure.test.js",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T05:08:52.890Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-23T07:04:40.172Z",
+  "git_context": {
+    "head_sha": "d08f42d88a99624bcff4efd8520e55ce2aee8748",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "f7eab1198abee4dc04ef53d2791c33389a512999239b66cde41bfcd8c4bdaae8",
+    "user_status_fingerprint_hash": "f2a1140559b5ced4b259185ec1e7e601f045ca29d704d885cb60aa8ded7b0c2d",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-23T07:04:40.148Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "d08f42d88a99624bcff4efd8520e55ce2aee8748",
+    "surface_files": [
+      {
+        "path": "src/cli.js",
+        "sha256": "9298e10ee26adcc4fa65512630a2ddd2fdb7d1d5f44c6243717c7bed2a85baf8",
+        "size": 220278
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "d66b01c88232c94eec50df78f6cc19e33346eb710a4460184bb61bedeb43bd05",
+        "size": 106618
+      },
+      {
+        "path": "src/one-command-pr-ready-closure.js",
+        "sha256": "b157c978e0a1de6245a9226524d56ca14f6b60c71693c4ac321852396badfc47",
+        "size": 25170
+      },
+      {
+        "path": "test/guarded-run-session.test.js",
+        "sha256": "0e6fed64698ca8c987e53faa72d9ecd32efc99c0280e169f396cec5cf53f2661",
+        "size": 198710
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "3fe65f9017b70055657bddc27c29ce6895a951508b0056ab929e92c75874049d"
+  },
+  "source_fingerprint": "050c52fc6ead8a728419c8c08d2d4d82c39798d4780d78c4415f121c79e719d1",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/impl_ux_repaired",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/lifecycle.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/review-request-ux_completion.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "codex-agent:/root/impl_ux_repaired",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

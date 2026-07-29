@@ -1,0 +1,124 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-attribution-boundary-guard",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Default human-readable audit omits attribution, empty-window unavailable lacks reason, and scope decision evidence needs refresh.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "path-surface-human-report-omits-attribution",
+      "detail": "Default_text_output_omits_attribution_and_readiness"
+    },
+    {
+      "severity": "medium",
+      "id": "unavailable-empty-window-has-no-reason",
+      "detail": "Empty_window_unavailable_state_lacks_reason"
+    },
+    {
+      "severity": "medium",
+      "id": "scope-reviewability-decision-not-current-bound",
+      "detail": "Scope_decision_needs_current_evidence"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected current-head diff, Story, Architecture, Spec, source, tests, verification, adjudication, split plan, and blockers; focused tests passed 29/29.",
+    "evidence": "subagent:019f7478-c376-7e82-9c96-bb8d335d7a42",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/review-request-gate_evidence.md"
+    ]
+  },
+  "judgment_delta": [
+    "Current-head evidence cleared freshness concerns; inspection found a missing operator surface and unavailable reason."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+    "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+    "expected_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+    "expected_head_sha": "ebd415ed6a15aefae3bda5ac0a114883fd9be820",
+    "current_head_sha": "ebd415ed6a15aefae3bda5ac0a114883fd9be820",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/95a4/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+      "branch": "codex/story-vibepro-session-attribution-boundary-guard",
+      "actual_branch": "codex/story-vibepro-session-attribution-boundary-guard",
+      "current_head_sha": "ebd415ed6a15aefae3bda5ac0a114883fd9be820",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T09:11:42.788Z",
+  "git_context": {
+    "head_sha": "ebd415ed6a15aefae3bda5ac0a114883fd9be820",
+    "current_branch": "codex/story-vibepro-session-attribution-boundary-guard",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T09:11:42.787Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ebd415ed6a15aefae3bda5ac0a114883fd9be820",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "bf7414e2bc2ae87c5a45c85a591ed3e9ddda391828786fd9eab041ee944628ca",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f7478-c376-7e82-9c96-bb8d335d7a42",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "subagent:019f7478-c376-7e82-9c96-bb8d335d7a42",
+    "request_artifact": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent_notification:019f7478-c376-7e82-9c96-bb8d335d7a42",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

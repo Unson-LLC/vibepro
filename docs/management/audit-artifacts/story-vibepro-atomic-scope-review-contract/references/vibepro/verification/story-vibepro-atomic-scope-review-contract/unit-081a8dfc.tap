@@ -1,0 +1,820 @@
+TAP version 13
+# Subtest: review record persists explicit reviewer identity declaration
+ok 1 - review record persists explicit reviewer identity declaration
+  ---
+  duration_ms: 2896.642708
+  type: 'test'
+  ...
+# Subtest: review record derives reviewer identity from session ids and defaults to unknown
+ok 2 - review record derives reviewer identity from session ids and defaults to unknown
+  ---
+  duration_ms: 5758.142
+  type: 'test'
+  ...
+# Subtest: review record rejects an invalid reviewer identity value
+ok 3 - review record rejects an invalid reviewer identity value
+  ---
+  duration_ms: 2138.968917
+  type: 'test'
+  ...
+# Subtest: pr prepare warns (without failing the gate) when a recorded review is same_session
+ok 4 - pr prepare warns (without failing the gate) when a recorded review is same_session
+  ---
+  duration_ms: 6355.933792
+  type: 'test'
+  ...
+# Subtest: pr prepare stays silent about independence for legacy reviews without reviewer_identity
+ok 5 - pr prepare stays silent about independence for legacy reviews without reviewer_identity
+  ---
+  duration_ms: 6456.110417
+  type: 'test'
+  ...
+# Subtest: content binding fails closed on unreadable inspection inputs without exposing the repository root
+ok 6 - content binding fails closed on unreadable inspection inputs without exposing the repository root
+  ---
+  duration_ms: 985.27425
+  type: 'test'
+  ...
+# Subtest: CEF-S-1/2/5 verification evidence stays current for docs-only commits and stales on bound surface changes
+ok 7 - CEF-S-1/2/5 verification evidence stays current for docs-only commits and stales on bound surface changes
+  ---
+  duration_ms: 14271.886958
+  type: 'test'
+  ...
+# Subtest: CEF-S-2/5 deleted bound files stale evidence with an operator-visible missing-file reason
+ok 8 - CEF-S-2/5 deleted bound files stale evidence with an operator-visible missing-file reason
+  ---
+  duration_ms: 6678.640292
+  type: 'test'
+  ...
+# Subtest: agent review minimal recovery emits an executable inspection-aware pass command
+ok 9 - agent review minimal recovery emits an executable inspection-aware pass command
+  ---
+  duration_ms: 8635.275209
+  type: 'test'
+  ...
+# Subtest: CEF-S-3 review evidence uses inspected input content binding across docs-only commits
+ok 10 - CEF-S-3 review evidence uses inspected input content binding across docs-only commits
+  ---
+  duration_ms: 9487.790833
+  type: 'test'
+  ...
+# Subtest: review freshness policy keeps every built-in high-risk gate role strict, preserves inspected files, and invalidates on HEAD movement
+ok 11 - review freshness policy keeps every built-in high-risk gate role strict, preserves inspected files, and invalidates on HEAD movement
+  ---
+  duration_ms: 5504.477625
+  type: 'test'
+  ...
+# Subtest: role policy can explicitly narrow a built-in strict exception to content surface
+ok 12 - role policy can explicitly narrow a built-in strict exception to content surface
+  ---
+  duration_ms: 3252.262333
+  type: 'test'
+  ...
+# Subtest: global content-surface default cannot weaken a built-in strict role
+ok 13 - global content-surface default cannot weaken a built-in strict role
+  ---
+  duration_ms: 2343.608042
+  type: 'test'
+  ...
+# Subtest: review strict HEAD CLI override requires and records an explicit reason
+ok 14 - review strict HEAD CLI override requires and records an explicit reason
+  ---
+  duration_ms: 7938.834292
+  type: 'test'
+  ...
+# Subtest: custom strict HEAD role policy requires and persists its rationale
+ok 15 - custom strict HEAD role policy requires and persists its rationale
+  ---
+  duration_ms: 2269.515208
+  type: 'test'
+  ...
+# Subtest: global strict HEAD default is rejected so ordinary roles remain content-scoped
+ok 16 - global strict HEAD default is rejected so ordinary roles remain content-scoped
+  ---
+  duration_ms: 655.74675
+  type: 'test'
+  ...
+# Subtest: content-scoped pass rejects generated workspace artifacts as the only inspection input
+ok 17 - content-scoped pass rejects generated workspace artifacts as the only inspection input
+  ---
+  duration_ms: 1521.386167
+  type: 'test'
+  ...
+# Subtest: CEF-S-4 strict HEAD binding still invalidates docs-only commits
+ok 18 - CEF-S-4 strict HEAD binding still invalidates docs-only commits
+  ---
+  duration_ms: 4075.466
+  type: 'test'
+  ...
+# Subtest: DIJ-CONTRACT-001 DIJ-CONTRACT-003 DIJ-CONTRACT-004 DIJ-SCENARIO-001 story diagnose --pre-architecture records design-input judgment evidence
+ok 19 - DIJ-CONTRACT-001 DIJ-CONTRACT-003 DIJ-CONTRACT-004 DIJ-SCENARIO-001 story diagnose --pre-architecture records design-input judgment evidence
+  ---
+  duration_ms: 2255.300458
+  type: 'test'
+  ...
+# Subtest: DIJ-CONTRACT-001 parse_failure story diagnose rejects unsupported phase instead of silently defaulting
+ok 20 - DIJ-CONTRACT-001 parse_failure story diagnose rejects unsupported phase instead of silently defaulting
+  ---
+  duration_ms: 492.687583
+  type: 'test'
+  ...
+# Subtest: DIJ-CONTRACT-002 DIJ-CONTRACT-003 DIJ-CONTRACT-004 story diagnose --phase design-input records the same design-input evidence as --pre-architecture
+ok 21 - DIJ-CONTRACT-002 DIJ-CONTRACT-003 DIJ-CONTRACT-004 story diagnose --phase design-input records the same design-input evidence as --pre-architecture
+  ---
+  duration_ms: 1541.030875
+  type: 'test'
+  ...
+# Subtest: DIJ-CONTRACT-006 DIJ-CONTRACT-008 DIJ-CONTRACT-009 DIJ-INV-002 DIJ-AP-002 workflow_state_regression pr prepare warns on cross-surface Architecture/Spec without design-input diagnosis
+ok 22 - DIJ-CONTRACT-006 DIJ-CONTRACT-008 DIJ-CONTRACT-009 DIJ-INV-002 DIJ-AP-002 workflow_state_regression pr prepare warns on cross-surface Architecture/Spec without design-input diagnosis
+  ---
+  duration_ms: 7296.918541
+  type: 'test'
+  ...
+# Subtest: DIJ-CONTRACT-008 DIJ-CONTRACT-009 DIJ-SCENARIO-003 pr prepare passes design-input gate when pre-architecture diagnosis exists
+ok 23 - DIJ-CONTRACT-008 DIJ-CONTRACT-009 DIJ-SCENARIO-003 pr prepare passes design-input gate when pre-architecture diagnosis exists
+  ---
+  duration_ms: 7084.043209
+  type: 'test'
+  ...
+# Subtest: DIJ-CONTRACT-010 DIJ-AP-003 manifest_only_false_pass pr prepare warns when design-input run exists but evidence artifact is missing
+ok 24 - DIJ-CONTRACT-010 DIJ-AP-003 manifest_only_false_pass pr prepare warns when design-input run exists but evidence artifact is missing
+  ---
+  duration_ms: 6921.238792
+  type: 'test'
+  ...
+# Subtest: ac:4 DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-CONTRACT-012 DIJ-INV-001 DIJ-AP-001 DIJ-SCENARIO-008 evidence_lifecycle_regression pr prepare preserves design-input judgment after later pre-implementation diagnosis
+ok 25 - ac:4 DIJ-CONTRACT-006 DIJ-CONTRACT-007 DIJ-CONTRACT-012 DIJ-INV-001 DIJ-AP-001 DIJ-SCENARIO-008 evidence_lifecycle_regression pr prepare preserves design-input judgment after later pre-implementation diagnosis
+  ---
+  duration_ms: 7344.19125
+  type: 'test'
+  ...
+# Subtest: DIJ-CONTRACT-007 pr prepare preserves complete gate token in story source policy and PR body
+ok 26 - DIJ-CONTRACT-007 pr prepare preserves complete gate token in story source policy and PR body
+  ---
+  duration_ms: 5450.856
+  type: 'test'
+  ...
+# Subtest: IRO-S-1 runs roles in a stage concurrently and keeps the next stage behind its record barrier
+ok 27 - IRO-S-1 runs roles in a stage concurrently and keeps the next stage behind its record barrier
+  ---
+  duration_ms: 2.324459
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 restart reuses every completed journal operation exactly once
+ok 28 - IRO-S-3 restart reuses every completed journal operation exactly once
+  ---
+  duration_ms: 0.800959
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 persists stopped operations, closes their lifecycle, and restart never repolls
+ok 29 - IRO-S-3 persists stopped operations, closes their lifecycle, and restart never repolls
+  ---
+  duration_ms: 0.299833
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 reserves dispatch before the external boundary and reconciles its idempotency key after a crash
+ok 30 - IRO-S-3 reserves dispatch before the external boundary and reconciles its idempotency key after a crash
+  ---
+  duration_ms: 0.75425
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 resumes a reserved record with the same idempotency key
+ok 31 - IRO-S-3 resumes a reserved record with the same idempotency key
+  ---
+  duration_ms: 3.023208
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 serializes parallel-role checkpoint writes so an older snapshot cannot win
+ok 32 - IRO-S-3 serializes parallel-role checkpoint writes so an older snapshot cannot win
+  ---
+  duration_ms: 15.791084
+  type: 'test'
+  ...
+# Subtest: IRO-S-4 preserves existing pass, needs_changes, and block verdicts
+ok 33 - IRO-S-4 preserves existing pass, needs_changes, and block verdicts
+  ---
+  duration_ms: 3.522
+  type: 'test'
+  ...
+# Subtest: IRO-S-3 a malformed persisted review record fails closed after restart
+ok 34 - IRO-S-3 a malformed persisted review record fails closed after restart
+  ---
+  duration_ms: 0.255375
+  type: 'test'
+  ...
+# Subtest: IRO-S-5 timeout, schema_failure, retry_or_async_failure, auth_denied, workflow_state_regression, and provenance stops never become pass
+ok 35 - IRO-S-5 timeout, schema_failure, retry_or_async_failure, auth_denied, workflow_state_regression, and provenance stops never become pass
+  ---
+  duration_ms: 3.156291
+  type: 'test'
+  ...
+# Subtest: IRO-S-6 same-session/runtime rejection and a needs_changes result are contained
+ok 36 - IRO-S-6 same-session/runtime rejection and a needs_changes result are contained
+  ---
+  duration_ms: 0.52725
+  type: 'test'
+  ...
+# Subtest: IRO-S-7 Guarded Run adapter completes serial stages and preserves needs_changes for repair
+ok 37 - IRO-S-7 Guarded Run adapter completes serial stages and preserves needs_changes for repair
+  ---
+  duration_ms: 0.5345
+  type: 'test'
+  ...
+# Subtest: resolver matches cleanup responsibility contract and blocks without current evidence
+ok 38 - resolver matches cleanup responsibility contract and blocks without current evidence
+  ---
+  duration_ms: 428.591708
+  type: 'test'
+  ...
+# Subtest: resolver passes matched contract when current-head evidence is bound to required observations
+ok 39 - resolver passes matched contract when current-head evidence is bound to required observations
+  ---
+  duration_ms: 436.20775
+  type: 'test'
+  ...
+# Subtest: resolver accepts verify-record git context and observed values as current responsibility evidence
+ok 40 - resolver accepts verify-record git context and observed values as current responsibility evidence
+  ---
+  duration_ms: 725.412292
+  type: 'test'
+  ...
+# Subtest: resolver accepts evidence whose user scope is clean while generated artifacts leave the raw worktree dirty
+ok 41 - resolver accepts evidence whose user scope is clean while generated artifacts leave the raw worktree dirty
+  ---
+  duration_ms: 547.8995
+  type: 'test'
+  ...
+# Subtest: resolver still rejects current-head evidence when the user-dirty scope contains a manual edit
+ok 42 - resolver still rejects current-head evidence when the user-dirty scope contains a manual edit
+  ---
+  duration_ms: 594.264375
+  type: 'test'
+  ...
+# Subtest: resolver does not satisfy contract evidence with unrelated generic unit pass
+ok 43 - resolver does not satisfy contract evidence with unrelated generic unit pass
+  ---
+  duration_ms: 553.943875
+  type: 'test'
+  ...
+# Subtest: resolver accepts generic current unit evidence for read-only audit reporting responsibilities
+ok 44 - resolver accepts generic current unit evidence for read-only audit reporting responsibilities
+  ---
+  duration_ms: 618.556708
+  type: 'test'
+  ...
+# Subtest: resolver emits no_registered_authority for unregistered high-risk state surfaces
+ok 45 - resolver emits no_registered_authority for unregistered high-risk state surfaces
+  ---
+  duration_ms: 390.069541
+  type: 'test'
+  ...
+# Subtest: resolver uses the accepted Run-lineage Architecture registry contract
+ok 46 - resolver uses the accepted Run-lineage Architecture registry contract
+  ---
+  duration_ms: 8.596834
+  type: 'test'
+  ...
+# Subtest: resolver does not classify derive-only workspace status as an unregistered state responsibility
+ok 47 - resolver does not classify derive-only workspace status as an unregistered state responsibility
+  ---
+  duration_ms: 594.404708
+  type: 'test'
+  ...
+# Subtest: resolver fails closed when workspace status contains a state mutation
+ok 48 - resolver fails closed when workspace status contains a state mutation
+  ---
+  duration_ms: 479.654083
+  type: 'test'
+  ...
+# Subtest: resolver applies workspace status exemption without hiding unregistered CLI wiring
+ok 49 - resolver applies workspace status exemption without hiding unregistered CLI wiring
+  ---
+  duration_ms: 530.169708
+  type: 'test'
+  ...
+# Subtest: resolver retains a mixed worker candidate beside read-only workspace status
+ok 50 - resolver retains a mixed worker candidate beside read-only workspace status
+  ---
+  duration_ms: 575.196542
+  type: 'test'
+  ...
+# Subtest: resolver fails closed when reviewed workspace status gains an indirect git side effect
+ok 51 - resolver fails closed when reviewed workspace status gains an indirect git side effect
+  ---
+  duration_ms: 458.988916
+  type: 'test'
+  ...
+# Subtest: resolver keeps no_registered_authority for mixed matched and unregistered high-risk paths
+ok 52 - resolver keeps no_registered_authority for mixed matched and unregistered high-risk paths
+  ---
+  duration_ms: 739.559792
+  type: 'test'
+  ...
+# Subtest: resolver fails closed when matched registry entry is missing required fields
+ok 53 - resolver fails closed when matched registry entry is missing required fields
+  ---
+  duration_ms: 437.932875
+  type: 'test'
+  ...
+# Subtest: resolver fails closed on malformed responsibility registry JSON
+ok 54 - resolver fails closed on malformed responsibility registry JSON
+  ---
+  duration_ms: 699.505125
+  type: 'test'
+  ...
+# Subtest: root registry resolves VibePro core responsibility authorities with contract-bound evidence
+ok 55 - root registry resolves VibePro core responsibility authorities with contract-bound evidence
+  ---
+  duration_ms: 95.526208
+  type: 'test'
+  ...
+# Subtest: resolver prefers contract-bound evidence over an earlier unqualified scenario match
+ok 56 - resolver prefers contract-bound evidence over an earlier unqualified scenario match
+  ---
+  duration_ms: 7.751959
+  type: 'test'
+  ...
+# Subtest: resolver does not fan out a shared risk surface across path-anchored responsibilities
+ok 57 - resolver does not fan out a shared risk surface across path-anchored responsibilities
+  ---
+  duration_ms: 411.240583
+  type: 'test'
+  ...
+# Subtest: resolver preserves standalone risk matching for an explicitly risk-only responsibility
+ok 58 - resolver preserves standalone risk matching for an explicitly risk-only responsibility
+  ---
+  duration_ms: 447.728334
+  type: 'test'
+  ...
+# Subtest: resolver lets a contract clause path supplement a non-matching registry path
+ok 59 - resolver lets a contract clause path supplement a non-matching registry path
+  ---
+  duration_ms: 581.012834
+  type: 'test'
+  ...
+# Subtest: resolver matches symbols only in changed production lines
+ok 60 - resolver matches symbols only in changed production lines
+  ---
+  duration_ms: 1325.959958
+  type: 'test'
+  ...
+# Subtest: resolver matches a symbol added on a changed production line
+ok 61 - resolver matches a symbol added on a changed production line
+  ---
+  duration_ms: 1160.031875
+  type: 'test'
+  ...
+# Subtest: resolver fails closed for symbol matching when the production diff cannot be read
+ok 62 - resolver fails closed for symbol matching when the production diff cannot be read
+  ---
+  duration_ms: 771.621667
+  type: 'test'
+  ...
+# Subtest: resolver fails closed for symbol matching when no diff base is provided
+ok 63 - resolver fails closed for symbol matching when no diff base is provided
+  ---
+  duration_ms: 486.495792
+  type: 'test'
+  ...
+# Subtest: resolver compares an explicit head even when another branch is checked out
+ok 64 - resolver compares an explicit head even when another branch is checked out
+  ---
+  duration_ms: 1491.893792
+  type: 'test'
+  ...
+# Subtest: resolver matches a symbol in an untracked production file
+ok 65 - resolver matches a symbol in an untracked production file
+  ---
+  duration_ms: 1010.619167
+  type: 'test'
+  ...
+# Subtest: resolver ignores registered symbols that appear only in test files or story text
+ok 66 - resolver ignores registered symbols that appear only in test files or story text
+  ---
+  duration_ms: 607.063458
+  type: 'test'
+  ...
+# Subtest: resolver does not match a contract from responsibility reference alone
+ok 67 - resolver does not match a contract from responsibility reference alone
+  ---
+  duration_ms: 514.16875
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps shared-risk authority matching precise through Gate DAG and Requirement synthesis
+ok 68 - pr prepare keeps shared-risk authority matching precise through Gate DAG and Requirement synthesis
+  ---
+  duration_ms: 4777.809667
+  type: 'test'
+  ...
+# Subtest: artifact consistency preserves stale non-required reviews as nonblocking history
+ok 69 - artifact consistency preserves stale non-required reviews as nonblocking history
+  ---
+  duration_ms: 1.330833
+  type: 'test'
+  ...
+# Subtest: change classifier selects workflow_heavy for cross-surface workflow changes
+ok 70 - change classifier selects workflow_heavy for cross-surface workflow changes
+  ---
+  duration_ms: 6.041208
+  type: 'test'
+  ...
+# Subtest: change classifier avoids workflow_heavy for narrow changes
+ok 71 - change classifier avoids workflow_heavy for narrow changes
+  ---
+  duration_ms: 0.256292
+  type: 'test'
+  ...
+# Subtest: change classifier does not treat design authority files as auth boundary
+ok 72 - change classifier does not treat design authority files as auth boundary
+  ---
+  duration_ms: 0.253125
+  type: 'test'
+  ...
+# Subtest: change classifier does not treat standalone session cost paths as auth boundary
+ok 73 - change classifier does not treat standalone session cost paths as auth boundary
+  ---
+  duration_ms: 0.225416
+  type: 'test'
+  ...
+# Subtest: change classifier recognizes monorepo app runtime API source paths
+ok 74 - change classifier recognizes monorepo app runtime API source paths
+  ---
+  duration_ms: 0.105958
+  type: 'test'
+  ...
+# Subtest: change classifier marks Story Spec and test marker edits as low-risk evidence changes
+ok 75 - change classifier marks Story Spec and test marker edits as low-risk evidence changes
+  ---
+  duration_ms: 1.132083
+  type: 'test'
+  ...
+# Subtest: pr prepare groups monorepo apps src runtime files as source
+ok 76 - pr prepare groups monorepo apps src runtime files as source
+  ---
+  duration_ms: 5554.93275
+  type: 'test'
+  ...
+# Subtest: bug physics triage requires probe evidence before selecting a timing gate profile
+ok 77 - bug physics triage requires probe evidence before selecting a timing gate profile
+  ---
+  duration_ms: 5935.551792
+  type: 'test'
+  ...
+# Subtest: bug physics verification text includes structured observation scenarios and values
+ok 78 - bug physics verification text includes structured observation scenarios and values
+  ---
+  duration_ms: 0.549458
+  type: 'test'
+  ...
+# Subtest: pr prepare reuses same-head passing verification for low-risk evidence changes only
+ok 79 - pr prepare reuses same-head passing verification for low-risk evidence changes only
+  ---
+  duration_ms: 10863.849083
+  type: 'test'
+  ...
+# Subtest: pr prepare invalidates stale E2E evidence when test files changed
+ok 80 - pr prepare invalidates stale E2E evidence when test files changed
+  ---
+  duration_ms: 6234.173458
+  type: 'test'
+  ...
+# Subtest: worktree feature stories do not trigger deployment bug physics without deployment evidence
+ok 81 - worktree feature stories do not trigger deployment bug physics without deployment evidence
+  ---
+  duration_ms: 4381.821709
+  type: 'test'
+  ...
+# Subtest: bug physics triage emits multi-label profiles typed N/A gates and feedback edge
+ok 82 - bug physics triage emits multi-label profiles typed N/A gates and feedback edge
+  ---
+  duration_ms: 5134.838
+  type: 'test'
+  ...
+# Subtest: deployment bug physics bypasses code gates through typed N/A instead of waiver
+ok 83 - deployment bug physics bypasses code gates through typed N/A instead of waiver
+  ---
+  duration_ms: 4066.265834
+  type: 'test'
+  ...
+# Subtest: pr prepare expands workflow-heavy gate DAG and blocks release without flow evidence
+ok 84 - pr prepare expands workflow-heavy gate DAG and blocks release without flow evidence
+  ---
+  duration_ms: 30221.18075
+  type: 'test'
+  ...
+# Subtest: validation sequence ownership keeps obsolete checkpoint lifecycle out of required recovery
+ok 85 - validation sequence ownership keeps obsolete checkpoint lifecycle out of required recovery
+  ---
+  duration_ms: 4535.721458
+  type: 'test'
+  ...
+# Subtest: workflow-heavy release confidence requires state scenario and no blocker questions
+ok 86 - workflow-heavy release confidence requires state scenario and no blocker questions
+  ---
+  duration_ms: 5431.46725
+  type: 'test'
+  ...
+# Subtest: workflow-heavy E2E replay rejects marker-only story files and manifest-only flow passes
+ok 87 - workflow-heavy E2E replay rejects marker-only story files and manifest-only flow passes
+  ---
+  duration_ms: 41704.787708
+  type: 'test'
+  ...
+# Subtest: readValidationSequence fails closed when persisted state JSON is malformed
+ok 88 - readValidationSequence fails closed when persisted state JSON is malformed
+  ---
+  duration_ms: 14.3265
+  type: 'test'
+  ...
+# Subtest: canonical phase evidence rejects incomplete native records and pre-freeze expensive runs
+ok 89 - canonical phase evidence rejects incomplete native records and pre-freeze expensive runs
+  ---
+  duration_ms: 15.864125
+  type: 'test'
+  ...
+# Subtest: high-risk plan schedules one canonical aggregate boundary preflight before expensive verification
+ok 90 - high-risk plan schedules one canonical aggregate boundary preflight before expensive verification
+  ---
+  duration_ms: 6.815042
+  type: 'test'
+  ...
+# Subtest: aggregate preflight inspection inputs fail closed without design runtime and test coverage
+ok 91 - aggregate preflight inspection inputs fail closed without design runtime and test coverage
+  ---
+  duration_ms: 0.38225
+  type: 'test'
+  ...
+# Subtest: aggregate preflight inspection inputs cover every planned changed path
+ok 92 - aggregate preflight inspection inputs cover every planned changed path
+  ---
+  duration_ms: 0.161625
+  type: 'test'
+  ...
+# Subtest: auth-only plan emits a canonical producible aggregate review
+ok 93 - auth-only plan emits a canonical producible aggregate review
+  ---
+  duration_ms: 0.674625
+  type: 'test'
+  ...
+# Subtest: advisory preflight never satisfies final review and freeze waits for its disposition
+ok 94 - advisory preflight never satisfies final review and freeze waits for its disposition
+  ---
+  duration_ms: 0.267791
+  type: 'test'
+  ...
+# Subtest: expensive verification is reused only at the exact frozen binding
+ok 95 - expensive verification is reused only at the exact frozen binding
+  ---
+  duration_ms: 0.29875
+  type: 'test'
+  ...
+# Subtest: post-freeze expensive verification may use a distinct e2e command at the frozen identity
+ok 96 - post-freeze expensive verification may use a distinct e2e command at the frozen identity
+  ---
+  duration_ms: 0.354208
+  type: 'test'
+  ...
+# Subtest: post-freeze phase-specific commands still reject changed HEAD or fingerprint
+ok 97 - post-freeze phase-specific commands still reject changed HEAD or fingerprint
+  ---
+  duration_ms: 0.3635
+  type: 'test'
+  ...
+# Subtest: freeze rejects nonterminal or unknown preflight dispositions
+ok 98 - freeze rejects nonterminal or unknown preflight dispositions
+  ---
+  duration_ms: 0.19075
+  type: 'test'
+  ...
+# Subtest: freeze rejects passed preflight findings that have no terminal disposition
+ok 99 - freeze rejects passed preflight findings that have no terminal disposition
+  ---
+  duration_ms: 0.090375
+  type: 'test'
+  ...
+# Subtest: mutation invalidates scoped phases and unknown surfaces fail closed
+ok 100 - mutation invalidates scoped phases and unknown surfaces fail closed
+  ---
+  duration_ms: 0.876875
+  type: 'test'
+  ...
+# Subtest: changed files override optimistic surface declarations and fail closed
+ok 101 - changed files override optimistic surface declarations and fail closed
+  ---
+  duration_ms: 1.653209
+  type: 'test'
+  ...
+# Subtest: persisted light plan is invalidated when current risk classification escalates
+ok 102 - persisted light plan is invalidated when current risk classification escalates
+  ---
+  duration_ms: 0.227291
+  type: 'test'
+  ...
+# Subtest: same-plan HEAD drift invalidates stale phases and advances the proposed binding
+ok 103 - same-plan HEAD drift invalidates stale phases and advances the proposed binding
+  ---
+  duration_ms: 0.119209
+  type: 'test'
+  ...
+# Subtest: explicit surface-only invalidation does not invent an unknown surface
+ok 104 - explicit surface-only invalidation does not invent an unknown surface
+  ---
+  duration_ms: 3.269792
+  type: 'test'
+  ...
+# Subtest: final review rejects strong provenance from a different review role
+ok 105 - final review rejects strong provenance from a different review role
+  ---
+  duration_ms: 0.692
+  type: 'test'
+  ...
+# Subtest: final readiness requires final review at current HEAD even when CI supplied expensive evidence
+ok 106 - final readiness requires final review at current HEAD even when CI supplied expensive evidence
+  ---
+  duration_ms: 0.642625
+  type: 'test'
+  ...
+# Subtest: changing the frozen binding invalidates stale downstream evidence and readiness fails closed
+ok 107 - changing the frozen binding invalidates stale downstream evidence and readiness fails closed
+  ---
+  duration_ms: 0.277875
+  type: 'test'
+  ...
+# Subtest: final review cannot be recorded before exact-bound expensive verification passes
+ok 108 - final review cannot be recorded before exact-bound expensive verification passes
+  ---
+  duration_ms: 0.246709
+  type: 'test'
+  ...
+# Subtest: final review rejects stale, weak, or open Agent Review provenance
+ok 109 - final review rejects stale, weak, or open Agent Review provenance
+  ---
+  duration_ms: 0.500166
+  type: 'test'
+  ...
+# Subtest: freeze and evaluation reject targeted or preflight evidence from an older binding
+ok 110 - freeze and evaluation reject targeted or preflight evidence from an older binding
+  ---
+  duration_ms: 0.268959
+  type: 'test'
+  ...
+# Subtest: evaluation exposes a deterministic next required sequence action
+ok 111 - evaluation exposes a deterministic next required sequence action
+  ---
+  duration_ms: 0.405708
+  type: 'test'
+  ...
+# Subtest: state without a complete proposed binding directs plan and rejects phase recording
+ok 112 - state without a complete proposed binding directs plan and rejects phase recording
+  ---
+  duration_ms: 0.14375
+  type: 'test'
+  ...
+# Subtest: targeted completion advances the next action to advisory preflight before freeze exists
+ok 113 - targeted completion advances the next action to advisory preflight before freeze exists
+  ---
+  duration_ms: 0.10725
+  type: 'test'
+  ...
+# Subtest: current HEAD drift exposes an actionable invalidation command after a completed sequence
+ok 114 - current HEAD drift exposes an actionable invalidation command after a completed sequence
+  ---
+  duration_ms: 0.145333
+  type: 'test'
+  ...
+# Subtest: current HEAD drift is repaired before suggesting a pending final review
+ok 115 - current HEAD drift is repaired before suggesting a pending final review
+  ---
+  duration_ms: 0.087708
+  type: 'test'
+  ...
+# Subtest: pending final review at the frozen current HEAD recommends final review without invalidation
+ok 116 - pending final review at the frozen current HEAD recommends final review without invalidation
+  ---
+  duration_ms: 0.219834
+  type: 'test'
+  ...
+# Subtest: direct CI sequence recording is rejected without a validated import receipt
+ok 117 - direct CI sequence recording is rejected without a validated import receipt
+  ---
+  duration_ms: 9.889583
+  type: 'test'
+  ...
+# Subtest: direct CI augmentation is rejected without a validated import receipt
+ok 118 - direct CI augmentation is rejected without a validated import receipt
+  ---
+  duration_ms: 37.948875
+  type: 'test'
+  ...
+# Subtest: CI import fails closed when command identity is unproven or mapped checks are unresolved
+ok 119 - CI import fails closed when command identity is unproven or mapped checks are unresolved
+  ---
+  duration_ms: 6.91225
+  type: 'test'
+  ...
+# Subtest: sequence CLI persists the planned and recorded workflow through the public command path
+ok 120 - sequence CLI persists the planned and recorded workflow through the public command path
+  ---
+  duration_ms: 45.053959
+  type: 'test'
+  ...
+# Subtest: validation sequence story ids cannot escape the canonical workspace namespace
+ok 121 - validation sequence story ids cannot escape the canonical workspace namespace
+  ---
+  duration_ms: 0.272417
+  type: 'test'
+  ...
+# Subtest: verify record persists structured observation from CLI options
+ok 122 - verify record persists structured observation from CLI options
+  ---
+  duration_ms: 2328.10475
+  type: 'test'
+  ...
+# Subtest: verify record rejects malformed --observed input
+ok 123 - verify record rejects malformed --observed input
+  ---
+  duration_ms: 1599.706209
+  type: 'test'
+  ...
+# Subtest: verify record rejects shell substitution and unterminated quotes in passing commands
+ok 124 - verify record rejects shell substitution and unterminated quotes in passing commands
+  ---
+  duration_ms: 4619.179708
+  type: 'test'
+  ...
+# Subtest: unit evidence requires an explicit native test selection
+ok 125 - unit evidence requires an explicit native test selection
+  ---
+  duration_ms: 6287.264584
+  type: 'test'
+  ...
+# Subtest: manual generic artifacts cannot impersonate imported CI transcripts
+ok 126 - manual generic artifacts cannot impersonate imported CI transcripts
+  ---
+  duration_ms: 1496.36625
+  type: 'test'
+  ...
+# Subtest: integration evidence requires an integration-specific executable command
+ok 127 - integration evidence requires an integration-specific executable command
+  ---
+  duration_ms: 2897.836542
+  type: 'test'
+  ...
+# Subtest: generic status artifact observed values are merged with CLI priority
+ok 128 - generic status artifact observed values are merged with CLI priority
+  ---
+  duration_ms: 2644.579208
+  type: 'test'
+  ...
+# Subtest: vitest artifact counts are auto-extracted into observation values
+ok 129 - vitest artifact counts are auto-extracted into observation values
+  ---
+  duration_ms: 2054.535042
+  type: 'test'
+  ...
+# Subtest: observation_check is missing for a passing claim without any observation
+ok 130 - observation_check is missing for a passing claim without any observation
+  ---
+  duration_ms: 1908.079292
+  type: 'test'
+  ...
+# Subtest: verify record clears stale observation warnings when the same kind is rerecorded with observations
+ok 131 - verify record clears stale observation warnings when the same kind is rerecorded with observations
+  ---
+  duration_ms: 3356.003667
+  type: 'test'
+  ...
+# Subtest: observation_check is partial when only values are present
+ok 132 - observation_check is partial when only values are present
+  ---
+  duration_ms: 1909.3025
+  type: 'test'
+  ...
+# Subtest: observation_check is not_applicable for needs_setup claims
+ok 133 - observation_check is not_applicable for needs_setup claims
+  ---
+  duration_ms: 1969.15025
+  type: 'test'
+  ...
+# Subtest: usage report counts stories with observation-missing pass claims
+ok 134 - usage report counts stories with observation-missing pass claims
+  ---
+  duration_ms: 49.01275
+  type: 'test'
+  ...
+# Subtest: observation text contributes to judgment evidence classification
+ok 135 - observation text contributes to judgment evidence classification
+  ---
+  duration_ms: 5404.483541
+  type: 'test'
+  ...
+1..135
+# tests 135
+# suites 0
+# pass 135
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 124377.852208

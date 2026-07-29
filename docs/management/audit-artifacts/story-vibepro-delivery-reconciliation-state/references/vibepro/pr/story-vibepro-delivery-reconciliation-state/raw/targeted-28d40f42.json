@@ -1,0 +1,9 @@
+{
+  "head_sha": "28d40f42",
+  "command": "node --test --test-concurrency=2 test/delivery-reconciliation-state.test.js test/traceability-usage-report.test.js test/artifact-routing.test.js test/merge-gate-authorization.test.js test/execution-state.test.js test/story-transaction-lock.test.js test/responsibility-authority.test.js test/agent-review-independence.test.js test/review-inspection-first.test.js test/guarded-run-session.test.js test/managed-worktree-policy-resync.test.js test/risk-adaptive-gate.test.js test/session-efficiency-audit.test.js test/session-efficiency-run-lineage.test.js",
+  "status": "pass",
+  "tests": 406,
+  "passed": 406,
+  "failed": 0,
+  "duration_ms": 203378.820583
+}

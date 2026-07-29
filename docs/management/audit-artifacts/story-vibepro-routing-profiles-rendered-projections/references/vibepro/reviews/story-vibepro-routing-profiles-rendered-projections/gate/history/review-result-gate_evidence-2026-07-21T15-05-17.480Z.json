@@ -1,0 +1,148 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Implementation evidence passes but senior-axis gate artifacts require regeneration.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "senior-axis-evidence-unresolved",
+      "detail": "Current gate DAG needs axis evidence regeneration."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read current source, strict-head evidence, responsibility tests, and gate DAG.",
+    "evidence": ".vibepro/qa/routing-profiles-rendered-projections/current-responsibility-v2-8a1f.json",
+    "inputs": [
+      "src/artifact-routing.js",
+      "src/agent-review.js",
+      "test/responsibility-authority.test.js",
+      ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/gate-dag.json"
+    ]
+  },
+  "judgment_delta": [
+    "Implementation is sound; gate needs regenerated axis evidence."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "expected_root": null,
+    "expected_head_sha": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+    "current_head_sha": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "expected_root": null,
+      "expected_head_sha": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "current_head_sha": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T15:05:17.480Z",
+  "git_context": {
+    "head_sha": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+    "current_branch": "codex/graphify-read-side-effect",
+    "dirty": false,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "e953899e3ccfd45947829fd4ab0690735c9f4d46cb03bd90b0ec19bf66e9bc01",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/",
+        "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+        "docs/features/routing-profiles-rendered-projections/04_technical_delta.md",
+        "docs/features/routing-profiles-rendered-projections/05_test_plan.md",
+        "docs/features/routing-profiles-rendered-projections/06_tasks.md",
+        "docs/features/routing-profiles-rendered-projections/07_evidence.md",
+        "docs/features/routing-profiles-rendered-projections/08_review.md",
+        "docs/features/routing-profiles-rendered-projections/09_gate.md",
+        "docs/features/routing-profiles-rendered-projections/10_release.md"
+      ]
+    },
+    "recorded_at": "2026-07-21T15:05:17.475Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Gate evidence must bind current frozen HEAD."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+    "surface_files": [
+      {
+        "path": "src/agent-review.js",
+        "sha256": "0c227c0feaa02dbbbbfdcb4c67fc70d8c1eb02ade8f687878d3e4c94ca8c6517",
+        "size": 154534
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "31598361c6701bf07971b864f474abe337a0a49d2326cdb13dfdc55a7db3ae48",
+        "size": 45451
+      },
+      {
+        "path": "test/responsibility-authority.test.js",
+        "sha256": "cf8053c6f30dcb0cfd828b70f230345cc2a8ee77b4044f201249085604410838",
+        "size": 45260
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "e3dc79c78d987c0480a03365e0a6379896b5639cdedc1022bfdabecba6e303f8"
+  },
+  "source_fingerprint": "600a286391d1685abbb9cca7011965c386f00918d3d0f9fa14a93d459aaec108",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "terra-low-gate-evidence-replacement-8a1f",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../../../tmp/gate-evidence-replacement.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

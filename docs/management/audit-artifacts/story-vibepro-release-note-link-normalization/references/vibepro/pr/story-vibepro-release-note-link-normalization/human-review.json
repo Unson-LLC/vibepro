@@ -1,0 +1,173 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-note-link-normalization",
+  "created_at": "2026-07-19T06:17:20.275Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-release-note-link-normalization/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-release-note-link-normalization/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-release-note-link-normalization/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-release-note-link-normalization/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-release-note-link-normalization.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-release-note-link-normalization.vibepro.json, docs/specs/vibepro-release-note-link-normalization.md)"
+    },
+    "decision_records": {
+      "total": 5,
+      "open": 0,
+      "by_type": {
+        "needs_review": 5
+      },
+      "by_status": {
+        "accepted": 5
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/private/tmp/vibepro-release-note-link-fix",
+          "actual_root": "/private/tmp/vibepro-release-note-link-fix",
+          "expected_root": null,
+          "expected_head_sha": "b986d22ccf74ecd00a18d9cf3f9aab08acd9cf9f",
+          "current_head_sha": "b986d22ccf74ecd00a18d9cf3f9aab08acd9cf9f",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784425205452-f76483bb",
+        "story_id": "story-vibepro-release-note-link-normalization",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_release_ops",
+        "source_status": "needs_review",
+        "summary": "Use the existing trusted-default-branch release workflow for rollout",
+        "reason": "Rollout occurs through the existing post-merge release documentation workflow with no manual operator step. CI docs:build and the generated release pages are the observability surface; rollback is one commit followed by regeneration.",
+        "reviewer": "codex",
+        "artifact": "docs/architecture/story-vibepro-release-note-link-normalization.md",
+        "verification_evidence_summary": {
+          "count": 5,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-release-note-link-normalization/run-artifacts/e2e.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-release-note-link-normalization/run-artifacts/build.json",
+              "type": "build",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-release-note-link-normalization/run-artifacts/typecheck.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-release-note-link-normalization/run-artifacts/integration.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-release-note-link-normalization/run-artifacts/unit.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/private/tmp/vibepro-release-note-link-fix",
+            "actual_root": "/private/tmp/vibepro-release-note-link-fix",
+            "expected_root": null,
+            "expected_head_sha": "b986d22ccf74ecd00a18d9cf3f9aab08acd9cf9f",
+            "current_head_sha": "b986d22ccf74ecd00a18d9cf3f9aab08acd9cf9f",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "b986d22ccf74ecd00a18d9cf3f9aab08acd9cf9f",
+          "current_branch": "codex/fix-release-note-story-links",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-19T01:40:05.440Z"
+        },
+        "recorded_at": "2026-07-19T01:40:05.452Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-19T06:17:18.207Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/private/tmp/vibepro-release-note-link-fix"
+    },
+    "cli": {
+      "entrypoint": "/private/tmp/vibepro-release-note-link-fix/bin/vibepro.js",
+      "runtime_module": "/private/tmp/vibepro-release-note-link-fix/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "cd21e65ae408191fbe58082c28bd6f6eb78593f3",
+      "branch": "codex/fix-release-note-story-links",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "67c304867a78d142fcb7e372ec33ddc1a7bf8c96",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

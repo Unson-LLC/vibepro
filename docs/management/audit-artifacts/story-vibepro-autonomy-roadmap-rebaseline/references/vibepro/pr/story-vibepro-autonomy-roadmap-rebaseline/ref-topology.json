@@ -10,10 +10,10 @@
   "refs": {
     "base_ref": "origin/main",
     "head_ref": "HEAD",
-    "current_branch": "codex/story-vibepro-autonomy-roadmap-rebaseline",
-    "base_sha": "a8629f5fbe6a3ca9a6cd0d96d2d74fde170c0b48",
-    "head_sha": "e096fdb300a610e185f596dd2530dfcbe6605594",
-    "merge_base_sha": "a8629f5fbe6a3ca9a6cd0d96d2d74fde170c0b48"
+    "current_branch": "vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj",
+    "base_sha": "846d36bc73d00133bf6983310f3ed0c1b20fe9f4",
+    "head_sha": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+    "merge_base_sha": "846d36bc73d00133bf6983310f3ed0c1b20fe9f4"
   },
   "base_selection": {
     "ref": "origin/main",
@@ -529,9 +529,9 @@
     },
     {
       "branch": "codex/review-surface-policy",
-      "local_sha": "9566cede5e005050bbab84378838992380a713e0",
+      "local_sha": "709dbf083f2ca30213cb24de6299f30cbcc5eb17",
       "remotes": {
-        "origin": "9566cede5e005050bbab84378838992380a713e0"
+        "origin": "709dbf083f2ca30213cb24de6299f30cbcc5eb17"
       },
       "divergence": {
         "local_vs_remote": false,
@@ -627,6 +627,17 @@
       }
     },
     {
+      "branch": "codex/story-vibepro-artifact-output-routing",
+      "local_sha": "0433f642bc2aa7bed054b00cbbe55a8b443d6c72",
+      "remotes": {
+        "origin": "0433f642bc2aa7bed054b00cbbe55a8b443d6c72"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
       "branch": "codex/story-vibepro-autonomy-roadmap-rebaseline",
       "local_sha": "e096fdb300a610e185f596dd2530dfcbe6605594",
       "remotes": {
@@ -638,6 +649,39 @@
       }
     },
     {
+      "branch": "codex/story-vibepro-classifier-premise-recovery",
+      "local_sha": "6581d33016632f9921b278d473e6c71fb96c4c94",
+      "remotes": {
+        "origin": "6581d33016632f9921b278d473e6c71fb96c4c94"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-vibepro-cli-env-boundary",
+      "local_sha": "80cdae3531ac02f99a0c0da9d020c1d671c6c64b",
+      "remotes": {
+        "origin": "80cdae3531ac02f99a0c0da9d020c1d671c6c64b"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-vibepro-delivery-reconciliation-state-clean",
+      "local_sha": "ced487895a24cb57d636d930a6615adad356c683",
+      "remotes": {
+        "origin": "00d39173668d92b4d08a1bb41e8ffdac6aeab3b8"
+      },
+      "divergence": {
+        "local_vs_remote": true,
+        "remote_disagreement": false
+      }
+    },
+    {
       "branch": "codex/story-vibepro-evidence-decision-ledger",
       "local_sha": "9828d893292d2e5de1308211b2884ef510afe88d",
       "remotes": {
@@ -645,6 +689,17 @@
       },
       "divergence": {
         "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-vibepro-gate-decision-outcome-ledger-clean",
+      "local_sha": "ff391da23b2107a06c3d5143d884e60078d4514d",
+      "remotes": {
+        "origin": "17bd1d8810f298c459c67591f8a21574c71fcacf"
+      },
+      "divergence": {
+        "local_vs_remote": true,
         "remote_disagreement": false
       }
     },
@@ -675,6 +730,17 @@
       "local_sha": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82",
       "remotes": {
         "origin": "6e53e3aac1eabdbcbea7ed205ea4e97d43a78f82"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-vibepro-next-best-action-controller",
+      "local_sha": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "remotes": {
+        "origin": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9"
       },
       "divergence": {
         "local_vs_remote": false,
@@ -715,10 +781,43 @@
       }
     },
     {
+      "branch": "codex/story-vibepro-safe-action-orchestrator-v2",
+      "local_sha": "462f28ce194e8588f179776d7332643d03e6d8c4",
+      "remotes": {
+        "origin": "462f28ce194e8588f179776d7332643d03e6d8c4"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-vibepro-session-attribution-boundary-guard-clean",
+      "local_sha": "960cb9386ee857763d837aad4e200b0bcc88283d",
+      "remotes": {
+        "origin": "960cb9386ee857763d837aad4e200b0bcc88283d"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
       "branch": "codex/story-vibepro-session-exposure-provenance-dedup",
       "local_sha": "fb521e3ee9c24da5a567a8892b23561365e643c3",
       "remotes": {
         "origin": "fb521e3ee9c24da5a567a8892b23561365e643c3"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "codex/story-vibepro-session-exposure-provenance-dedup-clean",
+      "local_sha": "4d1f92360eec8922b494173032f207541f0a7ac1",
+      "remotes": {
+        "origin": "4d1f92360eec8922b494173032f207541f0a7ac1"
       },
       "divergence": {
         "local_vs_remote": false,
@@ -1433,7 +1532,7 @@
       "branch": "dependabot/github_actions/actions/checkout-7",
       "local_sha": null,
       "remotes": {
-        "origin": "6678d2c28d8745bba850a35135b1454603361298"
+        "origin": "541d059f28b76a19f4377e8d170c710761062d3f"
       },
       "divergence": {
         "local_vs_remote": false,
@@ -1730,7 +1829,7 @@
       "branch": "main",
       "local_sha": "c8a3d7fc1e80dffa7fc0805fdd6e4511ce109045",
       "remotes": {
-        "origin": "a8629f5fbe6a3ca9a6cd0d96d2d74fde170c0b48"
+        "origin": "846d36bc73d00133bf6983310f3ed0c1b20fe9f4"
       },
       "divergence": {
         "local_vs_remote": true,
@@ -1837,6 +1936,28 @@
       }
     },
     {
+      "branch": "vibepro-npm-release-lock",
+      "local_sha": null,
+      "remotes": {
+        "origin": "305a0a11fb0069c85475587955606ad87aef4f6e"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "vibepro/story-vibepro-autonomy-roadmap-rebaseline-1bl6wj",
+      "local_sha": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+      "remotes": {
+        "origin": "be8236faf7bee8ac5612a2824c153089bd4f93dc"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
       "branch": "vibepro/story-vibepro-ci-evidence-fast-lane",
       "local_sha": "c93add26d289e4b8a4256fd84f2f42a29a9db57c",
       "remotes": {
@@ -1881,10 +2002,43 @@
       }
     },
     {
+      "branch": "vibepro/story-vibepro-linux-rollup-ci-lock",
+      "local_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "remotes": {
+        "origin": "4d57b80973d64a428f4dc8f765b857fd3261e315"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
       "branch": "vibepro/story-vibepro-managed-worktree-execution-dag-1k3pbc",
       "local_sha": "e0207ad8ecdd601f6f778b0976e74ab5d3b4519c",
       "remotes": {
         "origin": "e0207ad8ecdd601f6f778b0976e74ab5d3b4519c"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "vibepro/story-vibepro-post-merge-docs-clean-worktree",
+      "local_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+      "remotes": {
+        "origin": "971be8775b4cf2012a661612e508723a0dc7ab1a"
+      },
+      "divergence": {
+        "local_vs_remote": false,
+        "remote_disagreement": false
+      }
+    },
+    {
+      "branch": "vibepro/story-vibepro-pr-driven-continuous-release-wzlakz",
+      "local_sha": "6086ea0a94aa47222ca648167c22f1a02aed20f4",
+      "remotes": {
+        "origin": "6086ea0a94aa47222ca648167c22f1a02aed20f4"
       },
       "divergence": {
         "local_vs_remote": false,

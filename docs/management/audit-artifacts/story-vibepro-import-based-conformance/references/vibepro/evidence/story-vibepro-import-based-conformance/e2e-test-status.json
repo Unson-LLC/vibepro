@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test --test-name-pattern e2e test/architecture-conformance.test.js",
+  "tests": 2,
+  "pass": 2,
+  "fail": 0,
+  "generated_from_log": "/tmp/g5-e2e.log",
+  "generated_at": "2026-07-25T00:03:01.649Z"
+}

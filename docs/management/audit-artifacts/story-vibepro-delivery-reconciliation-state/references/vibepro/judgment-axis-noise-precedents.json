@@ -1,0 +1,87 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout|pr_route:release_merge",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-delivery-reconciliation-state",
+      "decision_id": "decision-1784861665330-41659d10",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "Rollback does not erase observed delivery. The current E2E artifact verifies recovery and transaction ownership; Story and release guide define consumer rollback and execute reconcile ownership. No feature gate or destructive migration exists.",
+      "artifact": ".vibepro/pr/story-vibepro-delivery-reconciliation-state/raw/e2e-4c86e1cc.json",
+      "activation_candidates": [
+        "pr_route:release_merge",
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T02:54:39.460Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:518|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-delivery-reconciliation-state",
+      "decision_id": "decision-1784861664624-db04172f",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The focused branch excludes reservation accounting and the downstream gate-ledger Story. Architecture boundary, runtime contract, gate evidence, PR split scope, and release risk were independently reviewed by named roles, so this is one reviewable Story rather than a mixed parent-session diff.",
+      "artifact": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/review-summary.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:518",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T02:54:39.460Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "performance_semantic|changed_surface:performance_semantic",
+      "axis": "performance_semantic",
+      "story_id": "story-vibepro-delivery-reconciliation-state",
+      "decision_id": "decision-1784861663858-689742f0",
+      "source": "gate:judgment_axis_performance_semantic",
+      "reason": "No performance claim, hot-path algorithm, polling interval, payload-scale contract, or external runtime budget changes. Current typecheck, focused regression, and 79/79 E2E cover semantic invariants; inventing a benchmark delta would be false evidence.",
+      "artifact": "docs/management/stories/active/story-vibepro-delivery-reconciliation-state.md",
+      "activation_candidates": [
+        "changed_surface:performance_semantic"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T02:54:39.461Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-delivery-reconciliation-state",
+      "decision_id": "decision-1784861665330-41659d10",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "Rollback does not erase observed delivery. The current E2E artifact verifies recovery and transaction ownership; Story and release guide define consumer rollback and execute reconcile ownership. No feature gate or destructive migration exists.",
+      "artifact": ".vibepro/pr/story-vibepro-delivery-reconciliation-state/raw/e2e-4c86e1cc.json",
+      "activation_candidates": [
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T02:54:50.551Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:55|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-delivery-reconciliation-state",
+      "decision_id": "decision-1784861664624-db04172f",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The focused branch excludes reservation accounting and the downstream gate-ledger Story. Architecture boundary, runtime contract, gate evidence, PR split scope, and release risk were independently reviewed by named roles, so this is one reviewable Story rather than a mixed parent-session diff.",
+      "artifact": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/review-summary.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:55",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T02:54:50.551Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

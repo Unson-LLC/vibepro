@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "head": "c01a1fe4",
+  "command": "node --test test/e2e/story-vibepro-autonomous-action-dag-main.spec.js",
+  "tests": 1,
+  "passed": 1,
+  "failed": 0,
+  "acceptance_criteria": ["AC-1", "AC-2", "AC-3", "AC-4", "AC-5", "AC-6", "AC-7"],
+  "scenarios": ["S-002", "S-003"],
+  "workflow_replay": "pass",
+  "artifact_version": "0.2.0-beta.1"
+}

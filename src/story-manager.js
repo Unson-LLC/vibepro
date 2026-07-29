@@ -10,8 +10,9 @@ import { generateStoryCatalog, renderStoryCatalogMap } from './story-catalog-gen
 import { bindStoryTraceability } from './traceability.js';
 import { renderStoryReportHtml } from './story-html.js';
 import { getJourneyStatus } from './journey-map.js';
-import { DEFAULT_BRAINBASE_STORIES, getWorkspaceDir, initWorkspace, readManifest, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
+import { getWorkspaceDir, initWorkspace, isArchived, normalizeActiveStories, readManifest, toWorkspaceRelative, writeManifest, WORKSPACE_DIR } from './workspace.js';
 import { readStoryTasks } from './story-task-generator.js';
+import { resolveArtifactRoute, resolveArtifactRoutes, resolveGraphifyArtifactFile } from './artifact-routing.js';
 
 const STORY_FIELDS = [
   ['--id', 'story_id'],
@@ -139,13 +140,25 @@ export async function getStoryStatus(repoRoot, storyId = null) {
   const latestRun = findLatestStoryRun(manifest, story.story_id, runs);
   const evidence = latestRun ? await readRunEvidence(root, latestRun) : null;
   const journeyContext = await buildStoryJourneyContext(root, story);
+  const routing = await resolveArtifactRoutes(root, { storyId: story.story_id });
   return {
     story,
     latestRun,
     runs,
     findingCount: evidence?.findings?.length ?? 0,
     artifacts: latestRun?.artifacts ?? {},
-    journey_context: journeyContext
+    journey_context: journeyContext,
+    artifact_routes: Object.fromEntries(Object.entries(routing.routes).map(([kind, route]) => [kind, {
+      ownership: route.canonical.ownership ?? 'legacy',
+      canonical: route.canonical.relative_path,
+      canonical_writer: route.canonical_writer ?? route.writer ?? 'owner',
+      read_authority: route.canonical.relative_path,
+      projections: (route.projections ?? []).map((projection) => ({
+        ownership: projection.ownership ?? (projection.generated ? 'generated' : 'legacy'),
+        path: projection.relative_path,
+        renderer: projection.renderer ? `${projection.renderer.id}@${projection.renderer.version}` : '-'
+      }))
+    }]))
   };
 }
 
@@ -165,7 +178,7 @@ export async function createStoryReport(repoRoot, storyId = null) {
   const reportPath = path.join(storyDir, 'story-report.md');
   await writeFile(reportPath, renderStoryReport({ story, latestRun, runs, evidence, taskState, journeyContext }));
   const htmlPath = path.join(storyDir, 'index.html');
-  const graphHtmlRel = path.join(WORKSPACE_DIR, 'graphify', 'graph.html');
+  const graphHtmlRel = toWorkspaceRelative(root, await resolveGraphifyArtifactFile(root, story.story_id, 'graph.html'));
   await writeFile(htmlPath, renderStoryReportHtml({
     story,
     latestRun,
@@ -253,7 +266,7 @@ async function writeStoryDeriveFailure(root, error, options = {}) {
   const runId = `story-derive-failure-${new Date().toISOString().replace(/\.\d{3}Z$/, 'Z').replace(/:/g, '')}`;
   const runDir = path.join(getWorkspaceDir(root), 'diagnostics', runId);
   await mkdir(runDir, { recursive: true });
-  const graphStats = await readGraphStatsForFailure(root);
+  const graphStats = await readGraphStatsForFailure(root, options.storyId ?? options.id ?? 'story-default');
   const failure = {
     schema_version: '0.1.0',
     run_id: runId,
@@ -274,9 +287,9 @@ async function writeStoryDeriveFailure(root, error, options = {}) {
   await writeFile(markdownPath, renderStoryDeriveFailure(failure));
 }
 
-async function readGraphStatsForFailure(root) {
+async function readGraphStatsForFailure(root, storyId) {
   try {
-    const graph = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'graphify', 'graph.json'), 'utf8'));
+    const graph = JSON.parse(await readFile(await resolveGraphifyArtifactFile(root, storyId), 'utf8'));
     const edges = Array.isArray(graph?.edges) ? graph.edges : Array.isArray(graph?.links) ? graph.links : [];
     return {
       available: true,
@@ -325,9 +338,10 @@ export async function readStoryMap(repoRoot) {
 
 export async function createStoryPlan(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
+  const config = await readConfig(root);
   const manifest = await readManifest(root);
   const { catalog, catalogPath } = await readStoryMap(root);
-  const graphIndex = await readStoryPlanGraphIndex(root);
+  const graphIndex = await readStoryPlanGraphIndex(root, config.brainbase?.current_story_id ?? 'story-default');
   const limit = Number.isInteger(options.limit) && options.limit > 0 ? options.limit : 5;
   const explicitStoryTasks = await readExplicitStoryTasks(root, catalog);
   const plan = buildStoryExecutionPlan(catalog, { limit, graphIndex, explicitStoryTasks });
@@ -353,9 +367,9 @@ export async function createStoryPlan(repoRoot, options = {}) {
   return { plan, planPath, markdownPath };
 }
 
-async function readStoryPlanGraphIndex(root) {
+async function readStoryPlanGraphIndex(root, storyId) {
   try {
-    const graph = JSON.parse(await readFile(path.join(getWorkspaceDir(root), 'graphify', 'graph.json'), 'utf8'));
+    const graph = JSON.parse(await readFile(await resolveGraphifyArtifactFile(root, storyId), 'utf8'));
     const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
     const { edges } = normalizeGraphEdges(graph);
     return buildGraphIndex({ nodes, edges });
@@ -463,6 +477,13 @@ export function renderStoryStatus(result) {
 ## Artifacts
 
 ${Object.entries(result.artifacts).length === 0 ? '- なし' : Object.entries(result.artifacts).map(([key, value]) => `- ${key}: ${value}`).join('\n')}
+
+## Artifact Authority
+
+${Object.entries(result.artifact_routes ?? {}).map(([kind, route]) => [
+  `- ${kind}: ownership=${route.ownership}; canonical=${route.canonical}; canonical-writer=${route.canonical_writer}; read-authority=${route.read_authority}`,
+  ...(route.projections ?? []).map((projection) => `  projection: ownership=${projection.ownership}; path=${projection.path}; renderer=${projection.renderer}`)
+].join('\n')).join('\n')}
 
 ${renderStoryJourneyContext(result.journey_context)}
 `;
@@ -641,7 +662,7 @@ async function detectStoryJourneyImpact(root, story) {
 }
 
 async function readStoryJourneyDocuments(root, story) {
-  const candidates = buildStoryDocumentCandidates(root, story.story_id);
+  const candidates = await buildStoryDocumentCandidates(root, story.story_id);
   const documents = [];
   for (const candidate of candidates) {
     try {
@@ -656,9 +677,13 @@ async function readStoryJourneyDocuments(root, story) {
   return documents;
 }
 
-function buildStoryDocumentCandidates(root, storyId) {
+async function buildStoryDocumentCandidates(root, storyId) {
   const names = storyId.startsWith('story-') ? [storyId] : [storyId, `story-${storyId}`];
-  return [...new Set(names.flatMap((name) => STORY_DOCUMENT_DIRS.map((dir) => path.join(root, dir, `${name}.md`))))];
+  const canonical = (await resolveArtifactRoute(root, 'story', { storyId })).canonical.absolute_path;
+  return [...new Set([
+    canonical,
+    ...names.flatMap((name) => STORY_DOCUMENT_DIRS.map((dir) => path.join(root, dir, `${name}.md`)))
+  ])];
 }
 
 function buildStoryJourneyNextActions(status) {
@@ -2180,26 +2205,6 @@ async function readRunEvidence(repoRoot, run) {
   return JSON.parse(await readFile(path.resolve(repoRoot, evidencePath), 'utf8'));
 }
 
-export function normalizeActiveStories(stories) {
-  const sourceStories = Array.isArray(stories) && stories.length > 0 ? stories : DEFAULT_BRAINBASE_STORIES;
-  const activeStories = sourceStories.filter((story) => !isArchived(story));
-  if (activeStories.length === 0) {
-    throw new Error('At least one active story is required');
-  }
-  return activeStories.map((story) => ({
-    story_id: story.story_id,
-    title: story.title,
-    ssot: story.ssot ?? 'NocoDB',
-    status: story.status ?? 'active',
-    horizon: story.horizon ?? null,
-    view: typeof story.view === 'string' ? story.view : null,
-    period: typeof story.period === 'string' ? story.period : null,
-    started_at: story.started_at ?? null,
-    due_at: story.due_at ?? null,
-    category: story.category ?? null
-  }));
-}
-
 async function readConfig(repoRoot) {
   await initWorkspace(repoRoot);
   return JSON.parse(await readFile(getConfigPath(repoRoot), 'utf8'));
@@ -2328,8 +2333,4 @@ function getOption(args, name) {
   const index = args.indexOf(name);
   if (index === -1) return null;
   return args[index + 1] ?? null;
-}
-
-function isArchived(story) {
-  return story.status === 'archived' || story.status === 'アーカイブ';
 }

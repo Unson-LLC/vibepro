@@ -1,0 +1,39 @@
+{
+  "status": "pass",
+  "summary": "The current HEAD preserves the surface-aware freshness runtime contract and closes the design-lineage gap: Story, Architecture, and Spec all declare parent_design vibepro-content-scoped-evidence-freshness, which resolves to the registered design root. Regression, legacy/fail-closed, strict override, generated artifact, config, documentation, and E2E surfaces are covered.",
+  "findings": [],
+  "inspection_summary": "Read the current architecture review request and parallel dispatch, compared HEAD 6ed774dc77d187c42b894e2f073a50580c72e631 with the prior independently reviewed tree, inspected the design registry and all Story/Architecture/Spec parent_design declarations, verified the formal Spec architecture/code/test anchors, re-read the runtime freshness and content-binding boundaries, reviewed the guides/releases and focused/E2E tests, checked current verification evidence, and reran the eight-case E2E matrix.",
+  "inspection_evidence": "design-ssot-reconciliation.summary.json reports status=passed, coverage_status=passed, action_items_count=0, unregistered_changed_docs_count=0; current unit evidence is 39/39 at HEAD 6ed774dc; current E2E rerun is 8/8 at HEAD 6ed774dc; git diff --check origin/main...HEAD passed.",
+  "inspection_inputs": [
+    ".vibepro/config.json",
+    "design-ssot.json",
+    "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/architecture/vibepro-content-scoped-evidence-freshness.md",
+    "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+    "docs/specs/story-vibepro-content-scoped-evidence-freshness.md",
+    "docs/guide/agent-review.md",
+    "docs/guide/release-and-audit.md",
+    "docs/ja/guide/agent-review.md",
+    "docs/releases/2026-07.md",
+    "docs/ja/releases/2026-07.md",
+    "src/agent-review.js",
+    "src/content-binding.js",
+    "test/content-scoped-evidence-freshness.test.js",
+    "test/review-inspection-first.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-content-scoped-evidence-freshness-main.test.js",
+    "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+    ".vibepro/spec/story-vibepro-surface-aware-agent-review-freshness/spec.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/design-ssot-reconciliation.summary.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/review-request-architecture_boundary.md",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/parallel-dispatch.md"
+  ],
+  "judgment_delta": [
+    "Initial concern: the new parent_design fields might name an unregistered or inconsistent authority across Story, Architecture, and Spec. Final conclusion: all three name vibepro-content-scoped-evidence-freshness, the registry links all three documents under that root, and current reconciliation passes with zero action items or unregistered changed documents.",
+    "Initial concern: exact-HEAD lineage repair or review-budget amendment might alter the runtime freshness contract. Final conclusion: changes since the prior reviewed tree are metadata/frontmatter and Story-local bounded review policy only; src/agent-review.js, src/content-binding.js, focused tests, and E2E code are unchanged.",
+    "Initial concern under regression_guard: removing the built-in strict roles could weaken legacy, dirty fingerprint, provenance/lifecycle, or explicit strict paths. Final conclusion: the implementation retains fail-closed content evaluation and legacy merge-delta handling, current focused evidence passes 39/39, and the current E2E matrix passes 8/8.",
+    "Initial concern under path_surface_coverage: design lineage or operator-facing outputs might disagree with runtime behavior. Final conclusion: formal Spec anchors resolve, design reconciliation passes, English/Japanese guides and releases describe the same content-surface default and reasoned strict override, and generated review policy exposes content_surface rather than a hidden role-name exception."
+  ]
+}

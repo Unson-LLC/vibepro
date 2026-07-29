@@ -28,10 +28,10 @@ test('story-vibepro-content-scoped-evidence-freshness executes AC-1 through AC-9
   assert.match(stdout, /minimal recovery emits an executable inspection-aware pass command/);
   assert.match(stdout, /CEF-S-3 review evidence uses inspected input content binding/);
   assert.match(stdout, /CEF-S-4 strict HEAD binding still invalidates/);
-  assert.match(stdout, /every built-in high-risk gate role strict/);
+  assert.match(stdout, /gate evidence and release risk reviews survive unrelated main advance and rebase/);
   assert.match(stdout, /global strict HEAD default is rejected/);
   assert.match(stdout, /without inspection flags rejects gate_evidence pass/);
   assert.match(stdout, /rejects generated workspace artifacts as the only inspection input/);
-  assert.match(stdout, /preserves inspected files/);
+  assert.match(stdout, /review strict HEAD CLI override requires and records an explicit reason/);
   assert.match(stdout, /fail 0/);
 });

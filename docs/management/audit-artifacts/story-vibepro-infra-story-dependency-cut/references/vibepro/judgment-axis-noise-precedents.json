@@ -1,0 +1,68 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-infra-story-dependency-cut",
+      "decision_id": "decision-1784909827654-46904f6f",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "Independently adjudicated judged_sound (event 4192b2c7-5520-4154-8f7f-7a4679d19cbd): a single reviewer can read this whole diff in one sitting as one coherent decision; review_owner_map/decision_record evidence is satisfied by this very decision record plus the gate_evidence Agent Review pass.",
+      "artifact": ".vibepro/adjudication/story-vibepro-infra-story-dependency-cut/judgment-adjudication.json",
+      "activation_candidates": [
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T16:17:19.467Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "performance_semantic|changed_surface:performance_semantic",
+      "axis": "performance_semantic",
+      "story_id": "story-vibepro-infra-story-dependency-cut",
+      "decision_id": "decision-1784909826626-e1ba7bf1",
+      "source": "gate:judgment_axis_performance_semantic",
+      "reason": "Independently adjudicated judged_sound (event cc910918-0852-468c-bad7-3cdbec5964ec): the axis is vacuously satisfied since there is no algorithmic or async/sync change, so benchmark_delta/perf_regression_guard/semantic_invariant_test evidence is not applicable.",
+      "artifact": ".vibepro/adjudication/story-vibepro-infra-story-dependency-cut/judgment-adjudication.json",
+      "activation_candidates": [
+        "changed_surface:performance_semantic"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T16:17:19.467Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "data_state|changed_path:data_state",
+      "axis": "data_state",
+      "story_id": "story-vibepro-infra-story-dependency-cut",
+      "decision_id": "decision-1784909825571-513749cb",
+      "source": "gate:judgment_axis_data_state",
+      "reason": "Independently adjudicated judged_sound (event 62212c30-9028-4363-8aec-b1c3a0d274fd): the rest of the diff is pure function relocation and JSON module-classification metadata, so migration_plan/rollback_plan/idempotency_test/query_semantics_test evidence is not applicable -- there is no persistent-state change to cover.",
+      "artifact": ".vibepro/adjudication/story-vibepro-infra-story-dependency-cut/judgment-adjudication.json",
+      "activation_candidates": [
+        "changed_path:data_state"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T16:17:19.467Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|pr_route:runtime_change|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-infra-story-dependency-cut",
+      "decision_id": "decision-1784909824552-d96c2155",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "Independently adjudicated judged_sound (event d784af1b-841d-473e-9786-3c39b6935d94): git diff shows src/cli.js untouched and a repo-wide grep confirms no remaining import of [REDACTED:69b1d2030a95] from the old story-manager.js path; no compat_or_output_test is needed because there is no public-contract surface change to test.",
+      "artifact": ".vibepro/adjudication/story-vibepro-infra-story-dependency-cut/judgment-adjudication.json",
+      "activation_candidates": [
+        "pr_route:runtime_change",
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T16:17:19.467Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

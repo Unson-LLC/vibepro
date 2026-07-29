@@ -9,8 +9,64 @@ import { promisify } from 'node:util';
 
 import { classifyChangeRisk } from '../src/change-risk-classifier.js';
 import { runCli } from '../src/cli.js';
+import { bugPhysicsVerificationText, buildArtifactConsistencyGate } from '../src/pr-manager.js';
 
 const execFileAsync = promisify(execFile);
+
+test('artifact consistency preserves stale non-required reviews as nonblocking history', () => {
+  const gate = buildArtifactConsistencyGate({
+    git: {
+      head_sha: 'current-head',
+      status_fingerprint_hash: hashFingerprint('current'),
+      user_status_fingerprint_hash: hashFingerprint('current-user'),
+      dirty: false,
+      raw_dirty: false
+    },
+    verificationEvidence: { commands: [] },
+    agentReviews: {
+      required_reviews: [{ stage: 'gate', role: 'gate_evidence' }],
+      checkpoint_required_reviews: [],
+      risk_adaptive_coverage: {
+        duplicate_checkpoint_roles_suppressed: ['architecture_spec:architecture_boundary'],
+        validation_sequence_review_roles: []
+      },
+      stages: [
+        {
+          stage: 'architecture_spec',
+          roles: [{
+            role: 'architecture_boundary',
+            artifact: '.vibepro/reviews/story/architecture_spec/review-result-architecture_boundary.json',
+            effective_status: 'stale',
+            stale_reason: 'strict HEAD review was recorded for old-head, current head is current-head',
+            git_context: { head_sha: 'old-head' }
+          }]
+        },
+        {
+          stage: 'gate',
+          roles: [{
+            role: 'gate_evidence',
+            artifact: '.vibepro/reviews/story/gate/review-result-gate_evidence.json',
+            effective_status: 'pass',
+            git_context: { head_sha: 'current-head' }
+          }]
+        }
+      ]
+    },
+    storyId: 'story'
+  });
+
+  assert.equal(gate.status, 'passed');
+  assert.equal(gate.inconsistent_artifact_count, 0);
+  assert.equal(
+    gate.artifacts.find((artifact) => artifact.role === 'architecture_boundary').status,
+    'historical_nonblocking'
+  );
+  assert.equal(
+    gate.artifacts.find((artifact) => artifact.role === 'gate_evidence').status,
+    'current'
+  );
+  assert.match(gate.reason, /historical nonblocking/);
+});
 
 async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
@@ -71,6 +127,16 @@ async function makeGitRepo() {
     '--period',
     '2026-05'
   ]);
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  config.agent_reviews = {
+    ...(config.agent_reviews ?? {}),
+    defaults: {
+      ...(config.agent_reviews?.defaults ?? {}),
+      validation_sequence_owns_checkpoints: true
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
   await git(root, ['add', '.']);
   await git(root, ['commit', '-m', 'chore: init risk gate repo']);
   await git(root, ['switch', '-c', 'feature/risk-gate']);
@@ -134,6 +200,50 @@ test('change classifier selects workflow_heavy for cross-surface workflow change
   assert.ok(gateDagChange.risk_surfaces.includes('gate_orchestration'));
   assert.ok(gateDagChange.risk_surfaces.includes('verification_evidence'));
   assert.ok(gateDagChange.risk_surfaces.includes('review_lifecycle'));
+
+  const reviewRepairChange = classifyChangeRisk({
+    fileGroups: {
+      source: { files: ['src/review-repair.js'] },
+      tests: { files: ['test/review-repair.test.js'] }
+    }
+  });
+  assert.ok(reviewRepairChange.risk_surfaces.includes('review_lifecycle'));
+
+  const gateReviewBoundaryChange = classifyChangeRisk({
+    storySource: {
+      title: 'Atomic gate review contract',
+      background: 'Gate evidence ownership and reviewer lifecycle must remain fail closed.'
+    },
+    fileGroups: {
+      source: { files: ['src/pr-manager.js', 'src/agent-review.js'] },
+      tests: { files: ['test/vibepro-cli.test.js'] }
+    }
+  });
+  assert.equal(gateReviewBoundaryChange.profile, 'workflow_heavy');
+
+  const gateOnlyBoundaryChange = classifyChangeRisk({
+    storySource: { title: 'Atomic gate contract', background: 'Gate orchestration remains fail closed.' },
+    fileGroups: {
+      source: { files: ['src/pr-manager.js'] },
+      tests: { files: ['test/vibepro-cli.test.js'] }
+    }
+  });
+  assert.notEqual(gateOnlyBoundaryChange.profile, 'workflow_heavy');
+
+  const validationSequenceOnlyChange = classifyChangeRisk({
+    storySource: { title: 'Validation sequencing maintenance', background: 'Keep validation ordering correct.' },
+    fileGroups: { source: { files: ['src/validation-sequencing.js'] }, tests: { files: [] } }
+  });
+  assert.ok(validationSequenceOnlyChange.risk_surfaces.includes('gate_orchestration'));
+
+  const reviewOnlyBoundaryChange = classifyChangeRisk({
+    storySource: { title: 'Review lifecycle contract', background: 'Reviewer lifecycle identity remains explicit.' },
+    fileGroups: {
+      source: { files: ['src/agent-review.js'] },
+      tests: { files: ['test/agent-review-independence.test.js'] }
+    }
+  });
+  assert.notEqual(reviewOnlyBoundaryChange.profile, 'workflow_heavy');
 
   const coreWorkflowChange = classifyChangeRisk({
     storySource: {
@@ -428,6 +538,77 @@ Session switching is intermittent and looks like a race condition with async orp
   assert.equal(result.result.preparation.gate_status.ready_for_pr_create, false);
 });
 
+test('bug physics verification text includes structured observation scenarios and values', () => {
+  const text = bugPhysicsVerificationText({
+    commands: [{
+      kind: 'integration',
+      status: 'pass',
+      command: 'node --test lineage.test.js',
+      summary: 'verification passed',
+      observation: {
+        scenarios: ['authoritative_signal_source is verification-evidence store'],
+        values: {
+          signal_availability: 'available',
+          monitoring: 'current-head monitoring evidence'
+        }
+      }
+    }]
+  });
+
+  assert.match(text, /authoritative_signal_source is verification-evidence store/);
+  assert.match(text, /signal_availability available/);
+  assert.match(text, /monitoring current-head monitoring evidence/);
+});
+
+test('observability bug physics accepts structured evidence bound by current git context', async () => {
+  const repo = await makeGitRepo();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-risk-adaptive.md'), `---
+story_id: story-risk-adaptive
+title: Authoritative observability signal
+architecture_docs:
+  reason: observability fixture
+---
+
+# Authoritative observability signal
+
+## 背景
+
+Monitoring needs one authoritative signal source instead of ambiguous indicators.
+
+## 受け入れ基準
+
+- [ ] Current-head structured verification proves signal availability
+`);
+  await writeFile(path.join(repo, 'src', 'observability.js'), 'export const signalSource = "verification-evidence";\n');
+  await execFileAsync('git', ['add', '.'], { cwd: repo });
+  await execFileAsync('git', ['commit', '-m', 'add observability fixture'], { cwd: repo });
+
+  const recorded = await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'integration',
+    '--status', 'pass',
+    '--command', 'node --test test/integration/observability.test.js',
+    '--target', 'src/observability.js',
+    '--scenario', 'authoritative_signal_source is verification-evidence store',
+    '--observed', 'signal_availability=available',
+    '--strict-head-binding',
+    '--strict-head-reason', 'observability proof must match the inspected runtime HEAD'
+  ]);
+  assert.equal(recorded.exitCode, 0, recorded.stderr);
+  assert.equal(recorded.result.evidence.commands[0].binding, undefined);
+  assert.equal(recorded.result.evidence.commands[0].content_binding.status, 'strict_head');
+  assert.equal(recorded.result.evidence.commands[0].git_context.dirty, false);
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 0);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:bug_physics_observability_signal_source');
+  assert.equal(gate.status, 'passed');
+});
+
 test('pr prepare reuses same-head passing verification for low-risk evidence changes only', async () => {
   const repo = await makeGitRepo();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
@@ -634,7 +815,7 @@ Terminal rendering has an illegal-state-representable surface plus deterministic
     '--id', 'story-risk-adaptive',
     '--kind', 'unit',
     '--status', 'pass',
-    '--command', 'node --test test/risk-adaptive-gate.test.js',
+    '--command', 'node --test test/unit/risk-adaptive-gate.test.js',
     '--summary', 'real-byte fixture and headless replay assertion passed; invariant unit makes illegal-state unrepresentable; selected harness could not reproduce one symptom, so contradiction feedback must re-triage'
   ])).exitCode, 0);
 
@@ -680,7 +861,7 @@ The running session reads an unexpected artifact version. The deployment probe e
     '--id', 'story-risk-adaptive',
     '--kind', 'integration',
     '--status', 'pass',
-    '--command', 'node --test test/risk-adaptive-gate.test.js',
+    '--command', 'node --test test/integration/risk-adaptive-gate.test.js',
     '--summary', 'version-stamp propagation evidence proves the running session reads the expected artifact version'
   ])).exitCode, 0);
 
@@ -708,6 +889,7 @@ test('pr prepare expands workflow-heavy gate DAG and blocks release without flow
   await mkdir(path.join(repo, 'src', 'app', 'api', 'v1', 'projects', '[projectId]', 'start'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'lib', 'services'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'workers'), { recursive: true });
+  await mkdir(path.join(repo, 'test', 'integration'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-risk-adaptive.md'), `---
 story_id: story-risk-adaptive
 title: FORM preflight workflow gate
@@ -731,6 +913,175 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   await writeFile(path.join(repo, 'src', 'app', 'api', 'v1', 'projects', '[projectId]', 'start', 'route.ts'), 'export async function POST(){ return Response.json({ legacy: "v1" }); }\n');
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'formProjectStartService.ts'), 'export function startFormWorkflow(){ return "retry-status"; }\n');
   await writeFile(path.join(repo, 'src', 'workers', 'formDetectionWorker.ts'), 'export function enqueueFormDetectionJob(){ return "queued"; }\n');
+  await writeFile(path.join(repo, 'test', 'integration', 'workflow-validation.test.js'), 'import test from "node:test";\nimport assert from "node:assert/strict";\ntest("workflow validation", () => assert.equal(true, true));\n');
+
+  const freshPrepare = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(freshPrepare.exitCode, 0);
+  const freshHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  await mkdir(path.join(repo, '.vibepro', 'qa'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'qa', 'sequence-status.json'), JSON.stringify({
+    status: 'pass', observed: { focused_tests: 1 }
+  }));
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'integration',
+    '--status', 'pass',
+    '--command', 'node --test test/integration/workflow-validation.test.js',
+    '--summary', 'targeted validation passed',
+    '--artifact', '.vibepro/qa/sequence-status.json',
+    '--target', 'src/lib/services/formProjectStartService.ts',
+    '--scenario', 'targeted workflow contract validation passed',
+    '--observed', 'test_fingerprint=fresh-tests-v1',
+    '--observed', 'validation_phase=targeted_validation'
+  ])).exitCode, 0);
+  const canonicalEvidence = '.vibepro/pr/story-risk-adaptive/verification-evidence.json';
+  const persistedSequencePath = path.join(repo, '.vibepro', 'validation-sequencing', 'story-risk-adaptive', 'state.json');
+  const freshSequence = await readJson(persistedSequencePath);
+  assert.equal(freshSequence.plan.risk_profile, 'workflow_heavy');
+  assert.equal(freshSequence.proposed_binding.head_sha, freshHead);
+  const freshEvaluation = freshPrepare.result.preparation.pr_context.validation_sequencing.evaluation;
+  assert.equal(freshEvaluation.next_required_action.phase, 'plan');
+  assert.match(freshEvaluation.next_required_action.command, /--command .*--test-fingerprint/);
+  const rejectedUnboundTargeted = await runCli([
+    'sequence', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--phase', 'targeted_validation',
+    '--json'
+  ]);
+  assert.equal(rejectedUnboundTargeted.exitCode, 1);
+  const freshPlan = await runCli([
+    'sequence', 'plan', repo,
+    '--id', 'story-risk-adaptive',
+    '--head', freshHead,
+    '--risk-profile', 'workflow_heavy',
+    ...freshSequence.plan.risk_surfaces.flatMap((surface) => ['--surface', surface]),
+    ...freshSequence.plan.preflight_required_inspection_inputs.flatMap((input) => ['--inspection-input', input]),
+    '--command', 'node --test test/integration/workflow-validation.test.js',
+    '--test-fingerprint', 'fresh-tests-v1',
+    '--evidence', canonicalEvidence,
+    '--json'
+  ]);
+  assert.equal(freshPlan.exitCode, 0);
+  let freshTargetedStderr = '';
+  const freshTargeted = await runCli([
+    'sequence', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--phase', 'targeted_validation',
+    '--head', freshHead,
+    '--command', 'node --test test/integration/workflow-validation.test.js',
+    '--test-fingerprint', 'fresh-tests-v1',
+    '--evidence', canonicalEvidence,
+    '--json'
+  ], { stderr: { write: (chunk) => { freshTargetedStderr += chunk; } } });
+  assert.equal(freshTargeted.exitCode, 0, freshTargetedStderr);
+  assert.equal(freshTargeted.result.evaluation.next_required_action.phase, 'preflight_review');
+  assert.equal((await runCli([
+    'review', 'prepare', repo, '--id', 'story-risk-adaptive', '--stage', 'architecture_spec', '--role', 'architecture_boundary'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'review', 'start', repo, '--id', 'story-risk-adaptive', '--stage', 'architecture_spec', '--role', 'architecture_boundary',
+    '--agent-system', 'codex', '--agent-id', 'boundary-reviewer'
+  ])).exitCode, 0);
+  const preflightTranscript = path.join(repo, '.vibepro', 'reviews', 'story-risk-adaptive', 'architecture_spec', 'transcript-architecture_boundary.md');
+  await writeFile(preflightTranscript, '# architecture boundary review transcript\nAggregate workflow boundaries inspected and passed.\n');
+  const preflightTranscriptRelative = '.vibepro/reviews/story-risk-adaptive/architecture_spec/transcript-architecture_boundary.md';
+  assert.equal((await runCli([
+    'review', 'close', repo, '--id', 'story-risk-adaptive', '--stage', 'architecture_spec', '--role', 'architecture_boundary',
+    '--agent-id', 'boundary-reviewer', '--close-reason', 'completed', '--close-evidence', preflightTranscriptRelative
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'review', 'record', repo, '--id', 'story-risk-adaptive', '--stage', 'architecture_spec', '--role', 'architecture_boundary',
+    '--status', 'pass', '--summary', 'aggregate workflow boundary passed',
+    '--inspection-summary', `inspected aggregate boundary; risk_surfaces=${freshSequence.plan.preflight_surfaces.slice().sort().join(',')}`,
+    ...freshSequence.plan.preflight_required_inspection_inputs.flatMap((input) => ['--inspection-input', input]),
+    '--judgment-delta', 'unverified aggregate workflow boundary became verified',
+    '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'boundary-reviewer',
+    '--agent-transcript', preflightTranscriptRelative, '--agent-closed', '--agent-close-evidence', preflightTranscriptRelative,
+    '--strict-head-binding', '--strict-head-reason', 'validation preflight binds to the planned head'
+  ])).exitCode, 0);
+  const preflightReviewEvidence = '.vibepro/reviews/story-risk-adaptive/architecture_spec/review-result-architecture_boundary.json';
+  let preflightSequenceStderr = '';
+  const preflightSequence = await runCli([
+    'sequence', 'record', repo, '--id', 'story-risk-adaptive', '--phase', 'preflight_review',
+    '--head', freshHead, '--command', 'node --test test/integration/workflow-validation.test.js', '--test-fingerprint', 'fresh-tests-v1', '--json'
+    , '--source', 'agent_review', '--evidence', preflightReviewEvidence
+  ], { stderr: { write: (chunk) => { preflightSequenceStderr += chunk; } } });
+  assert.equal(preflightSequence.exitCode, 0, preflightSequenceStderr);
+  assert.equal((await runCli([
+    'sequence', 'record', repo, '--id', 'story-risk-adaptive', '--phase', 'code_frozen',
+    '--head', freshHead, '--command', 'node --test test/integration/workflow-validation.test.js', '--test-fingerprint', 'fresh-tests-v1', '--json'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--kind', 'integration',
+    '--status', 'pass',
+    '--command', 'node --test test/integration/workflow-validation.test.js',
+    '--summary', 'expensive validation passed after code freeze',
+    '--artifact', '.vibepro/qa/sequence-status.json',
+    '--target', 'src/lib/services/formProjectStartService.ts',
+    '--scenario', 'expensive workflow contract validation passed after freeze',
+    '--observed', 'test_fingerprint=fresh-tests-v1',
+    '--observed', 'validation_phase=expensive_verification'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'sequence', 'record', repo, '--id', 'story-risk-adaptive', '--phase', 'expensive_verification',
+    '--head', freshHead, '--command', 'node --test test/integration/workflow-validation.test.js', '--test-fingerprint', 'fresh-tests-v1', '--json'
+    , '--evidence', canonicalEvidence
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'review', 'prepare', repo, '--id', 'story-risk-adaptive', '--stage', 'implementation', '--role', 'runtime_contract'
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'review', 'start', repo, '--id', 'story-risk-adaptive', '--stage', 'implementation', '--role', 'runtime_contract',
+    '--agent-system', 'codex', '--agent-id', 'runtime-reviewer'
+  ])).exitCode, 0);
+  const finalTranscript = path.join(repo, '.vibepro', 'reviews', 'story-risk-adaptive', 'implementation', 'transcript-runtime_contract.md');
+  await writeFile(finalTranscript, '# runtime contract review transcript\nCurrent-head implementation inspected and passed.\n');
+  const finalTranscriptRelative = '.vibepro/reviews/story-risk-adaptive/implementation/transcript-runtime_contract.md';
+  assert.equal((await runCli([
+    'review', 'close', repo, '--id', 'story-risk-adaptive', '--stage', 'implementation', '--role', 'runtime_contract',
+    '--agent-id', 'runtime-reviewer', '--close-reason', 'completed', '--close-evidence', finalTranscriptRelative
+  ])).exitCode, 0);
+  assert.equal((await runCli([
+    'review', 'record', repo, '--id', 'story-risk-adaptive', '--stage', 'implementation', '--role', 'runtime_contract',
+    '--status', 'pass', '--summary', 'runtime contract passed',
+    '--inspection-summary', 'inspected workflow implementation', '--inspection-input', 'src/lib/services/formProjectStartService.ts',
+    '--judgment-delta', 'unverified -> pass after current-head inspection',
+    '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'runtime-reviewer', '--agent-closed',
+    '--agent-transcript', finalTranscriptRelative, '--agent-close-evidence', finalTranscriptRelative,
+    '--strict-head-binding', '--strict-head-reason', 'final sequence review binds to frozen head'
+  ])).exitCode, 0);
+  let finalSequenceStderr = '';
+  const finalSequence = await runCli([
+    'sequence', 'record', repo, '--id', 'story-risk-adaptive', '--phase', 'final_review',
+    '--head', freshHead, '--command', 'node --test test/integration/workflow-validation.test.js', '--test-fingerprint', 'fresh-tests-v1',
+    '--source', 'agent_review', '--evidence', '.vibepro/reviews/story-risk-adaptive/implementation/review-result-runtime_contract.json', '--json'
+  ], { stderr: { write: (chunk) => { finalSequenceStderr += chunk; } } });
+  assert.equal(finalSequence.exitCode, 0, finalSequenceStderr);
+  const completedPrepare = await runCli([
+    'pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json'
+  ]);
+  assert.equal(completedPrepare.exitCode, 0);
+  const completedSequenceGate = completedPrepare.result.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:validation_sequencing');
+  assert.equal(completedSequenceGate.required, true);
+  assert.equal(completedSequenceGate.status, 'passed');
+  assert.deepEqual(completedSequenceGate.blocking_phases, []);
+
+  const stalePlan = await runCli([
+    'sequence', 'plan', repo,
+    '--id', 'story-risk-adaptive',
+    '--head', 'persisted-light-head',
+    '--risk-profile', 'light',
+    '--command', 'node --test test/integration/workflow-validation.test.js',
+    '--test-fingerprint', 'tests-v1',
+    '--evidence', '.vibepro/qa/targeted.json',
+    '--json'
+  ]);
+  assert.equal(stalePlan.exitCode, 0);
+  assert.equal(stalePlan.result.state.plan.required, false);
 
   const result = await runCli([
     'pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main',
@@ -754,10 +1105,47 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(gateDag.nodes.some((node) => node.id === 'gate:workflow_flow_replay'), true);
   assert.equal(gateDag.nodes.some((node) => node.id === 'gate:evidence_coverage'), true);
   assert.equal(gateDag.nodes.some((node) => node.id === 'gate:release_confidence'), true);
+  assert.equal(gateDag.nodes.some((node) => node.id === 'gate:validation_sequencing'), true);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:validation_sequencing').required, true);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:validation_sequencing').status, 'needs_evidence');
+  const currentHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const reconciledSequence = await readJson(persistedSequencePath);
+  assert.equal(reconciledSequence.plan.risk_profile, 'workflow_heavy');
+  assert.equal(reconciledSequence.plan.required, true);
+  assert.equal(reconciledSequence.proposed_binding.head_sha, currentHead);
+  assert.equal(reconciledSequence.phases.targeted_validation.status, 'invalidated');
+  assert.equal((await runCli([
+    'verify', 'record', repo,
+    '--id', 'story-risk-adaptive', '--kind', 'unit', '--status', 'pass', '--command', 'node --test test/risk-adaptive-gate.test.js',
+    '--summary', 'targeted validation passed after workflow change',
+    '--artifact', '.vibepro/qa/sequence-status.json',
+    '--target', 'src/lib/services/formProjectStartService.ts',
+    '--scenario', 'targeted workflow contract validation passed after workflow change',
+    '--observed', 'test_fingerprint=tests-v1', '--observed', 'validation_phase=targeted_validation'
+  ])).exitCode, 0);
+  const recordedTargeted = await runCli([
+    'sequence', 'record', repo,
+    '--id', 'story-risk-adaptive',
+    '--phase', 'targeted_validation',
+    '--head', currentHead,
+    '--command', 'node --test test/risk-adaptive-gate.test.js',
+    '--test-fingerprint', 'tests-v1',
+    '--evidence', canonicalEvidence,
+    '--json'
+  ]);
+  assert.equal(recordedTargeted.exitCode, 0);
+  const preparedAgain = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
+  assert.equal(preparedAgain.exitCode, 0);
+  const reloadedSequence = await readJson(persistedSequencePath);
+  assert.equal(reloadedSequence.plan.risk_profile, 'workflow_heavy');
+  assert.equal(reloadedSequence.phases.targeted_validation.status, 'passed');
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:artifact_consistency' && edge.to === 'gate:validation_sequencing'), true);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'gate:validation_sequencing' && edge.to === 'gate:dag_connectivity'), true);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:dag_connectivity').dead_end_nodes.includes('gate:validation_sequencing'), false);
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:workflow_flow_replay').status, 'needs_evidence');
   const spineGate = gateDag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
   assert.equal(spineGate.status, 'needs_evidence');
-  assert.equal(spineGate.subchecks.some((check) => check.id === 'invariants' && check.status === 'needs_evidence'), true);
+  assert.equal(spineGate.subchecks.some((check) => check.id === 'invariants' && check.status === 'passed'), true);
   assert.equal(spineGate.subchecks.some((check) => check.id === 'done_evidence' && check.status === 'needs_evidence'), true);
   const failureModeGate = gateDag.nodes.find((node) => node.id === 'gate:failure_mode_coverage');
   assert.equal(failureModeGate.status, 'missing_coverage');
@@ -770,7 +1158,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   const prBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'pr-body.md'), 'utf8');
   assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-risk-adaptive\/\]\(\.vibepro\/pr\/story-risk-adaptive\/\)/);
   assert.doesNotMatch(prBody, /#### 共通spineの確認/);
-  assert.equal(spineGate.subchecks.find((check) => check.id === 'invariants').status, 'needs_evidence');
+  assert.equal(spineGate.subchecks.find((check) => check.id === 'invariants').status, 'passed');
   assert.equal(spineGate.subchecks.find((check) => check.id === 'done_evidence').status, 'needs_evidence');
 
   const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
@@ -800,7 +1188,7 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     '--id', 'story-risk-adaptive',
     '--kind', 'e2e',
     '--status', 'pass',
-    '--command', 'node --test test/risk-adaptive-gate.test.js',
+    '--command', 'node --test test/e2e/risk-adaptive-gate.spec.js',
     '--summary', 'Generic CLI test was mislabeled as E2E'
   ])).exitCode, 0);
 
@@ -824,92 +1212,77 @@ Sample generation must run a preflight workflow, start detection, poll status, r
 	  assert.deepEqual([...required].sort(), [
 		    'gate:gate_evidence',
 	    'gate:release_risk',
-	    'preview:human_usability',
-	    'preview:network_runtime'
+	    'preview:human_usability'
 		  ]);
 	  assert.deepEqual(agentReviews.required_reviews
 	    .filter((item) => item.policy === 'workflow_heavy')
 	    .map((item) => `${item.stage}:${item.role}`)
 	    .sort(), [
-	    'gate:release_risk',
-	    'preview:network_runtime'
+	    'gate:release_risk'
 	  ]);
   assert.equal(agentReviews.required_reviews.some((item) => ['architecture_spec', 'test_plan', 'implementation'].includes(item.stage)), false);
-  assert.deepEqual(agentReviews.checkpoint_required_reviews
-    .map((item) => `${item.stage}:${item.role}`)
-    .sort(), [
-    'architecture_spec:regression_risk',
-    'implementation:runtime_contract',
-    'implementation:ux_completion',
-    'test_plan:e2e_ux',
-    'test_plan:gate_coverage'
-  ]);
-  assert.equal(agentReviews.summary.unmet_checkpoint_review_count, 5);
-  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').unmet_checkpoint_reviews.length, 5);
+  assert.deepEqual(agentReviews.checkpoint_required_reviews, []);
+  assert.equal(agentReviews.risk_adaptive_coverage.checkpoint_owner, 'validation_sequence');
+  assert.equal(agentReviews.risk_adaptive_coverage.duplicate_checkpoint_roles_suppressed.length, 5);
+  assert.equal(agentReviews.summary.unmet_checkpoint_review_count, 0);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').unmet_checkpoint_reviews.length, 0);
   assert.deepEqual(agentReviews.parallel_dispatch.required_stages
     .map((stage) => stage.stage)
     .sort(), [
-    'architecture_spec',
     'gate',
-    'implementation',
-    'preview',
-    'test_plan'
+    'preview'
   ]);
   assert.equal(agentReviews.parallel_dispatch.stage_execution.serial_between_stages, true);
   assert.equal(agentReviews.parallel_dispatch.stage_execution.parallel_within_stage, true);
-  assert.equal(agentReviews.parallel_dispatch.stage_execution.current_stage, 'architecture_spec');
+  assert.equal(agentReviews.parallel_dispatch.stage_execution.current_stage, 'preview');
   const previewStageSummary = agentReviews.stages.find((stage) => stage.stage === 'preview');
   assert.deepEqual(previewStageSummary.roles.map((role) => role.role).sort(), [
-    'human_usability',
-    'network_runtime'
+    'human_usability'
   ]);
   assert.equal(previewStageSummary.next_actions.join('\n').includes('preview_smoke'), false);
   const previewDispatchStage = agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'preview');
   assert.deepEqual(previewDispatchStage.roles.sort(), [
-    'human_usability',
-    'network_runtime'
+    'human_usability'
   ]);
   assert.equal(previewDispatchStage.prepare_command.includes('preview_smoke'), false);
   assert.deepEqual(agentReviews.parallel_dispatch.required_stages
     .map((stage) => `${stage.serial_index}:${stage.stage}:${stage.dispatch_state}`), [
-    '1:architecture_spec:current',
-    '2:test_plan:blocked_by_previous_stage',
-    '3:implementation:blocked_by_previous_stage',
-    '4:preview:blocked_by_previous_stage',
-    '5:gate:blocked_by_previous_stage'
+    '1:preview:current',
+    '2:gate:blocked_by_previous_stage'
   ]);
-  assert.equal(agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'test_plan').roles.includes('gate_coverage'), true);
-  assert.equal(agentReviews.parallel_dispatch.required_stages.find((stage) => stage.stage === 'implementation').roles.includes('runtime_contract'), true);
-  assert.equal(gateDag.nodes.some((node) => node.id === 'review:join:architecture_spec' && node.type === 'agent_review_stage_join_gate'), true);
-  assert.equal(gateDag.nodes.some((node) => node.id === 'review:join:test_plan' && node.type === 'agent_review_stage_join_gate'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:architecture_spec' && edge.to === 'review:dispatch_batch:test_plan'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:dispatch_batch:test_plan' && edge.to === 'review:preflight:test_plan:gate_coverage'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:preflight:test_plan:gate_coverage' && edge.to === 'review:prepare:test_plan'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:test_plan' && edge.to === 'review:dispatch_batch:implementation'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:dispatch_batch:implementation' && edge.to === 'review:preflight:implementation:runtime_contract'), true);
-  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:preflight:implementation:runtime_contract' && edge.to === 'review:prepare:implementation'), true);
+  assert.equal(gateDag.nodes.some((node) => node.id === 'review:join:architecture_spec' && node.type === 'agent_review_stage_join_gate'), false);
+  assert.equal(gateDag.nodes.some((node) => node.id === 'review:join:test_plan' && node.type === 'agent_review_stage_join_gate'), false);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:preflight:test_plan:gate_coverage' && edge.to === 'review:prepare:test_plan'), false);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:test_plan' && edge.to === 'review:dispatch_batch:implementation'), false);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:dispatch_batch:implementation' && edge.to === 'review:preflight:implementation:runtime_contract'), false);
+  assert.equal(gateDag.edges.some((edge) => edge.from === 'review:preflight:implementation:runtime_contract' && edge.to === 'review:prepare:implementation'), false);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'review:join:gate' && edge.to === 'gate:agent_review'), true);
   assert.equal(gateDag.edges.some((edge) => edge.from === 'review:prepare:preview' && edge.to === 'review:prepare:gate'), false);
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions[0].includes('Current Agent Review stage 1'), true);
-  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions[0].includes('architecture_spec'), true);
+  assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions[0].includes('preview'), true);
   assert.equal(gateDag.nodes.find((node) => node.id === 'gate:agent_review').required_actions.some((action) => action.includes('Later Agent Review stages are serial-barriered')), true);
   const agentReviewGate = gateDag.nodes.find((node) => node.id === 'gate:agent_review');
-  assert.equal(agentReviewGate.minimal_recovery_plan.current_stage.stage, 'architecture_spec');
+  assert.equal(agentReviewGate.minimal_recovery_plan.current_stage.stage, 'preview');
   assert.deepEqual(agentReviewGate.minimal_recovery_plan.current_stage_work.map((item) => `${item.stage}:${item.role}:${item.recovery_kind}`), [
-    'architecture_spec:regression_risk:missing'
+    'preview:human_usability:missing'
   ]);
   const recoveryRecordCommand = agentReviewGate.minimal_recovery_plan.current_stage_work[0].next_commands
     .find((command) => command.startsWith('vibepro review record'));
+  const recoveryCommands = agentReviewGate.minimal_recovery_plan.current_stage_work[0].next_commands;
+  const recoveryStartIndex = recoveryCommands.findIndex((command) => command.startsWith('vibepro review start'));
+  const recoveryCloseIndex = recoveryCommands.findIndex((command) => command.startsWith('vibepro review close'));
+  const recoveryRecordIndex = recoveryCommands.findIndex((command) => command.startsWith('vibepro review record'));
   assert.ok(recoveryRecordCommand);
+  assert.equal(recoveryStartIndex < recoveryCloseIndex && recoveryCloseIndex < recoveryRecordIndex, true);
+  assert.match(recoveryCommands[recoveryStartIndex], /--agent-thread-id '<replacement-agent-thread-id>'.*--agent-session-id '<replacement-agent-session-id>'/);
+  assert.match(recoveryCommands[recoveryCloseIndex], /--agent-id '<replacement-agent-id>'.*--close-reason completed.*--close-evidence '<replacement-agent-close-evidence>'/);
+  assert.match(recoveryRecordCommand, /--agent-thread-id '<replacement-agent-thread-id>'.*--agent-session-id '<replacement-agent-session-id>'.*--implementation-session-id '<implementation-session-id>'.*--reviewer-identity separate_session/);
   assert.match(recoveryRecordCommand, /--inspection-summary "<inspection-summary>"/);
-  assert.match(recoveryRecordCommand, /--inspection-evidence <inspection-evidence>/);
-  assert.match(recoveryRecordCommand, /--inspection-input <inspection-input>/);
+  assert.match(recoveryRecordCommand, /--inspection-evidence '<inspection-evidence>'/);
+  assert.match(recoveryRecordCommand, /--inspection-input '<inspection-input>'/);
   assert.match(recoveryRecordCommand, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
-  assert.match(recoveryRecordCommand, /--status <pass\|needs_changes\|block>/);
+  assert.match(recoveryRecordCommand, /--status '<pass\|needs_changes\|block>'/);
   assert.deepEqual(agentReviewGate.minimal_recovery_plan.later_stages_blocked.map((stage) => stage.stage), [
-    'test_plan',
-    'implementation',
-    'preview',
     'gate'
   ]);
   assert.equal(prepare.preparation.gate_status.agent_review_minimal_recovery_plan.first_command, agentReviewGate.minimal_recovery_plan.first_command);
@@ -926,10 +1299,10 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   });
   assert.equal(summaryResult.exitCode, 0);
   assert.match(prepareSummary, /minimal_recovery_plan/);
-  assert.match(prepareSummary, /current_stage: 1:architecture_spec/);
-  assert.match(prepareSummary, /current_roles: architecture_spec:regression_risk\(missing\)/);
+  assert.match(prepareSummary, /current_stage: 1:preview/);
+  assert.match(prepareSummary, /current_roles: preview:human_usability\(missing\)/);
   assert.match(prepareSummary, /first_command: `vibepro review prepare/);
-  assert.match(prepareSummary, /later_stages_blocked: 2:test_plan, 3:implementation, 4:preview, 5:gate/);
+  assert.match(prepareSummary, /later_stages_blocked: 2:gate/);
 
   const gateDagJsonPath = path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'gate-dag.json');
   await stat(gateDagJsonPath);
@@ -937,12 +1310,12 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   assert.equal(writtenGateDag.nodes.some((node) => node.id === 'gate:release_confidence'), true);
   const prPrepareHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-risk-adaptive', 'pr-prepare.html'), 'utf8');
   assert.match(prPrepareHtml, /minimal_recovery_plan/);
-  assert.match(prPrepareHtml, /current_roles: architecture_spec:regression_risk\(missing\)/);
+  assert.match(prPrepareHtml, /current_roles: preview:human_usability\(missing\)/);
   assert.match(prPrepareHtml, /first_command/);
-  assert.match(prPrepareHtml, /later_stages_blocked: 2:test_plan, 3:implementation, 4:preview, 5:gate/);
+  assert.match(prPrepareHtml, /later_stages_blocked: 2:gate/);
 });
 
-test('agent review gate minimal recovery plan dedupes stale result and timed-out lifecycle', async () => {
+test('validation sequence ownership keeps obsolete checkpoint lifecycle out of required recovery', async () => {
   const repo = await makeGitRepo();
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
   await mkdir(path.join(repo, 'src', 'app', 'projects', '[projectId]', 'components'), { recursive: true });
@@ -1014,26 +1387,14 @@ Sample generation must run a preflight workflow, poll status, retry failed detec
   const agentReviewGate = gateDag.nodes.find((node) => node.id === 'gate:agent_review');
   const plan = agentReviewGate.minimal_recovery_plan;
 
-  assert.equal(plan.current_stage.stage, 'architecture_spec');
-  assert.equal(plan.source_blocker_count > plan.deduped_blocker_count, true);
-  assert.deepEqual(plan.current_stage_work.map((item) => `${item.stage}:${item.role}`), ['architecture_spec:regression_risk']);
-  assert.equal(plan.current_stage_work[0].recovery_kind, 'timed_out');
-  assert.equal(plan.current_stage_work[0].lifecycle.agent_id, 'agent-timeout');
-  assert.equal(plan.current_stage_work[0].lifecycle.lifecycle_id, 'lifecycle-timeout');
-  assert.match(plan.current_stage_work[0].lifecycle.close_command, /review close .*--agent-id "agent-timeout".*--close-reason timeout/);
-  assert.match(plan.current_stage_work[0].lifecycle.replacement_command, /review start .*--replacement-for lifecycle-timeout/);
-  const strictRecoveryCommand = plan.current_stage_work[0].next_commands
-    .find((command) => command.startsWith('vibepro review record'));
-  assert.match(strictRecoveryCommand, /--strict-head-binding/);
-  assert.match(strictRecoveryCommand, /--strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"/);
-  assert.equal(plan.first_command, plan.current_stage_work[0].lifecycle.close_command);
-  assert.deepEqual(plan.later_stages_blocked.map((stage) => stage.stage), [
-    'test_plan',
-    'implementation',
-    'preview',
-    'gate'
-  ]);
-  assert.equal(result.result.preparation.gate_status.agent_review_minimal_recovery_plan.current_stage_work[0].recovery_kind, 'timed_out');
+  assert.equal(plan.current_stage.stage, 'preview');
+  assert.equal(result.result.preparation.pr_context.agent_reviews.risk_adaptive_coverage.checkpoint_owner, 'validation_sequence');
+  assert.deepEqual(result.result.preparation.pr_context.agent_reviews.checkpoint_required_reviews, []);
+  assert.equal(plan.current_stage_work.some((item) => item.role === 'regression_risk'), false);
+  assert.deepEqual(plan.later_stages_blocked.map((stage) => stage.stage), ['gate']);
+  const architectureStage = result.result.preparation.pr_context.agent_reviews.stages
+    .find((stage) => stage.stage === 'architecture_spec');
+  assert.equal(architectureStage.roles.find((role) => role.role === 'regression_risk').lifecycle.effective_status, 'timed_out');
 });
 
 test('workflow-heavy release confidence requires state scenario and no blocker questions', async () => {

@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/canonical-audit-self-contained.test.js",
+  "tests": 20,
+  "pass": 20,
+  "fail": 0,
+  "recorded_at": "2026-07-22"
+}

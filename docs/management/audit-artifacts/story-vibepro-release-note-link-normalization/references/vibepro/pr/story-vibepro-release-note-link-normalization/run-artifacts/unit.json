@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/e2e/story-vibepro-release-note-link-normalization-acceptance.spec.js test/post-merge-release.test.js test/e2e/story-vibepro-pr-driven-continuous-release-main.test.js",
+  "observed": {
+    "tests": 32,
+    "passed": 32,
+    "failed": 0,
+    "head": "cd21e65a",
+    "contexts": "VitePress top-level and container heading boundaries, renderer block boundaries, destination backslash/parenthesis escape and entity semantics, real plan/publish-npm subprocess isolation without VitePress, GitHub Actions output isolation, trusted project/reproject/release-body subprocesses, positive-integer PR rejection, inline and multiline code spans, blockquote/list and mixed-container fences, parser-rejected outer nested links, nested images, existing percent escapes, malformed destinations, and production projection"
+  }
+}

@@ -1,0 +1,184 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-docs-only-evidence-profile",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Round-2 budget-floor regression is completely closed and no new regression was introduced: a three-way probe of base 458f5bfd, pre-fix 490d4466 and head over 66 identical inputs shows head is never stricter than base on any docs-only branch (head-stricter count 0) and never looser (the 1500-line inheritance occurs only where base itself used the high profile), while implementation inputs resolve identically to base. line_budget_ratio is carried in the persisted budget block so both accounting passes agree; the new tests demonstrably fail against 490d4466. Six low-severity findings recorded, none able to change a gate verdict",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read git show 9443767 and the current src/evidence-cost-budget.js and src/docs-only-change.js; wrote read-only probes importing base, pre-fix and head builds of buildCanonicalEvidenceCostSummary side by side across 48 docs-only inputs (100/1000/3000 docs lines x 400/600/2000/10000 artifact lines x risk profile x trigger signal), 18 implementation inputs and 12 caller-budget edge cases; extracted 490d4466 into a scratch tree with head test files to confirm the new tests fail pre-fix; traced the compact writer second accounting pass; grepped every docs/ path literal referenced by src/ to audit the machine-read carve-out list; and independently ran the neighbouring suites at head (44/44 and 32/32)",
+    "evidence": "head-stricter count 0 over 66 comparison cases; pre-fix run of head tests produced 3 failures including 'DOE-S-2 never gives a docs-only change a tighter budget than it would otherwise get' at test/docs-only-evidence-profile.test.js:214; pass1/pass2 budget blocks identical (effective_canonical_artifact_lines 3000, docs_only_budget_status within_budget, implementation_budget_status not_applicable); unit-run.log 29 pass, integration-run.log 5 pass, e2e-run.log 3 pass all dated after 9443767; reviewer's own runs 44/44 and 32/32 at head",
+    "inputs": [
+      "src/evidence-cost-budget.js",
+      "src/docs-only-change.js",
+      "src/canonical-audit.js",
+      "src/pr-manager.js",
+      "src/requirement-consistency.js",
+      "src/usage-report.js",
+      "test/docs-only-evidence-profile.test.js",
+      "test/docs-only-evidence-profile-integration.test.js",
+      "test/e2e/story-vibepro-docs-only-evidence-profile-acceptance.spec.js",
+      "docs/architecture/story-vibepro-docs-only-evidence-profile.md",
+      "docs/specs/story-vibepro-docs-only-evidence-profile.vibepro.json"
+    ]
+  },
+  "judgment_delta": [
+    "needs_changes-leaning (two prior rounds each found the fix half applied, and relaxDocsOnlyThresholds looked like it could over-correct) -> pass, because a base/pre-fix/head probe over 66 identical inputs shows head is never stricter and never looser than base on any docs-only branch, implementation inputs are byte-identical to base, both accounting passes agree via the persisted line_budget_ratio, and the new tests fail against 490d4466"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb",
+    "expected_root": null,
+    "expected_head_sha": "9443767173f2a1faf9d318931f5a1109009f3723",
+    "current_head_sha": "9443767173f2a1faf9d318931f5a1109009f3723",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/charming-hermann-8fd1cb",
+      "expected_root": null,
+      "expected_head_sha": "9443767173f2a1faf9d318931f5a1109009f3723",
+      "current_head_sha": "9443767173f2a1faf9d318931f5a1109009f3723",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-25T13:56:18.225Z",
+  "git_context": {
+    "head_sha": "9443767173f2a1faf9d318931f5a1109009f3723",
+    "current_branch": "claude/story-vibepro-docs-only-evidence-profile-scoped",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-25T13:56:18.195Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 11 file(s)",
+    "recorded_head_sha": "9443767173f2a1faf9d318931f5a1109009f3723",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-docs-only-evidence-profile.md",
+        "sha256": "05898a0991ae2ffe936319f459e9a51278a8aa8d2928f8ac99904ab4f67c23a7",
+        "size": 11798
+      },
+      {
+        "path": "docs/specs/story-vibepro-docs-only-evidence-profile.vibepro.json",
+        "sha256": "319bd4a3beb561dd93be8fb4a3232986a0cbb686c7043972e33264cddb56a6d2",
+        "size": 18071
+      },
+      {
+        "path": "src/canonical-audit.js",
+        "sha256": "a804cce6561d8670c0ea2b7395d447563fd417c180cdae9628aae8aa93153959",
+        "size": 117188
+      },
+      {
+        "path": "src/docs-only-change.js",
+        "sha256": "26a9f740f3a07eba543f8b32d3e30b1de6c94a6c33f98c38faebe8f147a4091f",
+        "size": 11953
+      },
+      {
+        "path": "src/evidence-cost-budget.js",
+        "sha256": "a4201137f29a94de8d3a59e10c40981407e87d9863c2a7abbc3de2350fa0af6a",
+        "size": 19769
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "c9b52fa30104dcb99db9d618ed9e10a12dceb7defb9b9f8f0442f3f46f17e666",
+        "size": 707255
+      },
+      {
+        "path": "src/requirement-consistency.js",
+        "sha256": "a57a5b93b106e3ac3f1e7e36830f5ed61f185f0bc635038b86da12457a4f814f",
+        "size": 49004
+      },
+      {
+        "path": "src/usage-report.js",
+        "sha256": "d4e1b0c638723bd0961fedcd4c820069876d72e7873066110ddd4cc5f039434a",
+        "size": 108047
+      },
+      {
+        "path": "test/docs-only-evidence-profile-integration.test.js",
+        "sha256": "6761cee6391276f1f0ebb9abdd8747b86d2d1383e3032c1e519913da95fb67f8",
+        "size": 13631
+      },
+      {
+        "path": "test/docs-only-evidence-profile.test.js",
+        "sha256": "1492503460df352cd484365cc695a2b5f5599fe4c68b08e137731b143adbd0ba",
+        "size": 20839
+      },
+      {
+        "path": "test/e2e/story-vibepro-docs-only-evidence-profile-acceptance.spec.js",
+        "sha256": "3bd6c0e738c3a9e6f5994d655fb3a2233f99d031561a5bb42d0c129322000a57",
+        "size": 9325
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "4fca043c0c6e92d2c0ea8d6ebdb50efa06a6512e745a0f8a7ff0e8beecda91da"
+  },
+  "source_fingerprint": "974fa188e0e73d24f974f186850f0197646dbd7d122823d85b03868fd6831ee0",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a3bfedc6141faff0f",
+    "agent_role": null,
+    "model": "claude-opus-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a3bfedc6141faff0f",
+    "session_id": "a3bfedc6141faff0f",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-docs-only-evidence-profile/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "Agent tool run a3bfedc6141faff0f returned verdict JSON as its final message and terminated",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a3bfedc6141faff0f",
+      "implementation_session_id": "6b8ab19a-0859-4231-be55-6517b2b232c4",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

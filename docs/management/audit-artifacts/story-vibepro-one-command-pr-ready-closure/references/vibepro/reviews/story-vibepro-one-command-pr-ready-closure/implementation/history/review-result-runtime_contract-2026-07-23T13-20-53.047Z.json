@@ -1,0 +1,194 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "needs_changes",
+  "summary": "Runtime contract is sound but production-smoke and lifecycle-closure documents conflict with the typed-stop terminal contract",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "architecture-e2e-production-smoke-gap",
+      "detail": "Actual production Run stopped with typed runtime_unavailable before implementation and independent review; OCR-S6/OCR-T5 currently require commit plus review proof"
+    },
+    {
+      "severity": "medium",
+      "id": "lifecycle-closure-evidence-order",
+      "detail": "Story and roadmap completed markers precede current-HEAD Gate and CI import"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "architecture-conformance-current-head-gap",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "resolved by current-HEAD 73-to-73 conformance with no new reverse CLI edge",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed frozen HEAD runtime contract, full diff, Story Architecture Spec Task, code tests QA conformance and production Run; typed stop satisfies OCR-S7 but not conflicting OCR-S6/OCR-T5 wording",
+    "evidence": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/agent-transcript-runtime-contract-02cb8d90-needs-changes.md",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+      "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+      "src/one-command-pr-ready-closure.js",
+      "src/guarded-run-session.js",
+      "src/independent-review-orchestrator.js",
+      "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "Architecture and runtime code pass; final approval changed to needs_changes because production-smoke wording rejects the otherwise valid typed-stop terminal and delivery closure is represented before Gate/CI"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "02cb8d90b93c7f57d341cadc5fc9d203d1a9d9a2",
+    "current_head_sha": "02cb8d90b93c7f57d341cadc5fc9d203d1a9d9a2",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "02cb8d90b93c7f57d341cadc5fc9d203d1a9d9a2",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T11:59:07.093Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-23T13:20:53.047Z",
+  "git_context": {
+    "head_sha": "02cb8d90b93c7f57d341cadc5fc9d203d1a9d9a2",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-23T13:20:53.035Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "bind final review to frozen release candidate"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "02cb8d90b93c7f57d341cadc5fc9d203d1a9d9a2",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "319f65c3263f636713f760fa521e6b436eeec291dc619dd11982c93e2b44bc3a",
+        "size": 9470
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "e8d71060d6ae28b6140d8eb77660731d02fd102c38e6c00db97358fb23d7a683",
+        "size": 6640
+      },
+      {
+        "path": "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+        "sha256": "164d21a0e4631a656f1826048f253ead0339ae9bf53af51e0134674bac34622d",
+        "size": 7285
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "57a480d44ce98f8ab0a36b879134d67a1c62c67d2c51888896b1b866be056900",
+        "size": 110060
+      },
+      {
+        "path": "src/independent-review-orchestrator.js",
+        "sha256": "0c9b94b2732d347c75f4ca2b2f07d34b03712850ae96027fe54cf7a2b1ebfc51",
+        "size": 24781
+      },
+      {
+        "path": "src/one-command-pr-ready-closure.js",
+        "sha256": "b157c978e0a1de6245a9226524d56ca14f6b60c71693c4ac321852396badfc47",
+        "size": 25170
+      },
+      {
+        "path": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+        "sha256": "a1d59e54f0d721f3f76cabff027ca3f70e0d3465a3a2244848818ceb9108d267",
+        "size": 4144
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "e074419841a1b9ea70f9a0b674cfeb3cd08e34d817055b578ce738f2a31b4482"
+  },
+  "source_fingerprint": "b88301a18f918e35399e7a1851fd554a24aeff9e844b74ec1f92cf03efe80b20",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/ocr_runtime_final_02cb",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "/root/ocr_runtime_final_02cb",
+    "session_id": "ocr-runtime-final-02cb",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/agent-transcript-runtime-contract-02cb8d90-needs-changes.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/agent-transcript-runtime-contract-02cb8d90-needs-changes.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "ocr-runtime-final-02cb",
+      "implementation_session_id": "root-one-command-pr-ready-closure",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

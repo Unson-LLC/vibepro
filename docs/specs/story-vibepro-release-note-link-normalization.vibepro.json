@@ -1,0 +1,136 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-note-link-normalization",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "RNLN-001",
+      "type": "scenario",
+      "statement": "An inline Markdown destination beginning with docs/ is projected as a canonical GitHub blob URL, or a raw URL for images; VitePress destination semantics are preserved across angle wrappers, existing percent escapes, Markdown punctuation escapes, HTML entities, and spaces.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "normalizeReleaseDocumentationLinks" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/post-merge-release.test.js", "must_contain": "RNLN-001/002/003" },
+          { "file_glob": "test/e2e/story-vibepro-release-note-link-normalization-acceptance.spec.js", "must_contain": "RNLN-001" }
+        ]
+      }
+    },
+    {
+      "id": "RNLN-002",
+      "type": "invariant",
+      "statement": "A prose docs link is normalized while VitePress block-code tokens, inline code, and parsed link destination/title regions remain unchanged; nested images in labels are handled independently, parser-rejected outer nested links remain unchanged, container and malformed fence boundaries follow the production renderer, and only top-level headings terminate release sections.",
+      "origin": {
+        "story_refs": [{ "kind": "other" }],
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "findProtectedCodeRanges" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "[fenced](docs/fenced.md)" }]
+      }
+    },
+    {
+      "id": "RNLN-003",
+      "type": "scenario",
+      "statement": "HTTP(S), anchor, mailto, site-root relative, non-docs relative, and malformed angle destinations with unescaped less-than signs or invalid Unicode remain unchanged without aborting later projection.",
+      "origin": {
+        "story_refs": [{ "kind": "other" }],
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "findMarkdownLinkReplacements" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/post-merge-release.test.js", "must_contain": "[external](https://example.com/docs/file.md)" },
+          { "file_glob": "test/e2e/story-vibepro-release-note-link-normalization-acceptance.spec.js", "must_contain": "RNLN-003" }
+        ]
+      }
+    },
+    {
+      "id": "RNLN-004",
+      "type": "invariant",
+      "statement": "HTML and Vue interpolation sanitization and PR-number idempotent upsert remain intact.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "sanitizeReleaseContent" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/post-merge-release.test.js", "must_contain": "PCR-CON-002/003 projects a PR #350-shaped entry idempotently" },
+          { "file_glob": "test/e2e/story-vibepro-release-note-link-normalization-acceptance.spec.js", "must_contain": "RNLN-005" }
+        ]
+      }
+    },
+    {
+      "id": "RNLN-005",
+      "type": "scenario",
+      "statement": "English and Japanese release history and CHANGELOG receive the same normalized idempotent note.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "projectReleaseNote" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "PCR-CON-002/003 projects a PR #350-shaped entry idempotently" }]
+      }
+    },
+    {
+      "id": "RNLN-006",
+      "type": "invariant",
+      "statement": "Blockquote and list container headings cannot select or terminate top-level release sections.",
+      "origin": {
+        "story_refs": [{ "kind": "other" }],
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "captureSection" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "RNLN-006 ignores container headings" }]
+      }
+    },
+    {
+      "id": "RNLN-007",
+      "type": "invariant",
+      "statement": "The VitePress Markdown renderer is initialized only for project, reproject, and release-body; plan and publish-npm remain outside the parser initialization boundary.",
+      "origin": {
+        "story_refs": [{ "kind": "other" }],
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "commandRequiresMarkdownRenderer" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "RNLN-007 initializes the Markdown renderer only for projection commands" }]
+      }
+    },
+    {
+      "id": "RNLN-008",
+      "type": "invariant",
+      "statement": "The reproject command accepts only a merged pull request for Unson-LLC/vibepro main whose canonical URL matches its positive integer PR number, updates release documentation idempotently, and never projects package or version-history state.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "validateMergedPullRequest" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          { "file_glob": "test/post-merge-release.test.js", "must_contain": "RNLN-008 reprojects a trusted live PR payload through the real docs-only subprocess" },
+          { "file_glob": "test/e2e/story-vibepro-pr-driven-continuous-release-main.test.js", "must_contain": "replays merged-PR projection and immutable npm convergence" }
+        ]
+      }
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "Release note projection trust boundaries",
+      "mermaid": "flowchart LR\n  LivePR[GitHub live merged PR payload] --> Validate[merged PR and repository validation]\n  Validate --> Parse[Markdown parser and docs link normalization]\n  Parse --> Sanitize[HTML and Vue sanitization]\n  Sanitize --> Docs[English and Japanese release docs plus CHANGELOG]\n  Unknown[Malformed or unsupported Markdown] --> Preserve[Preserve input and continue projection]\n  Preserve --> Sanitize\n  Reproject[Docs-only reproject command] --> Validate\n  Reproject -. never invokes .-> Publish[npm publish or version history]"
+    },
+    {
+      "kind": "flow",
+      "title": "Release note projection boundary",
+      "mermaid": "flowchart LR\n  PR[PR Release Notes] --> Normalize[docs link normalization]\n  Normalize --> Escape[HTML and Vue escape once]\n  Escape --> EN[English release]\n  Escape --> JA[Japanese release]\n  Escape --> Changelog[CHANGELOG]"
+    },
+    {
+      "kind": "state",
+      "title": "Markdown segment handling",
+      "entities": ["prose", "inline code", "fenced code", "normalized"],
+      "mermaid": "stateDiagram-v2\n  [*] --> ParseBlocks\n  ParseBlocks --> ProtectedCode: VitePress code token\n  ParseBlocks --> Prose: inline token\n  Prose --> Normalized: destination starts docs/\n  Prose --> Prose: other or malformed destination\n  Prose --> InlineCode: code span\n  InlineCode --> Prose: span closes"
+    }
+  ]
+}

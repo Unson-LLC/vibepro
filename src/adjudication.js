@@ -7,6 +7,7 @@ import { promisify } from 'node:util';
 import { findStorySource } from './requirement-consistency.js';
 import { extractAcceptanceCriteria } from './traceability.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -75,7 +76,7 @@ export async function readAdjudicationIfExists(repoRoot, storyId) {
 }
 
 async function readVerificationEvidenceEntries(repoRoot, storyId) {
-  const evidencePath = path.join(getWorkspaceDir(path.resolve(repoRoot)), 'pr', storyId, 'verification-evidence.json');
+  const evidencePath = await resolvePrArtifactFile(path.resolve(repoRoot), storyId, 'verification-evidence.json');
   try {
     const parsed = JSON.parse(await readFile(evidencePath, 'utf8'));
     return Array.isArray(parsed?.commands) ? parsed.commands : [];
@@ -84,27 +85,205 @@ async function readVerificationEvidenceEntries(repoRoot, storyId) {
   }
 }
 
+// Every value interpolated into this entry is agent-controlled text landing in a markdown
+// list, and the list is where the authoritative fields (evidence_source, the producer, the
+// discarded-input diff) are stated. A value containing a line break would render as its own
+// list item, so an observation value could write a second `- evidence_source: runner_direct`
+// line under a self_reported record.
+//
+// Folding only `\r\n|\r|\n` closed one instance of that hole and left the class open: U+2028
+// and U+2029 are ECMAScript LineTerminators, so `^` under the `m` flag starts a line at them —
+// the same forged item composes itself under a different codepoint, and the oracle that counts
+// `- evidence_source:` lines sees two. NEL, vertical tab and form feed break lines for markdown
+// renderers and terminals in the same way. The fold therefore covers the whole line-breaking
+// class, and every remaining C0 control (plus DEL) is escaped after it. The claim is scoped
+// to line structure: no agent-controlled codepoint can open a new line in the request. C1
+// controls and Unicode format characters (zero-width, bidi, BOM) pass through unescaped —
+// none of them starts a line in regex or markdown semantics, so they cannot displace the
+// authoritative fields, but they are not invisible-proofed. Characters are escaped, never
+// dropped: the judge still sees that the value carried a break, and which one (`\r\n` folds
+// with `\n` as one line break).
+const LINE_BREAK_ESCAPES = new Map([
+  ['\r\n', '\\n'],
+  ['\n', '\\n'],
+  ['\r', '\\r'],
+  ['\u000b', '\\v'],
+  ['\f', '\\f'],
+  ['\u0085', '\\u0085'],
+  ['\u2028', '\\u2028'],
+  ['\u2029', '\\u2029']
+]);
+const LINE_BREAK_PATTERN = /\r\n|[\n\r\u000b\f\u0085\u2028\u2029]/g;
+const CONTROL_CHARACTER_PATTERN = /[\u0000-\u0009\u000e-\u001f\u007f]/g;
+
+function inlineText(value) {
+  return String(value ?? '')
+    .replace(LINE_BREAK_PATTERN, (match) => LINE_BREAK_ESCAPES.get(match))
+    .replace(CONTROL_CHARACTER_PATTERN, (match) => (
+      match === '\t' ? '\\t' : `\\u${match.codePointAt(0).toString(16).padStart(4, '0')}`
+    ));
+}
+
+// A warning id names the category; the reason carries what the recording path actually
+// found — the rejected key and its quoted value, which head moved, how thin the counts were.
+// Rendering the id alone dropped exactly that: a caller-key rejection reached the judge as
+// the bare string `verification_observation_caller_key_rejected`, with the forged claim it
+// was reporting nowhere on the page. Both are rendered, and the reason goes through
+// inlineText like every other agent-reachable string.
+function formatWarningText(warning) {
+  if (typeof warning === 'string') return warning;
+  const id = warning?.id ?? warning?.code ?? null;
+  const reason = warning?.reason ?? warning?.message ?? null;
+  if (id && reason) return `${id}: ${reason}`;
+  return id ?? reason ?? JSON.stringify(warning);
+}
+
+function normalizeAcceptanceScope(scope, storyId, acceptanceCriteria = []) {
+  if (scope != null && scope.source == null) {
+    throw new Error('Invalid adjudication acceptance scope: source is required.');
+  }
+  if (scope != null && !String(scope.story_id ?? '').trim()) {
+    throw new Error('Invalid adjudication acceptance scope: story_id is required.');
+  }
+  if (
+    scope != null
+    && !Object.prototype.hasOwnProperty.call(scope, 'acceptance_criteria')
+  ) {
+    throw new Error('Invalid adjudication acceptance scope: acceptance_criteria is required.');
+  }
+  const source = scope == null ? 'story' : scope.source;
+  if (!['story', 'task'].includes(source)) {
+    throw new Error(
+      `Invalid adjudication acceptance scope source "${String(source)}"; expected "story" or "task".`
+    );
+  }
+  if (source === 'task' && !String(scope?.task_id ?? '').trim()) {
+    throw new Error('Invalid adjudication acceptance scope: task_id is required for task scope.');
+  }
+  const criteria = scope == null
+    ? acceptanceCriteria.map((clause) => clause.text)
+    : scope.acceptance_criteria;
+  if (!Array.isArray(criteria)) {
+    throw new Error('Invalid adjudication acceptance scope: acceptance_criteria must be an array.');
+  }
+  return {
+    source,
+    story_id: String(scope?.story_id ?? storyId ?? ''),
+    task_id: source === 'task' ? String(scope?.task_id ?? '') : null,
+    acceptance_criteria: criteria
+      .map((criterion) => String(criterion).trim())
+      .filter(Boolean)
+  };
+}
+
+function acceptanceScopeFingerprint(scope) {
+  return createHash('sha256').update(JSON.stringify(scope)).digest('hex');
+}
+
+function entryMatchesAcceptanceScope(entry, scope) {
+  const hasEmbeddedScope = Object.prototype.hasOwnProperty.call(entry ?? {}, 'acceptance_scope');
+  if (scope.source === 'story' && !hasEmbeddedScope && !entry?.acceptance_scope_fingerprint) {
+    return true;
+  }
+  if (
+    hasEmbeddedScope
+    && (
+      entry.acceptance_scope === null
+      || typeof entry.acceptance_scope !== 'object'
+      || Array.isArray(entry.acceptance_scope)
+    )
+  ) {
+    return false;
+  }
+  const entryScope = hasEmbeddedScope
+    ? normalizeAcceptanceScope(entry.acceptance_scope, scope.story_id)
+    : null;
+  const embeddedFingerprint = entryScope ? acceptanceScopeFingerprint(entryScope) : null;
+  const storedFingerprint = entry?.acceptance_scope_fingerprint ?? null;
+  if (storedFingerprint && embeddedFingerprint && storedFingerprint !== embeddedFingerprint) {
+    return false;
+  }
+  const entryFingerprint = storedFingerprint ?? embeddedFingerprint;
+  return entryFingerprint === acceptanceScopeFingerprint(scope);
+}
+
+async function resolveCurrentAcceptanceScope(root, storyId, storyClauses) {
+  const fallback = normalizeAcceptanceScope(null, storyId, storyClauses);
+  const preparePath = await resolvePrArtifactFile(root, storyId, 'pr-prepare.json');
+  try {
+    const prepare = JSON.parse(await readFile(preparePath, 'utf8'));
+    const prContext = prepare?.pr_context;
+    if (!Object.prototype.hasOwnProperty.call(prContext ?? {}, 'acceptance_scope')) {
+      return fallback;
+    }
+    const scope = prContext.acceptance_scope;
+    if (scope === null || typeof scope !== 'object' || Array.isArray(scope)) {
+      throw new Error('Invalid adjudication acceptance scope: expected an object.');
+    }
+    const normalized = normalizeAcceptanceScope(scope, storyId);
+    if (normalized.story_id !== storyId) {
+      throw new Error(
+        `adjudication acceptance scope story mismatch: expected ${storyId}, received ${normalized.story_id}`
+      );
+    }
+    if (normalized.source === 'task' && (!normalized.task_id || normalized.acceptance_criteria.length === 0)) {
+      throw new Error('adjudication task acceptance scope requires task_id and non-empty acceptance_criteria');
+    }
+    return normalized;
+  } catch (error) {
+    if (error.code === 'ENOENT') return fallback;
+    throw error;
+  }
+}
+
 function formatEvidenceEntry(entry, index) {
   const lines = [
-    `### 証拠 E-${index + 1}: kind=${entry.kind ?? 'unknown'} status=${entry.status ?? 'unknown'}`,
+    `### 証拠 E-${index + 1}: kind=${inlineText(entry.kind ?? 'unknown')} status=${inlineText(entry.status ?? 'unknown')}`,
     '',
-    `- command: \`${entry.command ?? '-'}\``,
-    `- summary: ${entry.summary ?? '-'}`
+    `- command: \`${inlineText(entry.command ?? '-')}\``,
+    `- summary: ${inlineText(entry.summary ?? '-')}`
   ];
   const observation = entry.observation ?? {};
   const targets = Array.isArray(observation.targets) ? observation.targets : [];
   const scenarios = Array.isArray(observation.scenarios) ? observation.scenarios : [];
   const values = observation.values && typeof observation.values === 'object' ? observation.values : {};
-  if (targets.length > 0) lines.push(`- observation.targets: ${targets.join(', ')}`);
+  if (targets.length > 0) lines.push(`- observation.targets: ${targets.map(inlineText).join(', ')}`);
   if (scenarios.length > 0) {
     lines.push('- observation.scenarios:');
-    for (const scenario of scenarios) lines.push(`  - ${scenario}`);
+    for (const scenario of scenarios) lines.push(`  - ${inlineText(scenario)}`);
   }
   const valueEntries = Object.entries(values);
   if (valueEntries.length > 0) {
-    lines.push(`- observation.values: ${valueEntries.map(([key, value]) => `${key}=${value}`).join(', ')}`);
+    lines.push(`- observation.values: ${valueEntries.map(([key, value]) => `${inlineText(key)}=${inlineText(value)}`).join(', ')}`);
   }
-  if (entry.artifact) lines.push(`- artifact: ${entry.artifact}`);
+  // The adjudicator judges whether the evidence demonstrates the clause, so it has to see
+  // how the evidence was produced and what the producer already flagged about it. Without
+  // these, observation.values is the only thing on the page, and a value an agent wrote is
+  // indistinguishable from one an execution left behind.
+  lines.push(`- evidence_source: ${inlineText(entry.evidence_source ?? 'self_reported')}`);
+  const computed = entry.computed_observation;
+  if (computed && typeof computed === 'object') {
+    const computedKeys = Array.isArray(computed.computed_keys) ? computed.computed_keys : [];
+    lines.push(`- computed_observation.producer: ${inlineText(computed.producer ?? '-')}`);
+    if (computedKeys.length > 0) {
+      lines.push(`- computed_observation.computed_keys: ${computedKeys.map(inlineText).join(', ')}`);
+    }
+  }
+  const overrides = Array.isArray(entry.observation_overrides) ? entry.observation_overrides : [];
+  if (overrides.length > 0) {
+    lines.push('- observation_overrides (agent input discarded in favour of the computed value):');
+    for (const override of overrides) {
+      lines.push(`  - ${inlineText(override.key ?? '-')}: agent=${inlineText(override.agent_value ?? '-')} computed=${inlineText(override.computed_value ?? '-')}`);
+    }
+  }
+  const warnings = Array.isArray(entry.warnings) ? entry.warnings : [];
+  if (warnings.length > 0) {
+    lines.push('- warnings:');
+    for (const warning of warnings) {
+      lines.push(`  - ${inlineText(formatWarningText(warning))}`);
+    }
+  }
+  if (entry.artifact) lines.push(`- artifact: ${inlineText(entry.artifact)}`);
   return lines.join('\n');
 }
 
@@ -123,11 +302,19 @@ export async function prepareAdjudication(repoRoot, { storyId } = {}) {
       + 'This is an explicit error, not a pass.'
     );
   }
+  const acceptanceScope = await resolveCurrentAcceptanceScope(root, storyId, clauses);
+  const scopedClauses = acceptanceScope.source === 'task'
+    ? acceptanceScope.acceptance_criteria.map((text, index) => ({ id: `ac:${index + 1}`, text }))
+    : clauses;
+  const scopeFingerprint = acceptanceScopeFingerprint(acceptanceScope);
   const evidenceEntries = await readVerificationEvidenceEntries(root, storyId);
   const lines = [
     `# Evidence Adjudication Request: ${storyId}`,
     '',
     `- story: ${source.path}`,
+    `- acceptance_scope: ${acceptanceScope.source}`,
+    `- task_id: ${acceptanceScope.task_id ?? '-'}`,
+    `- acceptance_scope_fingerprint: ${scopeFingerprint}`,
     `- generated_at: ${new Date().toISOString()}`,
     '',
     '## 裁定者への指示',
@@ -155,7 +342,7 @@ export async function prepareAdjudication(repoRoot, { storyId } = {}) {
     '## 受け入れ基準 clauses',
     ''
   ];
-  for (const clause of clauses) {
+  for (const clause of scopedClauses) {
     lines.push(`### ${clause.id}`, '', `> ${clause.text}`, '');
   }
   lines.push('## 記録済み検証証拠', '');
@@ -172,8 +359,10 @@ export async function prepareAdjudication(repoRoot, { storyId } = {}) {
   return {
     story_id: storyId,
     story_path: source.path,
-    clause_count: clauses.length,
-    clauses: clauses.map((clause) => ({ id: clause.id, text: clause.text })),
+    clause_count: scopedClauses.length,
+    clauses: scopedClauses.map((clause) => ({ id: clause.id, text: clause.text })),
+    acceptance_scope: acceptanceScope,
+    acceptance_scope_fingerprint: scopeFingerprint,
     evidence_count: evidenceEntries.length,
     artifact: toWorkspaceRelative(root, requestPath)
   };
@@ -195,6 +384,10 @@ export async function recordAdjudication(repoRoot, options = {}) {
     throw new Error('adjudicate record could not resolve the current HEAD commit (git rev-parse HEAD failed); verdicts must be head-bound, so run this command inside the target git repository');
   }
   const existing = await readAdjudicationIfExists(root, storyId);
+  const source = await findStorySource(root, { story_id: storyId });
+  const storyClauses = source?.content ? extractAcceptanceCriteria(source.content) : [];
+  const acceptanceScope = await resolveCurrentAcceptanceScope(root, storyId, storyClauses);
+  const scopeFingerprint = acceptanceScopeFingerprint(acceptanceScope);
   const entry = {
     clause_id: clauseId,
     verdict,
@@ -205,11 +398,15 @@ export async function recordAdjudication(repoRoot, options = {}) {
       session_ref: options.sessionRef ?? null
     },
     head_commit: headCommit,
+    acceptance_scope: acceptanceScope,
+    acceptance_scope_fingerprint: scopeFingerprint,
     recorded_at: new Date().toISOString()
   };
   const verdicts = [
     entry,
-    ...(existing?.verdicts ?? []).filter((item) => item.clause_id !== clauseId)
+    ...(existing?.verdicts ?? []).filter((item) => (
+      item.clause_id !== clauseId || !entryMatchesAcceptanceScope(item, acceptanceScope)
+    ))
   ];
   const next = {
     schema_version: ADJUDICATION_SCHEMA_VERSION,
@@ -235,6 +432,7 @@ export function isAdjudicationEnabled(config) {
 export function buildEvidenceAdjudicationGate({
   storyId,
   acceptanceCriteria = [],
+  acceptanceScope = null,
   adjudication = null,
   headSha = null,
   decisions = []
@@ -247,6 +445,7 @@ export function buildEvidenceAdjudicationGate({
     command: `vibepro adjudicate prepare . --id ${storyId}`,
     artifact: `.vibepro/adjudication/${storyId}/adjudication.json`
   };
+  const currentScope = normalizeAcceptanceScope(acceptanceScope, storyId, acceptanceCriteria);
   if (acceptanceCriteria.length === 0) {
     return {
       ...base,
@@ -255,22 +454,52 @@ export function buildEvidenceAdjudicationGate({
     };
   }
   const verdicts = Array.isArray(adjudication?.verdicts) ? adjudication.verdicts : [];
+  const currentScopeFingerprint = acceptanceScopeFingerprint(currentScope);
   const freshVerdictByClause = new Map();
+  const currentClauseIds = new Set(acceptanceCriteria.map((clause) => clause.id));
+  const invalidVerdicts = [];
   for (const entry of verdicts) {
     if (!entry?.clause_id) continue;
     // Fail closed on both sides of the freshness comparison: a verdict without a
     // recorded head_commit is stale, and an unknown current HEAD means freshness
     // is unverifiable, so no verdict counts as fresh.
     if (!headSha || entry.head_commit !== headSha) continue;
+    if (!entryMatchesAcceptanceScope(entry, currentScope)) continue;
+    if (!ADJUDICATION_VERDICTS.includes(entry.verdict)) {
+      if (currentClauseIds.has(entry.clause_id)) {
+        invalidVerdicts.push({ clause_id: entry.clause_id, verdict: entry.verdict });
+      }
+      continue;
+    }
     freshVerdictByClause.set(entry.clause_id, entry);
   }
   const acceptedHumanClosures = new Set(
     (decisions ?? [])
       .filter((decision) => decision?.status === 'accepted' && decision?.reason && decision?.artifact)
+      .filter((decision) => (
+        currentScope.source === 'story'
+        || (Boolean(headSha) && decision?.git_context?.head_sha === headSha)
+      ))
       .map((decision) => String(decision.source ?? ''))
       .filter((source) => source.startsWith('gate:evidence_adjudication:'))
       .map((source) => source.slice('gate:evidence_adjudication:'.length))
+      .map((source) => {
+        if (currentScope.source === 'story') return source;
+        const prefix = `${currentScopeFingerprint}:`;
+        return source.startsWith(prefix) ? source.slice(prefix.length) : null;
+      })
+      .filter(Boolean)
   );
+  if (invalidVerdicts.length > 0) {
+    return {
+      ...base,
+      status: 'failed',
+      invalid_verdicts: invalidVerdicts,
+      reason: `Current-head adjudication contains ${invalidVerdicts.length} unknown adjudication verdict value(s): `
+        + invalidVerdicts.map((item) => `${item.clause_id} (${item.verdict ?? '(missing)'})`).join('; ')
+        + `. Repair or remove the corrupt adjudication artifact at ${base.artifact}, then re-record the verdicts.`
+    };
+  }
   const missing = [];
   const notDemonstrated = [];
   const needsHuman = [];
@@ -305,9 +534,12 @@ export function buildEvidenceAdjudicationGate({
         + 'Run `vibepro adjudicate prepare`, dispatch an independent fresh-context subagent, and record verdicts with `vibepro adjudicate record`.');
     }
     if (needsHuman.length > 0) {
+      const decisionSource = currentScope.source === 'task'
+        ? `gate:evidence_adjudication:${currentScopeFingerprint}:<clause-id>`
+        : 'gate:evidence_adjudication:<clause-id>';
       reasons.push(`${needsHuman.length} clause(s) were judged not verifiable by automation and require human verification: `
         + needsHuman.map((item) => item.clause_id).join(', ')
-        + '. Close each with a decision record: `vibepro decision record . --id <story-id> --type needs_review --source gate:evidence_adjudication:<clause-id> --status accepted --reason <human-observation> --artifact <evidence-path>`.');
+        + `. Close each with a decision record: \`vibepro decision record . --id <story-id> --type needs_review --source ${decisionSource} --status accepted --reason <human-observation> --artifact <evidence-path>\`.`);
     }
     return {
       ...base,
@@ -324,9 +556,20 @@ export function buildEvidenceAdjudicationGate({
   };
 }
 
-export function summarizeAdjudicationForPr({ acceptanceCriteria = [], adjudication = null, headSha = null } = {}) {
+export function summarizeAdjudicationForPr({
+  storyId = null,
+  acceptanceCriteria = [],
+  acceptanceScope = null,
+  adjudication = null,
+  headSha = null
+} = {}) {
   const verdicts = Array.isArray(adjudication?.verdicts) ? adjudication.verdicts : [];
-  const fresh = verdicts.filter((entry) => Boolean(headSha) && entry.head_commit === headSha);
+  const currentScope = normalizeAcceptanceScope(acceptanceScope, storyId, acceptanceCriteria);
+  const fresh = verdicts.filter((entry) => (
+    Boolean(headSha)
+    && entry.head_commit === headSha
+    && entryMatchesAcceptanceScope(entry, currentScope)
+  ));
   return {
     clause_count: acceptanceCriteria.length,
     fresh_verdict_count: fresh.length,
@@ -748,7 +991,7 @@ function summarizeMatchedEvidence(matched) {
 export async function prepareJudgmentAdjudication(repoRoot, { storyId } = {}) {
   if (!storyId) throw new Error('adjudicate prepare --judgment requires --id <story-id>');
   const root = path.resolve(repoRoot);
-  const prPreparePath = path.join(getWorkspaceDir(root), 'pr', storyId, 'pr-prepare.json');
+  const prPreparePath = await resolvePrArtifactFile(root, storyId);
   let prPrepareRaw = null;
   try {
     prPrepareRaw = await readFile(prPreparePath, 'utf8');

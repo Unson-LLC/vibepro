@@ -1,0 +1,157 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "test_plan",
+  "role": "e2e_ux",
+  "status": "pass",
+  "summary": "Routed packet lifecycle is verified for feature and governance profiles, legacy compatibility, ownership and lineage, and fail-closed failures.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected E2E, routing regressions, config, generated Test Plan, fresh-checkout CLI surfaces, and hand-edit stale transition.",
+    "evidence": "HEAD 7059c5ff; routed lifecycle E2E 3/3 and artifact-routing 60/60 passed.",
+    "inputs": [
+      "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+      "test/artifact-routing.test.js",
+      "src/artifact-routing.js",
+      "src/agent-review.js",
+      "src/git-fingerprint.js",
+      "src/workspace.js",
+      ".vibepro/config.json"
+    ]
+  },
+  "judgment_delta": [
+    "Concern that exclusions could hide user or fallback paths -> pass because production CLI covers both profiles and regressions keep edits stale and malformed lineage fail-closed."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+    "expected_root": null,
+    "expected_head_sha": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+    "current_head_sha": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "actual_root": "/private/tmp/vibepro-graphify-read-side-effect",
+      "expected_root": null,
+      "expected_head_sha": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "current_head_sha": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T13:28:39.063Z",
+  "git_context": {
+    "head_sha": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+    "current_branch": "codex/graphify-read-side-effect",
+    "dirty": false,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "ffb287ecb9d4a2179d4de6d29938f17a885e037f20e0174c8dff3b6b2d155e36",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/",
+        "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+        "docs/features/routing-profiles-rendered-projections/05_test_plan.md",
+        "docs/features/routing-profiles-rendered-projections/08_review.md",
+        "docs/features/routing-profiles-rendered-projections/09_gate.md",
+        "docs/features/routing-profiles-rendered-projections/10_release.md"
+      ]
+    },
+    "recorded_at": "2026-07-21T13:28:39.056Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 6 file(s)",
+    "recorded_head_sha": "7059c5ff0453f033bee7fa740c9c68f5306886d8",
+    "surface_files": [
+      {
+        "path": "src/agent-review.js",
+        "sha256": "07dbcce2eb15eab311999a3765b185763e09f9ab9c3bf5fe721fed4d1315dc87",
+        "size": 153464
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "31598361c6701bf07971b864f474abe337a0a49d2326cdb13dfdc55a7db3ae48",
+        "size": 45451
+      },
+      {
+        "path": "src/git-fingerprint.js",
+        "sha256": "74d573f4a770489639e9bee28b10018dbae13c32a804da42564950730014a843",
+        "size": 5581
+      },
+      {
+        "path": "src/workspace.js",
+        "sha256": "74f1a87af14cc9e68021f56ff1dc8e3970d27e2d941af02068fc8736d8bf19aa",
+        "size": 4314
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "7a8c00f7e42466262cb1f89ea8b5805334f7478bf90886a833227aa7c759c689",
+        "size": 77065
+      },
+      {
+        "path": "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+        "sha256": "7cad02c75367b517df545664bc79f3d379594fe42f5728b8ca41e4b10557bf73",
+        "size": 12373
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "3efad00f79d84a8eaa83dfab3cab671e9c6b80f366ef2f8e2b35fa65efa826e2"
+  },
+  "source_fingerprint": "ba19cbef4d25f65e54c0b0d8f004ba3c014de676b3b287280c5d7935154c9bd9",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/review_e2e_ux_terra",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../vibepro-review-e2e-ux.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-request-e2e_ux.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

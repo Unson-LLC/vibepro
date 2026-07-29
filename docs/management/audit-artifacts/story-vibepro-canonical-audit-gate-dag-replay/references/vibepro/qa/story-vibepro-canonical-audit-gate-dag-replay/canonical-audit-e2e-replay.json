@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "head_sha": "bb7fa9bd6b81183d519f190ab0fc423a127d36fe",
+  "command": "node --test test/e2e/story-vibepro-usage-report-canonical-traceability-main.spec.js test/canonical-audit-self-contained.test.js test/canonical-audit-idempotent-persistence.test.js",
+  "tests": 26,
+  "passed": 26,
+  "failed": 0,
+  "observations": {
+    "flow_replay": "canonical promotion to deterministic audit replay",
+    "artifact_replay": "summary substitute, incomplete fail-closed, full gate DAG, and persisted bundle replay",
+    "scenario_clause_e2e": "CAGR-S-001 through CAGR-S-004 plus canonical traceability acceptance coverage"
+  }
+}

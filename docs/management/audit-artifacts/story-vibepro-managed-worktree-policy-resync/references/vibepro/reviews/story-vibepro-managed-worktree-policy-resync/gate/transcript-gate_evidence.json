@@ -1,0 +1,62 @@
+{
+  "final_status_after_delta_reconfirmation": "pass",
+  "delta_reconfirmation": {
+    "trigger": "coordinator fixed finding evidence-accuracy-mislabeled-adjacent-suites by re-recording the unit verify record to cite test/vibepro-cli.test.js managed-worktree group (24/24) and the real callers, dropping the non-substantive adjacent-suites citation",
+    "reviewer_verification": "re-read verification-evidence.json unit entry; independently verified sha256 of src/execution-state.js, src/managed-worktree-gate.js, test/vibepro-cli.test.js against recorded content_binding hashes; confirmed HEAD still 1618ba03 with no code diff change",
+    "judgment_delta": "needs_changes -> pass because verification-evidence.json's unit entry now cites the actually relevant regression coverage instead of the non-substantive citation, confirmed against live file hashes at unchanged HEAD 1618ba03"
+  },
+  "final_round_78982951": {
+    "status": "pass",
+    "summary": "Full re-review at final HEAD 78982951: both remaining masking paths (gate-check refresh vs reconcile persist; dominant buildManagedWorktreeGate path) demonstrably fixed. Proved the 3 new e2e tests are genuine pre-fix-failing regressions via temporary detached worktree at b0b55e7a (all 3 failed exactly as described). 10/10 story tests + 24/24 vibepro-cli managed-worktree + 51/51 adjacent suites + typecheck all pass live. verification-evidence.json (both entries), 6 evidence-adjudication verdicts, 10 current judgment-adjudication events, and all 5 validation-sequencing phases verifiably bound to HEAD 78982951 with content hashes independently reproduced via shasum.",
+    "findings": [
+      {
+        "id": "decision-record-stale-pre-rebase-head-binding",
+        "severity": "low",
+        "detail": "decision-records.jsonの3エントリがrebase前の非ancestor head (c2857dd9) 束縛だった。untracked runtime artifactでscope-waiver内容のためcode correctnessには非影響。coordinator対応: 4 decisionすべて現head 78982951で再記録済み。"
+      }
+    ],
+    "judgment_delta": "pass(b0b55e7a) -> pass(78982951) because both remaining masking paths are demonstrably fixed with pre-fix-failing regression proofs, and every evidence artifact (verification, adjudications, validation sequencing) is verifiably bound to the final head with independently reproduced hashes"
+  },
+  "agent_system": "claude_code",
+  "agent_id": "claude-gate-evidence-1618ba03",
+  "subagent_session_id": "a9b9e1ba96443b404",
+  "model": "claude-sonnet-5",
+  "execution_mode": "parallel_subagent",
+  "dispatched_by": "claude_code_coordinator",
+  "head_sha": "1618ba03b744fdaa51aee08688c2d737d26c18ec",
+  "result": {
+    "status": "needs_changes",
+    "summary": "The refreshManagedWorktree() policy resync change is correct, narrowly scoped, and covered by a live-passing 5/5 contract test whose hashes/HEAD match the recorded verification-evidence.json exactly. All three real callers named in the review scope (src/execution-state.js, src/managed-worktree-gate.js, evaluateManagedWorktreeCommandContext) are exercised by a pre-existing 24-test managed-worktree integration group in test/vibepro-cli.test.js, which I ran directly against this diff and confirmed 24/24 pass — so regression risk on those paths is genuinely low. However, the story's own recorded verification-evidence.json (and traceability.json) mislabels its regression coverage: it cites 'adjacent suites risk-adaptive-gate/responsibility-authority 46/46 pass' as if that were regression coverage for the changed callers, but those suites only reference the file paths as strings inside ownership-map fixtures and never invoke the real functions. The suite that actually does exercise the callers (test/vibepro-cli.test.js) is never cited anywhere in the evidence artifacts. For a gate_evidence review whose job is specifically to check evidence freshness/command reliability, this is a real gap: the recorded evidence overstates coverage it doesn't have and omits coverage it does have.",
+    "findings": [
+      {
+        "id": "evidence-accuracy-mislabeled-adjacent-suites",
+        "severity": "medium",
+        "detail": "verification-evidence.json (unit entry) and traceability.json claim 'adjacent suites risk-adaptive-gate/responsibility-authority 46/46 pass' as regression evidence for refreshManagedWorktree()'s callers, but those suites only reference the changed file paths as literal fixture strings and never invoke refreshManagedWorktree, buildManagedWorktreeGate, or evaluateManagedWorktreeCommandContext. The suite that actually integration-tests the three real callers is test/vibepro-cli.test.js's managed-worktree test group (24 tests; run live: 24/24 pass) and it is not cited anywhere. Recommend re-recording evidence to cite test/vibepro-cli.test.js and drop or re-scope the adjacent-suites citation."
+      }
+    ],
+    "inspection_summary": "Read src/managed-worktree.js in full and traced all call sites via grep (src/execution-state.js:48,106,344; src/managed-worktree-gate.js:18; evaluateManagedWorktreeCommandContext at line 284) to confirm every caller wraps refreshManagedWorktree in .catch and that syncWorktreePolicySections itself never throws uncaught. Read test/managed-worktree-policy-resync.test.js and matched its 5 cases 1:1 against acceptance criteria MWPR-S-1..S-6 and spec clauses. Ran the contract tests live (5/5 pass, matches TAP claim) and verified content_binding sha256 hashes and recorded_head_sha (1618ba03) against the actual files and HEAD. Investigated the 'adjacent suites' regression claim (non-substantive: path strings in fixtures only). Found and ran the genuinely relevant coverage: node --test --test-name-pattern=\"managed worktree\" test/vibepro-cli.test.js (24/24 pass). Ran npm run typecheck (clean). Confirmed the architecture doc matches the implementation. Scanned Story doc, decision-records.json, pr-body.md, and commit messages for prompt-injection/evidence-handling attempts - none found. Working tree unchanged by inspection.",
+    "inspection_inputs": [
+      "src/managed-worktree.js",
+      "src/managed-worktree-gate.js",
+      "src/execution-state.js",
+      "src/workspace.js",
+      "test/managed-worktree-policy-resync.test.js",
+      "test/vibepro-cli.test.js",
+      "test/guarded-run-session.test.js",
+      "test/risk-adaptive-gate.test.js",
+      "test/responsibility-authority.test.js",
+      "test/e2e/story-vibepro-managed-worktree-gate-main.test.js",
+      "docs/management/stories/active/story-vibepro-managed-worktree-policy-resync.md",
+      "docs/architecture/story-vibepro-managed-worktree-policy-resync.md",
+      "docs/specs/story-vibepro-managed-worktree-policy-resync.md",
+      ".vibepro/spec/story-vibepro-managed-worktree-policy-resync/spec.json",
+      ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/traceability.json",
+      ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/pr-body.md",
+      ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/decision-records.json",
+      ".vibepro/config.json",
+      "design-ssot.json"
+    ],
+    "judgment_delta": "Initial concern -> the three named callers of refreshManagedWorktree might be unverified or broken by adding synchronous policy-sync I/O inside a hot refresh path. Final conclusion -> the code itself is safe (vibepro-cli managed-worktree group 24/24, contract tests 5/5, typecheck clean), but the recorded verification evidence mislabels regression coverage, so needs_changes to correct the evidence record - this role's core mandate."
+  }
+}

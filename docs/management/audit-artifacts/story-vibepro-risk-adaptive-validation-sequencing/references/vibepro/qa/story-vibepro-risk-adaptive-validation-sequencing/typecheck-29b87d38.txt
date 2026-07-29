@@ -1,0 +1,3 @@
+Command: node --check src/validation-sequencing.js
+HEAD: 29b87d38d160c168f46a17d4252b0a55ecbfa5e1
+Exit: 0

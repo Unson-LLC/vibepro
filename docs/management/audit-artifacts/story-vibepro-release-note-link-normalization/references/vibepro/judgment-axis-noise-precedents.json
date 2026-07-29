@@ -1,0 +1,102 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "release_ops|changed_path:release_ops",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-release-note-link-normalization",
+      "decision_id": "decision-1784425205452-f76483bb",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "Rollout occurs through the existing post-merge release documentation workflow with no manual operator step. CI docs:build and the generated release pages are the observability surface; rollback is one commit followed by regeneration.",
+      "artifact": "docs/architecture/story-vibepro-release-note-link-normalization.md",
+      "activation_candidates": [
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T01:40:22.162Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-release-note-link-normalization",
+      "decision_id": "decision-1784425203940-78053dea",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The review surface is one pure normalization boundary plus its projections and tests. A single gate reviewer owns implementation, generated-output, traceability, and rollback assessment; independent AC and judgment adjudicators remain separate.",
+      "artifact": "docs/management/stories/active/story-vibepro-release-note-link-normalization.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T01:40:22.162Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-release-note-link-normalization",
+      "decision_id": "decision-1784425202968-cc1534a0",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "This change adds no schema, persisted state, protocol, or feature gate. Reverting the implementation commit restores the previous projector; rerunning the release projection regenerates prior-form output. Unit and docs-build artifacts cover upgrade behavior.",
+      "artifact": "docs/architecture/story-vibepro-release-note-link-normalization.md",
+      "activation_candidates": [
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T01:40:22.162Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "release_ops|changed_path:release_ops|route:release_engineering",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-release-note-link-normalization",
+      "decision_id": "decision-1784425205452-f76483bb",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "Rollout occurs through the existing post-merge release documentation workflow with no manual operator step. CI docs:build and the generated release pages are the observability surface; rollback is one commit followed by regeneration.",
+      "artifact": "docs/architecture/story-vibepro-release-note-link-normalization.md",
+      "activation_candidates": [
+        "route:release_engineering",
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T05:31:19.708Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:1674|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-release-note-link-normalization",
+      "decision_id": "decision-1784425203940-78053dea",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The review surface is one pure normalization boundary plus its projections and tests. A single gate reviewer owns implementation, generated-output, traceability, and rollback assessment; independent AC and judgment adjudicators remain separate.",
+      "artifact": "docs/management/stories/active/story-vibepro-release-note-link-normalization.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:1674",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T05:31:19.708Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout|pr_route:mirror_sync",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-release-note-link-normalization",
+      "decision_id": "decision-1784425202968-cc1534a0",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "This change adds no schema, persisted state, protocol, or feature gate. Reverting the implementation commit restores the previous projector; rerunning the release projection regenerates prior-form output. Unit and docs-build artifacts cover upgrade behavior.",
+      "artifact": "docs/architecture/story-vibepro-release-note-link-normalization.md",
+      "activation_candidates": [
+        "pr_route:mirror_sync",
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-19T05:31:19.708Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

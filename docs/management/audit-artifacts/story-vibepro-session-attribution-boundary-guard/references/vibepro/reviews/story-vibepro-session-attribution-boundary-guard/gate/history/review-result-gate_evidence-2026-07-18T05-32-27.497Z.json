@@ -1,0 +1,124 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-attribution-boundary-guard",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Current-head tests pass, but the PR output contract drifts from Story and Architecture, single-story accounting invariance lacks direct coverage, and persisted evidence is stale or missing.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "path-surface-pr-contract-drift",
+      "detail": "Story and Architecture say pr prepare runs the detector and persists mixed-parent detail, while implementation persists only runtime session id and delegation guidance; unify the contract and test preparePullRequest output."
+    },
+    {
+      "severity": "medium",
+      "id": "sab-s2-single-story-evidence-gap",
+      "detail": "SAB-S-2 requires unchanged token and semantic totals for a single-story session, but the mapped test does not assert accounting totals; add a direct single-story fixture."
+    },
+    {
+      "severity": "medium",
+      "id": "verification-artifact-freshness",
+      "detail": "Passing unit and integration claims have missing artifact checks and reuse is stale; bind a machine-readable current-head artifact and refresh preparation."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected current HEAD, origin/main diff, bounded summaries, implementation and call sites, Story, Architecture, Spec, generated artifacts, and independently reran 64 tests and typecheck.",
+    "evidence": "docs/architecture/vibepro-session-attribution-boundary-guard.md:59;src/pr-manager.js:615;src/pr-manager.js:3174;docs/specs/story-vibepro-session-attribution-boundary-guard.vibepro.json:20;test/session-efficiency-audit.test.js:1147",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/review-request-gate_evidence.md"
+    ]
+  },
+  "judgment_delta": [
+    "Current-head test reruns reduced regression concern, but PR contract drift and missing single-story proof established needs_changes."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+    "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+    "expected_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+    "expected_head_sha": "25fcb1357a60a1641a052701f1a52282e777effa",
+    "current_head_sha": "25fcb1357a60a1641a052701f1a52282e777effa",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/95a4/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+      "branch": "codex/story-vibepro-session-attribution-boundary-guard",
+      "actual_branch": "codex/story-vibepro-session-attribution-boundary-guard",
+      "current_head_sha": "25fcb1357a60a1641a052701f1a52282e777effa",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T05:32:27.497Z",
+  "git_context": {
+    "head_sha": "25fcb1357a60a1641a052701f1a52282e777effa",
+    "current_branch": "codex/story-vibepro-session-attribution-boundary-guard",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T05:32:27.495Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "25fcb1357a60a1641a052701f1a52282e777effa",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "cd83886c03e95ce2758813e2754bd141d18795c921ae274ccd92f7ad4868415c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f73aa-e507-7dc1-a24d-29960e6f4c0a",
+    "agent_role": null,
+    "model": "gpt-5.4",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent_notification:019f73aa-e507-7dc1-a24d-29960e6f4c0a",
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

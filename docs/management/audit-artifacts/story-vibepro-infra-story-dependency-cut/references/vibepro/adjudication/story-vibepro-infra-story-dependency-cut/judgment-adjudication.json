@@ -1,0 +1,216 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-infra-story-dependency-cut",
+  "updated_at": "2026-07-24T16:16:04.812Z",
+  "events": [
+    {
+      "event_id": "d2b6c379-cd01-4272-9772-155dec099c0b",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently verified the Story's stated intent (reduce the largest workspace-infra->story violation pair) matches exactly what happened, down to the AC-1 edge-count reconciliation. Intent and outcome match with no inferential leap needed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:16:00.115Z"
+    },
+    {
+      "event_id": "be978fad-652a-4c29-ad66-0b821e7afee6",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Verified the workflow current-reality claim directly: git diff shows managed-worktree.js, managed-worktree-gate.js, and decision-records.js are byte-identical across the change (only target-model.json's classification of decision-records.js moved). Reran the cited e2e suite (12/12 pass) rather than trusting the recorded artifact.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:16:00.502Z"
+    },
+    {
+      "event_id": "3833a2c1-ca6a-465e-b733-1fd0c9ebaf1d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Verified IDC-INV-001 directly in src/performance-evidence.js: the hasUserPerceivedEvidence/readinessKind branches are untouched; only the normalizeActiveStories import line changed source module. The final squashed commit's src/docs content carries the structured inherited_behaviors entries in the spec.json artifact the Requirement Gate reads.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:16:00.895Z"
+    },
+    {
+      "event_id": "19e9fda2-f994-40c2-a927-a8cdccfe97f7",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The cited decision_record is topically about a different, tangential boundary question (.vibepro/ commit policy), not the actual module-reclassification boundary this Story makes -- a citation mismatch. However the architecture_doc evidence (Story reason: frontmatter's boundary section, plus Spec IDC-CONTRACT-001/003's explicit responsibility rationale) substantively addresses the real boundary question and was independently verified against the actual code (decision-records.js's imports/consumers).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:16:01.281Z"
+    },
+    {
+      "event_id": "8cb26953-ab1b-4ee3-b78a-a8987649cfc2",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The cited failure-mode evidence (targeted unit suite + two e2e replay files) is the correct kind of evidence for workflow-shaped changes, reran both with passing results, directly exercising the managed-worktree/decision-record and story-discovery paths this refactor touches.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:16:01.676Z"
+    },
+    {
+      "event_id": "d9140ee4-fedd-4096-8ba2-57dbe5af2d9d",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Same evidence set as failure_modes/current_reality, independently rerun with passing results (88/88 unit, 12/12 e2e), directly covering the changed files and their real call paths.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:16:02.060Z"
+    },
+    {
+      "event_id": "d784af1b-841d-473e-9786-3c39b6935d94",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The matched evidence list is generic boilerplate reused across all four axis items, so verified independently: git diff shows src/cli.js is completely untouched, and a repo-wide grep confirms normalizeActiveStories/isArchived have no remaining import from ./story-manager.js anywhere. No CLI flag, output format, or config schema changed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:16:02.458Z"
+    },
+    {
+      "event_id": "62212c30-9028-4363-8aec-b1c3a0d274fd",
+      "type": "verdict",
+      "item_id": "axis:data_state",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Verified directly: decision-records.js (the only file in this diff that touches persistent state) has a completely empty diff. The rest is pure function relocation and JSON module-classification metadata. No migration, cache, query, or idempotency-sensitive code is touched.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:16:02.848Z"
+    },
+    {
+      "event_id": "cc910918-0852-468c-bad7-3cdbec5964ec",
+      "type": "verdict",
+      "item_id": "axis:performance_semantic",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This Story makes no performance claim and touches no runtime/compiler-semantic code path (no algorithmic change, no async/sync change) -- it is a pure static dependency-graph classification and function-relocation refactor. The axis is vacuously satisfied.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:16:03.232Z"
+    },
+    {
+      "event_id": "4192b2c7-5520-4154-8f7f-7a4679d19cbd",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Changed-file set is small and single-intent: 5 src files (3 one-line import retargets, 1 pure function relocation, 1 file receiving it) plus registration scaffolding. Read start-to-finish, this is a coherent, single-purpose PR a reviewer could assess in one sitting.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:16:03.613Z"
+    },
+    {
+      "event_id": "c1c49866-733d-4641-b112-3463cd6d12c9",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Classifier marked this not_required. Verified correct: this diff touches no parser/JSON-extraction code, so exclusion is appropriate rather than a dodge.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:16:04.043Z"
+    },
+    {
+      "event_id": "0fa7c698-b43b-49f0-805f-aa0270f87c1f",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "decision-records.js's own logic is diff-empty, and decision-records.test.js was rerun as part of the 88/88 passing targeted suite, directly exercising the lifecycle this failure mode concerns. The only change affecting this area is a target-model.json module reclassification, re-passed by architecture-conformance.test.js.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:16:04.427Z"
+    },
+    {
+      "event_id": "53ec784d-2bf4-4f1e-9638-810d9ce13bfa",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Reran the two cited e2e files: 12/12 pass, directly replaying the workflow/state-transition paths (gate ac1-ac7, execution-dag runtime smoke) that touch managed-worktree.js/managed-worktree-gate.js, both byte-identical pre/post change.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:16:04.811Z"
+    }
+  ]
+}

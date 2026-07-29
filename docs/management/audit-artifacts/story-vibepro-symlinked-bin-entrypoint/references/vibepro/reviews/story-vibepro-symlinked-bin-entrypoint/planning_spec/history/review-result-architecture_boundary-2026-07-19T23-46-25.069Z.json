@@ -1,0 +1,145 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-symlinked-bin-entrypoint",
+  "stage": "planning_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "Entrypoint canonicalization stays inside the binary adapter boundary with no downstream contract expansion.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Story, Architecture, Spec, package bin, source, tests, and fresh verification were inspected; tests and typecheck rerun.",
+    "evidence": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/verification-evidence.json",
+    "inputs": [
+      "bin/vibepro.js",
+      "test/bin-entrypoint.test.js",
+      "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+      "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+      "docs/specs/story-vibepro-symlinked-bin-entrypoint.md"
+    ]
+  },
+  "judgment_delta": [
+    "Boundary regression concern -> pass because only direct-execution identity is canonicalized and import, fallback, IO, and subcommand boundaries remain intact."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+    "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+    "expected_root": null,
+    "expected_head_sha": "ec4889ed8d9f27d6743b1ef12f73dcd358b42a3f",
+    "current_head_sha": "ec4889ed8d9f27d6743b1ef12f73dcd358b42a3f",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+      "actual_root": "/Users/ksato/workspace/code/.worktrees/vibepro-cli-symlink-entrypoint",
+      "expected_root": null,
+      "expected_head_sha": "ec4889ed8d9f27d6743b1ef12f73dcd358b42a3f",
+      "current_head_sha": "ec4889ed8d9f27d6743b1ef12f73dcd358b42a3f",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-19T23:46:25.069Z",
+  "git_context": {
+    "head_sha": "ec4889ed8d9f27d6743b1ef12f73dcd358b42a3f",
+    "current_branch": "codex/cli-symlink-entrypoint",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "529761cb80870b446f4ccbc7c454f298328b65d5eb0667f8ee4c50118ddded93",
+    "user_status_fingerprint_hash": "96bf7c867f4b9d643b5dc8429b387588593860cc13c8072f58aa513a71e8b9f3",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T23:46:25.062Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "ec4889ed8d9f27d6743b1ef12f73dcd358b42a3f",
+    "surface_files": [
+      {
+        "path": "bin/vibepro.js",
+        "sha256": "0c364787a843a8985a0ccecee0f0278a717e69d8fb92d81a4e5d3e69b3f1e5a4",
+        "size": 789
+      },
+      {
+        "path": "docs/architecture/story-vibepro-symlinked-bin-entrypoint.md",
+        "sha256": "9bd6d33d4dc2f53f2575f7d8b83a1a9a73293ff91fc04c5cd22a098289d1c6c7",
+        "size": 1386
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-symlinked-bin-entrypoint.md",
+        "sha256": "c3d0d2be56e74b529a0cdb928b3bea420225de116c66ec9629841b1b3b265f78",
+        "size": 1993
+      },
+      {
+        "path": "docs/specs/story-vibepro-symlinked-bin-entrypoint.md",
+        "sha256": "2b14600fdff1d73f3592f663362862c831bcb734b7968c6390a0eccb0c71ceb8",
+        "size": 954
+      },
+      {
+        "path": "test/bin-entrypoint.test.js",
+        "sha256": "dce3e52a3827656e9d536a7f0bb0c55c3e50d5c0e2cde66f5a0c47fb7a1d14bc",
+        "size": 4234
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "b8c8975d453598ff5cbcc9381d1ed772302b66a99d197900601b295c075cf1e1"
+  },
+  "source_fingerprint": "383361b83827922a93b1bda64824f41b84e2ab830ebe3d5aa681e9bd941b06a7",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/review_architecture_boundary",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "medium",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-symlinked-bin-entrypoint/planning_spec/transcript-architecture_boundary.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-symlinked-bin-entrypoint/planning_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-symlinked-bin-entrypoint/planning_spec/lifecycle.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

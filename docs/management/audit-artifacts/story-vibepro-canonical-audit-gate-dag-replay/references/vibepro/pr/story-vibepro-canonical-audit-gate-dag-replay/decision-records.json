@@ -1,0 +1,843 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+  "updated_at": "2026-07-21T07:58:50.762Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+      "expected_root": null,
+      "expected_head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+      "current_head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784620730762-bfc8e1b1",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "単一review ownerがcanonical replay契約全体を判断できる粒度",
+      "reason": "変更対象はcollector、対応テスト、契約文書、登録正本に限定",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:58:50.758Z"
+      },
+      "recorded_at": "2026-07-21T07:58:50.762Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784620726060-317b892b",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "PRには設定・正本・実装・テストのみを含め、.vibepro証跡はコミットしない",
+      "reason": "診断artifactはcanonical promotionで保持しGit差分へ混在させない",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:58:46.051Z"
+      },
+      "recorded_at": "2026-07-21T07:58:46.060Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784620718852-f6d6d9fe",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "自動split提案を棄却し単一PRとして解決",
+      "reason": "変更はcanonical audit契約に閉じ、実装は1モジュールと対応テストのみ",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:58:38.850Z"
+      },
+      "recorded_at": "2026-07-21T07:58:38.853Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784620714560-1f2ffe74",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Story・設計・実装・テスト・Design SSOTは同一契約を構成するためbundled scopeを採用",
+      "reason": "分割すると要求正本とfail-closed実装・検証が別々になり一貫レビューを損なう",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:58:34.557Z"
+      },
+      "recorded_at": "2026-07-21T07:58:34.560Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784620237423-6b026257",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "単一review ownerがcanonical replay契約全体を判断できる粒度",
+      "reason": "変更対象はcollector、対応テスト、契約文書、登録正本に限定",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "expected_root": null,
+          "expected_head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+          "current_head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:50:37.418Z"
+      },
+      "recorded_at": "2026-07-21T07:50:37.424Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784620235961-bfcb5c08",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "PRには設定・正本・実装・テストのみを含め、.vibepro証跡はコミットしない",
+      "reason": "診断artifactはcanonical promotionで保持しGit差分へ混在させない",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "expected_root": null,
+          "expected_head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+          "current_head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:50:35.957Z"
+      },
+      "recorded_at": "2026-07-21T07:50:35.961Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784620234369-b5a10bf4",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "自動split提案を棄却し単一PRとして解決",
+      "reason": "変更はcanonical audit契約に閉じ、実装は1モジュールと対応テストのみ",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "expected_root": null,
+          "expected_head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+          "current_head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:50:34.364Z"
+      },
+      "recorded_at": "2026-07-21T07:50:34.369Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784620233210-bd5f64a5",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Story・設計・実装・テスト・Design SSOTは同一契約を構成するためbundled scopeを採用",
+      "reason": "分割すると要求正本とfail-closed実装・検証が別々になり一貫レビューを損なう",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "expected_root": null,
+          "expected_head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+          "current_head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:50:33.208Z"
+      },
+      "recorded_at": "2026-07-21T07:50:33.210Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784619922928-e0b2e18a",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "単一review ownerがcanonical replay契約全体を判断できる粒度",
+      "reason": "変更対象はcollector、対応テスト、契約文書、登録正本に限定",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "expected_root": null,
+          "expected_head_sha": "6bcd5017f12ee5c82651e9b6191c09bc89638b1e",
+          "current_head_sha": "6bcd5017f12ee5c82651e9b6191c09bc89638b1e",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6bcd5017f12ee5c82651e9b6191c09bc89638b1e",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:45:22.926Z"
+      },
+      "recorded_at": "2026-07-21T07:45:22.928Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784619920836-282f7b5e",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "PRには設定・正本・実装・テストのみを含め、.vibepro証跡はコミットしない",
+      "reason": "診断artifactはcanonical promotionで保持しGit差分へ混在させない",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "expected_root": null,
+          "expected_head_sha": "6bcd5017f12ee5c82651e9b6191c09bc89638b1e",
+          "current_head_sha": "6bcd5017f12ee5c82651e9b6191c09bc89638b1e",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6bcd5017f12ee5c82651e9b6191c09bc89638b1e",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:45:20.835Z"
+      },
+      "recorded_at": "2026-07-21T07:45:20.837Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784619918597-b93e0f32",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "自動split提案を棄却し単一PRとして解決",
+      "reason": "6ファイルは1つのStory契約に閉じ、変更実装は1モジュールと対応テストのみ",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "expected_root": null,
+          "expected_head_sha": "6bcd5017f12ee5c82651e9b6191c09bc89638b1e",
+          "current_head_sha": "6bcd5017f12ee5c82651e9b6191c09bc89638b1e",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6bcd5017f12ee5c82651e9b6191c09bc89638b1e",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:45:18.590Z"
+      },
+      "recorded_at": "2026-07-21T07:45:18.597Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784619916980-e97ef435",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Story・設計・実装・テスト・Design SSOTは同一契約を構成するためbundled scopeを採用",
+      "reason": "分割すると要求正本とfail-closed実装・検証が別々になり、canonical replay契約の一貫レビューを損なう",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "expected_root": null,
+          "expected_head_sha": "6bcd5017f12ee5c82651e9b6191c09bc89638b1e",
+          "current_head_sha": "6bcd5017f12ee5c82651e9b6191c09bc89638b1e",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "6bcd5017f12ee5c82651e9b6191c09bc89638b1e",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:45:16.976Z"
+      },
+      "recorded_at": "2026-07-21T07:45:16.981Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784619783964-ec1f63fa",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "canonical auditのsummary replay契約だけを変更する単一review surfaceとして維持する",
+      "reason": "変更はcollector、対応テスト、Story/Architecture/Spec/Design SSOTに限定され、別PRに分割すると契約と検証が分離する",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "expected_root": null,
+          "expected_head_sha": "00b9f7083b9f289114200bbc5ef45561e9fda6d2",
+          "current_head_sha": "00b9f7083b9f289114200bbc5ef45561e9fda6d2",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "00b9f7083b9f289114200bbc5ef45561e9fda6d2",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:43:03.962Z"
+      },
+      "recorded_at": "2026-07-21T07:43:03.964Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784619783174-e56bb7f1",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "PRには設定と設計・実装・テストのみを含め、.vibepro実行証跡は診断artifactとしてコミットしない",
+      "reason": "runtime evidenceはcanonical promotion対象でありGit差分へ混在させない",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-tests.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+          "expected_root": null,
+          "expected_head_sha": "00b9f7083b9f289114200bbc5ef45561e9fda6d2",
+          "current_head_sha": "00b9f7083b9f289114200bbc5ef45561e9fda6d2",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "00b9f7083b9f289114200bbc5ef45561e9fda6d2",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:43:03.173Z"
+      },
+      "recorded_at": "2026-07-21T07:43:03.174Z"
+    }
+  ],
+  "summary": {
+    "total": 14,
+    "open": 0,
+    "by_type": {
+      "needs_review": 14
+    },
+    "by_status": {
+      "accepted": 14
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+        "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+        "expected_root": null,
+        "expected_head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+        "current_head_sha": "8228b8700e08b5392f8374a1e540eb4c37e3dc89",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784620730762-bfc8e1b1",
+      "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "単一review ownerがcanonical replay契約全体を判断できる粒度",
+      "reason": "変更対象はcollector、対応テスト、契約文書、登録正本に限定",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/vibepro-canonical-audit-gate-dag-replay.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-canonical-audit-gate-dag-replay/canonical-audit-unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+        "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-21T07:58:50.758Z"
+      },
+      "recorded_at": "2026-07-21T07:58:50.762Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-canonical-audit-gate-dag-replay/decision-records.json"
+}

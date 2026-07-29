@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "test_count": 3,
+  "fail_count": 0,
+  "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+  "command": "node --test test/e2e/story-vibepro-human-decision-checkpoint-acceptance.spec.ts test/e2e/story-vibepro-guarded-run-session-contract-main.test.js"
+}

@@ -1,0 +1,156 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-production-runtime-connectors",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Production connector contract and credential-free probe are demonstrated at current HEAD; failed live lifecycle was not treated as success.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed main-to-HEAD source, Story/Spec/Architecture, 41-test targeted JUnit, full-suite JUnit, strict-HEAD evidence, typed failures, sandbox/identity separation, fallback and CLI composition.",
+    "evidence": ".vibepro/verify-artifacts/runtime-connectors-targeted.xml",
+    "inputs": [
+      "src/agent-runtime-connectors.js",
+      "src/agent-runtime-adapter.js",
+      "src/cli.js",
+      "test/agent-runtime-connectors.test.js",
+      "test/agent-runtime-adapter.test.js",
+      "docs/specs/vibepro-production-runtime-connectors.md"
+    ]
+  },
+  "judgment_delta": [
+    "Concern about missing strong evidence and false production claims -> pass because current-head machine-readable JUnit proves 41 conformance/negative tests, the real credential-free probe is included, and failed real lifecycle was explicitly excluded."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-production-runtime-connectors",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-production-runtime-connectors",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-production-runtime-connectors",
+    "expected_head_sha": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+    "current_head_sha": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-production-runtime-connectors",
+      "branch": "codex/story-vibepro-production-runtime-connectors",
+      "actual_branch": "codex/story-vibepro-production-runtime-connectors",
+      "current_head_sha": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": []
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-22T01:07:28.768Z",
+  "git_context": {
+    "head_sha": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+    "current_branch": "codex/story-vibepro-production-runtime-connectors",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-22T01:07:28.694Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Production runtime connector safety review must bind exact implementation HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "67e97c07ff3b0621f1d114dc4e9b1cb58e8c1abe",
+    "surface_files": [
+      {
+        "path": "docs/specs/vibepro-production-runtime-connectors.md",
+        "sha256": "160aa933e2235336c65dcaaccdabdb570fe46d31843bc275bfc05d72529c378d",
+        "size": 1753
+      },
+      {
+        "path": "src/agent-runtime-adapter.js",
+        "sha256": "06ebf86d4cc6706a8a98a593b72ecdd266afb23a870853ce78681867ab6695c1",
+        "size": 29701
+      },
+      {
+        "path": "src/agent-runtime-connectors.js",
+        "sha256": "539a76074cd3a16fe0fd6944cfb458edc33a4d7bb84cac3d1171639170cb11be",
+        "size": 11668
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "439c930f0119790506aafd36e712a953377bc83932ceb0308c52fdd2ef0d70ba",
+        "size": 216133
+      },
+      {
+        "path": "test/agent-runtime-adapter.test.js",
+        "sha256": "deff6b30d78e6f0ca9da4033c035c68e127dc0924174ac0732a4226db274d9ed",
+        "size": 26117
+      },
+      {
+        "path": "test/agent-runtime-connectors.test.js",
+        "sha256": "c243a74f752d4a8a33815ff18d5fe0fa9c9bcf61de95c06ee0b42e68a1a2d463",
+        "size": 8253
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "921f3edf885d68a3344a1098e7404a1542f40f9b528c12d98b56ab43c06d143f"
+  },
+  "source_fingerprint": "3c9f0a6ae1818e9c6e216037a3767335e84cdf2398fe1f8bc63e3f0c89b83d31",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "runtime_gate_review_final",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": "runtime_gate_review_final",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-production-runtime-connectors/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "runtime_gate_review_final",
+      "implementation_session_id": "root",
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

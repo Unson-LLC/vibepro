@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.1.0",
+  "coverage": [
+    {
+      "check": "test (20)",
+      "workflow": "CI",
+      "command": "npm test",
+      "test_fingerprint": "full-suite-node20"
+    },
+    {
+      "check": "test (22)",
+      "workflow": "CI",
+      "command": "npm test",
+      "test_fingerprint": "full-suite-node22"
+    }
+  ]
+}

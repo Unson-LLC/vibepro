@@ -1,0 +1,186 @@
+{
+  "schema_version": "0.1.0",
+  "tool": "vibepro",
+  "workspace": ".vibepro",
+  "output": {
+    "language": "ja"
+  },
+  "execution": {
+    "managed_worktree": "preferred"
+  },
+  "budgets": {
+    "pr_artifact_bytes": 16384
+  },
+  "brainbase": {
+    "stories": [
+      {
+        "story_id": "story-vibepro-artifact-output-routing",
+        "title": "成果物の正本出力先をリポジトリ設定で一意に制御する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-19",
+        "due_at": null,
+        "category": "dev"
+      },
+      {
+        "story_id": "story-vibepro-routing-profiles-rendered-projections",
+        "title": "Story別routing profileとlineage付きprojectionでfeature packetを正本化する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "dev",
+        "artifact_profile": "feature_packet",
+        "feature_slug": "routing-profiles-rendered-projections"
+      },
+      {
+        "story_id": "story-vibepro-session-attribution-boundary-guard",
+        "title": "Session cost attributionを構造的なworktree境界に限定する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-18",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-human-decision-checkpoint",
+        "title": "実行を止める重要判断だけを永続化して再開するHuman Checkpoint",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-15",
+        "due_at": null,
+        "category": "product"
+      },
+      {
+        "story_id": "story-vibepro-agent-runtime-adapters",
+        "title": "実装・Reviewを委譲するProvider-neutral Agent Runtime Adapter",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-15",
+        "due_at": null,
+        "category": "platform"
+      },
+      {
+        "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+        "title": "高シグナル確認を先行するRisk-adaptive Validation Sequencing",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-16",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-review-finding-repair-loop",
+        "title": "Review findingを実装修正へ戻すBounded Repair Loop",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-15",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-story-run-portfolio-controller",
+        "title": "複数Storyを混載しないStory Run Portfolio Controller",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-16",
+        "due_at": null,
+        "category": "product"
+      },
+      {
+        "story_id": "story-vibepro-guarded-autonomy-hardening",
+        "title": "Guarded Autonomyを予算・独立Review・成果指標で本番運用可能にする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "product"
+      },
+      {
+        "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+        "title": "Summary depthのCanonical Audit Replayを欠損なく引き継ぐ",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-explicit-run-attribution-lineage",
+        "title": "Thread分離に依存せずRun lineageでstory attributionを確定する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "product",
+        "judgment_ssot": "docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json",
+        "gate_evidence_ssot": "docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json#/gate_evidence",
+        "validation_sequence_state": ".vibepro/validation-sequencing/story-vibepro-explicit-run-attribution-lineage/state.json",
+        "task_plan_source": "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+        "reviewability_evidence": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
+        "reviewability_authority": "current_independent_pr_split_scope_result",
+        "split_plan_authority": "advisory_only",
+        "pr_decision": "one_pr",
+        "pr_decision_rationale": "The owned changes form one coherent Run-attribution contract with no independently reviewable boundary."
+      },
+      {
+        "story_id": "story-vibepro-content-scoped-evidence-reuse-key",
+        "title": "Evidence reuse keyをhead束縛からcontent surface束縛へ移す",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-managed-worktree-policy-resync",
+        "title": "Managed worktreeのポリシーconfigを凍結させず親repoから再同期する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-21",
+        "due_at": null,
+        "category": "quality"
+      }
+    ],
+    "current_story_id": "story-vibepro-managed-worktree-policy-resync"
+  }
+}

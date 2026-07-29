@@ -1,0 +1,150 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-independent-review-orchestration",
+  "stage": "architecture_spec",
+  "role": "architecture_boundary",
+  "status": "block",
+  "summary": "Reserved record checkpoint is rejected before idempotent reconciliation",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "IRO-RST-001",
+      "detail": "Reserved record operation with null result is incorrectly classified invalid on restart"
+    },
+    {
+      "severity": "high",
+      "id": "IRO-EVID-001",
+      "detail": "Current HEAD gate closure requires refreshed evidence after repair"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Dependency direction is sound, but a crash after record reservation leaves a valid incomplete checkpoint that preflight rejects; E2E restart did not replay captured checkpoint.",
+    "evidence": "src/independent-review-orchestrator.js",
+    "inputs": [
+      "src/independent-review-orchestrator.js",
+      "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "Initially passable due to journal idempotency; changed to block after reserved record checkpoint analysis exposed fail-closed misclassification"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/main-dist/.worktrees/vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/main-dist/.worktrees/vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/main-dist/.worktrees/vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+    "expected_head_sha": "59691a2f834cd1c414b8036f5505b4286660714e",
+    "current_head_sha": "59691a2f834cd1c414b8036f5505b4286660714e",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/main-dist",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/main-dist/.worktrees/vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+      "branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+      "actual_branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+      "current_head_sha": "59691a2f834cd1c414b8036f5505b4286660714e",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-22T10:27:26.361Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-22T10:36:43.008Z",
+  "git_context": {
+    "head_sha": "59691a2f834cd1c414b8036f5505b4286660714e",
+    "current_branch": "vibepro/story-vibepro-independent-review-orchestration-1y6roj",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-22T10:36:42.996Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "required architecture preflight bound to frozen HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "59691a2f834cd1c414b8036f5505b4286660714e",
+    "surface_files": [
+      {
+        "path": "src/independent-review-orchestrator.js",
+        "sha256": "3b852b69cdd203693efda79ab1ffcb4444aedff442bfdef8386de4eafbe30652",
+        "size": 22389
+      },
+      {
+        "path": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+        "sha256": "7807734594f0028b753f1b10078a46f59a1ce73b28a6bdcbfaf225ea02efba59",
+        "size": 10873
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "80f5328aacc6d0e370b55fe5ca3708da7421d1b7a37421e0d683a7438962222f"
+  },
+  "source_fingerprint": "4716583eb2f153421ff16945e700d868750e3cfaa00f884032812051ff6b538a",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "iro_arch_final",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": "/root/iro_arch_final",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-independent-review-orchestration/architecture_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent:/root/iro_arch_final",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "/root/iro_arch_final",
+      "implementation_session_id": "root-implementation-59691a2f",
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

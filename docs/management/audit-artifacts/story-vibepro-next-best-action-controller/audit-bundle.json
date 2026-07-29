@@ -1,0 +1,1744 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-next-best-action-controller",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-19T02:32:01.504Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [
+      "canonical_artifact_lines_exceeded"
+    ],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:784e5eb563ecd28564bcf11b81ba008f6a58fad93bfb47daf5e387a556bdf47a",
+    "compressed_hash": "sha256:eb4bfca3ba29ddb1f2c21177266018849763d7e5ef7bb33eaa1ae18b4a01b0b2",
+    "expanded_bytes": 29512,
+    "compressed_bytes": 4506,
+    "expanded_line_count": 756,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-next-best-action-controller",
+    "cost": {
+      "compressed_bytes": 4506,
+      "expanded_bytes": 29512,
+      "expanded_line_count": 756,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged_externally",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/352",
+    "merge_commit_sha": "b89bf7f3fc89f74395625db1278774ad0f2e3993",
+    "merged_at": "2026-07-19T02:30:39Z",
+    "current_head_sha": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 125,
+    "copied_reference_count": 101,
+    "unresolved_reference_count": 11,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-next-best-action-controller"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:784e5eb563ecd28564bcf11b81ba008f6a58fad93bfb47daf5e387a556bdf47a"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:b25923136638d728bebc147f3762d46c0c7e88be07ae9fd81e8bfc6faa94f059",
+      "audit_digest": "sha256:b25923136638d728bebc147f3762d46c0c7e88be07ae9fd81e8bfc6faa94f059",
+      "line_count": 200,
+      "raw_line_count": 200,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:2f48a84a3abdee7b5ee221a413289ea60f4050895aaacc4f4e2a297260d3b4b5",
+      "audit_digest": "sha256:92676e1d9a08aa80829f17b984858324dd1d9f162a61cc425e71a7f5865ea93c",
+      "line_count": 6495,
+      "raw_line_count": 34904,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:5376cf77e9423799b00ce7840e4a82ced7fc4587c17828f3bf1127c32453262e",
+      "audit_digest": "sha256:250293131b96153ef1d46f234d2ee9a4f9515bfdc202797e8e04bdc5494a5fa0",
+      "line_count": 2167,
+      "raw_line_count": 5232,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:5fb153cb080a3ab95c5ef1b5c0fbe5562108ba02578ebdb71f5d161d882a3a9e",
+      "audit_digest": "sha256:f5a4a71e53e9f01e35eb0260427f5f9ce52931eae29c37298710a230ce22f041",
+      "line_count": 49,
+      "raw_line_count": 845,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:44123dd1ea79bfaff0a252757fd4710f8c30c1941da95fa47747f88473f5c383",
+      "audit_digest": "sha256:56fb7bd865aef0738bea94cbe9e40d7b239c5c570d6f14df98be9cf824570e5b",
+      "line_count": 2204,
+      "raw_line_count": 5261,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:07b29246ce05280fa133f7896a71d3a129139c49bc3a7f1590e09685621fea61",
+      "audit_digest": "sha256:07b29246ce05280fa133f7896a71d3a129139c49bc3a7f1590e09685621fea61",
+      "line_count": 996,
+      "raw_line_count": 996,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:b8f0f94630ccc17a168908d2f0dc8cba31acfcd924a9a094784d97b7b41d83fc",
+      "audit_digest": "sha256:8ae3c6835389b39cb6156444d16836a163d7981273ad9727d98f7bcd07c54347",
+      "line_count": 45,
+      "raw_line_count": 439,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:866c3191c3b739d07853e6d3775e2a3c42cb910f90d7c299fe8a1ed7d358b7f2",
+      "audit_digest": "sha256:866c3191c3b739d07853e6d3775e2a3c42cb910f90d7c299fe8a1ed7d358b7f2",
+      "line_count": 284,
+      "raw_line_count": 284,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/review-request-regression_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:5d7f6c74a967c6591d6c509eb45ffdde7111bd671226476c3700a995ebc0e37b",
+      "audit_digest": "sha256:5d7f6c74a967c6591d6c509eb45ffdde7111bd671226476c3700a995ebc0e37b",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/review-result-regression_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:53ac02daf2473a52daa251cec5e4d0ef8bf3e5e5bc71db86e73a792546759924",
+      "audit_digest": "sha256:53ac02daf2473a52daa251cec5e4d0ef8bf3e5e5bc71db86e73a792546759924",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:01cc73d956370fa1e65135cb14cc50308f18b86f1a3aebfb2dffe9af7f3d9eff",
+      "audit_digest": "sha256:01cc73d956370fa1e65135cb14cc50308f18b86f1a3aebfb2dffe9af7f3d9eff",
+      "line_count": 493,
+      "raw_line_count": 493,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:84cca85bf1ec956fef0b40faeb7fd36e6a4ff02239702779d10161001225da7c",
+      "audit_digest": "sha256:84cca85bf1ec956fef0b40faeb7fd36e6a4ff02239702779d10161001225da7c",
+      "line_count": 159,
+      "raw_line_count": 159,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:1c3a2e1e5226619701f1c5174597b3c8e810b6d641237fa9ffd5e796306a7cf3",
+      "audit_digest": "sha256:1c3a2e1e5226619701f1c5174597b3c8e810b6d641237fa9ffd5e796306a7cf3",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:ddb9408df5824b87b8dcec62db5202e451aff6d557959928befbab2a8507b6e9",
+      "audit_digest": "sha256:ddb9408df5824b87b8dcec62db5202e451aff6d557959928befbab2a8507b6e9",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:8bb97c52637f838a2e81b28d1bffc0f0bcd1982d78f8ab234c52a199602b4482",
+      "audit_digest": "sha256:8bb97c52637f838a2e81b28d1bffc0f0bcd1982d78f8ab234c52a199602b4482",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/review-result-release_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:baf204ecd6f353d460be1dd4736a8e1e71d4b7759f4eacf1300933953f1f9e12",
+      "audit_digest": "sha256:baf204ecd6f353d460be1dd4736a8e1e71d4b7759f4eacf1300933953f1f9e12",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:87e8c930df999fe02369178a6c398eea4fdc13fde28a5bef4ff90ab4ba4ba6c5",
+      "audit_digest": "sha256:87e8c930df999fe02369178a6c398eea4fdc13fde28a5bef4ff90ab4ba4ba6c5",
+      "line_count": 478,
+      "raw_line_count": 478,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:da2f8c061c64312781d8ca09e61713fced13807a9f9b259c9bbea76c251cdbd0",
+      "audit_digest": "sha256:da2f8c061c64312781d8ca09e61713fced13807a9f9b259c9bbea76c251cdbd0",
+      "line_count": 259,
+      "raw_line_count": 259,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/review-request-runtime_contract.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:e4193e7a3c75d7962f2e2a1235d1dcbec2d20277ef42650561dfe6e371cfda3b",
+      "audit_digest": "sha256:e4193e7a3c75d7962f2e2a1235d1dcbec2d20277ef42650561dfe6e371cfda3b",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/review-request-ux_completion.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:84749a7aa6de675ce8568c8e1cf6244567e78660f19a47fd138ac6435285bdf4",
+      "audit_digest": "sha256:84749a7aa6de675ce8568c8e1cf6244567e78660f19a47fd138ac6435285bdf4",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/review-result-runtime_contract.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:6e40ad17f2c51225d354df20c73686a9e53336a93341f20ac7712992bacfaa7a",
+      "audit_digest": "sha256:6e40ad17f2c51225d354df20c73686a9e53336a93341f20ac7712992bacfaa7a",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/review-result-ux_completion.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:d70e6ce6ff8bb2beac8b9fdd73bee08d46ad4f95cc232620ae693d5f70f137fb",
+      "audit_digest": "sha256:d70e6ce6ff8bb2beac8b9fdd73bee08d46ad4f95cc232620ae693d5f70f137fb",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:7a86127fbcc73e651ecf27280eed7e249fab7ed2d3a441bd17573f571f815c7c",
+      "audit_digest": "sha256:7a86127fbcc73e651ecf27280eed7e249fab7ed2d3a441bd17573f571f815c7c",
+      "line_count": 590,
+      "raw_line_count": 590,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:096b564bf4718bafe542ac21b37bfd13e84a4b0ecc98b122200b26614975eee1",
+      "audit_digest": "sha256:096b564bf4718bafe542ac21b37bfd13e84a4b0ecc98b122200b26614975eee1",
+      "line_count": 159,
+      "raw_line_count": 159,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/review-request-human_usability.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:50f06bd1dc63a1ee053082146d7b3852ac0f14784b8cf925c1b7a3a41877f747",
+      "audit_digest": "sha256:50f06bd1dc63a1ee053082146d7b3852ac0f14784b8cf925c1b7a3a41877f747",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/review-request-network_runtime.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:76cd05e16e79c08e0a7510124287a74c86aa32970dd2df9593309480178bfb5a",
+      "audit_digest": "sha256:76cd05e16e79c08e0a7510124287a74c86aa32970dd2df9593309480178bfb5a",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/review-result-human_usability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:fb8933babd926bcad81b9d449f4ebc93cb478eb7551ba11efdecf6948c68c393",
+      "audit_digest": "sha256:fb8933babd926bcad81b9d449f4ebc93cb478eb7551ba11efdecf6948c68c393",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/review-result-network_runtime.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:607c49341b495a7c1ea14338e4e180f5e7627981f6ff77bf611585f456dc8453",
+      "audit_digest": "sha256:607c49341b495a7c1ea14338e4e180f5e7627981f6ff77bf611585f456dc8453",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:884e3ee92982e7f197fc2650c324bd62f24088611ad0923ea4884a77b95f8b35",
+      "audit_digest": "sha256:884e3ee92982e7f197fc2650c324bd62f24088611ad0923ea4884a77b95f8b35",
+      "line_count": 478,
+      "raw_line_count": 478,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:c3a8f743b3279558daa50307aacb38ce3a30045b10290be94e1dc9eb37e59ef5",
+      "audit_digest": "sha256:c3a8f743b3279558daa50307aacb38ce3a30045b10290be94e1dc9eb37e59ef5",
+      "line_count": 309,
+      "raw_line_count": 309,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/review-request-e2e_ux.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:f7565e51a110e3f3afaf19784280cfc20638440bc12f5915c5eccbc5ce1ecb0a",
+      "audit_digest": "sha256:f7565e51a110e3f3afaf19784280cfc20638440bc12f5915c5eccbc5ce1ecb0a",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/review-request-gate_coverage.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:8035619a0c102f4e0ac08866c3e67cde51aa5238b750dfd58b9624cd3f6b743a",
+      "audit_digest": "sha256:8035619a0c102f4e0ac08866c3e67cde51aa5238b750dfd58b9624cd3f6b743a",
+      "line_count": 137,
+      "raw_line_count": 137,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/review-result-e2e_ux.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:febae6ac998945ce57e2366eb60eeb539721c01d94f98f9bbefe9d344d70ebd4",
+      "audit_digest": "sha256:febae6ac998945ce57e2366eb60eeb539721c01d94f98f9bbefe9d344d70ebd4",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/review-result-gate_coverage.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:1d1db48fb94b58fe7ca5dd1cfd9901abead26fe02446c7a8053536c52b79f6da",
+      "audit_digest": "sha256:1d1db48fb94b58fe7ca5dd1cfd9901abead26fe02446c7a8053536c52b79f6da",
+      "line_count": 136,
+      "raw_line_count": 136,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/audit-replay-bundle.json.gz",
+      "digest": "sha256:2d56da694d4a004cdbc2b0e2a735a03754ba7045dff720a78c3de18f3f356496",
+      "audit_digest": "sha256:2d56da694d4a004cdbc2b0e2a735a03754ba7045dff720a78c3de18f3f356496",
+      "line_count": 648,
+      "raw_line_count": 648,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [
+    {
+      "kind": "gate_dag",
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/gate-dag.json"
+    }
+  ],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-next-best-action-controller/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/adjudication/story-vibepro-next-best-action-controller/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-next-best-action-controller/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/adjudication/story-vibepro-next-best-action-controller/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/next-best-action-tests.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/evidence/next-best-action-tests.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/next-best-action-typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/evidence/next-best-action-typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/next-best-action-unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/evidence/next-best-action-unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-next-best-action-controller/acceptance-flow-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/evidence/story-vibepro-next-best-action-controller/acceptance-flow-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-next-best-action-controller/focused-unit-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/evidence/story-vibepro-next-best-action-controller/focused-unit-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-next-best-action-controller/typecheck-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/evidence/story-vibepro-next-best-action-controller/typecheck-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T00-13-35.179Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T00-13-35.179Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T00-27-41.113Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T00-27-41.113Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T00-50-34.313Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T00-50-34.313Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-21-32.973Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-21-32.973Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-30-43.781Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-30-43.781Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-38-57.470Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-38-57.470Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-50-43.567Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-50-43.567Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T02-01-54.002Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T02-01-54.002Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T02-14-46.833Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T02-14-46.833Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T02-19-47.214Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T02-19-47.214Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/review-request-regression_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/architecture_spec/review-request-regression_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/review-result-regression_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/architecture_spec/review-result-regression_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-726fbfce.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-726fbfce.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-8d92ea3.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-8d92ea3.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-ee5ec-predecessor.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-ee5ec-predecessor.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-ee5ec31.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-ee5ec31.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-v4.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-v4.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T01-58-28.875Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T01-58-28.875Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T02-02-11.499Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T02-02-11.499Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T02-15-21.899Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T02-15-21.899Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T02-20-31.837Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T02-20-31.837Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T01-58-33.568Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T01-58-33.568Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T02-02-14.218Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T02-02-14.218Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T02-15-26.188Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T02-15-26.188Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T02-20-37.159Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T02-20-37.159Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/review-request-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/gate/review-request-release_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/review-result-release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/gate/review-result-release_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/transcript-gate_evidence-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/transcript-gate_evidence-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/transcript-release_risk-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/transcript-release_risk-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T01-53-16.059Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T01-53-16.059Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T02-02-01.151Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T02-02-01.151Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T02-15-00.624Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T02-15-00.624Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T02-20-03.406Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T02-20-03.406Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T01-53-20.621Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T01-53-20.621Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T02-02-04.208Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T02-02-04.208Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T02-15-08.033Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T02-15-08.033Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T02-20-10.883Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T02-20-10.883Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/review-request-runtime_contract.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/implementation/review-request-runtime_contract.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/review-request-ux_completion.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/implementation/review-request-ux_completion.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/review-result-runtime_contract.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/implementation/review-result-runtime_contract.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/review-result-ux_completion.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/implementation/review-result-ux_completion.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/transcript-runtime_contract-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/transcript-runtime_contract-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/transcript-ux_completion-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/transcript-ux_completion-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T01-54-37.589Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T01-54-37.589Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T02-02-08.753Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T02-02-08.753Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T02-15-17.409Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T02-15-17.409Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T02-20-25.112Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T02-20-25.112Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T01-54-33.151Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T01-54-33.151Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T02-02-06.470Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T02-02-06.470Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T02-15-12.970Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T02-15-12.970Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T02-20-17.254Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T02-20-17.254Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/review-request-human_usability.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/preview/review-request-human_usability.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/review-request-network_runtime.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/preview/review-request-network_runtime.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/review-result-human_usability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/preview/review-result-human_usability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/review-result-network_runtime.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/preview/review-result-network_runtime.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/transcript-human_usability-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/transcript-human_usability-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/transcript-network_runtime-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/transcript-network_runtime-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T01-40-44.552Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T01-40-44.552Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T01-52-05.241Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T01-52-05.241Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T02-01-56.376Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T02-01-56.376Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T02-14-51.519Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T02-14-51.519Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T02-19-52.192Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T02-19-52.192Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T01-40-49.642Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T01-40-49.642Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T01-52-10.750Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T01-52-10.750Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T02-01-58.642Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T02-01-58.642Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T02-14-56.134Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T02-14-56.134Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T02-19-58.396Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T02-19-58.396Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/review-request-e2e_ux.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/test_plan/review-request-e2e_ux.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/review-request-gate_coverage.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/test_plan/review-request-gate_coverage.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/review-result-e2e_ux.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/test_plan/review-result-e2e_ux.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/review-result-gate_coverage.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/reviews/test_plan/review-result-gate_coverage.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-e2e_ux-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-e2e_ux-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-e2e_ux-726fbfce.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-e2e_ux-726fbfce.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-gate_coverage-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-gate_coverage-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-gate_coverage-726fbfce.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-gate_coverage-726fbfce.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-next-best-action-controller/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/stories/story-vibepro-next-best-action-controller/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-next-best-action-controller/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/stories/story-vibepro-next-best-action-controller/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-next-best-action-controller/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/adjudication/story-vibepro-next-best-action-controller/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-next-best-action-controller/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/adjudication/story-vibepro-next-best-action-controller/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/diagnostics/2026-07-18T162828Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/next-best-action-tests.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/evidence/next-best-action-tests.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/next-best-action-typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/evidence/next-best-action-typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/next-best-action-unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/evidence/next-best-action-unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-next-best-action-controller/acceptance-flow-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/evidence/story-vibepro-next-best-action-controller/acceptance-flow-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-next-best-action-controller/focused-unit-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/evidence/story-vibepro-next-best-action-controller/focused-unit-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-next-best-action-controller/typecheck-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/evidence/story-vibepro-next-best-action-controller/typecheck-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/decision-index.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/evidence-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-next-best-action-controller/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/pr/story-vibepro-next-best-action-controller/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T00-13-35.179Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T00-13-35.179Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T00-27-41.113Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T00-27-41.113Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T00-50-34.313Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T00-50-34.313Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-21-32.973Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-21-32.973Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-30-43.781Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-30-43.781Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-38-57.470Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-38-57.470Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-50-43.567Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T01-50-43.567Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T02-01-54.002Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T02-01-54.002Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T02-14-46.833Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T02-14-46.833Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T02-19-47.214Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/history/review-result-regression_risk-2026-07-19T02-19-47.214Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-726fbfce.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-726fbfce.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-8d92ea3.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-8d92ea3.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-ee5ec-predecessor.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-ee5ec-predecessor.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-ee5ec31.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-ee5ec31.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-v4.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/architecture_spec/transcript-regression_risk-v4.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T01-58-28.875Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T01-58-28.875Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T02-02-11.499Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T02-02-11.499Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T02-15-21.899Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T02-15-21.899Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T02-20-31.837Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-gate_evidence-2026-07-19T02-20-31.837Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T01-58-33.568Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T01-58-33.568Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T02-02-14.218Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T02-02-14.218Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T02-15-26.188Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T02-15-26.188Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T02-20-37.159Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/history/review-result-release_risk-2026-07-19T02-20-37.159Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/transcript-gate_evidence-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/transcript-gate_evidence-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/gate/transcript-release_risk-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/gate/transcript-release_risk-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T01-53-16.059Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T01-53-16.059Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T02-02-01.151Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T02-02-01.151Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T02-15-00.624Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T02-15-00.624Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T02-20-03.406Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-runtime_contract-2026-07-19T02-20-03.406Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T01-53-20.621Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T01-53-20.621Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T02-02-04.208Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T02-02-04.208Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T02-15-08.033Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T02-15-08.033Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T02-20-10.883Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/history/review-result-ux_completion-2026-07-19T02-20-10.883Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/transcript-runtime_contract-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/transcript-runtime_contract-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/implementation/transcript-ux_completion-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/implementation/transcript-ux_completion-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T01-54-37.589Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T01-54-37.589Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T02-02-08.753Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T02-02-08.753Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T02-15-17.409Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T02-15-17.409Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T02-20-25.112Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-human_usability-2026-07-19T02-20-25.112Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T01-54-33.151Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T01-54-33.151Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T02-02-06.470Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T02-02-06.470Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T02-15-12.970Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T02-15-12.970Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T02-20-17.254Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/history/review-result-network_runtime-2026-07-19T02-20-17.254Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/transcript-human_usability-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/transcript-human_usability-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/preview/transcript-network_runtime-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/preview/transcript-network_runtime-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T01-40-44.552Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T01-40-44.552Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T01-52-05.241Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T01-52-05.241Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T02-01-56.376Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T02-01-56.376Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T02-14-51.519Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T02-14-51.519Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T02-19-52.192Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-e2e_ux-2026-07-19T02-19-52.192Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T01-40-49.642Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T01-40-49.642Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T01-52-10.750Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T01-52-10.750Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T02-01-58.642Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T02-01-58.642Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T02-14-56.134Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T02-14-56.134Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T02-19-58.396Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/history/review-result-gate_coverage-2026-07-19T02-19-58.396Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-e2e_ux-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-e2e_ux-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-e2e_ux-726fbfce.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-e2e_ux-726fbfce.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-gate_coverage-3aee4c45.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-gate_coverage-3aee4c45.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-gate_coverage-726fbfce.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/reviews/story-vibepro-next-best-action-controller/test_plan/transcript-gate_coverage-726fbfce.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-next-best-action-controller/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/stories/story-vibepro-next-best-action-controller/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-next-best-action-controller/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-next-best-action-controller/references/vibepro/stories/story-vibepro-next-best-action-controller/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 5783420
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-18T162828Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 969933
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 5516481
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/final-acceptance-c2536e99.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/final-architecture-c2536e99.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-next-best-action-controller/final-judgment-c2536e99.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-next-best-action-controller/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-next-best-action-controller/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/verification/",
+      "reason": "source_missing"
+    }
+  ]
+}

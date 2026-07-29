@@ -12,6 +12,7 @@ import {
   normalizeDesignSystemBundle
 } from './design-modernize.js';
 import { importGraphifyArtifacts } from './graphify-adapter.js';
+import { resolveGraphifyArtifactFile } from './artifact-routing.js';
 import { localizedText } from './language.js';
 import { resolveUiuxStylePreset } from './uiux-style-presets.js';
 
@@ -2126,10 +2127,12 @@ function ensureTrailingNewline(value) {
 }
 
 async function collectGraphifyEvidence(root, options) {
+  const storyId = options.storyId ?? 'story-default';
   if (options.runGraphify) {
     const imported = await importGraphifyArtifacts(root, {
       runGraphify: true,
-      sourceDir: options.graphifyOut ?? 'graphify-out'
+      sourceDir: options.graphifyOut ?? 'graphify-out',
+      storyId
     });
     return {
       status: 'imported',
@@ -2137,7 +2140,7 @@ async function collectGraphifyEvidence(root, options) {
       artifact_dir: path.relative(root, imported.graphifyDir).split(path.sep).join('/')
     };
   }
-  const graphPath = path.join(root, '.vibepro', 'graphify', 'graph.json');
+  const graphPath = await resolveGraphifyArtifactFile(root, storyId, 'graph.json');
   try {
     const graph = JSON.parse(await readFile(graphPath, 'utf8'));
     return summarizeGraphifyGraph(graph, path.relative(root, graphPath).split(path.sep).join('/'));

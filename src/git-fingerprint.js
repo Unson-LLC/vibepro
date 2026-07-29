@@ -17,11 +17,11 @@ const USER_PATHSPEC = [
   ':(exclude).worktrees/vibepro'
 ];
 
-export async function collectGitContext(repoRoot) {
+export async function collectGitContext(repoRoot, options = {}) {
   const [headSha, currentBranch, fingerprints] = await Promise.all([
     gitOptional(repoRoot, ['rev-parse', 'HEAD']),
     gitOptional(repoRoot, ['branch', '--show-current']),
-    collectGitStatusFingerprints(repoRoot)
+    collectGitStatusFingerprints(repoRoot, options)
   ]);
   return {
     head_sha: headSha || null,
@@ -35,17 +35,28 @@ export async function collectGitContext(repoRoot) {
   };
 }
 
-export async function collectGitStatusFingerprints(repoRoot) {
-  const [statusOutput, userStatusOutput] = await Promise.all([
+export async function collectGitStatusFingerprints(repoRoot, options = {}) {
+  const additionalUserExcludePaths = normalizeUserExcludePaths(options.userExcludePaths);
+  const userExcludePaths = [...USER_FINGERPRINT_EXCLUDE_PATHS, ...additionalUserExcludePaths];
+  const userPathspec = [
+    ...USER_PATHSPEC,
+    ...additionalUserExcludePaths.map((filePath) => `:(exclude,literal)${filePath}`)
+  ];
+  const [statusOutput, userStatusWithoutConfig, configStatusOutput] = await Promise.all([
     gitStatus(repoRoot),
-    gitStatus(repoRoot, USER_PATHSPEC)
+    gitStatus(repoRoot, userPathspec),
+    gitStatus(repoRoot, ['.vibepro/config.json'])
   ]);
-  const [dirtyDiff, userDirtyDiff] = await Promise.all([
+  const userStatusOutput = [userStatusWithoutConfig, configStatusOutput].filter(Boolean).join('\n');
+  const [dirtyDiff, userDirtyWithoutConfig, configDirtyDiff] = await Promise.all([
     collectDirtyDiff(repoRoot),
-    collectDirtyDiff(repoRoot, USER_PATHSPEC)
+    collectDirtyDiff(repoRoot, userPathspec),
+    collectDirtyDiff(repoRoot, ['.vibepro/config.json'])
   ]);
+  const userDirtyDiff = [userDirtyWithoutConfig, configDirtyDiff].filter(Boolean).join('\n');
   const fingerprintScope = {
-    user_excludes: USER_FINGERPRINT_EXCLUDE_PATHS
+    user_excludes: userExcludePaths,
+    user_includes: ['.vibepro/config.json']
   };
   return {
     status_output: statusOutput,
@@ -56,6 +67,17 @@ export async function collectGitStatusFingerprints(repoRoot) {
     user_status_fingerprint_hash: hashFingerprint(fingerprintStatus(userStatusOutput, userDirtyDiff)),
     fingerprint_scope: fingerprintScope
   };
+}
+
+function normalizeUserExcludePaths(paths = []) {
+  const normalized = [];
+  for (const value of paths ?? []) {
+    const filePath = String(value ?? '').trim().replaceAll('\\', '/').replace(/^\.\//, '');
+    if (!filePath || path.posix.isAbsolute(filePath) || filePath.includes('\0')) continue;
+    if (filePath.split('/').includes('..')) continue;
+    normalized.push(filePath);
+  }
+  return [...new Set(normalized)];
 }
 
 export function fingerprintHashForContext(gitContext) {

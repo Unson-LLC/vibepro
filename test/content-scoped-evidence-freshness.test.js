@@ -238,10 +238,10 @@ test('agent review minimal recovery emits an executable inspection-aware pass co
   const recordCommand = recovery.next_commands.find((command) => command.startsWith('vibepro review record'));
   assert.ok(recordCommand);
   assert.match(recordCommand, /--inspection-summary "<inspection-summary>"/);
-  assert.match(recordCommand, /--inspection-evidence <inspection-evidence>/);
-  assert.match(recordCommand, /--inspection-input <inspection-input>/);
+  assert.match(recordCommand, /--inspection-evidence '<inspection-evidence>'/);
+  assert.match(recordCommand, /--inspection-input '<inspection-input>'/);
   assert.match(recordCommand, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
-  assert.match(recordCommand, /--status <pass\|needs_changes\|block>/);
+  assert.match(recordCommand, /--status '<pass\|needs_changes\|block>'/);
 
   const executable = recordCommand
     .replace(/^vibepro\b/, `${JSON.stringify(process.execPath)} ${JSON.stringify(path.resolve('bin/vibepro.js'))}`)
@@ -251,8 +251,15 @@ test('agent review minimal recovery emits an executable inspection-aware pass co
     .replace('<inspection-input>', 'src/content-binding-target.js')
     .replace('<initial judgment -> final judgment because evidence>', 'initial risk -> accepted after inspecting the runtime contract source')
     .replace('<pass|needs_changes|block>', 'pass')
-    .replace('<agent-id>', 'agent-minimal-recovery')
-    .replace('<agent-thread-id>', 'thread-minimal-recovery');
+    .replace('<codex|claude_code>', 'codex')
+    .replace('<replacement-agent-id>', 'agent-minimal-recovery')
+    .replace('<replacement-agent-thread-id>', 'thread-minimal-recovery')
+    .replace('<replacement-agent-session-id>', 'session-minimal-recovery')
+    .replace('<implementation-session-id>', 'session-implementation')
+    .replace('<replacement-agent-transcript>', 'src/content-binding-target.js')
+    .replace('<replacement-agent-close-evidence>', 'src/content-binding-target.js');
+  await runCli(['review', 'start', repo, '--id', 'story-content-binding', '--stage', recovery.stage, '--role', recovery.role, '--agent-system', 'codex', '--agent-id', 'agent-minimal-recovery', '--agent-thread-id', 'thread-minimal-recovery', '--agent-session-id', 'session-minimal-recovery']);
+  await runCli(['review', 'close', repo, '--id', 'story-content-binding', '--stage', recovery.stage, '--role', recovery.role, '--agent-id', 'agent-minimal-recovery', '--close-reason', 'completed', '--close-evidence', 'src/content-binding-target.js']);
   await execFileAsync('/bin/sh', ['-c', executable], { cwd: repo, encoding: 'utf8' });
 
   const status = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', recovery.stage, '--json']);
@@ -346,7 +353,7 @@ test('CEF-S-3 review evidence uses inspected input content binding across docs-o
   assert.notEqual(sourceReviewBinding.current_head_sha, sourceReviewBinding.recorded_head_sha);
 });
 
-test('review freshness policy keeps every built-in high-risk gate role strict, preserves inspected files, and invalidates on HEAD movement', async () => {
+test('gate evidence and release risk reviews survive unrelated main advance and rebase when surfaces are unchanged', async () => {
   for (const role of ['gate_evidence', 'release_risk']) {
     const repo = await makeGitRepoWithStory();
     await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'gate', '--role', role]);
@@ -379,26 +386,120 @@ test('review freshness policy keeps every built-in high-risk gate role strict, p
       '--agent-closed'
     ]);
     assert.equal(recordResult.exitCode, 0);
-    assert.equal(recordResult.result.review.freshness_policy.effective_mode, 'strict_head');
-    assert.equal(recordResult.result.review.freshness_policy.source, 'built_in_exception');
-    assert.equal(recordResult.result.review.content_binding.mode, 'strict_head');
+    assert.equal(recordResult.result.review.freshness_policy.effective_mode, 'content_surface');
+    assert.equal(recordResult.result.review.freshness_policy.source, 'content_surface_default');
+    assert.equal(recordResult.result.review.content_binding.mode, 'content_surface');
     assert.deepEqual(
       recordResult.result.review.content_binding.surface_files.map((file) => file.path),
       ['src/content-binding-target.js']
     );
     assert.match(recordResult.result.review.content_binding.surface_hash, /^[a-f0-9]{64}$/);
 
-    await writeFile(path.join(repo, 'docs', 'notes.md'), `# Notes\n\n${role} must stale.\n`);
+    await git(repo, ['switch', 'main']);
+    await writeFile(path.join(repo, 'docs', 'notes.md'), `# Notes\n\n${role} surface is unchanged.\n`);
     await git(repo, ['add', 'docs/notes.md']);
-    await git(repo, ['commit', '-m', `docs: advance head after ${role}`]);
+    await git(repo, ['commit', '-m', `docs: advance main after ${role}`]);
+    await git(repo, ['switch', 'feature/content-binding']);
+
+    const unchangedHeadStatus = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'gate', '--json']);
+    const unchangedHeadRole = unchangedHeadStatus.result.stages[0].roles.find((item) => item.role === role);
+    assert.equal(unchangedHeadRole.binding_status, 'current');
+
+    await git(repo, ['rebase', 'main']);
     const status = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'gate', '--json']);
-    const staleRole = status.result.stages[0].roles.find((item) => item.role === role);
+    const currentRole = status.result.stages[0].roles.find((item) => item.role === role);
+    assert.equal(currentRole.binding_status, 'current');
+    assert.equal(['unverified_agent', 'weak_agent_provenance'].includes(currentRole.effective_status), true);
+    assert.equal(['unverified_agent', 'weak_agent_provenance'].includes(currentRole.provenance_status), true);
+    assert.match(currentRole.stale_reason, /content-bound evidence surface is current/);
+
+    await writeFile(path.join(repo, 'src', 'content-binding-target.js'), 'export const value = 3;\n');
+    const changedStatus = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'gate', '--json']);
+    const staleRole = changedStatus.result.stages[0].roles.find((item) => item.role === role);
     assert.equal(staleRole.binding_status, 'stale');
-    assert.match(staleRole.stale_reason, /recorded for .*current head/);
+    assert.deepEqual(staleRole.content_binding.changed_files, ['src/content-binding-target.js']);
   }
 });
 
-test('role policy can explicitly narrow a built-in strict exception to content surface', async () => {
+test('merge reuse invalidates only the role whose projection lineage or release impact surface changed', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'contracts'), { recursive: true });
+  await writeFile(path.join(repo, 'contracts', 'projection-lineage.json'), '{"source":"review-plan","version":1}\n');
+  await writeFile(path.join(repo, 'contracts', 'release-impact.json'), '{"rollback":"restore-built-in-policy","version":1}\n');
+  await git(repo, ['add', 'contracts/projection-lineage.json', 'contracts/release-impact.json']);
+  await git(repo, ['commit', '-m', 'test: add role-specific review surfaces']);
+
+  const roleInputs = new Map([
+    ['gate_evidence', 'contracts/projection-lineage.json'],
+    ['release_risk', 'contracts/release-impact.json']
+  ]);
+  for (const [role, inspectionInput] of roleInputs) {
+    await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'gate', '--role', role]);
+    const recorded = await runCli([
+      'review',
+      'record',
+      repo,
+      '--id',
+      'story-content-binding',
+      '--stage',
+      'gate',
+      '--role',
+      role,
+      '--status',
+      'pass',
+      '--summary',
+      `${role} reviewed its role-specific contract`,
+      '--inspection-summary',
+      `read ${inspectionInput}`,
+      '--inspection-input',
+      inspectionInput,
+      '--judgment-delta',
+      `generic pass -> accepted after inspecting ${inspectionInput}`,
+      '--agent-system',
+      'codex',
+      '--execution-mode',
+      'parallel_subagent',
+      '--agent-id',
+      `codex-${role}-role-surface-review`,
+      '--agent-closed'
+    ]);
+    assert.equal(recorded.exitCode, 0);
+    assert.deepEqual(recorded.result.review.content_binding.surface_files.map((file) => file.path), [inspectionInput]);
+  }
+
+  await git(repo, ['switch', 'main']);
+  await writeFile(path.join(repo, 'docs', 'notes.md'), '# Notes\n\nUnrelated main advance for merge coverage.\n');
+  await git(repo, ['add', 'docs/notes.md']);
+  await git(repo, ['commit', '-m', 'docs: advance main for merge coverage']);
+  await git(repo, ['switch', 'feature/content-binding']);
+  await git(repo, ['merge', '--no-ff', 'main', '-m', 'merge: advance feature without changing review surfaces']);
+
+  const mergedStatus = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'gate', '--json']);
+  for (const role of roleInputs.keys()) {
+    const currentRole = mergedStatus.result.stages[0].roles.find((item) => item.role === role);
+    assert.equal(currentRole.binding_status, 'current');
+  }
+
+  await writeFile(path.join(repo, 'contracts', 'projection-lineage.json'), '{"source":"review-plan","version":2}\n');
+  await git(repo, ['add', 'contracts/projection-lineage.json']);
+  await git(repo, ['commit', '-m', 'test: change projection lineage surface']);
+  const projectionStatus = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'gate', '--json']);
+  const staleGateEvidence = projectionStatus.result.stages[0].roles.find((item) => item.role === 'gate_evidence');
+  const currentReleaseRisk = projectionStatus.result.stages[0].roles.find((item) => item.role === 'release_risk');
+  assert.equal(staleGateEvidence.binding_status, 'stale');
+  assert.deepEqual(staleGateEvidence.content_binding.changed_files, ['contracts/projection-lineage.json']);
+  assert.equal(currentReleaseRisk.binding_status, 'current');
+
+  await writeFile(path.join(repo, 'contracts', 'release-impact.json'), '{"rollback":"restore-built-in-policy","version":2}\n');
+  await git(repo, ['add', 'contracts/release-impact.json']);
+  await git(repo, ['commit', '-m', 'test: change release impact surface']);
+  const releaseStatus = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'gate', '--json']);
+  const staleReleaseRisk = releaseStatus.result.stages[0].roles.find((item) => item.role === 'release_risk');
+  assert.equal(staleReleaseRisk.binding_status, 'stale');
+  assert.deepEqual(staleReleaseRisk.content_binding.changed_files, ['contracts/release-impact.json']);
+});
+
+test('role policy can explicitly retain content surface freshness for gate evidence', async () => {
   const repo = await makeGitRepoWithStory();
   const configPath = path.join(repo, '.vibepro', 'config.json');
   const config = JSON.parse(await readFile(configPath, 'utf8'));
@@ -430,7 +531,7 @@ test('role policy can explicitly narrow a built-in strict exception to content s
     '--inspection-input',
     'src/content-binding-target.js',
     '--judgment-delta',
-    'built-in strict default -> content scoped because the role policy names a complete file surface',
+    'content surface default -> explicit content policy names a complete file surface',
     '--agent-system',
     'codex',
     '--execution-mode',
@@ -458,7 +559,7 @@ test('role policy can explicitly narrow a built-in strict exception to content s
   assert.deepEqual(staleRole.content_binding.changed_files, ['src/content-binding-target.js']);
 });
 
-test('global content-surface default cannot weaken a built-in strict role', async () => {
+test('global content-surface default applies to gate evidence without a built-in strict exception', async () => {
   const repo = await makeGitRepoWithStory();
   const configPath = path.join(repo, '.vibepro', 'config.json');
   const config = JSON.parse(await readFile(configPath, 'utf8'));
@@ -482,13 +583,13 @@ test('global content-surface default cannot weaken a built-in strict role', asyn
     '--status',
     'pass',
     '--summary',
-    'gate evidence keeps its built-in strict policy',
+    'gate evidence uses the configured content surface policy',
     '--inspection-summary',
     'read the implementation surface',
     '--inspection-input',
     'src/content-binding-target.js',
     '--judgment-delta',
-    'global content default -> built-in strict policy retained',
+    'implicit content default -> explicit global content policy retained',
     '--agent-system',
     'codex',
     '--execution-mode',
@@ -498,8 +599,8 @@ test('global content-surface default cannot weaken a built-in strict role', asyn
     '--agent-closed'
   ]);
   assert.equal(recordResult.exitCode, 0);
-  assert.equal(recordResult.result.review.freshness_policy.effective_mode, 'strict_head');
-  assert.equal(recordResult.result.review.freshness_policy.source, 'built_in_exception');
+  assert.equal(recordResult.result.review.freshness_policy.effective_mode, 'content_surface');
+  assert.equal(recordResult.result.review.freshness_policy.source, 'policy_default');
 });
 
 test('review strict HEAD CLI override requires and records an explicit reason', async () => {
@@ -559,7 +660,7 @@ test('review strict HEAD CLI override requires and records an explicit reason', 
   const artifactGate = findGate(prepared, 'gate:artifact_consistency');
   const staleReview = artifactGate.stale_artifact_details.find((item) => item.role === 'runtime_contract');
   const recoveryCommand = staleReview.remediation_commands.find((command) => command.startsWith('vibepro review record'));
-  assert.match(recoveryCommand, /--status <pass\|needs_changes\|block>/);
+  assert.match(recoveryCommand, /--status '<pass\|needs_changes\|block>'/);
   assert.match(recoveryCommand, /--strict-head-binding/);
   assert.match(recoveryCommand, /--strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"/);
   const freshnessGate = findGate(prepared, 'gate:pr_freshness');
@@ -588,7 +689,12 @@ test('review strict HEAD CLI override requires and records an explicit reason', 
     .replace('<pass|needs_changes|block>', 'pass')
     .replace('<agent-id>', 'agent-strict-recovery')
     .replace('<agent-thread-id>', 'thread-strict-recovery')
-    .replaceAll('<artifact>', 'src/content-binding-target.js');
+    .replace('<agent-session-id>', 'session-strict-recovery')
+    .replace('<implementation-session-id>', 'session-implementation')
+    .replace('<agent-transcript>', 'src/content-binding-target.js')
+    .replace('<agent-close-evidence>', 'src/content-binding-target.js');
+  await runCli(['review', 'start', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--role', 'runtime_contract', '--agent-system', 'codex', '--agent-id', 'agent-strict-recovery', '--agent-thread-id', 'thread-strict-recovery', '--agent-session-id', 'session-strict-recovery']);
+  await runCli(['review', 'close', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--role', 'runtime_contract', '--agent-id', 'agent-strict-recovery', '--close-reason', 'completed', '--close-evidence', 'src/content-binding-target.js']);
   await execFileAsync('/bin/sh', ['-c', executableRecovery], { cwd: repo, encoding: 'utf8' });
 
   const status = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--json']);

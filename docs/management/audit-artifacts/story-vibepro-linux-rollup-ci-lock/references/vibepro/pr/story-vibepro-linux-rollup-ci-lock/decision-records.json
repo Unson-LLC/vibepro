@@ -1,0 +1,665 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-linux-rollup-ci-lock",
+  "updated_at": "2026-07-19T02:03:30.860Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+      "expected_root": null,
+      "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784426610860-522505be",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_dag_adjudication:spine:done_evidence",
+      "source_status": "needs_human_judgment",
+      "summary": "Accept pre-PR done evidence with mandatory CI and post-merge observation",
+      "reason": "At the current clean HEAD, artifact-bound focused tests pass 26/26, typecheck passes, and the 192-file VitePress build passes. The exact Linux artifact is directly asserted in package and lock metadata. Ubuntu execution is necessarily observed after PR creation and imported before VibePro merge, then the merged-main release run is monitored; this is a bounded verification sequence, not an unverified completion claim.",
+      "reviewer": "human-authorized-codex",
+      "artifact": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/focused-tests.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/focused-tests.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/focused-tests.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "expected_root": null,
+          "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+        "current_branch": "vibepro/story-vibepro-linux-rollup-ci-lock",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T02:03:30.858Z"
+      },
+      "recorded_at": "2026-07-19T02:03:30.860Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784426214576-0ef6ddd1",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Scope is reviewable as one failure chain",
+      "reason": "The Story and four Spec clauses map the install artifact and projection repair to focused tests and three output surfaces. The independent code, runtime, and UX reviewers all passed the same atomic scope.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/vibepro-linux-rollup-ci-lock.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "expected_root": null,
+          "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+        "current_branch": "vibepro/story-vibepro-linux-rollup-ci-lock",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T01:56:54.575Z"
+      },
+      "recorded_at": "2026-07-19T01:56:54.576Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784426213965-badca260",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": "needs_evidence",
+      "summary": "Rollback and version-skew boundary are explicit",
+      "reason": "The exact optional package version matches Rollup 4.62.2. Reverting this atomic recovery restores the prior lock/projector state; there are no stored objects, schema migrations, feature gates, or downgrade state.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/vibepro-linux-rollup-ci-lock.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "expected_root": null,
+          "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+        "current_branch": "vibepro/story-vibepro-linux-rollup-ci-lock",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T01:56:53.964Z"
+      },
+      "recorded_at": "2026-07-19T01:56:53.965Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784426213342-bff6daf7",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Release operation is fully automatic with owner-visible recovery evidence",
+      "reason": "No operator action is required. The merged-main workflow projects release notes, validates VitePress, deploys, and reports results in GitHub Actions. Rollback is a revert of this atomic commit followed by the same workflow; npm immutable publication behavior is unchanged.",
+      "reviewer": "codex",
+      "artifact": ".github/workflows/post-merge-release.yml",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "expected_root": null,
+          "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+        "current_branch": "vibepro/story-vibepro-linux-rollup-ci-lock",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T01:56:53.341Z"
+      },
+      "recorded_at": "2026-07-19T01:56:53.342Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784426212747-b8c3149e",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:bug_physics_deployment_version_stamp",
+      "source_status": "needs_evidence",
+      "summary": "Bind deployment artifact version to Rollup 4.62.2",
+      "reason": "package.json, the lockfile root entry, the concrete Linux x64 GNU package, and Rollup itself all resolve to 4.62.2; the pre-fix-sensitive test asserts the same value.",
+      "reviewer": "codex",
+      "artifact": "package-lock.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "expected_root": null,
+          "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+        "current_branch": "vibepro/story-vibepro-linux-rollup-ci-lock",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T01:56:52.746Z"
+      },
+      "recorded_at": "2026-07-19T01:56:52.747Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784426212177-abadc98d",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:bug_physics_triage",
+      "source_status": "needs_evidence",
+      "summary": "Classify the incident as deployment artifact and projection failure",
+      "reason": "The observed failures occur before application runtime: Linux npm ci lacks the native Rollup artifact and VitePress rejects repository-relative projected links. The regression suite probes both physical failure points.",
+      "reviewer": "codex",
+      "artifact": "test/post-merge-release.test.js",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "expected_root": null,
+          "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+        "current_branch": "vibepro/story-vibepro-linux-rollup-ci-lock",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T01:56:52.175Z"
+      },
+      "recorded_at": "2026-07-19T01:56:52.177Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784426211518-6c0ce9c6",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Resolve split analysis in favor of a bundled recovery",
+      "reason": "All changed lanes share one failure chain and rollback boundary: merged-main release install, projection, validation, and deploy. One reviewer can evaluate them through LRCL-001 through LRCL-004 and the focused fixture.",
+      "reviewer": "codex",
+      "artifact": "docs/specs/vibepro-linux-rollup-ci-lock.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "expected_root": null,
+          "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+        "current_branch": "vibepro/story-vibepro-linux-rollup-ci-lock",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T01:56:51.517Z"
+      },
+      "recorded_at": "2026-07-19T01:56:51.519Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784426210938-2769acc4",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep the recovery as one atomic PR",
+      "reason": "The root optional dependency, concrete lockfile entry, release-link projector, repaired generated outputs, tests, and Story/Spec form one deployable recovery. Splitting them would temporarily leave either Linux npm ci or VitePress release projection broken and would separate generated outputs from their enforcing code.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-linux-rollup-ci-lock.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/verification-evidence.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "expected_root": null,
+          "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+        "current_branch": "vibepro/story-vibepro-linux-rollup-ci-lock",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T01:56:50.937Z"
+      },
+      "recorded_at": "2026-07-19T01:56:50.938Z"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "open": 0,
+    "by_type": {
+      "needs_review": 8
+    },
+    "by_status": {
+      "accepted": 8
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+        "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+        "expected_root": null,
+        "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+        "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784426610860-522505be",
+      "story_id": "story-vibepro-linux-rollup-ci-lock",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_dag_adjudication:spine:done_evidence",
+      "source_status": "needs_human_judgment",
+      "summary": "Accept pre-PR done evidence with mandatory CI and post-merge observation",
+      "reason": "At the current clean HEAD, artifact-bound focused tests pass 26/26, typecheck passes, and the 192-file VitePress build passes. The exact Linux artifact is directly asserted in package and lock metadata. Ubuntu execution is necessarily observed after PR creation and imported before VibePro merge, then the merged-main release run is monitored; this is a bounded verification sequence, not an unverified completion claim.",
+      "reviewer": "human-authorized-codex",
+      "artifact": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/focused-tests.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/focused-tests.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/docs-build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/evidence/story-vibepro-linux-rollup-ci-lock/focused-tests.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+          "expected_root": null,
+          "expected_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "current_head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "4d57b80973d64a428f4dc8f765b857fd3261e315",
+        "current_branch": "vibepro/story-vibepro-linux-rollup-ci-lock",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-19T02:03:30.858Z"
+      },
+      "recorded_at": "2026-07-19T02:03:30.860Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-linux-rollup-ci-lock/decision-records.json"
+}

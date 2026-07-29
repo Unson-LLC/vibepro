@@ -1,0 +1,80 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-infra-story-dependency-cut",
+  "updated_at": "2026-07-24T16:15:51.647Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "git diff --stat on src/ only: +33/-31 lines (net +2), a pure relocation with no new logic added. The larger total diff is almost entirely docs/design-ssot.json Story/Spec registration scaffolding plus a 4-line target-model.json reclassification, matching the clause's actual intent.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:15:51.645Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Reran the exact targeted unit command at current HEAD: 88/88 pass, exit 0. Reran the two e2e files: 12/12 pass, exit 0. Directly relevant targeted+e2e suites for the changed files and their callers are independently confirmed green.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:15:51.245Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Diffed target-model.json HEAD~1..HEAD: the only change is decision-records.js moving between the workspace-infra and story modules' paths arrays; allowed_dependencies is byte-identical. decision-records.js's own imports are only workspace.js/run-context-capsule.js/artifact-routing.js, its exported functions are all decision-record CRUD/rendering with no story-catalog function, and its only consumers repo-wide are cli.js, managed-worktree.js, managed-worktree-gate.js, and pr-manager.js.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:15:50.856Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Diffed the full violation module-pair sets between fresh parent (65 pairs) and HEAD (64 pairs) conformance runs: zero pairs appear in HEAD that were absent in parent; the only change is one pair (story -> gate-pr) dropping to zero, which AC-3 explicitly permits.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:15:50.454Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Fresh triple-repeated measurement: violation_count 85 (parent, stable x3) -> 84 (HEAD, stable x3). Not increased; decreased by 1.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:15:50.063Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Independently reproduced at the finest possible granularity (individual file-pair edge counts, not just aggregates), in two fresh git worktrees (HEAD and HEAD~1), each with fresh graph --run-graphify + architecture conformance --json reruns x3. Parent commit stably measured 46 workspace-infra->story edges / 85 violations across 3 reruns; HEAD stably measured 45 edges / 84 violations across 3 reruns. Decomposing by exact file pair: parent has 9 pairs summing to 46, including managed-worktree.js->decision-records.js:1, managed-worktree-gate.js->decision-records.js:1, guard.js->story-manager.js:1, and workspace.js->story-manager.js:21. HEAD has the same pairs minus those 3, and workspace.js->story-manager.js increased from 21 to 23 (+2), the claimed noise offset, confirmed via grep that workspace.js has zero occurrences of story-manager on both commits. 46-3+2=45 reconciles exactly.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8c9e8cfe0d072f9e",
+        "session_ref": "/Users/ksato/.claude/projects/-Users-ksato-workspace-code-vibepro/c22a9134-8f86-46bc-ab42-6faec0ea73c4/subagents/agent-a8c9e8cfe0d072f9e.jsonl"
+      },
+      "head_commit": "b99ab72207d62e00cd178c1792b106f8adfc896a",
+      "recorded_at": "2026-07-24T16:15:49.678Z"
+    }
+  ]
+}

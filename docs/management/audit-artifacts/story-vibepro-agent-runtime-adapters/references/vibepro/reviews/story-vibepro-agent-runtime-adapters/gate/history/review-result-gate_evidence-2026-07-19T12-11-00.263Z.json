@@ -1,0 +1,144 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-agent-runtime-adapters",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "block",
+  "summary": "Prior targeted findings are fixed, but implementation HEAD transition and persisted review provenance bridge remain unsafe",
+  "findings": [
+    {
+      "severity": "critical",
+      "id": "implementation-head-transition-uncollectable",
+      "detail": "pollRuntime requires the pre-dispatch HEAD, so a committing implementation agent cannot reach result collection"
+    },
+    {
+      "severity": "high",
+      "id": "review-gate-bridge-trusts-unvalidated-persisted-provenance",
+      "detail": "recordRuntimeReview upgrades persisted state without revalidating mutation HEAD identity session and execution mode"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected exact clean HEAD 2e0611a6 and reran four focused suites; 119 passed, then production path tracing exposed two uncovered boundary defects",
+    "evidence": "node --test test/agent-runtime-adapter.test.js test/guarded-run-session.test.js test/safe-action-orchestrator.test.js test/next-best-action-controller.test.js",
+    "inputs": [
+      "src/agent-runtime-adapter.js",
+      "src/guarded-run-session.js",
+      "test/guarded-run-session.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Focused tests suggested completion, but production path tracing showed committed implementation result collection is unreachable and persisted review provenance can be forged"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+    "expected_root": null,
+    "expected_head_sha": "2e0611a640cfcc86ff42d712038d528604e28479",
+    "current_head_sha": "2e0611a640cfcc86ff42d712038d528604e28479",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-agent-runtime-adapters",
+      "expected_root": null,
+      "expected_head_sha": "2e0611a640cfcc86ff42d712038d528604e28479",
+      "current_head_sha": "2e0611a640cfcc86ff42d712038d528604e28479",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-19T12:11:00.263Z",
+  "git_context": {
+    "head_sha": "2e0611a640cfcc86ff42d712038d528604e28479",
+    "current_branch": "codex/story-vibepro-agent-runtime-adapters",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T12:11:00.255Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "final gate review is bound to the exact implementation HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "2e0611a640cfcc86ff42d712038d528604e28479",
+    "surface_files": [
+      {
+        "path": "src/agent-runtime-adapter.js",
+        "sha256": "9f53f92814cf5773b96a31b191593d60e4779139e6a5e152e348fb8f367f77a1",
+        "size": 21626
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "0717da32598aded5e73a2f7e3c967aff33b45f9e4d19a40b40454005fbdccd0a",
+        "size": 71180
+      },
+      {
+        "path": "test/guarded-run-session.test.js",
+        "sha256": "a1861462cbdc40ade22b2ad8b145d50e19fea735ac83da42a10a7836cd129c32",
+        "size": 117367
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "31b1c52aa96cc1bf5e2ef83e597869a49c0a8996ae11f71e42665bcf1447e1a9"
+  },
+  "source_fingerprint": "fd5d37428f009bf25acd8d34ade41742efd2ec20c72a0754ca02660b3718890b",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/story6_current_gate_review",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-agent-runtime-adapters/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "independent-current-head-block",
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

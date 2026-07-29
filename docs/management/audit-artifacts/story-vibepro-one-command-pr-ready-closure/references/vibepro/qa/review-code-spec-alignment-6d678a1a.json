@@ -1,0 +1,58 @@
+{
+  "status": "pass",
+  "summary": "At frozen HEAD 6d678a1a, the implementation matches the One-command PR-ready Closure Story, architecture, registered Spec, and Task projection: the public CLI composes the run-session-owned autonomous DAG, typed stops and resumptions are persisted, repair replays verification and independent review against the actual current HEAD, and PR creation, merge, waiver, and material external effects remain outside autonomous authority. The predecessor runtime connector and independent-review owners are reused rather than reimplemented. OCR-S-8 and final Gate regeneration remain the intentional post-review delivery-closure steps.",
+  "inspection_summary": "Reviewed OCR-S-1..8, C-OCR-1, INV-OCR-2/3, S-OCR-4..6, all six projected Tasks, the changed production composition and state-machine paths, public run/resume/status/cancel E2E, typed-stop and human-decision persistence, current-HEAD verification, dogfood runtime state, predecessor merge records, roadmap lifecycle, and the regression_guard and path_surface_coverage lenses.",
+  "inspection_evidence": "Frozen HEAD 6d678a1ae53844703e3c42085b9eddbbbc89ca32; .vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json; .vibepro/qa/one-command-runtime-e2e.json; .vibepro/executions/story-vibepro-one-command-pr-ready-closure/runs/run-20260723T121501Z-793c40ad/state.json; codebase-memory search_graph/search_code for createGuardedRunSession, buildActionRunners, runSafeActionPlan, runCli, and createGuardedIndependentReviewRunner",
+  "inspection_inputs": [
+    "git rev-parse HEAD -> 6d678a1ae53844703e3c42085b9eddbbbc89ca32",
+    "git diff --name-status origin/main...HEAD",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/review-request-code_spec_alignment.md",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md#sha256:a01b367b935fcbc70747710535fc811e58db547e6a2154a9f348920a41565259",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md#sha256:39e782a841ca6ad666131a8cb7dfd80a5ee733835873e254f54c993647c82c91",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json#sha256:04911487fef95e4930a60af25a2e2fa2203f1377c4e25b2746bc1c315cc75464",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md#sha256:fda27e3c8699c6a388985bac4cc0c84cd281a83e284a20a7300d4dc740f2f9a4",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/tasks.json#sha256:926389039d5709527344dca54dd07e118a2735a2cd625a543c6675ab0e852f22",
+    "src/one-command-pr-ready-closure.js#sha256:f06c811a7e01853bba95c9d7d807bc102153dc4c3292a5251a4c9d26645f68fd",
+    "src/safe-action-orchestrator.js#sha256:3d83181335666ee470a6cd4b8daeaf9e339c2c9eea10bfd19d594299229a8735",
+    "src/guarded-run-session.js#sha256:fadf01bcce5b04fd6975f8d6b756b1d4a8e7e15a46e4734e8b99177577511494",
+    "src/cli.js#sha256:ffcf2da2364c5f564acd2d1535abc167ae7210c482ca30f116fa03cdd0b2897d",
+    "src/agent-runtime-adapter.js#sha256:d17f286a9a42c65f8649e8d07c7932a2099c12098db82a7e68efc021b0946a85",
+    "src/agent-runtime-connectors.js#sha256:8408b47801cc6112e721a835824ff58793d543f03be8051788c3840e17f0333e",
+    "src/independent-review-orchestrator.js#sha256:820d06a9a049c4b10845cfa561563a51563f3ab5c12cb53a4ac544c4ac99f456",
+    "src/human-decision-checkpoint.js#sha256:e96822ec2387267335df1d23765628a4119ac4f396128330974b3e94c08a4a2b",
+    "src/guarded-stop-codes.js#sha256:eb95a48876431bd61e5c9a49118a7c024ba5ccc7f3bf8ed5c618c5da4f14e52e",
+    "src/task-manager.js#changed target-file inference and reference-only exclusion paths",
+    "test/one-command-pr-ready-closure.test.js#sha256:766bf11ae15e69d2af8a74d39ba6c8cbe15683c2ec678b5aabad6a7f13ef0e4d",
+    "test/safe-action-orchestrator.test.js#sha256:7ff46cf0fbd4f2398d776fe4f49b0cb7f69a4e99ee9490f528f33d64dd8a0de1",
+    "test/guarded-run-session.test.js#sha256:f96728086704b02d584944f07db3c015201b55a6eec643db8e658742f3dde9cc",
+    "test/independent-review-orchestrator.test.js#sha256:56bfcfa412b84dfb5b4866c11cc96b4839e46002eeaa9b84def5ac39d7e7340c",
+    "test/agent-runtime-adapter.test.js#sha256:6ca2b87e1df98dc0d9a84b36ac36c17c8f02760279599555a56df8974f9f379a",
+    "test/scope-boundary-gate.test.js#sha256:7d5ce67e759f76832416a8283b440b66dd12bf21f74e6b96d3993055008abd1d",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts#sha256:65a9a1f2f413fd08eff9b619dcb21f6ceec483fe4883e4b435123ee9ef5580b5",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json#sha256:44d836a529c0afed4286d6843fab01b030f9f1215767a4ef03478e93d7503283",
+    ".vibepro/executions/story-vibepro-one-command-pr-ready-closure/runs/run-20260723T121501Z-793c40ad/state.json#sha256:2a50b9b4571dd7835141fed7c0e910292e595399cd3d89894bf21f1501bf9034",
+    "docs/management/stories/active/story-vibepro-production-runtime-connectors.md#merged PR 377 at 0c11f4fb9081407bb57ac59c3f6ca696faefa21f",
+    "docs/management/stories/active/story-vibepro-independent-review-orchestration.md#merged PR 382 at b235b36df6a225c49f4a98340c381eb2d8b8ad1c",
+    "docs/management/stories/active/story-vibepro-autonomous-implementation-closure-roadmap.md#sha256:9d77fec7531ce57f04e6c2a029fe98a9d95b3467a9f35ba94b01d50d805e9ae0",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json#stale-at-97c7684-not-used-as-current-Gate-proof",
+    ".vibepro/qa/review-architecture-boundary-6d678a1a.json#current-head-conformance-and-boundary-review"
+  ],
+  "judgment_delta": [
+    "Initial concern: the prior code-spec review and pr-prepare artifact were bound to 97c7684 and could not establish the frozen release-candidate surface. Final judgment: direct source inspection plus verification-evidence.json binds E2E 5/5, integration 4/4, unit 254/254, and typecheck pass to exact HEAD 6d678a1a; the stale pr-prepare artifact is explicitly excluded from current Gate claims.",
+    "Initial concern: a one-command owner could bypass the run-session boundary or duplicate the merged Production Runtime Connectors and Independent Review Orchestration implementations. Final judgment: src/cli.js remains the outer composition adapter, guarded-run-session injects callbacks into the new owner, the new owner has no CLI import, and the existing connector/review owners are composed directly.",
+    "Initial concern: repair or an injected final_prepare callback could preserve stale review/Gate evidence or accept a forged output HEAD. Final judgment: safe-action-orchestrator resolves the repository HEAD after every action, rebinds the remaining suffix, only permits needs_changes repair to replay from verify, and final_prepare is wrapped to require pr-prepare for the actual current HEAD before pr_ready.",
+    "Initial concern: typed-stop and recovery coverage might prove only an injected happy path. Final judgment: the production-shaped E2E exercises a real managed Git worktree, implementation and repair commits, a separate read-only review session, no_progress, exact seven-field human decisions, verification_failed, ci_pending, quota resume, timeout containment, public CLI runtime_unavailable/resume/status/cancel, and final current-HEAD Gate evaluation.",
+    "Initial concern: completing projected Task 6 while OCR-S-8 remains unchecked could falsely close delivery. Final judgment: the Story, Spec, and roadmap consistently define two-phase closure; implementation review may pass while the Story and roadmap remain active until current-HEAD Gate/CI evidence, closure commit and rebind, and explicit human-authorized execute merge."
+  ],
+  "findings": [],
+  "lenses": {
+    "regression_guard": {
+      "status": "pass",
+      "evidence": "Existing no-until persistence, explicit legacy/profile/provider overrides, disable fallback, status/resume/cancel behavior, strict current-HEAD enforcement, cancellation precedence, runtime timeout/quota recovery, and critical-waiver rejection are covered in the unit/integration/E2E surfaces. Current-HEAD recorded evidence is unit 254/254, integration 4/4, E2E 5/5, and typecheck pass. Architecture conformance is 80 violations versus origin/main baseline 81, so the target-model boundary is not worsened."
+    },
+    "path_surface_coverage": {
+      "status": "pass",
+      "evidence": "Inspected public execute run with and without --until, autonomous defaults, explicit legacy and disable paths, provider fallback, JSON and human status, resume, cancel, managed-worktree runtime dispatch, human-decision artifacts, action/retry/transition journals, independent review needs_changes repair, current-HEAD final_prepare, task target inference, Story/Spec/roadmap outputs, and unavailable-runtime dogfood. Stops are typed and persisted with recovery instead of being silently suppressed; PR creation, merge, waiver, deploy, publish, and material external effects are absent from the autonomous action boundary."
+    }
+  }
+}

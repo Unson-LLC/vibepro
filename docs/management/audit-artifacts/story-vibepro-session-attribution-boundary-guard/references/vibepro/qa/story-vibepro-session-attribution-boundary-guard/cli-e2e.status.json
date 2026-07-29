@@ -1,0 +1,11 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head_sha": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+  "command": "node --test --test-reporter=dot --test-concurrency=2 test/session-efficiency-audit.test.js test/responsibility-authority.test.js",
+  "observed": {
+    "tests": 57,
+    "passed": 57,
+    "failed": 0
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-import-based-conformance",
+      "decision_id": "decision-1784935849436-387225ea",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "review_owner_map evidence requires strict_head-bound, separate-session-identity-declared Agent Review roles across ALL configured stages (including planning_spec and preview stages not applicable to this measurement-only CLI change with no UI/preview surface). This Story's content_surface-bound gate-stage reviews (gate_evidence/pr_split_scope/release_risk) already independently and adversarially reviewed this diff across 3 rounds -- including catching and requiring a fix for a real defect (an undocumented new fail-loud path) -- which is materially stronger scope-reviewability evidence than a mechanical ownership-map artifact would provide. The diff remains one coherent, single-intent PR (7 files, all serving the one Story) per the already-accepted pr_scope_judgment/split_resolution waivers.",
+      "artifact": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "activation_candidates": [
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T23:31:12.927Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:1161|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-import-based-conformance",
+      "decision_id": "decision-1784935849436-387225ea",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "review_owner_map evidence requires strict_head-bound, separate-session-identity-declared Agent Review roles across ALL configured stages (including planning_spec and preview stages not applicable to this measurement-only CLI change with no UI/preview surface). This Story's content_surface-bound gate-stage reviews (gate_evidence/pr_split_scope/release_risk) already independently and adversarially reviewed this diff across 3 rounds -- including catching and requiring a fix for a real defect (an undocumented new fail-loud path) -- which is materially stronger scope-reviewability evidence than a mechanical ownership-map artifact would provide. The diff remains one coherent, single-intent PR (7 files, all serving the one Story) per the already-accepted pr_scope_judgment/split_resolution waivers.",
+      "artifact": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:1161",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-24T23:43:23.771Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

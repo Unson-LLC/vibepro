@@ -1,0 +1,80 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-session-attribution-boundary-guard",
+  "updated_at": "2026-07-21T17:57:46.682Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Unavailable attribution is explicit in src/session-efficiency-audit.js:1208-1245; omitted and failed inference cases assert status=unavailable at test/session-efficiency-audit.test.js:1573-1606.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-e9c3-7bf1-8eb7-a65aec7b366f",
+        "session_ref": "subagent:019f85d0-e9c3-7bf1-8eb7-a65aec7b366f"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T17:57:46.681Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "pr prepare persists session_boundary at src/pr-manager.js:632-636; tests verify non-blocking delegation and unchanged gates at test/session-efficiency-audit.test.js:1609-1652.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-e9c3-7bf1-8eb7-a65aec7b366f",
+        "session_ref": "subagent:019f85d0-e9c3-7bf1-8eb7-a65aec7b366f"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T17:57:46.538Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Threshold/risk and separate blocker are implemented at src/session-efficiency-audit.js:1158-1193,2682-2687; threshold and mixed/non-mixed tests pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-e9c3-7bf1-8eb7-a65aec7b366f",
+        "session_ref": "subagent:019f85d0-e9c3-7bf1-8eb7-a65aec7b366f"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T17:57:46.395Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Exclusive buckets and total are implemented at src/session-efficiency-audit.js:1092-1156; deterministic repeat and sum checks pass at test/session-efficiency-audit.test.js:1299-1328.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-e9c3-7bf1-8eb7-a65aec7b366f",
+        "session_ref": "subagent:019f85d0-e9c3-7bf1-8eb7-a65aec7b366f"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T17:57:46.262Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Single-story regression asserts mixed_parent=false and unchanged token/artifact totals at test/session-efficiency-audit.test.js:1443-1479.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-e9c3-7bf1-8eb7-a65aec7b366f",
+        "session_ref": "subagent:019f85d0-e9c3-7bf1-8eb7-a65aec7b366f"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T17:57:46.110Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "buildSessionAttribution returns mixed-parent, detected IDs, and ratio; tests assert these at test/session-efficiency-audit.test.js:1289-1312.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-e9c3-7bf1-8eb7-a65aec7b366f",
+        "session_ref": "subagent:019f85d0-e9c3-7bf1-8eb7-a65aec7b366f"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T17:57:45.974Z"
+    }
+  ]
+}

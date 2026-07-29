@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "summary": "9415adf4 reclassifies a closed timeout predecessor as replaced when a replacement_for entry exists, and regression coverage keeps scope_reviewed from substituting review_owner_map.",
+  "inspection_summary": "Reviewed the lifecycle classification, accepted scope evidence boundary, and focused regression tests.",
+  "inspection_evidence": "src/agent-review.js:3154-3177; src/pr-manager.js:8609-8626; test/vibepro-cli.test.js focused lifecycle and scope tests passed.",
+  "inspection_inputs": [
+    "src/agent-review.js",
+    "src/pr-manager.js",
+    "test/vibepro-cli.test.js"
+  ],
+  "findings": []
+}

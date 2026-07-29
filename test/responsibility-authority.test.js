@@ -120,6 +120,74 @@ test('resolver accepts verify-record git context and observed values as current 
   assert.equal(buildResponsibilityAuthorityGate(result).status, 'passed');
 });
 
+test('resolver accepts evidence whose user scope is clean while generated artifacts leave the raw worktree dirty', async () => {
+  const repo = await makeFixtureRepo();
+  await writeResponsibilityFixture(repo);
+  await writeFile(path.join(repo, 'src', 'cleanup-worker.js'), 'export const symbol = "metadata.awaitingProductionGenerationStart";\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/cleanup-worker.js'] },
+    fileGroups: { source: { files: ['src/cleanup-worker.js'] } },
+    changeClassification: { risk_surfaces: ['core_workflow_state'] },
+    verificationEvidence: {
+      commands: [{
+        kind: 'unit',
+        status: 'pass',
+        command: 'npm test',
+        summary: 'unit_regression cleanup_recovery_replay GEN-STATE-001',
+        git_context: {
+          head_sha: 'abc123',
+          // `dirty` is the user-dirty scope. `raw_dirty` remains diagnostic
+          // evidence that a current generated projection was rendered.
+          dirty: false,
+          raw_dirty: true,
+          user_status_fingerprint_hash: 'generated-projection-excluded'
+        },
+        observation: {
+          targets: ['GEN-STATE-001'],
+          scenarios: ['cleanup recovery replay']
+        }
+      }]
+    }
+  });
+
+  assert.equal(result.status, 'passed');
+  assert.equal(result.summary.missing_evidence_count, 0);
+});
+
+test('resolver still rejects current-head evidence when the user-dirty scope contains a manual edit', async () => {
+  const repo = await makeFixtureRepo();
+  await writeResponsibilityFixture(repo);
+  await writeFile(path.join(repo, 'src', 'cleanup-worker.js'), 'export const symbol = "metadata.awaitingProductionGenerationStart";\n');
+
+  const result = await resolveResponsibilityAuthority(repo, {
+    git: { changed_files: ['src/cleanup-worker.js'] },
+    fileGroups: { source: { files: ['src/cleanup-worker.js'] } },
+    changeClassification: { risk_surfaces: ['core_workflow_state'] },
+    verificationEvidence: {
+      commands: [{
+        kind: 'unit',
+        status: 'pass',
+        command: 'npm test',
+        summary: 'unit_regression cleanup_recovery_replay GEN-STATE-001',
+        git_context: {
+          head_sha: 'abc123',
+          dirty: true,
+          raw_dirty: true,
+          user_status_fingerprint_hash: 'manual-edit'
+        },
+        observation: {
+          targets: ['GEN-STATE-001'],
+          scenarios: ['cleanup recovery replay']
+        }
+      }]
+    }
+  });
+
+  assert.equal(result.status, 'stale');
+  assert.deepEqual(result.matched_responsibilities[0].stale_evidence.sort(), ['cleanup_recovery_replay', 'current_head_verification', 'unit_regression'].sort());
+});
+
 test('resolver does not satisfy contract evidence with unrelated generic unit pass', async () => {
   const repo = await makeFixtureRepo();
   await writeResponsibilityFixture(repo);
@@ -201,6 +269,45 @@ test('resolver emits no_registered_authority for unregistered high-risk state su
   assert.equal(result.summary.unregistered_candidate_count, 1);
   assert.equal(result.unregistered_candidates[0].id, 'no_registered_authority');
   assert.equal(buildResponsibilityAuthorityGate(result).status, 'needs_review');
+});
+
+test('resolver uses the accepted Run-lineage Architecture registry contract', async () => {
+  const result = await resolveResponsibilityAuthority(REPO_ROOT, {
+    git: {
+      changed_files: [
+        'src/human-decision-checkpoint.js',
+        'src/run-context-capsule.js',
+        'src/run-lineage.js'
+      ]
+    },
+    fileGroups: {
+      source: {
+        files: [
+          'src/human-decision-checkpoint.js',
+          'src/run-context-capsule.js',
+          'src/run-lineage.js'
+        ]
+      }
+    },
+    changeClassification: {
+      risk_surfaces: ['core_workflow_state', 'verification_evidence', 'review_lifecycle']
+    },
+    storySource: {
+      title: 'Thread分離に依存せずRun lineageでstory attributionを確定する',
+      content: 'Guarded Run lineage authority and context capsule handoff',
+      acceptance_criteria: []
+    }
+  });
+
+  const matched = result.matched_responsibilities.find((item) => item.id === 'vibepro.run_lineage.explicit_attribution');
+  assert.ok(matched);
+  assert.equal(matched.primary_authority.ref, 'docs/architecture/story-vibepro-explicit-run-attribution-lineage.md#architecture');
+  assert.deepEqual(matched.owned_surfaces.paths, [
+    'src/run-lineage.js',
+    'src/run-context-capsule.js',
+    'src/human-decision-checkpoint.js'
+  ]);
+  assert.equal(result.unregistered_candidates.some((item) => item.paths.some((file) => matched.owned_surfaces.paths.includes(file))), false);
 });
 
 test('resolver does not classify derive-only workspace status as an unregistered state responsibility', async () => {
@@ -461,6 +568,51 @@ test('root registry resolves VibePro core responsibility authorities with contra
     for (const evidenceToken of evidenceTokens) {
       assert.equal(matched.matched_evidence.some((evidence) => evidence.evidence === evidenceToken), true);
     }
+  }
+});
+
+test('resolver prefers contract-bound evidence over an earlier unqualified scenario match', async () => {
+  const qualifiedCommand = 'node --test test/responsibility-authority.test.js test/session-efficiency-audit.test.js';
+  const result = await resolveResponsibilityAuthority(REPO_ROOT, {
+    git: { changed_files: ['src/session-efficiency-audit.js'] },
+    fileGroups: { source: { files: ['src/session-efficiency-audit.js'] } },
+    changeClassification: { risk_surfaces: ['verification_evidence'] },
+    storySource: {
+      content: 'vibepro.runtime_cost.telemetry_ingestion VIBE-CORE-COST-001',
+      acceptance_criteria: []
+    },
+    verificationEvidence: {
+      commands: [
+        {
+          kind: 'e2e',
+          status: 'pass',
+          command: 'node --test test/vibepro-cli.test.js',
+          summary: 'Atomic scope replay',
+          binding: { status: 'current' },
+          observation: { scenarios: ['integration_runtime_path', 'negative_path'] }
+        },
+        {
+          kind: 'unit',
+          status: 'pass',
+          command: qualifiedCommand,
+          summary: '49 contract responsibility tests passed',
+          binding: { status: 'current' },
+          observation: {
+            targets: ['src/session-efficiency-audit.js', 'VIBE-CORE-COST-001'],
+            scenarios: ['unit_regression', 'integration_runtime_path', 'negative_path']
+          }
+        }
+      ]
+    }
+  });
+
+  const matched = result.matched_responsibilities.find((item) => (
+    item.id === 'vibepro.runtime_cost.telemetry_ingestion'
+  ));
+  assert.ok(matched);
+  assert.equal(matched.evidence_status, 'passed');
+  for (const evidence of ['integration_runtime_path', 'negative_path']) {
+    assert.equal(matched.matched_evidence.find((item) => item.evidence === evidence)?.command, qualifiedCommand);
   }
 });
 

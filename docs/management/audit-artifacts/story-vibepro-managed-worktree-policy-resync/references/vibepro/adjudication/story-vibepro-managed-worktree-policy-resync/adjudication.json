@@ -1,0 +1,80 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-managed-worktree-policy-resync",
+  "updated_at": "2026-07-21T15:15:14.636Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "必須5シナリオが実git worktreeで引き続きpass（本コミットの影響なし）",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-evidence-adjudicator-78982951",
+        "session_ref": "a9a8db63fe10a9e27"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:15:14.627Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "source不変。worktree内同期とsame-path skipの両テスト再実行pass",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-evidence-adjudicator-78982951",
+        "session_ref": "a9a8db63fe10a9e27"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:15:12.987Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "本コミットは監査を強化する方向: (1)支配的経路buildManagedWorktreeGate(cli.js 17箇所)の専用テスト追加、(2)デフォルトtext出力のpolicy_sync可視化。新e2e 2本の実行passに加え、裁定者自身のstandaloneスクリプトで(a)gate直接呼び出し後のsynced+worktree実書き込み+last_event引き継ぎ、(b)worktree内getExecutionStatus+renderExecutionStateSummaryの実出力行（policy_sync: failed / policy_sync_reason / headline flag）を独立観測。b0b55e7a/fed325a0の両修正と合わせ、実在する全呼び出し経路の監査マスキングが閉じていることを実装者テストに依存せず再現",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-evidence-adjudicator-78982951",
+        "session_ref": "a9a8db63fe10a9e27"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:15:11.402Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "mirror削除ロジック不変。該当テスト再実行pass",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-evidence-adjudicator-78982951",
+        "session_ref": "a9a8db63fe10a9e27"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:15:09.961Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "POLICY_CONFIG_SECTIONSと凍結挙動不変。親catalog変異の非伝播を78982951で再実行確認",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-evidence-adjudicator-78982951",
+        "session_ref": "a9a8db63fe10a9e27"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:15:08.471Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "src/managed-worktree.jsはdiff空で同期ロジック不変。contract test再実行6/6 passで配布到達をassert確認",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-evidence-adjudicator-78982951",
+        "session_ref": "a9a8db63fe10a9e27"
+      },
+      "head_commit": "78982951496abee40e54e05001139098241e3f8a",
+      "recorded_at": "2026-07-21T15:15:07.039Z"
+    }
+  ]
+}

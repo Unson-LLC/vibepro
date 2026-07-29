@@ -1,0 +1,208 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-attribution-boundary-guard",
+  "created_at": "2026-07-21T18:12:13.670Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-session-attribution-boundary-guard.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-session-attribution-boundary-guard.md, docs/specs/story-vibepro-session-attribution-boundary-guard.vibepro.json)"
+    },
+    "decision_records": {
+      "total": 5,
+      "open": 0,
+      "by_type": {
+        "waiver": 1,
+        "needs_review": 4
+      },
+      "by_status": {
+        "accepted": 5
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "managed branch mismatch: expected codex/story-vibepro-session-attribution-boundary-guard, found codex/story-vibepro-session-attribution-boundary-guard-clean",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+          "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+          "expected_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+          "expected_head_sha": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+          "current_head_sha": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+          "managed_worktree": {
+            "source_repo": "/Users/ksato/.codex/worktrees/95a4/vibepro",
+            "path": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+            "branch": "codex/story-vibepro-session-attribution-boundary-guard",
+            "actual_branch": "codex/story-vibepro-session-attribution-boundary-guard-clean",
+            "current_head_sha": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+            "dirty": false,
+            "dirty_fingerprint": "clean",
+            "raw_dirty": false,
+            "raw_dirty_fingerprint": "clean",
+            "fingerprint_scope": {
+              "user_excludes": [
+                ".vibepro/",
+                ".worktrees/vibepro/"
+              ]
+            }
+          }
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784650262984-4c6e6f66",
+        "story_id": "story-vibepro-session-attribution-boundary-guard",
+        "type": "waiver",
+        "status": "accepted",
+        "source": "gate:vibepro_artifact_policy",
+        "source_status": null,
+        "summary": "Commit the minimal VibePro story registration needed for self-dogfood traceability.",
+        "reason": ".vibepro/config.json contains only the story registration required to reproduce Story-to-Spec-to-PR routing; generated diagnostics and review outputs remain untracked.",
+        "reviewer": "codex",
+        "artifact": ".vibepro/config.json",
+        "verification_evidence_summary": {
+          "count": 5,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/expensive-verification-b6c66dac.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/expensive-verification-b6c66dac.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/verification-evidence.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/expensive-verification-785eff5c.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-session-attribution-boundary-guard/ci-evidence/CodeQL.json",
+              "type": "build",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "managed branch mismatch: expected codex/story-vibepro-session-attribution-boundary-guard, found codex/story-vibepro-session-attribution-boundary-guard-clean",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+            "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+            "expected_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+            "expected_head_sha": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+            "current_head_sha": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+            "managed_worktree": {
+              "source_repo": "/Users/ksato/.codex/worktrees/95a4/vibepro",
+              "path": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+              "branch": "codex/story-vibepro-session-attribution-boundary-guard",
+              "actual_branch": "codex/story-vibepro-session-attribution-boundary-guard-clean",
+              "current_head_sha": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+              "dirty": false,
+              "dirty_fingerprint": "clean",
+              "raw_dirty": false,
+              "raw_dirty_fingerprint": "clean",
+              "fingerprint_scope": {
+                "user_excludes": [
+                  ".vibepro/",
+                  ".worktrees/vibepro/"
+                ]
+              }
+            }
+          }
+        ],
+        "git_context": {
+          "head_sha": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+          "current_branch": "codex/story-vibepro-session-attribution-boundary-guard-clean",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-21T16:11:02.982Z"
+        },
+        "recorded_at": "2026-07-21T16:11:02.984Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-21T18:12:10.203Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "branch": "codex/story-vibepro-session-attribution-boundary-guard-clean",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "eb193c3abdd08935bce472ce2ece6310207be7bb",
+      "origin_main_relation": "ahead",
+      "dirty": true,
+      "dirty_summary": [
+        "M .vibepro/config.json"
+      ]
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

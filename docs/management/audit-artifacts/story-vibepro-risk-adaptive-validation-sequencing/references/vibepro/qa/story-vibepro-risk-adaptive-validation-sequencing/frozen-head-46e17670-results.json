@@ -1,0 +1,8 @@
+{
+  "numTotalTests": 44,
+  "numPassedTests": 44,
+  "numFailedTests": 0,
+  "success": true,
+  "head_sha": "46e17670c87fd46c1d11447185892c3fc5ddc445",
+  "command": "node --test --test-concurrency=2 test/validation-sequencing.test.js test/ci-evidence-import.test.js test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts"
+}

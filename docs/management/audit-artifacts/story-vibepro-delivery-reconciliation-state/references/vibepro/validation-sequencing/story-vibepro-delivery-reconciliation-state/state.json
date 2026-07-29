@@ -1,0 +1,365 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+  "story_id": "story-vibepro-delivery-reconciliation-state",
+  "created_at": "2026-07-24T03:45:41.949Z",
+  "updated_at": "2026-07-24T05:14:06.909Z",
+  "plan": {
+    "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+    "story_id": "story-vibepro-delivery-reconciliation-state",
+    "required": true,
+    "risk_profile": "workflow_heavy",
+    "risk_surfaces": [
+      "auth_boundary",
+      "core_workflow_state",
+      "gate_orchestration",
+      "polling_retry",
+      "regression_blast_radius",
+      "review_lifecycle",
+      "test_coverage",
+      "verification_evidence"
+    ],
+    "preflight_roles": [
+      "architecture_boundary"
+    ],
+    "preflight_reviews": [
+      {
+        "stage": "architecture_spec",
+        "role": "architecture_boundary",
+        "surfaces": [
+          "auth_boundary",
+          "core_workflow_state",
+          "gate_orchestration",
+          "review_lifecycle"
+        ]
+      }
+    ],
+    "preflight_surfaces": [
+      "auth_boundary",
+      "core_workflow_state",
+      "gate_orchestration",
+      "review_lifecycle"
+    ],
+    "preflight_required_inspection_inputs": [
+      "CHANGELOG.md",
+      "design-ssot.json",
+      "docs/architecture/story-vibepro-delivery-reconciliation-state.md",
+      "docs/guide/release-and-audit.md",
+      "docs/management/stories/active/story-vibepro-delivery-reconciliation-state.md",
+      "docs/management/test-plans/story-vibepro-delivery-reconciliation-state.md",
+      "docs/specs/vibepro-cli-status-honesty.md",
+      "docs/specs/vibepro-delivery-reconciliation-state.json",
+      "docs/specs/vibepro-delivery-reconciliation-state.md",
+      "src/adjudication.js",
+      "src/agent-review.js",
+      "src/architecture-readiness.js",
+      "src/artifact-routing.js",
+      "src/canonical-audit.js",
+      "src/ci-evidence.js",
+      "src/cli.js",
+      "src/decision-records.js",
+      "src/evidence-reuse.js",
+      "src/execution-state.js",
+      "src/html-report.js",
+      "src/journey-map.js",
+      "src/managed-worktree.js",
+      "src/merge-gate-authorization.js",
+      "src/merge-manager.js",
+      "src/performance-evidence.js",
+      "src/pr-manager.js",
+      "src/pre-spec-readiness.js",
+      "src/recipe-preflight.js",
+      "src/reconciliation-action.js",
+      "src/responsibility-authority.js",
+      "src/self-dogfood-scanner.js",
+      "src/story-transaction-lock.js",
+      "src/traceability.js",
+      "src/usage-report.js",
+      "src/verification-evidence.js",
+      "src/workspace-status.js",
+      "test/artifact-routing.test.js",
+      "test/canonical-audit-self-contained.test.js",
+      "test/cli-status-honesty.test.js",
+      "test/delivery-reconciliation-state.test.js",
+      "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts",
+      "test/e2e/story-vibepro-pr-readiness-status-ssot-main.test.js",
+      "test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+      "test/execution-state.test.js",
+      "test/fixtures/delivery-reconciliation-scenario-lineage.json",
+      "test/guarded-run-session.test.js",
+      "test/managed-worktree-policy-resync.test.js",
+      "test/merge-gate-authorization.test.js",
+      "test/risk-adaptive-gate.test.js",
+      "test/story-transaction-lock.test.js",
+      "test/traceability-promotion.test.js",
+      "test/traceability-usage-report.test.js",
+      "test/vibepro-cli.test.js",
+      "test/vibepro-gate-check.test.js",
+      "test/workspace-status.test.js"
+    ],
+    "phases": [
+      "targeted_validation",
+      "preflight_review",
+      "code_frozen",
+      "expensive_verification",
+      "final_review"
+    ]
+  },
+  "frozen_binding": {
+    "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+    "test_fingerprint": "18539aa8b1f13a052bf340ef7ac74c0c9052b7bd5e3b4c90a551c88423421ebe",
+    "verification_command": "node --test --test-concurrency=2 --test-name-pattern='DRS-CONTRACT-007|DRS-CONTRACT-008|DRS-CONTRACT-009|DRS-S-5|ROLLBACK-OWNERSHIP-002|configured routes' test/execution-state.test.js test/traceability-usage-report.test.js test/story-transaction-lock.test.js"
+  },
+  "phases": {
+    "targeted_validation": {
+      "status": "passed",
+      "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-24T05:11:22.027Z",
+      "binding": {
+        "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+        "test_fingerprint": "18539aa8b1f13a052bf340ef7ac74c0c9052b7bd5e3b4c90a551c88423421ebe",
+        "verification_command": "node --test --test-concurrency=2 --test-name-pattern='DRS-CONTRACT-007|DRS-CONTRACT-008|DRS-CONTRACT-009|DRS-S-5|ROLLBACK-OWNERSHIP-002|configured routes' test/execution-state.test.js test/traceability-usage-report.test.js test/story-transaction-lock.test.js"
+      }
+    },
+    "preflight_review": {
+      "status": "passed",
+      "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/architecture_spec/review-result-architecture_boundary.json",
+        ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/architecture_spec/review-result-architecture_boundary.json",
+        ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/architecture_spec/review-result-architecture_boundary.json",
+        ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/architecture_spec/review-result-architecture_boundary.json",
+        ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/architecture_spec/review-result-architecture_boundary.json",
+        ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/architecture_spec/review-result-architecture_boundary.json",
+        ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/architecture_spec/review-result-architecture_boundary.json"
+      ],
+      "record_type": "advisory_preflight",
+      "findings": [],
+      "dispositions": [],
+      "satisfies_final_review": false,
+      "recorded_at": "2026-07-24T05:11:53.035Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-delivery-reconciliation-state",
+        "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "architecture_boundary",
+        "stage": "architecture_spec",
+        "inspection_summary": "risk_surfaces=auth_boundary,core_workflow_state,gate_orchestration,review_lifecycle; inspected the complete planned changed-path union; no findings.",
+        "inspection_inputs": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs",
+          "src",
+          "test",
+          "docs/architecture/story-vibepro-delivery-reconciliation-state.md",
+          "src/merge-manager.js",
+          "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts"
+        ]
+      },
+      "binding": {
+        "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+        "test_fingerprint": "18539aa8b1f13a052bf340ef7ac74c0c9052b7bd5e3b4c90a551c88423421ebe",
+        "verification_command": "node --test --test-concurrency=2 --test-name-pattern='DRS-CONTRACT-007|DRS-CONTRACT-008|DRS-CONTRACT-009|DRS-S-5|ROLLBACK-OWNERSHIP-002|configured routes' test/execution-state.test.js test/traceability-usage-report.test.js test/story-transaction-lock.test.js"
+      }
+    },
+    "code_frozen": {
+      "status": "passed",
+      "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "reason": null,
+      "evidence": [
+        "5688806c80b337867f0f13de855bb6eaf71bc20e"
+      ],
+      "recorded_at": "2026-07-24T05:11:56.835Z",
+      "binding": {
+        "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+        "test_fingerprint": "18539aa8b1f13a052bf340ef7ac74c0c9052b7bd5e3b4c90a551c88423421ebe",
+        "verification_command": "node --test --test-concurrency=2 --test-name-pattern='DRS-CONTRACT-007|DRS-CONTRACT-008|DRS-CONTRACT-009|DRS-S-5|ROLLBACK-OWNERSHIP-002|configured routes' test/execution-state.test.js test/traceability-usage-report.test.js test/story-transaction-lock.test.js"
+      }
+    },
+    "expensive_verification": {
+      "status": "passed",
+      "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-24T05:14:00.812Z",
+      "binding": {
+        "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+        "test_fingerprint": "18539aa8b1f13a052bf340ef7ac74c0c9052b7bd5e3b4c90a551c88423421ebe",
+        "verification_command": "node --test test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts"
+      }
+    },
+    "final_review": {
+      "status": "passed",
+      "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/implementation/review-result-runtime_contract.json",
+        ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/implementation/review-result-runtime_contract.json",
+        ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/implementation/review-result-runtime_contract.json",
+        ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/implementation/review-result-runtime_contract.json",
+        ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/implementation/review-result-runtime_contract.json",
+        ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/implementation/review-result-runtime_contract.json"
+      ],
+      "source": "agent_review",
+      "recorded_at": "2026-07-24T05:14:06.909Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-delivery-reconciliation-state",
+        "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "runtime_contract",
+        "stage": "implementation",
+        "inspection_summary": "Inspected merge reconciliation, execution-state persistence/rendering, exact auth-denied fixture, exit semantics, and current-head integration/E2E evidence; no findings.",
+        "inspection_inputs": [
+          "src/merge-manager.js"
+        ]
+      },
+      "binding": {
+        "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+        "test_fingerprint": "18539aa8b1f13a052bf340ef7ac74c0c9052b7bd5e3b4c90a551c88423421ebe",
+        "verification_command": "node --test --test-concurrency=2 --test-name-pattern='DRS-CONTRACT-007|DRS-CONTRACT-008|DRS-CONTRACT-009|DRS-S-5|ROLLBACK-OWNERSHIP-002|configured routes' test/execution-state.test.js test/traceability-usage-report.test.js test/story-transaction-lock.test.js"
+      }
+    }
+  },
+  "proposed_binding": {
+    "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+    "test_fingerprint": "18539aa8b1f13a052bf340ef7ac74c0c9052b7bd5e3b4c90a551c88423421ebe",
+    "verification_command": "node --test --test-concurrency=2 --test-name-pattern='DRS-CONTRACT-007|DRS-CONTRACT-008|DRS-CONTRACT-009|DRS-S-5|ROLLBACK-OWNERSHIP-002|configured routes' test/execution-state.test.js test/traceability-usage-report.test.js test/story-transaction-lock.test.js"
+  },
+  "invalidations": [
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current change-risk classification differs from the persisted validation plan",
+      "invalidated_at": "2026-07-24T03:47:12.901Z"
+    },
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current change-risk classification differs from the persisted validation plan",
+      "invalidated_at": "2026-07-24T03:49:16.208Z"
+    },
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current change-risk classification differs from the persisted validation plan",
+      "invalidated_at": "2026-07-24T03:49:38.177Z"
+    },
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current HEAD differs from the persisted validation binding",
+      "invalidated_at": "2026-07-24T03:55:15.246Z"
+    },
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "post-freeze E2E found the new origin-absent early return outside the shared persisted CAS baseline finalizer",
+      "invalidated_at": "2026-07-24T04:14:26.305Z"
+    },
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current HEAD differs from the persisted validation binding",
+      "invalidated_at": "2026-07-24T04:34:25.407Z"
+    },
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current HEAD differs from the persisted validation binding",
+      "invalidated_at": "2026-07-24T04:59:56.434Z"
+    }
+  ]
+}

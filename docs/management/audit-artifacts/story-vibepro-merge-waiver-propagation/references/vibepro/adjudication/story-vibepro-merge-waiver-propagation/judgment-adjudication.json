@@ -1,0 +1,488 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-merge-waiver-propagation",
+  "updated_at": "2026-07-23T06:53:11.044Z",
+  "events": [
+    {
+      "event_id": "002a86f0-55a3-404b-a469-5c9e9160f236",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story AC-1..8 and S-001/S-002 define the focused waiver propagation and fail-closed intent.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:23.764Z"
+    },
+    {
+      "event_id": "52f194e8-8687-4a74-9978-06b0383b985e",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current execute merge reads current pr-create, current-HEAD pr-prepare, and reconciles routed and embedded Gate DAG before authorization.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:23.974Z"
+    },
+    {
+      "event_id": "892a9319-31c9-4866-a606-3bdfcba9c848",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec invariants and helper matrix demonstrate ready, malformed, critical, stale, and routed-DAG mismatch behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:24.170Z"
+    },
+    {
+      "event_id": "29f60ad7-bc77-4006-b497-6853b0066f7f",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture authority and host boundaries match the current lifecycle and pre-GitHub implementation boundary.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:24.382Z"
+    },
+    {
+      "event_id": "6088403a-cd89-4d5a-a839-60147ce776fa",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Focused and 29-test suites demonstrate stale, malformed, critical, timeout, replaced, manual shutdown, and persistence failures.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:24.601Z"
+    },
+    {
+      "event_id": "1d993cb8-301a-46fc-8c5a-c378d24f809d",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current HEAD focused suite passed 16 of 16 and unfiltered policy/lifecycle suite passed 29 of 29.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:24.831Z"
+    },
+    {
+      "event_id": "05656511-5249-4e9d-a4a5-a5bb9ed1a9e4",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Ready path remains compatible while waiver authority is limited to current pr-create and current Gate status.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:25.073Z"
+    },
+    {
+      "event_id": "f3c523a4-10a8-4126-99e9-1c616349fbfc",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Authorization and durable preconditions precede external checks and GitHub merge; persistence failure stops before GitHub.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:25.299Z"
+    },
+    {
+      "event_id": "892f6312-08e3-42b9-9f17-91f1bfb9c42e",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Change is limited to waiver propagation, completed review recovery, documentation, and focused regression fixtures.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:25.504Z"
+    },
+    {
+      "event_id": "2d44095b-9cd0-48a0-afb0-28b5da679a92",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Timeout, replacement, and manual shutdown reject result recording and leave no current or history result artifact.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:25.735Z"
+    },
+    {
+      "event_id": "6dba92e3-2f18-4ba0-a644-849ba7cf4d01",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed pr-create authority fails closed before GitHub in the production-path fixture.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:25.944Z"
+    },
+    {
+      "event_id": "70066e9e-0ae9-4608-8970-89be42cba5bb",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Omitted, conflicting, stale, or critical authority is denied before any GitHub call.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:26.150Z"
+    },
+    {
+      "event_id": "162b8750-70bf-4f0c-bb36-9557788a5ba2",
+      "type": "verdict",
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Merge artifact persistence failure stops execution before GitHub merge.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:26.386Z"
+    },
+    {
+      "event_id": "de2dfb3a-2d0e-4405-b606-43e4ae7e22e4",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Only completed lifecycle closure permits result recovery; non-completed closures create no result artifacts.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:26.638Z"
+    },
+    {
+      "event_id": "1bad858b-2339-4855-a034-1f327b7353b5",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Dry-run and actual fixtures prove authorization source persistence and review close-to-record transitions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "fresh_judgment_a6ab",
+        "session_ref": "/root/fresh_judgment_a6ab"
+      },
+      "head_commit": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+      "recorded_at": "2026-07-23T05:19:26.880Z"
+    },
+    {
+      "event_id": "3cb1686a-cd19-4106-be34-afd6c713ac95",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story, Architecture, and Spec consistently define reuse of only a current-HEAD auditable noncritical pr-create waiver; authorization is not re-entered at merge.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:07.577Z"
+    },
+    {
+      "event_id": "ca1b4b54-c7b6-4f95-9768-d9cd8e8e4687",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The prior gate-DAG-only merge path is replaced by buildMergeGateAuthorization wiring in merge-manager while preserving the ready_for_review path.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:08.080Z"
+    },
+    {
+      "event_id": "2daa7577-2163-4a14-a977-b88390cd6c18",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current code validates reason, policy, targets, critical sets, current HEAD, and routed-versus-embedded DAG authority surface; targeted tests pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:08.416Z"
+    },
+    {
+      "event_id": "dce81d22-ae88-4478-8520-05633ec8c6e4",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "VibePro owns waiver validation and artifact audit fields; GitHub checks, review policy, mergeability, and merge execution remain downstream preconditions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:08.631Z"
+    },
+    {
+      "event_id": "bda829dc-bb43-4b9a-9664-33f2d1b7208a",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Stale, malformed, mismatched, critical, parse, persistence, and review-lifecycle failure paths are fail-closed and covered by current tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:08.871Z"
+    },
+    {
+      "event_id": "adb5d366-fa09-4807-85c7-c757745186b8",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current HEAD 1c2267aa has recorded full-suite 1757/1757, targeted 16/16, typecheck, and package validation evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:09.097Z"
+    },
+    {
+      "event_id": "4b76b9cd-afdd-4c52-838a-2a11475d9274",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No merge-time waiver input or raw merge bypass was added; merge consumes only persisted current-HEAD pr-create authority.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:09.303Z"
+    },
+    {
+      "event_id": "802caec6-3cd5-4f25-8bcb-da00cf9d46e6",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Invalid authorization returns gate_not_ready before fetch or gh pr view; valid authorization remains combined with GitHub and local merge preconditions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:09.499Z"
+    },
+    {
+      "event_id": "c50d4880-f1f3-418e-880a-b8f1eee2a747",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The 15-file diff is one merge-waiver intent: requirements define lineage, runtime and tests implement it, and control-plane files register authority. split-plan is advisory, not mandatory.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:09.716Z"
+    },
+    {
+      "event_id": "1005260f-a492-4b0e-81df-5c961601712d",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Agent-review treats timed-out lifecycle entries as blocking and requires explicit close then replacement; regression coverage prevents result persistence after timeout.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:09.969Z"
+    },
+    {
+      "event_id": "2b7094a8-c225-4baf-bce5-8c47e8263fae",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed pr-create JSON aborts before GitHub invocation and the dedicated parse-failure test passes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:10.184Z"
+    },
+    {
+      "event_id": "f74f693c-5d05-4ace-81a0-2597ab1ea21b",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Omitted targets, stale authority or status, routed-DAG mismatch, and current critical gates deny authorization before non-dry-run GitHub operations.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:10.381Z"
+    },
+    {
+      "event_id": "34cdc5f6-b9d2-42b3-870a-7bd761eb2dc6",
+      "type": "verdict",
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The artifact-write failure fixture confirms merge exits before gh invocation when pr-merge persistence fails.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:10.595Z"
+    },
+    {
+      "event_id": "8f3a41c3-0dd2-47b4-b317-41c192db91eb",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Review result attachment requires completed closure and rejects timeout, replaced, and manual_shutdown closures.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:10.809Z"
+    },
+    {
+      "event_id": "7b789887-9b6f-49f4-962f-a733c50ac6e4",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The successful GitHub merge fixture verifies shared waiver authorization, pr-merge audit persistence, execution state, and canonical audit transition.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/final_judgment_1c",
+        "session_ref": "final-judgment-1c2267aa"
+      },
+      "head_commit": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+      "recorded_at": "2026-07-23T06:53:11.043Z"
+    }
+  ]
+}

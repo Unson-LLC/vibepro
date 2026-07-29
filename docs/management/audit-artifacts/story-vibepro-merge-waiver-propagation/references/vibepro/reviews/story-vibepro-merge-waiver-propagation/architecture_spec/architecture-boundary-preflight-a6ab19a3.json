@@ -1,0 +1,28 @@
+{
+  "head_sha": "a6ab19a343e0a5c884473ca9dcc7c350f4d9ccce",
+  "status": "pass",
+  "summary": "The final fail-open path is closed. A missing embedded pr_context.gate_dag is rejected whenever a routed Gate DAG exists, exact normalized authorization surfaces are compared, and missing or mismatched authority fixtures stop before GitHub. Prior lifecycle rejection ordering remains covered and passing.",
+  "findings": [],
+  "inspection_inputs": [
+    "src/merge-gate-authorization.js",
+    "test/merge-gate-authorization.test.js",
+    "test/vibepro-cli.test.js",
+    "test/review-inspection-first.test.js",
+    "docs/architecture/story-vibepro-merge-waiver-propagation.md",
+    "docs/specs/story-vibepro-merge-waiver-propagation.spec.md",
+    "docs/management/stories/active/story-vibepro-merge-waiver-propagation.md",
+    ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-a6ab19a3.json"
+  ],
+  "verification": [
+    "independent focused AC-8 and lifecycle rejection rerun: 2/2 passed",
+    "independent CLI authority rejection rerun: 1/1 passed across five fixture cases",
+    "GitHub call log remained absent for every rejected fixture"
+  ],
+  "judgment_delta": "Prior block because a missing embedded Gate DAG bypassed comparison changed to pass after embedded authority became mandatory, regressions proved missing and mismatched surfaces reject before GitHub, and prior lifecycle closure remained green.",
+  "reviewer": {
+    "agent_system": "codex",
+    "agent_id": "/root/gate_evidence_review",
+    "agent_model": "gpt-5.6-terra",
+    "agent_reasoning_effort": "low"
+  }
+}

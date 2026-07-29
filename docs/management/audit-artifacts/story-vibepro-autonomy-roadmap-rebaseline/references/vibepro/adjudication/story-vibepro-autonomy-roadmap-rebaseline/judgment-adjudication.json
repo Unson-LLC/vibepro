@@ -1,140 +1,312 @@
 {
-  "schema_version": "0.1.0",
-  "model": "vibepro-judgment-dag-adjudication-v1",
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
   "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
-  "updated_at": "2026-07-18T03:13:10.804Z",
-  "verdicts": [
+  "updated_at": "2026-07-19T03:29:16.848Z",
+  "events": [
     {
-      "item_id": "failure_mode:workflow_state_regression",
-      "verdict": "judged_sound",
-      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "/root/roadmap_split_scope",
-        "session_ref": null
-      },
-      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
-      "recorded_at": "2026-07-18T03:13:10.804Z"
-    },
-    {
-      "item_id": "failure_mode:evidence_lifecycle_regression",
-      "verdict": "judged_sound",
-      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "/root/roadmap_split_scope",
-        "session_ref": null
-      },
-      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
-      "recorded_at": "2026-07-18T03:13:10.603Z"
-    },
-    {
-      "item_id": "failure_mode:parse_failure",
-      "verdict": "judged_sound",
-      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "/root/roadmap_split_scope",
-        "session_ref": null
-      },
-      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
-      "recorded_at": "2026-07-18T03:13:10.393Z"
-    },
-    {
-      "item_id": "axis:scope_reviewability",
-      "verdict": "judged_sound",
-      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "/root/roadmap_split_scope",
-        "session_ref": null
-      },
-      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
-      "recorded_at": "2026-07-18T03:13:10.095Z"
-    },
-    {
-      "item_id": "axis:public_contract",
-      "verdict": "judged_sound",
-      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "/root/roadmap_split_scope",
-        "session_ref": null
-      },
-      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
-      "recorded_at": "2026-07-18T03:13:09.905Z"
-    },
-    {
-      "item_id": "spine:done_evidence",
-      "verdict": "judged_sound",
-      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "/root/roadmap_split_scope",
-        "session_ref": null
-      },
-      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
-      "recorded_at": "2026-07-18T03:13:09.697Z"
-    },
-    {
-      "item_id": "spine:failure_modes",
-      "verdict": "judged_sound",
-      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "/root/roadmap_split_scope",
-        "session_ref": null
-      },
-      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
-      "recorded_at": "2026-07-18T03:13:09.503Z"
-    },
-    {
-      "item_id": "spine:boundaries",
-      "verdict": "judged_sound",
-      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "/root/roadmap_split_scope",
-        "session_ref": null
-      },
-      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
-      "recorded_at": "2026-07-18T03:13:09.287Z"
-    },
-    {
-      "item_id": "spine:invariants",
-      "verdict": "judged_sound",
-      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "/root/roadmap_split_scope",
-        "session_ref": null
-      },
-      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
-      "recorded_at": "2026-07-18T03:13:09.091Z"
-    },
-    {
-      "item_id": "spine:current_reality",
-      "verdict": "judged_sound",
-      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
-      "provenance": {
-        "agent_system": "codex",
-        "agent_id": "/root/roadmap_split_scope",
-        "session_ref": null
-      },
-      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
-      "recorded_at": "2026-07-18T03:13:08.885Z"
-    },
-    {
+      "event_id": "37620c45-e470-4a6b-9406-272c4c24d24f",
+      "type": "verdict",
       "item_id": "spine:intent",
       "verdict": "judged_sound",
-      "reason": "Current-head roadmap artifacts and strict-head E-1 support this judgment without runtime implementation changes.",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Roadmap delta directly synchronizes completed Stories 1-4 and remaining Stories 5-10 with the stated intent.",
       "provenance": {
         "agent_system": "codex",
-        "agent_id": "/root/roadmap_split_scope",
-        "session_ref": null
+        "agent_id": "/root/roadmap_judgment_adjudication_final",
+        "session_ref": "agent_final_response"
       },
-      "head_commit": "e096fdb300a610e185f596dd2530dfcbe6605594",
-      "recorded_at": "2026-07-18T03:13:08.692Z"
+      "head_commit": "af01cc7bb1900bad72eb7b65cf6ed0ff42daf75c",
+      "recorded_at": "2026-07-19T03:07:29.940Z"
+    },
+    {
+      "event_id": "492f2d34-c8d7-4d24-bdca-d4afb223ad86",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Canonical audits for Stories 1-4 and Story 4 merge/audit ancestry support six remaining Stories.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_judgment_adjudication_final",
+        "session_ref": "agent_final_response"
+      },
+      "head_commit": "af01cc7bb1900bad72eb7b65cf6ed0ff42daf75c",
+      "recorded_at": "2026-07-19T03:07:30.175Z"
+    },
+    {
+      "event_id": "323490c3-af2e-477c-bb78-3526e0fabceb",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Serial dependency, merge and audit entry gates, isolated evidence, and latest-main diagnosis remain intact.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_judgment_adjudication_final",
+        "session_ref": "agent_final_response"
+      },
+      "head_commit": "af01cc7bb1900bad72eb7b65cf6ed0ff42daf75c",
+      "recorded_at": "2026-07-19T03:07:30.414Z"
+    },
+    {
+      "event_id": "ccb48411-40da-4c5e-abc5-54022714f142",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Docs-only change preserves runtime, waiver, merge authority, and existing ownership boundaries.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_judgment_adjudication_final",
+        "session_ref": "agent_final_response"
+      },
+      "head_commit": "af01cc7bb1900bad72eb7b65cf6ed0ff42daf75c",
+      "recorded_at": "2026-07-19T03:07:30.650Z"
+    },
+    {
+      "event_id": "9161888e-4317-411b-b545-4e4506772632",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current docs-status and verification bind to af01cc7b; immutable older audit bundles remain correctly historical.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_judgment_adjudication_final",
+        "session_ref": "agent_final_response"
+      },
+      "head_commit": "af01cc7bb1900bad72eb7b65cf6ed0ff42daf75c",
+      "recorded_at": "2026-07-19T03:07:30.904Z"
+    },
+    {
+      "event_id": "52b5cdcb-8209-43a5-a617-9f58eed9f717",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current QA artifact, verification evidence, and reviews bind to af01cc7b and cover consistency and non-duplication.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_judgment_adjudication_final",
+        "session_ref": "agent_final_response"
+      },
+      "head_commit": "af01cc7bb1900bad72eb7b65cf6ed0ff42daf75c",
+      "recorded_at": "2026-07-19T03:07:31.116Z"
+    },
+    {
+      "event_id": "4e6b0e61-6602-4807-b39d-7dd3ed9321e5",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No CLI, API, config, output, or PR contract changes; governance authority is unchanged.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_judgment_adjudication_final",
+        "session_ref": "agent_final_response"
+      },
+      "head_commit": "af01cc7bb1900bad72eb7b65cf6ed0ff42daf75c",
+      "recorded_at": "2026-07-19T03:07:31.361Z"
+    },
+    {
+      "event_id": "6c40bd12-151d-43b5-9aff-28d8b21ebd88",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current evidence is strict-head bound; historical audit evidence is not presented as current.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_judgment_adjudication_final",
+        "session_ref": "agent_final_response"
+      },
+      "head_commit": "af01cc7bb1900bad72eb7b65cf6ed0ff42daf75c",
+      "recorded_at": "2026-07-19T03:07:31.605Z"
+    },
+    {
+      "event_id": "76210512-d3ea-484f-aade-2a11bf6a9713",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head consistency verifies Stories 1-4 completed, 5 next, and 6-10 pending.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_judgment_adjudication_final",
+        "session_ref": "agent_final_response"
+      },
+      "head_commit": "af01cc7bb1900bad72eb7b65cf6ed0ff42daf75c",
+      "recorded_at": "2026-07-19T03:07:31.844Z"
+    },
+    {
+      "event_id": "6fd2fe5f-a6c6-4a60-858b-190090c250b1",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final adjudication found this judgment sound at be8236fa after Spec synchronization and roadmap registration validation",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_final_adjudication_be8",
+        "session_ref": "/root/roadmap_final_adjudication_be8"
+      },
+      "head_commit": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+      "recorded_at": "2026-07-19T03:29:15.679Z"
+    },
+    {
+      "event_id": "8f3f0e81-4bc0-4294-8ebf-94dcb6556b33",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final adjudication found this judgment sound at be8236fa after Spec synchronization and roadmap registration validation",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_final_adjudication_be8",
+        "session_ref": "/root/roadmap_final_adjudication_be8"
+      },
+      "head_commit": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+      "recorded_at": "2026-07-19T03:29:15.801Z"
+    },
+    {
+      "event_id": "e6737c10-20e5-4a68-8f6e-4b9d1499f2db",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final adjudication found this judgment sound at be8236fa after Spec synchronization and roadmap registration validation",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_final_adjudication_be8",
+        "session_ref": "/root/roadmap_final_adjudication_be8"
+      },
+      "head_commit": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+      "recorded_at": "2026-07-19T03:29:15.924Z"
+    },
+    {
+      "event_id": "653399d0-047f-42f6-8379-79ae283e8dbe",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final adjudication found this judgment sound at be8236fa after Spec synchronization and roadmap registration validation",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_final_adjudication_be8",
+        "session_ref": "/root/roadmap_final_adjudication_be8"
+      },
+      "head_commit": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+      "recorded_at": "2026-07-19T03:29:16.050Z"
+    },
+    {
+      "event_id": "e6408981-4dab-44a9-b518-9bafa934baaa",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final adjudication found this judgment sound at be8236fa after Spec synchronization and roadmap registration validation",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_final_adjudication_be8",
+        "session_ref": "/root/roadmap_final_adjudication_be8"
+      },
+      "head_commit": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+      "recorded_at": "2026-07-19T03:29:16.178Z"
+    },
+    {
+      "event_id": "13508e23-65be-408f-a807-0d05a3cda0b8",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final adjudication found this judgment sound at be8236fa after Spec synchronization and roadmap registration validation",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_final_adjudication_be8",
+        "session_ref": "/root/roadmap_final_adjudication_be8"
+      },
+      "head_commit": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+      "recorded_at": "2026-07-19T03:29:16.326Z"
+    },
+    {
+      "event_id": "c84beca0-7858-4ae6-a837-1e1ea84220da",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final adjudication found this judgment sound at be8236fa after Spec synchronization and roadmap registration validation",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_final_adjudication_be8",
+        "session_ref": "/root/roadmap_final_adjudication_be8"
+      },
+      "head_commit": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+      "recorded_at": "2026-07-19T03:29:16.457Z"
+    },
+    {
+      "event_id": "eb9aba3f-072e-405b-87c9-0ba7779a80af",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final adjudication found this judgment sound at be8236fa after Spec synchronization and roadmap registration validation",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_final_adjudication_be8",
+        "session_ref": "/root/roadmap_final_adjudication_be8"
+      },
+      "head_commit": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+      "recorded_at": "2026-07-19T03:29:16.582Z"
+    },
+    {
+      "event_id": "8ca111ef-cf41-4656-8c77-54adaf9342cc",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final adjudication found this judgment sound at be8236fa after Spec synchronization and roadmap registration validation",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_final_adjudication_be8",
+        "session_ref": "/root/roadmap_final_adjudication_be8"
+      },
+      "head_commit": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+      "recorded_at": "2026-07-19T03:29:16.706Z"
+    },
+    {
+      "event_id": "9c1aeb2a-34bc-4dac-9f61-6b639f0597ee",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent final adjudication found this judgment sound at be8236fa after Spec synchronization and roadmap registration validation",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/roadmap_final_adjudication_be8",
+        "session_ref": "/root/roadmap_final_adjudication_be8"
+      },
+      "head_commit": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+      "recorded_at": "2026-07-19T03:29:16.848Z"
     }
   ]
 }

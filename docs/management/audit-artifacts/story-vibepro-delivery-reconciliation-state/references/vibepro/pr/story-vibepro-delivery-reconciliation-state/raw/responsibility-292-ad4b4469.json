@@ -1,0 +1,9 @@
+{
+  "schema_version": "0.1.0",
+  "head_sha": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+  "command": "node --test test/responsibility-authority.test.js test/independent-review-orchestrator.test.js test/managed-worktree-policy-resync.test.js test/recipe-preflight.test.js test/safe-action-orchestrator.test.js test/guarded-run-session.test.js test/execution-state.test.js",
+  "numTotalTests": 292,
+  "numPassedTests": 292,
+  "numFailedTests": 0,
+  "success": true
+}

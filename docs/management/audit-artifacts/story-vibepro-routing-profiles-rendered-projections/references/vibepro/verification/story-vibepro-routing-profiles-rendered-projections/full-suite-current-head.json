@@ -1,0 +1,8 @@
+{
+  "status": "needs_setup",
+  "command": "node --test --test-concurrency=2",
+  "head_sha": "242228bdf0851094baeb60c2fdf324ee644dd1f9",
+  "reason": "runner terminated before emitting the suite summary or an exit code after reporting test 99; the JUnit attempt likewise ended with an incomplete testsuites document",
+  "classification": "runner_resource_or_environment_termination",
+  "not_interpreted_as": "pass"
+}

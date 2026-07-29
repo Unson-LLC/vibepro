@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "observed": {
+    "head_sha": "47a5efc0",
+    "test_command": "node --test --test-concurrency=2",
+    "conformance_violations": 69,
+    "conformance_baseline": 69,
+    "skills_lint_errors": 0,
+    "agent_instructions_identical": true
+  }
+}

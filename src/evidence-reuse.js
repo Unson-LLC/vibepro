@@ -2,7 +2,8 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 
-import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
+import { toWorkspaceRelative } from './workspace.js';
+import { resolvePrArtifactFile } from './artifact-routing.js';
 
 export const EVIDENCE_REUSE_VERSION = '0.1.0';
 export const EVIDENCE_REUSE_MODEL = 'vibepro-evidence-summary-reuse-v1';
@@ -13,7 +14,7 @@ const FRESH_REUSE_STATUSES = new Set(['hit', 'miss']);
 
 export async function readEvidenceReuseIfExists(repoRoot, storyId) {
   if (!storyId) return null;
-  const filePath = getEvidenceReusePath(repoRoot, storyId);
+  const filePath = await getEvidenceReusePath(repoRoot, storyId);
   try {
     return JSON.parse(await readFile(filePath, 'utf8'));
   } catch (error) {
@@ -23,7 +24,7 @@ export async function readEvidenceReuseIfExists(repoRoot, storyId) {
 }
 
 export function getEvidenceReusePath(repoRoot, storyId) {
-  return path.join(getWorkspaceDir(path.resolve(repoRoot)), 'pr', storyId, 'evidence-reuse.json');
+  return resolvePrArtifactFile(path.resolve(repoRoot), storyId, 'evidence-reuse.json');
 }
 
 export function buildEvidenceReuse({
@@ -131,6 +132,7 @@ export function summarizeEvidenceReuse(reuse) {
     fresh_use_allowed: reuse.fresh_use_allowed === true,
     used_as_fresh: reuse.used_as_fresh === true,
     gate_status: reuse.gate_status ?? null,
+    decision_outcome_summary: reuse.decision_outcome_summary ?? null,
     artifact_value_ledger: reuse.artifact_value_ledger ? summarizeArtifactValueLedger(reuse.artifact_value_ledger) : null,
     session_attribution_ledger: reuse.session_attribution_ledger ? summarizeSessionAttributionLedger(reuse.session_attribution_ledger) : null,
     verification_summary_fingerprint: reuse.key_inputs?.verification_summary_fingerprint ?? null,
@@ -375,6 +377,11 @@ export function evaluateEvidenceReuseForReview({ reuse = null, gitContext = null
     artifact_status: reuse.status ?? null,
     artifact: reuse.summary_artifacts?.evidence_reuse ?? null,
     preferred_order: fresh ? (reuse.review_input_summary?.preferred_order ?? []) : [],
+    // Freshness controls whether the reusable evidence bundle may be the first
+    // review input.  The decision-outcome projection is a separate, bounded
+    // current-HEAD surface and remains useful when only verification timestamps
+    // changed after pr prepare.  Never expose it across a HEAD mismatch.
+    decision_outcome_summary: headMatches ? (reuse.decision_outcome_summary ?? null) : null,
     stale_reasons: fresh ? [] : [
       ...(Array.isArray(reuse.stale_reasons) ? reuse.stale_reasons : []),
       ...staleReasons

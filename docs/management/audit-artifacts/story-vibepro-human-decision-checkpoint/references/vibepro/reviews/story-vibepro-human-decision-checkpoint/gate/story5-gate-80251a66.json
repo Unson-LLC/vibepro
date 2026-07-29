@@ -1,0 +1,1 @@
+{"status":"needs_changes","head_sha":"80251a6684087e9ae197c7ccc425d629b67d4ae3","summary":"Historical completed checkpoint from another HEAD could consume the current cursor.","findings":["resume-cursor-consumes-historical-head-checkpoint"]}

@@ -1,0 +1,2258 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-21T18:37:11.477Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:64c9a76db3708e0711ea9d796355bcc7e5d469cd8996c4363350c61cfa6c506c",
+    "compressed_hash": "sha256:ee1227ea7934b4c77c3f199b5ca3ce452030156681930206e57146285d343cfd",
+    "expanded_bytes": 37495,
+    "compressed_bytes": 5623,
+    "expanded_line_count": 928,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-routing-profiles-rendered-projections",
+    "cost": {
+      "compressed_bytes": 5623,
+      "expanded_bytes": 37495,
+      "expanded_line_count": 928,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/373",
+    "merge_commit_sha": "b03bec63b9dd03d9ecc33baad705ec5d5dfe0f1b",
+    "merged_at": "2026-07-21T18:37:10Z",
+    "current_head_sha": "b4def95aac626d5e5e8fa9ba2efc16985b1491e9",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...b4def95aac626d5e5e8fa9ba2efc16985b1491e9"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 170,
+    "copied_reference_count": 135,
+    "unresolved_reference_count": 12,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-routing-profiles-rendered-projections"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:64c9a76db3708e0711ea9d796355bcc7e5d469cd8996c4363350c61cfa6c506c"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:9cb951f17f66b63192ab5d3e8f9317e0c9d196f8e344f31228bc8ee6bab389c5",
+      "audit_digest": "sha256:9cb951f17f66b63192ab5d3e8f9317e0c9d196f8e344f31228bc8ee6bab389c5",
+      "line_count": 272,
+      "raw_line_count": 272,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:aee8074d0b95ad06ff38404fdfe0f2958ea9ede2688f2242017075b4c8ffe381",
+      "audit_digest": "sha256:ed2114eded7ebad0f22587ba0be7294a89a14ddcc1ea884460d22a13ea28a7df",
+      "line_count": 9005,
+      "raw_line_count": 40900,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:3807556e87f22bb827c5aaf48c6184976aa077873158e6045cf6f069f3589158",
+      "audit_digest": "sha256:7a30a6e2ff93bd546d3808f81f13fc25ef76298b9a16eae4b10bb671b56fb409",
+      "line_count": 2592,
+      "raw_line_count": 5796,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:2cd6b3fd71e29af9ee1647d72744d22f92190110b90a0c0a6dcd227d15aa6f4f",
+      "audit_digest": "sha256:17a089c64dcbc254db44cf1bf128e55967de3e566d4da87f693f17f1eae9216f",
+      "line_count": 21,
+      "raw_line_count": 921,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:ddd888caac70dd957d7e087892d844c621cbf6d3cd706537f8c197815d11b0b4",
+      "audit_digest": "sha256:94650e820be8c315243b81a594b9ae7270735636fec7ab3b1510f9f15db61fcc",
+      "line_count": 2626,
+      "raw_line_count": 5881,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:d8d1d64133ffb2c174e64724d72b2386713352a16b5cbabe2826bb956973416b",
+      "audit_digest": "sha256:d8d1d64133ffb2c174e64724d72b2386713352a16b5cbabe2826bb956973416b",
+      "line_count": 784,
+      "raw_line_count": 784,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:d5649328038fa9f4a4de8a625cb9915e143443f094185c5e82a833a1d5d05a1f",
+      "audit_digest": "sha256:65a0e084361a6b8b5cadbe443915ccefb7de44774d768f56b4d55689074f18ea",
+      "line_count": 69,
+      "raw_line_count": 515,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:ef6d98f2be2eb9c805fc2a2393a18d881a401859418a88e93144e5c7121eb8ea",
+      "audit_digest": "sha256:ef6d98f2be2eb9c805fc2a2393a18d881a401859418a88e93144e5c7121eb8ea",
+      "line_count": 372,
+      "raw_line_count": 372,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:1fd0fe62521ef881441e7b34653616493ec66a5c04c5f6cb5b3b7792c45a803c",
+      "audit_digest": "sha256:1fd0fe62521ef881441e7b34653616493ec66a5c04c5f6cb5b3b7792c45a803c",
+      "line_count": 375,
+      "raw_line_count": 375,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:a38df9bab9a77ccc3d787c5578bcedf9c91cbbcf249e286af0f364d8dce63b1f",
+      "audit_digest": "sha256:a38df9bab9a77ccc3d787c5578bcedf9c91cbbcf249e286af0f364d8dce63b1f",
+      "line_count": 636,
+      "raw_line_count": 636,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-architecture_boundary.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:541f0aab87e9220958134c44a40ff7ee9be70d6dbe3f93a704770d8911ec6f14",
+      "audit_digest": "sha256:541f0aab87e9220958134c44a40ff7ee9be70d6dbe3f93a704770d8911ec6f14",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-regression_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:e2e38a84ed85ebdd3925dfc5dedbd724e8dc78c4cf46adcc2bcc3f10202e1d9b",
+      "audit_digest": "sha256:e2e38a84ed85ebdd3925dfc5dedbd724e8dc78c4cf46adcc2bcc3f10202e1d9b",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-spec_consistency.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:05cb13722a28c2f6d2a7432eb440814d6a8302db99b8738cf4bbc5ab18cddda4",
+      "audit_digest": "sha256:05cb13722a28c2f6d2a7432eb440814d6a8302db99b8738cf4bbc5ab18cddda4",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-result-architecture_boundary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:dbdbe69159d91ec862f6af5e4bdba9eff1ecf237f7773d04726be8a69f6febba",
+      "audit_digest": "sha256:dbdbe69159d91ec862f6af5e4bdba9eff1ecf237f7773d04726be8a69f6febba",
+      "line_count": 127,
+      "raw_line_count": 127,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-result-regression_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:1eeee4959ba9b09c7fc02eac81a594cd60ad765e86a630800b9f55ce88d8324f",
+      "audit_digest": "sha256:1eeee4959ba9b09c7fc02eac81a594cd60ad765e86a630800b9f55ce88d8324f",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-result-spec_consistency.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:b0f2754093f6ca9e53f2a78a90e4a2832d717edb8d367bf079624f9613c5380b",
+      "audit_digest": "sha256:b0f2754093f6ca9e53f2a78a90e4a2832d717edb8d367bf079624f9613c5380b",
+      "line_count": 130,
+      "raw_line_count": 130,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:f5384b84473e163c9f11337f44d3ba2e1ab634fa5b27419aed291a328426ac06",
+      "audit_digest": "sha256:f5384b84473e163c9f11337f44d3ba2e1ab634fa5b27419aed291a328426ac06",
+      "line_count": 1172,
+      "raw_line_count": 1172,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:914c95920f5d4b08494d8ecb20196be38ee916d001e8cfb14b99b56b5aec3179",
+      "audit_digest": "sha256:914c95920f5d4b08494d8ecb20196be38ee916d001e8cfb14b99b56b5aec3179",
+      "line_count": 509,
+      "raw_line_count": 509,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:0c1738da2f06e7f7b2ef7d71f1eabaa9819ed5f00f5e6ddefff94f5c71b197d0",
+      "audit_digest": "sha256:0c1738da2f06e7f7b2ef7d71f1eabaa9819ed5f00f5e6ddefff94f5c71b197d0",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:ffb2f9da75eb0cecb2186af1e6efbf24b917e5396fbb4d818d6130c45ac7f1b2",
+      "audit_digest": "sha256:ffb2f9da75eb0cecb2186af1e6efbf24b917e5396fbb4d818d6130c45ac7f1b2",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:5e6a1f740a999618de4b3b4cf621b467fb21d1acf00decef9d642767723fcd6e",
+      "audit_digest": "sha256:5e6a1f740a999618de4b3b4cf621b467fb21d1acf00decef9d642767723fcd6e",
+      "line_count": 124,
+      "raw_line_count": 124,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-result-release_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:ae9da92efa19186466fe3b01b18d142bcafb2c1f9adaa0f3db6be70171bd2f40",
+      "audit_digest": "sha256:ae9da92efa19186466fe3b01b18d142bcafb2c1f9adaa0f3db6be70171bd2f40",
+      "line_count": 124,
+      "raw_line_count": 124,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:eb789e63d0e8ea733ee285f89655cfa925eabafe88606c0de6ccb044c92f8189",
+      "audit_digest": "sha256:eb789e63d0e8ea733ee285f89655cfa925eabafe88606c0de6ccb044c92f8189",
+      "line_count": 876,
+      "raw_line_count": 876,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:e8f5ba4854407eb6a9b54d5be542bbbecedcec11316be1bc6cdde6688654576d",
+      "audit_digest": "sha256:e8f5ba4854407eb6a9b54d5be542bbbecedcec11316be1bc6cdde6688654576d",
+      "line_count": 484,
+      "raw_line_count": 484,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-request-code_spec_alignment.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:0502cb711a7d6323cf6dd3b15d44be0f803ab3f5f609641148d4077066534a4d",
+      "audit_digest": "sha256:0502cb711a7d6323cf6dd3b15d44be0f803ab3f5f609641148d4077066534a4d",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-request-runtime_contract.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:1bfdda71eacaafcbd8e0689389ad286ea53e7b84c3190b3aa7f3755ef2f574b0",
+      "audit_digest": "sha256:1bfdda71eacaafcbd8e0689389ad286ea53e7b84c3190b3aa7f3755ef2f574b0",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-request-ux_completion.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:0fabff73a08beb5f5b6935feb1549900a1a94b2f5a55b7decc139923759ead0e",
+      "audit_digest": "sha256:0fabff73a08beb5f5b6935feb1549900a1a94b2f5a55b7decc139923759ead0e",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-result-code_spec_alignment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:cc759e5554f66d30ff3a560158b02782a02a627d1e460281fa12cb3a31a39783",
+      "audit_digest": "sha256:cc759e5554f66d30ff3a560158b02782a02a627d1e460281fa12cb3a31a39783",
+      "line_count": 124,
+      "raw_line_count": 124,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-result-runtime_contract.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:2059fef792e808c9f8ec0a0b0750673c5fd673ff00b29e378ef842a7051f1b27",
+      "audit_digest": "sha256:2059fef792e808c9f8ec0a0b0750673c5fd673ff00b29e378ef842a7051f1b27",
+      "line_count": 127,
+      "raw_line_count": 127,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-result-ux_completion.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:00f925340ab2e1ad944b1386e671851afb7bf1d65002a92dac44c0c09f154900",
+      "audit_digest": "sha256:00f925340ab2e1ad944b1386e671851afb7bf1d65002a92dac44c0c09f154900",
+      "line_count": 124,
+      "raw_line_count": 124,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:2dcf467be800a423c17de1bcf8b842bda560ca00981bc9d7f053d4646fe0f38b",
+      "audit_digest": "sha256:2dcf467be800a423c17de1bcf8b842bda560ca00981bc9d7f053d4646fe0f38b",
+      "line_count": 983,
+      "raw_line_count": 983,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:4c45b8b1977e6be0f8f8e861b0a1016d75447aeec00da345747329161753df0a",
+      "audit_digest": "sha256:4c45b8b1977e6be0f8f8e861b0a1016d75447aeec00da345747329161753df0a",
+      "line_count": 109,
+      "raw_line_count": 109,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/review-request-human_usability.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:d17c0a57b0371ee844e6201797dfc6594aad01a74701935844b8979ecbd2d0ca",
+      "audit_digest": "sha256:d17c0a57b0371ee844e6201797dfc6594aad01a74701935844b8979ecbd2d0ca",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/review-request-network_runtime.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:c6cd1f2ad1820e2a07216a46c3f58017d5ab416d3e6bd930abcea567dd30f7a9",
+      "audit_digest": "sha256:c6cd1f2ad1820e2a07216a46c3f58017d5ab416d3e6bd930abcea567dd30f7a9",
+      "line_count": 135,
+      "raw_line_count": 135,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/review-result-human_usability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:ab91bad84c98a0eae075a6a374f41e7f52274c17f01fa4c8f8100922d3279e7b",
+      "audit_digest": "sha256:ab91bad84c98a0eae075a6a374f41e7f52274c17f01fa4c8f8100922d3279e7b",
+      "line_count": 142,
+      "raw_line_count": 142,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/review-result-network_runtime.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:3424f3e18e2e88941057ebbc29e1bab95129d726958543949beeddbe00031a3e",
+      "audit_digest": "sha256:3424f3e18e2e88941057ebbc29e1bab95129d726958543949beeddbe00031a3e",
+      "line_count": 124,
+      "raw_line_count": 124,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:605fe15bdab28cd8cd3569578dd61332dc01323d9a938b6fd023ea8fff4f6bff",
+      "audit_digest": "sha256:605fe15bdab28cd8cd3569578dd61332dc01323d9a938b6fd023ea8fff4f6bff",
+      "line_count": 426,
+      "raw_line_count": 426,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:060cb4b84eba72c0e3707b00f0787172209c9ea9763d085fb1925ecd5a6b9954",
+      "audit_digest": "sha256:060cb4b84eba72c0e3707b00f0787172209c9ea9763d085fb1925ecd5a6b9954",
+      "line_count": 434,
+      "raw_line_count": 434,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-request-e2e_ux.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:7859481a82e27367c82cfadf1a1ac71210334964ff0b3284cd0ab4756191651a",
+      "audit_digest": "sha256:7859481a82e27367c82cfadf1a1ac71210334964ff0b3284cd0ab4756191651a",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-request-gate_coverage.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:cf6514e7ca2f436dac438dcd901d6beef8c24735bfa6cd39a59a214b5d1f419b",
+      "audit_digest": "sha256:cf6514e7ca2f436dac438dcd901d6beef8c24735bfa6cd39a59a214b5d1f419b",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-request-unit_integration.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:68baff49fd9528a36da16e5ebb0db008f1fcdf1fdb17f03823ac2467f66cbc20",
+      "audit_digest": "sha256:68baff49fd9528a36da16e5ebb0db008f1fcdf1fdb17f03823ac2467f66cbc20",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-result-e2e_ux.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:0b04be7cd905c773028c524bcbc3eb49fcb52884a853278a6dc2d9869d2e89d1",
+      "audit_digest": "sha256:0b04be7cd905c773028c524bcbc3eb49fcb52884a853278a6dc2d9869d2e89d1",
+      "line_count": 130,
+      "raw_line_count": 130,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-result-gate_coverage.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:1bf45930815abc6f2c55b044082802c69329641a22dbaaaa0e17b266cca26548",
+      "audit_digest": "sha256:1bf45930815abc6f2c55b044082802c69329641a22dbaaaa0e17b266cca26548",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-result-unit_integration.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:a4fc223435484275ab3d8ef5c13d5d9c4bb51999830e6ebf080811583dc633b2",
+      "audit_digest": "sha256:a4fc223435484275ab3d8ef5c13d5d9c4bb51999830e6ebf080811583dc633b2",
+      "line_count": 133,
+      "raw_line_count": 133,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/audit-replay-bundle.json.gz",
+      "digest": "sha256:41e09975138d25fefc9e5f0ff54953578f1b882690de921e9f8e14357d49fa5a",
+      "audit_digest": "sha256:41e09975138d25fefc9e5f0ff54953578f1b882690de921e9f8e14357d49fa5a",
+      "line_count": 938,
+      "raw_line_count": 938,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-routing-profiles-rendered-projections/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/adjudication/story-vibepro-routing-profiles-rendered-projections/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-routing-profiles-rendered-projections/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/adjudication/story-vibepro-routing-profiles-rendered-projections/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/targeted-validation-b4.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/targeted-validation-b4.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/typecheck-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/typecheck-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/split-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/split-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/qa/routing-profiles-rendered-projections/current-build-8a1f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/qa/routing-profiles-rendered-projections/current-build-8a1f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/routing-profiles-rendered-projections/current-responsibility-v2-8a1f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/qa/routing-profiles-rendered-projections/current-responsibility-v2-8a1f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/routing-profiles-rendered-projections/current-typecheck-8a1f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/qa/routing-profiles-rendered-projections/current-typecheck-8a1f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/routing-profiles-rendered-projections/expensive-8a1f0780.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/qa/routing-profiles-rendered-projections/expensive-8a1f0780.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/routing-profiles-rendered-projections/targeted-8a1f0780.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/qa/routing-profiles-rendered-projections/targeted-8a1f0780.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T13-25-43.096Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T13-25-43.096Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T13-58-54.977Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T13-58-54.977Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T14-33-48.141Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T14-33-48.141Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T14-34-18.149Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T14-34-18.149Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-36-27.448Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-36-27.448Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-38-03.411Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-38-03.411Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-39-27.659Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-39-27.659Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-39-43.120Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-39-43.120Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-21-10.156Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-21-10.156Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-54-14.584Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-54-14.584Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-54-30.158Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-54-30.158Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-06-07.512Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-06-07.512Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-18-13.833Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-18-13.833Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-26-55.166Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-26-55.166Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-30-55.714Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-30-55.714Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T18-24-33.889Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T18-24-33.889Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T18-27-24.570Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T18-27-24.570Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T18-27-35.547Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T18-27-35.547Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T13-25-49.468Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T13-25-49.468Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T13-54-53.021Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T13-54-53.021Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T14-41-35.672Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T14-41-35.672Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T17-19-42.473Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T17-19-42.473Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T18-23-34.461Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T18-23-34.461Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-spec_consistency-2026-07-21T13-25-46.234Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-spec_consistency-2026-07-21T13-25-46.234Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-spec_consistency-2026-07-21T17-03-00.764Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-spec_consistency-2026-07-21T17-03-00.764Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-spec_consistency-2026-07-21T17-16-39.013Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-spec_consistency-2026-07-21T17-16-39.013Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/preflight-needs-changes-9415.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/preflight-needs-changes-9415.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-architecture_boundary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/architecture_spec/review-request-architecture_boundary.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-regression_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/architecture_spec/review-request-regression_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-request-spec_consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/architecture_spec/review-request-spec_consistency.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-result-architecture_boundary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/architecture_spec/review-result-architecture_boundary.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-result-regression_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/architecture_spec/review-result-regression_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/review-result-spec_consistency.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/architecture_spec/review-result-spec_consistency.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-architecture-boundary-8a1f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-architecture-boundary-8a1f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-architecture-boundary-final-9415.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-architecture-boundary-final-9415.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-architecture-boundary-pass-9415.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-architecture-boundary-pass-9415.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-regression-risk-8a1f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-regression-risk-8a1f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T10-45-16.533Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T10-45-16.533Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T11-09-13.140Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T11-09-13.140Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T11-36-57.469Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T11-36-57.469Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T12-11-09.208Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T12-11-09.208Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T14-56-08.013Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T14-56-08.013Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T15-05-17.480Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T15-05-17.480Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T15-21-25.669Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T15-21-25.669Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T16-51-00.662Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T16-51-00.662Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T17-44-05.845Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T17-44-05.845Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T18-20-56.320Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T18-20-56.320Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T14-56-08.836Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T14-56-08.836Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T15-24-35.652Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T15-24-35.652Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T16-27-22.231Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T16-27-22.231Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T16-51-47.721Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T16-51-47.721Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T17-44-38.072Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T17-44-38.072Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T18-21-02.155Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T18-21-02.155Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/lifecycle.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/gate/lifecycle.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-request-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/gate/review-request-release_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-result-release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/gate/review-result-release_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/terra-low-gate-evidence-final-9415.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/terra-low-gate-evidence-final-9415.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/terra-low-release-risk-9415.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/terra-low-release-risk-9415.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-code_spec_alignment-2026-07-21T16-18-27.863Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-code_spec_alignment-2026-07-21T16-18-27.863Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-code_spec_alignment-2026-07-21T17-01-21.015Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-code_spec_alignment-2026-07-21T17-01-21.015Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-code_spec_alignment-2026-07-21T18-18-37.261Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-code_spec_alignment-2026-07-21T18-18-37.261Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T13-31-36.134Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T13-31-36.134Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T14-02-12.655Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T14-02-12.655Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T14-19-15.669Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T14-19-15.669Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T14-37-02.205Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T14-37-02.205Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T15-28-35.830Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T15-28-35.830Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T15-43-06.327Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T15-43-06.327Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T16-18-48.026Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T16-18-48.026Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T16-47-30.541Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T16-47-30.541Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T16-59-31.287Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T16-59-31.287Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T17-33-35.992Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T17-33-35.992Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T18-18-44.339Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T18-18-44.339Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T18-27-54.753Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T18-27-54.753Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T13-31-37.162Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T13-31-37.162Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T14-19-16.549Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T14-19-16.549Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T14-46-31.445Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T14-46-31.445Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T17-40-27.553Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T17-40-27.553Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T18-18-51.525Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T18-18-51.525Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-request-code_spec_alignment.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/implementation/review-request-code_spec_alignment.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-request-runtime_contract.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/implementation/review-request-runtime_contract.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-request-ux_completion.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/implementation/review-request-ux_completion.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-result-code_spec_alignment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/implementation/review-result-code_spec_alignment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-result-runtime_contract.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/implementation/review-result-runtime_contract.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/review-result-ux_completion.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/implementation/review-result-ux_completion.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/terra-low-runtime-contract-8a1f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/terra-low-runtime-contract-8a1f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/terra-low-runtime-contract-9415.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/terra-low-runtime-contract-9415.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-human_usability-2026-07-21T14-52-15.959Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-human_usability-2026-07-21T14-52-15.959Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-network_runtime-2026-07-21T14-52-15.053Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-network_runtime-2026-07-21T14-52-15.053Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-network_runtime-2026-07-21T17-41-59.463Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-network_runtime-2026-07-21T17-41-59.463Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-network_runtime-2026-07-21T18-20-50.261Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-network_runtime-2026-07-21T18-20-50.261Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/review-request-human_usability.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/preview/review-request-human_usability.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/review-request-network_runtime.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/preview/review-request-network_runtime.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/review-result-human_usability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/preview/review-result-human_usability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/review-result-network_runtime.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/preview/review-result-network_runtime.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T13-28-39.063Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T13-28-39.063Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T14-06-09.190Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T14-06-09.190Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T14-45-12.864Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T14-45-12.864Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T17-38-01.319Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T17-38-01.319Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T18-11-08.738Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T18-11-08.738Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T13-28-40.412Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T13-28-40.412Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T14-09-45.916Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T14-09-45.916Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T14-16-24.768Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T14-16-24.768Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T14-45-13.993Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T14-45-13.993Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T17-39-01.813Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T17-39-01.813Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T18-12-27.132Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T18-12-27.132Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T18-22-08.166Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T18-22-08.166Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-unit_integration-2026-07-21T18-09-40.248Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-unit_integration-2026-07-21T18-09-40.248Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-unit_integration-2026-07-21T18-22-06.028Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-unit_integration-2026-07-21T18-22-06.028Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-request-e2e_ux.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/test_plan/review-request-e2e_ux.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-request-gate_coverage.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/test_plan/review-request-gate_coverage.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-request-unit_integration.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/test_plan/review-request-unit_integration.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-result-e2e_ux.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/test_plan/review-result-e2e_ux.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-result-gate_coverage.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/test_plan/review-result-gate_coverage.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/review-result-unit_integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/reviews/test_plan/review-result-unit_integration.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-routing-profiles-rendered-projections/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/spec/story-vibepro-routing-profiles-rendered-projections/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-routing-profiles-rendered-projections/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/stories/story-vibepro-routing-profiles-rendered-projections/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-routing-profiles-rendered-projections/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/validation-sequencing/story-vibepro-routing-profiles-rendered-projections/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-routing-profiles-rendered-projections/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/adjudication/story-vibepro-routing-profiles-rendered-projections/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-routing-profiles-rendered-projections/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/adjudication/story-vibepro-routing-profiles-rendered-projections/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/diagnostics/2026-07-21T142609Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/design-ssot-reconciliation.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/design-ssot-reconciliation.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/targeted-validation-b4.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/targeted-validation-b4.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/typecheck-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/preflight-artifacts/typecheck-status.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/split-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/pr/story-vibepro-routing-profiles-rendered-projections/split-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/routing-profiles-rendered-projections/current-build-8a1f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/qa/routing-profiles-rendered-projections/current-build-8a1f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/routing-profiles-rendered-projections/current-responsibility-v2-8a1f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/qa/routing-profiles-rendered-projections/current-responsibility-v2-8a1f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/routing-profiles-rendered-projections/current-typecheck-8a1f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/qa/routing-profiles-rendered-projections/current-typecheck-8a1f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/routing-profiles-rendered-projections/expensive-8a1f0780.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/qa/routing-profiles-rendered-projections/expensive-8a1f0780.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/qa/routing-profiles-rendered-projections/targeted-8a1f0780.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/qa/routing-profiles-rendered-projections/targeted-8a1f0780.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T13-25-43.096Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T13-25-43.096Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T13-58-54.977Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T13-58-54.977Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T14-33-48.141Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T14-33-48.141Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T14-34-18.149Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T14-34-18.149Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-36-27.448Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-36-27.448Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-38-03.411Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-38-03.411Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-39-27.659Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-39-27.659Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-39-43.120Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T15-39-43.120Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-21-10.156Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-21-10.156Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-54-14.584Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-54-14.584Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-54-30.158Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T16-54-30.158Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-06-07.512Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-06-07.512Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-18-13.833Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-18-13.833Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-26-55.166Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-26-55.166Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-30-55.714Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T17-30-55.714Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T18-24-33.889Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T18-24-33.889Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T18-27-24.570Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T18-27-24.570Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T18-27-35.547Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-architecture_boundary-2026-07-21T18-27-35.547Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T13-25-49.468Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T13-25-49.468Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T13-54-53.021Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T13-54-53.021Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T14-41-35.672Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T14-41-35.672Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T17-19-42.473Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T17-19-42.473Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T18-23-34.461Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-regression_risk-2026-07-21T18-23-34.461Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-spec_consistency-2026-07-21T13-25-46.234Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-spec_consistency-2026-07-21T13-25-46.234Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-spec_consistency-2026-07-21T17-03-00.764Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-spec_consistency-2026-07-21T17-03-00.764Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-spec_consistency-2026-07-21T17-16-39.013Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/history/review-result-spec_consistency-2026-07-21T17-16-39.013Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/preflight-needs-changes-9415.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/preflight-needs-changes-9415.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-architecture-boundary-8a1f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-architecture-boundary-8a1f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-architecture-boundary-final-9415.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-architecture-boundary-final-9415.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-architecture-boundary-pass-9415.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-architecture-boundary-pass-9415.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-regression-risk-8a1f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/architecture_spec/terra-low-regression-risk-8a1f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T10-45-16.533Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T10-45-16.533Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T11-09-13.140Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T11-09-13.140Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T11-36-57.469Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T11-36-57.469Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T12-11-09.208Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T12-11-09.208Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T14-56-08.013Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T14-56-08.013Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T15-05-17.480Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T15-05-17.480Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T15-21-25.669Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T15-21-25.669Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T16-51-00.662Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T16-51-00.662Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T17-44-05.845Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T17-44-05.845Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T18-20-56.320Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-gate_evidence-2026-07-21T18-20-56.320Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T14-56-08.836Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T14-56-08.836Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T15-24-35.652Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T15-24-35.652Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T16-27-22.231Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T16-27-22.231Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T16-51-47.721Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T16-51-47.721Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T17-44-38.072Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T17-44-38.072Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T18-21-02.155Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/history/review-result-release_risk-2026-07-21T18-21-02.155Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/terra-low-gate-evidence-final-9415.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/terra-low-gate-evidence-final-9415.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/terra-low-release-risk-9415.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/terra-low-release-risk-9415.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-code_spec_alignment-2026-07-21T16-18-27.863Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-code_spec_alignment-2026-07-21T16-18-27.863Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-code_spec_alignment-2026-07-21T17-01-21.015Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-code_spec_alignment-2026-07-21T17-01-21.015Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-code_spec_alignment-2026-07-21T18-18-37.261Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-code_spec_alignment-2026-07-21T18-18-37.261Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T13-31-36.134Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T13-31-36.134Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T14-02-12.655Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T14-02-12.655Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T14-19-15.669Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T14-19-15.669Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T14-37-02.205Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T14-37-02.205Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T15-28-35.830Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T15-28-35.830Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T15-43-06.327Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T15-43-06.327Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T16-18-48.026Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T16-18-48.026Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T16-47-30.541Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T16-47-30.541Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T16-59-31.287Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T16-59-31.287Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T17-33-35.992Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T17-33-35.992Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T18-18-44.339Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T18-18-44.339Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T18-27-54.753Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-runtime_contract-2026-07-21T18-27-54.753Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T13-31-37.162Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T13-31-37.162Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T14-19-16.549Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T14-19-16.549Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T14-46-31.445Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T14-46-31.445Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T17-40-27.553Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T17-40-27.553Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T18-18-51.525Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/history/review-result-ux_completion-2026-07-21T18-18-51.525Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/terra-low-runtime-contract-8a1f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/terra-low-runtime-contract-8a1f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/terra-low-runtime-contract-9415.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/terra-low-runtime-contract-9415.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-human_usability-2026-07-21T14-52-15.959Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-human_usability-2026-07-21T14-52-15.959Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-network_runtime-2026-07-21T14-52-15.053Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-network_runtime-2026-07-21T14-52-15.053Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-network_runtime-2026-07-21T17-41-59.463Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-network_runtime-2026-07-21T17-41-59.463Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-network_runtime-2026-07-21T18-20-50.261Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/history/review-result-network_runtime-2026-07-21T18-20-50.261Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/preview/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T13-28-39.063Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T13-28-39.063Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T14-06-09.190Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T14-06-09.190Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T14-45-12.864Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T14-45-12.864Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T17-38-01.319Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T17-38-01.319Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T18-11-08.738Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-e2e_ux-2026-07-21T18-11-08.738Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T13-28-40.412Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T13-28-40.412Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T14-09-45.916Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T14-09-45.916Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T14-16-24.768Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T14-16-24.768Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T14-45-13.993Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T14-45-13.993Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T17-39-01.813Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T17-39-01.813Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T18-12-27.132Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T18-12-27.132Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T18-22-08.166Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-gate_coverage-2026-07-21T18-22-08.166Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-unit_integration-2026-07-21T18-09-40.248Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-unit_integration-2026-07-21T18-09-40.248Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-unit_integration-2026-07-21T18-22-06.028Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/history/review-result-unit_integration-2026-07-21T18-22-06.028Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-routing-profiles-rendered-projections/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/spec/story-vibepro-routing-profiles-rendered-projections/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-routing-profiles-rendered-projections/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/stories/story-vibepro-routing-profiles-rendered-projections/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-routing-profiles-rendered-projections/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-routing-profiles-rendered-projections/references/vibepro/validation-sequencing/story-vibepro-routing-profiles-rendered-projections/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 6361394
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-21T142609Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 974945
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 6144836
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/implementation/terra-low-runtime-contract-final-9415.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/e2e-transcript.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/test_plan/gate-transcript.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/spec/story-example/spec.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/stories/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-routing-profiles-rendered-projections/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-routing-profiles-rendered-projections/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/verification/",
+      "reason": "source_missing"
+    }
+  ]
+}

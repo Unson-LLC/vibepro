@@ -1,0 +1,8 @@
+{
+  "head_sha": "5e829717106cadc59b23c2f4d7ede74e97b04a22",
+  "exit_code": 0,
+  "pass_count": 128,
+  "fail_count": 0,
+  "command": "node --test --test-reporter=tap test/run-lineage.test.js test/run-lineage-evidence-propagation.test.js test/responsibility-authority.test.js test/guarded-run-session.test.js",
+  "completed_at": "2026-07-21T09:16:10.300Z"
+}

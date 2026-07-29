@@ -61,14 +61,11 @@ missing files, recorded/current heads, and surface hashes.
 
 ### CEF-CONTRACT-006: Content surface is the default review freshness policy
 
-Agent review recording MUST default to `content_surface`. Built-in high-risk
-roles `gate_evidence` and `release_risk` MUST retain strict HEAD freshness
-unless a role-specific policy explicitly opts that role into `content_surface`.
-That opt-in is an operator-owned risk decision; the implementation MUST hash the
-supplied inspection surface but MUST NOT claim to prove transitive impact
-completeness. A global default MUST NOT weaken these built-in roles. An operator
-MAY request strict HEAD binding for another role only when a non-empty
-strict-head reason is supplied.
+Agent review recording MUST default to `content_surface`, including for
+`gate_evidence` and `release_risk`. The implementation MUST hash the supplied
+inspection surface and fail closed when that surface cannot be resolved or no
+longer matches. An operator MAY request strict HEAD binding for a genuinely
+commit-wide high-risk role only when a non-empty strict-head reason is supplied.
 
 ### CEF-CONTRACT-007: Passing review requires inspected judgment
 
@@ -108,10 +105,11 @@ assertion-only invocation.
 - `CEF-S-6`: Given the content freshness implementation, when its focused
   regression suite runs, then docs-only continuation, bound-surface staleness,
   review evidence, and strict binding branches all execute as assertions.
-- `CEF-S-7`: Given a normal review role, when a pass is recorded without a
-  freshness override, then the record uses content-surface freshness; a
-  built-in high-risk role, a role policy carrying `freshness_reason`, or a
-  reasoned CLI override may select strict HEAD freshness.
+- `CEF-S-7`: Given any review role, including `gate_evidence` and
+  `release_risk`, when a pass is recorded without a freshness override, then
+  the record uses content-surface freshness; a role policy carrying
+  `freshness_reason`, or a reasoned CLI override, may select strict HEAD
+  freshness.
 - `CEF-S-8`: Given a pass review missing an inspection summary, judgment delta,
   actual existing inspection input, or inspection-bound surface, then review
   recording fails with a specific validation error.
@@ -128,9 +126,9 @@ assertion-only invocation.
   surface hash behavior.
 - Strict HEAD coverage records `--strict-head-binding` evidence and asserts the
   legacy HEAD mismatch behavior.
-- Review policy coverage asserts content-surface defaults, built-in strict
-  roles that cannot be weakened by a global default, rejection of a global
-  strict default, reason-required role policies, and reason-required CLI
+- Review policy coverage asserts content-surface defaults for gate and release
+  roles, rejection of a global strict default, reason-required role policies,
+  and reason-required CLI
   overrides, pass inspection requirements, and strict-mode surface persistence.
 - CLI and stale-artifact coverage assert that every advertised passing review
   command includes the required inspection and judgment arguments.

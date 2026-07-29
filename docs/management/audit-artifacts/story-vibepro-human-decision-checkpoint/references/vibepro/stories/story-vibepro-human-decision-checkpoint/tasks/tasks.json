@@ -1,0 +1,830 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-07-19T09:15:32.189Z",
+  "story": {
+    "story_id": "story-vibepro-human-decision-checkpoint",
+    "title": "story-vibepro-human-decision-checkpoint",
+    "ssot": "local",
+    "status": "active",
+    "horizon": null,
+    "view": null,
+    "period": null,
+    "category": null
+  },
+  "source_run": {
+    "run_id": "2026-07-19T034124Z",
+    "gate_status": "pass",
+    "source_plan_generated_at": "2026-07-19T09:15:20.354Z"
+  },
+  "scope_boundary": {
+    "schema_version": "0.1.0",
+    "declared": false,
+    "allowed_paths": [
+      "src/checkpoint-manager.js",
+      "src/decision-records.js",
+      "src/nocodb-story-sync.js",
+      "src/story-candidate-generator.js",
+      "src/story-catalog-generator.js",
+      "src/story-html.js",
+      "src/story-manager.js",
+      "src/story-task-generator.js",
+      "src/cli.js",
+      "src/workspace.js",
+      "src/pr-manager.js",
+      "src/diagnostic-engine.js"
+    ],
+    "source": "derived_from_target_files",
+    "recorded_at": "2026-07-19T09:15:32.190Z"
+  },
+  "tasks": [
+    {
+      "id": "story-vibepro-human-decision-checkpoint-source-alignment-review",
+      "source_type": "source_alignment_finding",
+      "source_id": "story-vibepro-human-decision-checkpoint-source-alignment-review",
+      "finding_id": null,
+      "title": "Story/Spec/ADR不整合をレビューする",
+      "priority": "high",
+      "status": "todo",
+      "order": 10,
+      "execution_policy": "proposal_only",
+      "mutates_repository": false,
+      "target_count": 12,
+      "target_files": [
+        "src/checkpoint-manager.js",
+        "src/decision-records.js",
+        "src/nocodb-story-sync.js",
+        "src/story-candidate-generator.js",
+        "src/story-catalog-generator.js",
+        "src/story-html.js",
+        "src/story-manager.js",
+        "src/story-task-generator.js",
+        "src/cli.js",
+        "src/workspace.js",
+        "src/pr-manager.js",
+        "src/diagnostic-engine.js"
+      ],
+      "target_routes": [],
+      "target_groups": [],
+      "read_first_files": [
+        {
+          "file": "src/checkpoint-manager.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/decision-records.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/nocodb-story-sync.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-candidate-generator.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-catalog-generator.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-html.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-manager.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        },
+        {
+          "file": "src/story-task-generator.js",
+          "reason": "Source Alignment FindingのGraphify/コード証跡"
+        }
+      ],
+      "recommended_strategy": {
+        "id": "source-alignment-review",
+        "reason": "コードとしては正しいUIやAPIでも、ユーザーが本当に達成したい成果とずれている可能性がある。"
+      },
+      "implementation_steps": [
+        {
+          "id": "read-sources",
+          "title": "正本を読む",
+          "detail": "Story、Spec、Architecture/ADRの参照を読み、要件・受け入れ基準・境界判断を並べる"
+        },
+        {
+          "id": "read-graph",
+          "title": "Graph影響範囲を読む",
+          "detail": "Graphifyのmatched/related/hub/communityを読み、実際の影響範囲を確認する"
+        },
+        {
+          "id": "classify-mismatch",
+          "title": "不整合を分類する",
+          "detail": "Storyが誤り、Specが誤り、ADRが不足、コードが意図外のどれかを判定する"
+        },
+        {
+          "id": "record-outcome",
+          "title": "判断を記録する",
+          "detail": "修正する場合はタスク化し、正しい場合はレビュー済み理由を正本またはPR本文へ残す"
+        }
+      ],
+      "acceptance_criteria": [
+        "各潜在バグ候補について、Story/Spec/ADR/コードのどれを修正するか判断している",
+        "Graphifyのhub/communityを読んだ上で影響範囲を説明できる",
+        "要件が正しい場合はレビュー済み理由を正本またはPR本文に残している"
+      ],
+      "source_recovery": null,
+      "recovery_drafts": [],
+      "source_alignment_findings": [
+        {
+          "id": "story-vibepro-human-decision-checkpoint-business_context_gap",
+          "story_id": "story-vibepro-human-decision-checkpoint",
+          "title": "実行を止める重要判断だけを永続化して再開するHuman Checkpoint",
+          "type": "business_context_gap",
+          "severity": "high",
+          "reason": "Storyの事業/利用文脈が未確定。",
+          "potential_bug": "コードとしては正しいUIやAPIでも、ユーザーが本当に達成したい成果とずれている可能性がある。",
+          "recommended_review": "対象ユーザー、利用場面、成功状態をStory正本に明記してからSpecを承認する。",
+          "evidence": {
+            "story_source_status": "present",
+            "spec_status": "present",
+            "architecture_status": "present",
+            "source_type": "config_story",
+            "confidence": "medium",
+            "open_questions": [
+              "business_context",
+              "business_metric"
+            ],
+            "story_contract": {
+              "status": "ready",
+              "story_type": "new_capability",
+              "unresolved_checks": []
+            },
+            "docs": [
+              "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md",
+              "docs/specs/vibepro-human-decision-checkpoint.md",
+              "docs/architecture/story-vibepro-human-decision-checkpoint.md"
+            ],
+            "files": [
+              "src/checkpoint-manager.js",
+              "src/decision-records.js",
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js",
+              "src/cli.js",
+              "src/workspace.js",
+              "src/pr-manager.js",
+              "src/diagnostic-engine.js"
+            ],
+            "open_question": "business_context"
+          },
+          "refs": {
+            "story": [
+              "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md"
+            ],
+            "spec": [
+              "docs/specs/vibepro-human-decision-checkpoint.md"
+            ],
+            "architecture": [
+              "docs/architecture/story-vibepro-human-decision-checkpoint.md"
+            ]
+          },
+          "graph": {
+            "matched_files": [
+              "src/checkpoint-manager.js",
+              "src/decision-records.js",
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js"
+            ],
+            "related_files": [
+              "src/cli.js",
+              "src/workspace.js",
+              "src/pr-manager.js",
+              "src/diagnostic-engine.js",
+              "src/run-context-capsule.js",
+              "src/architecture-profiler.js",
+              "src/playbook-exporter.js",
+              "src/agent-review.js"
+            ],
+            "hub_nodes": [
+              {
+                "id": "src_cli_runcli",
+                "label": "runCli()",
+                "source_file": "src/cli.js",
+                "community": 1,
+                "degree": 308
+              },
+              {
+                "id": "src_workspace_toworkspacerelative",
+                "label": "toWorkspaceRelative()",
+                "source_file": "src/workspace.js",
+                "community": 4,
+                "degree": 133
+              },
+              {
+                "id": "src_story_catalog_generator_js",
+                "label": "story-catalog-generator.js",
+                "source_file": "src/story-catalog-generator.js",
+                "community": 6,
+                "degree": 128
+              },
+              {
+                "id": "src_story_manager_js",
+                "label": "story-manager.js",
+                "source_file": "src/story-manager.js",
+                "community": 10,
+                "degree": 126
+              },
+              {
+                "id": "src_pr_manager_buildprcontext",
+                "label": "buildPrContext()",
+                "source_file": "src/pr-manager.js",
+                "community": 0,
+                "degree": 59
+              }
+            ],
+            "affected_communities": [
+              {
+                "id": 4,
+                "route_count": 0,
+                "file_count": 3,
+                "node_count": 51,
+                "edge_count": 172
+              },
+              {
+                "id": 6,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 136,
+                "edge_count": 276
+              },
+              {
+                "id": 20,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 36,
+                "edge_count": 79
+              },
+              {
+                "id": 10,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 120,
+                "edge_count": 273
+              },
+              {
+                "id": 19,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 13,
+                "edge_count": 36
+              },
+              {
+                "id": 1,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 8,
+                "edge_count": 41
+              },
+              {
+                "id": 0,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 6
+              },
+              {
+                "id": 30,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 7
+              },
+              {
+                "id": 7,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 8
+              }
+            ],
+            "related_edge_count": 835,
+            "impact_score": 0.0832,
+            "cross_community": true
+          },
+          "execution_policy": "proposal_only",
+          "mutates_repository": false
+        },
+        {
+          "id": "story-vibepro-human-decision-checkpoint-business_metric_gap",
+          "story_id": "story-vibepro-human-decision-checkpoint",
+          "title": "実行を止める重要判断だけを永続化して再開するHuman Checkpoint",
+          "type": "business_metric_gap",
+          "severity": "medium",
+          "reason": "Storyの成功指標または観測観点が未確定。",
+          "potential_bug": "受け入れ基準を満たしても、プロダクト上の改善を検知できない可能性がある。",
+          "recommended_review": "少なくとも1つのKPI、ログ、運用確認観点をSpecまたはStoryへ紐づける。",
+          "evidence": {
+            "story_source_status": "present",
+            "spec_status": "present",
+            "architecture_status": "present",
+            "source_type": "config_story",
+            "confidence": "medium",
+            "open_questions": [
+              "business_context",
+              "business_metric"
+            ],
+            "story_contract": {
+              "status": "ready",
+              "story_type": "new_capability",
+              "unresolved_checks": []
+            },
+            "docs": [
+              "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md",
+              "docs/specs/vibepro-human-decision-checkpoint.md",
+              "docs/architecture/story-vibepro-human-decision-checkpoint.md"
+            ],
+            "files": [
+              "src/checkpoint-manager.js",
+              "src/decision-records.js",
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js",
+              "src/cli.js",
+              "src/workspace.js",
+              "src/pr-manager.js",
+              "src/diagnostic-engine.js"
+            ],
+            "open_question": "business_metric"
+          },
+          "refs": {
+            "story": [
+              "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md"
+            ],
+            "spec": [
+              "docs/specs/vibepro-human-decision-checkpoint.md"
+            ],
+            "architecture": [
+              "docs/architecture/story-vibepro-human-decision-checkpoint.md"
+            ]
+          },
+          "graph": {
+            "matched_files": [
+              "src/checkpoint-manager.js",
+              "src/decision-records.js",
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js"
+            ],
+            "related_files": [
+              "src/cli.js",
+              "src/workspace.js",
+              "src/pr-manager.js",
+              "src/diagnostic-engine.js",
+              "src/run-context-capsule.js",
+              "src/architecture-profiler.js",
+              "src/playbook-exporter.js",
+              "src/agent-review.js"
+            ],
+            "hub_nodes": [
+              {
+                "id": "src_cli_runcli",
+                "label": "runCli()",
+                "source_file": "src/cli.js",
+                "community": 1,
+                "degree": 308
+              },
+              {
+                "id": "src_workspace_toworkspacerelative",
+                "label": "toWorkspaceRelative()",
+                "source_file": "src/workspace.js",
+                "community": 4,
+                "degree": 133
+              },
+              {
+                "id": "src_story_catalog_generator_js",
+                "label": "story-catalog-generator.js",
+                "source_file": "src/story-catalog-generator.js",
+                "community": 6,
+                "degree": 128
+              },
+              {
+                "id": "src_story_manager_js",
+                "label": "story-manager.js",
+                "source_file": "src/story-manager.js",
+                "community": 10,
+                "degree": 126
+              },
+              {
+                "id": "src_pr_manager_buildprcontext",
+                "label": "buildPrContext()",
+                "source_file": "src/pr-manager.js",
+                "community": 0,
+                "degree": 59
+              }
+            ],
+            "affected_communities": [
+              {
+                "id": 4,
+                "route_count": 0,
+                "file_count": 3,
+                "node_count": 51,
+                "edge_count": 172
+              },
+              {
+                "id": 6,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 136,
+                "edge_count": 276
+              },
+              {
+                "id": 20,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 36,
+                "edge_count": 79
+              },
+              {
+                "id": 10,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 120,
+                "edge_count": 273
+              },
+              {
+                "id": 19,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 13,
+                "edge_count": 36
+              },
+              {
+                "id": 1,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 8,
+                "edge_count": 41
+              },
+              {
+                "id": 0,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 6
+              },
+              {
+                "id": 30,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 7
+              },
+              {
+                "id": 7,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 8
+              }
+            ],
+            "related_edge_count": 835,
+            "impact_score": 0.0832,
+            "cross_community": true
+          },
+          "execution_policy": "proposal_only",
+          "mutates_repository": false
+        },
+        {
+          "id": "story-vibepro-human-decision-checkpoint-cross_community_architecture_review",
+          "story_id": "story-vibepro-human-decision-checkpoint",
+          "title": "実行を止める重要判断だけを永続化して再開するHuman Checkpoint",
+          "type": "cross_community_architecture_review",
+          "severity": "medium",
+          "reason": "Graphify上で複数communityに跨り、ADRは存在するため、ADRと実依存の対応確認が必要。",
+          "potential_bug": "ADRで想定した境界より実コードの影響範囲が広く、要件上は無関係な画面/APIまで変える可能性がある。",
+          "recommended_review": "ADRの対象境界とGraphifyのaffected_communities/hub_nodesが一致しているか確認する。",
+          "evidence": {
+            "story_source_status": "present",
+            "spec_status": "present",
+            "architecture_status": "present",
+            "source_type": "config_story",
+            "confidence": "medium",
+            "open_questions": [
+              "business_context",
+              "business_metric"
+            ],
+            "story_contract": {
+              "status": "ready",
+              "story_type": "new_capability",
+              "unresolved_checks": []
+            },
+            "docs": [
+              "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md",
+              "docs/specs/vibepro-human-decision-checkpoint.md",
+              "docs/architecture/story-vibepro-human-decision-checkpoint.md"
+            ],
+            "files": [
+              "src/checkpoint-manager.js",
+              "src/decision-records.js",
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js",
+              "src/cli.js",
+              "src/workspace.js",
+              "src/pr-manager.js",
+              "src/diagnostic-engine.js"
+            ]
+          },
+          "refs": {
+            "story": [
+              "docs/management/stories/active/story-vibepro-human-decision-checkpoint.md"
+            ],
+            "spec": [
+              "docs/specs/vibepro-human-decision-checkpoint.md"
+            ],
+            "architecture": [
+              "docs/architecture/story-vibepro-human-decision-checkpoint.md"
+            ]
+          },
+          "graph": {
+            "matched_files": [
+              "src/checkpoint-manager.js",
+              "src/decision-records.js",
+              "src/nocodb-story-sync.js",
+              "src/story-candidate-generator.js",
+              "src/story-catalog-generator.js",
+              "src/story-html.js",
+              "src/story-manager.js",
+              "src/story-task-generator.js"
+            ],
+            "related_files": [
+              "src/cli.js",
+              "src/workspace.js",
+              "src/pr-manager.js",
+              "src/diagnostic-engine.js",
+              "src/run-context-capsule.js",
+              "src/architecture-profiler.js",
+              "src/playbook-exporter.js",
+              "src/agent-review.js"
+            ],
+            "hub_nodes": [
+              {
+                "id": "src_cli_runcli",
+                "label": "runCli()",
+                "source_file": "src/cli.js",
+                "community": 1,
+                "degree": 308
+              },
+              {
+                "id": "src_workspace_toworkspacerelative",
+                "label": "toWorkspaceRelative()",
+                "source_file": "src/workspace.js",
+                "community": 4,
+                "degree": 133
+              },
+              {
+                "id": "src_story_catalog_generator_js",
+                "label": "story-catalog-generator.js",
+                "source_file": "src/story-catalog-generator.js",
+                "community": 6,
+                "degree": 128
+              },
+              {
+                "id": "src_story_manager_js",
+                "label": "story-manager.js",
+                "source_file": "src/story-manager.js",
+                "community": 10,
+                "degree": 126
+              },
+              {
+                "id": "src_pr_manager_buildprcontext",
+                "label": "buildPrContext()",
+                "source_file": "src/pr-manager.js",
+                "community": 0,
+                "degree": 59
+              }
+            ],
+            "affected_communities": [
+              {
+                "id": 4,
+                "route_count": 0,
+                "file_count": 3,
+                "node_count": 51,
+                "edge_count": 172
+              },
+              {
+                "id": 6,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 136,
+                "edge_count": 276
+              },
+              {
+                "id": 20,
+                "route_count": 0,
+                "file_count": 2,
+                "node_count": 36,
+                "edge_count": 79
+              },
+              {
+                "id": 10,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 120,
+                "edge_count": 273
+              },
+              {
+                "id": 19,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 13,
+                "edge_count": 36
+              },
+              {
+                "id": 1,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 8,
+                "edge_count": 41
+              },
+              {
+                "id": 0,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 6
+              },
+              {
+                "id": 30,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 7
+              },
+              {
+                "id": 7,
+                "route_count": 0,
+                "file_count": 1,
+                "node_count": 1,
+                "edge_count": 8
+              }
+            ],
+            "related_edge_count": 835,
+            "impact_score": 0.0832,
+            "cross_community": true
+          },
+          "execution_policy": "proposal_only",
+          "mutates_repository": false
+        }
+      ],
+      "graph_context": {
+        "matched_route_count": 0,
+        "target_file_count": 8,
+        "matched_file_count": 8,
+        "matched_files": [
+          "src/checkpoint-manager.js",
+          "src/decision-records.js",
+          "src/nocodb-story-sync.js",
+          "src/story-candidate-generator.js",
+          "src/story-catalog-generator.js",
+          "src/story-html.js",
+          "src/story-manager.js",
+          "src/story-task-generator.js"
+        ],
+        "unmatched_files": [],
+        "matched_node_count": 367,
+        "affected_communities": [
+          {
+            "id": 4,
+            "route_count": 0,
+            "file_count": 3,
+            "node_count": 51,
+            "edge_count": 172
+          },
+          {
+            "id": 6,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 136,
+            "edge_count": 276
+          },
+          {
+            "id": 20,
+            "route_count": 0,
+            "file_count": 2,
+            "node_count": 36,
+            "edge_count": 79
+          },
+          {
+            "id": 10,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 120,
+            "edge_count": 273
+          },
+          {
+            "id": 19,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 13,
+            "edge_count": 36
+          },
+          {
+            "id": 1,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 8,
+            "edge_count": 41
+          },
+          {
+            "id": 0,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 6
+          },
+          {
+            "id": 30,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 7
+          },
+          {
+            "id": 7,
+            "route_count": 0,
+            "file_count": 1,
+            "node_count": 1,
+            "edge_count": 8
+          }
+        ],
+        "hub_nodes": [
+          {
+            "id": "src_cli_runcli",
+            "label": "runCli()",
+            "source_file": "src/cli.js",
+            "community": 1,
+            "degree": 308
+          },
+          {
+            "id": "src_workspace_toworkspacerelative",
+            "label": "toWorkspaceRelative()",
+            "source_file": "src/workspace.js",
+            "community": 4,
+            "degree": 133
+          },
+          {
+            "id": "src_story_catalog_generator_js",
+            "label": "story-catalog-generator.js",
+            "source_file": "src/story-catalog-generator.js",
+            "community": 6,
+            "degree": 128
+          },
+          {
+            "id": "src_story_manager_js",
+            "label": "story-manager.js",
+            "source_file": "src/story-manager.js",
+            "community": 10,
+            "degree": 126
+          },
+          {
+            "id": "src_pr_manager_buildprcontext",
+            "label": "buildPrContext()",
+            "source_file": "src/pr-manager.js",
+            "community": 0,
+            "degree": 59
+          }
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/workspace.js",
+          "src/pr-manager.js",
+          "src/diagnostic-engine.js",
+          "src/run-context-capsule.js",
+          "src/architecture-profiler.js",
+          "src/playbook-exporter.js",
+          "src/agent-review.js"
+        ],
+        "related_edge_count": 835,
+        "impact_score": 0.0832,
+        "community_span": 9,
+        "cross_community": true
+      },
+      "pre_fix_briefing": null
+    }
+  ]
+}

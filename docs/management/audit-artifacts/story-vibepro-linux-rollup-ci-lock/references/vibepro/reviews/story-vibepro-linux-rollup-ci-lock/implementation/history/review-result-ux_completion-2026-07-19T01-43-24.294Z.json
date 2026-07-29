@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-linux-rollup-ci-lock",
+  "stage": "implementation",
+  "role": "ux_completion",
+  "status": "pass",
+  "summary": "Public output and navigation are unchanged while LRCL-004 traceability improved",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified current-head Spec-only delta against prior public-output review and fresh build evidence",
+    "evidence": null,
+    "inputs": [
+      "docs/releases/2026-07.md"
+    ]
+  },
+  "judgment_delta": [
+    "No executable or generated-output regression; current build validates 192 files"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+    "expected_root": null,
+    "expected_head_sha": "0a603dc07d84b757128380b60ad55ce6740314c4",
+    "current_head_sha": "0a603dc07d84b757128380b60ad55ce6740314c4",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-linux-rollup-ci-lock",
+      "expected_root": null,
+      "expected_head_sha": "0a603dc07d84b757128380b60ad55ce6740314c4",
+      "current_head_sha": "0a603dc07d84b757128380b60ad55ce6740314c4",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-19T01:43:24.294Z",
+  "git_context": {
+    "head_sha": "0a603dc07d84b757128380b60ad55ce6740314c4",
+    "current_branch": "vibepro/story-vibepro-linux-rollup-ci-lock",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T01:43:24.292Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Independent differential current-head review"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "0a603dc07d84b757128380b60ad55ce6740314c4",
+    "surface_files": [
+      {
+        "path": "docs/releases/2026-07.md",
+        "sha256": "10f9bdc1224b541a630ae8fbcc8f8ec891075ef4da20acd0269d498d576c1c6f",
+        "size": 4188
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "4efb3e1d3972e0f37c4a798409fbffda494491fd8bef97f59c89a38f7f5d838c"
+  },
+  "source_fingerprint": "e7849a84c5957d7efa3d4f44da73ebbfb4cf67bbb6dcf19c26e41655109480e4",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/r3_ux",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-linux-rollup-ci-lock/implementation/review-request-ux_completion.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

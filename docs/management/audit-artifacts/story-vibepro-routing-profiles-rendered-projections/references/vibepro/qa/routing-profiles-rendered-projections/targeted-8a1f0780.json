@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "tests": 111,
+  "pass": 111,
+  "fail": 0,
+  "head": "8a1f0780ee0f8378b4c2a11870cb9e024f34c03d",
+  "command": "node --test test/artifact-routing.test.js test/responsibility-authority.test.js test/agent-review-independence.test.js test/content-scoped-evidence-freshness.test.js test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+  "tap_artifact": ".vibepro/qa/routing-profiles-rendered-projections/targeted-8a1f0780.tap"
+}

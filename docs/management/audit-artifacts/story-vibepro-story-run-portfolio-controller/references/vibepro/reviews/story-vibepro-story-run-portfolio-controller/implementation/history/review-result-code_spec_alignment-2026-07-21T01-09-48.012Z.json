@@ -1,0 +1,163 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-story-run-portfolio-controller",
+  "stage": "implementation",
+  "role": "code_spec_alignment",
+  "status": "pass",
+  "summary": "Current HEAD aligns with Story Spec and Architecture.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed Story Architecture Spec controller Guarded Run CLI and focused tests; malformed JSON creation identity and scope contamination are covered.",
+    "evidence": null,
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-story-run-portfolio-controller.md",
+      "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+      "docs/specs/story-vibepro-story-run-portfolio-controller.md",
+      "src/story-run-portfolio.js",
+      "src/guarded-run-session.js",
+      "src/cli.js",
+      "test/story-run-portfolio.test.js",
+      "test/guarded-run-session.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Prior parse and creation identity concerns were resolved by direct current-HEAD tests."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+    "expected_head_sha": "0cd39316cbdde8bb6bc7f32dbb388b2c0607000a",
+    "current_head_sha": "0cd39316cbdde8bb6bc7f32dbb388b2c0607000a",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-story-run-portfolio-controller-dev",
+      "branch": "codex/story-vibepro-story-run-portfolio-controller",
+      "actual_branch": "codex/story-vibepro-story-run-portfolio-controller",
+      "current_head_sha": "0cd39316cbdde8bb6bc7f32dbb388b2c0607000a",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-21T01:09:48.012Z",
+  "git_context": {
+    "head_sha": "0cd39316cbdde8bb6bc7f32dbb388b2c0607000a",
+    "current_branch": "codex/story-vibepro-story-run-portfolio-controller",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T01:09:48.002Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "final current-head code and spec review"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "0cd39316cbdde8bb6bc7f32dbb388b2c0607000a",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-story-run-portfolio-controller.md",
+        "sha256": "45996a071da814712eb28572e7db8a485dcb122c74bde362ca6ca18183dea8a3",
+        "size": 4449
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-story-run-portfolio-controller.md",
+        "sha256": "f18889263b606a7cde24e905c5a9c74b33f8b1504a3970e36a3e1732d53ecce4",
+        "size": 4441
+      },
+      {
+        "path": "docs/specs/story-vibepro-story-run-portfolio-controller.md",
+        "sha256": "987600509812924a1a52c15b8bb2063cfd7d3e5f87dd6f11c243817404197ed8",
+        "size": 5085
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "0701fc2ad1047dcb5cedfd3042fc668ad27899047ae739936515da754d5b17a3",
+        "size": 210078
+      },
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "e02d2ad12d71146a4dc568838542f57bc306d447814de47e906dec3d2c5b50fc",
+        "size": 77013
+      },
+      {
+        "path": "src/story-run-portfolio.js",
+        "sha256": "f75f2f7cc19fb53975a51f509132075f7c6d78c9c21803c96a3482f36fd30249",
+        "size": 27674
+      },
+      {
+        "path": "test/guarded-run-session.test.js",
+        "sha256": "7538ba525ab368b5599b7de65a001858d3dfe9465938f8e30deef26fa142799d",
+        "size": 125769
+      },
+      {
+        "path": "test/story-run-portfolio.test.js",
+        "sha256": "acb7961911bed7223fa72a2a1dc50cf63837c1b0c60ad3b05cb2408f86329305",
+        "size": 31366
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "82578e1215c5000de8c92502ef2fc3142835dd232418a0fbc2022b598cc27506"
+  },
+  "source_fingerprint": "d0fac35b901a2052658e8f35c6c7b11ba94b06359e2250e19c9f7b76dee74e22",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/story9_code_final",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-story-run-portfolio-controller/implementation/review-request-code_spec_alignment.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

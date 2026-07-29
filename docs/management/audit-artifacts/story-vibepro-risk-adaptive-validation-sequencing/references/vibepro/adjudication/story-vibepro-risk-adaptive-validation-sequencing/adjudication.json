@@ -1,0 +1,116 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+  "updated_at": "2026-07-20T10:13:07.280Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "The public-path matrix covers repair, freeze, reuse, invalidation, CI import, and final authority and passes 63/63 on frozen HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7d7f-b8d0-7dd0-a4aa-38ba40ffffc6",
+        "session_ref": ".vibepro/adjudication/story-vibepro-risk-adaptive-validation-sequencing/transcript-current-head-29b87d38.md"
+      },
+      "head_commit": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+      "recorded_at": "2026-07-20T10:13:07.280Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "Trusted CI import requires matching HEAD, committed workflow coverage, command fingerprint, and validated receipt; negative variants reject.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7d7f-b8d0-7dd0-a4aa-38ba40ffffc6",
+        "session_ref": ".vibepro/adjudication/story-vibepro-risk-adaptive-validation-sequencing/transcript-current-head-29b87d38.md"
+      },
+      "head_commit": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+      "recorded_at": "2026-07-20T10:13:07.072Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "PR readiness requires current-head strong closed canonical final review; stale, weak, open, or preflight-only evidence blocks.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7d7f-b8d0-7dd0-a4aa-38ba40ffffc6",
+        "session_ref": ".vibepro/adjudication/story-vibepro-risk-adaptive-validation-sequencing/transcript-current-head-29b87d38.md"
+      },
+      "head_commit": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+      "recorded_at": "2026-07-20T10:13:06.885Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Unknown, source, test, repo-control, other, and contradicted optimistic labels fail closed to full invalidation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7d7f-b8d0-7dd0-a4aa-38ba40ffffc6",
+        "session_ref": ".vibepro/adjudication/story-vibepro-risk-adaptive-validation-sequencing/transcript-current-head-29b87d38.md"
+      },
+      "head_commit": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+      "recorded_at": "2026-07-20T10:13:06.636Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Known contract surfaces produce persisted scoped downstream invalidation with reason, surfaces, and files.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7d7f-b8d0-7dd0-a4aa-38ba40ffffc6",
+        "session_ref": ".vibepro/adjudication/story-vibepro-risk-adaptive-validation-sequencing/transcript-current-head-29b87d38.md"
+      },
+      "head_commit": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+      "recorded_at": "2026-07-20T10:13:06.461Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Reuse enforces the exact frozen HEAD, fingerprint, and command triple and rejects drift or incompatible duplicates.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7d7f-b8d0-7dd0-a4aa-38ba40ffffc6",
+        "session_ref": ".vibepro/adjudication/story-vibepro-risk-adaptive-validation-sequencing/transcript-current-head-29b87d38.md"
+      },
+      "head_commit": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+      "recorded_at": "2026-07-20T10:13:06.239Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Transitions reject premature freeze and nonterminal findings; current state froze only after valid targeted and preflight passes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7d7f-b8d0-7dd0-a4aa-38ba40ffffc6",
+        "session_ref": ".vibepro/adjudication/story-vibepro-risk-adaptive-validation-sequencing/transcript-current-head-29b87d38.md"
+      },
+      "head_commit": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+      "recorded_at": "2026-07-20T10:13:06.035Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Advisory preflight is explicitly non-final and tests keep independent final review blocking.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7d7f-b8d0-7dd0-a4aa-38ba40ffffc6",
+        "session_ref": ".vibepro/adjudication/story-vibepro-risk-adaptive-validation-sequencing/transcript-current-head-29b87d38.md"
+      },
+      "head_commit": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+      "recorded_at": "2026-07-20T10:13:05.856Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Planner and current state demonstrate ordered aggregate preflight before frozen expensive verification.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f7d7f-b8d0-7dd0-a4aa-38ba40ffffc6",
+        "session_ref": ".vibepro/adjudication/story-vibepro-risk-adaptive-validation-sequencing/transcript-current-head-29b87d38.md"
+      },
+      "head_commit": "29b87d38d160c168f46a17d4252b0a55ecbfa5e1",
+      "recorded_at": "2026-07-20T10:13:05.662Z"
+    }
+  ]
+}

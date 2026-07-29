@@ -1,0 +1,216 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Exact frozen HEAD e3c7d93b now has a complete, current, executable and waiver-free evidence chain; the runtime inspection-path traceability defect is resolved.",
+  "findings": [],
+  "finding_dispositions": [
+    {
+      "finding_id": "gate-evidence-runtime-review-missing-inputs",
+      "disposition": "accepted",
+      "resolved_by": [
+        ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/review-result-runtime_contract.json"
+      ],
+      "reason": "corrected runtime_contract record now binds only real test paths",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [
+    ".vibepro/qa/review-gate-evidence-e3c7d93b.json"
+  ],
+  "inspection": {
+    "summary": "Independently verified the corrected strict-head runtime_contract canonical record: the three actual tests exist, are hash-bound, missing_files is empty, provenance is strong and lifecycle closed. Full 2028/2028, targeted 124/124, sequence 5/5, focused 5/5 and conformance parity 85/65/9/11 remain current.",
+    "evidence": ".vibepro/qa/review-gate-evidence-e3c7d93b.json",
+    "inputs": [
+      "src/execution-state.js",
+      "test/execution-state.test.js",
+      "test/one-command-pr-ready-closure.test.js",
+      "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "Initial verdict was needs_changes because runtime_contract named two nonexistent paths; after accepted remediation and independent reinspection of the corrected canonical record on unchanged HEAD, final verdict is pass with no remaining findings."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "managed branch mismatch: expected vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8, found vibepro/story-vibepro-one-command-pr-ready-closure-reconcile-routing",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+    "current_head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-reconcile-routing",
+      "current_head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-24T13:51:54.045Z"
+        }
+      }
+    }
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "managed branch mismatch: expected vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8, found vibepro/story-vibepro-one-command-pr-ready-closure-reconcile-routing",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "expected_head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "current_head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+      "managed_worktree": {
+        "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+        "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+        "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+        "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-reconcile-routing",
+        "current_head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+        "dirty": false,
+        "dirty_fingerprint": "clean",
+        "raw_dirty": false,
+        "raw_dirty_fingerprint": "clean",
+        "fingerprint_scope": {
+          "user_excludes": [
+            ".vibepro/",
+            ".worktrees/vibepro/"
+          ],
+          "user_includes": [
+            ".vibepro/config.json"
+          ]
+        },
+        "policy_sync": {
+          "status": "unchanged",
+          "reason": "policy sections already match the source repo config",
+          "sections_updated": [],
+          "last_event": {
+            "status": "synced",
+            "sections_updated": [
+              "budgets"
+            ],
+            "synced_at": "2026-07-24T13:51:54.045Z"
+          }
+        }
+      }
+    }
+  ],
+  "recorded_at": "2026-07-24T14:50:58.072Z",
+  "git_context": {
+    "head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-reconcile-routing",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T14:50:58.058Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "PR-final gate role requires exact frozen HEAD closure after provider task projection"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "e3c7d93bdc6fb9d04964bb3f2f5248b9b93e5c01",
+    "surface_files": [
+      {
+        "path": "src/execution-state.js",
+        "sha256": "c4d1a504fc36be746a88808576d1fc9b1e6cbf7134398d82f196cb07cdd9a5e8",
+        "size": 78535
+      },
+      {
+        "path": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+        "sha256": "65e122a860cebfb2f694322431a61ce0b762a66781f1a211d5c426ffb1ba5179",
+        "size": 37182
+      },
+      {
+        "path": "test/execution-state.test.js",
+        "sha256": "14cfdb891075b67ead18b6b5e221b73974d792f25dfac39a9d2223a409e0bebf",
+        "size": 89391
+      },
+      {
+        "path": "test/one-command-pr-ready-closure.test.js",
+        "sha256": "a806ff69b466508a83bf1954a5569358792e3946b2fb7e1454d97491cfc0fa8e",
+        "size": 21658
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "ebe1bd4576e9994617a641891a14f9d83f1caa2d36de44da5fc1b06d9cb33c5f"
+  },
+  "source_fingerprint": "6590c17f3182fd89974e5073a4078d284ed61f7f8cff3d4538201b0d10ae6a29",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "review-gate-evidence-e3c7d93b",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "/root/review_gate_e3c7",
+    "session_id": "/root/review_gate_e3c7",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/review-gate-evidence-e3c7d93b.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/review-gate-evidence-e3c7d93b.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "/root/review_gate_e3c7",
+      "implementation_session_id": "run-20260724T130916Z-7c409e4b",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

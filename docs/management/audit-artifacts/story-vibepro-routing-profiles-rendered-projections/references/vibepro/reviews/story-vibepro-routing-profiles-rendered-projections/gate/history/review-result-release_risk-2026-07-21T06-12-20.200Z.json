@@ -1,0 +1,145 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Release risk is controlled by legacy fallback, dry-run migration, fail-closed writes, ordered publication states, and an explicit rollback path.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "At HEAD 43835759, verified unchanged legacy fallback authority, migration dry-run with edits_performed zero and collision reporting, fail-closed routing and projection preflight, ordered unresolved -> canonical_written -> projections_written -> published transition, preservation of published bytes on failure, and four-step rollback. Fresh evidence records 55 focused tests, 56 Story E2E tests, and typecheck pass; the interrupted full suite remains needs_setup and is not counted as pass.",
+    "evidence": null,
+    "inputs": [
+      "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+      "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
+      "src/artifact-routing.js",
+      "test/artifact-routing.test.js",
+      "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern was that the explicit transition might describe publication safety without enforcing it; final judgment is pass because validation precedes canonical mutation, failure preserves prior bytes, migration is read-only and collision-aware, legacy fallback is unchanged, and rollback preserves machine canonicals while restoring legacy authority."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue-359",
+    "actual_root": "/private/tmp/vibepro-issue-359",
+    "expected_root": null,
+    "expected_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+    "current_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue-359",
+      "actual_root": "/private/tmp/vibepro-issue-359",
+      "expected_root": null,
+      "expected_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "current_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T06:12:20.200Z",
+  "git_context": {
+    "head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+    "current_branch": "codex/issue-359-routing-profiles-projections",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T06:12:20.184Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Final release risk must bind the frozen PR head."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "43835759a6198b69c70dea5d8e64b6717379240c",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
+        "sha256": "7ddf35a9b77642dce72af9d6c472dacf5276cefff0a72514380bead0b409b0f1",
+        "size": 11743
+      },
+      {
+        "path": "docs/features/routing-profiles-rendered-projections/02_functional_spec.md",
+        "sha256": "96f7f697c2dbecbc8c7baf008a8d25dac613196419494b56e3fcb93de97eb60d",
+        "size": 10732
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "abf0c9e9b651b4b76590aaf833daa291fb3c161ebc782fe2fb80a15d8a9b6ee9",
+        "size": 41595
+      },
+      {
+        "path": "test/artifact-routing.test.js",
+        "sha256": "ab38aeb0118926cdee027d09a35443698dd5e8491af1dd8e11d6d05fef608731",
+        "size": 65324
+      },
+      {
+        "path": "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+        "sha256": "9c4af628210ca17fbc46817fdd726efb3ec47d84ea40dcace6a81163f8b950de",
+        "size": 1346
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "5d8d72672be1045ebe31fd96e304d874c7fa8595004ad01f8782879ab476a063"
+  },
+  "source_fingerprint": "62b67a360ea05495dd92a709adb5fe5dd6598e0b69211c4b98fcbcd161a83866",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "issue359-release-risk-438",
+    "agent_role": null,
+    "model": "gpt-5.4-mini",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/verification-evidence.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

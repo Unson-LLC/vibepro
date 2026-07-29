@@ -1,0 +1,123 @@
+{
+  "schema_version": "0.1.0",
+  "review_type": "architecture_spec:architecture_boundary",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "head_sha": "5cb813d26c831d0e3770f453dec2a82750f731cb",
+  "baseline_ref": "origin/main@118b68091b296f6bb8c4414cfc5eadb69ed73dc0",
+  "status": "needs_changes",
+  "summary": "The runtime architecture conforms to the run-session boundary: the one-command policy is callback-injected, the CLI remains an outer composition surface, the merged production connector and independent-review owners are reused rather than duplicated, and PR creation, merge, waiver, and material external side effects remain outside the autonomous action DAG. However, the exact-head pr-prepare acceptance_e2e_coverage diagnostic reports AC-1 through AC-8 as uncovered after the circular prose-only test was removed, because the remaining behavioral assertions do not carry machine-readable AC markers.",
+  "checks": [
+    {
+      "id": "run_session_module_boundary",
+      "status": "pass",
+      "reason": "src/one-command-pr-ready-closure.js owns policy inside the target model's run-session module and imports only node:timers/promises. Gate/readiness, PR preparation, runtime dispatch, polling, cancellation, and persistence are supplied through bounded callbacks."
+    },
+    {
+      "id": "cli_dependency_direction",
+      "status": "pass",
+      "reason": "No run-session implementation imports src/cli.js. src/cli.js remains the outer command/composition surface, and exact-head conformance records new_run_session_cli_reverse_dependency=false."
+    },
+    {
+      "id": "production_connector_reuse",
+      "status": "pass",
+      "reason": "src/agent-runtime-connectors.js remains the production provider boundary from merged PR #377. The closure diff adds only the runtime objective to its existing prompt contract; it does not add another connector implementation."
+    },
+    {
+      "id": "independent_review_reuse",
+      "status": "pass",
+      "reason": "src/independent-review-orchestrator.js remains the lifecycle, read-only identity, verdict, checkpoint, and recording owner from merged PR #382. guarded-run-session composes createGuardedIndependentReviewRunner and records through the existing Agent Review boundary instead of reproducing review policy in the one-command owner."
+    },
+    {
+      "id": "surface_aware_review_freshness",
+      "status": "pass",
+      "reason": "The branch is based on origin/main containing PR #384 Surface-aware Agent Review Freshness. Guarded review recording supplies inspection inputs and judgment deltas to the existing Agent Review recorder; unchanged-surface rebind requires an explicit assertion and matching inspection surface hash, while strict-head review remains fail-closed. The current main freshness regression matrix passes."
+    },
+    {
+      "id": "human_authority_boundary",
+      "status": "pass",
+      "reason": "The autonomous registry contains only diagnose, prepare_artifacts, implement, verify, review, repair, and final_prepare. PR creation, merge, waiver, deployment, publication, and other material external side effects are absent and remain explicit human commands or typed approval stops."
+    },
+    {
+      "id": "current_head_pr_ready_authority",
+      "status": "pass",
+      "reason": "Only final_prepare can return pr_ready, and both the action owner and the run-session binding require a prepared HEAD equal to the authoritative current managed-worktree HEAD with gate_status.ready_for_pr_create=true."
+    },
+    {
+      "id": "behavioral_acceptance_evidence",
+      "status": "needs_changes",
+      "reason": "The four executable scenarios are substantive and non-circular, but current pr-prepare reports acceptance_e2e_coverage=needs_evidence with covered_acceptance_criteria_count=0 and AC-1 through AC-8 missing. File-header comments are not accepted as executable bindings; the relevant existing behavior assertions need AC marker text in their assertion messages or referenced local static bindings."
+    },
+    {
+      "id": "target_architecture_conformance",
+      "status": "pass",
+      "reason": "The exact-head conformance artifact compares against origin/main@118b68091b296f6bb8c4414cfc5eadb69ed73dc0 and improves violations from 81 to 80, delta -1, with no new run-session-to-CLI reverse dependency."
+    }
+  ],
+  "findings": [
+    {
+      "id": "architecture-boundary-ac-traceability",
+      "severity": "medium",
+      "title": "Behavioral E2E assertions lost machine-readable AC-1 through AC-8 bindings",
+      "detail": "The circular marker-only test was correctly removed, and the remaining four scenarios exercise real managed-worktree, review/repair, typed-stop/resume, and roadmap behavior. Nevertheless, .vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json records acceptance_e2e_coverage.status=needs_evidence, covered_acceptance_criteria_count=0, and every AC-1 through AC-8 as missing because no executable assertion message or assertion-referenced local static binding carries the corresponding marker.",
+      "required_change": "Add each AC marker to the message of an existing assertion that substantively proves that criterion, or to a local static binding consumed by that assertion. Re-run the four-scenario E2E and pr prepare, and require acceptance_e2e_coverage to cover AC-1 through AC-8. Do not restore a marker-only assertion or prose-only test."
+    }
+  ],
+  "conformance": {
+    "artifact": ".vibepro/qa/conformance-5cb813d2.json",
+    "status": "pass",
+    "baseline_violation_count": 81,
+    "current_violation_count": 80,
+    "delta": -1,
+    "undeclared_dependency_count": 66,
+    "budget_violation_count": 5,
+    "orphan_file_count": 9,
+    "new_run_session_cli_reverse_dependency": false
+  },
+  "verification": {
+    "recorded_exact_head_e2e": {
+      "artifact": ".vibepro/qa/e2e-5cb813d2.json",
+      "tests": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    "reviewer_focused_run": {
+      "command": "node --test test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts test/independent-review-orchestrator.test.js test/scope-boundary-gate.test.js test/agent-review.test.js",
+      "tests": 26,
+      "passed": 26,
+      "failed": 0
+    },
+    "latest_main_freshness_run": {
+      "command": "node --test test/content-scoped-evidence-freshness.test.js test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts test/e2e/story-vibepro-content-scoped-evidence-freshness-main.test.js test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+      "tests": 25,
+      "passed": 25,
+      "failed": 0
+    },
+    "diff_check": {
+      "command": "git diff --check 118b68091b296f6bb8c4414cfc5eadb69ed73dc0..HEAD",
+      "status": "pass"
+    }
+  },
+  "inspected_inputs": [
+    ".vibepro/qa/conformance-5cb813d2.json",
+    ".vibepro/qa/e2e-5cb813d2.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    "src/one-command-pr-ready-closure.js",
+    "src/guarded-run-session.js",
+    "src/independent-review-orchestrator.js",
+    "src/agent-runtime-connectors.js",
+    "src/safe-action-orchestrator.js",
+    "src/agent-review.js",
+    "src/cli.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "test/independent-review-orchestrator.test.js",
+    "test/scope-boundary-gate.test.js",
+    "test/content-scoped-evidence-freshness.test.js",
+    "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/target-model.json",
+    "origin/main@118b68091b296f6bb8c4414cfc5eadb69ed73dc0"
+  ]
+}

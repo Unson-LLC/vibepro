@@ -1,0 +1,18 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "head_sha": "56d69700700016747741657b3af580bab5991777",
+  "status": "pass",
+  "command": "node bin/vibepro.js architecture conformance . --json",
+  "current_violation_count": 80,
+  "baseline_ref": "origin/main",
+  "baseline_head_sha": "118b68091b296f6bb8c4414cfc5eadb69ed73dc0",
+  "baseline_violation_count": 81,
+  "current_undeclared_dependency_count": 66,
+  "baseline_undeclared_dependency_count": 66,
+  "current_budget_violation_count": 5,
+  "baseline_budget_violation_count": 5,
+  "current_orphan_file_count": 9,
+  "baseline_orphan_file_count": 10,
+  "new_run_session_to_cli_reverse_dependencies": 0
+}

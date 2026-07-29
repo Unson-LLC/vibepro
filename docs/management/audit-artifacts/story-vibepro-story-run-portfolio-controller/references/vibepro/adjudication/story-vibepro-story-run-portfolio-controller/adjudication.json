@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-story-run-portfolio-controller",
+  "updated_at": "2026-07-21T02:30:09.040Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "focused E2E evidenceは92件passで、テスト群に6 Story sequential完走、mid-story blocker、controller restart後のskipおよびcreation publish gap復旧、typed explicit skip、安全なdigest context promotion、parallel_isolation_unproven拒否がそれぞれ実行可能なシナリオとして存在し、要求matrixの全要素を観測している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_ac_adjudicator",
+        "session_ref": "/root/story9_ac_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:30:09.039Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "assertRunOwnershipがStory、Run、creation request、worktree、branch、mutation/evidence/review/session attributionを検査し、不一致時はentryとportfolioをblocked、stop_reasonをscope_contaminationとして永続化してから例外を返す。各汚染ケースのテストが第二Storyをqueuedのまま開始しないことまで直接確認している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_ac_adjudicator",
+        "session_ref": "/root/story9_ac_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:30:08.808Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "entry単位のcost_attributionがtrusted_pr_ready_ms、active_ms、wait_ms、total_tokens、cost_usd、full_suite_count、evidence_reuse_count、human_interruption_countを保持し、summaryテストがStory別行にactive/wait/token、Full Suite、reuse、interruptionと未取得Trusted PR-readyをunknownとして表示することを直接確認する。異Story attributionは停止され既存値も保持される。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_ac_adjudicator",
+        "session_ref": "/root/story9_ac_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:30:08.585Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "promoteContextはsource_story_id、artifact_path、実内容SHA-256 digest、consumer_story_id、reason、promoted_atを保存する。テストは完全な保存値を確認し、digest不一致、欠損、repo外symlink、raw transcript path、内部transcriptへのsymlinkをすべて拒否しており、raw transcript非継承を直接実証する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_ac_adjudicator",
+        "session_ref": "/root/story9_ac_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:30:08.361Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "waiting_for_human、waiting_for_runtime、blocked、failed、cancelledはSTOPPEDとしてactive扱いされ成功終端から除外される。decideはcontinue/retry/skip、policy_type、reasonを必須化し、全5停止状態のテストが無型判断の拒否、同一Runのみのresume、次entryのqueued維持を確認し、explicit skipの再起動後継続も実証している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_ac_adjudicator",
+        "session_ref": "/root/story9_ac_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:30:08.117Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "advancePortfolioはactive childを先に観測し、前entryがpr_readyまたは明示的skippedでない場合に次queued childの開始を拒否する。6 Storyテストは各前Storyをpr_readyにするまでstarted配列へ次Storyが追加されないことを全順序で確認し、同時advanceも二重開始前に拒否される。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_ac_adjudicator",
+        "session_ref": "/root/story9_ac_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:30:07.873Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "永続creation_request_idとstory_id/run_id/worktree/branchのscope bindingをRun観測ごとに照合し、mutation/evidence/review/session attributionおよびcost attributionの異Story・異Run混載をscope_contaminationで停止する。初回Run、再起動、各artifact種別の異物混入テストが拒否と次entry未開始を直接確認している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_ac_adjudicator",
+        "session_ref": "/root/story9_ac_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:30:07.667Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "createPortfolioが全entryをstory_id、order、run_id、status、worktree、head_sha、cost_attribution、stop_reasonの閉じた8キーで生成し、validateStateも完全一致を強制する。SRP-S-1テストが生成結果のキー集合と6 entryを直接観測している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/story9_ac_adjudicator",
+        "session_ref": "/root/story9_ac_adjudicator"
+      },
+      "head_commit": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+      "recorded_at": "2026-07-21T02:30:07.452Z"
+    }
+  ]
+}

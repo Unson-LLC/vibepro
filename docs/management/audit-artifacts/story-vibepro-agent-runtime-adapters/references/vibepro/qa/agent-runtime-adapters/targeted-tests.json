@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head_sha": "2800e8be37dca4e26c52873898b152f865433524",
+  "command": "node --test test/agent-runtime-adapter.test.js test/safe-action-orchestrator.test.js test/next-best-action-controller.test.js test/guarded-run-session.test.js",
+  "tests": 127,
+  "passed": 127,
+  "failed": 0
+}

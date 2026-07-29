@@ -1,0 +1,12 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "checks": [
+    "config_json_parse",
+    "story_diagnose_graphify",
+    "git_diff_check",
+    "roadmap_state_consistency",
+    "hardening_non_duplication"
+  ],
+  "head": "be8236fa"
+}

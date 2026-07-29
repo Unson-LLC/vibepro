@@ -1,0 +1,180 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-conformance-nul-escape",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Post-rebase gate_evidence pass at head aa22e2d2: NUL-escape fix byte-exact and behavior-identical; unit/e2e/typecheck re-recorded at the rebased head with matching artifacts and content-binding hashes; rebase introduced zero drift in story-owned files (identical blob ids across rebase); diff surface contains only this story's additions. Residuals: CI import still bound to pre-rebase head (re-import before merge), and the deferred NUL-scan guard follow-up.",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "ci-integration-evidence-pre-rebase-head",
+      "detail": "Integration CI import (test (22) SUCCESS) is bound to pre-rebase head 3dbc7eb8, visible as unbound in the artifact; vibepro verify import-ci must be re-run against CI at the rebased head before execute merge"
+    },
+    {
+      "severity": "low",
+      "id": "nul-regression-guard-deferred-acknowledged",
+      "detail": "No committed test fails on raw-NUL reintroduction; already dispositioned deferred in the ledger per Story scope-out; follow-up story chip filed"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "ci-integration-evidence-pre-rebase-head",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "re-import is the immediate next step once CI completes at the rebased head",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "nul-regression-guard-deferred-acknowledged",
+      "disposition": "deferred",
+      "resolved_by": [],
+      "reason": "follow-up story proposed separately per Story scope-out",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewer proved byte-exactness (substituting each raw NUL in the origin/main blob with the 2-char escape reproduces the current file, Buffer.compare===0), confirmed runtime U+0000 equivalence by probe and recorded e2e replay (deepStrictEqual over 7859 files x 16 modules with negative stale probe), ran the unit suite fresh (12/12), verified git blob ids of src and story doc identical across the rebase with merge-base = origin/main c4c3ee55, confirmed the 4-file diff carries only this story's additions, cross-checked verification-evidence head_sha=aa22e2d2 dirty=false and content_binding sha256s against worktree files, confirmed file(1) UTF-8 text and grep -c=3 without binary suppression; no instruction-like text in evidence.",
+    "evidence": "nul-equiv-check probe (escaped(main)==current byte-for-byte); verification-evidence.json head/content-binding cross-check at aa22e2d2; fresh node --test run 12/12; git blob-id comparison across rebase",
+    "inputs": [
+      "src/architecture-conformance.js",
+      "test/architecture-conformance.test.js",
+      "docs/management/stories/active/story-vibepro-conformance-nul-escape.md",
+      ".vibepro/spec/story-vibepro-conformance-nul-escape/spec.json",
+      "design-ssot.json",
+      ".vibepro/config.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial concerns: rebase could have drifted story files or leaked upstream changes into the surface; escape rewrite might not be provably identical; evidence might still bind the pre-rebase head -> final pass because blob ids are identical across the rebase, byte-exact substitution and runtime equivalence are proven, the 4-file diff carries only this story's additions, and unit/e2e/typecheck are re-recorded at aa22e2d2 with matching hashes; CI re-import remains as the standard pre-merge step"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+    "expected_root": null,
+    "expected_head_sha": "aa22e2d29472828117652e75423abf34173b4555",
+    "current_head_sha": "aa22e2d29472828117652e75423abf34173b4555",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-conformance-nul-escape",
+      "expected_root": null,
+      "expected_head_sha": "aa22e2d29472828117652e75423abf34173b4555",
+      "current_head_sha": "aa22e2d29472828117652e75423abf34173b4555",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-24T23:51:51.965Z",
+  "git_context": {
+    "head_sha": "aa22e2d29472828117652e75423abf34173b4555",
+    "current_branch": "claude/story-vibepro-conformance-nul-escape",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T23:51:51.914Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "aa22e2d29472828117652e75423abf34173b4555",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "eac971cb60a16ef06b4eb98bcb7ed021dfeeaabcb8cdde9988a28cd62c4f3593",
+        "size": 42425
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "3bf3d05a5467a2a96813ce34ebc23ceb7f6446823b7d40543f3253db8b51b39b",
+        "size": 225595
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-conformance-nul-escape.md",
+        "sha256": "9e4d34bf7ad231d877e9f9403647e91415cba6c5247d54995bcab534477ed713",
+        "size": 2998
+      },
+      {
+        "path": "src/architecture-conformance.js",
+        "sha256": "7cfe68137a7e158280b9e3fd42e2d56d552ec4da1c8858420e50b330c2797515",
+        "size": 13199
+      },
+      {
+        "path": "test/architecture-conformance.test.js",
+        "sha256": "bf764ce4db81a99ad80ce814773d44099ba60ffde2ebee246f27582ac69e3ec3",
+        "size": 9493
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "d5d192b71f1586c0ea0d4900c44f98a18aa9d73b37c41936688781fc1bb04575"
+  },
+  "source_fingerprint": "d13e2788f7785b082afd9ae37b73409397b8c18387f3ce091af4f81167da3770",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a192997f6894c24ea",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a192997f6894c24ea",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-conformance-nul-escape/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "synchronous Agent tool run completed and returned final verdict JSON; lifecycle bd969c62-be2e-4564-9279-ee009b62fc5c closed with reason completed",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a192997f6894c24ea",
+      "implementation_session_id": "a413907f-956a-47c0-91fa-e0143de14790",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": 101074,
+    "cost_usd": null
+  }
+}

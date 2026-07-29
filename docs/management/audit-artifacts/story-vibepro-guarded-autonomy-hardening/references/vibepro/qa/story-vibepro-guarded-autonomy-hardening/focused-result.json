@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "tests": 155,
+  "passed": 155,
+  "failed": 0,
+  "head_sha": "e6f5cb0438c98309ef98e88a13c7263c59f01b9b",
+  "run_artifact": ".vibepro/qa/story-vibepro-guarded-autonomy-hardening/focused-run.txt",
+  "scenarios": [
+    "budget_and_deadline",
+    "retry_and_backoff",
+    "custom_retry_code_enforcement",
+    "runtime_quota_recovery",
+    "runtime_timeout_recovery",
+    "ci_pending_recovery",
+    "review_timeout_recovery",
+    "review_independence",
+    "provider_fallback_execution_and_audit",
+    "closed_safe_actions",
+    "guarded_run_acceptance_binding",
+    "safe_action_acceptance_binding",
+    "restart_and_cancel",
+    "complete_operational_stop_matrix",
+    "head_drift",
+    "operator_cockpit",
+    "trusted_delivery_efficiency_typed_measurements_and_authority_roundtrip"
+  ]
+}

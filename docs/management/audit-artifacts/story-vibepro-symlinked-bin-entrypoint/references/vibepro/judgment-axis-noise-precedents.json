@@ -1,0 +1,54 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "decision_id": "decision-1784526725386-47b095cc",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The public behavior fix, focused regression test, and its Story Architecture Spec traceability form one atomic CLI-entrypoint change. Splitting documentation or tests would separate the contract from its proof without reducing reviewer load.",
+      "artifact": "docs/architecture/vibepro-symlinked-bin-entrypoint.md",
+      "activation_candidates": [
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-20T05:53:39.599Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:76|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "decision_id": "decision-1784526725386-47b095cc",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The public behavior fix, focused regression test, and its Story Architecture Spec traceability form one atomic CLI-entrypoint change. Splitting documentation or tests would separate the contract from its proof without reducing reviewer load.",
+      "artifact": "docs/architecture/vibepro-symlinked-bin-entrypoint.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:76",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-20T05:58:47.167Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-symlinked-bin-entrypoint",
+      "decision_id": "decision-1784526725386-47b095cc",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The public behavior fix, focused regression test, and its Story Architecture Spec traceability form one atomic CLI-entrypoint change. Splitting documentation or tests would separate the contract from its proof without reducing reviewer load.",
+      "artifact": "docs/architecture/vibepro-symlinked-bin-entrypoint.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-25T04:28:46.589Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

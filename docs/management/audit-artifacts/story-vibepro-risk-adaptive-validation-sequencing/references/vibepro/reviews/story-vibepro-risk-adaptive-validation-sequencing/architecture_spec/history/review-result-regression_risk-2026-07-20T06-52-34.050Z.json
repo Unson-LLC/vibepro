@@ -1,0 +1,142 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "Canonical workflow sequence regression surface passes",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed the canonical fixture repair and independently replayed validation sequencing CI import execution state acceptance and workflow-heavy PR gate paths",
+    "evidence": "Adjacent suite passed 60/60 with 0 failures",
+    "inputs": [
+      "test/risk-adaptive-gate.test.js",
+      "test/execution-state.test.js",
+      "test/validation-sequencing.test.js",
+      "test/ci-evidence-import.test.js",
+      "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "needs_changes for obsolete arbitrary JSON fixture -> pass after canonical public lifecycle and 60-test replay"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+    "expected_root": null,
+    "expected_head_sha": "1eaaf04e23204bf390d44a1a4b8592b1aba90105",
+    "current_head_sha": "1eaaf04e23204bf390d44a1a4b8592b1aba90105",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+      "expected_root": null,
+      "expected_head_sha": "1eaaf04e23204bf390d44a1a4b8592b1aba90105",
+      "current_head_sha": "1eaaf04e23204bf390d44a1a4b8592b1aba90105",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-20T06:52:34.050Z",
+  "git_context": {
+    "head_sha": "1eaaf04e23204bf390d44a1a4b8592b1aba90105",
+    "current_branch": "codex/story-vibepro-risk-adaptive-validation-sequencing",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-20T06:52:34.042Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "1eaaf04e23204bf390d44a1a4b8592b1aba90105",
+    "surface_files": [
+      {
+        "path": "test/ci-evidence-import.test.js",
+        "sha256": "45a99593161a66a75a639e4997e1feebcbf81884735758c6787cd4bdd34d3e20",
+        "size": 14713
+      },
+      {
+        "path": "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+        "sha256": "c939c65f8a02f158e23f2d2d0b98fb4dfb51609c405953a7a81df45aa3a7b5cd",
+        "size": 12701
+      },
+      {
+        "path": "test/risk-adaptive-gate.test.js",
+        "sha256": "6f4789affc81acc0b2017a13673adf857a198c7002b5342e8ed4dbe8b1709a8a",
+        "size": 89242
+      },
+      {
+        "path": "test/validation-sequencing.test.js",
+        "sha256": "cdd2cc326a46feaf1aebf30ffc6b4946e63da6bbd1bc6c548c213047653e4566",
+        "size": 24784
+      }
+    ],
+    "missing_files": [
+      "test/execution-state.test.js"
+    ],
+    "surface_hash": "c3105382cbf08991eef7d97a4ca5530c0fcd1d6bc9a4842085efc0653c8872a2"
+  },
+  "source_fingerprint": "ed7b8b9177f909fe1b63efde8d003507ca64e5bd87c9c19b3eeeb9939ce08009",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "story7_runtime_rereview",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-risk-adaptive-validation-sequencing/architecture_spec/transcript-regression-risk-1eaaf04e.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-risk-adaptive-validation-sequencing/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-risk-adaptive-validation-sequencing/architecture_spec/transcript-regression-risk-1eaaf04e.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

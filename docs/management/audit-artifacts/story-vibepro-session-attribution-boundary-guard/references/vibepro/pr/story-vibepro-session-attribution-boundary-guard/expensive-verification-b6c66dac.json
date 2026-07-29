@@ -1,0 +1,19 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-attribution-boundary-guard",
+  "head_sha": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+  "status": "pass",
+  "commands": [
+    "npm run typecheck",
+    "node --test test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js test/session-efficiency-audit.test.js test/responsibility-authority.test.js",
+    "node --test --test-name-pattern=\"AUTCOST-SCENARIO-002|preserves partial cost accounting\" test/vibepro-cli.test.js"
+  ],
+  "results": {
+    "typecheck": "pass",
+    "primary_tests": 62,
+    "filtered_cli_tests": 2,
+    "passed": 64,
+    "failed": 0
+  },
+  "observed_at": "2026-07-21T17:54:00Z"
+}

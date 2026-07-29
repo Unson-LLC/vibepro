@@ -1,0 +1,15 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "head_sha": "50b3a8abbfc342ed7c96c019071d355d63ec733a",
+  "recorded_at": "2026-07-22T11:44:00Z",
+  "checks": [
+    { "name": "targeted_review_and_acceptance", "passed": 225, "failed": 0 },
+    { "name": "full_suite", "passed": 1743, "failed": 0, "command": "node --test --test-concurrency=2" },
+    { "name": "runtime_integration_rerun", "passed": 211, "failed": 0, "command": "node --test test/guarded-run-session.test.js test/agent-runtime-adapter.test.js test/agent-runtime-connectors.test.js test/safe-action-orchestrator.test.js", "note": "A first standalone concurrent run reported one transient failure; immediate full rerun passed 211/211, while the canonical full suite had already passed 1743/1743." },
+    { "name": "skills_lint", "passed": 7, "failed": 0 },
+    { "name": "agent_instructions_identity", "passed": 1, "failed": 0 },
+    { "name": "architecture_conformance_non_regression", "baseline_ref": "origin/main", "baseline_head_sha": "c4ccdcbd481be0b2992ae72772d5dd050e9897e4", "baseline_violations": 69, "current_violations": 69, "new_violations": 0, "new_story_budget_violations": 0 }
+  ],
+  "summary": "Final HEAD passes the independent-review, runtime-adapter, connector, guarded-run, safe-action, and production-composed acceptance surface, including pass, needs_changes, and block through the production composer and restart from a reserved record checkpoint. The complete full suite passed 1743/1743 outside the restricted sandbox. The same conformance command reports 69 violations for origin/main and 69 for this HEAD; no violation or Story budget overage was added."
+}

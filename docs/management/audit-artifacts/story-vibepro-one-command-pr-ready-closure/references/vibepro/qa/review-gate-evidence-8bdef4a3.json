@@ -1,0 +1,130 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "head_sha": "8bdef4a330b37a57f069a2656a892da954c0d934",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Remediation materially improved the exact-HEAD evidence: the targeted regression suite, integration, E2E, typecheck and build records are current; E2E has a verified machine artifact; and target conformance is now bound to 8bdef4a3 and improves the origin/main baseline from 81 to 80 violations. The gate still needs changes because the regenerated canonical pr-prepare remains ready_for_pr_create=false with eight execution blockers, seven stale review/evidence artifacts, one missing responsibility-specific unit_regression item, and no canonical current-HEAD adjudication record. The fresh independent adjudication additionally identifies AC-2 and AC-6 as not demonstrated because no capable real provider completed the public one-command commit plus independent-review path.",
+  "inspection_summary": "Re-inspected the same strict-HEAD surface after remediation without reopening the lifecycle. Confirmed the full targeted unit command, focused integration and verified E2E records, rich failure-mode/flow/path-surface scenarios, exact-HEAD target conformance, fresh independent adjudication artifact, and a newly generated canonical blocking-gates view. Design SSOT, run-session ownership, human authority boundaries, and predecessor closure remain sound. Remaining blockers are exact and recoverable: record or resolve the capable-provider acceptance gap, canonically import adjudication, close and record this current review lifecycle, refresh the remaining stale review artifacts, and add the responsibility-specific telemetry ingestion unit evidence.",
+  "judgment_delta": "Initial judgment before remediation: needs_changes because verification, adjudication and conformance were stale or incomplete. Final judgment after remediation: still needs_changes, but the conformance and broad verification findings are resolved; the decisive remaining evidence is the canonical eight-blocker pr-prepare result plus the independent not_demonstrated verdicts for AC-2 and AC-6.",
+  "findings": [
+    {
+      "id": "GE-001",
+      "severity": "high",
+      "title": "Canonical current-HEAD readiness remains blocked",
+      "detail": "The post-remediation blocking-gates view still reports overall_status=needs_verification, ready_for_pr_create=false and execution_gate.status=blocked. Artifact inconsistency has improved from 13 to seven items, and the production-path verification gates are no longer listed as execution blockers, but the current gate_evidence lifecycle is still open and older/current review artifacts still require current-git closure or refresh.",
+      "evidence": [
+        "node bin/vibepro.js pr prepare . --story-id story-vibepro-one-command-pr-ready-closure --view blocking-gates at 2026-07-23T20:59:42.101Z: ready_for_pr_create=false; execution_gate.status=blocked; blocking_gate_count=8",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: gate:artifact_consistency reports 7 recorded verification/review artifacts not bound to the current git state",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: gate_evidence remains running and must be closed and recorded before readiness can advance"
+      ],
+      "required_recovery": "Close and canonically record this same review lifecycle, refresh the remaining stale review artifacts against the frozen git state, rerun pr-prepare, and require ready_for_pr_create=true before claiming PR-ready."
+    },
+    {
+      "id": "GE-002",
+      "severity": "medium",
+      "title": "One responsibility-specific unit evidence item is still missing",
+      "detail": "The remediation replaces the narrow two-test unit record with the intended seven-file targeted regression suite and the canonical Gate now treats unit, integration, E2E, build and typecheck as current supporting or strong evidence. One matched responsibility contract nevertheless remains unsatisfied: vibepro.runtime_cost.telemetry_ingestion still requires evidence explicitly classified as unit_regression. The missing machine artifact on unit/build/typecheck lowers their strength but is not itself listed as a separate execution blocker once the verified E2E artifact and current command records are considered.",
+      "evidence": [
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json updated 2026-07-23T20:54:57.990Z: seven-file targeted unit suite current; integration 4/4; E2E 5/5 with verified TAP artifact; build and typecheck pass",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: gate:responsibility_authority reports one missing item, responsibility_id=vibepro.runtime_cost.telemetry_ingestion and evidence=unit_regression",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json: unit, integration, build and typecheck records are current but have artifact_quality=missing_artifact"
+      ],
+      "required_recovery": "Record the already exercised telemetry-ingestion regression with the required unit_regression scenario/classification, preferably with a structured artifact, then rerun pr-prepare."
+    },
+    {
+      "id": "GE-003",
+      "severity": "high",
+      "title": "Capable-provider acceptance remains unproven and adjudication is not yet canonical",
+      "detail": "A fresh exact-HEAD independent adjudication artifact now exists and judges all sixteen engineering-judgment items sound. It deliberately marks AC-2 and AC-6 not_demonstrated: the production-shaped fixture proves the contract and the real unavailable-provider run proves typed pre-mutation stopping, but neither proves one public command completing commit, verification and independent review through a capable real provider. AC-8 is correctly classified as the post-PR/post-CI closure phase and does not block initial PR creation by itself. The QA adjudication has not yet been recorded into the canonical adjudication stores, so pr-prepare still reports all acceptance and judgment verdicts missing.",
+      "evidence": [
+        ".vibepro/qa/adjudication-8bdef4a3.json: exact-HEAD verdicts demonstrate AC-1, AC-3, AC-4, AC-5 and AC-7; AC-2 and AC-6 are not_demonstrated; AC-8 is a non-initial-PR-blocking phase-two closure",
+        ".vibepro/qa/adjudication-8bdef4a3.json: all 16 judgment_verdicts are judged_sound",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json after remediation: gate:evidence_adjudication and gate:judgment_dag_adjudication still report no current-head canonical verdicts",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/traceability.json: AC-3 and S-001 remain weakly mapped until clause-specific proof/adjudication is canonically recorded"
+      ],
+      "required_recovery": "Resolve AC-2 and AC-6 with an observed capable real-provider public-command smoke or an explicit authorized acceptance-scope decision; record the fresh evidence and judgment verdicts through vibepro adjudicate record; then rerun pr-prepare."
+    }
+  ],
+  "inspected_inputs": [
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-request-gate_evidence.md",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/management/tasks/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/management/roadmap.md",
+    "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+    "src/one-command-pr-ready-closure.js",
+    "src/guarded-run-session.js",
+    "src/cli.js",
+    "bin/vibepro.js",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/guarded-run-session.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/gate-dag.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/traceability.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/design-ssot-reconciliation.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+    ".vibepro/adjudication/story-vibepro-one-command-pr-ready-closure/adjudication.json",
+    ".vibepro/adjudication/story-vibepro-one-command-pr-ready-closure/judgment-adjudication.json",
+    ".vibepro/qa/one-command-conformance.json",
+    ".vibepro/qa/one-command-conformance-8bdef4a3.json",
+    ".vibepro/qa/adjudication-8bdef4a3.json",
+    "Predecessor closure records: PR #372 merge df3c5dcd7cb95f99d06c299ee963fafeea2703fb; PR #377 merge 0c11f4fb9081407bb57ac5c3f6ca696faefa21f; PR #382 merge b235b36df6a225c49f4a98340c381eb2d8b8ad1c"
+  ],
+  "checks": {
+    "exact_head": {
+      "status": "pass",
+      "observed": "8bdef4a330b37a57f069a2656a892da954c0d934"
+    },
+    "canonical_pr_readiness": {
+      "status": "needs_changes",
+      "observed": "ready_for_pr_create=false; execution blocked by 8 canonical blockers after remediation"
+    },
+    "artifact_consistency": {
+      "status": "needs_changes",
+      "observed": "7 verification/review artifacts are not current-git-state bound; current gate_evidence lifecycle is still open"
+    },
+    "regression_guard": {
+      "status": "pass",
+      "observed": "current seven-file targeted regression suite, integration 4/4, E2E 5/5 with verified TAP artifact, typecheck and build all pass"
+    },
+    "path_surface_coverage": {
+      "status": "needs_changes",
+      "observed": "flow/path-surface scenarios are current, but AC-3 and S-001 remain weakly mapped until fresh adjudication is canonically recorded"
+    },
+    "acceptance_and_judgment_adjudication": {
+      "status": "needs_changes",
+      "observed": "fresh QA verdicts exist, but are not yet canonical; AC-2 and AC-6 are explicitly not_demonstrated"
+    },
+    "target_architecture_conformance": {
+      "status": "pass",
+      "observed": "exact HEAD and fingerprint bound; 80 violations versus origin/main baseline 81; run-session=11; no new production CLI reverse dependency"
+    },
+    "design_ssot_reconciliation": {
+      "status": "pass",
+      "observed": "no missing, stale, contradictory or uncovered changed design documents"
+    },
+    "module_boundary": {
+      "status": "pass",
+      "observed": "orchestration remains owned by run-session modules; no CLI-layer reverse call was observed"
+    },
+    "human_authority_boundary": {
+      "status": "pass",
+      "observed": "merge, waiver and major external side effects remain explicit human operations"
+    },
+    "predecessor_closure": {
+      "status": "pass",
+      "observed": "PRs #372, #377 and #382 have distinct canonical merge evidence and are not reimplemented"
+    },
+    "review_lifecycle": {
+      "status": "pending_coordinator_close_record",
+      "observed": "gate_evidence and release_risk are intentionally running for the current review batch"
+    },
+    "prompt_injection": {
+      "status": "pass",
+      "observed": "No suspicious instruction or evidence tampering directive was identified in the inspected inputs"
+    }
+  }
+}

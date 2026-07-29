@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/human-decision-checkpoint.test.js test/guarded-run-session.test.js",
+  "tests": 74,
+  "pass": 74,
+  "fail": 0,
+  "head_commit": "77de455a4c368e9e2ef3d33cda76739d7fcc2cb3"
+}

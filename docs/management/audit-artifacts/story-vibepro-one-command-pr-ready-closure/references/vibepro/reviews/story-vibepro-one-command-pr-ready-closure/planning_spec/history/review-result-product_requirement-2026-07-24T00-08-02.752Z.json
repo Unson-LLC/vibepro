@@ -1,0 +1,147 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "planning_spec",
+  "role": "product_requirement",
+  "status": "pass",
+  "summary": "Current-HEAD implementation demonstrates OCR-S-1..8, real implementation HEAD advance, typed stop/resume containment, current-HEAD Gate, and the human authority boundary.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [
+    ".vibepro/qa/review-planning-product-926227f9.json"
+  ],
+  "inspection": {
+    "summary": "Inspected all eight acceptance criteria, real HEAD-advance enforcement, typed stops/resume, final Gate rebinding, human-only operations, and connector/review owner reuse; focused 20/20 tests passed.",
+    "evidence": ".vibepro/qa/review-planning-product-926227f9.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+      "src/one-command-pr-ready-closure.js"
+    ]
+  },
+  "judgment_delta": [
+    "Prior stale same-HEAD concern became pass because requireHeadAdvance and a pre-fix-failing negative test now enforce the requirement."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "926227f945878299770448a03966c17dfa70158d",
+    "current_head_sha": "926227f945878299770448a03966c17dfa70158d",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "926227f945878299770448a03966c17dfa70158d",
+      "dirty": true,
+      "dirty_fingerprint": " M .vibepro/config.json",
+      "raw_dirty": true,
+      "raw_dirty_fingerprint": " M .vibepro/config.json",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T21:02:29.971Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-24T00:08:02.752Z",
+  "git_context": {
+    "head_sha": "926227f945878299770448a03966c17dfa70158d",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "7af7c2dd8036e7ecdbd7450e810b0bb674586064b4c682dd596ebe000798d1dc",
+    "user_status_fingerprint_hash": "7af7c2dd8036e7ecdbd7450e810b0bb674586064b4c682dd596ebe000798d1dc",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T00:08:02.740Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Product requirement recovery must remain exact-HEAD bound through PR-ready closure."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "926227f945878299770448a03966c17dfa70158d",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "1604e50adee111b1473f766310b3bed08501679b383e13d1f848324e3a1a1602",
+        "size": 8186
+      },
+      {
+        "path": "src/one-command-pr-ready-closure.js",
+        "sha256": "0a2803f953b02cec3b522fedb73b1dfb7a9734b6e1b9e00131d0ed54e7743ad2",
+        "size": 28336
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "0c744acef96911f3d4b7fb48ab869cd89f57a6299ae0485c865cae3c3f447867"
+  },
+  "source_fingerprint": "d580fe5439ec5a98bffd965bcc366173cf30f686a59b9819d2bf01755f6366bb",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "planning-product-926227f9",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "/root/review_planning",
+    "session_id": "planning-product-926227f9",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/review-planning-product-926227f9.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/planning_spec/review-request-product_requirement.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/review-planning-product-926227f9.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "planning-product-926227f9",
+      "implementation_session_id": "/root",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

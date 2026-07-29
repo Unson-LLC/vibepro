@@ -1,5 +1,6 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { resolveArtifactRoute } from './artifact-routing.js';
 
 export const MAX_SCAN_FILES = 80;
 export const CODE_EXTENSIONS = new Set(['.js', '.jsx', '.ts', '.tsx']);
@@ -311,6 +312,15 @@ export async function findStorySource(repoRoot, story) {
   const storyId = story?.story_id ?? null;
   const storyDirs = await resolveStoryDirs(repoRoot);
   const candidates = [];
+  if (storyId) {
+    const canonical = await resolveArtifactRoute(repoRoot, 'story', { storyId });
+    try {
+      await readFile(canonical.canonical.absolute_path, 'utf8');
+      candidates.push(canonical.canonical.absolute_path);
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+  }
   for (const dir of storyDirs) {
     const files = await listFiles(path.join(repoRoot, dir));
     candidates.push(...files.filter((file) => /\.(md|mdx)$/i.test(file)));

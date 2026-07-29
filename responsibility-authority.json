@@ -49,7 +49,9 @@
       ],
       "owned_surfaces": {
         "paths": [
+          "src/merge-gate-authorization.js",
           "src/merge-manager.js",
+          "src/execution-state.js",
           "src/task-manager.js",
           "src/usage-report.js"
         ],
@@ -84,7 +86,12 @@
       "owned_surfaces": {
         "paths": [
           "src/agent-review.js",
-          "src/review-repair.js"
+          "src/independent-review-orchestrator.js",
+          "src/agent-runtime-adapter.js",
+          "src/agent-runtime-connectors.js",
+          "src/review-repair.js",
+          "src/content-binding.js",
+          "src/review-inspection-inputs.js"
         ],
         "symbols": [
           "gate:agent_review",
@@ -126,7 +133,8 @@
           "src/git-fingerprint.js",
           "src/canonical-audit.js",
           "src/change-risk-classifier.js",
-          "src/pr-manager.js"
+          "src/pr-manager.js",
+          "src/html-report.js"
         ],
         "symbols": [
           "gate:artifact_consistency",
@@ -364,15 +372,18 @@
         "paths": [
           "src/safe-action-orchestrator.js",
           "src/guarded-run-session.js",
+          "src/next-best-action-controller.js",
           "src/pr-manager.js",
           "src/cli.js",
           "test/safe-action-orchestrator.test.js",
           "test/guarded-run-session.test.js",
+          "test/next-best-action-controller.test.js",
           "test/e2e/story-vibepro-safe-action-orchestrator-acceptance.spec.ts"
         ],
         "symbols": [
           "execute run --until pr-ready",
           "SafeActionOrchestrator",
+          "NextBestActionController",
           "action_journal",
           "action_failed"
         ],
@@ -380,6 +391,113 @@
           "service_orchestration",
           "core_workflow_state",
           "gate_orchestration"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
+        "integration_runtime_path",
+        "negative_path",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.guarded_run.portfolio_coordination",
+      "primary_authority": {
+        "kind": "architecture",
+        "ref": "docs/architecture/story-vibepro-autonomous-action-dag.md"
+      },
+      "supporting_authority": [
+        "docs/management/stories/active/story-vibepro-autonomous-action-dag.md",
+        "docs/specs/story-vibepro-autonomous-action-dag.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/story-run-portfolio.js",
+          "test/story-run-portfolio.test.js"
+        ],
+        "symbols": [
+          "sequential portfolio lock",
+          "portfolio_lock_recovery_required",
+          "portfolio_busy"
+        ],
+        "risk_surfaces": [
+          "core_workflow_state"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
+        "integration_runtime_path",
+        "negative_path",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.run_lineage.explicit_attribution",
+      "primary_authority": {
+        "kind": "architecture",
+        "ref": "docs/architecture/story-vibepro-explicit-run-attribution-lineage.md#architecture"
+      },
+      "supporting_authority": [
+        "docs/management/stories/active/story-vibepro-explicit-run-attribution-lineage.md",
+        "docs/specs/story-vibepro-explicit-run-attribution-lineage.vibepro.json"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/run-lineage.js",
+          "src/run-context-capsule.js",
+          "src/human-decision-checkpoint.js"
+        ],
+        "symbols": [
+          "Run lineage",
+          "RUN_LINEAGE_SCHEMA_VERSION",
+          "validateRunLineageEnvelope"
+        ],
+        "risk_surfaces": [
+          "core_workflow_state",
+          "verification_evidence",
+          "review_lifecycle"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
+        "integration_runtime_path",
+        "negative_path",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.codex_runtime.detached_completion_delivery",
+      "primary_authority": {
+        "kind": "architecture",
+        "ref": "docs/architecture/story-vibepro-codex-detached-completion-inbox.md"
+      },
+      "supporting_authority": [
+        "docs/management/stories/active/story-vibepro-codex-detached-completion-inbox.md",
+        "docs/specs/vibepro-codex-detached-completion-inbox.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/agent-completion-inbox.js",
+          "src/codex-runtime-bridge.js",
+          "src/codex-runtime-output-contract.js",
+          "src/codex-subagent-host-worker.js",
+          "src/codex-subagent-host.js",
+          "src/codex-subagent-runtime-adapter.js"
+        ],
+        "symbols": [
+          "running_detached",
+          "runtime-ingest",
+          "createCodexGuardedRunBridge",
+          "createCodexSubagentHost"
+        ],
+        "risk_surfaces": [
+          "queue_worker",
+          "service_orchestration",
+          "core_workflow_state",
+          "review_lifecycle"
         ]
       },
       "required_evidence": [
@@ -417,6 +535,43 @@
       "required_evidence": [
         "unit_regression",
         "typecheck",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.verification.runner_direct_recording",
+      "primary_authority": {
+        "kind": "domain_contract",
+        "ref": "docs/contracts/vibepro-core-responsibilities.json#VIBE-CORE-EV-001"
+      },
+      "supporting_authority": [
+        "docs/specs/story-vibepro-runner-direct-evidence.md",
+        "docs/management/stories/active/story-vibepro-runner-direct-evidence.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/verification-runner.js",
+          "src/ci-evidence.js",
+          "src/adjudication.js",
+          "test/verification-runner.test.js",
+          "test/adjudication.test.js",
+          "test/ci-evidence-import.test.js"
+        ],
+        "symbols": [
+          "RUNNER_EVIDENCE_RECEIPT",
+          "runner_direct",
+          "verify run",
+          "COMPUTED_OBSERVATION_KEYS",
+          "CALLER_FORBIDDEN_OBSERVATION_KEYS"
+        ],
+        "risk_surfaces": [
+          "core_workflow_state",
+          "verification_evidence"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
         "current_head_verification"
       ],
       "unknown_policy": "block_or_review"

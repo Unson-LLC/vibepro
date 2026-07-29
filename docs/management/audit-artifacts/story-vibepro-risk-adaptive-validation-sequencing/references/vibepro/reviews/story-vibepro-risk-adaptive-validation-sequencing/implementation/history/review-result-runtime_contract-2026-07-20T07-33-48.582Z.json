@@ -1,0 +1,163 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-risk-adaptive-validation-sequencing",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "Final frozen-head runtime contract review passed with no blocking findings",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed Story Architecture Spec validation producer state evaluator CLI PR Gate CI importer canonical review provenance and integration tests at frozen HEAD",
+    "evidence": ".vibepro/qa/story-vibepro-risk-adaptive-validation-sequencing/frozen-head-aa8aa235-results.json",
+    "inputs": [
+      "src/validation-sequencing.js",
+      "src/cli.js",
+      "src/pr-manager.js",
+      "src/ci-evidence.js",
+      "test/validation-sequencing.test.js",
+      "test/ci-evidence-import.test.js",
+      "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+      "test/risk-adaptive-gate.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Prior path escape and consumer-only final review findings are closed while exact binding canonical provenance CI receipts and PR reconciliation remain fail-closed"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+    "expected_root": null,
+    "expected_head_sha": "aa8aa23533b182beaf9723554267484536464157",
+    "current_head_sha": "aa8aa23533b182beaf9723554267484536464157",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-risk-adaptive-validation-sequencing-work",
+      "expected_root": null,
+      "expected_head_sha": "aa8aa23533b182beaf9723554267484536464157",
+      "current_head_sha": "aa8aa23533b182beaf9723554267484536464157",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-20T07:33:48.582Z",
+  "git_context": {
+    "head_sha": "aa8aa23533b182beaf9723554267484536464157",
+    "current_branch": "codex/story-vibepro-risk-adaptive-validation-sequencing",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-20T07:33:48.574Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Bind final review to the frozen release candidate."
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "aa8aa23533b182beaf9723554267484536464157",
+    "surface_files": [
+      {
+        "path": "src/ci-evidence.js",
+        "sha256": "a4de705955588837f80d46ec33dbeca84e2dd07f22d451ea71272bef868f6a8d",
+        "size": 13286
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "bf54e980e474607b38cb1284fb0d43f52f48233e9dc785fd1f5b06615a0e6172",
+        "size": 202551
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "df42d8d070f310f88892559c8e5a83fd742d558cb3efd069373c2ba6a87733ad",
+        "size": 653410
+      },
+      {
+        "path": "src/validation-sequencing.js",
+        "sha256": "42c1e4a2c2b6cdb0054e42e918268eab71cc962367572f82193f127ef5ca95c3",
+        "size": 27328
+      },
+      {
+        "path": "test/ci-evidence-import.test.js",
+        "sha256": "45a99593161a66a75a639e4997e1feebcbf81884735758c6787cd4bdd34d3e20",
+        "size": 14713
+      },
+      {
+        "path": "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+        "sha256": "958f23f61643bbd05ed281c27696279e23b07fd1e3648b0f8af242124929a434",
+        "size": 13759
+      },
+      {
+        "path": "test/risk-adaptive-gate.test.js",
+        "sha256": "6f4789affc81acc0b2017a13673adf857a198c7002b5342e8ed4dbe8b1709a8a",
+        "size": 89242
+      },
+      {
+        "path": "test/validation-sequencing.test.js",
+        "sha256": "eeea63b60d37d471bb7267e4fd097e7268f768bc4ae62c52d9325cb8666d4439",
+        "size": 26520
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "a3dc6e5441620cd41ad3a17294b26cd63b69b5ad9c022ba020b9f2a9e137809c"
+  },
+  "source_fingerprint": "95adffdb91f59db3cdf6f837e36e193add611065f6e5f9525e0460c610628416",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "story7_runtime_rereview",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-risk-adaptive-validation-sequencing/implementation/transcript-runtime-contract-aa8aa235.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-risk-adaptive-validation-sequencing/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-risk-adaptive-validation-sequencing/implementation/transcript-runtime-contract-aa8aa235.md",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

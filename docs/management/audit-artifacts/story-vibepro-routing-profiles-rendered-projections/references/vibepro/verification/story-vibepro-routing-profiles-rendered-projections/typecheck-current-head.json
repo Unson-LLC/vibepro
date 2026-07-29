@@ -1,0 +1,8 @@
+{
+  "schema_version": "0.1.0",
+  "command": "npm run typecheck",
+  "status": "pass",
+  "exit_code": 0,
+  "head_sha": "1ac5adcc3e3d4e318d62bfc2ebead8df4d7040eb",
+  "checks": ["node --check bin/vibepro.js", "node --check src/*.js"]
+}

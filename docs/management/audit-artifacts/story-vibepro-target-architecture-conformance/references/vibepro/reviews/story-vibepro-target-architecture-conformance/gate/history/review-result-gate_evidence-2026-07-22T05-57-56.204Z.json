@@ -1,0 +1,150 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-target-architecture-conformance",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Re-review after fix: both needs_changes findings verified fixed. All status JSONs match source-log ground truth (telemetry 429, guarded-run 174, unit 12, conformance 68 violations, 66 undeclared sub-count); verification-evidence.json counts corrected and bound to f05f9b24; HEAD unchanged with clean tracked tree so the strict-HEAD review's regression_guard and path_surface_coverage conclusions remain valid.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified HEAD f05f9b24 and empty git status; extracted ground-truth counts from the three source logs and diffed against all seven status JSONs plus verification-evidence.json; verified conformance violation total 68 against conformance.json; scanned for residual swapped pairings (none found)",
+    "evidence": ".vibepro/reviews/story-vibepro-target-architecture-conformance/gate/subagent-gate_evidence-verdict-f05f9b24-fix.json",
+    "inputs": [
+      "src/architecture-conformance.js",
+      "src/cli.js",
+      "docs/architecture/target-model.json",
+      "test/architecture-conformance.test.js",
+      "docs/management/stories/active/story-vibepro-target-architecture-conformance.md"
+    ]
+  },
+  "judgment_delta": [
+    "needs_changes -> pass because the count swap and stale 66-violation status are corrected across all regenerated status JSONs and verification-evidence summaries while source, tests and model are untouched at HEAD f05f9b24"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-target-architecture-conformance",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-target-architecture-conformance",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-target-architecture-conformance",
+    "expected_head_sha": "f05f9b2401655828445858c7dc717f83d55017db",
+    "current_head_sha": "f05f9b2401655828445858c7dc717f83d55017db",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-target-architecture-conformance",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-target-architecture-conformance",
+      "branch": "codex/story-vibepro-target-architecture-conformance",
+      "actual_branch": "codex/story-vibepro-target-architecture-conformance",
+      "current_head_sha": "f05f9b2401655828445858c7dc717f83d55017db",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      },
+      "policy_sync": {
+        "status": "skipped",
+        "reason": "source repo and managed worktree are the same checkout",
+        "sections_updated": []
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-22T05:57:56.204Z",
+  "git_context": {
+    "head_sha": "f05f9b2401655828445858c7dc717f83d55017db",
+    "current_branch": "codex/story-vibepro-target-architecture-conformance",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-22T05:57:55.977Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "built_in_exception",
+    "reason": "gate evidence reviews inspect head-bound canonical artifacts whose content surface is not yet independently hashed"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "f05f9b2401655828445858c7dc717f83d55017db",
+    "surface_files": [
+      {
+        "path": "docs/architecture/target-model.json",
+        "sha256": "b8f8216c5fdcf40150f13a186011d1f8dcc136660ea77fcf9ee45189c515657c",
+        "size": 8142
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+        "sha256": "a3dd007fecff2744866a0523376e2c5d35ada4d38e2e5d165b443031e971dde3",
+        "size": 3014
+      },
+      {
+        "path": "src/architecture-conformance.js",
+        "sha256": "a948b9fcbf4e1b16abb28838744c9e7ad767838338db4e147ec254d3f5f1ee71",
+        "size": 13197
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "07b8ecf0c4d3a3dbe349e62a3fdad93866b09e1ac7040b625b3039214f1dcb89",
+        "size": 220029
+      },
+      {
+        "path": "test/architecture-conformance.test.js",
+        "sha256": "bf764ce4db81a99ad80ce814773d44099ba60ffde2ebee246f27582ac69e3ec3",
+        "size": 9493
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "61dd60eebb8a73b3456249979f328b4c2c7aed633dbb6b799d45f293c7586060"
+  },
+  "source_fingerprint": "9aabf49eb35c837d70bd8d33d0f1d5e2eb0bff1bd468165ab352cff360ece925",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-explore-aaff3dcee4b8bead8",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "high",
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-target-architecture-conformance/gate/subagent-gate_evidence-verdict-f05f9b24-fix.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-target-architecture-conformance/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

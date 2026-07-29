@@ -15,9 +15,10 @@ import { scanFlowDesign } from '../src/flow-design-scanner.js';
 import { scanGestureInteraction } from '../src/gesture-interaction-scanner.js';
 import { runCli as coreRunCli } from '../src/cli.js';
 import { collectGitStatusFingerprints } from '../src/git-fingerprint.js';
+import { projectArtifact } from '../src/artifact-routing.js';
 import { scanLocalDev } from '../src/local-dev-scanner.js';
 import { scanNetworkContracts } from '../src/network-contract-scanner.js';
-import { preparePullRequest } from '../src/pr-manager.js';
+import { buildAgentReviewOwnerMapEvidence, preparePullRequest } from '../src/pr-manager.js';
 import { projectPrPrepareForLlm } from '../src/canonical-audit.js';
 import { scanPublicDiscovery } from '../src/public-discovery-scanner.js';
 import { renderAgentReviewPrSection } from '../src/agent-review.js';
@@ -162,10 +163,21 @@ async function git(repo, args) {
   return execFileAsync('git', args, { cwd: repo, encoding: 'utf8' });
 }
 
-async function runCliWithStdout(args) {
+async function gitIsAncestorForTest(repo, ancestor, descendant) {
+  try {
+    await git(repo, ['merge-base', '--is-ancestor', ancestor, descendant]);
+    return true;
+  } catch (error) {
+    if (error?.code === 1) return false;
+    throw error;
+  }
+}
+
+async function runCliWithStdout(args, io = {}) {
   let stdout = '';
   let stderr = '';
   const result = await runCli(args, {
+    ...io,
     stdout: {
       write(chunk) {
         stdout += chunk;
@@ -230,16 +242,33 @@ if (args[0] !== 'pr') {
   process.stderr.write('unexpected gh command: ' + args.join(' '));
   process.exit(1);
 }
+
 if (args[1] === 'view') {
   const merged = state.merged === true;
   const fieldsArg = args[args.indexOf('--json') + 1] || '';
+  if (state.viewExitCode && !fieldsArg.includes('mergedAt')) {
+    process.stderr.write(state.viewStderr || 'provider view failed');
+    process.exit(state.viewExitCode);
+  }
   if (fieldsArg.includes('mergedAt')) {
+    if (state.postMergeViewExitCode) {
+      process.stderr.write(state.postMergeViewStderr || 'post-merge provider view failed');
+      process.exit(state.postMergeViewExitCode);
+    }
+    if (state.malformedPostMergeJson) {
+      console.log('{malformed post-merge provider response');
+      process.exit(0);
+    }
     console.log(JSON.stringify({
       url: state.url,
       state: merged ? 'MERGED' : 'OPEN',
       mergedAt: merged ? state.mergedAt : null,
       mergeCommit: merged && !state.omitMergeCommit ? { oid: state.mergeCommit } : null
     }));
+    process.exit(0);
+  }
+  if (state.malformedPrViewJson) {
+    console.log('{malformed provider response');
     process.exit(0);
   }
   console.log(JSON.stringify({
@@ -280,6 +309,18 @@ process.exit(1);
 `);
   await chmod(ghPath, 0o755);
   return { binDir, statePath };
+}
+
+async function writeCurrentGateDag(repo, storyId, currentHeadSha, gateDag) {
+  const boundGateDag = { ...gateDag, current_head_sha: currentHeadSha };
+  const prDir = path.join(repo, '.vibepro', 'pr', storyId);
+  await writeJson(path.join(prDir, 'gate-dag.json'), boundGateDag);
+  const preparePath = path.join(prDir, 'pr-prepare.json');
+  const prepare = await readJson(preparePath);
+  prepare.current_head_sha = currentHeadSha;
+  prepare.git = { ...(prepare.git ?? {}), head_sha: currentHeadSha };
+  prepare.pr_context = { ...(prepare.pr_context ?? {}), gate_dag: boundGateDag };
+  await writeJson(preparePath, prepare);
 }
 
 async function gitFingerprintHash(repo) {
@@ -345,6 +386,7 @@ async function makeAutopilotRepo() {
     type: 'module',
     scripts: {
       test: 'node ./scripts/pass.js',
+      'test:fail': 'node ./scripts/fail.js',
       typecheck: 'node ./scripts/pass.js'
     }
   }, null, 2));
@@ -356,14 +398,39 @@ async function makeAutopilotRepo() {
 }
 
 async function prepareExecuteMergeDryRunFixture(repo, storyId = 'story-pr-prepare') {
+  const authorityUrl = 'https://github.example.test/unson/vibepro.git';
+  const remotes = (await git(repo, ['remote'])).stdout.trim().split('\n').filter(Boolean);
+  if (!remotes.includes('origin')) {
+    await git(repo, ['remote', 'add', 'origin', authorityUrl]);
+  } else {
+    const originUrl = (await git(repo, ['config', '--get', 'remote.origin.url'])).stdout.trim();
+    if (!/^https?:\/\/[^/]+\/[^/]+\/[^/]+(?:\.git)?$/i.test(originUrl)
+      && !/^(?:ssh:\/\/)?git@[^/:]+(?::\d+)?[:/][^/]+\/[^/]+(?:\.git)?$/i.test(originUrl)) {
+      await git(repo, ['config', `url.${originUrl}.insteadOf`, authorityUrl]);
+      await git(repo, ['remote', 'set-url', 'origin', authorityUrl]);
+    }
+  }
+  const effectiveAuthorityUrl = (await git(repo, ['config', '--get', 'remote.origin.url'])).stdout.trim();
+  const prUrl = `${effectiveAuthorityUrl.replace(/\.git$/i, '')}/pull/123`;
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const prDir = path.join(repo, '.vibepro', 'pr', storyId);
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: storyId, title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    gate_status: {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    },
     pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
-    git: { base_ref: 'main' }
+    git: { base_ref: 'main', head_sha: headSha }
+  });
+  await writeJson(path.join(prDir, 'gate-dag.json'), {
+    story_id: storyId,
+    overall_status: 'ready_for_review',
+    nodes: [],
+    summary: { needs_evidence_count: 0 }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
@@ -377,7 +444,7 @@ async function prepareExecuteMergeDryRunFixture(repo, storyId = 'story-pr-prepar
     execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
     base: 'main',
     head: 'feature/test-story',
-    pr_url: 'https://github.example.test/unson/vibepro/pull/123',
+    pr_url: prUrl,
     current_head_sha: headSha,
     artifact_freshness: {
       kind: 'pr_create',
@@ -403,6 +470,16 @@ process.exit(99);
     ghCallLog,
     env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
   };
+}
+
+async function routeGitHubAuthorityToLocalOrigin(
+  repo,
+  localOrigin,
+  authorityUrl = 'https://github.example.test/unson/vibepro.git'
+) {
+  await git(repo, ['config', `url.${localOrigin}.insteadOf`, authorityUrl]);
+  await git(repo, ['remote', 'set-url', 'origin', authorityUrl]);
+  return authorityUrl;
 }
 
 async function recordRequiredAgentReviews(repo, storyId = 'story-pr-prepare') {
@@ -465,7 +542,25 @@ async function recordAgentReviewStage(repo, storyId, stage, roles, options = {})
   ]);
   for (const role of roles) {
     const strictHead = (options.strictHeadRoles ?? []).includes(role);
-    const inspectionInput = options.inspectionInputsByRole?.[role] ?? 'index.html';
+    const inspectionInputs = [options.inspectionInputsByRole?.[role] ?? 'index.html'].flat();
+    const agentId = `${stage}-${role}-agent`;
+    const reviewerSessionId = options.reviewerIdentity === 'separate_session'
+      ? (options.reviewerSessionId ?? `${agentId}-session`)
+      : options.reviewerSessionId;
+    if (options.reviewerIdentity === 'separate_session') {
+      const started = await runCli([
+        'review', 'start', repo, '--id', storyId, '--stage', stage, '--role', role,
+        '--agent-system', 'codex', '--agent-id', agentId,
+        '--agent-thread-id', `${stage}-${role}-thread`,
+        '--agent-session-id', reviewerSessionId
+      ]);
+      assert.equal(started.exitCode, 0);
+      const closed = await runCli([
+        'review', 'close', repo, '--id', storyId, '--stage', stage, '--role', role,
+        '--agent-id', agentId, '--close-reason', 'completed', '--close-evidence', `agent:${agentId}:completed`
+      ]);
+      assert.equal(closed.exitCode, 0);
+    }
     const result = await runCliWithStdout([
       'review',
       'record',
@@ -485,13 +580,15 @@ async function recordAgentReviewStage(repo, storyId, stage, roles, options = {})
       '--execution-mode',
       'parallel_subagent',
       '--agent-id',
-      `${stage}-${role}-agent`,
+      agentId,
       '--agent-thread-id',
       `${stage}-${role}-thread`,
+      ...(reviewerSessionId ? ['--agent-session-id', reviewerSessionId] : []),
+      ...(options.implementationSessionId ? ['--implementation-session-id', options.implementationSessionId] : []),
+      ...(options.reviewerIdentity ? ['--reviewer-identity', options.reviewerIdentity] : []),
       '--inspection-summary',
       `read ${stage}:${role} evidence and verified the fixture contract`,
-      '--inspection-input',
-      inspectionInput,
+      ...inspectionInputs.flatMap((inspectionInput) => ['--inspection-input', inspectionInput]),
       '--judgment-delta',
       `generic ${stage}:${role} pass -> accepted because the fixture contract was inspected`,
       ...(strictHead ? [
@@ -503,6 +600,26 @@ async function recordAgentReviewStage(repo, storyId, stage, roles, options = {})
     ]);
     assert.equal(result.exitCode, 0, JSON.stringify(result, null, 2));
   }
+}
+
+async function writeAtomicScopeFixtureStory(repo) {
+  const storyPath = path.join(repo, 'docs', 'stories', 'story-pr-prepare.md');
+  await mkdir(path.dirname(storyPath), { recursive: true });
+  await writeFile(storyPath, `---
+story_id: story-pr-prepare
+title: PR準備
+pr_scope_strategy: atomic_single_pr
+pr_scope_reason: "The requirements and runtime facets form one release boundary, so target-bound evidence is required before this current HEAD can be accepted as one atomic change."
+pr_scope_review_facets:
+  - requirements-ssot
+  - runtime-behavior
+pr_scope_dependency_boundaries:
+  - requirements-ssot->runtime-behavior
+---
+
+# PR準備
+`);
+  return 'docs/stories/story-pr-prepare.md';
 }
 
 async function writeMinimalTaskState(repo, storyId = 'story-pr-prepare') {
@@ -553,7 +670,8 @@ test('init creates a repo-local VibePro workspace and updates gitignore only', a
   assert.equal((await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'))).latest_run, null);
   await assert.rejects(stat(path.join(repo, '.vibeproignore')), { code: 'ENOENT' });
   const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
-  assert.match(gitignore, /^\.vibepro\/$/m);
+  assert.match(gitignore, /^\.vibepro\/\*$/m);
+  assert.match(gitignore, /^!\.vibepro\/config\.json$/m);
   assert.doesNotMatch(gitignore, /\.vibepro\/raw\//);
 });
 
@@ -570,6 +688,34 @@ test('init help aliases print help without creating a flag-named workspace', asy
     assert.deepEqual(await readdir(cwd), initialEntries);
     await assert.rejects(stat(path.join(cwd, flag)), { code: 'ENOENT' });
   }
+});
+
+test('artifacts resolve and migrate use tracked custom routing without editing files', async () => {
+  const repo = await makeRepo();
+  await runCli(['init', repo]);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.artifact_routing = {
+    schema_version: '0.1.0',
+    artifacts: {
+      story: { canonical: 'docs/features/{feature_slug}/01_behavior_spec.md' },
+      architecture: { canonical: 'docs/features/{feature_slug}/04_technical_delta.md' }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  const source = path.join(repo, 'docs', 'management', 'stories', 'active', 'story-checkout-safe.md');
+  await mkdir(path.dirname(source), { recursive: true });
+  await writeFile(source, '---\nstory_id: story-checkout-safe\n---\n');
+
+  const resolved = await runCli(['artifacts', 'resolve', repo, '--id', 'story-checkout-safe', '--json']);
+  assert.equal(resolved.exitCode, 0);
+  assert.equal(resolved.result.routes.story.canonical.relative_path, 'docs/features/checkout-safe/01_behavior_spec.md');
+
+  const migration = await runCli(['artifacts', 'migrate', repo, '--id', 'story-checkout-safe', '--dry-run', '--json']);
+  assert.equal(migration.exitCode, 0);
+  assert.equal(migration.result.edits_performed, 0);
+  assert.equal(migration.result.items.find((item) => item.kind === 'story').action, 'move_required');
+  assert.equal(await readFile(source, 'utf8'), '---\nstory_id: story-checkout-safe\n---\n');
 });
 
 test('pr prepare reports preferred managed worktree gate without blocking', async () => {
@@ -615,7 +761,7 @@ test('managed worktree gate is not applicable when disabled', async () => {
   assert.match(prBody, /- 管理worktree: disabled/);
 });
 
-test('pr prepare removes stale skipped full artifacts for summary evidence depth', async () => {
+test('pr prepare refreshes routed Gate canonical and removes stale skipped full artifacts for summary evidence depth', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs'), { recursive: true });
   await writeFile(path.join(repo, 'docs', 'summary-depth-note.md'), 'Summary-depth artifact hygiene fixture.\n');
@@ -656,9 +802,11 @@ test('pr prepare removes stale skipped full artifacts for summary evidence depth
   assert.equal(prepare.evidence_plan.artifact_policy.write_full_gate_dag_dump, false);
   assert.equal(prepare.evidence_plan.artifact_policy.write_html_reports, false);
   assert.equal(prepare.evidence_plan.skipped_artifacts.includes('gate-dag.json'), true);
-  for (const artifact of staleArtifacts) {
+  for (const artifact of staleArtifacts.filter((artifact) => artifact !== 'gate-dag.json')) {
     assert.equal(await pathExists(path.join(prDir, artifact)), false, `${artifact} should be removed when skipped`);
   }
+  const routedGate = await readJson(path.join(prDir, 'gate-dag.json'));
+  assert.notEqual(routedGate.stale, true, 'routed gate canonical should replace the stale standalone dump');
   assert.equal(await pathExists(path.join(prDir, 'pr-prepare.json')), true);
   assert.equal(await pathExists(path.join(prDir, 'evidence-plan.json')), true);
   const evidenceReuse = await readJson(path.join(prDir, 'evidence-reuse.json'));
@@ -800,6 +948,12 @@ test('required managed worktree gate accepts local execution state or accepted w
     'unit',
     '--status',
     'pass',
+    '--command',
+    'npm test',
+    '--target',
+    'docs/management/stories/active/story-pr-prepare.md',
+    '--scenario',
+    'managed worktree waiver unit suite passed',
     '--summary',
     'unit passed with accepted managed worktree waiver'
   ]);
@@ -2628,7 +2782,7 @@ test('status reports corrupt VibePro config as needs_repair', async () => {
   assert.match(result.status.issues[0].detail, /invalid/);
 });
 
-test('init ignores all VibePro workspace artifacts from git status', async () => {
+test('init tracks repository config and ignores generated VibePro workspace artifacts', async () => {
   const repo = await makeRepo();
   await git(repo, ['init', '-b', 'main']);
 
@@ -2639,11 +2793,11 @@ test('init ignores all VibePro workspace artifacts from git status', async () =>
   assert.equal(result.exitCode, 0);
   const ignored = await git(repo, [
     'check-ignore',
-    '.vibepro/config.json',
     '.vibepro/pr/story-ignore-check/pr-prepare.html'
   ]);
-  assert.match(ignored.stdout, /^\.vibepro\/config\.json$/m);
   assert.match(ignored.stdout, /^\.vibepro\/pr\/story-ignore-check\/pr-prepare\.html$/m);
+  const status = await git(repo, ['status', '--short']);
+  assert.match(status.stdout, /^\?\? \.vibepro\/$/m);
 });
 
 test('help command prints discoverable usage', async () => {
@@ -2790,7 +2944,7 @@ test('check self-dogfood detects verify evidence without final gate artifacts', 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.check.status, 'needs_review');
   assert.equal(result.result.check.evidence.self_dogfood.findings.length, 1);
-  assert.match(result.result.check.evidence.self_dogfood.findings[0].detail, /final pr-prepare\/gate-dag artifacts are missing/);
+  assert.match(result.result.check.evidence.self_dogfood.findings[0].detail, /final pr-prepare\/gate artifacts are missing/);
   assert.equal(result.result.check.evidence.self_dogfood.findings.some((finding) => finding.id.includes('raw_gh_pr_create_guidance')), false);
 });
 
@@ -3536,6 +3690,42 @@ related_stories:
   assert.deepEqual(relatedDoc.related_stories, ['story-pr-prepare']);
 });
 
+test('pr prepare ignores canonical audit snapshot Story copies for source integrity', async () => {
+  const repo = await makeGitRepoWithStory();
+  const snapshotDir = path.join(repo, 'docs', 'management', 'audit-artifacts', 'child-story', 'references', 'vibepro', 'stories', 'child-story', 'tasks');
+  await mkdir(snapshotDir, { recursive: true });
+  await writeFile(path.join(snapshotDir, 'tasks.md'), `---\nstory_id: child-story\ntitle: Child snapshot\n---\n`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'stacked.js'), 'export const stacked = true;\n');
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const integrity = result.result.preparation.pr_context.story_source_integrity;
+  assert.equal(integrity.status, 'passed');
+  assert.equal(integrity.changed_story_docs.some((doc) => doc.path.includes('/audit-artifacts/')), false);
+});
+
+test('pr prepare never selects a same-id canonical audit snapshot as the primary Story', async () => {
+  const repo = await makeGitRepoWithStory();
+  const liveDir = path.join(repo, 'docs', 'stories');
+  await mkdir(liveDir, { recursive: true });
+  await writeFile(path.join(liveDir, 'story-pr-prepare.md'), `---\nstory_id: story-pr-prepare\ntitle: PR準備\n---\n\n## Acceptance Criteria\n\n- Live Story remains authoritative.\n`);
+  const snapshotDir = path.join(repo, 'docs', 'management', 'audit-artifacts', 'story-pr-prepare', 'references', 'vibepro', 'stories');
+  await mkdir(snapshotDir, { recursive: true });
+  await writeFile(path.join(snapshotDir, 'story-pr-prepare.md'), `---\nstory_id: story-pr-prepare\ntitle: Stale snapshot\n---\n\n## Acceptance Criteria\n\n- Stale snapshot must not become authoritative.\n`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'stacked.js'), 'export const stacked = true;\n');
+
+  const result = await runCli(['pr', 'prepare', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  const context = result.result.preparation.pr_context;
+  assert.equal(context.story_source.path, 'docs/stories/story-pr-prepare.md');
+  assert.equal(context.story_source.title, 'PR準備');
+  assert.equal(context.story_source_integrity.status, 'passed');
+});
+
 test('pr prepare accepts path surface matrix decision records', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs', 'stories'), { recursive: true });
@@ -3670,7 +3860,7 @@ test('pr prepare resolves path surface matrix from structured observation with b
     '--id',
     'story-pr-prepare',
     '--kind',
-    'integration',
+    'unit',
     '--status',
     'pass',
     '--command',
@@ -3698,6 +3888,211 @@ test('pr prepare resolves path surface matrix from structured observation with b
   assert.deepEqual(afterGate.deprecation_notices, []);
 });
 
+test('pr prepare does not let structured path surface evidence cover an unrelated changed target', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyPath = await writeAtomicScopeFixtureStory(repo);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'cli.js'), 'export const run = () => "ok";\n');
+  await writeFile(path.join(repo, 'docs', 'reference.md'), '# Reference\n');
+  await git(repo, ['add', 'src/cli.js', 'docs/reference.md', storyPath]);
+  await git(repo, ['commit', '-m', 'feat: update cli contract']);
+
+  const record = await runCli([
+    'verify', 'record', repo, '--id', 'story-pr-prepare', '--kind', 'integration', '--status', 'pass',
+    '--command', 'node --test test/integration/docs-build.test.js', '--summary', 'passed', '--target', 'docs/reference.md',
+    '--scenario', 'path_surface:cli', '--observed', 'surface=cli', '--json'
+  ]);
+  assert.equal(record.exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  const cliRow = gate.rows.find((row) => row.surface === 'cli');
+  assert.deepEqual(cliRow.changed_paths, ['src/cli.js']);
+  assert.equal(cliRow.status, 'missing_surface_evidence');
+  assert.equal(gate.missing_surfaces.includes('cli'), true);
+  assert.equal(gate.target_binding_mode, 'atomic_changed_paths');
+});
+
+test('pr prepare preserves legacy surface-signal coverage for Stories without atomic metadata', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'cli.js'), 'export const run = () => "ok";\n');
+  await writeFile(path.join(repo, 'docs', 'reference.md'), '# Reference\n');
+  await git(repo, ['add', 'src/cli.js', 'docs/reference.md']);
+  await git(repo, ['commit', '-m', 'feat: update legacy cli contract']);
+
+  const record = await runCli([
+    'verify', 'record', repo, '--id', 'story-pr-prepare', '--kind', 'integration', '--status', 'pass',
+    '--command', 'node --test test/integration/docs-build.test.js', '--summary', 'passed', '--target', 'docs/reference.md',
+    '--scenario', 'path_surface:cli', '--observed', 'surface=cli', '--json'
+  ]);
+  assert.equal(record.exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  const cliRow = gate.rows.find((row) => row.surface === 'cli');
+  assert.equal(cliRow, undefined);
+  assert.equal(gate.target_binding_mode, 'legacy_surface_signal');
+});
+
+test('pr prepare keeps a reviewable small PR on the legacy single-PR readiness path', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'small-fix.js'), 'export const smallFix = true;\n');
+  await git(repo, ['add', 'src/small-fix.js']);
+  await git(repo, ['commit', '-m', 'fix: keep small reviewable change focused']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const { split_plan: splitPlan, gate_status: gateStatus } = result.result.preparation;
+  assert.equal(splitPlan.atomic_scope.status, 'not_requested');
+  assert.equal(splitPlan.status, 'single_pr_ok');
+  assert.equal(splitPlan.recommended_strategy, 'keep_current_pr');
+  assert.equal(
+    gateStatus.unresolved_gates.some((gate) => ['gate:pr_scope_judgment', 'gate:split_resolution'].includes(gate.id)),
+    false
+  );
+});
+
+test('pr prepare requires structured evidence to cover every changed path in one surface row', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyPath = await writeAtomicScopeFixtureStory(repo);
+  await mkdir(path.join(repo, '.vibepro'), { recursive: true });
+  await writeFile(path.join(repo, '.vibepro', 'config.json'), '{"brainbase":{"stories":[]}}\n');
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'canonical-persistence-a.js'), 'export const persistA = () => "saved";\n');
+  await writeFile(path.join(repo, 'src', 'canonical-persistence-b.js'), 'export const persistB = () => "saved";\n');
+  await git(repo, ['add', '.vibepro/config.json', 'src/canonical-persistence-a.js', 'src/canonical-persistence-b.js', storyPath]);
+  await git(repo, ['commit', '-m', 'feat: update two persistence paths']);
+
+  const record = await runCli([
+    'verify', 'record', repo, '--id', 'story-pr-prepare', '--kind', 'integration', '--status', 'pass',
+    '--command', 'node --test test/integration/surface.test.js', '--summary', 'only one persistence path was checked',
+    '--target', 'src/canonical-persistence-a.js', '--scenario', 'path_surface:persistence',
+    '--observed', 'surface=persistence', '--json'
+  ]);
+  assert.equal(record.exitCode, 0);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(result.exitCode, 0);
+  const gate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  const persistenceRow = gate.rows.find((row) => row.surface === 'persistence');
+  const inventoryRow = gate.rows.find((row) => row.surface === 'changed_path_inventory');
+  assert.deepEqual(persistenceRow.changed_paths, [
+    'src/canonical-persistence-a.js',
+    'src/canonical-persistence-b.js'
+  ]);
+  assert.equal(persistenceRow.status, 'missing_surface_evidence');
+  assert.equal(gate.missing_surfaces.includes('persistence'), true);
+  assert.deepEqual(inventoryRow.changed_paths, [
+    '.vibepro/config.json',
+    storyPath,
+    'src/canonical-persistence-a.js',
+    'src/canonical-persistence-b.js'
+  ].sort());
+  assert.equal(inventoryRow.status, 'missing_surface_evidence');
+
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+  const flowRunId = 'atomic-targetless-flow';
+  const flowDir = path.join(repo, '.vibepro', 'verification', flowRunId);
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const gitContext = {
+    head_sha: headSha,
+    dirty: false,
+    status_fingerprint_hash: await gitFingerprintHash(repo),
+    recorded_at: '2026-07-20T00:00:00.000Z'
+  };
+  await mkdir(flowDir, { recursive: true });
+  await writeFile(path.join(flowDir, 'flow-verification.json'), `${JSON.stringify({
+    schema_version: '0.1.0',
+    run_id: flowRunId,
+    story_id: 'story-pr-prepare',
+    status: 'pass',
+    git_context: gitContext,
+    probes: [{
+      id: 'persistence-keyword-only',
+      status: 'pass',
+      description: 'persistence changed path inventory src/canonical-persistence-a.js src/canonical-persistence-b.js'
+    }]
+  }, null, 2)}\n`);
+  manifest.latest_flow_verification_run = flowRunId;
+  manifest.flow_verification_runs = [{
+    run_id: flowRunId,
+    story_id: 'story-pr-prepare',
+    created_at: '2026-07-20T00:00:00.000Z',
+    status: 'pass',
+    git_context: gitContext,
+    artifacts: { flow_verification_json: `.vibepro/verification/${flowRunId}/flow-verification.json` }
+  }];
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+
+  const targetlessFlowResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(targetlessFlowResult.exitCode, 0);
+  const targetlessFlowGate = targetlessFlowResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  assert.equal(targetlessFlowGate.rows.find((row) => row.surface === 'persistence').status, 'missing_surface_evidence');
+  assert.equal(targetlessFlowGate.rows.find((row) => row.surface === 'changed_path_inventory').status, 'missing_surface_evidence');
+
+  const completeRecord = await runCli([
+    'verify', 'record', repo, '--id', 'story-pr-prepare', '--kind', 'integration', '--status', 'pass',
+    '--command', 'node --test test/integration/inventory.test.js', '--summary', 'all changed paths were checked',
+    '--target', '.vibepro/config.json', '--target', storyPath,
+    '--target', 'src/canonical-persistence-a.js', '--target', 'src/canonical-persistence-b.js',
+    '--scenario', 'path_surface:changed_path_inventory', '--observed', 'surface=changed_path_inventory', '--json'
+  ]);
+  assert.equal(completeRecord.exitCode, 0);
+  const coveredResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  const coveredGate = coveredResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  assert.equal(coveredGate.rows.find((row) => row.surface === 'changed_path_inventory').status, 'covered');
+});
+
+test('pr prepare requires structured evidence for CLI state persistence and managed-process surfaces', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyPath = await writeAtomicScopeFixtureStory(repo);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'cli.js'), 'export const run = () => "ok";\n');
+  await writeFile(path.join(repo, 'src', 'outcome-manager.js'), 'export const transition = () => "accepted";\n');
+  await writeFile(path.join(repo, 'src', 'canonical-persistence.js'), 'export const persist = () => "saved";\n');
+  await writeFile(path.join(repo, 'src', 'managed-command-executor.js'), 'export const execute = () => "done";\n');
+  await writeFile(path.join(repo, 'test', 'surface.test.js'), 'export const checked = true;\n');
+  await git(repo, ['add', 'src', 'test/surface.test.js', storyPath]);
+  await git(repo, ['commit', '-m', 'feat: update guarded command surfaces']);
+
+  const before = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(before.exitCode, 0);
+  const beforeGate = before.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  assert.equal(beforeGate.status, 'partial_surface');
+  for (const surface of ['cli', 'state', 'persistence', 'process']) {
+    assert.equal(beforeGate.missing_surfaces.includes(surface), true, `${surface} must require current-bound evidence`);
+  }
+
+  const record = await runCli([
+    'verify', 'record', repo, '--id', 'story-pr-prepare', '--kind', 'integration', '--status', 'pass',
+    '--command', 'node --test test/integration/surface.test.js', '--summary', 'passed',
+    '--target', 'src/cli.js', '--target', 'src/outcome-manager.js',
+    '--target', 'src/canonical-persistence.js', '--target', 'src/managed-command-executor.js',
+    '--scenario', 'path_surface:cli', '--scenario', 'path_surface:state',
+    '--scenario', 'path_surface:persistence', '--scenario', 'path_surface:process',
+    '--observed', 'cli_surface=covered', '--observed', 'state_surface=covered',
+    '--observed', 'persistence_surface=covered', '--observed', 'process_surface=covered', '--json'
+  ]);
+  assert.equal(record.exitCode, 0);
+
+  const after = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(after.exitCode, 0);
+  const afterGate = after.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  for (const surface of ['cli', 'state', 'persistence', 'process']) {
+    const row = afterGate.rows.find((candidate) => candidate.surface === surface);
+    assert.equal(row.status, 'covered', `${surface} must resolve from structured observation`);
+    assert.equal(row.resolution_source, 'structured_observation');
+  }
+});
+
 test('pr prepare rejects partial structured observation for path surface matrix coverage', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -3714,7 +4109,7 @@ test('pr prepare rejects partial structured observation for path surface matrix 
     '--id',
     'story-pr-prepare',
     '--kind',
-    'integration',
+    'unit',
     '--status',
     'pass',
     '--command',
@@ -3759,7 +4154,7 @@ test('pr prepare keeps path surface legacy keyword compatibility with deprecatio
     '--id',
     'story-pr-prepare',
     '--kind',
-    'integration',
+    'unit',
     '--status',
     'pass',
     '--command',
@@ -3782,6 +4177,29 @@ test('pr prepare keeps path surface legacy keyword compatibility with deprecatio
   assert.match(gate.deprecation_notices[0].reason, /migration-only compatibility/);
 });
 
+test('pr prepare rejects legacy keyword evidence for atomic changed-path coverage', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyPath = await writeAtomicScopeFixtureStory(repo);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'pr-manager.js'), 'export function buildGateDag() { return "changed"; }\n');
+  await git(repo, ['add', 'src/pr-manager.js', storyPath]);
+  await git(repo, ['commit', '-m', 'feat: update atomic review surface']);
+
+  const record = await runCli([
+    'verify', 'record', repo, '--id', 'story-pr-prepare', '--kind', 'integration', '--status', 'pass',
+    '--command', 'node --test test/integration/surface.test.js', '--summary', 'review artifact surface checked', '--json'
+  ]);
+  assert.equal(record.exitCode, 0);
+
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const gate = prepared.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:path_surface_matrix');
+  const reviewRow = gate.rows.find((row) => row.surface === 'review_surface');
+  assert.equal(gate.target_binding_mode, 'atomic_changed_paths');
+  assert.equal(reviewRow.status, 'missing_surface_evidence');
+  assert.notEqual(reviewRow.resolution_source, 'legacy_summary_keyword');
+});
+
 test('pr prepare does not cover persistence surface from hash substrings', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -3800,7 +4218,7 @@ test('pr prepare does not cover persistence surface from hash substrings', async
     '--status',
     'pass',
     '--command',
-    'CI CodeQL: https://github.com/example/actions/runs/123',
+    'npm run build',
     '--summary',
     'imported current CI result',
     '--target',
@@ -3822,7 +4240,7 @@ test('pr prepare does not cover persistence surface from hash substrings', async
   assert.equal(gate.status, 'partial_surface');
   assert.equal(gate.missing_surfaces.includes('persistence'), true);
   assert.equal(persistenceRow.status, 'missing_surface_evidence');
-  assert.notEqual(persistenceRow.evidence, 'CI CodeQL: https://github.com/example/actions/runs/123');
+  assert.notEqual(persistenceRow.evidence, 'npm run build');
 });
 
 test('pr prepare does not infer persistence surface from story spec migration slugs', async () => {
@@ -3877,6 +4295,131 @@ test('pr prepare blocks PR freshness when base advanced after branch creation', 
   const actions = staleResult.result.preparation.gate_status.execution_gate.required_actions.join('\n');
   assert.match(actions, /git fetch origin/);
   assert.match(actions, /vibepro pr prepare/);
+});
+
+test('pr prepare keeps a current generated projection out of artifact consistency but stales a hand edit', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-pr-prepare';
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  const canonicalByKind = {
+    story: 'docs/management/stories/active/{story_id}.md',
+    architecture: 'docs/architecture/{story_id}.md',
+    accepted_spec: '.vibepro/spec/{story_id}/spec.json',
+    task_plan: '.vibepro/stories/{story_id}/tasks/tasks.json',
+    graphify: '.vibepro/graphify',
+    evidence: '.vibepro/evidence/{story_id}',
+    test_plan: '.vibepro/test-plans/{story_id}.json',
+    review: '.vibepro/reviews/{story_id}',
+    gate: '.vibepro/pr/{story_id}/gate-dag.json',
+    pr: '.vibepro/pr/{story_id}/pr-prepare.json'
+  };
+  const artifacts = Object.fromEntries(Object.entries(canonicalByKind).map(([kind, canonical]) => [kind, {
+    canonical,
+    ownership: kind === 'story' || kind === 'architecture' ? 'curated' : 'generated'
+  }]));
+  artifacts.accepted_spec.projections = [{
+    path: 'docs/features/{feature_slug}/02_functional_spec.md',
+    ownership: 'generated',
+    renderer: { id: 'functional_spec_markdown', version: '1' }
+  }];
+  artifacts.review.projections = [{
+    path: 'docs/features/{feature_slug}/08_review.md',
+    ownership: 'generated',
+    renderer: { id: 'review_summary_markdown', version: '1' }
+  }];
+  config.brainbase.stories = config.brainbase.stories.map((story) => story.story_id === storyId
+    ? { ...story, artifact_profile: 'feature_packet', feature_slug: 'projection-freshness' }
+    : story);
+  config.artifact_routing = {
+    schema_version: '0.2.0',
+    artifacts: {},
+    profiles: {
+      feature_packet: { artifacts },
+      governance_packet: { artifacts: structuredClone(artifacts) }
+    }
+  };
+  await writeJson(configPath, config);
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${storyId}.md`), `---\nstory_id: ${storyId}\nartifact_profile: feature_packet\nfeature_slug: projection-freshness\n---\n`);
+  await projectArtifact(repo, 'accepted_spec', {
+    storyId,
+    writeCanonical: true,
+    content: { story_id: storyId, clauses: [{ id: 'C-001', text: 'initial projection' }] }
+  });
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: configure generated projection fixture']);
+
+  const recordResult = await runCli([
+    'verify', 'record', repo, '--id', storyId, '--kind', 'unit', '--status', 'pass',
+    '--command', 'npm test', '--summary', 'projection freshness fixture passed'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+
+  // This advances an ignored canonical artifact and its exact generated view.
+  // It must remain outside the author-dirty fingerprint used by PR/Gate.
+  await projectArtifact(repo, 'accepted_spec', {
+    storyId,
+    writeCanonical: true,
+    content: { story_id: storyId, clauses: [{ id: 'C-001', text: 'updated projection' }] }
+  });
+  const generatedResult = await runCli(['pr', 'prepare', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(generatedResult.exitCode, 0);
+  assert.equal(generatedResult.result.preparation.git.dirty, false);
+  assert.equal(generatedResult.result.preparation.git.raw_dirty, true);
+  const generatedEvidence = generatedResult.result.preparation.pr_context.verification_evidence.commands[0];
+  assert.equal(generatedEvidence.binding.status, 'current');
+  const generatedGate = generatedResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:artifact_consistency');
+  assert.equal(generatedGate.status, 'passed');
+  assert.equal(generatedGate.current.status_fingerprint_hash, generatedGate.current.user_status_fingerprint_hash);
+
+  // The first record produces the review projection. The replacement review
+  // genuinely inspects that rendered handoff as well as its real source input.
+  // Recording and PR preparation re-render it, but that must not turn the
+  // content-surface review stale merely because it observed its own view.
+  await runCli(['review', 'prepare', repo, '--id', storyId, '--stage', 'implementation', '--role', 'runtime_contract']);
+  const initialReview = await runCli([
+    'review', 'record', repo, '--id', storyId, '--stage', 'implementation', '--role', 'runtime_contract',
+    '--status', 'pass', '--summary', 'initial rendered review projection',
+    '--inspection-summary', 'inspected the runtime input before the projection existed',
+    '--inspection-input', 'index.html',
+    '--judgment-delta', 'pending -> pass after inspecting the runtime input',
+    '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'projection-review-initial', '--agent-closed'
+  ]);
+  assert.equal(initialReview.exitCode, 0);
+  const reviewProjectionPath = path.join(repo, 'docs', 'features', 'projection-freshness', '08_review.md');
+  assert.equal(await pathExists(reviewProjectionPath), true);
+
+  const projectionReview = await runCli([
+    'review', 'record', repo, '--id', storyId, '--stage', 'implementation', '--role', 'runtime_contract',
+    '--status', 'pass', '--summary', 'review includes the generated handoff projection',
+    '--inspection-summary', 'inspected the runtime input and its generated review handoff',
+    '--inspection-input', 'index.html', '--inspection-input', 'docs/features/projection-freshness/08_review.md',
+    '--judgment-delta', 'initial pass -> confirmed after inspecting the generated review handoff',
+    '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'projection-review-current', '--agent-closed'
+  ]);
+  assert.equal(projectionReview.exitCode, 0);
+  assert.deepEqual(projectionReview.result.review.content_binding.surface_files.map((file) => file.path), ['index.html']);
+
+  const projectionPrepared = await runCli(['pr', 'prepare', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(projectionPrepared.exitCode, 0);
+  const currentProjectionReview = await runCli(['review', 'status', repo, '--id', storyId, '--stage', 'implementation', '--json']);
+  const currentProjectionRole = currentProjectionReview.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
+  assert.equal(currentProjectionRole.binding_status, 'current');
+
+  await writeFile(reviewProjectionPath, `${await readFile(reviewProjectionPath, 'utf8')}hand edit\n`);
+  const handEditedReview = await runCli(['review', 'status', repo, '--id', storyId, '--stage', 'implementation', '--json']);
+  const handEditedRole = handEditedReview.result.stages[0].roles.find((role) => role.role === 'runtime_contract');
+  assert.equal(handEditedRole.binding_status, 'stale');
+  assert.match(handEditedRole.stale_reason, /different user dirty worktree fingerprint/);
+
+  const projectionPath = path.join(repo, 'docs', 'features', 'projection-freshness', '02_functional_spec.md');
+  await writeFile(projectionPath, `${await readFile(projectionPath, 'utf8')}hand edit\n`);
+  const handEditResult = await runCli(['pr', 'prepare', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(handEditResult.exitCode, 0);
+  assert.equal(handEditResult.result.preparation.git.dirty, true);
+  const handEditEvidence = handEditResult.result.preparation.pr_context.verification_evidence.commands[0];
+  assert.equal(handEditEvidence.binding.status, 'stale');
 });
 
 test('pr prepare exposes stale verification evidence through artifact consistency gate', async () => {
@@ -4039,9 +4582,9 @@ This Story doc intentionally omits story_id frontmatter and binds by filename.
     .find((command) => /vibepro review record \. --id story-pr-prepare --stage implementation --role runtime_contract/.test(command));
   assert.ok(staleReviewRecordCommand);
   assert.match(staleReviewRecordCommand, /--inspection-summary "<inspection-summary>"/);
-  assert.match(staleReviewRecordCommand, /--inspection-input <inspection-input>/);
+  assert.match(staleReviewRecordCommand, /--inspection-input '<inspection-input>'/);
   assert.match(staleReviewRecordCommand, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
-  assert.match(staleReviewRecordCommand, /--agent-close-evidence <artifact>/);
+  assert.match(staleReviewRecordCommand, /--agent-close-evidence '<agent-close-evidence>'/);
   assert.equal(staleGate.stale_artifact_groups.some((group) => group.artifact_type === 'verification_command'), true);
   assert.equal(staleGate.stale_artifact_groups.some((group) => group.artifact_type === 'agent_review_result'), true);
   assert.match(staleGate.reason, /not bound to the current git state/);
@@ -4194,7 +4737,8 @@ test('pr prepare annotates stale PR lifecycle artifacts with current HEAD mismat
   assert.match(prMerge.warnings.join('\n'), /VibePro lifecycle artifact freshness: pr-merge artifact was recorded/);
   const prMergeHtml = await readFile(path.join(prDir, 'pr-merge.html'), 'utf8');
   assert.match(prMergeHtml, /Artifact Freshness/);
-  assert.match(prMergeHtml, /pr-merge artifact was recorded/);
+  assert.match(prMergeHtml, /Merge processing produced a warning/);
+  assert.doesNotMatch(prMergeHtml, /pr-merge artifact was recorded/);
   assert.match(prMergeHtml, new RegExp(currentHead.slice(0, 12)));
 
   const prPrepareHtml = await readFile(path.join(prDir, 'review-cockpit.html'), 'utf8');
@@ -7424,6 +7968,7 @@ test('story derive creates stories for code surfaces that have no spec documents
   await writeFile(path.join(repo, 'src', 'lib', 'article', 'client.ts'), 'export function listArticles() { return []; }\n');
   await writeFile(path.join(repo, 'src', 'app', 'api', 'health', 'route.ts'), 'export function GET() {}\n');
   await writeFile(path.join(repo, 'src', 'app', '(app)', 'manager', 'page.tsx'), 'export default function Page() { return null; }\n');
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'login_form_file', source_file: 'src/components/auth/LoginForm.tsx', label: 'LoginForm.tsx' },
@@ -7608,6 +8153,7 @@ test('story coverage keeps all uncovered graph files in the catalog', async () =
     await writeFile(path.join(repo, filePath), 'export default function Page() { return null; }\n');
     nodes.push({ id: `unmapped_${index}`, source_file: filePath, label: 'page.tsx' });
   }
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({ nodes, links: [] }));
 
   const result = await runCli(['story', 'derive', repo]);
@@ -7759,7 +8305,7 @@ architecture_ref: docs/architecture/ADR-story-pr-prepare.md
       source_id: 'TASK-001',
       title: 'PR準備Task',
       priority: 'high',
-      status: 'todo',
+      status: 'completed',
       execution_policy: 'proposal_only',
       mutates_repository: false,
       target_count: 1,
@@ -7770,6 +8316,25 @@ architecture_ref: docs/architecture/ADR-story-pr-prepare.md
       recommended_strategy: { id: 'task-driven-pr', reason: 'Task/HandoffとPRを接続する' },
       implementation_steps: [],
       acceptance_criteria: ['Task/HandoffがPR本文に入る'],
+      graph_context: null,
+      pre_fix_briefing: null
+    }, {
+      id: 'TASK-002',
+      source_type: 'story_plan_candidate',
+      source_id: 'TASK-002',
+      title: '将来のlive apply Task',
+      priority: 'medium',
+      status: 'todo',
+      execution_policy: 'proposal_only',
+      mutates_repository: false,
+      target_count: 1,
+      target_files: ['src/feature/future-apply.js'],
+      target_routes: [],
+      target_groups: [],
+      read_first_files: [],
+      recommended_strategy: { id: 'future-task', reason: '後続Taskは現在PRの受け入れ範囲外' },
+      implementation_steps: [],
+      acceptance_criteria: ['将来のlive applyが完了する'],
       graph_context: null,
       pre_fix_briefing: null
     }]
@@ -7930,6 +8495,12 @@ Weighted semantic/layout residual: **34%**
   assert.match(prBody, /PR本文を日本語の判断ブリーフ/);
   assert.doesNotMatch(prBody, /npm test -- --runTestsByPath src\/feature\/pr-prepare.test.js tests\/unit\/pr-prepare.test.js --runInBand/);
   assert.match(prBody, /TASK-001 PR準備Task/);
+  assert.match(prBody, /^## 受入判定スコープ$/m);
+  assert.match(prBody, /- 判定単位: Task/);
+  assert.match(prBody, /- Story ID: story-pr-prepare/);
+  assert.match(prBody, /- Task ID: TASK-001/);
+  assert.match(prBody, /- 対象受入基準: 1件/);
+  assert.match(prBody, /1\. Task\/HandoffがPR本文に入る/);
   assert.match(prBody, /- Gate: needs_verification/);
   assert.match(prBody, /- 実行状態: blocked/);
   assert.match(prBody, /- 証跡: \[\.vibepro\/pr\/story-pr-prepare\/\]\(\.vibepro\/pr\/story-pr-prepare\/\)/);
@@ -7958,7 +8529,30 @@ Weighted semantic/layout residual: **34%**
   assert.equal(prepare.pr_context.gate_dag.overall_status, 'needs_verification');
   assert.equal(prepare.pr_context.refactoring_delta.status, 'available');
   assert.equal(prepare.pr_context.refactoring_delta.top_remaining.length, 1);
-  assert.equal(prepare.pr_context.gate_dag.summary.acceptance_criteria_count, 3);
+  assert.deepEqual(prepare.pr_context.acceptance_scope, {
+    source: 'task',
+    story_id: 'story-pr-prepare',
+    task_id: 'TASK-001',
+    acceptance_criteria: ['Task/HandoffがPR本文に入る']
+  });
+  assert.equal(prepare.pr_context.story_source.acceptance_criteria.length, 3);
+  assert.equal(prepare.pr_context.gate_dag.summary.acceptance_criteria_count, 1);
+  assert.deepEqual(prepare.pr_context.gate_dag.summary.scenario_clauses, []);
+  assert.equal(prepare.pr_context.acceptance_e2e_coverage.scenario_clause_count, 0);
+  assert.equal(prepare.pr_context.gate_dag.summary.traceability_clause_coverage.acceptance_criteria_count, 1);
+  const taskScopedTraceability = await readJson(
+    path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'traceability.json')
+  );
+  assert.equal(
+    taskScopedTraceability.acceptance_criteria
+      .some((criterion) => /将来のlive apply/.test(criterion.source_text)),
+    false
+  );
+  assert.deepEqual(
+    prepare.pr_context.gate_dag.summary.traceability_clause_coverage.scenario_lineage.story_scenario_ids,
+    []
+  );
+  assert.equal(prepare.pr_context.senior_gap_judgment.ideal_state.acceptance_criteria_count, 1);
   assert.equal(prepare.pr_context.gate_dag.summary.requirement_status, 'not_applicable');
   assert.equal(prepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:requirement'), true);
   assert.equal(prepare.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:e2e'), true);
@@ -7993,6 +8587,13 @@ Weighted semantic/layout residual: **34%**
   assert.match(prepareHtml, /変更ファイル分類/);
   assert.match(prepareHtml, /実行Gate/);
   assert.match(prepareHtml, /Requirement Consistency/);
+  assert.match(prepareHtml, /受入判定スコープ/);
+  assert.match(prepareHtml, /判定単位/);
+  assert.match(prepareHtml, />Task</);
+  assert.match(prepareHtml, /Task ID/);
+  assert.match(prepareHtml, />TASK-001</);
+  assert.match(prepareHtml, /対象受入基準 \(1件\)/);
+  assert.match(prepareHtml, /Task\/HandoffがPR本文に入る/);
   assert.match(prepareHtml, /gate-dag\.html/);
   const reviewCockpitHtml = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'review-cockpit.html'), 'utf8');
   assert.equal(reviewCockpitHtml, prepareHtml);
@@ -8025,6 +8626,308 @@ Weighted semantic/layout residual: **34%**
   assert.equal(prepare.next_commands.some((command) => command.includes('vibepro pr create')), false);
   assert.equal(prepare.next_commands.some((command) => command.includes('vibepro review status')), true);
   assert.equal(prepare.next_commands.some((command) => command.includes('vibepro pr prepare')), true);
+
+  const taskStatePath = path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'tasks.json');
+  const validTaskState = await readJson(taskStatePath);
+  await writeJson(taskStatePath, {
+    ...validTaskState,
+    tasks: validTaskState.tasks.map((task) => ({ ...task, acceptance_criteria: [] }))
+  });
+  let emptyTaskCriteriaStderr = '';
+  const emptyTaskCriteria = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stderr: { write: (text) => { emptyTaskCriteriaStderr += text; } }
+  });
+  assert.equal(emptyTaskCriteria.exitCode, 1);
+  assert.match(emptyTaskCriteriaStderr, /Task acceptance criteria are required for PR prepare: TASK-001/);
+  assert.match(emptyTaskCriteriaStderr, /\.vibepro\/stories\/story-pr-prepare\/tasks\/tasks\.json/);
+  assert.match(emptyTaskCriteriaStderr, /Repair the configured canonical Task plan and rerun vibepro pr prepare/);
+  await writeJson(taskStatePath, validTaskState);
+
+  await writeJson(taskStatePath, {
+    ...validTaskState,
+    story: { ...validTaskState.story, story_id: '' }
+  });
+  let missingTaskStoryIdentityStdout = '';
+  let missingTaskStoryIdentityStderr = '';
+  const missingTaskStoryIdentity = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stdout: { write: (text) => { missingTaskStoryIdentityStdout += text; } },
+    stderr: { write: (text) => { missingTaskStoryIdentityStderr += text; } }
+  });
+  assert.equal(missingTaskStoryIdentity.exitCode, 1);
+  assert.match(
+    missingTaskStoryIdentityStderr,
+    /Task state story_id is required for PR prepare: story-pr-prepare/
+  );
+  assert.match(
+    missingTaskStoryIdentityStderr,
+    /\.vibepro\/stories\/story-pr-prepare\/tasks\/tasks\.json/
+  );
+  assert.match(
+    missingTaskStoryIdentityStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
+  assert.doesNotMatch(missingTaskStoryIdentityStdout, /判定単位: Story/);
+  await writeJson(taskStatePath, validTaskState);
+
+  let missingTaskStderr = '';
+  const missingTask = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-MISSING'
+  ], {
+    stderr: { write: (text) => { missingTaskStderr += text; } }
+  });
+  assert.equal(missingTask.exitCode, 1);
+  assert.match(missingTaskStderr, /Task not found for PR prepare: TASK-MISSING/);
+  assert.match(missingTaskStderr, /\.vibepro\/stories\/story-pr-prepare\/tasks\/tasks\.json/);
+  assert.match(missingTaskStderr, /Repair the configured canonical Task plan and rerun vibepro pr prepare/);
+
+  let missingTargetGroupStdout = '';
+  let missingTargetGroupStderr = '';
+  const missingTargetGroup = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001', '--group', 'group-missing'
+  ], {
+    stdout: { write: (text) => { missingTargetGroupStdout += text; } },
+    stderr: { write: (text) => { missingTargetGroupStderr += text; } }
+  });
+  assert.equal(missingTargetGroup.exitCode, 1);
+  assert.match(missingTargetGroupStderr, /Target group not found for PR prepare: group-missing/);
+  assert.match(
+    missingTargetGroupStderr,
+    /\.vibepro\/stories\/story-pr-prepare\/tasks\/tasks\.json/
+  );
+  assert.match(
+    missingTargetGroupStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
+  assert.doesNotMatch(missingTargetGroupStdout, /判定単位: Story/);
+
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const originalConfig = await readJson(configPath);
+  const routedTaskStatePath = path.join(repo, '.vibepro', 'routed', 'story-pr-prepare-tasks.json');
+  await mkdir(path.dirname(routedTaskStatePath), { recursive: true });
+  await writeJson(routedTaskStatePath, validTaskState);
+  await writeJson(taskStatePath, { ...validTaskState, tasks: [] });
+  await writeJson(configPath, {
+    ...originalConfig,
+    artifact_routing: {
+      ...(originalConfig.artifact_routing ?? {}),
+      artifacts: {
+        ...(originalConfig.artifact_routing?.artifacts ?? {}),
+        task_plan: { canonical: '.vibepro/routed/{story_id}-tasks.json' }
+      }
+    }
+  });
+  const routedTaskPrepare = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ]);
+  assert.equal(routedTaskPrepare.exitCode, 0);
+  assert.equal(routedTaskPrepare.result.preparation.task_context.task.id, 'TASK-001');
+
+  await writeJson(routedTaskStatePath, {
+    ...validTaskState,
+    story: { ...validTaskState.story, story_id: 'story-other' }
+  });
+  let mismatchedRoutedTaskStateStderr = '';
+  const mismatchedRoutedTaskState = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stderr: { write: (text) => { mismatchedRoutedTaskStateStderr += text; } }
+  });
+  assert.equal(mismatchedRoutedTaskState.exitCode, 1);
+  assert.match(
+    mismatchedRoutedTaskStateStderr,
+    /Task state story mismatch for PR prepare: expected story-pr-prepare, received story-other/
+  );
+  assert.match(
+    mismatchedRoutedTaskStateStderr,
+    /\.vibepro\/routed\/story-pr-prepare-tasks\.json/
+  );
+  assert.match(
+    mismatchedRoutedTaskStateStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
+
+  await writeFile(routedTaskStatePath, '{"story":');
+  let malformedRoutedTaskStateStderr = '';
+  const malformedRoutedTaskState = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stderr: { write: (text) => { malformedRoutedTaskStateStderr += text; } }
+  });
+  assert.equal(malformedRoutedTaskState.exitCode, 1);
+  assert.match(
+    malformedRoutedTaskStateStderr,
+    /Invalid Task state JSON for PR prepare: \.vibepro\/routed\/story-pr-prepare-tasks\.json/
+  );
+  assert.match(malformedRoutedTaskStateStderr, /Repair the configured canonical Task plan and rerun vibepro pr prepare/);
+  assert.match(malformedRoutedTaskStateStderr, /Unexpected end of JSON input/);
+
+  await writeJson(routedTaskStatePath, {
+    story: { story_id: 'story-pr-prepare' },
+    tasks: { 'TASK-001': validTaskState.tasks[0] }
+  });
+  let invalidRoutedTaskSchemaStderr = '';
+  const invalidRoutedTaskSchema = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stderr: { write: (text) => { invalidRoutedTaskSchemaStderr += text; } }
+  });
+  assert.equal(invalidRoutedTaskSchema.exitCode, 1);
+  assert.match(
+    invalidRoutedTaskSchemaStderr,
+    /Invalid Task state schema for PR prepare: tasks must be an array/
+  );
+  assert.match(
+    invalidRoutedTaskSchemaStderr,
+    /\.vibepro\/routed\/story-pr-prepare-tasks\.json/
+  );
+  assert.match(
+    invalidRoutedTaskSchemaStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
+  assert.doesNotMatch(invalidRoutedTaskSchemaStderr, /TypeError/);
+
+  await writeJson(routedTaskStatePath, {
+    ...validTaskState,
+    tasks: [null, ...validTaskState.tasks]
+  });
+  let invalidRoutedTaskItemStderr = '';
+  const invalidRoutedTaskItem = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stderr: { write: (text) => { invalidRoutedTaskItemStderr += text; } }
+  });
+  assert.equal(invalidRoutedTaskItem.exitCode, 1);
+  assert.match(
+    invalidRoutedTaskItemStderr,
+    /Invalid Task state schema for PR prepare: tasks must contain objects with non-empty id values/
+  );
+  assert.match(invalidRoutedTaskItemStderr, /\.vibepro\/routed\/story-pr-prepare-tasks\.json/);
+  assert.match(
+    invalidRoutedTaskItemStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
+  assert.doesNotMatch(invalidRoutedTaskItemStderr, /TypeError/);
+
+  await writeJson(routedTaskStatePath, {
+    ...validTaskState,
+    tasks: [{
+      ...validTaskState.tasks[0],
+      target_groups: { group: validTaskState.tasks[0].target_groups[0] }
+    }]
+  });
+  let invalidTargetGroupsSchemaStderr = '';
+  const invalidTargetGroupsSchema = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001', '--group', 'group-a'
+  ], {
+    stderr: { write: (text) => { invalidTargetGroupsSchemaStderr += text; } }
+  });
+  assert.equal(invalidTargetGroupsSchema.exitCode, 1);
+  assert.match(
+    invalidTargetGroupsSchemaStderr,
+    /Invalid Task state schema for PR prepare: target_groups must be an array/
+  );
+  assert.match(invalidTargetGroupsSchemaStderr, /\.vibepro\/routed\/story-pr-prepare-tasks\.json/);
+  assert.match(
+    invalidTargetGroupsSchemaStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
+  assert.doesNotMatch(invalidTargetGroupsSchemaStderr, /TypeError/);
+
+  await writeJson(routedTaskStatePath, {
+    ...validTaskState,
+    tasks: [{
+      ...validTaskState.tasks[0],
+      target_groups: [null]
+    }]
+  });
+  let invalidTargetGroupItemStderr = '';
+  const invalidTargetGroupItem = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001', '--group', 'group-a'
+  ], {
+    stderr: { write: (text) => { invalidTargetGroupItemStderr += text; } }
+  });
+  assert.equal(invalidTargetGroupItem.exitCode, 1);
+  assert.match(
+    invalidTargetGroupItemStderr,
+    /Invalid Task state schema for PR prepare: target_groups must contain objects with non-empty id values/
+  );
+  assert.match(invalidTargetGroupItemStderr, /\.vibepro\/routed\/story-pr-prepare-tasks\.json/);
+  assert.doesNotMatch(invalidTargetGroupItemStderr, /TypeError/);
+
+  await writeJson(routedTaskStatePath, validTaskState);
+  await rm(routedTaskStatePath);
+  let missingRoutedTaskStateStderr = '';
+  const missingRoutedTaskState = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stderr: { write: (text) => { missingRoutedTaskStateStderr += text; } }
+  });
+  assert.equal(missingRoutedTaskState.exitCode, 1);
+  assert.match(
+    missingRoutedTaskStateStderr,
+    /Task state not found for PR prepare: \.vibepro\/routed\/story-pr-prepare-tasks\.json/
+  );
+  assert.match(
+    missingRoutedTaskStateStderr,
+    /Repair the configured canonical Task plan and rerun vibepro pr prepare/
+  );
+  await writeJson(configPath, originalConfig);
+  await writeJson(taskStatePath, validTaskState);
+
+  const storyScopedPrepare = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'inspect Story fallback HTML acceptance scope',
+    '--evidence-depth-consumer', 'vibepro-cli-test',
+    '--evidence-depth-target', 'pr-prepare.html',
+    '--evidence-depth-target', 'review-cockpit.html'
+  ]);
+  assert.equal(storyScopedPrepare.exitCode, 0);
+  const storyScopedArtifact = await readJson(
+    path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json')
+  );
+  assert.deepEqual(storyScopedArtifact.pr_context.acceptance_scope, {
+    source: 'story',
+    story_id: 'story-pr-prepare',
+    task_id: null,
+    acceptance_criteria: [
+      'PR本文に背景が入る',
+      'PR本文にADR判断が入る',
+      'PR本文に検証候補が入る'
+    ]
+  });
+  assert.equal(storyScopedArtifact.pr_context.gate_dag.summary.acceptance_criteria_count, 3);
+  const storyScopedPrBody = await readFile(
+    path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'),
+    'utf8'
+  );
+  assert.match(storyScopedPrBody, /- 判定単位: Story/);
+  assert.match(storyScopedPrBody, /- Task ID: なし/);
+  assert.match(storyScopedPrBody, /- 対象受入基準: 3件/);
+  assert.doesNotMatch(storyScopedPrBody, /1\. PR本文に背景が入る/);
+  const storyScopedPrepareHtml = await readFile(
+    path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.html'),
+    'utf8'
+  );
+  assert.match(storyScopedPrepareHtml, />Story</);
+  assert.match(storyScopedPrepareHtml, /対象受入基準 \(3件\)/);
+  assert.match(storyScopedPrepareHtml, /PR本文に背景が入る/);
+  assert.match(storyScopedPrepareHtml, /PR本文にADR判断が入る/);
+  assert.match(storyScopedPrepareHtml, /PR本文に検証候補が入る/);
+  const storyScopedReviewCockpitHtml = await readFile(
+    path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'review-cockpit.html'),
+    'utf8'
+  );
+  assert.equal(storyScopedReviewCockpitHtml, storyScopedPrepareHtml);
+
+  const restoredTaskPrepare = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ]);
+  assert.equal(restoredTaskPrepare.exitCode, 0);
 
   // gate guard: flag無しなら needs_verification で拒否される
   let stderrOutput = '';
@@ -8093,14 +8996,8 @@ Weighted semantic/layout residual: **1%**
 import { expect, test } from '@playwright/test';
 test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async () => {
   // story-pr-prepare ac:1
-  // PR本文に背景が入る
-  // story-pr-prepare ac:2
-  // PR本文にADR判断が入る
-  // story-pr-prepare ac:3
-  // PR本文に検証候補が入る
-  expect('PR本文に背景が入る').toContain('背景');
-  expect('PR本文にADR判断が入る').toContain('ADR');
-  expect('PR本文に検証候補が入る').toContain('検証');
+  // Task/HandoffがPR本文に入る
+  expect('Task/HandoffがPR本文に入る').toContain('Task/Handoff');
 });
 `);
   await git(repo, ['add', 'tests/e2e/story-pr-prepare-pr-artifacts.spec.ts']);
@@ -8203,9 +9100,7 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
   ]);
 
   for (const [clause, reason] of [
-    ['AC-1', 'PR本文artifactの生成テストが背景セクションの出力を直接観測している'],
-    ['AC-2', 'PR本文artifactの生成テストがADR判断セクションの出力を直接観測している'],
-    ['AC-3', 'PR本文artifactの生成テストが検証候補セクションの出力を直接観測している']
+    ['ac:1', 'PR本文artifactの生成テストがTask/Handoffセクションの出力を直接観測している']
   ]) {
     assert.equal((await runCli([
       'adjudicate', 'record', repo,
@@ -8425,7 +9320,7 @@ PR本文がファイル数だけではレビュー判断に足りない。
   ])).exitCode, 0);
   await recordRequiredAgentReviews(repo, 'story-pr-prepare');
   await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
-  for (const clause of ['AC-1', 'AC-2', 'AC-3']) {
+  for (const clause of ['ac:1']) {
     assert.equal((await runCli([
       'adjudicate', 'record', repo,
       '--id', 'story-pr-prepare',
@@ -8708,7 +9603,7 @@ test('pr ship dry-run reruns prepare and stops with Agent Review commands instea
   assert.equal(prepare.story.story_id, 'story-pr-prepare');
 });
 
-test('pr ship dry-run restores Agent Review commands from stale role gates', async () => {
+test('pr ship dry-run restores Agent Review commands from explicitly strict stale role gates', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'ship-stale-review.js'), 'export const version = 1;\n');
@@ -8736,6 +9631,9 @@ test('pr ship dry-run restores Agent Review commands from stale role gates', asy
     'gate',
     '--role',
     'gate_evidence',
+    '--strict-head-binding',
+    '--strict-head-reason',
+    'exercise explicit strict-head compatibility after the surface-aware default',
     '--status',
     'pass',
     '--summary',
@@ -9039,7 +9937,7 @@ test('pr autopilot records passing verification evidence from a defined command'
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/pass.js',
+    'unit=npm test',
     '--json'
   ]);
 
@@ -9058,7 +9956,13 @@ test('pr autopilot records passing verification evidence from a defined command'
   const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
   assert.equal(evidence.commands[0].kind, 'unit');
   assert.equal(evidence.commands[0].status, 'pass');
-  assert.equal(evidence.commands[0].command, 'node ./scripts/pass.js');
+  assert.equal(evidence.commands[0].command, 'npm test');
+  // Autopilot executes the command itself and derives the status from the exit code, so the
+  // record must not claim to be self-reported.
+  assert.equal(evidence.commands[0].evidence_source, 'autopilot_run');
+  assert.equal(evidence.commands[0].computed_observation.producer, 'vibepro pr autopilot');
+  assert.equal(evidence.commands[0].computed_observation.values.exit_code, '0');
+  assert.equal(evidence.commands[0].computed_observation.output_metrics, 'exit_code_only');
   const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'autopilot', 'unit-verification.json'));
   assert.equal(artifact.exit_code, 0);
   assert.equal(artifact.status, 'pass');
@@ -9076,7 +9980,7 @@ test('pr autopilot records failed verification as fail and stops', async () => {
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/fail.js',
+    'unit=npm run test:fail',
     '--json'
   ]);
 
@@ -9103,7 +10007,7 @@ test('pr autopilot dry-run plans verification without recording evidence', async
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/pass.js',
+    'unit=npm test',
     '--dry-run',
     '--json'
   ]);
@@ -9154,7 +10058,7 @@ test('pr autopilot skips existing passing records instead of overwriting them', 
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/pass.js',
+    'unit=npm test',
     '--json'
   ]);
   assert.equal(first.exitCode, 0);
@@ -9168,7 +10072,7 @@ test('pr autopilot skips existing passing records instead of overwriting them', 
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/fail.js',
+    'unit=npm run test:fail',
     '--json'
   ]);
 
@@ -9177,7 +10081,7 @@ test('pr autopilot skips existing passing records instead of overwriting them', 
   const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
   assert.equal(evidence.commands[0].kind, 'unit');
   assert.equal(evidence.commands[0].status, 'pass');
-  assert.equal(evidence.commands[0].command, 'node ./scripts/pass.js');
+  assert.equal(evidence.commands[0].command, 'npm test');
 });
 
 test('pr autopilot reruns stale passing records instead of skipping by kind only', async () => {
@@ -9191,7 +10095,7 @@ test('pr autopilot reruns stale passing records instead of skipping by kind only
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/pass.js',
+    'unit=npm test',
     '--json'
   ]);
   assert.equal(first.exitCode, 0);
@@ -9209,7 +10113,7 @@ test('pr autopilot reruns stale passing records instead of skipping by kind only
     '--story-id',
     'story-pr-prepare',
     '--verify',
-    'unit=node ./scripts/fail.js',
+    'unit=npm run test:fail',
     '--json'
   ]);
 
@@ -9219,7 +10123,7 @@ test('pr autopilot reruns stale passing records instead of skipping by kind only
   const evidence = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'verification-evidence.json'));
   assert.equal(evidence.commands[0].kind, 'unit');
   assert.equal(evidence.commands[0].status, 'fail');
-  assert.equal(evidence.commands[0].command, 'node ./scripts/fail.js');
+  assert.equal(evidence.commands[0].command, 'npm run test:fail');
 });
 
 test('pr prepare flags empty commit messages in the PR range', async () => {
@@ -9464,7 +10368,7 @@ test('review prepare generates stage role requests', async () => {
   assert.equal(result.result.plan.agent_skill_discipline.required, true);
   assert.equal(result.result.plan.agent_skill_discipline.common_rationalizations.includes('tests_pass_so_review_done'), true);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /vibepro review record .*--role e2e_ux/);
-  assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-system <codex\|claude_code>/);
+  assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-system "<codex\|claude_code>"/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--execution-mode parallel_subagent/);
   assert.match(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /--agent-closed/);
   assert.doesNotMatch(result.result.plan.parallel_dispatch.record_commands.e2e_ux, /manual_review/);
@@ -9658,6 +10562,7 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   assert.equal(gateStage.lifecycle.timed_out_count, 1);
   assert.equal(gateStage.roles.find((role) => role.role === 'gate_evidence').lifecycle.effective_status, 'timed_out');
   assert.equal(gateStage.next_actions.some((action) => action.includes('review close') && action.includes('agent-stuck')), true);
+  assert.equal(gateStage.next_actions.some((action) => action.includes('--close-reason timeout') && action.includes('--close-evidence') && action.includes('timeout-close-evidence')), true);
   assert.equal(gateStage.next_actions.some((action) => action.includes('review start') && action.includes('--replacement-for')), true);
 
   const close = await runCli([
@@ -9682,6 +10587,20 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   assert.equal(close.result.lifecycle.effective_status, 'closed');
   assert.equal(close.result.lifecycle.close_reason, 'timeout');
 
+  const rewrittenClose = await runCli([
+    'review', 'close', repo,
+    '--id', 'story-pr-prepare',
+    '--stage', 'gate',
+    '--role', 'gate_evidence',
+    '--agent-id', 'agent-stuck',
+    '--close-reason', 'completed',
+    '--close-evidence', 'rewrite-attempt',
+    '--json'
+  ]);
+  assert.equal(rewrittenClose.exitCode, 1);
+  const immutableLifecycle = await readJson(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', 'gate', 'lifecycle.json'));
+  assert.equal(immutableLifecycle.entries.find((entry) => entry.agent_id === 'agent-stuck').close_reason, 'timeout');
+
   const replacement = await runCli([
     'review',
     'start',
@@ -9702,6 +10621,12 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   ]);
   assert.equal(replacement.exitCode, 0);
   assert.equal(replacement.result.lifecycle.replacement_for, start.result.lifecycle.lifecycle_id);
+
+  const recovered = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
+  assert.equal(recovered.exitCode, 0);
+  assert.equal(recovered.result.stages[0].lifecycle.timed_out_count, 0);
+  assert.equal(recovered.result.stages[0].lifecycle.replaced_count, 1);
+  assert.equal(recovered.result.stages[0].lifecycle.entries.find((entry) => entry.lifecycle_id === start.result.lifecycle.lifecycle_id).effective_status, 'replaced');
 
   const record = await runCli([
     'review',
@@ -9771,12 +10696,137 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
     'agent-manual-stop',
     '--close-reason',
     'manual_shutdown',
+    '--close-evidence',
+    'operator-shutdown',
     '--json'
   ]);
   assert.equal(manualClose.exitCode, 0);
   assert.equal(manualClose.result.lifecycle.close_reason, 'manual_shutdown');
   const manualStatus = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
   assert.equal(manualStatus.result.stages[0].next_actions.some((action) => action.includes('manually shut down') && action.includes('--replacement-for')), true);
+});
+
+test('artifact-backed accepted scope decision marks scope_reviewed without inventing review ownership', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
+  await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: Scope decision evidence
+architecture_docs:
+  - docs/architecture/scope.md
+spec_docs:
+  - docs/specs/scope.md
+---
+
+# Scope decision evidence
+
+- [ ] A coherent multi-commit Story remains reviewable with an artifact-backed senior decision.
+`);
+  await writeFile(path.join(repo, 'docs', 'architecture', 'scope.md'), '# Scope architecture\n\nBoundary: one coherent Story may span multiple commits.\n');
+  await writeFile(path.join(repo, 'docs', 'specs', 'scope.md'), '# Scope spec\n\nScope reviewability is explicit.\n');
+  await writeFile(path.join(repo, 'src', 'scope.js'), 'export const scope = "reviewable";\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: establish coherent scope']);
+  for (let index = 0; index < 11; index += 1) {
+    const file = path.join(repo, 'src', `scope-part-${index}.js`);
+    await writeFile(file, `export const part${index} = ${index};\n`);
+    await git(repo, ['add', file]);
+    await git(repo, ['commit', '-m', `feat: coherent scope part ${index}`]);
+  }
+  const decision = await runCli([
+    'decision', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--type', 'needs_review',
+    '--summary', 'Scope is one coherent review unit.',
+    '--source', 'gate:judgment_axis_scope_reviewability',
+    '--reason', 'All commits implement one declared scope contract and are reviewed together.',
+    '--artifact', 'docs/architecture/scope.md',
+    '--status', 'accepted', '--json'
+  ]);
+  assert.equal(decision.exitCode, 0);
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+  assert.equal(prepared.exitCode, 0);
+  const axis = prepared.result.preparation.pr_context.engineering_judgment.judgment_axes.find((item) => item.axis === 'scope_reviewability');
+  assert.notEqual(axis.status, 'inactive');
+  assert.equal(axis.matched_evidence.some((item) => item.kind === 'scope_reviewed'), true);
+  assert.equal(axis.matched_evidence.some((item) => item.kind === 'decision_record'), true);
+  assert.equal(axis.matched_evidence.some((item) => item.kind === 'review_owner_map'), false);
+  assert.equal(axis.missing_evidence.includes('review_owner_map'), true);
+});
+
+test('review replacement lifecycle enforces same-role lineage and prior closure evidence', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'gate']);
+  const start = await runCli([
+    'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
+    '--agent-system', 'codex', '--agent-id', 'agent-original', '--json'
+  ]);
+  assert.equal(start.exitCode, 0);
+
+  const unlinked = await runCliWithStdout([
+    'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
+    '--agent-system', 'codex', '--agent-id', 'agent-unlinked', '--replacement-for', 'missing-lifecycle', '--json'
+  ]);
+  assert.notEqual(unlinked.exitCode, 0);
+  assert.match(unlinked.stderr, /existing lifecycle for the same story, stage, and role/);
+
+  const premature = await runCliWithStdout([
+    'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
+    '--agent-system', 'codex', '--agent-id', 'agent-premature', '--replacement-for', start.result.lifecycle.lifecycle_id, '--json'
+  ]);
+  assert.notEqual(premature.exitCode, 0);
+  assert.match(premature.stderr, /prior lifecycle to be closed first/);
+
+  const close = await runCli([
+    'review', 'close', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
+    '--agent-id', 'agent-original', '--close-reason', 'manual_shutdown', '--close-evidence', 'agent shutdown confirmed', '--json'
+  ]);
+  assert.equal(close.exitCode, 0);
+  const missingReplacement = await runCliWithStdout([
+    'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
+    '--agent-system', 'codex', '--agent-id', 'agent-missing-replacement', '--json'
+  ]);
+  assert.notEqual(missingReplacement.exitCode, 0);
+  assert.match(missingReplacement.stderr, /manually shut down prior lifecycle.*--replacement-for/);
+  const replacement = await runCli([
+    'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
+    '--agent-system', 'codex', '--agent-id', 'agent-valid-replacement', '--replacement-for', start.result.lifecycle.lifecycle_id, '--json'
+  ]);
+  assert.equal(replacement.exitCode, 0);
+
+  const replacementClose = await runCli([
+    'review', 'close', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
+    '--agent-id', 'agent-valid-replacement', '--close-reason', 'manual_shutdown', '--close-evidence', 'replacement shutdown confirmed', '--json'
+  ]);
+  assert.equal(replacementClose.exitCode, 0);
+  const staleLineage = await runCliWithStdout([
+    'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
+    '--agent-system', 'codex', '--agent-id', 'agent-stale-lineage', '--replacement-for', start.result.lifecycle.lifecycle_id, '--json'
+  ]);
+  assert.notEqual(staleLineage.exitCode, 0);
+  assert.match(staleLineage.stderr, /latest same-role lifecycle/);
+});
+
+test('user git fingerprint includes dirty VibePro config but ignores generated artifacts', async () => {
+  const repo = await makeGitRepoWithStory();
+  const clean = await collectGitStatusFingerprints(repo);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.test_policy_marker = true;
+  await writeJson(configPath, config);
+  const configDirty = await collectGitStatusFingerprints(repo);
+  assert.equal(configDirty.user_dirty, true);
+  assert.notEqual(configDirty.user_status_fingerprint_hash, clean.user_status_fingerprint_hash);
+
+  await git(repo, ['restore', '.vibepro/config.json']);
+  await writeJson(path.join(repo, '.vibepro', 'generated-only.json'), { generated: true });
+  const artifactDirty = await collectGitStatusFingerprints(repo);
+  assert.equal(artifactDirty.raw_dirty, undefined);
+  assert.equal(artifactDirty.user_dirty, false);
+  assert.equal(artifactDirty.user_status_fingerprint_hash, clean.user_status_fingerprint_hash);
 });
 
 test('review status and summary tell operators to close running subagents before recording', async () => {
@@ -11827,11 +12877,13 @@ title: PR準備
 
   const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(started.exitCode, 0);
+  const currentHeadSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
 
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
   await mkdir(prDir, { recursive: true });
   const gateDag = {
     schema_version: '0.1.0',
+    current_head_sha: currentHeadSha,
     overall_status: 'needs_verification',
     nodes: [
       {
@@ -11846,10 +12898,12 @@ title: PR準備
   await writeFile(path.join(prDir, 'gate-dag.json'), `${JSON.stringify(gateDag, null, 2)}\n`);
   await writeFile(path.join(prDir, 'pr-prepare.json'), `${JSON.stringify({
     story_id: 'story-pr-prepare',
+    current_head_sha: currentHeadSha,
     pr_context: { gate_dag: gateDag }
   }, null, 2)}\n`);
   await writeFile(path.join(prDir, 'pr-create.json'), `${JSON.stringify({
     story_id: 'story-pr-prepare',
+    current_head_sha: currentHeadSha,
     pr_url: 'https://github.example.test/unson/vibepro/pull/171',
     dry_run: false
   }, null, 2)}\n`);
@@ -12274,7 +13328,7 @@ test('execute status treats a normally advanced managed worktree as the current 
   );
 });
 
-test('execute status keeps merged execution state and review completion aligned with artifacts', async () => {
+test('execute status keeps merged delivery without inferring incomplete review evidence', async () => {
   const repo = await makeGitRepoWithStory();
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
@@ -12310,6 +13364,8 @@ test('execute status keeps merged execution state and review completion aligned 
     current_head_sha: headSha,
     merged_at: '2026-06-15T00:00:00.000Z',
     merge_commit_sha: headSha,
+    delivery: { status: 'merged', merge_commit_sha: headSha },
+    reconciliation: { status: 'reconciled', reasons: [] },
     pr: { url: 'https://github.example.test/unson/vibepro/pull/999' }
   });
   await writeJson(path.join(reviewDir, 'review-result-gate_evidence.json'), {
@@ -12344,7 +13400,8 @@ test('execute status keeps merged execution state and review completion aligned 
       request_artifact: '.vibepro/reviews/story-pr-prepare/gate/review-request-gate_evidence.md',
       lifecycle: { agent_closed: true, close_evidence: '.vibepro/reviews/story-pr-prepare/gate/transcript-gate-evidence-1.json' },
       evidence_strength: 'strong'
-    }
+    },
+    lifecycle: { effective_status: 'closed' }
   });
   await writeJson(path.join(reviewDir, 'lifecycle.json'), {
     schema_version: '0.1.0',
@@ -12367,13 +13424,19 @@ test('execute status keeps merged execution state and review completion aligned 
       }
     ]
   });
+  await mkdir(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'), {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    completion_status: 'pr_created'
+  });
 
   const status = await runCli(['execute', 'status', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(status.exitCode, 0);
   assert.equal(status.result.state.completion_status, 'merged');
   assert.equal(status.result.state.pr_url, 'https://github.example.test/unson/vibepro/pull/999');
-  assert.equal(status.result.state.completed_phases.includes('agent_review'), true);
-  assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded')?.status, 'passed');
+  assert.equal(status.result.state.completed_phases.includes('agent_review'), false);
+  assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'agent_review_recorded')?.status, 'pending');
   assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'pr_created')?.status, 'passed');
   assert.equal(status.result.state.execution_dag.nodes.find((node) => node.id === 'merged_or_closed')?.status, 'passed');
 });
@@ -12432,6 +13495,12 @@ test('execute status does not advance from stale pr lifecycle artifacts', async 
       artifact_head_sha: oldHead,
       current_head_sha: currentHead
     }
+  });
+  await mkdir(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'), {
+    schema_version: '0.1.0',
+    story_id: 'story-pr-prepare',
+    completion_status: 'blocked'
   });
 
   const status = await runCli(['execute', 'status', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
@@ -12923,7 +13992,7 @@ test('required managed worktree backfills VibePro control files when reusing an 
   );
 });
 
-test('execute merge dry-run plans external checks without executing them', async () => {
+test('story-vibepro-merge-waiver-propagation ac:1 ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path execute merge dry-run plans external checks without executing them', async () => {
   const repo = await makeGitRepoWithStory();
   await git(repo, ['remote', 'add', 'origin', 'https://github.com/unson/target-product.git']);
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
@@ -12931,9 +14000,20 @@ test('execute merge dry-run plans external checks without executing them', async
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
-    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
-    git: { base_ref: 'main' }
+    gate_status: {
+      overall_status: 'needs_verification',
+      ready_for_pr_create: false,
+      unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+      critical_unresolved_gates: []
+    },
+    pr_context: { gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } } },
+    git: { base_ref: 'main', head_sha: headSha }
+  });
+  await writeJson(path.join(prDir, 'gate-dag.json'), {
+    story_id: 'story-pr-prepare',
+    overall_status: 'needs_verification',
+    nodes: [],
+    summary: { needs_evidence_count: 1 }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
@@ -12943,11 +14023,18 @@ test('execute merge dry-run plans external checks without executing them', async
     workspace_initialized: true,
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
     output: { language: 'ja' },
-    gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } },
-    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } },
+    execution_gate: { status: 'waiver_required', pr_create_allowed: true, blocking_gates: [] },
+    gate_override: {
+      allowed: true,
+      waiver_policy: 'cli_reason',
+      reason: 'MWP-AC-5 noncritical current-HEAD waiver fixture',
+      critical_unresolved_gates: [],
+      unresolved_gates: [{ id: 'gate:validation_sequencing', severity: 'warning' }]
+    },
     base: 'main',
     head: 'feature/test-story',
-    pr_url: 'https://github.example.test/unson/vibepro/pull/123',
+    pr_url: 'https://github.com/unson/target-product/pull/123',
     current_head_sha: headSha,
     artifact_freshness: {
       kind: 'pr_create',
@@ -12992,6 +14079,8 @@ process.exit(99);
   assert.equal(result.result.merge.preconditions.checks_ready.status, 'not_run');
   assert.equal(result.result.merge.preconditions.review_policy.status, 'not_run');
   assert.equal(result.result.merge.preconditions.open_pull_request.status, 'not_run');
+  assert.equal(result.result.merge.preconditions.gate_ready, true);
+  assert.equal(result.result.merge.gate_authorization.source, 'pr_create_gate_override');
   assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr merge')), true);
   assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr view')), true);
   assert.equal(result.result.merge.commands.some((command) => command.includes('git fetch origin main')), true);
@@ -13005,15 +14094,51 @@ process.exit(99);
   assert.equal(artifact.status, 'dry_run_planned');
   assert.equal(artifact.dry_run, true);
   assert.equal(artifact.results.length, 0);
+  assert.equal(artifact.gate_authorization.source, 'pr_create_gate_override');
+  assert.equal(artifact.gate_authorization.reason, 'MWP-AC-5 noncritical current-HEAD waiver fixture');
+  assert.equal(artifact.gate_authorization.gate_override.waiver_policy, 'cli_reason');
+  assert.deepEqual(artifact.gate_authorization.gate_override.critical_unresolved_gates, []);
   assert.equal(
     await pathExists(path.join(repo, 'docs', 'management', 'audit-artifacts', 'story-pr-prepare', 'audit-bundle.json')),
     false
   );
   const html = await readFile(path.join(prDir, 'pr-merge.html'), 'utf8');
   assert.match(html, /data-vibepro-report="pr-merge"/);
+  assert.match(html, /Gate Authorization/);
+  assert.match(html, /pr_create_gate_override/);
+  assert.match(html, /MWP-AC-5 noncritical current-HEAD waiver fixture/);
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
   assert.equal(manifest.pr_merges['story-pr-prepare'].latest_merge, '.vibepro/pr/story-pr-prepare/pr-merge.json');
+  assert.equal(manifest.pr_merges['story-pr-prepare'].latest_base, 'main');
   assert.equal(manifest.canonical_audit_artifacts?.['story-pr-prepare'], undefined);
+});
+
+test('GDL-CONTRACT-009 execute merge fails closed when remote origin authority is unavailable', async () => {
+  const repo = await makeGitRepoWithStory();
+  await git(repo, ['remote', 'add', 'origin', 'https://github.com/unson/target-product.git']);
+  await prepareExecuteMergeDryRunFixture(repo);
+  await git(repo, ['remote', 'remove', 'origin']);
+
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-missing-origin-bin-'));
+  const ghCallLog = path.join(binDir, 'gh-called.log');
+  await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(ghCallLog)}, process.argv.slice(2).join(' ') + '\\n');
+process.exit(99);
+`);
+  await chmod(path.join(binDir, 'gh'), 0o755);
+
+  let stderr = '';
+  const result = await runCli([
+    'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--dry-run', '--json'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` },
+    stderr: { write(chunk) { stderr += chunk; } }
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.equal(await pathExists(ghCallLog), false);
+  assert.match(stderr, /repository authority is unavailable/i);
 });
 
 test('execute merge dry-run keeps absent and unreadable cost accounting explicit without zeros', async () => {
@@ -13058,12 +14183,20 @@ test('execute merge dry-run keeps absent and unreadable cost accounting explicit
   assert.equal(unreadable.result.merge.cost_accounting_collection.status, 'unavailable');
   assert.equal(unreadable.result.merge.cost_accounting.token_accounting.total_tokens, null);
   assert.equal(unreadable.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.status, 'unavailable');
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.estimated_total_tokens, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.estimated_tokens, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.event_count, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.provenance_buckets.mixed_tool_output.estimated_tokens, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.provenance_buckets.mixed_tool_output.event_count, null);
+  assert.equal(unreadable.result.merge.cost_accounting.artifact_token_accounting.unmatched_event_count, null);
   assert.match(unreadable.result.merge.cost_accounting_collection.reason, /ENOENT/);
   assert.equal(unreadable.result.merge.warnings.some((warning) => warning.includes('Cost accounting file could not be read')), true);
 
   const artifact = await readJson(path.join(prDir, 'pr-merge.json'));
   assert.equal(artifact.cost_accounting.status, 'unavailable');
   assert.equal(artifact.cost_accounting.token_accounting.total_tokens, null);
+  assert.equal(artifact.cost_accounting.artifact_token_accounting.status, 'unavailable');
 });
 
 test('execute merge dry-run preserves partial cost accounting as unavailable fields instead of zeros', async () => {
@@ -13079,6 +14212,16 @@ test('execute merge dry-run preserves partial cost accounting as unavailable fie
         output_tokens: 77,
         source: 'codex-session-jsonl',
         window: { session_id: 'partial-session' }
+      },
+      session_efficiency_audit: {
+        artifact_kind: 'vibepro_session_efficiency_audit',
+        attribution: {
+          status: 'available',
+          primary: { basis: 'strict_story_cues', event_count: 2 },
+          upper_bound: { basis: 'strict_plus_worktree_associated', event_count: 3 },
+          mixed_parent: false,
+          strict_over_associated: 0.667
+        }
       }
     }
   });
@@ -13100,9 +14243,22 @@ test('execute merge dry-run preserves partial cost accounting as unavailable fie
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.merge.cost_accounting.status, 'available');
   assert.equal(result.result.merge.cost_accounting.token_accounting.total_tokens, 777);
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.attribution.status, 'available');
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.primary.event_count, 2);
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.upper_bound.event_count, 3);
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.mixed_parent, false);
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.strict_over_associated, 0.667);
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.status, 'unavailable');
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, null);
   assert.match(result.result.merge.cost_accounting.elapsed_time_accounting.reason, /elapsed-time accounting was not present/);
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.status, 'unavailable');
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.estimated_total_tokens, null);
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.label,
+    '監査証跡 / canonical audit artifacts / gate-review-verification evidence');
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.ratio_of_classified_exposure, null);
+  assert.deepEqual(result.result.merge.cost_accounting.artifact_token_accounting.buckets.audit_evidence.matched_signals, []);
+  assert.match(result.result.merge.cost_accounting.artifact_token_accounting.estimate_method, /ceil\(text\.length \/ 4\)/);
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.coverage, 'signal-matched transcript entries only');
 });
 
 test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accounting with automation memory window provenance', async () => {
@@ -13112,6 +14268,7 @@ test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accoun
   await git(repo, ['remote', 'add', 'origin', remote]);
   await git(repo, ['push', '-u', 'origin', 'main']);
   await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  await git(repo, ['remote', 'set-url', 'origin', 'https://github.com/unson/target-product.git']);
   const { env } = await prepareExecuteMergeDryRunFixture(repo);
   const codexHome = await mkdtemp(path.join(os.tmpdir(), 'vibepro-execute-merge-codex-'));
   const sessionId = '019f0405-d790-70e1-882f-a436d8074dcd';
@@ -13210,6 +14367,25 @@ test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accoun
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.status, 'available');
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, 140000);
   assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.artifact_kind, 'vibepro_session_efficiency_audit');
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.attribution.status, 'available');
+  assert.deepEqual(
+    result.result.merge.cost_accounting.session_efficiency_audit.primary,
+    result.result.merge.cost_accounting.session_efficiency_audit.attribution.primary
+  );
+  assert.deepEqual(
+    result.result.merge.cost_accounting.session_efficiency_audit.upper_bound,
+    result.result.merge.cost_accounting.session_efficiency_audit.attribution.upper_bound
+  );
+  assert.equal(
+    result.result.merge.cost_accounting.session_efficiency_audit.mixed_parent,
+    result.result.merge.cost_accounting.session_efficiency_audit.attribution.mixed_parent
+  );
+  assert.equal(
+    result.result.merge.cost_accounting.session_efficiency_audit.strict_over_associated,
+    result.result.merge.cost_accounting.session_efficiency_audit.attribution.strict_over_associated
+  );
+  assert.equal(result.result.merge.cost_accounting.artifact_token_accounting.status, 'available');
+  assert.equal(result.result.merge.cost_accounting.session_efficiency_audit.artifact_token_accounting.status, 'available');
 
   const inferred = await runCli([
     'execute',
@@ -13239,8 +14415,9 @@ test('AUTCOST-SCENARIO-002 execute merge dry-run collects session-id cost accoun
   assert.equal(inferred.result.merge.cost_accounting.token_accounting.total_tokens, 250);
 });
 
-test('execute merge dry-run ignores stale pr-create selectors', async () => {
+test('story-vibepro-merge-waiver-propagation ac:3 S-001 scenario_clause_e2e failure_mode: schema_failure execute merge dry-run rejects a stale pr-create waiver even with an explicit PR selector', async () => {
   const repo = await makeGitRepoWithStory();
+  await git(repo, ['remote', 'add', 'origin', 'https://github.example.test/unson/vibepro.git']);
   const oldHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   await writeFile(path.join(repo, 'src-stale-merge-selector.js'), 'export const staleMergeSelector = true;\n');
   await git(repo, ['add', 'src-stale-merge-selector.js']);
@@ -13250,8 +14427,13 @@ test('execute merge dry-run ignores stale pr-create selectors', async () => {
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
-    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    gate_status: {
+      overall_status: 'needs_verification',
+      ready_for_pr_create: false,
+      unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+      critical_unresolved_gates: []
+    },
+    pr_context: { gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } } },
     git: { base_ref: 'main', head_sha: currentHead }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
@@ -13261,6 +14443,12 @@ test('execute merge dry-run ignores stale pr-create selectors', async () => {
     dry_run: false,
     workspace_initialized: true,
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    gate_override: {
+      allowed: true,
+      waiver_policy: 'cli_reason',
+      reason: 'stale waiver must never authorize merge',
+      critical_unresolved_gates: []
+    },
     base: 'main',
     head: 'feature/test-story',
     pr_url: 'https://github.example.test/unson/vibepro/pull/123',
@@ -13291,6 +14479,8 @@ process.exit(99);
     'story-pr-prepare',
     '--base',
     'main',
+    '--pr',
+    '123',
     '--dry-run',
     '--json'
   ], {
@@ -13300,16 +14490,283 @@ process.exit(99);
   assert.equal(result.exitCode, 2);
   assert.equal(await pathExists(ghCallLog), false);
   assert.equal(result.result.merge.status, 'blocked');
-  assert.equal(result.result.merge.stop_reason, 'pr_selector_missing');
-  assert.equal(result.result.merge.commands.length, 0);
-  assert.equal(result.result.merge.warnings.some((warning) => warning.includes('Ignored stale pr-create artifact PR URL')), true);
+  assert.equal(result.result.merge.stop_reason, 'gate_not_ready');
+  assert.equal(result.result.merge.gate_authorization.allowed, false);
+  assert.equal(result.result.merge.gate_authorization.reason, 'gate_override_not_allowed');
+  assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr merge')), true);
+  assert.equal(result.result.merge.warnings.some((warning) => warning.includes('Merge gate authorization rejected')), true);
+  assert.equal(result.result.merge.warnings.some((warning) => warning.includes('vibepro pr prepare')), true);
+  const artifact = await readJson(path.join(prDir, 'pr-merge.json'));
+  assert.equal(artifact.gate_authorization.allowed, false);
+  assert.equal(artifact.gate_authorization.reason, 'gate_override_not_allowed');
+  const html = await readFile(path.join(prDir, 'pr-merge.html'), 'utf8');
+  assert.match(html, /Gate Authorization/);
+  assert.match(html, /gate_override_not_allowed/);
+  assert.match(html, /Merge processing produced a warning/);
+  assert.doesNotMatch(html, /vibepro pr prepare/);
   assert.equal(
     await pathExists(path.join(repo, 'docs', 'management', 'audit-artifacts', 'story-pr-prepare', 'audit-bundle.json')),
     false
   );
 });
 
-test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, and canonical audit bundle after a successful GitHub merge', async () => {
+test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted, conflicting, or stale waiver authority fails before non-dry-run GitHub operations', async () => {
+  const cases = [
+    {
+      name: 'omitted targets',
+      gateStatus: {
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      gateOverride: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'target audit is required',
+        critical_unresolved_gates: []
+      },
+      expectedReason: 'gate_override_targets_missing'
+    },
+    {
+      name: 'conflicting current critical gate',
+      gateStatus: {
+        unresolved_gates: [
+          { id: 'gate:validation_sequencing' },
+          { id: 'gate:e2e' }
+        ],
+        critical_unresolved_gates: [{ id: 'gate:e2e' }]
+      },
+      gateOverride: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'critical authority must not be suppressed',
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      expectedReason: 'current_gate_status_contains_critical_gates'
+    },
+    {
+      name: 'stale pr-prepare status',
+      gateStatus: {
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      gateOverride: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'stale status must not authorize merge',
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      prPrepareHeadSha: '0'.repeat(40),
+      expectedReason: 'current_gate_status_unknown'
+    },
+    {
+      name: 'same status but differently routed critical gate',
+      gateStatus: {
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      gateOverride: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'same overall status must not conceal a different critical gate surface',
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      routedGateDag: {
+        overall_status: 'needs_verification',
+        nodes: [{
+          id: 'gate:e2e',
+          type: 'e2e',
+          required: true,
+          critical: true,
+          status: 'needs_evidence'
+        }]
+      },
+      expectedReason: 'current_gate_status_unknown'
+    },
+    {
+      name: 'routed critical gate with missing embedded gate dag',
+      gateStatus: {
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      gateOverride: {
+        allowed: true,
+        waiver_policy: 'cli_reason',
+        reason: 'missing embedded authority must not conceal the routed critical gate',
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+        critical_unresolved_gates: []
+      },
+      routedGateDag: {
+        overall_status: 'needs_verification',
+        nodes: [{
+          id: 'gate:e2e',
+          type: 'e2e',
+          required: true,
+          critical: true,
+          status: 'needs_evidence'
+        }]
+      },
+      omitEmbeddedGateDag: true,
+      expectedReason: 'current_gate_status_unknown'
+    }
+  ];
+
+  for (const fixture of cases) {
+    const repo = await makeGitRepoWithStory();
+    const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-authority-remote-'));
+    await git(remote, ['init', '--bare']);
+    await git(repo, ['remote', 'add', 'origin', remote]);
+    await git(repo, ['push', '-u', 'origin', 'main']);
+    await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+    await routeGitHubAuthorityToLocalOrigin(repo, remote);
+    const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+    const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+    await mkdir(prDir, { recursive: true });
+    await writeJson(path.join(prDir, 'pr-prepare.json'), {
+      story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+      gate_status: {
+        overall_status: 'needs_verification',
+        ready_for_pr_create: false,
+        ...fixture.gateStatus
+      },
+      pr_context: fixture.omitEmbeddedGateDag ? {} : {
+        gate_dag: {
+          overall_status: 'needs_verification',
+          nodes: fixture.gateStatus.unresolved_gates.map((gate) => ({
+            ...gate,
+            required: true,
+            status: 'needs_evidence'
+          }))
+        }
+      },
+      git: { base_ref: 'main', head_sha: fixture.prPrepareHeadSha ?? headSha }
+    });
+    await writeJson(path.join(prDir, 'pr-create.json'), {
+      schema_version: '0.1.0',
+      mode: 'pr_create',
+      dry_run: false,
+      story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+      gate_override: fixture.gateOverride,
+      base: 'main',
+      pr_url: 'https://github.example.test/unson/vibepro/pull/123',
+      current_head_sha: headSha,
+      artifact_freshness: {
+        kind: 'pr_create',
+        status: 'current',
+        artifact_head_sha: headSha,
+        current_head_sha: headSha
+      }
+    });
+    if (fixture.routedGateDag) {
+      await writeJson(path.join(prDir, 'gate-dag.json'), fixture.routedGateDag);
+    }
+    const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-target-reconcile-bin-'));
+    const ghCallLog = path.join(binDir, 'gh-called.log');
+    await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node
+const fs = require('node:fs');
+const args = process.argv.slice(2);
+if (args[0] === 'pr' && args[1] === 'view') {
+  console.log(JSON.stringify({
+    url: 'https://github.example.test/unson/vibepro/pull/123',
+    state: 'OPEN',
+    isDraft: false,
+    headRefName: 'feature/test-story',
+    headRefOid: ${JSON.stringify(headSha)},
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN',
+    reviewDecision: '',
+    statusCheckRollup: []
+  }));
+  process.exit(0);
+}
+fs.writeFileSync(${JSON.stringify(ghCallLog)}, args.join(' ') + '\\n');
+process.exit(99);
+`);
+    await chmod(path.join(binDir, 'gh'), 0o755);
+
+    const result = await runCli([
+      'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--pr', '123', '--json'
+    ], {
+      env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+    });
+
+    assert.equal(result.exitCode, 2, fixture.name);
+    assert.equal(result.result.merge.dry_run, false, fixture.name);
+    assert.equal(result.result.merge.stop_reason, 'gate_not_ready', fixture.name);
+    assert.equal(
+      result.result.merge.results.every((entry) => entry.label !== 'merge'),
+      true,
+      fixture.name
+    );
+    assert.equal(await pathExists(ghCallLog), false, fixture.name);
+    assert.equal(result.result.merge.gate_authorization.reason, fixture.expectedReason, fixture.name);
+  }
+});
+
+test('story-vibepro-merge-waiver-propagation ac:3 S-001 failure_mode: parse_failure malformed pr-create authority fails before GitHub merge', async () => {
+  const repo = await makeGitRepoWithStory();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  await writeFile(path.join(prDir, 'pr-create.json'), '{ malformed');
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-parse-failure-bin-'));
+  const ghCallLog = path.join(binDir, 'gh-called.log');
+  await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(ghCallLog)}, process.argv.slice(2).join(' ') + '\\n');
+process.exit(99);
+`);
+  await chmod(path.join(binDir, 'gh'), 0o755);
+
+  let parseFailureStderr = '';
+  const result = await runCli([
+    'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--pr', '123', '--dry-run', '--json'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` },
+    stderr: { write(chunk) { parseFailureStderr += chunk; } }
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.equal(await pathExists(ghCallLog), false);
+  assert.match(parseFailureStderr, /JSON|position|property name/i);
+});
+
+test('story-vibepro-merge-waiver-propagation ac:4 S-001 failure_mode: persistence_failure merge artifact write failure stops before GitHub merge', async () => {
+  const repo = await makeGitRepoWithStory();
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-prepare.json'), {
+    story: { story_id: 'story-pr-prepare', title: 'PR準備' },
+    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
+    git: { base_ref: 'main', head_sha: head }
+  });
+  await mkdir(path.join(prDir, 'pr-merge.json'));
+  const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-gh-persistence-failure-bin-'));
+  const ghCallLog = path.join(binDir, 'gh-called.log');
+  await writeFile(path.join(binDir, 'gh'), `#!/usr/bin/env node
+const fs = require('node:fs');
+fs.writeFileSync(${JSON.stringify(ghCallLog)}, process.argv.slice(2).join(' ') + '\\n');
+process.exit(99);
+`);
+  await chmod(path.join(binDir, 'gh'), 0o755);
+
+  let persistenceFailureStderr = '';
+  const result = await runCli([
+    'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--pr', '123', '--dry-run', '--json'
+  ], {
+    env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` },
+    stderr: { write(chunk) { persistenceFailureStderr += chunk; } }
+  });
+
+  assert.notEqual(result.exitCode, 0);
+  assert.equal(await pathExists(ghCallLog), false);
+  assert.match(persistenceFailureStderr, /directory|EISDIR|rename/i);
+});
+
+test('story-vibepro-merge-waiver-propagation ac:2 ac:4 ac:5 S-001 scenario_clause_e2e workflow_state_transition production_path CAA-VERIFY-001 execute merge completes merge artifacts, execution state, and canonical audit bundle after a successful GitHub merge', async () => {
   const repo = await makeGitRepoWithStory();
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
   await git(remote, ['init', '--bare']);
@@ -13333,20 +14790,26 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   await git(repo, ['commit', '-m', 'feat: add merge diff fixture']);
   await git(repo, ['push', '-u', 'origin', 'main']);
   await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  await routeGitHubAuthorityToLocalOrigin(repo, remote);
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
-    pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
-    git: { base_ref: 'main' }
+    gate_status: {
+      overall_status: 'needs_verification',
+      ready_for_pr_create: false,
+      unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+      critical_unresolved_gates: []
+    },
+    pr_context: { gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } } },
+    git: { base_ref: 'main', head_sha: headSha }
   });
   await writeJson(path.join(prDir, 'gate-dag.json'), {
     story_id: 'story-pr-prepare',
-    overall_status: 'ready_for_review',
+    overall_status: 'needs_verification',
     nodes: [],
-    summary: { needs_evidence_count: 0 }
+    summary: { needs_evidence_count: 1 }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
@@ -13356,8 +14819,15 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
     workspace_initialized: true,
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
     output: { language: 'ja' },
-    gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } },
-    execution_gate: { status: 'ready', pr_create_allowed: true, blocking_gates: [] },
+    gate_dag: { overall_status: 'needs_verification', nodes: [], summary: { needs_evidence_count: 1 } },
+    execution_gate: { status: 'waiver_required', pr_create_allowed: true, blocking_gates: [] },
+    gate_override: {
+      allowed: true,
+      waiver_policy: 'cli_reason',
+      reason: 'MWP-AC-5 noncritical current-HEAD waiver fixture',
+      critical_unresolved_gates: [],
+      unresolved_gates: [{ id: 'gate:validation_sequencing', severity: 'warning' }]
+    },
     base: 'main',
     head: 'feature/test-story',
     pr_url: 'https://github.example.test/unson/vibepro/pull/124',
@@ -13430,6 +14900,10 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
 
   assert.equal(result.exitCode, 0);
   assert.equal(result.result.merge.status, 'merged');
+  assert.equal(result.result.merge.delivery.status, 'merged');
+  assert.equal(result.result.merge.reconciliation.status, 'reconciled');
+  assert.deepEqual(result.result.merge.reconciliation.reasons, []);
+  assert.equal(result.result.merge.gate_authorization.source, 'pr_create_gate_override');
   assert.equal(result.result.merge.merge_commit_sha, headSha);
   assert.equal(result.result.merge.merged_at, '2026-06-07T00:32:55Z');
   assert.equal(result.result.merge.branch_cleanup.requested, false);
@@ -13441,7 +14915,14 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   assert.equal(result.result.merge.cost_accounting.elapsed_time_accounting.elapsed_ms, 600000);
 
   const prMergeArtifact = await readJson(path.join(prDir, 'pr-merge.json'));
+  assert.equal(prMergeArtifact.gate_authorization.source, 'pr_create_gate_override');
+  assert.equal(prMergeArtifact.gate_authorization.reason, 'MWP-AC-5 noncritical current-HEAD waiver fixture');
+  assert.equal(prMergeArtifact.gate_authorization.gate_override.waiver_policy, 'cli_reason');
+  assert.deepEqual(prMergeArtifact.gate_authorization.gate_override.critical_unresolved_gates, []);
   assert.equal(prMergeArtifact.canonical_audit.persistence.status, 'pushed');
+  assert.equal(prMergeArtifact.delivery.status, 'merged');
+  assert.equal(prMergeArtifact.reconciliation.status, 'reconciled');
+  assert.deepEqual(prMergeArtifact.reconciliation.reasons, []);
   assert.equal(prMergeArtifact.canonical_audit.persistence.pushed, true);
   assert.match(prMergeArtifact.canonical_audit.persistence.commit_sha, /^[0-9a-f]{40}$/);
   assert.equal(prMergeArtifact.cost_accounting_collection.status, 'available');
@@ -13481,6 +14962,10 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
 
   const executionState = await readJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'));
   assert.equal(executionState.completion_status, 'merged');
+  assert.equal(executionState.delivery.status, 'merged');
+  assert.equal(executionState.reconciliation.status, 'reconciled');
+  assert.deepEqual(executionState.next_actions, []);
+  assert.equal(executionState.blocking_gate, null);
   assert.equal(executionState.execution_dag.nodes.find((node) => node.id === 'merge_ready')?.status, 'passed');
   assert.equal(executionState.execution_dag.nodes.find((node) => node.id === 'merged_or_closed')?.status, 'passed');
   const manifest = await readJson(path.join(repo, '.vibepro', 'vibepro-manifest.json'));
@@ -13517,7 +15002,7 @@ test('CAA-VERIFY-001 execute merge completes merge artifacts, execution state, a
   assert.equal(remoteMainParent, headSha);
 });
 
-test('CAA-VERIFY-001 execute merge does not persist canonical audit artifacts when merge commit evidence is missing', async () => {
+test('CAA-VERIFY-001 execute merge fails closed before canonical audit when merge commit evidence is missing', async () => {
   const repo = await makeGitRepoWithStory();
   const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-merge-remote-'));
   await git(remote, ['init', '--bare']);
@@ -13528,14 +15013,20 @@ test('CAA-VERIFY-001 execute merge does not persist canonical audit artifacts wh
   }
   await git(repo, ['push', '-u', 'origin', 'main']);
   await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  await routeGitHubAuthorityToLocalOrigin(repo, remote);
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    gate_status: {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    },
     pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
-    git: { base_ref: 'main' }
+    git: { base_ref: 'main', head_sha: headSha }
   });
   await writeJson(path.join(prDir, 'gate-dag.json'), {
     story_id: 'story-pr-prepare',
@@ -13591,37 +15082,37 @@ test('CAA-VERIFY-001 execute merge does not persist canonical audit artifacts wh
     'story-pr-prepare',
     '--base',
     'main',
+    '--delete-branch',
     '--json'
   ], {
     env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
   });
 
-  assert.equal(result.exitCode, 1);
-  assert.equal(result.result.merge.status, 'failed');
-  assert.equal(result.result.merge.stop_reason, 'canonical_audit_persistence_failed');
+  assert.equal(result.exitCode, 2);
+  assert.equal(result.result.merge.status, 'blocked');
+  assert.equal(result.result.merge.stop_reason, 'pr_delivery_unverified');
+  assert.equal(result.result.merge.delivery.status, 'unverified');
+  assert.equal(result.result.merge.reconciliation.status, 'blocked');
+  assert.deepEqual(result.result.merge.reconciliation.reasons, ['delivery_not_verified']);
   assert.equal(result.result.merge.merge_commit_sha, null);
-  assert.equal(result.result.merge.canonical_audit.persistence.status, 'failed');
-  assert.equal(result.result.merge.canonical_audit.persistence.reason, 'canonical_audit_merge_commit_missing');
-  assert.equal(result.result.merge.canonical_audit.persistence.pushed, false);
+  assert.equal(result.result.merge.branch_cleanup.remote.attempted, false);
+  assert.equal((await git(remote, ['show-ref', '--verify', 'refs/heads/feature/test-story'])).stdout.trim().length > 0, true);
 
   const prMergeArtifact = await readJson(path.join(prDir, 'pr-merge.json'));
-  assert.equal(prMergeArtifact.canonical_audit.persistence.status, 'failed');
-  assert.equal(prMergeArtifact.canonical_audit.persistence.reason, 'canonical_audit_merge_commit_missing');
-  const canonicalPrMergeArtifact = await readJson(path.join(
-    repo,
-    'docs',
-    'management',
-    'audit-artifacts',
-    'story-pr-prepare',
-    'pr',
-    'pr-merge.json'
-  ));
-  // story-vibepro-idempotent-audit-persistence: canonical_audit persistence
-  // bookkeeping is excluded from the promoted view; the failure is still recorded on
-  // the merge result and the local .vibepro/pr artifact (asserted above).
-  assert.equal(canonicalPrMergeArtifact.canonical_audit, undefined);
-  assert.equal(canonicalPrMergeArtifact.status, 'failed');
-  assert.equal(canonicalPrMergeArtifact.stop_reason, 'canonical_audit_persistence_failed');
+  assert.equal(prMergeArtifact.delivery.status, 'unverified');
+  assert.equal(prMergeArtifact.reconciliation.status, 'blocked');
+  await assert.rejects(
+    () => readJson(path.join(
+      repo,
+      'docs',
+      'management',
+      'audit-artifacts',
+      'story-pr-prepare',
+      'pr',
+      'pr-merge.json'
+    )),
+    /ENOENT/
+  );
 
   const remoteMain = (await git(remote, ['rev-parse', 'main'])).stdout.trim();
   assert.equal(remoteMain, headSha);
@@ -13630,6 +15121,796 @@ test('CAA-VERIFY-001 execute merge does not persist canonical audit artifacts wh
     remoteMainTree,
     /docs\/management\/audit-artifacts\/story-pr-prepare\/audit-bundle\.json/
   );
+});
+
+test('DRS-SCENARIO-007 provider command and JSON failures persist blocked delivery evidence', async (t) => {
+  const makeProviderFailureFixture = async () => {
+    const repo = await makeGitRepoWithStory();
+    const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-provider-failure-remote-'));
+    await git(remote, ['init', '--bare']);
+    await git(repo, ['remote', 'add', 'origin', remote]);
+    await git(repo, ['push', '-u', 'origin', 'main']);
+    await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+    await prepareExecuteMergeDryRunFixture(repo);
+    return { repo, remote, headSha: (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim() };
+  };
+
+  const writePriorDelivery = async (repo, headSha, {
+    legacy = false,
+    base = 'main',
+    selector = 'https://github.example.test/unson/vibepro/pull/123'
+  } = {}) => {
+    const artifact = {
+      schema_version: '0.1.0',
+      story: { story_id: 'story-pr-prepare' },
+      current_head_sha: headSha,
+      status: 'merged_externally',
+      base,
+      pr: { selector },
+      merge_commit_sha: headSha,
+      merged_at: '2026-06-07T00:32:55Z',
+      reconciliation: { status: 'reconciled', reasons: [] }
+    };
+    if (!legacy) {
+      artifact.delivery = {
+        status: 'merged_externally',
+        observed: true,
+        source: 'github_pr',
+        pr_url: selector,
+        merge_commit_sha: headSha,
+        merged_at: '2026-06-07T00:32:55Z'
+      };
+    }
+    await writeJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'), artifact);
+  };
+
+  const makeManagedMergeState = (headSha, remote, overrides = {}) => ({
+    url: 'https://github.example.test/unson/vibepro/pull/123',
+    headRefName: 'feature/test-story',
+    headRefOid: headSha,
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN',
+    reviewDecision: '',
+    statusCheckRollup: [
+      { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }
+    ],
+    mergeStdout: 'merged pull request',
+    mergeCommit: headSha,
+    mergedAt: '2026-06-07T00:32:55Z',
+    remotePath: remote,
+    ...overrides
+  });
+
+  await t.test('nonzero provider command remains unverified', async () => {
+    const { repo, headSha } = await makeProviderFailureFixture();
+    const gh = await makeFakeGhMerge({
+      viewExitCode: 7,
+      viewStderr: 'provider unavailable',
+      url: 'https://github.example.test/unson/vibepro/pull/123',
+      headRefName: 'feature/test-story',
+      headRefOid: headSha,
+      baseRefName: 'main'
+    });
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    assert.equal(result.result.merge.stop_reason, 'pr_view_failed');
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.base, 'main');
+    assert.equal(artifact.pr.selector, 'https://github.example.test/unson/vibepro/pull/123');
+    assert.equal(artifact.delivery.status, 'unverified');
+    assert.equal(artifact.reconciliation.status, 'blocked');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_command_failed']);
+  });
+
+  await t.test('malformed provider JSON fails closed with explicit classification', async () => {
+    const { repo, headSha } = await makeProviderFailureFixture();
+    const gh = await makeFakeGhMerge({
+      malformedPrViewJson: true,
+      url: 'https://github.example.test/unson/vibepro/pull/123',
+      headRefName: 'feature/test-story',
+      headRefOid: headSha,
+      baseRefName: 'main'
+    });
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    assert.equal(result.result.merge.stop_reason, 'pr_view_response_parse_failed');
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.base, 'main');
+    assert.equal(artifact.pr.selector, 'https://github.example.test/unson/vibepro/pull/123');
+    assert.equal(artifact.delivery.status, 'unverified');
+    assert.equal(artifact.reconciliation.status, 'blocked');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_response_parse_failed']);
+  });
+
+  await t.test('provider command failure preserves a previously observed delivery', async () => {
+    const { repo, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha);
+    const gh = await makeFakeGhMerge({
+      viewExitCode: 7,
+      viewStderr: 'provider unavailable',
+      url: 'https://github.example.test/unson/vibepro/pull/123',
+      headRefName: 'feature/test-story',
+      headRefOid: headSha,
+      baseRefName: 'main'
+    });
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_command_failed']);
+  });
+
+  await t.test('provider JSON failure preserves a previously observed delivery', async () => {
+    const { repo, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha);
+    const gh = await makeFakeGhMerge({
+      malformedPrViewJson: true,
+      url: 'https://github.example.test/unson/vibepro/pull/123',
+      headRefName: 'feature/test-story',
+      headRefOid: headSha,
+      baseRefName: 'main'
+    });
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_response_parse_failed']);
+  });
+
+  await t.test('base fetch failure preserves a previously observed delivery', async () => {
+    const { repo, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha);
+    const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-fetch-failure-bin-'));
+    const realGit = (await execFileAsync('which', ['git'])).stdout.trim();
+    await writeFile(path.join(binDir, 'git'), `#!/usr/bin/env node
+const { spawnSync } = require('node:child_process');
+const args = process.argv.slice(2);
+if (args.includes('fetch')) {
+  process.stderr.write('simulated base fetch failure\\n');
+  process.exit(73);
+}
+const result = spawnSync(${JSON.stringify(realGit)}, args, { stdio: 'inherit' });
+process.exit(result.status ?? 1);
+`);
+    await chmod(path.join(binDir, 'git'), 0o755);
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.stop_reason, 'base_fetch_failed');
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['base_fetch_failed']);
+  });
+
+  await t.test('legacy merged artifact is normalized before provider failure preservation', async () => {
+    const { repo, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha, { legacy: true });
+    const gh = await makeFakeGhMerge({
+      viewExitCode: 7,
+      viewStderr: 'provider unavailable',
+      url: 'https://github.example.test/unson/vibepro/pull/123',
+      headRefName: 'feature/test-story',
+      headRefOid: headSha,
+      baseRefName: 'main'
+    });
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.source, 'legacy_pr_merge');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_command_failed']);
+  });
+
+  await t.test('initial managed merge post-processing command failure exits one and remains unverified', async () => {
+    const { repo, remote, headSha } = await makeProviderFailureFixture();
+    const gh = await makeFakeGhMerge(makeManagedMergeState(headSha, remote, {
+      postMergeViewExitCode: 74,
+      postMergeViewStderr: 'post-merge provider unavailable'
+    }));
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 1);
+    assert.equal(result.result.merge.status, 'failed');
+    assert.equal(result.result.merge.stop_reason, 'post_merge_pr_view_failed');
+    assert.equal(result.result.merge.delivery.status, 'unverified');
+    assert.deepEqual(result.result.merge.reconciliation.reasons, ['provider_command_failed']);
+  });
+
+  await t.test('post-merge provider command failure preserves identity-bound prior delivery', async () => {
+    const { repo, remote, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha);
+    const gh = await makeFakeGhMerge(makeManagedMergeState(headSha, remote, {
+      postMergeViewExitCode: 74
+    }));
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_command_failed']);
+  });
+
+  await t.test('post-merge malformed JSON preserves identity-bound prior delivery', async () => {
+    const { repo, remote, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha);
+    const gh = await makeFakeGhMerge(makeManagedMergeState(headSha, remote, {
+      malformedPostMergeJson: true
+    }));
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_response_parse_failed']);
+  });
+
+  await t.test('post-merge base fetch failure preserves identity-bound prior delivery', async () => {
+    const { repo, remote, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha);
+    const gh = await makeFakeGhMerge(makeManagedMergeState(headSha, remote));
+    const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-second-fetch-failure-bin-'));
+    const realGit = (await execFileAsync('which', ['git'])).stdout.trim();
+    const fetchCountPath = path.join(binDir, 'fetch-count.txt');
+    await writeFile(path.join(binDir, 'git'), `#!/usr/bin/env node
+const fs = require('node:fs');
+const { spawnSync } = require('node:child_process');
+const args = process.argv.slice(2);
+if (args[0] === 'fetch') {
+  const count = Number(fs.existsSync(${JSON.stringify(fetchCountPath)}) ? fs.readFileSync(${JSON.stringify(fetchCountPath)}, 'utf8') : '0') + 1;
+  fs.writeFileSync(${JSON.stringify(fetchCountPath)}, String(count));
+  if (count === 2) {
+    process.stderr.write('simulated post-merge base fetch failure\\n');
+    process.exit(73);
+  }
+}
+const result = spawnSync(${JSON.stringify(realGit)}, args, { stdio: 'inherit' });
+process.exit(result.status ?? 1);
+`);
+    await chmod(path.join(binDir, 'git'), 0o755);
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${binDir}${path.delimiter}${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 2);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.stop_reason, 'post_merge_base_fetch_failed');
+    assert.equal(artifact.delivery.status, 'merged_externally');
+    assert.equal(artifact.delivery.merge_commit_sha, headSha);
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.deepEqual(artifact.reconciliation.reasons, ['base_fetch_failed']);
+  });
+
+  await t.test('post-merge failure does not preserve a prior delivery with a different selector', async () => {
+    const { repo, remote, headSha } = await makeProviderFailureFixture();
+    await writePriorDelivery(repo, headSha, {
+      selector: 'https://github.example.test/unson/vibepro/pull/999'
+    });
+    const gh = await makeFakeGhMerge(makeManagedMergeState(headSha, remote, {
+      postMergeViewExitCode: 74
+    }));
+    const result = await runCli(['execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'], {
+      env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+    });
+    assert.equal(result.exitCode, 1);
+    const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+    assert.equal(artifact.delivery.status, 'unverified');
+    assert.equal(artifact.reconciliation.status, 'blocked');
+    assert.deepEqual(artifact.reconciliation.reasons, ['provider_command_failed']);
+  });
+});
+
+test('DRS-SCENARIO-002 externally merged ancestor refreshes stale origin/base before bypassing a stale local gate', async () => {
+  const repo = await makeGitRepoWithStory();
+  const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-external-ancestor-remote-'));
+  await git(remote, ['init', '--bare']);
+  await git(repo, ['remote', 'add', 'origin', remote]);
+  await writeFile(path.join(repo, 'story-change.txt'), 'story branch change\n');
+  await git(repo, ['add', 'story-change.txt']);
+  await git(repo, ['commit', '-m', 'feat: add story branch change']);
+  await git(repo, ['push', '-u', 'origin', 'main']);
+  await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  const { headSha, prDir } = await prepareExecuteMergeDryRunFixture(repo);
+
+  const prepare = await readJson(path.join(prDir, 'pr-prepare.json'));
+  prepare.gate_status = {
+    overall_status: 'needs_verification',
+    ready_for_pr_create: false,
+    unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+    critical_unresolved_gates: []
+  };
+  prepare.pr_context.gate_dag = {
+    overall_status: 'needs_verification',
+    nodes: [],
+    summary: { needs_evidence_count: 1 }
+  };
+  await writeJson(path.join(prDir, 'pr-prepare.json'), prepare);
+
+  const externalClone = await mkdtemp(path.join(os.tmpdir(), 'vibepro-external-ancestor-clone-'));
+  await git(externalClone, ['clone', remote, '.']);
+  await git(externalClone, ['config', 'user.email', 'test@example.com']);
+  await git(externalClone, ['config', 'user.name', 'Test User']);
+  await git(externalClone, ['switch', '-c', 'main', '--track', 'origin/main']);
+  await writeFile(path.join(externalClone, 'base-only.txt'), 'base-only change after story branch\n');
+  await git(externalClone, ['add', 'base-only.txt']);
+  await git(externalClone, ['commit', '-m', 'chore: advance base independently']);
+  await git(externalClone, ['merge', '--no-ff', 'origin/feature/test-story', '-m', 'merge: deliver story externally']);
+  const mergeCommit = (await git(externalClone, ['rev-parse', 'HEAD'])).stdout.trim();
+  await git(externalClone, ['push', 'origin', 'main']);
+
+  assert.equal(
+    await gitIsAncestorForTest(repo, headSha, 'origin/main'),
+    false,
+    'fixture must leave the invoking clone remote-tracking base stale'
+  );
+
+  const gh = await makeFakeGhMerge({
+    merged: true,
+    url: 'https://github.example.test/unson/vibepro/pull/123',
+    headRefName: 'feature/test-story',
+    headRefOid: headSha,
+    baseRefName: 'main',
+    reviewDecision: '',
+    statusCheckRollup: [],
+    mergeCommit,
+    mergedAt: '2026-06-07T00:32:55Z'
+  });
+  const result = await runCli([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'main',
+    '--json'
+  ], {
+    env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 2);
+  assert.equal(result.result.merge.status, 'merged_externally');
+  assert.equal(result.result.merge.stop_reason, 'delivery_reconciliation_required');
+  assert.equal(result.result.merge.delivery.status, 'merged_externally');
+  assert.equal(result.result.merge.delivery.merge_commit_sha, mergeCommit);
+  assert.equal(result.result.merge.reconciliation.status, 'reconciliation_required');
+  assert.deepEqual(result.result.merge.reconciliation.reasons, ['gate_not_ready']);
+  assert.equal(result.result.merge.results.some((entry) => entry.command.includes('gh pr view')), true);
+  assert.equal(await gitIsAncestorForTest(repo, headSha, 'origin/main'), true);
+});
+
+test('DRS-SCENARIO-007 execute merge fails closed at the real canonical persistence boundary', async () => {
+  const repo = await makeGitRepoWithStory();
+  const remote = await mkdtemp(path.join(os.tmpdir(), 'vibepro-persistence-failure-remote-'));
+  await git(remote, ['init', '--bare']);
+  await git(repo, ['remote', 'add', 'origin', remote]);
+  await git(repo, ['push', '-u', 'origin', 'main']);
+  await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  const { headSha } = await prepareExecuteMergeDryRunFixture(repo);
+  await mkdir(path.join(repo, '.vibepro', 'gate-outcomes'), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'gate-outcomes', 'ledger.json'), {
+    schema_version: '0.1.0',
+    model: 'vibepro-gate-outcome-ledger-v3',
+    updated_at: '2026-06-07T00:01:00.000Z',
+    entries: [{
+      schema_version: '0.1.0',
+      entry_key: 'story-pr-prepare|gate:requirement|needs_review|passed|prev|curr',
+      story_id: 'story-pr-prepare',
+      gate_id: 'gate:requirement',
+      outcome: 'source_fix',
+      classification: 'resolving_diff_contains_source_changes',
+      resolved_at: '2026-06-07T00:01:00.000Z'
+    }]
+  });
+
+  await writeFile(path.join(remote, 'hooks', 'pre-receive'), `#!/bin/sh
+while read old new ref
+do
+  if [ "$ref" = "refs/heads/main" ] && [ "$old" = "${headSha}" ] && [ "$new" != "${headSha}" ]; then
+    echo "reject canonical audit persistence" >&2
+    exit 1
+  fi
+done
+exit 0
+`);
+  await chmod(path.join(remote, 'hooks', 'pre-receive'), 0o755);
+
+  const gh = await makeFakeGhMerge({
+    url: 'https://github.example.test/unson/vibepro/pull/123',
+    headRefName: 'feature/test-story',
+    headRefOid: headSha,
+    baseRefName: 'main',
+    mergeStateStatus: 'CLEAN',
+    reviewDecision: '',
+    statusCheckRollup: [
+      { name: 'test', status: 'COMPLETED', conclusion: 'SUCCESS', workflowName: 'CI' }
+    ],
+    mergeStdout: 'merged pull request',
+    mergeCommit: headSha,
+    mergedAt: '2026-06-07T00:32:55Z',
+    remotePath: remote
+  });
+
+  const result = await runCli([
+    'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json'
+  ], {
+    env: { ...process.env, PATH: `${gh.binDir}${path.delimiter}${process.env.PATH}` }
+  });
+
+  assert.equal(result.exitCode, 2);
+  assert.equal(result.result.merge.status, 'merged');
+  assert.equal(result.result.merge.stop_reason, 'delivery_reconciliation_required');
+  assert.equal(result.result.merge.delivery.status, 'merged');
+  assert.equal(result.result.merge.merge_commit_sha, headSha);
+  assert.equal(result.result.merge.canonical_audit.persistence.status, 'failed');
+  assert.equal(result.result.merge.canonical_audit.persistence.reason, 'canonical_audit_push_failed');
+  assert.equal(result.result.merge.decision_outcome_binding.status, 'failed');
+  assert.equal(result.result.merge.decision_outcome_binding.persistence_status, 'failed');
+  assert.equal(result.result.merge.decision_outcome_binding.reason, 'canonical_audit_push_failed');
+  const artifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+  assert.equal(artifact.status, 'merged');
+  assert.equal(artifact.stop_reason, 'delivery_reconciliation_required');
+  assert.equal(artifact.delivery.status, 'merged');
+  assert.equal(artifact.decision_outcome_binding.status, 'failed');
+  assert.equal((await git(remote, ['rev-parse', 'main'])).stdout.trim(), headSha);
+});
+
+test('DRS-CONTRACT-007 execute merge preserves observed delivery across execution-state synchronization failure', async () => {
+  const repo = await makeGitRepoWithStory();
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const mergeBeforeSync = {
+    story: { story_id: 'story-pr-prepare' },
+    status: 'merged',
+    base: 'develop',
+    current_head_sha: headSha,
+    dry_run: false,
+    merge_commit_sha: 'observed-merge-sha',
+    delivery: { status: 'merged', observed: true, merge_commit_sha: 'observed-merge-sha', pr_url: 'https://github.com/Unson-LLC/vibepro/pull/777' },
+    reconciliation: { status: 'reconciled', reasons: [] },
+    pr: { selector: 'https://github.com/Unson-LLC/vibepro/pull/777' }
+  };
+  await writeJson(
+    path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'),
+    mergeBeforeSync
+  );
+  const returnedMerge = {
+    ...structuredClone(mergeBeforeSync),
+    canonical_audit: {
+      bundle: 'docs/management/audit-artifacts/story-pr-prepare/audit-bundle.json',
+      artifact_count: 7,
+      missing_artifact_count: 0
+    }
+  };
+  const result = await runCliWithStdout([
+    'execute',
+    'merge',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'develop',
+    '--json'
+  ], {
+    executeMerge: async () => ({
+      merge: returnedMerge,
+      artifacts: {
+        pr_merge_json: path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json')
+      }
+    }),
+    updateExecutionStateFromPrMerge: async () => {
+      throw new Error('simulated state write failure');
+    }
+  });
+
+  assert.equal(result.exitCode, 1);
+  const output = JSON.parse(result.stdout);
+  assert.equal(output.status, 'merged');
+  assert.equal(output.dry_run, false);
+  assert.equal(output.delivery.status, 'merged');
+  assert.equal(output.merge_commit_sha, 'observed-merge-sha');
+  assert.equal(output.execution_state_sync.status, 'failed');
+  assert.equal(
+    output.execution_state_sync.followup_persistence,
+    'persisted',
+    output.execution_state_sync.persistence_error
+  );
+  assert.match(output.execution_state_sync.recovery_command, /vibepro execute reconcile .*--base develop/);
+  assert.match(output.execution_state_sync.recovery_command, /--pr https:\/\/github\.com\/Unson-LLC\/vibepro\/pull\/777/);
+  assert.match(result.stderr, /Execution-state synchronization failed after merge processing/);
+  assert.doesNotMatch(result.stderr, /simulated state write failure/);
+  const localFollowup = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+  const canonicalFollowup = await readJson(path.join(
+    repo,
+    'docs',
+    'management',
+    'audit-artifacts',
+    'story-pr-prepare',
+    'pr',
+    'pr-merge.json'
+  ));
+  for (const artifact of [localFollowup, canonicalFollowup]) {
+    assert.equal(artifact.delivery.status, 'merged');
+    assert.equal(artifact.reconciliation.status, 'reconciliation_required');
+    assert.equal(artifact.stop_reason, 'execution_state_sync_failed');
+    assert.match(artifact.execution_state_sync.recovery_command, /--base develop/);
+  }
+
+  const rejectedRecoveries = [
+    ['--base', 'develop', '--pr', 'https://github.com/Unson-LLC/vibepro/pull/778'],
+    ['--base', 'main', '--pr', 'https://github.com/Unson-LLC/vibepro/pull/777'],
+    ['--base', 'develop'],
+    ['--pr', 'https://github.com/Unson-LLC/vibepro/pull/777'],
+    []
+  ];
+  for (const identityArgs of rejectedRecoveries) {
+    const rejected = await runCliWithStdout([
+      'execute',
+      'reconcile',
+      repo,
+      '--story-id',
+      'story-pr-prepare',
+      ...identityArgs,
+      '--json'
+    ]);
+    assert.equal(rejected.exitCode, 2, `${identityArgs.join(' ')}\n${rejected.stderr}`);
+    assert.equal(JSON.parse(rejected.stdout).reconciliation.status, 'reconciliation_required');
+    assert.equal(
+      (await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'))).execution_state_sync.status,
+      'failed'
+    );
+  }
+
+  const canonicalReportPath = path.join(
+    repo,
+    'docs',
+    'management',
+    'audit-artifacts',
+    'story-pr-prepare',
+    'pr',
+    'pr-merge.html'
+  );
+  const canonicalReport = await readFile(canonicalReportPath, 'utf8');
+  await rm(canonicalReportPath);
+  await mkdir(canonicalReportPath);
+  const snapshotTree = async (root, relative = '') => {
+    const entries = await readdir(path.join(root, relative), { withFileTypes: true });
+    const snapshot = [];
+    for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+      const entryRelative = path.join(relative, entry.name);
+      if (entry.isDirectory()) {
+        snapshot.push({ path: entryRelative, type: 'directory' });
+        snapshot.push(...await snapshotTree(root, entryRelative));
+      } else {
+        snapshot.push({
+          path: entryRelative,
+          type: 'file',
+          content: await readFile(path.join(root, entryRelative), 'utf8')
+        });
+      }
+    }
+    return snapshot;
+  };
+  const localPrDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  const canonicalStoryDir = path.join(
+    repo,
+    'docs',
+    'management',
+    'audit-artifacts',
+    'story-pr-prepare'
+  );
+  const manifestPath = path.join(repo, '.vibepro', 'vibepro-manifest.json');
+  const localTreeBeforeFailedPersistence = await snapshotTree(localPrDir);
+  const canonicalTreeBeforeFailedPersistence = await snapshotTree(canonicalStoryDir);
+  const manifestBeforeFailedPersistence = await readFile(manifestPath, 'utf8');
+  const failedPersistence = await runCliWithStdout([
+    'execute',
+    'reconcile',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'develop',
+    '--pr',
+    'https://github.com/Unson-LLC/vibepro/pull/777',
+    '--json'
+  ]);
+  assert.equal(failedPersistence.exitCode, 1);
+  assert.equal(
+    (await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'))).execution_state_sync.status,
+    'failed'
+  );
+  assert.equal(
+    (await readJson(path.join(
+      repo,
+      'docs',
+      'management',
+      'audit-artifacts',
+      'story-pr-prepare',
+      'pr',
+      'pr-merge.json'
+    ))).execution_state_sync.status,
+    'failed'
+  );
+  assert.deepEqual(await snapshotTree(localPrDir), localTreeBeforeFailedPersistence);
+  assert.deepEqual(await snapshotTree(canonicalStoryDir), canonicalTreeBeforeFailedPersistence);
+  assert.equal(await readFile(manifestPath, 'utf8'), manifestBeforeFailedPersistence);
+  await rm(canonicalReportPath, { recursive: true });
+  await writeFile(canonicalReportPath, canonicalReport);
+
+  const retainedReasonLocal = {
+    ...localFollowup,
+    reconciliation: {
+      ...localFollowup.reconciliation,
+      reasons: [...localFollowup.reconciliation.reasons, 'checks_not_ready']
+    }
+  };
+  const retainedReasonCanonical = {
+    ...canonicalFollowup,
+    reconciliation: {
+      ...canonicalFollowup.reconciliation,
+      reasons: [...canonicalFollowup.reconciliation.reasons, 'checks_not_ready']
+    }
+  };
+  await writeJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'), retainedReasonLocal);
+  await writeJson(path.join(
+    repo,
+    'docs',
+    'management',
+    'audit-artifacts',
+    'story-pr-prepare',
+    'pr',
+    'pr-merge.json'
+  ), retainedReasonCanonical);
+  const retainedReason = await runCliWithStdout([
+    'execute',
+    'reconcile',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'develop',
+    '--pr',
+    'https://github.com/Unson-LLC/vibepro/pull/777',
+    '--json'
+  ]);
+  assert.equal(retainedReason.exitCode, 2);
+  const retainedReasonArtifact = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+  assert.equal(retainedReasonArtifact.execution_state_sync.status, 'reconciled');
+  assert.deepEqual(retainedReasonArtifact.reconciliation.reasons, ['checks_not_ready']);
+  assert.equal(retainedReasonArtifact.reconciliation_action.status, 'required');
+  assert.deepEqual(retainedReasonArtifact.reconciliation_action.commands, [
+    'vibepro execute reconcile . --story-id story-pr-prepare --base develop --pr https://github.com/Unson-LLC/vibepro/pull/777'
+  ]);
+
+  await writeJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'), localFollowup);
+  await writeJson(path.join(
+    repo,
+    'docs',
+    'management',
+    'audit-artifacts',
+    'story-pr-prepare',
+    'pr',
+    'pr-merge.json'
+  ), canonicalFollowup);
+
+  const reconciled = await runCliWithStdout([
+    'execute',
+    'reconcile',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--base',
+    'develop',
+    '--pr',
+    'https://github.com/Unson-LLC/vibepro/pull/777',
+    '--json'
+  ]);
+  assert.equal(reconciled.exitCode, 0, reconciled.stderr);
+  const reconciledState = JSON.parse(reconciled.stdout);
+  assert.equal(reconciledState.completion_status, 'merged');
+  assert.equal(reconciledState.delivery.status, 'merged');
+  assert.equal(reconciledState.reconciliation.status, 'reconciled');
+  assert.deepEqual(reconciledState.next_actions, []);
+  const recoveredLocal = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-merge.json'));
+  const recoveredCanonical = await readJson(path.join(
+    repo,
+    'docs',
+    'management',
+    'audit-artifacts',
+    'story-pr-prepare',
+    'pr',
+    'pr-merge.json'
+  ));
+  for (const artifact of [recoveredLocal, recoveredCanonical]) {
+    assert.equal(artifact.delivery.status, 'merged');
+    assert.equal(artifact.base, 'develop');
+    assert.equal(artifact.delivery.pr_url, 'https://github.com/Unson-LLC/vibepro/pull/777');
+    assert.equal(artifact.execution_state_sync.status, 'reconciled');
+    assert.equal(artifact.execution_state_sync.previous_status, 'failed');
+    assert.equal(artifact.reconciliation.status, 'reconciled');
+    assert.deepEqual(artifact.reconciliation.reasons, []);
+    assert.deepEqual(artifact.reconciliation_action.commands, []);
+    assert.equal(artifact.stop_reason, undefined);
+  }
+});
+
+test('DRS-CONTRACT-007 execute merge preserves the primary sync failure when follow-up persistence also fails', async () => {
+  const repo = await makeGitRepoWithStory();
+  const result = await runCliWithStdout([
+    'execute', 'merge', repo, '--story-id', 'story-pr-prepare', '--base', 'develop', '--json'
+  ], {
+    executeMerge: async () => ({
+      merge: {
+        story: { story_id: 'story-pr-prepare' },
+        status: 'merged',
+        base: 'develop',
+        dry_run: false,
+        delivery: { status: 'merged', merge_commit_sha: 'observed-merge-sha' },
+        reconciliation: { status: 'reconciled', reasons: [] },
+        pr: { url: 'https://github.com/Unson-LLC/vibepro/pull/778' }
+      }
+    }),
+    updateExecutionStateFromPrMerge: async () => {
+      const original = new Error('simulated state write failure');
+      original.code = 'execution_state_write_failed';
+      throw original;
+    },
+    persistMergeFollowupState: async (_root, { merge, expectedMerge }) => {
+      assert.equal(expectedMerge.reconciliation.status, 'reconciled');
+      assert.equal(expectedMerge.execution_state_sync, undefined);
+      assert.equal(merge.execution_state_sync.status, 'failed');
+      const primary = new Error('simulated follow-up persistence failure');
+      const rollback = new Error('simulated follow-up rollback failure', { cause: primary });
+      rollback.code = 'merge_followup_transaction_restore_failed';
+      rollback.restore_errors = [{ artifact_path: '/tmp/pr-merge.json', message: 'concurrent operator update' }];
+      throw rollback;
+    },
+    persistMergeRecoveryState: async (root, { merge, expectedMerge }) => {
+      assert.equal(root, repo);
+      assert.equal(expectedMerge.execution_state_sync, undefined);
+      assert.equal(merge.execution_state_sync.status, 'failed');
+    }
+  });
+
+  assert.equal(result.exitCode, 1);
+  const output = JSON.parse(result.stdout);
+  assert.equal(output.delivery.status, 'merged');
+  assert.equal(output.reconciliation.status, 'reconciliation_required');
+  assert.equal(output.execution_state_sync.followup_persistence, 'failed');
+  assert.equal(output.execution_state_sync.recovery_persistence, 'persisted_local');
+  assert.equal(output.execution_state_sync.error.code, 'execution_state_write_failed');
+  assert.equal(output.execution_state_sync.persistence_error_details.code, 'merge_followup_transaction_restore_failed');
+  assert.equal(Object.hasOwn(output.execution_state_sync, 'persistence_error'), false);
+  assert.equal(Object.hasOwn(output.execution_state_sync.persistence_error_details, 'cause'), false);
+  assert.equal(Object.hasOwn(output.execution_state_sync.persistence_error_details, 'cause_details'), false);
+  assert.equal(Object.hasOwn(output.execution_state_sync.persistence_error_details, 'restore_errors'), false);
+  assert.doesNotMatch(result.stdout, /simulated|concurrent operator update|\/tmp\/pr-merge\.json/);
+  assert.doesNotMatch(result.stderr, /state write failure/);
+  assert.match(result.stderr, /follow-up persistence failed/);
 });
 
 test('CAA-VERIFY-001 execute merge lands a single canonical audit commit and skips the redundant second push (idempotent persistence)', async () => {
@@ -13643,14 +15924,20 @@ test('CAA-VERIFY-001 execute merge lands a single canonical audit commit and ski
   }
   await git(repo, ['push', '-u', 'origin', 'main']);
   await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  await routeGitHubAuthorityToLocalOrigin(repo, remote);
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    gate_status: {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    },
     pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
-    git: { base_ref: 'main' }
+    git: { base_ref: 'main', head_sha: headSha }
   });
   await writeJson(path.join(prDir, 'gate-dag.json'), {
     story_id: 'story-pr-prepare',
@@ -13762,14 +16049,20 @@ test('execute merge deletes the remote branch and records local cleanup skip whe
   }
   await git(repo, ['push', '-u', 'origin', 'main']);
   await git(repo, ['push', '-u', 'origin', 'feature/test-story']);
+  await routeGitHubAuthorityToLocalOrigin(repo, remote);
   const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
   await mkdir(prDir, { recursive: true });
   await writeJson(path.join(prDir, 'pr-prepare.json'), {
     story: { story_id: 'story-pr-prepare', title: 'PR準備' },
-    gate_status: { overall_status: 'ready_for_review', ready_for_pr_create: true },
+    gate_status: {
+      overall_status: 'ready_for_review',
+      ready_for_pr_create: true,
+      unresolved_gates: [],
+      critical_unresolved_gates: []
+    },
     pr_context: { gate_dag: { overall_status: 'ready_for_review', nodes: [], summary: { needs_evidence_count: 0 } } },
-    git: { base_ref: 'main' }
+    git: { base_ref: 'main', head_sha: headSha }
   });
   await writeJson(path.join(prDir, 'pr-create.json'), {
     schema_version: '0.1.0',
@@ -14098,7 +16391,7 @@ test('generated managed worktree pr prepare path keeps execution binding', async
   );
 });
 
-test('managed worktree pr prepare recovers execution binding from the source checkout state', async () => {
+test('managed worktree pr prepare does not overwrite a divergent local execution binding', async () => {
   const repo = await makeGitRepoWithStory();
   const configPath = path.join(repo, '.vibepro', 'config.json');
   const config = await readJson(configPath);
@@ -14108,6 +16401,8 @@ test('managed worktree pr prepare recovers execution binding from the source che
   const started = await runCli(['execute', 'start', repo, '--story-id', 'story-pr-prepare', '--base', 'main', '--json']);
   assert.equal(started.exitCode, 0);
   const worktreePath = started.result.state.managed_worktree.path;
+  const sourceStatePath = path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json');
+  const sourceStateBefore = await readJson(sourceStatePath);
 
   await writeFile(path.join(worktreePath, 'src-recovered-binding.js'), 'export const recoveredBinding = true;\n');
   await git(worktreePath, ['add', 'src-recovered-binding.js']);
@@ -14136,12 +16431,11 @@ test('managed worktree pr prepare recovers execution binding from the source che
   assert.equal(prepare.result.preparation.pr_context.managed_worktree.managed_worktree.path, worktreePath);
 
   const localState = await readJson(localStatePath);
-  assert.equal(localState.managed_worktree.path, worktreePath);
-  assert.equal(localState.managed_worktree.current_head_sha, prepare.result.preparation.git.head_sha);
-  assert.equal(localState.execution_dag.nodes.some((node) => node.id === 'head_bound' && node.status === 'passed'), true);
+  assert.equal(localState.managed_worktree, null);
+  assert.equal(localState.execution_dag, null);
 
-  const sourceState = await readJson(path.join(repo, '.vibepro', 'executions', 'story-pr-prepare', 'state.json'));
-  assert.equal(sourceState.managed_worktree.current_head_sha, prepare.result.preparation.git.head_sha);
+  const sourceState = await readJson(sourceStatePath);
+  assert.deepEqual(sourceState, sourceStateBefore);
 });
 
 test('execute start quarantines corrupt existing execution state before writing', async () => {
@@ -14172,10 +16466,11 @@ architecture_docs:
 # PR準備
 `);
   await writeFile(path.join(repo, 'src-gate.js'), 'export const value = 1;\n');
-  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const currentHeadSha = prepared.result.preparation.git.head_sha;
 
   const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
-  await writeFile(gateDagPath, `${JSON.stringify({
+  await writeCurrentGateDag(repo, storyId, currentHeadSha, {
     nodes: [
       {
         id: 'ac:1',
@@ -14194,7 +16489,7 @@ architecture_docs:
         reason: 'E2E evidence is missing'
       }
     ]
-  }, null, 2)}\n`);
+  });
 
   const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
   assert.equal(result.exitCode, 0);
@@ -14203,7 +16498,7 @@ architecture_docs:
   assert.equal(result.result.state.completion_status, 'blocked');
   assert.deepEqual(result.result.state.next_actions, ['E2E evidence is missing']);
 
-  await writeFile(gateDagPath, `${JSON.stringify({
+  await writeCurrentGateDag(repo, storyId, currentHeadSha, {
     nodes: [
       {
         id: 'review:preflight:gate:gate_evidence',
@@ -14214,14 +16509,14 @@ architecture_docs:
         reason: 'stale review preflight blocks dispatch'
       }
     ]
-  }, null, 2)}\n`);
+  });
   const preflightResult = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
   assert.equal(preflightResult.exitCode, 0);
   assert.equal(preflightResult.result.state.blocking_gate.id, 'review:preflight:gate:gate_evidence');
   assert.equal(preflightResult.result.state.completion_status, 'blocked');
   assert.deepEqual(preflightResult.result.state.next_actions, ['stale review preflight blocks dispatch']);
 
-  await writeFile(gateDagPath, `${JSON.stringify({
+  await writeCurrentGateDag(repo, storyId, currentHeadSha, {
     nodes: [
       {
         id: 'gate:judgment_agent_workflow_evidence_lifecycle',
@@ -14232,7 +16527,7 @@ architecture_docs:
         reason: 'Agent workflow route requires current-bound recorded agent review evidence'
       }
     ]
-  }, null, 2)}\n`);
+  });
   const lifecycleResult = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
   assert.equal(lifecycleResult.exitCode, 0);
   assert.equal(lifecycleResult.result.state.blocking_gate, null);
@@ -14244,14 +16539,38 @@ architecture_docs:
   );
 });
 
+test('DRS-S-5 execute reconcile returns nonzero for canonical persistence failure', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-pr-prepare';
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', storyId);
+  await mkdir(prDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-merge.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId },
+    status: 'failed',
+    stop_reason: 'canonical_audit_persistence_failed',
+    current_head_sha: head,
+    delivery: { status: 'merged', merge_commit_sha: head },
+    reconciliation: { status: 'reconciled', reasons: [] },
+    pr: { url: 'https://example.test/pr/1' }
+  });
+
+  const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(result.exitCode, 2);
+  assert.equal(result.result.state.completion_status, 'failed');
+  assert.equal(result.result.state.blocking_gate.id, 'merge_failure');
+});
+
 test('execute state treats route contract gates as PR blockers', async () => {
   const repo = await makeGitRepoWithStory();
   const storyId = 'story-pr-prepare';
-  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const currentHeadSha = prepared.result.preparation.git.head_sha;
 
   const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
   const assertBlocksGate = async (node, expectedReason) => {
-    await writeFile(gateDagPath, `${JSON.stringify({ nodes: [node] }, null, 2)}\n`);
+    await writeCurrentGateDag(repo, storyId, currentHeadSha, { nodes: [node] });
     const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
     assert.equal(result.exitCode, 0);
     assert.equal(result.result.state.completion_status, 'blocked');
@@ -14307,10 +16626,11 @@ architecture_docs:
 # PR準備
 `);
   await writeFile(path.join(repo, 'src-gate.js'), 'export const value = 1;\n');
-  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const currentHeadSha = prepared.result.preparation.git.head_sha;
 
   const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
-  await writeFile(gateDagPath, `${JSON.stringify({
+  await writeCurrentGateDag(repo, storyId, currentHeadSha, {
     nodes: [
       {
         id: 'architecture',
@@ -14321,7 +16641,7 @@ architecture_docs:
         reason: 'ADR evidence should be resolved or waived'
       }
     ]
-  }, null, 2)}\n`);
+  });
 
   const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
   assert.equal(result.exitCode, 0);
@@ -14352,7 +16672,9 @@ test('execute reconcile --all-merged recalculates merged story state from artifa
     pr: { url: 'https://github.com/example/repo/pull/123' },
     status: 'merged',
     merged_at: '2026-06-12T00:06:00.000Z',
-    merge_commit_sha: head
+    merge_commit_sha: head,
+    delivery: { status: 'merged', merge_commit_sha: head },
+    reconciliation: { status: 'reconciled', reasons: [] }
   });
   await mkdir(path.join(repo, '.vibepro', 'executions', storyId), { recursive: true });
   await writeJson(path.join(repo, '.vibepro', 'executions', storyId, 'state.json'), {
@@ -14361,6 +16683,88 @@ test('execute reconcile --all-merged recalculates merged story state from artifa
     completion_status: 'pr_created',
     managed_worktree: null
   });
+  const unverifiedStoryId = 'story-unverified-must-not-reconcile-as-merged';
+  await mkdir(path.join(repo, '.vibepro', 'pr', unverifiedStoryId), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'pr', unverifiedStoryId, 'pr-merge.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: unverifiedStoryId },
+    status: 'blocked',
+    merged_at: '2026-06-12T00:06:00.000Z',
+    merge_commit_sha: head,
+    delivery: { status: 'unverified' },
+    reconciliation: { status: 'blocked', reasons: ['delivery_not_verified'] }
+  });
+  const canonicalUnverifiedStoryId = 'story-canonical-unverified-must-not-reconcile-as-merged';
+  await mkdir(path.join(repo, 'docs', 'management', 'audit-artifacts', canonicalUnverifiedStoryId), { recursive: true });
+  await writeJson(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', canonicalUnverifiedStoryId, 'audit-bundle.json'),
+    {
+      schema_version: '0.1.0',
+      story_id: canonicalUnverifiedStoryId,
+      merge: {
+        status: 'merged',
+        merged_at: '2026-06-12T00:06:00.000Z',
+        merge_commit_sha: head,
+        delivery: { status: 'unverified' },
+        reconciliation: { status: 'blocked', reasons: ['delivery_not_verified'] }
+      }
+    }
+  );
+  await mkdir(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', canonicalUnverifiedStoryId, 'pr'),
+    { recursive: true }
+  );
+  await writeJson(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', canonicalUnverifiedStoryId, 'pr', 'pr-merge.json'),
+    { status: 'merged', merge_commit_sha: head, merged_at: '2026-06-12T00:06:00.000Z' }
+  );
+  await mkdir(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', unverifiedStoryId),
+    { recursive: true }
+  );
+  await writeJson(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', unverifiedStoryId, 'audit-bundle.json'),
+    { story_id: unverifiedStoryId, merge: { status: 'merged', merge_commit_sha: head } }
+  );
+  const unboundCanonicalStoryId = 'story-canonical-positive-without-trusted-identity';
+  await mkdir(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', unboundCanonicalStoryId),
+    { recursive: true }
+  );
+  await writeJson(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', unboundCanonicalStoryId, 'audit-bundle.json'),
+    {
+      story_id: unboundCanonicalStoryId,
+      merge: {
+        status: 'merged',
+        base: 'main',
+        pr: { selector: 'https://github.com/example/repo/pull/999' },
+        delivery: { status: 'merged', merge_commit_sha: head },
+        reconciliation: { status: 'reconciled', reasons: [] }
+      }
+    }
+  );
+  const completedButUnverifiedStoryId = 'story-completed-doc-but-unverified';
+  await mkdir(path.join(repo, 'docs', 'management', 'stories', 'completed'), { recursive: true });
+  await writeFile(
+    path.join(repo, 'docs', 'management', 'stories', 'completed', `${completedButUnverifiedStoryId}.md`),
+    `---\nstory_id: ${completedButUnverifiedStoryId}\nstatus: completed\n---\n\n# Completed but unverified\n`
+  );
+  await mkdir(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', completedButUnverifiedStoryId),
+    { recursive: true }
+  );
+  await writeJson(
+    path.join(repo, 'docs', 'management', 'audit-artifacts', completedButUnverifiedStoryId, 'audit-bundle.json'),
+    {
+      story_id: completedButUnverifiedStoryId,
+      merge: {
+        status: 'merged',
+        delivery: { status: 'unverified' },
+        reconciliation: { status: 'blocked', reasons: ['delivery_not_verified'] }
+      }
+    }
+  );
 
   const result = await runCli(['execute', 'reconcile', repo, '--all-merged', '--json']);
   assert.equal(result.exitCode, 0);
@@ -14377,6 +16781,195 @@ test('execute reconcile --all-merged recalculates merged story state from artifa
   assert.equal(state.execution_dag.nodes.find((node) => node.id === 'pr_created').status, 'passed');
 });
 
+test('DRS-CONTRACT-009 execute reconcile --all-merged discovers only the configured PR route', async () => {
+  const repo = await makeGitRepoWithStory();
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.artifact_routing = {
+    artifacts: {
+      pr: { canonical: '.vibepro/routed-pr/{story_id}-pr-prepare.json' }
+    }
+  };
+  await writeJson(configPath, config);
+
+  const routedMergedStory = 'story-routed-bulk-merged';
+  const routedUnverifiedStory = 'story-routed-bulk-unverified';
+  for (const [storyId, deliveryStatus] of [
+    [routedMergedStory, 'merged'],
+    [routedUnverifiedStory, 'unverified']
+  ]) {
+    const routedDir = path.join(repo, '.vibepro', 'routed-pr');
+    await mkdir(routedDir, { recursive: true });
+    await writeJson(path.join(routedDir, `${storyId}-pr-create.json`), {
+      schema_version: '0.1.0',
+      current_head_sha: head,
+      story: { story_id: storyId },
+      pr_url: `https://github.com/example/repo/pull/${storyId}`,
+      status: 'created'
+    });
+    await writeJson(path.join(routedDir, `${storyId}-pr-merge.json`), {
+      schema_version: '0.1.0',
+      current_head_sha: head,
+      story: { story_id: storyId },
+      status: deliveryStatus === 'merged' ? 'merged' : 'blocked',
+      delivery: { status: deliveryStatus, merge_commit_sha: deliveryStatus === 'merged' ? head : null },
+      reconciliation: {
+        status: deliveryStatus === 'merged' ? 'reconciled' : 'blocked',
+        reasons: deliveryStatus === 'merged' ? [] : ['delivery_not_verified']
+      }
+    });
+  }
+
+  const legacyMergedDecoyDir = path.join(repo, '.vibepro', 'pr', routedUnverifiedStory);
+  await mkdir(legacyMergedDecoyDir, { recursive: true });
+  await writeJson(path.join(legacyMergedDecoyDir, 'pr-merge.json'), {
+    current_head_sha: head,
+    story: { story_id: routedUnverifiedStory },
+    status: 'merged',
+    delivery: { status: 'merged', merge_commit_sha: head },
+    reconciliation: { status: 'reconciled', reasons: [] }
+  });
+  const legacyUnverifiedDecoyDir = path.join(repo, '.vibepro', 'pr', routedMergedStory);
+  await mkdir(legacyUnverifiedDecoyDir, { recursive: true });
+  await writeJson(path.join(legacyUnverifiedDecoyDir, 'pr-merge.json'), {
+    current_head_sha: head,
+    story: { story_id: routedMergedStory },
+    status: 'blocked',
+    delivery: { status: 'unverified' },
+    reconciliation: { status: 'blocked', reasons: ['delivery_not_verified'] }
+  });
+
+  const result = await runCli(['execute', 'reconcile', repo, '--all-merged', '--json']);
+
+  assert.equal(result.exitCode, 0, JSON.stringify(result.result, null, 2));
+  assert.equal(result.result.story_count, 1);
+  assert.equal(result.result.stories[0].story_id, routedMergedStory);
+  assert.equal(result.result.stories[0].after_status, 'merged');
+  assert.equal(result.result.stories.some((story) => story.story_id === routedUnverifiedStory), false);
+});
+
+test('DRS-CONTRACT-009 execute reconcile --all-merged discovers schema 0.2 named PR routes', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-named-profile-bulk-merged';
+  const featureSlug = 'named-profile-bulk-merged';
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  const canonicalByKind = {
+    story: 'docs/management/stories/active/{story_id}.md',
+    architecture: 'docs/architecture/{story_id}.md',
+    accepted_spec: '.vibepro/spec/{story_id}/spec.json',
+    task_plan: '.vibepro/stories/{story_id}/tasks/tasks.json',
+    graphify: '.vibepro/graphify',
+    evidence: '.vibepro/evidence/{story_id}',
+    test_plan: '.vibepro/test-plans/{story_id}.json',
+    review: '.vibepro/reviews/{story_id}',
+    gate: '.vibepro/pr/{story_id}/gate-dag.json',
+    pr: '.vibepro/packets/{feature_slug}/pr-prepare.json'
+  };
+  const artifacts = Object.fromEntries(Object.entries(canonicalByKind).map(([kind, canonical]) => [kind, {
+    canonical,
+    ownership: kind === 'story' || kind === 'architecture' ? 'curated' : 'generated'
+  }]));
+  config.brainbase.stories.push({
+    story_id: storyId,
+    title: 'Named profile bulk reconciliation',
+    artifact_profile: 'feature_packet',
+    feature_slug: featureSlug
+  });
+  config.artifact_routing = {
+    schema_version: '0.2.0',
+    profiles: {
+      feature_packet: { artifacts },
+      governance_packet: { artifacts: structuredClone(artifacts) }
+    }
+  };
+  await writeJson(configPath, config);
+  const storyPath = path.join(repo, 'docs', 'management', 'stories', 'active', `${storyId}.md`);
+  await mkdir(path.dirname(storyPath), { recursive: true });
+  await writeFile(storyPath, `---\nstory_id: ${storyId}\nartifact_profile: feature_packet\nfeature_slug: ${featureSlug}\n---\n`);
+  const packetDir = path.join(repo, '.vibepro', 'packets', featureSlug);
+  await mkdir(packetDir, { recursive: true });
+  await writeJson(path.join(packetDir, 'pr-create.json'), {
+    schema_version: '0.2.0',
+    current_head_sha: head,
+    story: { story_id: storyId },
+    pr_url: 'https://github.com/example/repo/pull/200',
+    status: 'created'
+  });
+  await writeJson(path.join(packetDir, 'pr-merge.json'), {
+    schema_version: '0.2.0',
+    current_head_sha: head,
+    story: { story_id: storyId },
+    status: 'merged',
+    delivery: { status: 'merged', merge_commit_sha: head },
+    reconciliation: { status: 'reconciled', reasons: [] }
+  });
+
+  const result = await runCli(['execute', 'reconcile', repo, '--all-merged', '--json']);
+
+  assert.equal(result.exitCode, 0, JSON.stringify(result.result, null, 2));
+  assert.equal(result.result.story_count, 1);
+  assert.equal(result.result.stories[0].story_id, storyId);
+  assert.equal(result.result.stories[0].after_status, 'merged');
+  assert.equal(result.result.stories[0].evidence.some((item) => item.kind === 'pr_merge'), true);
+});
+
+test('DRS-CONTRACT-007 execute reconcile --all-merged exits non-zero for legacy delivery without reconciliation', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-legacy-reconcile-required';
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  await mkdir(path.join(repo, '.vibepro', 'pr', storyId), { recursive: true });
+  await writeJson(path.join(repo, '.vibepro', 'pr', storyId, 'pr-merge.json'), {
+    schema_version: '0.1.0',
+    current_head_sha: head,
+    story: { story_id: storyId },
+    status: 'merged',
+    merged_at: '2026-06-12T00:06:00.000Z',
+    merge_commit_sha: head
+  });
+
+  const result = await runCli(['execute', 'reconcile', repo, '--all-merged', '--json']);
+  assert.equal(result.exitCode, 2);
+  assert.equal(result.result.story_count, 1);
+  assert.equal(result.result.stories[0].after_status, 'merged_reconciliation_required');
+});
+
+test('DRS-CONTRACT-007 execute reconcile --all-merged uses current local delivery over stale canonical conflict', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyId = 'story-current-local-bulk-priority';
+  const head = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  const prDir = path.join(repo, '.vibepro', 'pr', storyId);
+  const canonicalDir = path.join(repo, 'docs', 'management', 'audit-artifacts', storyId, 'pr');
+  await mkdir(prDir, { recursive: true });
+  await mkdir(canonicalDir, { recursive: true });
+  await writeJson(path.join(prDir, 'pr-merge.json'), {
+    schema_version: '0.1.0',
+    current_head_sha: head,
+    story: { story_id: storyId },
+    status: 'merged',
+    merged_at: '2026-06-12T00:06:00.000Z',
+    merge_commit_sha: head,
+    delivery: { status: 'merged', merge_commit_sha: head },
+    reconciliation: { status: 'reconciled', reasons: [] }
+  });
+  await writeJson(path.join(canonicalDir, 'pr-merge.json'), {
+    schema_version: '0.1.0',
+    story: { story_id: storyId },
+    status: 'blocked',
+    delivery: { status: 'unverified' },
+    reconciliation: { status: 'blocked', reasons: ['delivery_not_verified'] }
+  });
+
+  const result = await runCli(['execute', 'reconcile', repo, '--all-merged', '--json']);
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.story_count, 1);
+  assert.equal(result.result.stories[0].story_id, storyId);
+  assert.equal(result.result.stories[0].after_status, 'merged');
+});
+
 test('execute state treats workflow-heavy gates as critical blockers', async () => {
   const repo = await makeGitRepoWithStory();
   const storyId = 'story-pr-prepare';
@@ -14391,10 +16984,11 @@ architecture_docs:
 # PR準備
 `);
   await writeFile(path.join(repo, 'src-gate.js'), 'export const value = 1;\n');
-  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const currentHeadSha = prepared.result.preparation.git.head_sha;
 
   const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
-  await writeFile(gateDagPath, `${JSON.stringify({
+  await writeCurrentGateDag(repo, storyId, currentHeadSha, {
     nodes: [
       {
         id: 'gate:release_confidence',
@@ -14405,7 +16999,7 @@ architecture_docs:
         reason: 'workflow-heavy release evidence is missing'
       }
     ]
-  }, null, 2)}\n`);
+  });
 
   const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
   assert.equal(result.exitCode, 0);
@@ -14428,10 +17022,11 @@ architecture_docs:
 # PR準備
 `);
   await writeFile(path.join(repo, 'src-gate.js'), 'export const value = 1;\n');
-  await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const prepared = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', storyId, '--json']);
+  const currentHeadSha = prepared.result.preparation.git.head_sha;
 
   const gateDagPath = path.join(repo, '.vibepro', 'pr', storyId, 'gate-dag.json');
-  await writeFile(gateDagPath, `${JSON.stringify({
+  await writeCurrentGateDag(repo, storyId, currentHeadSha, {
     nodes: [
       {
         id: 'gate:design_quality',
@@ -14442,7 +17037,7 @@ architecture_docs:
         reason: 'design quality evidence is missing'
       }
     ]
-  }, null, 2)}\n`);
+  });
 
   const result = await runCli(['execute', 'reconcile', repo, '--story-id', storyId, '--base', 'main', '--json']);
   assert.equal(result.exitCode, 0);
@@ -14696,6 +17291,7 @@ architecture_docs:
     '--agent-id',
     'agent-running-after-pass'
   ]);
+  await writeFile(path.join(runningRepo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim().toLowerCase(); }\n');
   const runningResult = await runCli(['pr', 'prepare', runningRepo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   const runningPreflight = runningResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
   assert.equal(runningPreflight.status, 'failed');
@@ -14732,7 +17328,9 @@ architecture_docs:
     '--agent-id',
     'agent-manual-shutdown-after-pass',
     '--close-reason',
-    'manual_shutdown'
+    'manual_shutdown',
+    '--close-evidence',
+    'agent:agent-manual-shutdown-after-pass:manual-shutdown'
   ]);
   const manualShutdownResult = await runCli(['pr', 'prepare', manualShutdownRepo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   const manualShutdownPreflight = manualShutdownResult.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
@@ -14944,7 +17542,11 @@ The workflow runs UI, API, service, worker, retry, and status transitions.
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(result.exitCode, 0);
   const agentReviews = result.result.preparation.pr_context.agent_reviews;
-  assert.equal(agentReviews.summary.unmet_checkpoint_review_count, 1);
+  assert.equal(
+    agentReviews.summary.unmet_checkpoint_review_count,
+    1,
+    JSON.stringify(agentReviews.unmet_checkpoint_reviews, null, 2)
+  );
   assert.equal(agentReviews.unmet_checkpoint_reviews[0].role, 'runtime_contract');
   assert.equal(agentReviews.unmet_checkpoint_reviews[0].status, 'timed_out');
   assert.match(agentReviews.unmet_checkpoint_reviews[0].detail, /checkpoint-runtime-stuck-after-pass/);
@@ -15102,7 +17704,7 @@ test('pr body verification checklist checks exact current evidence even when the
     '--id', 'story-pr-prepare',
     '--kind', 'integration',
 	    '--status', 'pass',
-	    '--command', 'node --test test/risk-adaptive-gate.test.js',
+	    '--command', 'node --test test/integration/risk-adaptive-gate.test.js',
 	    '--summary', 'risk-adaptive gate regression passed',
 	    '--artifact', integrationArtifact
 	  ])).exitCode, 0);
@@ -15202,15 +17804,16 @@ test('pr body final E2E prefers current passing e2e-surface evidence over stale 
     '--summary', 'Current HEAD E2E flow failed before the fix',
     '--artifact', '.vibepro/verification/story-pr-prepare/e2e-current-failed-status.json'
   ])).exitCode, 0);
-  assert.equal((await runCli([
+  const currentPassingBuild = await runCliWithStdout([
     'verify', 'record', repo,
     '--id', 'story-pr-prepare',
     '--kind', 'build',
     '--status', 'pass',
-    '--command', 'node --test test/e2e/story-vibepro-design-input-judgment-flow.spec.ts',
+    '--command', 'npm run build:e2e',
     '--summary', 'Current HEAD E2E flow passed after the fix',
     '--artifact', '.vibepro/verification/story-pr-prepare/e2e-current-passed-status.json'
-  ])).exitCode, 0);
+  ]);
+  assert.equal(currentPassingBuild.exitCode, 0, currentPassingBuild.stderr);
 
   const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(result.exitCode, 0);
@@ -16162,7 +18765,7 @@ test('VQG-S-3 generic verification does not satisfy Visual QA Gate without expli
     '--status',
     'pass',
     '--command',
-    'npm test',
+    'npm run test:e2e',
     '--summary',
     'broad regression suite passed',
     '--target',
@@ -16400,7 +19003,7 @@ export async function execute(actionParams) {
     '--id', 'story-pr-prepare',
     '--kind', 'e2e',
     '--status', 'pass',
-    '--command', 'npm test',
+    '--command', 'npm run test:e2e',
     '--summary', 'Generic E2E command passed'
   ])).exitCode, 0);
   const genericE2eResult = await runCli(['pr', 'prepare', repo, '--base', 'HEAD', '--story-id', 'story-pr-prepare', '--json']);
@@ -16440,7 +19043,7 @@ test('verify record keeps verification evidence valid under concurrent writes', 
       '--id', 'story-concurrent-record',
       '--kind', 'integration',
       '--status', 'pass',
-      '--command', 'npm run typecheck',
+      '--command', 'npm run integration',
       '--summary', 'integration passed'
     ]),
     runCli([
@@ -17129,6 +19732,961 @@ test('pr prepare recommends a clean branch for broad session diffs', async () =>
   assert.match(splitPlanHtml, /Graphify Investigation Scope/);
 });
 
+test('pr prepare keeps automatic split advice until a typed atomic scope has current-head reviewer ownership evidence', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyPath = path.join(repo, 'docs', 'stories', 'story-pr-prepare.md');
+  await mkdir(path.dirname(storyPath), { recursive: true });
+  await writeFile(storyPath, `---
+story_id: story-pr-prepare
+title: PR準備
+pr_scope_strategy: atomic_single_pr
+pr_scope_reason: "The requirements-ssot and runtime-behavior facets define one public contract and implementation boundary; neither facet forms a safe independently releasable intermediate state, so both require one current HEAD."
+pr_scope_review_facets:
+  - requirements-ssot
+  - runtime-behavior
+pr_scope_dependency_boundaries:
+  - requirements-ssot->runtime-behavior
+---
+
+# PR準備
+`);
+  for (let index = 0; index < 4; index += 1) {
+    await mkdir(path.join(repo, 'src', `atomic-${index}`), { recursive: true });
+    await writeFile(path.join(repo, 'src', `atomic-${index}`, 'index.js'), `export const atomic${index} = true;\n`);
+  }
+  await git(repo, ['add', 'docs/stories/story-pr-prepare.md', 'src']);
+  await git(repo, ['commit', '-m', 'feat: add atomic public contract fixture']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--max-files', '3', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  const splitPlan = result.result.preparation.split_plan;
+  assert.equal(result.result.preparation.scope.status, 'needs_clean_branch');
+  assert.equal(splitPlan.automatic_recommendation.status, 'split_recommended');
+  assert.equal(splitPlan.atomic_scope.status, 'rejected');
+  assert.deepEqual(splitPlan.atomic_scope.generated_lane_ids, ['requirements-ssot', 'runtime-behavior']);
+  assert.equal(splitPlan.atomic_scope.review_owner_map_verified, false);
+  assert.match(splitPlan.atomic_scope.rejection_reasons.join('\n'), /current-head reviewer owner map/i);
+  assert.deepEqual(splitPlan.atomic_scope.next_actions.map((action) => action.type), [
+    'record_current_head_review_owners',
+    'rerun_atomic_scope_decision'
+  ]);
+  const ownerRepair = splitPlan.atomic_scope.next_actions[0];
+  assert.deepEqual(ownerRepair.missing_required_roles, []);
+  assert.ok(ownerRepair.roles_requiring_surface_coverage.length > 0);
+  assert.deepEqual(ownerRepair.unowned_review_facets, ['requirements-ssot', 'runtime-behavior']);
+  assert.ok(ownerRepair.uncovered_paths.length > 0);
+  assert.equal(ownerRepair.prepare_commands.length, ownerRepair.roles_requiring_surface_coverage.length);
+  assert.ok(ownerRepair.prepare_commands.every((command) => /review prepare/.test(command)));
+  assert.ok(ownerRepair.prepare_commands.every((command) => !/[<>]|\.\.\./.test(command)));
+  assert.equal(ownerRepair.command, ownerRepair.prepare_commands[0]);
+  assert.match(ownerRepair.follow_up_command, /review status/);
+  assert.doesNotMatch(ownerRepair.follow_up_command, /[<>]|\.\.\./);
+  assert.equal(ownerRepair.follow_up, ownerRepair.follow_up_command);
+  assert.match(splitPlan.atomic_scope.next_actions[1].command, /pr prepare/);
+  assert.equal(splitPlan.status, 'split_recommended');
+  assert.equal(splitPlan.recommended_strategy, 'split_by_lane_then_prepare');
+  assert.equal(splitPlan.stacked_gate_plan.summary.requires_atomic_head_validation, false);
+  const humanReview = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'human-review.json'));
+  assert.equal(humanReview.recommended_decision, 'split_pr');
+  const rejectedPrBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(rejectedPrBody, /- 分割判断: atomic rejected:/);
+  assert.match(rejectedPrBody, /current-head reviewer owner map/i);
+  assert.match(rejectedPrBody, /owner repair roles:/);
+  assert.match(rejectedPrBody, /uncovered paths:/);
+  assert.match(rejectedPrBody, /vibepro review prepare/);
+  assert.match(rejectedPrBody, /vibepro review status/);
+  assert.match(rejectedPrBody, /自動勧告: split_recommended \/ split_by_lane_then_prepare/);
+  assert.match(rejectedPrBody, /lanes: requirements-ssot, runtime-behavior/);
+
+  for (const stage of result.result.preparation.pr_context.agent_reviews.stages) {
+    const roles = stage.roles.map((role) => role.role);
+    await recordAgentReviewStage(repo, 'story-pr-prepare', stage.stage, roles, { strictHeadRoles: roles });
+  }
+  const unrelatedReviews = await runCli(['pr', 'prepare', repo, '--base', 'main', '--max-files', '3', '--story-id', 'story-pr-prepare']);
+  assert.equal(unrelatedReviews.exitCode, 0);
+  const unrelatedAtomicScope = unrelatedReviews.result.preparation.split_plan.atomic_scope;
+  assert.equal(unrelatedAtomicScope.status, 'rejected');
+  assert.equal(unrelatedAtomicScope.review_owner_map_verified, false);
+  assert.deepEqual(unrelatedAtomicScope.unowned_review_facets, ['requirements-ssot', 'runtime-behavior']);
+});
+
+test('atomic owner map ignores optional roles for both blocking and ownership', () => {
+  const passingRole = (role, status, surfaceFiles, reviewerSessionId) => ({
+    role,
+    effective_status: status,
+    lifecycle: { effective_status: 'closed' },
+    content_binding: { mode: 'strict_head', surface_files: surfaceFiles },
+    agent_provenance: {
+      reviewer_identity: {
+        relation: 'separate_session',
+        source: 'lifecycle_agent_binding',
+        reviewer_session_id: reviewerSessionId,
+        implementation_session_id: 'implementation-session'
+      }
+    }
+  });
+  const requiredReviews = [{ stage: 'test_plan', role: 'gate_coverage' }];
+  const lanes = [{ id: 'runtime-behavior', files: ['src/atomic.js'] }];
+  const optionalOnly = buildAgentReviewOwnerMapEvidence({
+    required_reviews: requiredReviews,
+    checkpoint_required_reviews: [],
+    stages: [{
+      stage: 'test_plan',
+      roles: [
+        passingRole('gate_coverage', 'missing', [], 'required-review-session'),
+        passingRole('optional_observer', 'pass', ['src/atomic.js'], 'optional-review-session')
+      ]
+    }]
+  }, lanes);
+  assert.equal(optionalOnly.verified, false);
+  assert.deepEqual(optionalOnly.facets[0].owners, []);
+
+  const requiredOnly = buildAgentReviewOwnerMapEvidence({
+    required_reviews: requiredReviews,
+    checkpoint_required_reviews: [],
+    stages: [{
+      stage: 'test_plan',
+      roles: [
+        passingRole('gate_coverage', 'pass', ['src/atomic.js'], 'required-review-session'),
+        passingRole('optional_observer', 'missing', [], 'optional-review-session')
+      ]
+    }]
+  }, lanes);
+  assert.equal(requiredOnly.verified, true);
+  assert.deepEqual(requiredOnly.facets[0].owners.map((owner) => owner.role), ['gate_coverage']);
+
+  const supersededByRunningLifecycle = buildAgentReviewOwnerMapEvidence({
+    required_reviews: requiredReviews,
+    checkpoint_required_reviews: [],
+    stages: [{
+      stage: 'test_plan',
+      roles: [{
+        ...passingRole('gate_coverage', 'pass', ['src/atomic.js'], 'required-review-session'),
+        lifecycle: { effective_status: 'running' }
+      }]
+    }]
+  }, lanes);
+  assert.equal(supersededByRunningLifecycle.verified, false);
+
+  const noRequiredRoles = buildAgentReviewOwnerMapEvidence({
+    required_reviews: [],
+    checkpoint_required_reviews: [],
+    stages: [{
+      stage: 'test_plan',
+      roles: [passingRole('optional_observer', 'pass', ['src/atomic.js'], 'optional-review-session')]
+    }]
+  }, lanes);
+  assert.equal(noRequiredRoles.verified, false);
+  assert.deepEqual(noRequiredRoles.facets[0].owners, []);
+
+  const missingDeclaredRole = buildAgentReviewOwnerMapEvidence({
+    required_reviews: [
+      { stage: 'test_plan', role: 'gate_coverage' },
+      { stage: 'gate', role: 'release_risk' }
+    ],
+    checkpoint_required_reviews: [],
+    stages: [{
+      stage: 'test_plan',
+      roles: [passingRole('gate_coverage', 'pass', ['src/atomic.js'], 'required-review-session')]
+    }]
+  }, lanes);
+  assert.equal(missingDeclaredRole.verified, false);
+  assert.deepEqual(missingDeclaredRole.missing_required_role_keys, ['gate:release_risk']);
+
+  const contentScopedOnly = buildAgentReviewOwnerMapEvidence({
+    required_reviews: requiredReviews,
+    checkpoint_required_reviews: [],
+    stages: [{
+      stage: 'test_plan',
+      roles: [{
+        ...passingRole('gate_coverage', 'pass', ['src/atomic.js'], 'content-scoped-session'),
+        content_binding: { mode: 'content_scoped', surface_files: ['src/atomic.js'] }
+      }]
+    }]
+  }, lanes);
+  assert.equal(contentScopedOnly.verified, false);
+  assert.deepEqual(contentScopedOnly.facets[0].owners, []);
+  assert.deepEqual(contentScopedOnly.unowned_facets, ['runtime-behavior']);
+});
+
+test('pr prepare keeps every required verification command after current-head reviewers accept an atomic scope', async () => {
+  const repo = await makeGitRepoWithStory();
+  await writeFile(path.join(repo, 'package.json'), JSON.stringify({
+    type: 'module',
+    scripts: {
+      test: 'node --test test/atomic.test.js',
+      integration: 'node scripts/build.js',
+      typecheck: 'node --check src/atomic.js',
+      build: 'node scripts/build.js',
+      'test:e2e': 'node --test e2e/tests/atomic.spec.js'
+    }
+  }, null, 2));
+  await git(repo, ['add', 'package.json']);
+  await git(repo, ['commit', '-m', 'chore: establish verification toolchain']);
+  await git(repo, ['branch', '-f', 'main', 'HEAD']);
+
+  const storyPath = path.join(repo, 'docs', 'stories', 'story-pr-prepare.md');
+  await mkdir(path.dirname(storyPath), { recursive: true });
+  await writeFile(storyPath, `---
+story_id: story-pr-prepare
+title: PR準備
+pr_scope_strategy: atomic_single_pr
+pr_scope_reason: "The repo-control registration, requirements-ssot, runtime-behavior, and e2e-gate facets define one public contract, implementation, and executable proof boundary; none forms a safe independently releasable intermediate state, so all require one current HEAD."
+pr_scope_review_facets:
+  - repo-control
+  - requirements-ssot
+  - runtime-behavior
+  - e2e-gate
+pr_scope_dependency_boundaries:
+  - repo-control->requirements-ssot
+  - requirements-ssot->runtime-behavior
+  - runtime-behavior->e2e-gate
+---
+
+# PR準備
+`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'atomic.js'), 'export const atomic = true;\n');
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'atomic.test.js'), 'import assert from "node:assert/strict"; import test from "node:test"; import { atomic } from "../src/atomic.js"; test("atomic unit", () => assert.equal(atomic, true));\n');
+  await mkdir(path.join(repo, 'e2e', 'tests'), { recursive: true });
+  await writeFile(path.join(repo, 'e2e', 'tests', 'atomic.spec.js'), 'import assert from "node:assert/strict"; import test from "node:test"; import { atomic } from "../../src/atomic.js"; test("atomic public behavior", () => assert.equal(atomic, true));\n');
+  await mkdir(path.join(repo, 'scripts'), { recursive: true });
+  await writeFile(path.join(repo, 'scripts', 'build.js'), 'import assert from "node:assert/strict"; import { atomic } from "../src/atomic.js"; assert.equal(atomic, true);\n');
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'feat: add atomic verification fixture']);
+
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.agent_reviews = {
+    ...(config.agent_reviews ?? {}),
+    roles: {
+      ...(config.agent_reviews?.roles ?? {}),
+      e2e_ux: { mode: 'optional' }
+    }
+  };
+  config.brainbase = {
+    ...(config.brainbase ?? {}),
+    stories: [
+      ...(config.brainbase?.stories ?? []),
+      { story_id: 'story-pr-prepare', path: 'docs/stories/story-pr-prepare.md' }
+    ]
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await git(repo, ['add', '-f', '.vibepro/config.json']);
+  await git(repo, ['commit', '-m', 'chore: register story-pr-prepare atomic review config']);
+  const { stdout: atomicDiffNames } = await git(repo, ['diff', '--name-only', 'main...HEAD']);
+  assert.match(atomicDiffNames, /^\.vibepro\/config\.json$/m, 'fixture must contain the canonical Story registration change');
+
+  for (const [kind, command, executable, args] of [
+    ['unit', 'node --test test/atomic.test.js', process.execPath, ['--test', 'test/atomic.test.js']],
+    ['integration', 'npm run integration', 'npm', ['run', 'integration']],
+    ['e2e', 'node --test e2e/tests/atomic.spec.js', process.execPath, ['--test', 'e2e/tests/atomic.spec.js']],
+    ['typecheck', 'npm run typecheck', 'npm', ['run', 'typecheck']],
+    ['build', 'npm run build', 'npm', ['run', 'build']]
+  ]) {
+    const runExecutable = executable ?? 'npm';
+    const runArgs = args ?? ['run', 'build'];
+    await execFileAsync(runExecutable, runArgs, { cwd: repo, encoding: 'utf8' });
+    const evidence = await runCli(['verify', 'record', repo, '--id', 'story-pr-prepare', '--kind', kind, '--status', 'pass', '--command', command, '--summary', `${kind} passed on the atomic fixture`]);
+    assert.equal(evidence.exitCode, 0);
+  }
+
+  await recordAgentReviewStage(repo, 'story-pr-prepare', 'test_plan', ['e2e_ux'], {
+    strictHeadRoles: ['e2e_ux'],
+    inspectionInputsByRole: { e2e_ux: ['e2e/tests/atomic.spec.js'] }
+  });
+
+  const beforeReviews = await runCli(['pr', 'prepare', repo, '--base', 'main', '--max-files', '3', '--story-id', 'story-pr-prepare']);
+  assert.equal(beforeReviews.exitCode, 0);
+  assert.equal(beforeReviews.result.preparation.split_plan.atomic_scope.status, 'rejected');
+  const atomicInspectionInputs = [
+    '.vibepro/config.json',
+    'docs/stories/story-pr-prepare.md',
+    'scripts/build.js',
+    'src/atomic.js',
+    'test/atomic.test.js',
+    'e2e/tests/atomic.spec.js'
+  ];
+  const requiredReviewKeys = new Set([
+    ...beforeReviews.result.preparation.pr_context.agent_reviews.required_reviews,
+    ...beforeReviews.result.preparation.pr_context.agent_reviews.checkpoint_required_reviews
+  ].map((review) => `${review.stage}:${review.role}`));
+  for (const stage of beforeReviews.result.preparation.pr_context.agent_reviews.stages) {
+    const roles = stage.roles.map((role) => role.role);
+    await recordAgentReviewStage(repo, 'story-pr-prepare', stage.stage, roles, {
+      strictHeadRoles: roles,
+      inspectionInputsByRole: Object.fromEntries(roles.map((role) => [role, atomicInspectionInputs]))
+    });
+  }
+
+  const unknownIdentityResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--max-files', '3', '--story-id', 'story-pr-prepare']);
+  assert.equal(unknownIdentityResult.exitCode, 0);
+  const unknownIdentityAtomicScope = unknownIdentityResult.result.preparation.split_plan.atomic_scope;
+  assert.equal(unknownIdentityAtomicScope.status, 'rejected');
+  assert.equal(unknownIdentityAtomicScope.review_owner_map_verified, false);
+  assert.equal(
+    unknownIdentityAtomicScope.review_owner_map
+      .flatMap((facet) => facet.owners)
+      .every((owner) => owner.reviewer_identity === 'unknown'),
+    true
+  );
+
+  for (const stage of unknownIdentityResult.result.preparation.pr_context.agent_reviews.stages) {
+    const roles = stage.roles.map((role) => role.role);
+    await recordAgentReviewStage(repo, 'story-pr-prepare', stage.stage, roles, {
+      strictHeadRoles: roles,
+      reviewerIdentity: 'same_session',
+      inspectionInputsByRole: Object.fromEntries(roles.map((role) => [role, atomicInspectionInputs]))
+    });
+  }
+
+  const sameSessionResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--max-files', '3', '--story-id', 'story-pr-prepare']);
+  assert.equal(sameSessionResult.exitCode, 0);
+  const sameSessionAtomicScope = sameSessionResult.result.preparation.split_plan.atomic_scope;
+  assert.equal(sameSessionAtomicScope.status, 'rejected');
+  assert.equal(sameSessionAtomicScope.review_owner_map_verified, false);
+  assert.equal(
+    sameSessionAtomicScope.review_owner_map
+      .flatMap((facet) => facet.owners)
+      .every((owner) => owner.reviewer_identity === 'same_session'),
+    true
+  );
+  assert.match(
+    sameSessionAtomicScope.rejection_reasons.join('\n'),
+    /reviewer owner map/i
+  );
+
+  const selfAssertedSeparateReview = await runCliWithStdout([
+    'review', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--stage', sameSessionResult.result.preparation.pr_context.agent_reviews.stages[0].stage,
+    '--role', sameSessionResult.result.preparation.pr_context.agent_reviews.stages[0].roles[0].role,
+    '--status', 'pass',
+    '--summary', 'self asserted separate review',
+    '--agent-system', 'codex',
+    '--execution-mode', 'parallel_subagent',
+    '--agent-id', 'self-asserted-agent',
+    '--agent-thread-id', 'reviewer-only-session',
+    '--reviewer-identity', 'separate_session',
+    '--inspection-summary', 'attempted identity-only acceptance',
+    '--inspection-input', atomicInspectionInputs[0],
+    '--judgment-delta', 'unknown to separate by assertion only',
+    '--agent-closed'
+  ]);
+  assert.equal(selfAssertedSeparateReview.exitCode, 1);
+  assert.match(selfAssertedSeparateReview.stderr, /requires both --implementation-session-id/);
+
+  const sameIdSeparateReview = await runCliWithStdout([
+    'review', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--stage', sameSessionResult.result.preparation.pr_context.agent_reviews.stages[0].stage,
+    '--role', sameSessionResult.result.preparation.pr_context.agent_reviews.stages[0].roles[0].role,
+    '--status', 'pass',
+    '--summary', 'same id separate review',
+    '--agent-system', 'codex',
+    '--execution-mode', 'parallel_subagent',
+    '--agent-id', 'same-id-agent',
+    '--agent-session-id', 'shared-session',
+    '--implementation-session-id', 'shared-session',
+    '--reviewer-identity', 'separate_session',
+    '--inspection-summary', 'attempted same-id acceptance',
+    '--inspection-input', atomicInspectionInputs[0],
+    '--judgment-delta', 'same to separate by assertion only',
+    '--agent-closed'
+  ]);
+  assert.equal(sameIdSeparateReview.exitCode, 1);
+  assert.match(sameIdSeparateReview.stderr, /requires different implementation and reviewer session ids/);
+
+  for (const stage of sameSessionResult.result.preparation.pr_context.agent_reviews.stages) {
+    const roles = stage.roles
+      .map((role) => role.role)
+      .filter((role) => requiredReviewKeys.has(`${stage.stage}:${role}`));
+    if (roles.length === 0) continue;
+    await recordAgentReviewStage(repo, 'story-pr-prepare', stage.stage, roles, {
+      strictHeadRoles: roles,
+      reviewerIdentity: 'separate_session',
+      reviewerSessionId: 'independent-review-session',
+      implementationSessionId: 'implementation-session',
+      inspectionInputsByRole: Object.fromEntries(roles.map((role) => [role, atomicInspectionInputs]))
+    });
+  }
+
+  const optionalReviewKeys = sameSessionResult.result.preparation.pr_context.agent_reviews.stages
+    .flatMap((stage) => stage.roles.map((role) => ({ stage: stage.stage, role: role.role })))
+    .filter(({ stage, role }) => !requiredReviewKeys.has(`${stage}:${role}`));
+  assert.equal(optionalReviewKeys.length > 0, true, 'fixture must exercise an optional review role');
+  for (const { stage, role } of optionalReviewKeys) {
+    await rm(path.join(repo, '.vibepro', 'reviews', 'story-pr-prepare', stage, `review-result-${role}.json`), { force: true });
+  }
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--max-files', '3', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  const splitPlan = result.result.preparation.split_plan;
+  assert.equal(splitPlan.atomic_scope.status, 'accepted', JSON.stringify(splitPlan.atomic_scope, null, 2));
+  assert.deepEqual(
+    result.result.preparation.scope.signals.find((signal) => signal.id === 'mixed_repo_control_surface'),
+    {
+      id: 'mixed_repo_control_surface',
+      unsafe_for_atomic_override: false,
+      repo_control_files: ['.vibepro/config.json'],
+      reason: '.vibepro/config.json is the Story registration/control-plane half of the same declared release contract and may proceed only through typed atomic review'
+    },
+    'the canonical Story registration change must remain reviewable through the typed atomic contract'
+  );
+  await execFileAsync(process.execPath, [path.resolve('bin/vibepro.js'), 'pr', 'prepare', repo, '--base', 'main', '--max-files', '3', '--story-id', 'story-pr-prepare', '--json'], {
+    cwd: process.cwd(),
+    encoding: 'utf8',
+    maxBuffer: 16 * 1024 * 1024
+  });
+  const publicAcceptedPreparation = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-prepare.json'));
+  const publicAcceptedSplitPlan = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'split-plan.json'));
+  assert.equal(publicAcceptedPreparation.split_plan.atomic_scope.status, 'accepted', 'public bin entrypoint must reload lifecycle evidence and preserve accepted atomic scope');
+  assert.equal(publicAcceptedSplitPlan.atomic_scope.status, 'accepted', 'public bin entrypoint must persist accepted atomic scope in the split-plan SSOT');
+  assert.equal(splitPlan.atomic_scope.review_owner_map_verified, true);
+  assert.equal(
+    splitPlan.atomic_scope.review_owner_map
+      .flatMap((facet) => facet.owners)
+      .every((owner) => owner.reviewer_identity === 'separate_session'),
+    true
+  );
+  assert.equal(
+    splitPlan.atomic_scope.review_owner_map
+      .flatMap((facet) => facet.owners)
+      .every((owner) => owner.reviewer_identity_source === 'lifecycle_agent_binding'
+        && owner.reviewer_session_id !== owner.implementation_session_id),
+    true
+  );
+  assert.deepEqual(splitPlan.atomic_scope.dependency_boundaries, [
+    { from: 'repo-control', to: 'requirements-ssot' },
+    { from: 'requirements-ssot', to: 'runtime-behavior' },
+    { from: 'runtime-behavior', to: 'e2e-gate' }
+  ]);
+  assert.equal(splitPlan.status, 'single_pr_ok');
+  const prScopeGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:pr_scope_judgment');
+  const splitResolutionGate = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:split_resolution');
+  assert.equal(prScopeGate.status, 'passed');
+  assert.equal(prScopeGate.classification, 'atomic_scope_accepted');
+  assert.equal(splitResolutionGate.status, 'passed');
+  assert.equal(
+    result.result.preparation.gate_status.unresolved_gates.some((gate) => ['gate:pr_scope_judgment', 'gate:split_resolution'].includes(gate.id)),
+    false
+  );
+  assert.equal(
+    result.result.preparation.pr_context.gate_dag.summary.needs_evidence_count,
+    result.result.preparation.gate_status.unresolved_gate_count,
+    'accepted atomic scope must reconcile the DAG summary after every final Gate is added'
+  );
+  const publicPrScopeGate = publicAcceptedPreparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:pr_scope_judgment');
+  const publicSplitResolutionGate = publicAcceptedPreparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:split_resolution');
+  const publicScopeAxis = publicAcceptedPreparation.pr_context.engineering_judgment.judgment_axes
+    .find((axis) => axis.axis === 'scope_reviewability');
+  assert.equal(publicPrScopeGate.status, 'passed', 'persisted public CLI output must reconcile the PR scope judgment Gate');
+  assert.equal(publicPrScopeGate.classification, 'atomic_scope_accepted');
+  assert.equal(publicSplitResolutionGate.status, 'passed', 'persisted public CLI output must reconcile the split resolution Gate');
+  assert.equal(
+    publicAcceptedPreparation.gate_status.unresolved_gates.some((gate) => ['gate:pr_scope_judgment', 'gate:split_resolution'].includes(gate.id)),
+    false
+  );
+  assert.equal(
+    publicAcceptedPreparation.pr_context.gate_dag.summary.needs_evidence_count,
+    publicAcceptedPreparation.gate_status.unresolved_gate_count,
+    'persisted public CLI output must retain the reconciled Gate count'
+  );
+  assert.equal(
+    publicScopeAxis.matched_evidence.some((item) => item.kind === 'review_owner_map'),
+    true,
+    'an optional missing role must not suppress the current required-role owner map from persisted senior judgment evidence'
+  );
+  const acceptedHumanReview = await readJson(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'human-review.json'));
+  assert.match(
+    acceptedHumanReview.recommendation_reason,
+    /typed atomic scope declaration accepts one cumulative PR/
+  );
+  const acceptedPrBody = await readFile(path.join(repo, '.vibepro', 'pr', 'story-pr-prepare', 'pr-body.md'), 'utf8');
+  assert.match(
+    acceptedPrBody,
+    /split=keep_current_pr_atomic_scope/
+  );
+  assert.match(acceptedPrBody, /- 分割判断: atomic accepted:/);
+  assert.match(acceptedPrBody, /none forms a safe independently releasable intermediate state/);
+  assert.match(acceptedPrBody, /自動勧告: split_recommended \/ split_by_lane_then_prepare/);
+  assert.match(acceptedPrBody, /lanes: repo-control, requirements-ssot, runtime-behavior, e2e-gate/);
+  assert.match(acceptedPrBody, /採用: keep_current_pr_atomic_scope/);
+  assert.equal(splitPlan.stacked_gate_plan.summary.requires_atomic_head_validation, true);
+  const requiredCommands = splitPlan.stacked_gate_plan.final_validation.commands;
+  const publicRequiredCommands = publicAcceptedSplitPlan.stacked_gate_plan.final_validation.commands;
+  assert.deepEqual(publicRequiredCommands, requiredCommands, 'persisted split-plan must retain final cumulative validation commands');
+  const verificationCommands = result.result.preparation.pr_context.verification_commands;
+  for (const kind of ['unit', 'typecheck']) {
+    const command = verificationCommands.find((item) => item.kind === kind)?.command;
+    assert.ok(command);
+    assert.equal(requiredCommands.includes(command), true);
+  }
+  const integrationCommand = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:integration')?.command;
+  const e2eCommand = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:e2e')?.command;
+  assert.equal(requiredCommands.includes(integrationCommand), true);
+  assert.equal(requiredCommands.includes(e2eCommand), true);
+  for (const lanePlan of splitPlan.stacked_gate_plan.lane_plans) {
+    assert.equal(lanePlan.gate_mode, 'cumulative_atomic_head');
+    assert.deepEqual(lanePlan.cumulative_checks, requiredCommands);
+  }
+  for (const lanePlan of publicAcceptedSplitPlan.stacked_gate_plan.lane_plans) {
+    assert.equal(lanePlan.gate_mode, 'cumulative_atomic_head', 'persisted split-plan lanes must validate cumulative atomic HEAD');
+    assert.deepEqual(lanePlan.cumulative_checks, publicRequiredCommands);
+  }
+
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'post-review-change.md'), 'strict HEAD reviews must become stale\n');
+  await git(repo, ['add', 'docs/post-review-change.md']);
+  await git(repo, ['commit', '-m', 'docs: change atomic head after review']);
+  const staleResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--max-files', '3', '--story-id', 'story-pr-prepare']);
+  assert.equal(staleResult.exitCode, 0);
+  assert.equal(staleResult.result.preparation.split_plan.atomic_scope.status, 'rejected');
+  assert.equal(staleResult.result.preparation.split_plan.atomic_scope.review_owner_map_verified, false);
+});
+
+test('pr prepare materializes a passed split resolution gate when atomic scope accepts reviewable automatic lane advice', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyPath = path.join(repo, 'docs', 'stories', 'story-pr-prepare.md');
+  await mkdir(path.dirname(storyPath), { recursive: true });
+  await writeFile(storyPath, `---
+story_id: story-pr-prepare
+title: Reviewable atomic lane advice
+pr_scope_strategy: atomic_single_pr
+pr_scope_reason: "The requirements, runtime behavior, and support artifact are one release contract whose intermediate states are not independently useful or safely reviewable, so current-head independent ownership is required."
+pr_scope_review_facets:
+  - requirements-ssot
+  - runtime-behavior
+  - misc-follow-up
+pr_scope_dependency_boundaries:
+  - requirements-ssot->runtime-behavior
+  - runtime-behavior->misc-follow-up
+---
+
+# Reviewable atomic lane advice
+`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'atomic.js'), 'export const atomic = true;\n');
+  await writeFile(path.join(repo, 'design-ssot.json'), '{"story":"story-pr-prepare"}\n');
+  await git(repo, ['add', 'docs/stories/story-pr-prepare.md', 'src/atomic.js', 'design-ssot.json']);
+  await git(repo, ['commit', '-m', 'feat: add reviewable atomic lane fixture']);
+  await writeFile(path.join(repo, 'src', 'atomic.js'), 'export const atomic = "reviewed-follow-up";\n');
+  await git(repo, ['add', 'src/atomic.js']);
+  await git(repo, ['commit', '-m', 'fix: refine story-pr-prepare atomic contract']);
+
+  const beforeReviews = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(beforeReviews.exitCode, 0);
+  assert.equal(beforeReviews.result.preparation.scope.status, 'needs_clean_branch');
+  assert.deepEqual(beforeReviews.result.preparation.scope.signals, [{
+    id: 'multiple_commits_scope_contamination_risk',
+    unsafe_for_atomic_override: false,
+    referenced_work_items: ['story-pr-prepare'],
+    foreign_work_items: []
+  }]);
+  assert.equal(beforeReviews.result.preparation.split_plan.automatic_recommendation.status, 'split_recommended');
+  assert.equal(beforeReviews.result.preparation.split_plan.atomic_scope.status, 'rejected');
+  const failureModeGate = beforeReviews.result.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:failure_mode_coverage');
+  assert.equal(
+    failureModeGate.modes.find((mode) => mode.id === 'schema_failure')?.status,
+    'missing_coverage',
+    'typed atomic metadata is a real schema boundary and must fail closed without negative-path evidence'
+  );
+  assert.match(failureModeGate.primary_next_command, /vibepro verify record/);
+  assert.match(failureModeGate.primary_next_command, /--id story-pr-prepare/);
+  assert.match(failureModeGate.primary_next_command, /node --test/);
+  assert.match(failureModeGate.primary_next_command, /src\/atomic\.js/);
+  assert.doesNotMatch(failureModeGate.primary_next_command, /<[^>]+>/);
+  assert.equal(failureModeGate.primary_next_command, failureModeGate.next_commands[0]);
+  assert.match(failureModeGate.next_commands[1], /^vibepro pr prepare/);
+  assert.equal(failureModeGate.next_commands.every((command) => !/<[^>]+>/.test(command)), true);
+  assert.equal(
+    failureModeGate.modes.some((mode) => mode.id === 'auth_denied'),
+    false,
+    'review roles and evidence ownership are governance concepts, not authentication boundaries'
+  );
+  assert.equal(
+    beforeReviews.result.preparation.pr_context.gate_dag.nodes.some((node) => node.id === 'gate:split_resolution'),
+    true,
+    'the reviewable multi-commit signal should require explicit split-resolution ownership before acceptance'
+  );
+  assert.equal(
+    beforeReviews.result.preparation.pr_context.gate_dag.edges
+      .some((edge) => edge.from === 'gate:pr_route_classification' && edge.to === 'gate:pr_body_contract'),
+    true,
+    'non-accepted scope keeps the ordinary route-to-body edge while split resolution remains independently required'
+  );
+
+  const inspectionInputs = [
+    'docs/stories/story-pr-prepare.md',
+    'src/atomic.js',
+    'design-ssot.json'
+  ];
+  for (const stage of beforeReviews.result.preparation.pr_context.agent_reviews.stages) {
+    const roles = stage.roles.map((role) => role.role);
+    await recordAgentReviewStage(repo, 'story-pr-prepare', stage.stage, roles, {
+      strictHeadRoles: roles,
+      reviewerIdentity: 'separate_session',
+      implementationSessionId: 'story-pr-prepare-implementation-session',
+      inspectionInputsByRole: Object.fromEntries(roles.map((role) => [role, inspectionInputs]))
+    });
+  }
+
+  const accepted = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(accepted.exitCode, 0);
+  assert.equal(accepted.result.preparation.split_plan.atomic_scope.status, 'accepted');
+  assert.deepEqual(accepted.result.preparation.split_plan.atomic_scope.next_actions, [{
+    type: 'continue_atomic_pr',
+    command: 'vibepro pr prepare . --story-id story-pr-prepare'
+  }]);
+  const splitResolutionGate = accepted.result.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:split_resolution');
+  assert.equal(splitResolutionGate.status, 'passed');
+  assert.equal(splitResolutionGate.atomic_scope.status, 'accepted');
+  assert.equal(
+    accepted.result.preparation.pr_context.gate_dag.edges
+      .some((edge) => edge.from === 'gate:pr_route_classification' && edge.to === 'gate:split_resolution'),
+    true
+  );
+  assert.equal(
+    accepted.result.preparation.pr_context.gate_dag.edges
+      .some((edge) => edge.from === 'gate:split_resolution' && edge.to === 'gate:pr_body_contract'),
+    true
+  );
+  assert.equal(
+    accepted.result.preparation.pr_context.gate_dag.edges
+      .some((edge) => edge.from === 'gate:pr_route_classification' && edge.to === 'gate:pr_body_contract'),
+    false,
+    'accepted atomic scope must not retain a direct edge that bypasses split resolution'
+  );
+  assert.equal(
+    accepted.result.preparation.gate_status.unresolved_gates.some((gate) => gate.id === 'gate:split_resolution'),
+    false
+  );
+  assert.equal(
+    accepted.result.preparation.pr_context.gate_dag.summary.needs_evidence_count,
+    accepted.result.preparation.gate_status.unresolved_gate_count,
+    'accepted reviewable scope must reconcile the synthesized split Gate with every later final Gate'
+  );
+  assert.equal(
+    accepted.result.preparation.pr_context.gate_dag.overall_status,
+    accepted.result.preparation.gate_status.overall_status,
+    'accepted scope must expose the recalculated overall status from the reconciled Gate DAG'
+  );
+});
+
+test('pr prepare keeps explicit foreign work-item lineage unsafe for atomic scope', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'foreign-lineage.js'), 'export const first = true;\n');
+  await git(repo, ['add', 'src/foreign-lineage.js']);
+  await git(repo, ['commit', '-m', 'feat: add story-pr-prepare runtime']);
+  await writeFile(path.join(repo, 'src', 'foreign-lineage.js'), 'export const first = false;\n');
+  await git(repo, ['add', 'src/foreign-lineage.js']);
+  await git(repo, ['commit', '-m', 'fix: carry BUG-999 unrelated lineage']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(result.result.preparation.scope.signals, [{
+    id: 'multiple_commits_foreign_story_lineage',
+    unsafe_for_atomic_override: true,
+    referenced_work_items: ['bug-999', 'story-pr-prepare'],
+    foreign_work_items: ['bug-999']
+  }]);
+});
+
+test('pr prepare accepts a versioned branch merge only when canonical remote topology resolves to a merge parent', async () => {
+  const repo = await makeGitRepoWithStory();
+  const originalBranch = (await git(repo, ['branch', '--show-current'])).stdout.trim();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'versioned-lineage.js'), 'export const first = true;\n');
+  await git(repo, ['add', 'src/versioned-lineage.js']);
+  await git(repo, ['commit', '-m', 'feat: add story-pr-prepare runtime']);
+  await git(repo, ['switch', '-c', 'codex/story-pr-prepare-v2']);
+  await writeFile(path.join(repo, 'src', 'versioned-lineage.js'), 'export const first = false;\n');
+  await git(repo, ['add', 'src/versioned-lineage.js']);
+  await git(repo, ['commit', '-m', 'fix: adjust runtime']);
+  const versionedTip = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  await git(repo, ['update-ref', 'refs/remotes/origin/codex/story-pr-prepare-v2', versionedTip]);
+  await git(repo, ['switch', originalBranch]);
+  await git(repo, ['merge', '--no-ff', 'codex/story-pr-prepare-v2', '-m', 'Merge remote-tracking branch \'origin/codex/story-pr-prepare-v2\' into codex/story-pr-prepare-v2']);
+  const mergeSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+
+  let prepareSummaryOutput = '';
+  const result = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare',
+    '--evidence-depth', 'standard',
+    '--evidence-depth-reason', 'verify accepted current Story lineage rendering',
+    '--evidence-depth-consumer', 'vibepro-cli-test',
+    '--evidence-depth-target', 'pr-prepare.html',
+    '--evidence-depth-target', 'gate-dag.json',
+    '--evidence-depth-target', 'gate-dag.html',
+    '--evidence-depth-target', 'split-plan.html'
+  ], {
+    stdout: { write: (text) => { prepareSummaryOutput += text; } }
+  });
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(result.result.preparation.scope.signals, [{
+    id: 'multiple_commits_scope_contamination_risk',
+    unsafe_for_atomic_override: false,
+    referenced_work_items: ['story-pr-prepare-v2', 'story-pr-prepare'],
+    foreign_work_items: [],
+    accepted_current_story_lineage: [{
+      reference: 'story-pr-prepare-v2',
+      commit_sha: mergeSha,
+      parent_count: 2,
+      source_ref: 'origin/codex/story-pr-prepare-v2',
+      target_ref: 'codex/story-pr-prepare-v2',
+      remote_tracking_sha: versionedTip,
+      basis: 'merge_topology_canonical_ref_and_title'
+    }]
+  }]);
+  assert.match(result.result.preparation.scope.reasons.join('\n'), /story-pr-prepare-v2@[a-f0-9]{12} parents=2/);
+  assert.match(prepareSummaryOutput, /story-pr-prepare-v2@[a-f0-9]{12} parents=2/);
+  const prDir = path.join(repo, '.vibepro', 'pr', 'story-pr-prepare');
+  const persistedPrepare = await readJson(path.join(prDir, 'pr-prepare.json'));
+  assert.equal(persistedPrepare.scope.signals[0].accepted_current_story_lineage[0].commit_sha, mergeSha);
+  const humanReview = await readJson(path.join(prDir, 'human-review.json'));
+  const expectedLineage = persistedPrepare.scope.signals[0].accepted_current_story_lineage[0];
+  assert.deepEqual(humanReview.accepted_current_story_lineage[0], expectedLineage);
+  assert.match(humanReview.recommendation_reason, /story-pr-prepare-v2@[a-f0-9]{12} parents=2/);
+  const prBody = await readFile(path.join(prDir, 'pr-body.md'), 'utf8');
+  const prPrepareHtml = await readFile(path.join(prDir, 'pr-prepare.html'), 'utf8');
+  const splitPlan = await readJson(path.join(prDir, 'split-plan.json'));
+  const gateDag = await readJson(path.join(prDir, 'gate-dag.json'));
+  const splitPlanHtml = await readFile(path.join(prDir, 'split-plan.html'), 'utf8');
+  const gateDagHtml = await readFile(path.join(prDir, 'gate-dag.html'), 'utf8');
+  assert.deepEqual(splitPlan.accepted_current_story_lineage[0], expectedLineage);
+  assert.deepEqual(gateDag.accepted_current_story_lineage[0], expectedLineage);
+  for (const value of Object.values(expectedLineage)) {
+    for (const output of [prBody, prPrepareHtml, splitPlanHtml, gateDagHtml]) {
+      assert.match(output, new RegExp(String(value)));
+    }
+  }
+
+  const bounded = await runCliWithStdout([
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--summary-json'
+  ]);
+  assert.equal(bounded.exitCode, 0, bounded.stderr);
+  const boundedSummary = JSON.parse(bounded.stdout);
+  assert.equal(boundedSummary.data.scope.signals[0].accepted_current_story_lineage[0].commit_sha, mergeSha);
+  assert.match(boundedSummary.data.scope.reasons.join('\n'), /story-pr-prepare-v2@[a-f0-9]{12} parents=2/);
+});
+
+test('pr prepare does not trust a spoofed two-parent versioned Story merge', async () => {
+  const repo = await makeGitRepoWithStory();
+  const originalBranch = (await git(repo, ['branch', '--show-current'])).stdout.trim();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'spoofed-lineage.js'), 'export const first = true;\n');
+  await git(repo, ['add', 'src/spoofed-lineage.js']);
+  await git(repo, ['commit', '-m', 'feat: add story-pr-prepare runtime']);
+  await git(repo, ['switch', '-c', 'codex/story-pr-prepare-v2']);
+  await writeFile(path.join(repo, 'src', 'spoofed-lineage.js'), 'export const first = false;\n');
+  await git(repo, ['add', 'src/spoofed-lineage.js']);
+  await git(repo, ['commit', '-m', 'fix: adjust runtime']);
+  const versionedTip = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  await git(repo, ['update-ref', 'refs/remotes/evil/story-pr-prepare-v2', versionedTip]);
+  await git(repo, ['switch', originalBranch]);
+  await git(repo, ['merge', '--no-ff', 'codex/story-pr-prepare-v2', '-m', 'Merge remote-tracking branch \'evil/story-pr-prepare-v2\' into evil/story-pr-prepare-v2']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.result.preparation.scope.signals[0].id, 'multiple_commits_foreign_story_lineage');
+  assert.equal(result.result.preparation.scope.signals[0].unsafe_for_atomic_override, true);
+  assert.deepEqual(result.result.preparation.scope.signals[0].foreign_work_items, ['story-pr-prepare-v2']);
+});
+
+test('pr prepare does not trust a merge-like versioned Story title on a single-parent commit', async () => {
+  const repo = await makeGitRepoWithStory();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'single-parent-lineage.js'), 'export const first = true;\n');
+  await git(repo, ['add', 'src/single-parent-lineage.js']);
+  await git(repo, ['commit', '-m', 'feat: add story-pr-prepare runtime']);
+  await writeFile(path.join(repo, 'src', 'single-parent-lineage.js'), 'export const first = false;\n');
+  await git(repo, ['add', 'src/single-parent-lineage.js']);
+  await git(repo, ['commit', '-m', 'Merge remote-tracking branch \'origin/codex/story-pr-prepare-v2\' into codex/story-pr-prepare-v2']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  assert.deepEqual(result.result.preparation.scope.signals, [{
+    id: 'multiple_commits_foreign_story_lineage',
+    unsafe_for_atomic_override: true,
+    referenced_work_items: ['story-pr-prepare-v2', 'story-pr-prepare'],
+    foreign_work_items: ['story-pr-prepare-v2']
+  }]);
+});
+
+test('pr prepare keeps independent repo-control unsafe for atomic scope while reserving the config registration exception', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyPath = path.join(repo, 'docs', 'stories', 'story-pr-prepare.md');
+  await mkdir(path.dirname(storyPath), { recursive: true });
+  await writeFile(storyPath, `---
+story_id: story-pr-prepare
+title: PR準備
+pr_scope_strategy: atomic_single_pr
+pr_scope_reason: "The repo-control, requirements-ssot, and runtime-behavior facets claim one release boundary, but an independent workflow policy must remain unsafe even when this declaration is otherwise complete."
+pr_scope_review_facets:
+  - repo-control
+  - requirements-ssot
+  - runtime-behavior
+pr_scope_dependency_boundaries:
+  - repo-control->requirements-ssot
+  - requirements-ssot->runtime-behavior
+---
+
+# PR準備
+`);
+  await mkdir(path.join(repo, '.github', 'workflows'), { recursive: true });
+  await mkdir(path.join(repo, '.claude'), { recursive: true });
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, '.github', 'workflows', 'independent.yml'), 'name: independent\n');
+  await writeFile(path.join(repo, '.claude', 'settings.json'), '{"independent":true}\n');
+  await writeFile(path.join(repo, 'package.json'), '{"type":"module","private":true}\n');
+  await writeFile(path.join(repo, 'package-lock.json'), '{"lockfileVersion":3}\n');
+  await writeFile(path.join(repo, 'src', 'atomic.js'), 'export const atomic = true;\n');
+  await git(repo, ['add', 'docs/stories/story-pr-prepare.md', '.github/workflows/independent.yml', '.claude/settings.json', 'package.json', 'package-lock.json', 'src/atomic.js']);
+  await git(repo, ['commit', '-m', 'feat: add unsafe repo-control atomic fixture']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  const preparation = result.result.preparation;
+  const repoControlSignal = preparation.scope.signals.find((signal) => signal.id === 'mixed_repo_control_surface');
+  assert.equal(repoControlSignal.unsafe_for_atomic_override, true);
+  assert.deepEqual(repoControlSignal.repo_control_files, [
+    '.claude/settings.json',
+    '.github/workflows/independent.yml',
+    'package-lock.json',
+    'package.json'
+  ]);
+  assert.equal(preparation.split_plan.atomic_scope.status, 'rejected');
+  assert.deepEqual(preparation.split_plan.atomic_scope.unsafe_scope_signals, [repoControlSignal]);
+  assert.match(preparation.split_plan.atomic_scope.rejection_reasons.join('\n'), /unsafe scope signals cannot be overridden/i);
+  const unsafeSplitAction = preparation.split_plan.atomic_scope.next_actions
+    .find((action) => action.type === 'split_unsafe_scope_surface');
+  assert.deepEqual(unsafeSplitAction, {
+    type: 'split_unsafe_scope_surface',
+    unsafe_signal_ids: ['mixed_repo_control_surface'],
+    reason: 'Unsafe repo-control or foreign-lineage surfaces cannot be repaired by atomic metadata.'
+  });
+  assert.equal(preparation.split_plan.status, 'split_recommended');
+});
+
+test('pr prepare rejects an incomplete typed atomic scope declaration and preserves split recommendation', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyPath = path.join(repo, 'docs', 'stories', 'story-pr-prepare.md');
+  await mkdir(path.dirname(storyPath), { recursive: true });
+  await writeFile(storyPath, `---
+story_id: story-pr-prepare
+title: PR準備
+pr_scope_strategy: atomic_single_pr
+pr_scope_reason: "The requirements-ssot and runtime-behavior facets define one public contract and implementation boundary; neither facet forms a safe independently releasable intermediate state, so both require one current HEAD."
+pr_scope_review_facets:
+  - requirements-ssot
+pr_scope_dependency_boundaries:
+  - requirements-ssot->runtime-behavior
+---
+
+# PR準備
+`);
+  for (let index = 0; index < 4; index += 1) {
+    await mkdir(path.join(repo, 'src', `atomic-incomplete-${index}`), { recursive: true });
+    await writeFile(path.join(repo, 'src', `atomic-incomplete-${index}`, 'index.js'), `export const incomplete${index} = true;\n`);
+  }
+  await git(repo, ['add', 'docs/stories/story-pr-prepare.md', 'src']);
+  await git(repo, ['commit', '-m', 'feat: add incomplete atomic scope fixture']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--max-files', '3', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  const splitPlan = result.result.preparation.split_plan;
+  assert.equal(splitPlan.atomic_scope.status, 'rejected');
+  assert.deepEqual(splitPlan.atomic_scope.missing_review_facets, ['runtime-behavior']);
+  const declarationAction = splitPlan.atomic_scope.next_actions
+    .find((action) => action.type === 'complete_atomic_scope_declaration');
+  assert.deepEqual(declarationAction, {
+    type: 'complete_atomic_scope_declaration',
+    target: 'Story frontmatter',
+    required_fields: ['pr_scope_reason', 'pr_scope_review_facets', 'pr_scope_dependency_boundaries']
+  });
+  assert.equal(splitPlan.status, 'split_recommended');
+  assert.equal(splitPlan.recommended_strategy, 'split_by_lane_then_prepare');
+
+  await writeFile(path.join(repo, 'src', 'atomic-incomplete-0', 'index.js'), 'export const incomplete0 = "dirty";\n');
+  const unsafeResult = await runCli(['pr', 'prepare', repo, '--base', 'main', '--max-files', '3', '--story-id', 'story-pr-prepare']);
+  assert.equal(unsafeResult.exitCode, 0);
+  assert.equal(unsafeResult.result.preparation.split_plan.atomic_scope.status, 'rejected');
+  assert.deepEqual(
+    unsafeResult.result.preparation.split_plan.atomic_scope.unsafe_scope_signals.map((signal) => signal.id),
+    ['dirty_review_surface']
+  );
+  assert.equal(unsafeResult.result.preparation.split_plan.atomic_scope.unsafe_scope_reasons.length > 0, true);
+});
+
+test('pr prepare rejects a long prose-only atomic scope reason without typed dependency boundaries', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyPath = path.join(repo, 'docs', 'stories', 'story-pr-prepare.md');
+  await mkdir(path.dirname(storyPath), { recursive: true });
+  await writeFile(storyPath, `---
+story_id: story-pr-prepare
+title: PR準備
+pr_scope_strategy: atomic_single_pr
+pr_scope_reason: "This deliberately long statement repeats that everything belongs together, but it never identifies which generated review facets are coupled or why their release boundaries depend on one another."
+pr_scope_review_facets:
+  - requirements-ssot
+  - runtime-behavior
+---
+
+# PR準備
+`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'atomic.js'), 'export const atomic = true;\n');
+  await git(repo, ['add', 'docs/stories/story-pr-prepare.md', 'src/atomic.js']);
+  await git(repo, ['commit', '-m', 'feat: add vaguely justified atomic scope']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--max-files', '1', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  const atomicScope = result.result.preparation.split_plan.atomic_scope;
+  assert.equal(atomicScope.status, 'rejected');
+  assert.deepEqual(atomicScope.missing_reason_facets, ['requirements-ssot', 'runtime-behavior']);
+  assert.match(atomicScope.rejection_reasons.join('\n'), /typed lane dependencies/);
+  assert.match(atomicScope.rejection_reasons.join('\n'), /connect every generated facet/);
+});
+
+test('pr prepare rejects malformed or disconnected typed atomic scope dependencies', async () => {
+  const repo = await makeGitRepoWithStory();
+  const storyPath = path.join(repo, 'docs', 'stories', 'story-pr-prepare.md');
+  await mkdir(path.dirname(storyPath), { recursive: true });
+  await writeFile(storyPath, `---
+story_id: story-pr-prepare
+title: PR準備
+pr_scope_strategy: atomic_single_pr
+pr_scope_reason: "Requirements, runtime, and executable proof must release together because each intermediate state violates the declared public behavior and cannot be reviewed as a safe release."
+pr_scope_review_facets:
+  - requirements-ssot
+  - runtime-behavior
+pr_scope_dependency_boundaries:
+  - requirements-ssot=>runtime-behavior
+  - requirements-ssot->unknown-lane
+---
+
+# PR準備
+`);
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'atomic.js'), 'export const atomic = true;\n');
+  await git(repo, ['add', 'docs/stories/story-pr-prepare.md', 'src/atomic.js']);
+  await git(repo, ['commit', '-m', 'feat: add malformed atomic dependencies']);
+
+  const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--max-files', '1', '--story-id', 'story-pr-prepare']);
+  assert.equal(result.exitCode, 0);
+  const atomicScope = result.result.preparation.split_plan.atomic_scope;
+  assert.equal(atomicScope.status, 'rejected');
+  assert.deepEqual(atomicScope.invalid_dependency_boundaries, [
+    'requirements-ssot=>runtime-behavior',
+    'requirements-ssot->unknown-lane'
+  ]);
+  assert.deepEqual(atomicScope.missing_dependency_facets, ['requirements-ssot', 'runtime-behavior']);
+});
+
 test('pr prepare classifies docs-only PR route and renders the route contract', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'docs'), { recursive: true });
@@ -17327,7 +20885,7 @@ test('common judgment spine requires surface-specific evidence instead of generi
     '--id', 'story-pr-prepare',
     '--kind', 'e2e',
     '--status', 'pass',
-    '--command', 'node --test test/agent-workflow.test.js',
+    '--command', 'node --test --test-name-pattern=e2e test/agent-workflow.test.js',
     '--summary', 'flow_replay and artifact_replay passed for the agent workflow path',
     '--target', 'src/agent-workflow.js',
     '--target', 'test/agent-workflow.test.js',
@@ -17462,27 +21020,28 @@ ADR-unnecessary: This stays inside existing usage report aggregation and does no
 test('evidence strength distinguishes artifact-thin workflow claims from durable replay artifacts', async () => {
   const repo = await makeGitRepoWithStory();
   await mkdir(path.join(repo, 'src'), { recursive: true });
-  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await mkdir(path.join(repo, 'e2e'), { recursive: true });
   await mkdir(path.join(repo, 'artifacts'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'agent-workflow.js'), 'export function runAgentWorkflow() { return "gate replay"; }\n');
-  await writeFile(path.join(repo, 'test', 'agent-workflow.test.js'), 'export const staticTestMarker = "flow replay artifact replay scenario clause";\n');
+  await writeFile(path.join(repo, 'e2e', 'agent-workflow.spec.js'), 'export const staticTestMarker = "flow replay artifact replay scenario clause";\n');
   await writeFile(path.join(repo, 'artifacts', 'workflow-replay-unrecognized.json'), JSON.stringify({ replay: true, note: 'artifact exists but status format is unknown' }, null, 2));
   await writeFile(path.join(repo, 'artifacts', 'workflow-replay-verified.json'), JSON.stringify({ status: 'pass', replay: true }, null, 2));
-  await git(repo, ['add', 'src/agent-workflow.js', 'test/agent-workflow.test.js', 'artifacts/workflow-replay-unrecognized.json', 'artifacts/workflow-replay-verified.json']);
+  await git(repo, ['add', 'src/agent-workflow.js', 'e2e/agent-workflow.spec.js', 'artifacts/workflow-replay-unrecognized.json', 'artifacts/workflow-replay-verified.json']);
   await git(repo, ['commit', '-m', 'feat: add durable workflow replay artifact']);
 
-  await runCli([
+  const thinRecord = await runCliWithStdout([
     'verify', 'record', repo,
     '--id', 'story-pr-prepare',
     '--kind', 'e2e',
     '--status', 'pass',
-    '--command', 'node --test test/agent-workflow.test.js',
+    '--command', 'node --test e2e/agent-workflow.spec.js',
     '--summary', 'workflow replay verified',
     '--target', 'src/agent-workflow.js',
-    '--scenario', 'flow replay for workflow path',
-    '--scenario', 'artifact replay for gate artifact path',
-    '--scenario', 'scenario clause e2e for workflow story'
+    '--scenario', 'flow_replay: workflow path replayed',
+    '--scenario', 'artifact_replay: gate artifact path replayed',
+    '--scenario', 'scenario_clause_e2e: workflow Story clause replayed'
   ]);
+  assert.equal(thinRecord.exitCode, 0, thinRecord.stderr);
   const thinPrepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
   const thinSpine = thinPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
   const thinReality = thinSpine.subchecks.find((check) => check.id === 'current_reality');
@@ -17498,13 +21057,13 @@ test('evidence strength distinguishes artifact-thin workflow claims from durable
     '--id', 'story-pr-prepare',
     '--kind', 'e2e',
     '--status', 'pass',
-    '--command', 'node --test test/agent-workflow.test.js',
+    '--command', 'node --test e2e/agent-workflow.spec.js',
     '--summary', 'workflow replay recorded with unrecognized artifact',
     '--artifact', 'artifacts/workflow-replay-unrecognized.json',
     '--target', 'src/agent-workflow.js',
-    '--scenario', 'flow replay for workflow path',
-    '--scenario', 'artifact replay for gate artifact path',
-    '--scenario', 'scenario clause e2e for workflow story'
+    '--scenario', 'flow_replay: workflow path replayed',
+    '--scenario', 'artifact_replay: gate artifact path replayed',
+    '--scenario', 'scenario_clause_e2e: workflow Story clause replayed'
   ]);
   const unrecognizedPrepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
   const unrecognizedSpine = unrecognizedPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
@@ -17520,13 +21079,13 @@ test('evidence strength distinguishes artifact-thin workflow claims from durable
     '--id', 'story-pr-prepare',
     '--kind', 'e2e',
     '--status', 'pass',
-    '--command', 'node --test test/agent-workflow.test.js',
+    '--command', 'node --test e2e/agent-workflow.spec.js',
     '--summary', 'workflow replay verified with durable artifact',
     '--artifact', 'artifacts/workflow-replay-verified.json',
     '--target', 'src/agent-workflow.js',
-    '--scenario', 'flow replay for workflow path',
-    '--scenario', 'artifact replay for gate artifact path',
-    '--scenario', 'scenario clause e2e for workflow story'
+    '--scenario', 'flow_replay: workflow path replayed',
+    '--scenario', 'artifact_replay: gate artifact path replayed',
+    '--scenario', 'scenario_clause_e2e: workflow Story clause replayed'
   ]);
   const strongPrepare = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
   const strongSpine = strongPrepare.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:common_judgment_spine');
@@ -17554,7 +21113,7 @@ test('explicit verification evidence tokens satisfy judgment axis requirements',
     '--id', 'story-pr-prepare',
     '--kind', 'integration',
     '--status', 'pass',
-    '--command', 'node --test test/pr-manager-state.test.js',
+    '--command', 'node --test test/integration/pr-manager-state.test.js',
     '--summary', 'data state axis has explicit migration rollback idempotency and query semantics evidence',
     '--artifact', 'artifacts/data-state-replay.json',
     '--target', 'src/pr-manager.js',
@@ -17611,7 +21170,7 @@ spec_docs:
     '--id', 'story-pr-prepare',
     '--kind', 'integration',
     '--status', 'pass',
-    '--command', 'node --test test/formatter-contract.test.js',
+    '--command', 'node --test test/integration/formatter-contract.test.js',
     '--summary', 'contract check passed',
     '--artifact', 'artifacts/public-contract.json',
     '--target', 'docs/specs/public-contract.md',
@@ -18290,10 +21849,244 @@ test('gate evidence classifier normalizes canonical token variants across observ
   await mkdir(path.join(parseRepo, 'src'), { recursive: true });
   await writeFile(
     path.join(parseRepo, 'src', 'auth-json-parser.js'),
-    'export function parseAuthorizedPayload(token, input) { if (token !== "ok") throw new Error("denied"); return JSON.parse(input); }\n'
+    'export function parseAuthorizedPayload(token, input) { if (token !== "ok") throw new Error("denied"); const value = JSON.parse(input); if (!value.id) throw new Error("schema validation failed"); return value; }\n'
   );
-  await git(parseRepo, ['add', 'src/auth-json-parser.js']);
+  await writeFile(
+    path.join(parseRepo, 'src', 'auth-schema-validator.js'),
+    'export function validateAuthorizedPayload(value) { if (!value.id) throw new Error("invalid schema"); return value; }\n'
+  );
+  await git(parseRepo, ['add', 'src/auth-json-parser.js', 'src/auth-schema-validator.js']);
   await git(parseRepo, ['commit', '-m', 'feat: add auth json parser']);
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'keyword-only marker',
+    '--target', 'parse_failure',
+    '--scenario', 'parse_failure',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const keywordOnlyPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    keywordOnlyPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'parse_failure').status,
+    'not_required',
+    'a mode ID without a concrete malformed-input assertion must not masquerade as an executed negative-path assertion'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'happy path marker',
+    '--target', 'src/auth-json-parser.js',
+    '--scenario', 'malformed json parsed successfully with no errors',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const happyPathPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    happyPathPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'parse_failure').status,
+    'not_required',
+    'a successful malformed-input claim must not be interpreted as rejection coverage'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'negated rejection marker',
+    '--target', 'src/auth-json-parser.js',
+    '--scenario', 'malformed json did not reject and invalid input does not throw',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const negatedParsePrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    negatedParsePrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'parse_failure').status,
+    'not_required',
+    'a negated rejecting outcome must not close parse failure coverage'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'equivalent negation forms',
+    '--target', 'src/auth-json-parser.js',
+    '--scenario', "malformed json didn't reject; invalid input never throws; corrupt input fails to reject; partial input was accepted without throwing",
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const equivalentNegationPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    equivalentNegationPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'parse_failure').status,
+    'not_required',
+    'contractions, never, without, and fails-to-reject forms must not close parse failure coverage'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'mixed assertion clauses',
+    '--target', 'src/auth-json-parser.js',
+    '--scenario', 'valid input does not throw and malformed json rejects with parse error',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const mixedClausePrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    mixedClausePrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'parse_failure').status,
+    'covered',
+    'a negative happy-path clause must not suppress an independent malformed-input rejection clause'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'failure clause before happy path',
+    '--target', 'src/auth-json-parser.js',
+    '--scenario', 'malformed json rejects with parse error and valid input does not throw',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const reverseMixedClausePrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    reverseMixedClausePrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'parse_failure').status,
+    'covered',
+    'a trailing negative happy-path clause must not suppress a preceding malformed-input rejection clause'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'schema marker only',
+    '--target', 'src/auth-json-parser.js',
+    '--scenario', 'schema_failure',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const schemaMarkerPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    schemaMarkerPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'schema_failure').status,
+    'not_required',
+    'a schema mode ID without a concrete invalid-payload assertion must not close coverage'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'negated schema rejection',
+    '--target', 'src/auth-schema-validator.js',
+    '--scenario', 'invalid schema was not rejected and did not fail validation',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const negatedSchemaPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    negatedSchemaPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'schema_failure').status,
+    'not_required',
+    'a negated rejecting outcome must not close schema failure coverage'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'negated observed schema value',
+    '--target', 'src/auth-schema-validator.js',
+    '--scenario', 'schema regression observation',
+    '--observed', "schema_failure=invalid schema wasn't rejected",
+    '--json'
+  ])).exitCode, 0);
+  const negatedObservedSchemaPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    negatedObservedSchemaPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'schema_failure').status,
+    'not_required',
+    'a negated structured observed value must not close schema failure coverage'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'invalid schema regression',
+    '--target', 'src/auth-schema-validator.js',
+    '--scenario', 'schema validator successfully rejects invalid payload',
+    '--observed', 'exit_code=0',
+    '--json'
+  ])).exitCode, 0);
+  const coveredSchemaPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(
+    coveredSchemaPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'schema_failure').status,
+    'covered'
+  );
+
+  assert.equal((await runCli([
+    'verify', 'record', parseRepo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'fail',
+    '--command', 'node --test test/json-parser.test.js',
+    '--summary', 'failing malformed-input check',
+    '--target', 'src/auth-json-parser.js',
+    '--scenario', 'parse failure rejects malformed json',
+    '--observed', 'exit_code=1',
+    '--json'
+  ])).exitCode, 0);
+  const failedCommandPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.notEqual(
+    failedCommandPrepare.result.preparation.pr_context.gate_dag.nodes
+      .find((node) => node.id === 'gate:failure_mode_coverage')
+      .modes.find((mode) => mode.id === 'parse_failure').status,
+    'covered',
+    'a failed executable check must not close failure-mode coverage'
+  );
 
   assert.equal((await runCli([
     'verify',
@@ -18314,7 +22107,7 @@ test('gate evidence classifier normalizes canonical token variants across observ
     '--scenario',
     'parse failure rejects malformed json',
     '--observed',
-    'parse failure=covered',
+    'exit_code=0',
     '--json'
   ])).exitCode, 0);
   const coveredPrepare = await runCli(['pr', 'prepare', parseRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
@@ -18906,9 +22699,9 @@ test('high-risk review pass requires inspection evidence in PR gate', async () =
   assert.equal(inspectionGate.high_risk, true);
   assert.equal(inspectionGate.missing_inspections[0].missing.includes('inspection_evidence'), true);
   const inspectionRecovery = inspectionGate.required_actions.find((action) => action.startsWith('vibepro review record'));
-  assert.match(inspectionRecovery, /--status <pass\|needs_changes\|block>/);
+  assert.match(inspectionRecovery, /--status '<pass\|needs_changes\|block>'/);
   assert.match(inspectionRecovery, /--inspection-summary "<inspection-summary>"/);
-  assert.match(inspectionRecovery, /--inspection-input <inspection-input>/);
+  assert.match(inspectionRecovery, /--inspection-input '<inspection-input>'/);
   assert.match(inspectionRecovery, /--judgment-delta "<initial judgment -> final judgment because evidence>"/);
   assert.equal(
     result.result.preparation.gate_status.critical_unresolved_gates.some((gate) => gate.id === 'gate:review_inspection_required'),
@@ -22328,6 +26121,7 @@ test('story derive supports modular-web preset for non Next.js layouts', async (
   await writeFile(path.join(repo, 'public', 'modules', 'domain', 'task', 'task-service.js'), 'export class TaskService {}\n');
   await writeFile(path.join(repo, 'server', 'routes', 'api.js'), 'export default function api() {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'cli_index', source_file: 'cli/index.js', label: 'cli/index.js' },
@@ -22374,6 +26168,7 @@ test('story derive does not leak next-app product stories into modular-web prese
   await writeFile(path.join(repo, 'lib', 'services', 'auth', 'session.js'), 'export {}\n');
   await writeFile(path.join(repo, 'lib', 'services', 'stripe', 'billing.js'), 'export {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'auth', source_file: 'lib/services/auth/session.js', label: 'auth-session' },
@@ -22413,6 +26208,7 @@ test('story derive uses salestailor preset without next-app product story leakag
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'formSubmission', 'formSubmissionOrchestrator.ts'),
     'export class FormSubmissionOrchestrator {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'review_page', source_file: 'src/app/projects/[projectId]/sample-review/page.tsx', label: 'SampleReview' },
@@ -22462,6 +26258,7 @@ test('story derive emits story_candidates clustering uncovered files', async () 
   const nodes = [];
   for (let i = 0; i < 5; i += 1) nodes.push({ id: `auth_${i}`, source_file: `lib/auth/auth${i}.js`, label: `auth${i}` });
   for (let i = 0; i < 6; i += 1) nodes.push({ id: `legacy_${i}`, source_file: `lib/legacy/legacy${i}.js`, label: `legacy${i}` });
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({ nodes, links: [] }));
 
   const result = await runCli(['story', 'derive', repo]);
@@ -22509,6 +26306,7 @@ test('modular-web preset coveragePatterns absorb broader paths into active stori
   await writeFile(path.join(repo, 'public', 'modules', 'utils', 'helper.js'), 'export {}\n');
   await writeFile(path.join(repo, 'server', 'controllers', 'foo-controller.js'), 'export {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'cli_main', source_file: 'cli/main.js', label: 'main' },
@@ -22561,6 +26359,7 @@ test('brainbase preset emits semantically separated active stories', async () =>
   await writeFile(path.join(repo, 'public', 'modules', 'domain', 'nocodb-task', 'service.js'), 'export {}\n');
   await writeFile(path.join(repo, 'public', 'modules', 'terminal', 'view.js'), 'export {}\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'cli', source_file: 'cli/main.js', label: 'cli' },
@@ -22628,6 +26427,7 @@ test('story derive surfaces domain subdirectories as separate candidates', async
   const nodes = [];
   for (let i = 0; i < 3; i += 1) nodes.push({ id: `a${i}`, source_file: `lib/auth-local/auth${i}.js`, label: `auth${i}` });
   for (let i = 0; i < 4; i += 1) nodes.push({ id: `s${i}`, source_file: `lib/session-local/sess${i}.js`, label: `sess${i}` });
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({ nodes, links: [] }));
 
   const result = await runCli(['story', 'derive', repo]);
@@ -22653,6 +26453,7 @@ test('story derive omits singletons from story_candidates', async () => {
 
   await mkdir(path.join(repo, 'cli'), { recursive: true });
   await writeFile(path.join(repo, 'cli', 'lonely.js'), 'export {}\n');
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [{ id: 'lonely', source_file: 'cli/lonely.js', label: 'lonely' }],
     links: []
@@ -22684,6 +26485,7 @@ test('story derive suppresses next-app product stories for non-web repositories 
   await writeFile(path.join(repo, 'src', 'pkg', 'decision_dag', 'notification_score.py'), 'def score(): return 0\n');
   await writeFile(path.join(repo, 'scripts', 'run_ctrader_shadow_trade.py'), 'print("shadow trade")\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'engine', source_file: 'src/backtest_engine.py', label: 'BacktestEngine' },
@@ -22753,6 +26555,7 @@ test('story derive keeps next-app preset behavior when preset is unset', async (
   await writeFile(path.join(repo, 'src', 'components', 'auth', 'LoginForm.tsx'),
     'export function LoginForm() { return null; }\n');
 
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'login_form', source_file: 'src/components/auth/LoginForm.tsx', label: 'LoginForm' }
@@ -22803,6 +26606,7 @@ story_id: story-product-profile-personalization
 
 Profile personalization is an explicit product requirement.
 `);
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'session', source_file: 'src/session_learning.py', label: 'load_session' },
@@ -22868,6 +26672,7 @@ story_id: story-vibepro-pr-prepare-authorization-scoring
 
 The authorization scoring module is called from pr prepare.
 `);
+  await mkdir(path.join(repo, '.vibepro', 'graphify'), { recursive: true });
   await writeFile(path.join(repo, '.vibepro', 'graphify', 'graph.json'), JSON.stringify({
     nodes: [
       { id: 'authorization_scoring', source_file: 'src/authorization_scoring.py', label: 'score_authorization' },
@@ -22973,7 +26778,7 @@ test('package metadata and README are ready for Apache-2.0 OSS publication', asy
   ];
 
   assert.equal(packageJson.license, 'Apache-2.0');
-  assert.equal(packageJson.version, '0.2.0-beta.1');
+  assert.equal(packageJson.version, '0.2.0-beta.2');
   assert.match(packageJson.description, /Product-intent gates/);
   assert.equal(packageJson.keywords.includes('ai-agents'), true);
   assert.equal(packageJson.keywords.includes('developer-tools'), true);
@@ -23061,7 +26866,8 @@ test('doctor detects missing .vibepro/ entry in .gitignore and fixes it', async 
   assert.equal(fixed.exitCode, 0);
   assert.equal(fixed.result.repairs.some((repair) => repair.id === 'ensure-gitignore-vibepro'), true);
   const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
-  assert.match(gitignore, /^\.vibepro\/$/m);
+  assert.match(gitignore, /^\.vibepro\/\*$/m);
+  assert.match(gitignore, /^!\.vibepro\/config\.json$/m);
   assert.match(gitignore, /node_modules\//);
 
   const after = await runCli(['doctor', repo, '--json']);
@@ -23079,7 +26885,8 @@ test('doctor --fix creates .gitignore when it is absent', async () => {
 
   await runCli(['doctor', repo, '--fix']);
   const gitignore = await readFile(path.join(repo, '.gitignore'), 'utf8');
-  assert.match(gitignore, /^\.vibepro\/$/m);
+  assert.match(gitignore, /^\.vibepro\/\*$/m);
+  assert.match(gitignore, /^!\.vibepro\/config\.json$/m);
 });
 
 test('story report writes index.html and links resolve to latest run artifacts', async () => {

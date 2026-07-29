@@ -1,0 +1,150 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-target-architecture-conformance",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "All 5 AC/Spec clauses demonstrated by fresh content-bound evidence; dry-run contract (exit 0 default, --strict opt-in, no gate coupling) verified in source and real-repo run; change purely additive. Two low findings: edges/type graph-shape fallback untested, markdown content not asserted in tests.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected conformance module, cli conformance block, target-model.json, tests, story doc, verification-evidence.json, conformance artifacts and unit-test-run.log; recomputed sha256 of 4 content-binding files (all match) and confirmed HEAD binding; verified real graph.json uses links+relation; confirmed no gate_status/pr coupling and additive-only diff.",
+    "evidence": ".vibepro/reviews/story-vibepro-target-architecture-conformance/gate/subagent-gate_evidence-verdict.json",
+    "inputs": [
+      "src/architecture-conformance.js",
+      "src/cli.js",
+      "docs/architecture/target-model.json",
+      "test/architecture-conformance.test.js",
+      "docs/management/stories/active/story-vibepro-target-architecture-conformance.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: evidence could be stale or happy-path-only and dry-run contract unproven -> final pass because content-bound hashes and HEAD match, strict-only exit logic and absence of gate wiring confirmed in source plus real-repo run, all clauses have unit+integration evidence; residual low-severity gaps (edge-shape fallback, markdown assertion) do not change the verdict"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-target-architecture-conformance",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-target-architecture-conformance",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-target-architecture-conformance",
+    "expected_head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+    "current_head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-target-architecture-conformance",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-target-architecture-conformance",
+      "branch": "codex/story-vibepro-target-architecture-conformance",
+      "actual_branch": "codex/story-vibepro-target-architecture-conformance",
+      "current_head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      },
+      "policy_sync": {
+        "status": "skipped",
+        "reason": "source repo and managed worktree are the same checkout",
+        "sections_updated": []
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-22T02:03:38.336Z",
+  "git_context": {
+    "head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+    "current_branch": "codex/story-vibepro-target-architecture-conformance",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-22T02:03:38.164Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "built_in_exception",
+    "reason": "gate evidence reviews inspect head-bound canonical artifacts whose content surface is not yet independently hashed"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "8a050820a65431c2936660da814839e2a0b3b2be",
+    "surface_files": [
+      {
+        "path": "docs/architecture/target-model.json",
+        "sha256": "b8f8216c5fdcf40150f13a186011d1f8dcc136660ea77fcf9ee45189c515657c",
+        "size": 8142
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-target-architecture-conformance.md",
+        "sha256": "a3dd007fecff2744866a0523376e2c5d35ada4d38e2e5d165b443031e971dde3",
+        "size": 3014
+      },
+      {
+        "path": "src/architecture-conformance.js",
+        "sha256": "a948b9fcbf4e1b16abb28838744c9e7ad767838338db4e147ec254d3f5f1ee71",
+        "size": 13197
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "205c8c8ca0b1916ed034cd0e27abef38c4d05b451b8270e8b705d40e0da2e7eb",
+        "size": 219843
+      },
+      {
+        "path": "test/architecture-conformance.test.js",
+        "sha256": "bf764ce4db81a99ad80ce814773d44099ba60ffde2ebee246f27582ac69e3ec3",
+        "size": 9493
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "87466c798fc804ea36a2ca4a4a39ed539e5d98d17d5b07cb40160177670d2169"
+  },
+  "source_fingerprint": "de82511213c8f2493c036136e3fb29b0052cf6eaefb0254cc8e3a722484da7bd",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "claude-explore-a956f3eb65a3d1b08",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": "high",
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-target-architecture-conformance/gate/subagent-gate_evidence-verdict.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-target-architecture-conformance/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

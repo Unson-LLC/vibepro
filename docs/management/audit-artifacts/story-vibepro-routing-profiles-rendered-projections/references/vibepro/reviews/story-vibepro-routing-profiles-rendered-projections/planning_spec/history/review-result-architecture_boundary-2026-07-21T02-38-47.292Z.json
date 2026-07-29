@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "stage": "planning_spec",
+  "role": "architecture_boundary",
+  "status": "needs_changes",
+  "summary": "境界設計にmetadata authority、全consumerのresolve経路、writer/read authority、Task正本、profile別fixtureが不足。",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "metadata-authority-unresolved",
+      "detail": "frontmatterとcatalogのauthorityが未決。"
+    },
+    {
+      "severity": "high",
+      "id": "lifecycle-resolution-gap",
+      "detail": "全lifecycle consumerが同一resolverを通る保証が不足。"
+    },
+    {
+      "severity": "high",
+      "id": "ownership-writer-matrix-missing",
+      "detail": "kind別ownership、renderer、writer、read authorityが未定義。"
+    },
+    {
+      "severity": "high",
+      "id": "task-ssot-mismatch",
+      "detail": "Markdown canonical案が既存tasks.json machine authorityと矛盾。"
+    },
+    {
+      "severity": "medium",
+      "id": "profile-fixtures-insufficient",
+      "detail": "featureとgovernanceのfresh-checkout regression fixtureが不足。"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Story、Architecture、Spec draft、config、resolver、lifecycle writer、routing testsをread-onlyで照合した。",
+    "evidence": null,
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
+      "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md"
+    ]
+  },
+  "judgment_delta": [
+    "主要ACは列挙済みでpass候補から、実装判断に必要なauthorityと回帰契約が未確定のためneeds_changesへ変更。"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-issue-359",
+    "actual_root": "/private/tmp/vibepro-issue-359",
+    "expected_root": null,
+    "expected_head_sha": "37a83f5e5bb217f4184c090f4b6a7c0d1eaa07c4",
+    "current_head_sha": "37a83f5e5bb217f4184c090f4b6a7c0d1eaa07c4",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-issue-359",
+      "actual_root": "/private/tmp/vibepro-issue-359",
+      "expected_root": null,
+      "expected_head_sha": "37a83f5e5bb217f4184c090f4b6a7c0d1eaa07c4",
+      "current_head_sha": "37a83f5e5bb217f4184c090f4b6a7c0d1eaa07c4",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-21T02:38:47.292Z",
+  "git_context": {
+    "head_sha": "37a83f5e5bb217f4184c090f4b6a7c0d1eaa07c4",
+    "current_branch": "codex/issue-359-routing-profiles-projections",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "30cc171ea112c674d4cc39f18b83ace30de26e2e28280bdc1f44260e4388fd67",
+    "user_status_fingerprint_hash": "6506727d6bba2d669cf35f042b498ae3179f7b7b87e966daa60013dbc38632da",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T02:38:47.286Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 2 file(s)",
+    "recorded_head_sha": "37a83f5e5bb217f4184c090f4b6a7c0d1eaa07c4",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-routing-profiles-rendered-projections.md",
+        "sha256": "e7fd6dae696247a8604307e39efd57ee24a3f37d390926daa618dee7c0fa961c",
+        "size": 4415
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-routing-profiles-rendered-projections.md",
+        "sha256": "c9cfcbf8b16881a600e38db13d106e097f631150f439bd9656766e06a488aa46",
+        "size": 4417
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "5f5a3c0d89e895307bd2e233e17e5a19458a453abd3ee242810e5e2aa9df9e42"
+  },
+  "source_fingerprint": "932b92abf8baa30cd9a1dddaa4464784ed64f8f4c5084c41d9a1c7342ea39a98",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "issue359-planning-architecture_boundary",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/planning_spec/architecture_boundary-result.md",
+    "request_artifact": ".vibepro/reviews/story-vibepro-routing-profiles-rendered-projections/planning_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

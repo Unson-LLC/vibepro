@@ -1,0 +1,1624 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-atomic-scope-review-contract",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-23T11:28:37.133Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:726df63a9d8cdc0782bb145e10cf10db74e673b8fa58fcc6ecda0e1983e1cbc4",
+    "compressed_hash": "sha256:12cc1b55e5136ad2d7e57c4decf311af731672d48983541566252767d85fd6fd",
+    "expanded_bytes": 20628,
+    "compressed_bytes": 4059,
+    "expanded_line_count": 534,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-atomic-scope-review-contract",
+    "cost": {
+      "compressed_bytes": 4059,
+      "expanded_bytes": 20628,
+      "expanded_line_count": 534,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/358",
+    "merge_commit_sha": "d6893c2671aeff5cb6792f215126af7d275038fc",
+    "merged_at": "2026-07-23T11:28:35Z",
+    "current_head_sha": "081a8dfcacea91920416d56248b2c4fb875af88c",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...081a8dfcacea91920416d56248b2c4fb875af88c"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 125,
+    "copied_reference_count": 109,
+    "unresolved_reference_count": 8,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-atomic-scope-review-contract"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:726df63a9d8cdc0782bb145e10cf10db74e673b8fa58fcc6ecda0e1983e1cbc4"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:17a09fffe45205291522c60d0467ba8cd83ac8b26483a83f85d1b0aab87a9826",
+      "audit_digest": "sha256:17a09fffe45205291522c60d0467ba8cd83ac8b26483a83f85d1b0aab87a9826",
+      "line_count": 205,
+      "raw_line_count": 205,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:426b0561662c269244317203ac7aedc3011c7505b85c5333b3b4c4b9177e25d0",
+      "audit_digest": "sha256:10d2a745483a045b7552594b79ea5f01780b42fff97124240d66338552ad1d8b",
+      "line_count": 17857,
+      "raw_line_count": 57648,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:fb56bc71d9c0acf98b2aa325066814ca21c37e042c9d0f1eb6b7c7d9efa54469",
+      "audit_digest": "sha256:5fbdd609855dee80d6a32358e23cea5fb1b9f566d8556222cb111889038a02fb",
+      "line_count": 3335,
+      "raw_line_count": 8819,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:a4cb7483b80cc30b7a244637b85e38e544c19507d7fb43fd2dc88809d8988e63",
+      "audit_digest": "sha256:1604b06555aa904d63516f7e5f5ce86a6478e36a194219344f128d49b8bae974",
+      "line_count": 14,
+      "raw_line_count": 616,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:710d4bbb174e2e89915bc484393a080bac3fba9da42805f67cd2b660563021ad",
+      "audit_digest": "sha256:bb038cb2dd8d0826cd07fc98ae78dbc975787aeaa924cb78d909db5b3b0260d3",
+      "line_count": 3374,
+      "raw_line_count": 9023,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:636f3d225e980a4d4970a02fefadefc6500bd258bd35ce6ec28bfd40d34a83c4",
+      "audit_digest": "sha256:636f3d225e980a4d4970a02fefadefc6500bd258bd35ce6ec28bfd40d34a83c4",
+      "line_count": 1437,
+      "raw_line_count": 1437,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:ed65e5b04580f0a780057be57758a92764242bc2cad1ae7a8dc43dc7d4bfd618",
+      "audit_digest": "sha256:4df0bc28e60777cbac6cdd5a7f0b16f65e54e7656a554097753eb17478ab11e7",
+      "line_count": 83,
+      "raw_line_count": 1365,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:29f3d29785b1168bfde8efbf288a559b50ff755ebac5170ad8c33aadf2e5c3e1",
+      "audit_digest": "sha256:29f3d29785b1168bfde8efbf288a559b50ff755ebac5170ad8c33aadf2e5c3e1",
+      "line_count": 335,
+      "raw_line_count": 335,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:9ce7128ba25c6dc0ae251e755d8069d57d1beb487fd49f8d7f68ba18ef75aa02",
+      "audit_digest": "sha256:9ce7128ba25c6dc0ae251e755d8069d57d1beb487fd49f8d7f68ba18ef75aa02",
+      "line_count": 329,
+      "raw_line_count": 329,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:c402eb6b74c12867d3aa054c63dc1c1fef8ba164b0cb931e6adcadf5c1f5a7e3",
+      "audit_digest": "sha256:c402eb6b74c12867d3aa054c63dc1c1fef8ba164b0cb931e6adcadf5c1f5a7e3",
+      "line_count": 3793,
+      "raw_line_count": 3793,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/review-request-architecture_boundary.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:d065970158f2bce939218332a564b32ad5365be49acddd52db1eba1aa9c5af2e",
+      "audit_digest": "sha256:d065970158f2bce939218332a564b32ad5365be49acddd52db1eba1aa9c5af2e",
+      "line_count": 141,
+      "raw_line_count": 141,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/review-result-architecture_boundary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:0c2a6248cfb13a13c321f8ff50d99bdfc89dd2781cb083f8f0a533f3a1a666c9",
+      "audit_digest": "sha256:0c2a6248cfb13a13c321f8ff50d99bdfc89dd2781cb083f8f0a533f3a1a666c9",
+      "line_count": 379,
+      "raw_line_count": 379,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:59d606a6a286ac0142c2bfa77d3ffab0039f1db2d6ff6948403e3f6cd2251ed2",
+      "audit_digest": "sha256:59d606a6a286ac0142c2bfa77d3ffab0039f1db2d6ff6948403e3f6cd2251ed2",
+      "line_count": 4375,
+      "raw_line_count": 4375,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:4cbcf16b9de4473fb800fb3693615ca971bfcc75690542610be68dc21c5afeaf",
+      "audit_digest": "sha256:4cbcf16b9de4473fb800fb3693615ca971bfcc75690542610be68dc21c5afeaf",
+      "line_count": 2616,
+      "raw_line_count": 2616,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:84bb0f82cbe274487dae672bc403411c7e7d30c863883cd7c7573e8a166f4a0f",
+      "audit_digest": "sha256:84bb0f82cbe274487dae672bc403411c7e7d30c863883cd7c7573e8a166f4a0f",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:ec3250c1f37aa852ea038e8ea99089c9750ca3160d7cd68b597f85f85eadb78d",
+      "audit_digest": "sha256:ec3250c1f37aa852ea038e8ea99089c9750ca3160d7cd68b597f85f85eadb78d",
+      "line_count": 140,
+      "raw_line_count": 140,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:1965717790c674a82a8248291e043e107a1af55efb51c0759a8a2ef2241d1696",
+      "audit_digest": "sha256:1965717790c674a82a8248291e043e107a1af55efb51c0759a8a2ef2241d1696",
+      "line_count": 155,
+      "raw_line_count": 155,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/review-result-release_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:5bae94a6ba10bc6040665e8cbc1a025c8898a6f8f5151d3eb885aef4ad0df29c",
+      "audit_digest": "sha256:5bae94a6ba10bc6040665e8cbc1a025c8898a6f8f5151d3eb885aef4ad0df29c",
+      "line_count": 189,
+      "raw_line_count": 189,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:46ab1af7ee34f6ecb3a0881a4ccd3bc1041ea359802a1ac3e2309c0768769788",
+      "audit_digest": "sha256:46ab1af7ee34f6ecb3a0881a4ccd3bc1041ea359802a1ac3e2309c0768769788",
+      "line_count": 3522,
+      "raw_line_count": 3522,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:d7056ffbb8e06af7c7d21b1fe76b8dc768479b06953903f578f3d425dd63d951",
+      "audit_digest": "sha256:d7056ffbb8e06af7c7d21b1fe76b8dc768479b06953903f578f3d425dd63d951",
+      "line_count": 1464,
+      "raw_line_count": 1464,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/review-request-runtime_contract.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:073574697e12598b8eacb8ea5bf34de0490ef74bb070e1d688a8daba35e657dc",
+      "audit_digest": "sha256:073574697e12598b8eacb8ea5bf34de0490ef74bb070e1d688a8daba35e657dc",
+      "line_count": 141,
+      "raw_line_count": 141,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/review-result-runtime_contract.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:1a19f75e30e84b029a5511fe127d3353b813a97517bbf2524e2cc0fb3c621218",
+      "audit_digest": "sha256:1a19f75e30e84b029a5511fe127d3353b813a97517bbf2524e2cc0fb3c621218",
+      "line_count": 197,
+      "raw_line_count": 197,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/audit-replay-bundle.json.gz",
+      "digest": "sha256:216e2e3158e1e27d7979b09bddfcbc9ed4f44b437ed159eb690e46b0892728b2",
+      "audit_digest": "sha256:216e2e3158e1e27d7979b09bddfcbc9ed4f44b437ed159eb690e46b0892728b2",
+      "line_count": 1947,
+      "raw_line_count": 1947,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-atomic-scope-review-contract/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/adjudication/story-vibepro-atomic-scope-review-contract/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-atomic-scope-review-contract/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/adjudication/story-vibepro-atomic-scope-review-contract/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/split-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/split-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-081a8dfc-019f8e7f.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-081a8dfc-019f8e7f.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-081a8dfc-019f8e88.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-081a8dfc-019f8e88.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-3f2270bd-block.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-3f2270bd-block.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-844a3598-pass.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-844a3598-pass.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-8724ae54-pass.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-8724ae54-pass.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-8724ae54-path-surface.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-8724ae54-path-surface.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T03-38-21.349Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T03-38-21.349Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-24-17.619Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-24-17.619Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-39-37.755Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-39-37.755Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-50-18.658Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-50-18.658Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-57-27.684Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-57-27.684Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-58-56.696Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-58-56.696Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T08-05-02.321Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T08-05-02.321Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T08-12-42.996Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T08-12-42.996Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T08-18-26.877Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T08-18-26.877Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T09-04-01.939Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T09-04-01.939Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T09-28-24.846Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T09-28-24.846Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T09-29-03.846Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T09-29-03.846Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T10-32-06.576Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T10-32-06.576Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T10-41-56.648Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T10-41-56.648Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T11-05-18.970Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T11-05-18.970Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/review-request-architecture_boundary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/reviews/architecture_spec/review-request-architecture_boundary.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/review-result-architecture_boundary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/reviews/architecture_spec/review-result-architecture_boundary.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d00-54bf-71e0-884d-bfc22582fd1e.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d00-54bf-71e0-884d-bfc22582fd1e.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d30-5927-7973-abb1-6c5f5aeaf78f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d30-5927-7973-abb1-6c5f5aeaf78f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d3e-4514-74a1-8cbe-f4f3b27baa39.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d3e-4514-74a1-8cbe-f4f3b27baa39.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d48-b7ac-7e00-86b8-3bace025a4e2.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d48-b7ac-7e00-86b8-3bace025a4e2.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d50-6988-7e41-9fd9-91a504b026c7.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d50-6988-7e41-9fd9-91a504b026c7.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/gate-evidence-agent-081a8dfc-019f8ea9.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/gate-evidence-agent-081a8dfc-019f8ea9.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/gate-evidence-agent-eea48888.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/gate-evidence-agent-eea48888.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T05-25-33.391Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T05-25-33.391Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T06-52-00.274Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T06-52-00.274Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T07-59-35.517Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T07-59-35.517Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T11-18-31.363Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T11-18-31.363Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T05-25-33.395Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T05-25-33.395Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T06-51-59.248Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T06-51-59.248Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T07-58-23.775Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T07-58-23.775Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T11-18-33.939Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T11-18-33.939Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T11-24-40.839Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T11-24-40.839Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-agent-081a8dfc-019f8ea9.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-agent-081a8dfc-019f8ea9.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-agent-eea48888.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-agent-eea48888.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-rereview-081a8dfc-019f8eb3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-rereview-081a8dfc-019f8eb3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/review-request-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/reviews/gate/review-request-release_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/review-result-release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/reviews/gate/review-result-release_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/transcript-019f8d69-22e3-7fe3-b3fb-5504c7598943.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/transcript-019f8d69-22e3-7fe3-b3fb-5504c7598943.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/transcript-019f8d69-4283-7113-997f-625c047759f9.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/transcript-019f8d69-4283-7113-997f-625c047759f9.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T05-13-16.851Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T05-13-16.851Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T08-30-08.572Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T08-30-08.572Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T09-47-56.433Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T09-47-56.433Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T10-02-14.374Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T10-02-14.374Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T10-56-00.376Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T10-56-00.376Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T11-05-19.818Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T11-05-19.818Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/review-request-runtime_contract.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/reviews/implementation/review-request-runtime_contract.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/review-result-runtime_contract.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/reviews/implementation/review-result-runtime_contract.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-081a8dfc-019f8e97.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-081a8dfc-019f8e97.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-844a3598-needs-changes.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-844a3598-needs-changes.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-844a3598-pass.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-844a3598-pass.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-8724ae54-final.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-8724ae54-final.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/transcript-019f8d5e-c133-7b10-92ff-a13530a9a008.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/transcript-019f8d5e-c133-7b10-92ff-a13530a9a008.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-atomic-scope-review-contract/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/stories/story-vibepro-atomic-scope-review-contract/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-atomic-scope-review-contract/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/stories/story-vibepro-atomic-scope-review-contract/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-atomic-scope-review-contract/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/validation-sequencing/story-vibepro-atomic-scope-review-contract/state.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/atomic-cli-recognized-integration-eea48888.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/atomic-cli-recognized-integration-eea48888.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/docs-build-8724ae54.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/docs-build-8724ae54.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/docs-build-eea48888.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/docs-build-eea48888.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-081a8dfc.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-081a8dfc.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-8724ae54.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-8724ae54.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-c58152d5.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-c58152d5.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-eea48888.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-eea48888.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/final-e2e-9039f377.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/final-e2e-9039f377.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/final-e2e-c58152d5.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/final-e2e-c58152d5.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/final-responsibility-9039f377.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/final-responsibility-9039f377.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/final-runtime-9039f377.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/final-runtime-9039f377.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/final-runtime-path-c58152d5.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/final-runtime-path-c58152d5.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/rollback-canary-compatibility-integration-8724ae54.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/rollback-canary-compatibility-integration-8724ae54.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/targeted-081a8dfc.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/targeted-081a8dfc.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/typecheck-8724ae54.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/typecheck-8724ae54.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/typecheck-eea48888.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/typecheck-eea48888.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-081a8dfc.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-081a8dfc.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-authority-failure-modes-8724ae54.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-authority-failure-modes-8724ae54.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-authority-failure-modes-c58152d5.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-authority-failure-modes-c58152d5.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-authority-failure-modes-eea48888.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-authority-failure-modes-eea48888.tap",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-atomic-scope-review-contract/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/adjudication/story-vibepro-atomic-scope-review-contract/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-atomic-scope-review-contract/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/adjudication/story-vibepro-atomic-scope-review-contract/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/diagnostics/2026-07-23T042555Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/split-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/pr/story-vibepro-atomic-scope-review-contract/split-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-081a8dfc-019f8e7f.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-081a8dfc-019f8e7f.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-081a8dfc-019f8e88.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-081a8dfc-019f8e88.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-3f2270bd-block.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-3f2270bd-block.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-844a3598-pass.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-844a3598-pass.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-8724ae54-pass.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-8724ae54-pass.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-8724ae54-path-surface.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/architecture-boundary-agent-8724ae54-path-surface.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T03-38-21.349Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T03-38-21.349Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-24-17.619Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-24-17.619Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-39-37.755Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-39-37.755Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-50-18.658Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-50-18.658Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-57-27.684Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-57-27.684Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-58-56.696Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T04-58-56.696Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T08-05-02.321Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T08-05-02.321Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T08-12-42.996Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T08-12-42.996Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T08-18-26.877Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T08-18-26.877Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T09-04-01.939Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T09-04-01.939Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T09-28-24.846Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T09-28-24.846Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T09-29-03.846Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T09-29-03.846Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T10-32-06.576Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T10-32-06.576Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T10-41-56.648Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T10-41-56.648Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T11-05-18.970Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/history/review-result-architecture_boundary-2026-07-23T11-05-18.970Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d00-54bf-71e0-884d-bfc22582fd1e.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d00-54bf-71e0-884d-bfc22582fd1e.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d30-5927-7973-abb1-6c5f5aeaf78f.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d30-5927-7973-abb1-6c5f5aeaf78f.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d3e-4514-74a1-8cbe-f4f3b27baa39.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d3e-4514-74a1-8cbe-f4f3b27baa39.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d48-b7ac-7e00-86b8-3bace025a4e2.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d48-b7ac-7e00-86b8-3bace025a4e2.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d50-6988-7e41-9fd9-91a504b026c7.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/architecture_spec/transcript-019f8d50-6988-7e41-9fd9-91a504b026c7.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/gate-evidence-agent-081a8dfc-019f8ea9.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/gate-evidence-agent-081a8dfc-019f8ea9.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/gate-evidence-agent-eea48888.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/gate-evidence-agent-eea48888.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T05-25-33.391Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T05-25-33.391Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T06-52-00.274Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T06-52-00.274Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T07-59-35.517Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T07-59-35.517Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T11-18-31.363Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-gate_evidence-2026-07-23T11-18-31.363Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T05-25-33.395Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T05-25-33.395Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T06-51-59.248Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T06-51-59.248Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T07-58-23.775Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T07-58-23.775Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T11-18-33.939Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T11-18-33.939Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T11-24-40.839Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/history/review-result-release_risk-2026-07-23T11-24-40.839Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-agent-081a8dfc-019f8ea9.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-agent-081a8dfc-019f8ea9.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-agent-eea48888.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-agent-eea48888.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-rereview-081a8dfc-019f8eb3.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/release-risk-rereview-081a8dfc-019f8eb3.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/transcript-019f8d69-22e3-7fe3-b3fb-5504c7598943.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/transcript-019f8d69-22e3-7fe3-b3fb-5504c7598943.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/transcript-019f8d69-4283-7113-997f-625c047759f9.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/gate/transcript-019f8d69-4283-7113-997f-625c047759f9.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T05-13-16.851Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T05-13-16.851Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T08-30-08.572Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T08-30-08.572Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T09-47-56.433Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T09-47-56.433Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T10-02-14.374Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T10-02-14.374Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T10-56-00.376Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T10-56-00.376Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T11-05-19.818Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/history/review-result-runtime_contract-2026-07-23T11-05-19.818Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-081a8dfc-019f8e97.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-081a8dfc-019f8e97.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-844a3598-needs-changes.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-844a3598-needs-changes.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-844a3598-pass.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-844a3598-pass.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-8724ae54-final.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/runtime-contract-agent-8724ae54-final.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/transcript-019f8d5e-c133-7b10-92ff-a13530a9a008.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/reviews/story-vibepro-atomic-scope-review-contract/implementation/transcript-019f8d5e-c133-7b10-92ff-a13530a9a008.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-atomic-scope-review-contract/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/stories/story-vibepro-atomic-scope-review-contract/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-atomic-scope-review-contract/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/stories/story-vibepro-atomic-scope-review-contract/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-atomic-scope-review-contract/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/validation-sequencing/story-vibepro-atomic-scope-review-contract/state.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/atomic-cli-recognized-integration-eea48888.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/atomic-cli-recognized-integration-eea48888.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/docs-build-8724ae54.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/docs-build-8724ae54.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/docs-build-eea48888.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/docs-build-eea48888.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-081a8dfc.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-081a8dfc.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-8724ae54.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-8724ae54.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-c58152d5.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-c58152d5.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-eea48888.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/expensive-e2e-eea48888.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/final-e2e-9039f377.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/final-e2e-9039f377.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/final-e2e-c58152d5.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/final-e2e-c58152d5.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/final-responsibility-9039f377.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/final-responsibility-9039f377.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/final-runtime-9039f377.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/final-runtime-9039f377.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/final-runtime-path-c58152d5.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/final-runtime-path-c58152d5.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/rollback-canary-compatibility-integration-8724ae54.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/rollback-canary-compatibility-integration-8724ae54.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/targeted-081a8dfc.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/targeted-081a8dfc.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/typecheck-8724ae54.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/typecheck-8724ae54.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/typecheck-eea48888.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/typecheck-eea48888.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-081a8dfc.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-081a8dfc.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-authority-failure-modes-8724ae54.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-authority-failure-modes-8724ae54.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-authority-failure-modes-c58152d5.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-authority-failure-modes-c58152d5.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-authority-failure-modes-eea48888.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-atomic-scope-review-contract/references/vibepro/verification/story-vibepro-atomic-scope-review-contract/unit-authority-failure-modes-eea48888.tap",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 6614236
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-23T042555Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 976746
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 6416670
+    },
+    {
+      "source": ".vibepro/pr/",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-atomic-scope-review-contract/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 533362
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-atomic-scope-review-contract/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-atomic-scope-review-contract/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/verification/",
+      "reason": "source_missing"
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-delivery-reconciliation-state",
+  "updated_at": "2026-07-24T05:08:51.604Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-10",
+      "verdict": "demonstrated",
+      "reason": "Canonical failure, local recovery, exact selector reconcile, and CAS conflict protection are verified end-to-end.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:51.601Z"
+    },
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "Configured and linked routes are scoped while legacy, foreign Story, and unrelated artifacts remain untouched.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:51.382Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "Generation fencing, all-authority CAS, and transaction-owned rollback assertions protect concurrent writers.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:51.159Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "E2E and 292-test suite cover provider, JSON, sync, persistence, retry, and rollback failures.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:50.929Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "E2E executes normal merge, clean external merge, gate drift, and missing ancestry paths.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:50.712Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Summary, traceability, usage, and canonical audit tests independently project delivery lifecycle and follow-up.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:50.487Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Clean external merge test excludes expected OPEN/base topology delta from reconciliation reasons.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:50.280Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Gate-drift test preserves verified delivery, marks reconciliation_required, and returns nonzero.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:50.068Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Contract test keeps delivery unconfirmed and blocked when external merge commit is absent from base ancestry.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:49.856Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Current-head E2E verifies independent delivery and reconciliation persistence and projection.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:49.527Z"
+    }
+  ]
+}

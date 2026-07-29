@@ -1,0 +1,50 @@
+{
+  "status": "needs_changes",
+  "summary": "The runtime contract implementation preserves the guarded authority boundary, rebinds evidence to the current HEAD, composes rather than duplicates the shipped runtime connector and independent-review owners, and retains the legacy fallback. The focused runtime tests pass. However, the claimed typed-stop E2E matrix does not traverse the real guarded Run persistence and resume/cancel surfaces, so the current path-surface evidence is insufficient for OCR-S-5 and overstates real-Git coverage.",
+  "inspection_summary": "Reviewed the exact frozen HEAD 97c7684b94681cc4fe1c902d2b2cabb888175546 across the Story, Architecture, canonical Spec and test plan; the run-session/action-owner/runtime-adapter and connector seams; independent-review ownership; CLI composition; focused unit, integration, and E2E tests; and current verification/conformance evidence. The production code supplies typed recovery data with provider identity, required and missing capabilities, a structured runtime-available condition, same Story/Run identity, and a resume command. Final preparation is rebound to the current HEAD and gate recheck failures become typed stops. Merge, waiver, PR creation, and material external effects remain outside autonomous authority. The one-command layer composes existing connector and review orchestration rather than replacing them, and legacy execution remains covered. A focused run of test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts, test/one-command-pr-ready-closure.test.js, and test/agent-runtime-adapter.test.js passed 52/52. The remaining defect is evidentiary and path-level: E2E scenario S-002 invokes action owners directly against in-memory state instead of exercising guarded Run creation, persisted stops, public rendering, resume, and cancel for the required matrix. In addition, the recorded architecture-conformance result is bound to d445b8f rather than the frozen review HEAD; source inspection found no reverse CLI dependency, but the required current-HEAD conformance evidence should be refreshed.",
+  "inspection_inputs": [
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    "src/guarded-run-session.js",
+    "src/one-command-pr-ready-closure.js",
+    "src/agent-runtime-adapter.js",
+    "src/agent-runtime-connectors.js",
+    "src/independent-review-orchestrator.js",
+    "src/safe-action-orchestrator.js",
+    "src/guarded-stop-codes.js",
+    "src/cli.js",
+    "test/guarded-run-session.test.js",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/agent-runtime-adapter.test.js",
+    "test/independent-review-orchestrator.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+  ],
+  "judgment_delta": [
+    "Initial concern that provider capability stops might lose recovery identity was resolved: the production run-session now persists provider, required and missing capabilities, a structured recovery condition, the same Story/Run identity, and the exact resume command, with focused tests and a current-HEAD run artifact corroborating the contract.",
+    "Initial concern that the one-command closure might duplicate predecessor ownership was resolved: runtime connectors and independent review remain owned by their existing modules and are composed by the run-session action owners.",
+    "Initial expectation that the verification evidence demonstrated the full typed-stop E2E matrix changed to needs_changes after inspection showed S-002 directly calls in-memory action owners and does not cross the guarded Run persistence, public rendering, resume, or cancel boundaries.",
+    "Source inspection confirms the target module boundary at the frozen HEAD, but the persisted conformance evidence is not itself rebound to that HEAD."
+  ],
+  "findings": [
+    {
+      "id": "runtime-e2e-matrix-does-not-cross-guarded-run-boundary",
+      "severity": "high",
+      "lens": "path_surface_coverage",
+      "path": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+      "summary": "The typed-stop matrix is an in-memory action-owner test, not an end-to-end guarded Run test.",
+      "detail": "Scenario S-002 constructs state in memory and calls createOneCommandPrReadyActionOwners methods directly. It does not create and persist a guarded Run, invoke the public execute/resume/cancel surfaces, verify JSON and human rendering, or prove same-Run recovery for human decision, verification failure, repair no-progress, quota, timeout, CI pending, and cancellation. The verification evidence consequently overstates this scenario as an independent real-Git typed-stop/resume matrix, leaving OCR-S-5 without the required path-level proof.",
+      "required_change": "Extend the real-Git E2E fixture to exercise the guarded session and public execution boundary for the required typed-stop matrix, including persisted state, same-Run resume, cancellation containment, and JSON/human surfaces. Then refresh verification evidence so its coverage description matches the paths actually executed."
+    },
+    {
+      "id": "current-head-conformance-evidence-is-stale",
+      "severity": "medium",
+      "lens": "regression_guard",
+      "path": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "summary": "The persisted architecture-conformance evidence is not bound to the frozen review HEAD.",
+      "detail": "The available conformance result records observed HEAD d445b8f while this review is frozen at 97c7684b94681cc4fe1c902d2b2cabb888175546. Manual inspection found no run-session-to-CLI reverse dependency and no new ownership duplication, but the Story requires target architecture conformance after implementation without worsening the latest-main baseline.",
+      "required_change": "Run target architecture conformance at 97c7684b94681cc4fe1c902d2b2cabb888175546 or its repaired descendant, record the current baseline comparison, and bind the evidence to that exact HEAD before the final review/gate pass."
+    }
+  ]
+}

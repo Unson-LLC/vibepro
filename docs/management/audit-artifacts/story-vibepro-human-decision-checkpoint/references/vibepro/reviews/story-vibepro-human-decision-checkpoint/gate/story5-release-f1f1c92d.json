@@ -1,0 +1,1 @@
+{"status":"needs_changes","summary":"Cross-HEAD duplicate decision reused a stale resolved artifact and could deadlock resume.","findings":[{"severity":"high","id":"release-risk-resolved-duplicate-cross-head-deadlock","detail":"Decision fingerprint lacked current HEAD binding."}]}

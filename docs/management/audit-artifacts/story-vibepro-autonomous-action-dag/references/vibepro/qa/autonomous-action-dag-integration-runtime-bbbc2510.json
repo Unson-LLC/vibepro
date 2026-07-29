@@ -1,0 +1,1 @@
+{"status":"pass","exit_code":0,"observed":{"tests":104,"pass":104,"fail":0,"head_sha":"bbbc25107e694eee5da4e1a2c628c6ed432cc597","negative_paths":"missing owner, forged HEAD, Gate not ready"}}

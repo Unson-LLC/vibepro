@@ -1,0 +1,59 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "agent_id": "gate-final-3ba30980",
+  "head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+  "verdict": "pass",
+  "inspection_inputs": [
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/verification-evidence.json",
+    ".vibepro/validation-sequencing/story-vibepro-one-command-pr-ready-closure/state.json",
+    ".vibepro/adjudication/story-vibepro-one-command-pr-ready-closure/adjudication.json",
+    ".vibepro/adjudication/story-vibepro-one-command-pr-ready-closure/judgment-adjudication.json",
+    ".vibepro/qa/final-adjudication-3ba30980.json",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/lifecycle.json",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/architecture_spec/lifecycle.json",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/test_plan/lifecycle.json",
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/implementation/lifecycle.json",
+    ".vibepro/architecture/conformance/conformance.json",
+    ".vibepro/qa/conformance-origin-main-db8f0ef3.json",
+    ".vibepro/qa/conformance-064dd1f6.json",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    ".vibepro/stories/story-vibepro-one-command-pr-ready-closure/tasks/tasks.json",
+    "src/one-command-pr-ready-closure.js",
+    "src/guarded-run-session.js",
+    "src/agent-runtime-connectors.js",
+    "src/independent-review-orchestrator.js",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+  ],
+  "inspection_summary": "Exact clean HEAD 3ba30980 was reviewed across Story, Architecture, Spec, Task projection, implementation, current-bound verification, adjudication, validation sequencing, responsibility authority, failure-mode coverage, review lifecycle, artifact consistency, and architecture conformance. Story has 8/8 completed acceptance criteria; canonical Spec clauses map Story to Architecture, code, and tests; seven closure tasks are done and the remaining VP-TASK-ARCH-001 is a separate responsibility-split campaign, not unfinished closure acceptance. Verification evidence is strict-head bound and clean: focused 290/290, public CLI E2E 4/4, runtime/session/cost integration 64/64, docs build pass, and typecheck pass. Validation sequencing has all five phases passed on 3ba30980. Acceptance adjudication is fresh 8/8 demonstrated and judgment adjudication is fresh 16/16 judged_sound with no unsound or pending correction. Responsibility authority passes with 6 matched responsibilities, 4 matched domain clauses, and zero missing, stale, unregistered, or invalid entries. Failure paths cover timeout, parse failure, provider failure, retry/async failure, evidence lifecycle regression, workflow-state regression, human decision, verification failure, repair convergence, no progress, quota, CI pending, and cancellation. Latest-main target conformance is advisory because the target model is draft, but the measured total is non-worsening at baseline/current 86/86; current composition adds no run-session-to-CLI reverse dependency. The canonical pr-prepare remains needs_verification only because strict-head gate_evidence and release_risk results from the prior HEAD are stale. The gate lifecycle now shows exactly two current-HEAD running replacements: gate-final-3ba30980 and release-final-3ba30980. Therefore agent_review and artifact_consistency are current lifecycle completion work, not a remaining substantive evidence defect; after both reviewers are closed and recorded, pr prepare must be rerun.",
+  "judgment_delta": "Initial judgment was needs_changes at 56d69700 because validation sequencing was invalidated and current-head acceptance/judgment adjudication was absent. Final judgment is pass at 3ba30980 because all five validation phases are rebound and passed, adjudication is complete at 8/8 and 16/16, exact-head verification is clean and passing, responsibility and failure-mode evidence is complete, and the only critical canonical blockers are the two intentionally running strict-head gate review lifecycles plus their derivative stale-review artifact consistency.",
+  "findings": [
+    {
+      "severity": "info",
+      "id": "current-gate-review-lifecycles-pending",
+      "summary": "Canonical readiness is not yet green solely because the two current strict-head gate reviewers are still running and their replacement results have not yet been recorded.",
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/lifecycle.json",
+        ".vibepro/pr/story-vibepro-one-command-pr-ready-closure/pr-prepare.json"
+      ],
+      "required_action": "Close and record gate-final-3ba30980 and release-final-3ba30980 with current-head strict binding, then rerun vibepro pr prepare. This is lifecycle completion, not a needs_changes finding."
+    },
+    {
+      "severity": "info",
+      "id": "conformance-total-non-worsening",
+      "summary": "Draft target-model conformance is baseline/current 86/86. The composition changes the advisory mix from 65/9/12 to 66/9/11 for undeclared/budget/orphan counts without worsening the total or adding a run-session-to-CLI reverse dependency.",
+      "evidence": [
+        ".vibepro/qa/conformance-origin-main-db8f0ef3.json",
+        ".vibepro/qa/conformance-064dd1f6.json",
+        "docs/architecture/story-vibepro-one-command-pr-ready-closure.md"
+      ],
+      "required_action": null
+    }
+  ]
+}

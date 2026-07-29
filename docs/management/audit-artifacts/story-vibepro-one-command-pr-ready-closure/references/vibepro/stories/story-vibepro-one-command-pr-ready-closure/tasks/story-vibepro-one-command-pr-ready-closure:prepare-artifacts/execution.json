@@ -1,0 +1,38 @@
+{
+  "schema_version": "0.1.0",
+  "generated_at": "2026-07-24T13:12:00.000Z",
+  "mode": "execution_record",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "task_id": "story-vibepro-one-command-pr-ready-closure:prepare-artifacts",
+  "runtime_dispatch_id": "dispatch-76d744478e3f04bc",
+  "head_sha": "a9109350819af99df22448d6ed8bd75adf611e36",
+  "status": "planned",
+  "change_surface": "planning_artifacts_only",
+  "created_artifacts": [
+    "briefing.json",
+    "briefing.md",
+    "plan.json",
+    "plan.md",
+    "handoff.json",
+    "handoff.md",
+    "execution.json",
+    "execution.md"
+  ],
+  "residual_gate_context": {
+    "gate_id": "gate:artifact_consistency",
+    "status_before_task": "stale_evidence",
+    "stale_artifacts": [
+      ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-result-gate_evidence.json",
+      ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-result-release_risk.json"
+    ],
+    "note": "Fresh review evidence remains outside this planning-artifact task."
+  },
+  "prohibited_actions_confirmed": [
+    "pr_create",
+    "merge",
+    "gate_waiver",
+    "deploy",
+    "publish",
+    "external_side_effect"
+  ]
+}

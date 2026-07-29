@@ -1,0 +1,161 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-release-note-link-normalization",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "block",
+  "summary": "VitePress container内headingをsection境界と誤認する再現可能な回帰がある",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "release-section-container-heading-regression",
+      "detail": "blockquoteまたはlist container内headingでChange Summaryが切断され後続が誤配分される"
+    },
+    {
+      "severity": "medium",
+      "id": "verification-pattern-skips-boundary-test",
+      "detail": "記録済みtest-name-patternが境界テストを実行していない"
+    },
+    {
+      "severity": "medium",
+      "id": "typecheck-target-mismatch",
+      "detail": "typecheck commandは変更scriptを対象に含めない"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "origin/main差分、Story、Architecture、Spec、実装、テスト、現HEAD証跡を確認しcontainer heading回帰を再現した",
+    "evidence": "independent node reproduction and focused tests",
+    "inputs": [
+      "scripts/post-merge-release.mjs",
+      "test/post-merge-release.test.js",
+      "docs/management/stories/active/story-vibepro-release-note-link-normalization.md",
+      "docs/architecture/story-vibepro-release-note-link-normalization.md",
+      "docs/specs/story-vibepro-release-note-link-normalization.vibepro.json"
+    ]
+  },
+  "judgment_delta": [
+    "VitePress token境界は十分という初期判断からcontainer内heading未処理の再現によりblockへ変更"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/private/tmp/vibepro-release-note-link-fix",
+    "actual_root": "/private/tmp/vibepro-release-note-link-fix",
+    "expected_root": null,
+    "expected_head_sha": "77c441515008b519f0ef83ab5acd170de08f715c",
+    "current_head_sha": "77c441515008b519f0ef83ab5acd170de08f715c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/private/tmp/vibepro-release-note-link-fix",
+      "actual_root": "/private/tmp/vibepro-release-note-link-fix",
+      "expected_root": null,
+      "expected_head_sha": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "current_head_sha": "77c441515008b519f0ef83ab5acd170de08f715c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-19T04:16:01.790Z",
+  "git_context": {
+    "head_sha": "77c441515008b519f0ef83ab5acd170de08f715c",
+    "current_branch": "codex/fix-release-note-story-links",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T04:16:01.782Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "release projection artifacts are HEAD-bound"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "77c441515008b519f0ef83ab5acd170de08f715c",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-release-note-link-normalization.md",
+        "sha256": "9f553cae3fd4dd6ae8d706b5f65aafa822cfacfcd18c549e727c2dc29dddc4e5",
+        "size": 2326
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-release-note-link-normalization.md",
+        "sha256": "31c218a9bae272c82327562908e8f3b608bf944336ab82211b462daff9bdc2d7",
+        "size": 3100
+      },
+      {
+        "path": "docs/specs/story-vibepro-release-note-link-normalization.vibepro.json",
+        "sha256": "d1c01049c1c38f9240a0b986272e4f6965f476901151685898f7b205f383878d",
+        "size": 4123
+      },
+      {
+        "path": "scripts/post-merge-release.mjs",
+        "sha256": "329be8885a4b83014a069c1ca3fb59f5418ad86f94d42b8246a98a1e90f09197",
+        "size": 23124
+      },
+      {
+        "path": "test/post-merge-release.test.js",
+        "sha256": "4fd0e356f910e693839c24aacef89358f938184a5e3704af4c7489b9162ffee1",
+        "size": 26347
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "792a8062c1831ad22c9093232573d590617029a3ed478a73f9f46fbd7da0a5ad"
+  },
+  "source_fingerprint": "2503a986dce143e49268a456e54f02ec8fec27b7c6010d5e8291a6bee821440c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f7893-8d92-7512-aad2-2a1bd8969cc1",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-release-note-link-normalization/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "independent-container-heading-reproduction",
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

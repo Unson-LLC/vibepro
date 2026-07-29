@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
   "source": "execute_merge",
-  "promoted_at": "2026-07-18T03:18:40.380Z",
+  "promoted_at": "2026-07-19T03:40:15.472Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-index.json",
@@ -12,7 +12,9 @@
     "evidence_depth": "standard",
     "compacted": true,
     "persisted_for_main_audit": true,
-    "why_compacted": [],
+    "why_compacted": [
+      "artifact_code_ratio_exceeded"
+    ],
     "excludes": [
       "duplicated decision index body",
       "duplicated cost summary body",
@@ -38,11 +40,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:921cbe8a460b3b07d8ec2f88780029238f42fb0f9a9bf93a314b08322e8645e3",
-    "compressed_hash": "sha256:7a2bf4860156b8cc1b3783760da2087e603e3d33d4e5c3eac9982c01bec5df26",
-    "expanded_bytes": 15138,
-    "compressed_bytes": 3240,
-    "expanded_line_count": 399,
+    "content_hash": "sha256:eebc6bdcd7907eb7387ab8dea55de0d02f995cb7c9c02bbb5a41b5901adafafb",
+    "compressed_hash": "sha256:6f5ab1987585871bdfbd4be974b61e81ca4c0c063292da9187b73413c351b274",
+    "expanded_bytes": 15077,
+    "compressed_bytes": 3217,
+    "expanded_line_count": 400,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "evidence_reuse",
@@ -59,26 +61,26 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-autonomy-roadmap-rebaseline",
     "cost": {
-      "compressed_bytes": 3240,
-      "expanded_bytes": 15138,
-      "expanded_line_count": 399,
+      "compressed_bytes": 3217,
+      "expanded_bytes": 15077,
+      "expanded_line_count": 400,
       "persisted_line_count": 1
     }
   },
   "merge": {
     "status": "merged",
-    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/342",
-    "merge_commit_sha": "2e8ca50338a743dcbf271fe94e623525a7789365",
-    "merged_at": "2026-07-18T03:18:39Z",
-    "current_head_sha": "e096fdb300a610e185f596dd2530dfcbe6605594",
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/353",
+    "merge_commit_sha": "5cdd7650f07de5a8fda7100f6d6d2fbd9011d68f",
+    "merged_at": "2026-07-19T03:40:14Z",
+    "current_head_sha": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
     "diff_stats_status": "available",
-    "diff_stats_source": "git diff --numstat origin/main...e096fdb300a610e185f596dd2530dfcbe6605594"
+    "diff_stats_source": "git diff --numstat origin/main...be8236faf7bee8ac5612a2824c153089bd4f93dc"
   },
   "handoff_replay_status": "blocked",
   "handoff_replay": {
     "status": "blocked",
-    "resolved_reference_count": 63,
-    "copied_reference_count": 51,
+    "resolved_reference_count": 73,
+    "copied_reference_count": 61,
     "unresolved_reference_count": 7,
     "replay_bundle": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
     "replay_command": "vibepro audit replay . --story-id story-vibepro-autonomy-roadmap-rebaseline"
@@ -96,7 +98,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:921cbe8a460b3b07d8ec2f88780029238f42fb0f9a9bf93a314b08322e8645e3"
+      "content_hash": "sha256:eebc6bdcd7907eb7387ab8dea55de0d02f995cb7c9c02bbb5a41b5901adafafb"
     }
   ],
   "raw_artifact_manifest": [
@@ -105,10 +107,10 @@
       "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/evidence-reuse.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:21c49bd698101ab689a8a5c8ea656bbe54c0c5c2ef962194243edb7e8bd37f7b",
-      "audit_digest": "sha256:21c49bd698101ab689a8a5c8ea656bbe54c0c5c2ef962194243edb7e8bd37f7b",
-      "line_count": 195,
-      "raw_line_count": 195,
+      "digest": "sha256:a21da7ec214a0b0b743144e1f98c22114b94da5b33569ff31d28711db5d07ab7",
+      "audit_digest": "sha256:a21da7ec214a0b0b743144e1f98c22114b94da5b33569ff31d28711db5d07ab7",
+      "line_count": 200,
+      "raw_line_count": 200,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": []
     },
@@ -117,10 +119,10 @@
       "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/pr-prepare.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:218e727ce3f29fdbbc6aaed309ebc95d1b71fb86e2991250ea90972ab5a1974e",
-      "audit_digest": "sha256:06a3bba12c8c2987487fd53f62da6c8ce1e505b93c4649611283f14bdc9d3ee2",
-      "line_count": 4304,
-      "raw_line_count": 26826,
+      "digest": "sha256:5223a9020572252e8371d85e8cd0f2bfa39271fc9cf26a80a0ea8ed6f97a8ef9",
+      "audit_digest": "sha256:5b68dd4538fc48b46c2df8d5b70ba2d2be1e38014426d94b336369cad537a2b0",
+      "line_count": 3533,
+      "raw_line_count": 27699,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_prepare.diagnostics.progress_snapshots",
@@ -144,10 +146,10 @@
       "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/pr-create.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:6d14a32854548e48e03081f4bfe4f71c8eefb6014f9aaae8fab4c96e0e45739d",
-      "audit_digest": "sha256:0475a3b5b7ebb62b3ee8af1e4ea70e00e54a2fa86d5cafc096687bbdd8c54b1d",
-      "line_count": 1247,
-      "raw_line_count": 2769,
+      "digest": "sha256:560b8ae4f3d626d04a2ca63febb62845631fa5b3409d44f35069782943c65e1c",
+      "audit_digest": "sha256:7a48b56c5830dd6b6307eb5ca83bd5b1b499d85c3f887ad8fb81d4823365a97f",
+      "line_count": 1315,
+      "raw_line_count": 3056,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -160,10 +162,10 @@
       "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/senior-gap-judgment.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:98c8e276d8e4647b128575bc098e31a2cb7957a0828044f133e1387b5995d8e2",
-      "audit_digest": "sha256:f061e17bfc784e8509105127d0afbf2f1b2b1e8d808baacdb11baf489e4ae173",
-      "line_count": 57,
-      "raw_line_count": 633,
+      "digest": "sha256:a68c5298c42c418c4545abffd63c0d26ba8c77471e30d5c1b4529030c0942172",
+      "audit_digest": "sha256:8c273b4edb388576e26ba3598ad78d111229853c3641a9b867c2b9a387fba26d",
+      "line_count": 14,
+      "raw_line_count": 438,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "senior_gap_judgment.verbose_supporting_context"
@@ -174,10 +176,10 @@
       "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:0566f65caa991a9d3c0c605ab6293eb8279a115164dd8bb46d803e5e2534e0b7",
-      "audit_digest": "sha256:13c15fb58632aabf8615d306680c74b4bdecb12a2a0ae3f8335793f44c49663d",
-      "line_count": 1286,
-      "raw_line_count": 2847,
+      "digest": "sha256:0277c281953e2837c410b2b90bf2331d7a35ea00b5037fb5b2f5eebf3cd82047",
+      "audit_digest": "sha256:96aa6781f6a7279cdb813bcb3c07f9e868300b171c6d0527b3d2a01cd5e35b3d",
+      "line_count": 1354,
+      "raw_line_count": 3102,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -192,10 +194,10 @@
       "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/traceability.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:1095f2efdfb8c4e7647d5dd8237fd4c6004be3a18544d1af7f854419880f1089",
-      "audit_digest": "sha256:1095f2efdfb8c4e7647d5dd8237fd4c6004be3a18544d1af7f854419880f1089",
-      "line_count": 262,
-      "raw_line_count": 262,
+      "digest": "sha256:6b91dfce6afdd116670e3d110bc266248da697b4160bc51c1fdd4a63fb87563b",
+      "audit_digest": "sha256:6b91dfce6afdd116670e3d110bc266248da697b4160bc51c1fdd4a63fb87563b",
+      "line_count": 330,
+      "raw_line_count": 330,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": []
     },
@@ -204,10 +206,10 @@
       "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/verification-evidence.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:463f3ee960e1979451b220b404b93834d63ca00a35de56bfd7308ab7056f0f69",
-      "audit_digest": "sha256:a6f45e7d85601f7a36d3a99d5d80c577ae255cd596922aefb8a793c6b8b93e6b",
-      "line_count": 71,
-      "raw_line_count": 324,
+      "digest": "sha256:cc9b7c6cc7e97e5c04110203944268b6e3671b008bf5ae6d2ed35107d63577d9",
+      "audit_digest": "sha256:bcb71e4cac5ad99914d328f305dfd519c620dbcc929a652236cfc004d31df72f",
+      "line_count": 45,
+      "raw_line_count": 404,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "verification.raw_command_output"
@@ -218,10 +220,10 @@
       "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/lifecycle.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:9cf46c36a72ab9e8bd02cfb34b302d7fa755a4b7fd3079dd501f2d2ea711b0dc",
-      "audit_digest": "sha256:9cf46c36a72ab9e8bd02cfb34b302d7fa755a4b7fd3079dd501f2d2ea711b0dc",
-      "line_count": 484,
-      "raw_line_count": 484,
+      "digest": "sha256:a1c33e1d17c8830b42f88a615532cb5a2fcde5e5dda5a783d118d05c7bd843e7",
+      "audit_digest": "sha256:a1c33e1d17c8830b42f88a615532cb5a2fcde5e5dda5a783d118d05c7bd843e7",
+      "line_count": 609,
+      "raw_line_count": 609,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": []
     },
@@ -230,8 +232,8 @@
       "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/review-request-gate_evidence.md",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:9bdc77f049f5a4fd286a3aca497cc8fe123516ba5feaa338bd51badae7b9ebf5",
-      "audit_digest": "sha256:9bdc77f049f5a4fd286a3aca497cc8fe123516ba5feaa338bd51badae7b9ebf5",
+      "digest": "sha256:771cdf416f3844a5b24dccf9da175fde2cf46d1e9ac03a0ee3345cda665277d3",
+      "audit_digest": "sha256:771cdf416f3844a5b24dccf9da175fde2cf46d1e9ac03a0ee3345cda665277d3",
       "line_count": 133,
       "raw_line_count": 133,
       "audit_scope": "judgment_evidence_v1",
@@ -242,8 +244,8 @@
       "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/review-request-pr_split_scope.md",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:c6ae4a7a7fa183206edad2c75b3333bb94be75dbf6b7324e8d266109e386d353",
-      "audit_digest": "sha256:c6ae4a7a7fa183206edad2c75b3333bb94be75dbf6b7324e8d266109e386d353",
+      "digest": "sha256:c9763db1dff904473cfbf137d2475110f120ae05940086ef7f5d21f6e05040e3",
+      "audit_digest": "sha256:c9763db1dff904473cfbf137d2475110f120ae05940086ef7f5d21f6e05040e3",
       "line_count": 133,
       "raw_line_count": 133,
       "audit_scope": "judgment_evidence_v1",
@@ -254,8 +256,8 @@
       "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/review-request-release_risk.md",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:1e2fbceb05a4a76c675d4985194a4befa9739e10066a94b5cebb1736daae0b32",
-      "audit_digest": "sha256:1e2fbceb05a4a76c675d4985194a4befa9739e10066a94b5cebb1736daae0b32",
+      "digest": "sha256:51b34a8c1f781521b2aa34e1620f892a1023e2126923565c9646d2e086b4ac5f",
+      "audit_digest": "sha256:51b34a8c1f781521b2aa34e1620f892a1023e2126923565c9646d2e086b4ac5f",
       "line_count": 133,
       "raw_line_count": 133,
       "audit_scope": "judgment_evidence_v1",
@@ -266,10 +268,10 @@
       "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/review-result-gate_evidence.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:07c3ff83daaf2885a1c7336bdf21644a59058e3d60ade1754d05734cad1bed40",
-      "audit_digest": "sha256:07c3ff83daaf2885a1c7336bdf21644a59058e3d60ade1754d05734cad1bed40",
-      "line_count": 113,
-      "raw_line_count": 113,
+      "digest": "sha256:2ec75ab63566a8f5288d417842a58f67030834a15f9601ccbc9a121e3f28f2dc",
+      "audit_digest": "sha256:2ec75ab63566a8f5288d417842a58f67030834a15f9601ccbc9a121e3f28f2dc",
+      "line_count": 122,
+      "raw_line_count": 122,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": []
     },
@@ -278,10 +280,10 @@
       "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/review-result-pr_split_scope.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:3902a5c59fd4dfd7593ae0c899d306aee47cc54800cd2cf6b874bc2f3c0c7b17",
-      "audit_digest": "sha256:3902a5c59fd4dfd7593ae0c899d306aee47cc54800cd2cf6b874bc2f3c0c7b17",
-      "line_count": 112,
-      "raw_line_count": 112,
+      "digest": "sha256:30e33e0276e162322a221ec8b8e132320a7060cbb0a25cb3fba611938b19495d",
+      "audit_digest": "sha256:30e33e0276e162322a221ec8b8e132320a7060cbb0a25cb3fba611938b19495d",
+      "line_count": 122,
+      "raw_line_count": 122,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": []
     },
@@ -290,10 +292,10 @@
       "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/review-result-release_risk.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:eddf4f8fd218ca536ee710b9bd8d1076a54b48f0f4386e35477d04b60e22ab97",
-      "audit_digest": "sha256:eddf4f8fd218ca536ee710b9bd8d1076a54b48f0f4386e35477d04b60e22ab97",
-      "line_count": 112,
-      "raw_line_count": 112,
+      "digest": "sha256:3d054ab18279165535f1fe24c61f6ba8c906fbc3717e5f1812583f6f37c2c089",
+      "audit_digest": "sha256:3d054ab18279165535f1fe24c61f6ba8c906fbc3717e5f1812583f6f37c2c089",
+      "line_count": 122,
+      "raw_line_count": 122,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": []
     },
@@ -302,10 +304,10 @@
       "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/review-summary.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/audit-replay-bundle.json.gz",
-      "digest": "sha256:8725324502c497041b3268e1f81ddd6e2ce3f50872dcd7d620ffcff73d194fcb",
-      "audit_digest": "sha256:8725324502c497041b3268e1f81ddd6e2ce3f50872dcd7d620ffcff73d194fcb",
-      "line_count": 929,
-      "raw_line_count": 929,
+      "digest": "sha256:f6aa2ae6473d3f9f66848c09c007d55420b51c7660b2d5ad7c4c01dfbcaa1b49",
+      "audit_digest": "sha256:f6aa2ae6473d3f9f66848c09c007d55420b51c7660b2d5ad7c4c01dfbcaa1b49",
+      "line_count": 1113,
+      "raw_line_count": 1113,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": []
     }
@@ -328,58 +330,58 @@
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/architecture-profile.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/architecture-profile.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/architecture-profile.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/component-style-check-result.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/component-style-check-result.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/component-style-check-result.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/finding-review.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/finding-review.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/finding-review.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/flow-design-check-result.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/flow-design-check-result.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/flow-design-check-result.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/gesture-interaction-check-result.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/gesture-interaction-check-result.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/gesture-interaction-check-result.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/refactoring-delta.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/refactoring-delta.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/refactoring-delta.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/requirement-consistency.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/requirement-consistency.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/requirement-consistency.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/risk-register.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/risk-register.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/risk-register.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/spec-drift.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/spec-drift.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/spec-drift.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/summary.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/summary.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/summary.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/terminal-link-check-result.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/terminal-link-check-result.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/terminal-link-check-result.md",
       "resolution": "copied_reference"
     },
     {
@@ -393,8 +395,13 @@
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/test_20_.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/test_20_.json",
+      "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/CodeQL.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/CodeQL.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/analyze.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/analyze.json",
       "resolution": "copied_reference"
     },
     {
@@ -410,11 +417,6 @@
     {
       "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/decision-records.json",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/decision-records.json",
-      "resolution": "copied_reference"
-    },
-    {
-      "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/decision-records.summary.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/decision-records.summary.json",
       "resolution": "copied_reference"
     },
     {
@@ -488,11 +490,6 @@
       "resolution": "canonical_artifact"
     },
     {
-      "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/senior-gap-judgment.summary.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/senior-gap-judgment.summary.json",
-      "resolution": "copied_reference"
-    },
-    {
       "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/split-plan.json",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/split-plan.json",
       "resolution": "copied_reference"
@@ -503,88 +500,128 @@
       "resolution": "canonical_artifact"
     },
     {
-      "source": ".vibepro/qa/phase-decomposition-violation-rate-not-applicable.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/qa/phase-decomposition-violation-rate-not-applicable.json",
+      "source": ".vibepro/qa/story-vibepro-autonomy-roadmap-rebaseline/docs-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/qa/story-vibepro-autonomy-roadmap-rebaseline/docs-status.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/qa/roadmap-rebaseline-current-head.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/qa/roadmap-rebaseline-current-head.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-00-02.340Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-00-02.340Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-29-33.745Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-29-33.745Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-03-59.555Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-03-59.555Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-35-04.307Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-35-04.307Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-09-03.883Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-09-03.883Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-45-09.132Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-45-09.132Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-10-05.447Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-10-05.447Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-51-08.585Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-51-08.585Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-12-32.309Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-12-32.309Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T03-12-27.097Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T03-12-27.097Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-18-45.893Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-18-45.893Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-29-34.481Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-29-34.481Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-25-23.636Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-25-23.636Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-34-50.544Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-34-50.544Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-31-33.615Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-31-33.615Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-44-29.931Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-44-29.931Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-00-06.771Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-00-06.771Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-51-43.673Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-51-43.673Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-04-04.200Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-04-04.200Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T03-13-22.065Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T03-13-22.065Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-09-08.637Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-09-08.637Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-29-35.303Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-29-35.303Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-10-07.948Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-10-07.948Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-34-51.409Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-34-51.409Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-12-36.924Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-12-36.924Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-44-31.456Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-44-31.456Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-18-50.503Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-18-50.503Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-50-52.762Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-50-52.762Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-25-26.437Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-25-26.437Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T03-17-04.083Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T03-17-04.083Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-32-41.134Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-32-41.134Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-00-10.895Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-00-10.895Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-04-08.550Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-04-08.550Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-09-13.589Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-09-13.589Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-10-10.516Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-10-10.516Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-12-41.556Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-12-41.556Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-18-57.703Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-18-57.703Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-25-28.834Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-25-28.834Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-32-45.289Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-32-45.289Z.json",
       "resolution": "copied_reference"
     },
     {
@@ -623,6 +660,21 @@
       "resolution": "canonical_artifact"
     },
     {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/transcript-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/transcript-gate_evidence.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/transcript-pr_split_scope.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/transcript-pr_split_scope.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/transcript-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/transcript-release_risk.md",
+      "resolution": "copied_reference"
+    },
+    {
       "source": ".vibepro/stories/story-vibepro-autonomy-roadmap-rebaseline/tasks/tasks.json",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/stories/story-vibepro-autonomy-roadmap-rebaseline/tasks/tasks.json",
       "resolution": "copied_reference"
@@ -645,58 +697,58 @@
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/architecture-profile.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/architecture-profile.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/architecture-profile.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/component-style-check-result.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/component-style-check-result.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/component-style-check-result.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/finding-review.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/finding-review.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/finding-review.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/flow-design-check-result.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/flow-design-check-result.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/flow-design-check-result.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/gesture-interaction-check-result.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/gesture-interaction-check-result.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/gesture-interaction-check-result.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/refactoring-delta.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/refactoring-delta.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/refactoring-delta.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/requirement-consistency.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/requirement-consistency.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/requirement-consistency.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/risk-register.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/risk-register.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/risk-register.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/spec-drift.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/spec-drift.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/spec-drift.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/summary.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/summary.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/summary.md",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/terminal-link-check-result.md",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-18T012313Z/terminal-link-check-result.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/diagnostics/2026-07-19T032804Z/terminal-link-check-result.md",
       "resolution": "copied_reference"
     },
     {
@@ -710,8 +762,13 @@
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/test_20_.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/test_20_.json",
+      "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/CodeQL.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/CodeQL.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/analyze.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/ci-evidence/analyze.json",
       "resolution": "copied_reference"
     },
     {
@@ -727,11 +784,6 @@
     {
       "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/decision-records.json",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/decision-records.json",
-      "resolution": "copied_reference"
-    },
-    {
-      "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/decision-records.summary.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/decision-records.summary.json",
       "resolution": "copied_reference"
     },
     {
@@ -780,103 +832,153 @@
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/senior-gap-judgment.summary.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/senior-gap-judgment.summary.json",
-      "resolution": "copied_reference"
-    },
-    {
       "source": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/split-plan.json",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/split-plan.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/qa/phase-decomposition-violation-rate-not-applicable.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/qa/phase-decomposition-violation-rate-not-applicable.json",
+      "source": ".vibepro/qa/story-vibepro-autonomy-roadmap-rebaseline/docs-status.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/qa/story-vibepro-autonomy-roadmap-rebaseline/docs-status.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/qa/roadmap-rebaseline-current-head.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/qa/roadmap-rebaseline-current-head.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-00-02.340Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-00-02.340Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-29-33.745Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-29-33.745Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-03-59.555Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-03-59.555Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-35-04.307Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-35-04.307Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-09-03.883Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-09-03.883Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-45-09.132Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-45-09.132Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-10-05.447Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-10-05.447Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-51-08.585Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T01-51-08.585Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-12-32.309Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-12-32.309Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T03-12-27.097Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-18T03-12-27.097Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-18-45.893Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-18-45.893Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-29-34.481Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-29-34.481Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-25-23.636Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-25-23.636Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-34-50.544Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-34-50.544Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-31-33.615Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-gate_evidence-2026-07-19T03-31-33.615Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-44-29.931Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-44-29.931Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-00-06.771Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-00-06.771Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-51-43.673Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T01-51-43.673Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-04-04.200Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-04-04.200Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T03-13-22.065Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-18T03-13-22.065Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-09-08.637Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-09-08.637Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-29-35.303Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-29-35.303Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-10-07.948Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-10-07.948Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-34-51.409Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-34-51.409Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-12-36.924Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-12-36.924Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-44-31.456Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-44-31.456Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-18-50.503Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-18-50.503Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-50-52.762Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T01-50-52.762Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-25-26.437Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-25-26.437Z.json",
       "resolution": "copied_reference"
     },
     {
-      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T03-17-04.083Z.json",
-      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-18T03-17-04.083Z.json",
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-32-41.134Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-pr_split_scope-2026-07-19T03-32-41.134Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-00-10.895Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-00-10.895Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-04-08.550Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-04-08.550Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-09-13.589Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-09-13.589Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-10-10.516Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-10-10.516Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-12-41.556Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-12-41.556Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-18-57.703Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-18-57.703Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-25-28.834Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-25-28.834Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-32-45.289Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/history/review-result-release_risk-2026-07-19T03-32-45.289Z.json",
       "resolution": "copied_reference"
     },
     {
       "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/parallel-dispatch.md",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/transcript-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/transcript-gate_evidence.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/transcript-pr_split_scope.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/transcript-pr_split_scope.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/transcript-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-autonomy-roadmap-rebaseline/references/vibepro/reviews/story-vibepro-autonomy-roadmap-rebaseline/gate/transcript-release_risk.md",
       "resolution": "copied_reference"
     },
     {
@@ -892,14 +994,14 @@
   ],
   "unresolved_references": [
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/evidence.json",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/evidence.json",
       "reason": "source_too_large",
-      "size_bytes": 5755193
+      "size_bytes": 5888613
     },
     {
-      "source": ".vibepro/diagnostics/2026-07-18T012313Z/static-site-check-result.md",
+      "source": ".vibepro/diagnostics/2026-07-19T032804Z/static-site-check-result.md",
       "reason": "source_too_large",
-      "size_bytes": 969534
+      "size_bytes": 971196
     },
     {
       "source": ".vibepro/gate-outcomes/ledger.json",
@@ -908,7 +1010,7 @@
     {
       "source": ".vibepro/graphify/graph.json",
       "reason": "source_too_large",
-      "size_bytes": 5463603
+      "size_bytes": 5623007
     },
     {
       "source": ".vibepro/pr/",

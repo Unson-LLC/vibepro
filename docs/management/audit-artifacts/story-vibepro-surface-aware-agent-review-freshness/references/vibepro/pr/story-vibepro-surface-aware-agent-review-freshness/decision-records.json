@@ -1,0 +1,469 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+  "updated_at": "2026-07-23T21:42:29.790Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "current_head_sha": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784842949789-29c503cb",
+      "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Release notes, rollback instruction, and observability evidence are documented for the no-operator-action freshness policy change.",
+      "reason": "English and Japanese July release notes state no operator action, rollback by reverting the commit or role policy, and observation via review status and reuse reason; current exact-head tests pass.",
+      "reviewer": "codex",
+      "artifact": "docs/releases/2026-07.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+          "current_head_sha": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+        "current_branch": "codex/story-vibepro-surface-aware-agent-review-freshness",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-23T21:42:29.782Z"
+      },
+      "recorded_at": "2026-07-23T21:42:29.790Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784828088448-232cea4d",
+      "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Release and operator path documented with no migration action",
+      "reason": "English and Japanese release notes state behavior, fail-closed observability, no user action or artifact migration, and rollback. Operators can observe stale/current reasons through review status and pr-prepare; rollback owner action is source revert of the built-in policy removal.",
+      "reviewer": "codex",
+      "artifact": "docs/releases/2026-07.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "2d8ae3d95b4ec81fa175ce684fe15b2771d94814",
+          "current_head_sha": "2d8ae3d95b4ec81fa175ce684fe15b2771d94814",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "2d8ae3d95b4ec81fa175ce684fe15b2771d94814",
+        "current_branch": "codex/story-vibepro-surface-aware-agent-review-freshness",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-23T17:34:48.441Z"
+      },
+      "recorded_at": "2026-07-23T17:34:48.451Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784828087026-241399e2",
+      "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "One coherent review surface with an explicit independent owner",
+      "reason": "The change is one policy-boundary correction across runtime, contract docs, and focused tests. The independent gate_evidence and architecture_boundary reviewers own the complete changed surface; splitting code from its policy tests/docs would weaken reviewability.",
+      "reviewer": "codex",
+      "artifact": ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/parallel-dispatch.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "2d8ae3d95b4ec81fa175ce684fe15b2771d94814",
+          "current_head_sha": "2d8ae3d95b4ec81fa175ce684fe15b2771d94814",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "2d8ae3d95b4ec81fa175ce684fe15b2771d94814",
+        "current_branch": "codex/story-vibepro-surface-aware-agent-review-freshness",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-23T17:34:47.021Z"
+      },
+      "recorded_at": "2026-07-23T17:34:47.027Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784828085821-235fbf41",
+      "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": "needs_evidence",
+      "summary": "Rollback boundary reviewed: restore the removed built-in strict-role policy",
+      "reason": "No stored object, schema migration, feature gate, deployment ordering, or version-skew boundary changes. Rollback is a source revert that restores the built-in gate_evidence/release_risk strict_head map; existing explicit strict policies remain unchanged.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "2d8ae3d95b4ec81fa175ce684fe15b2771d94814",
+          "current_head_sha": "2d8ae3d95b4ec81fa175ce684fe15b2771d94814",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "2d8ae3d95b4ec81fa175ce684fe15b2771d94814",
+        "current_branch": "codex/story-vibepro-surface-aware-agent-review-freshness",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-23T17:34:45.815Z"
+      },
+      "recorded_at": "2026-07-23T17:34:45.822Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784827759373-682aa7ec",
+      "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:requirement",
+      "source_status": "needs_review",
+      "summary": "Preserve inherited fallback without changing its contract",
+      "reason": "The condition !supplied && !runAuthority is an existing compatibility fallback, declared structurally in Spec S-003 and unchanged by this policy-default fix",
+      "reviewer": "codex",
+      "artifact": ".vibepro/spec/story-vibepro-surface-aware-agent-review-freshness/spec.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.test.js",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+          "current_head_sha": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+        "current_branch": "codex/story-vibepro-surface-aware-agent-review-freshness",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-23T17:29:19.367Z"
+      },
+      "recorded_at": "2026-07-23T17:29:19.374Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784827499436-60f20302",
+      "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "Track only .vibepro/config.json as the Story registration SSOT; generated diagnostic artifacts remain uncommitted",
+      "reason": "Self-dogfood requires the new Story registration in the tracked configuration, while generated review, adjudication, and PR artifacts are runtime evidence and must not enter the PR diff",
+      "reviewer": "codex",
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.test.js",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": "test/content-scoped-evidence-freshness.test.js",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+          "current_head_sha": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "f763feb2259b6c223bf579c56c69b31cedad26a2",
+        "current_branch": "codex/story-vibepro-surface-aware-agent-review-freshness",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-23T17:24:59.421Z"
+      },
+      "recorded_at": "2026-07-23T17:24:59.440Z"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "open": 0,
+    "by_type": {
+      "needs_review": 6
+    },
+    "by_status": {
+      "accepted": 6
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+        "actual_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+        "expected_root": null,
+        "expected_head_sha": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+        "current_head_sha": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784842949789-29c503cb",
+      "story_id": "story-vibepro-surface-aware-agent-review-freshness",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "Release notes, rollback instruction, and observability evidence are documented for the no-operator-action freshness policy change.",
+      "reason": "English and Japanese July release notes state no operator action, rollback by reverting the commit or role policy, and observation via review status and reuse reason; current exact-head tests pass.",
+      "reviewer": "codex",
+      "artifact": "docs/releases/2026-07.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/focused-tests.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "actual_root": "/Users/ksato/.codex/worktrees/5fe5/vibepro",
+          "expected_root": null,
+          "expected_head_sha": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+          "current_head_sha": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "5ade483c1848edf56c1f0e11782cb616cc3281b2",
+        "current_branch": "codex/story-vibepro-surface-aware-agent-review-freshness",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-23T21:42:29.782Z"
+      },
+      "recorded_at": "2026-07-23T21:42:29.790Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/decision-records.json"
+}

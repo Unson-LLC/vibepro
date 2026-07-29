@@ -1,0 +1,71 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|changed_files:30|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-explicit-run-attribution-lineage",
+      "decision_id": "decision-1784628026019-63d2cd4e",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The Luna pr_split_scope review inspected the full current diff: Story/Spec, resolver and propagation paths, generated CLI documentation, gate metadata, and tests are coupled parts of one authority contract. The 32-commit warning comes from branch history after rebasing, while the actual 30-file surface is one Story and splitting would weaken end-to-end traceability.",
+      "artifact": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:30",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-21T10:00:47.061Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-explicit-run-attribution-lineage",
+      "decision_id": "decision-1784628026019-63d2cd4e",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The Luna pr_split_scope review inspected the full current diff: Story/Spec, resolver and propagation paths, generated CLI documentation, gate metadata, and tests are coupled parts of one authority contract. The 32-commit warning comes from branch history after rebasing, while the actual 30-file surface is one Story and splitting would weaken end-to-end traceability.",
+      "artifact": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
+      "activation_candidates": [
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-21T10:46:04.710Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-explicit-run-attribution-lineage",
+      "decision_id": "decision-1784628026019-63d2cd4e",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The Luna pr_split_scope review inspected the full current diff: Story/Spec, resolver and propagation paths, generated CLI documentation, gate metadata, and tests are coupled parts of one authority contract. The 32-commit warning comes from branch history after rebasing, while the actual 30-file surface is one Story and splitting would weaken end-to-end traceability.",
+      "artifact": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-21T10:57:03.957Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:38|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-explicit-run-attribution-lineage",
+      "decision_id": "decision-1784628026019-63d2cd4e",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The Luna pr_split_scope review inspected the full current diff: Story/Spec, resolver and propagation paths, generated CLI documentation, gate metadata, and tests are coupled parts of one authority contract. The 32-commit warning comes from branch history after rebasing, while the actual 30-file surface is one Story and splitting would weaken end-to-end traceability.",
+      "artifact": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-pr_split_scope.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:38",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-21T12:19:27.447Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

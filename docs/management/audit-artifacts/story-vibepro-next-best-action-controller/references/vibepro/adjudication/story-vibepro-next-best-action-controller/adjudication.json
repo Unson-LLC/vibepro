@@ -1,0 +1,116 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-next-best-action-controller",
+  "updated_at": "2026-07-19T02:18:22.994Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "Independent exact-head rebase review demonstrates AC-9 against Story Spec implementation and passing targeted evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_acceptance_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:22.994Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "Independent exact-head rebase review demonstrates AC-8 against Story Spec implementation and passing targeted evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_acceptance_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:22.710Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Independent exact-head rebase review demonstrates AC-7 against Story Spec implementation and passing targeted evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_acceptance_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:22.467Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Independent exact-head rebase review demonstrates AC-6 against Story Spec implementation and passing targeted evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_acceptance_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:22.200Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Independent exact-head rebase review demonstrates AC-5 against Story Spec implementation and passing targeted evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_acceptance_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:21.939Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Independent exact-head rebase review demonstrates AC-4 against Story Spec implementation and passing targeted evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_acceptance_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:21.673Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Independent exact-head rebase review demonstrates AC-3 against Story Spec implementation and passing targeted evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_acceptance_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:21.444Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Independent exact-head rebase review demonstrates AC-2 against Story Spec implementation and passing targeted evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_acceptance_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:21.114Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Independent exact-head rebase review demonstrates AC-1 against Story Spec implementation and passing targeted evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/nba_acceptance_adjudication",
+        "session_ref": "rebase-head-2b53e4c4"
+      },
+      "head_commit": "2b53e4c44cffb0f2f885b3171bfbdc46fd0cefc9",
+      "recorded_at": "2026-07-19T02:18:20.824Z"
+    }
+  ]
+}

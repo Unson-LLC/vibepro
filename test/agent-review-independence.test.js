@@ -102,7 +102,7 @@ test('review record derives reviewer identity from session ids and defaults to u
   ]);
   let review = await readJson(path.join(root, '.vibepro', 'reviews', 'story-independence', 'gate', 'review-result-gate_evidence.json'));
   assert.equal(review.agent_provenance.reviewer_identity.relation, 'separate_session');
-  assert.equal(review.agent_provenance.reviewer_identity.source, 'derived_session_ids');
+  assert.equal(review.agent_provenance.reviewer_identity.source, 'unverified_session_ids');
 
   await recordGateEvidenceReview(root, [
     '--implementation-session-id', 'session-impl-1',

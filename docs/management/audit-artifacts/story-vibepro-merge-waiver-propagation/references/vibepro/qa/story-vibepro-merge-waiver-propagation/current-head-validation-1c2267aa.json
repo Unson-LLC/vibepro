@@ -1,0 +1,38 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-waiver-propagation",
+  "head_sha": "1c2267aa000f3cb9ed80944c106313a3f12240a4",
+  "status": "pass",
+  "summary": "Current HEAD validation passed: full suite 1757/1757, targeted Story replay 16/16, typecheck, and npm package build.",
+  "commands": [
+    {
+      "command": "NPM_CONFIG_CACHE=/private/tmp/vibepro-npm-cache-1c2267aa node --test --test-concurrency=2",
+      "status": "pass",
+      "tests_passed": 1757,
+      "tests_failed": 0,
+      "duration_ms": 1741174.226375
+    },
+    {
+      "command": "node --test --test-name-pattern='story-vibepro-merge-waiver-propagation|MWP-AC' test/review-inspection-first.test.js test/vibepro-cli.test.js test/merge-gate-authorization.test.js test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts",
+      "status": "pass",
+      "tests_passed": 16,
+      "tests_failed": 0,
+      "duration_ms": 12394.744084
+    },
+    {
+      "command": "npm run typecheck",
+      "status": "pass"
+    },
+    {
+      "command": "env npm_config_cache=/private/tmp/vibepro-npm-cache-1c2267aa npm pack --json --ignore-scripts --pack-destination /private/tmp",
+      "status": "pass",
+      "shasum": "98310126a713900becc8dde9d6c9b433cbae917a",
+      "entry_count": 182
+    }
+  ],
+  "observations": {
+    "invalid_authority_external_call_count": 0,
+    "gate_stop_reason": "gate_not_ready",
+    "full_suite_environment": "isolated npm cache with local-listen permission"
+  }
+}

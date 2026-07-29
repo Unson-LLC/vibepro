@@ -1,0 +1,93 @@
+{
+  "status": "needs_changes",
+  "summary": "OCR-S-9, INV-OCR-7, Task 7, the schema 0.2.0 selected-Story PR-route implementation, and both unit/E2E evidence are traceable and responsibility-preserving at HEAD ce89e4589ba8c96a418249cd2f9aa673acea646b. The review cannot pass because the inspected Architecture still makes a false current-HEAD conformance claim and names an obsolete origin/main baseline.",
+  "findings": [
+    {
+      "id": "SPEC-CONSISTENCY-001",
+      "priority": "P2",
+      "title": "Refresh the Architecture conformance evidence for the reviewed HEAD/base",
+      "file": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "line": 143,
+      "details": "Lines 143-149 claim comparison against origin/main db8f0ef3f7d3cfcb2dc0d31504e40e01025293dd and 86 current-HEAD violations (66 undeclared, 9 budget, 11 orphan). The requested review base is 6222d118315e7001abcbdc786aca932e48c58232, and `node bin/vibepro.js architecture conformance . --json` at ce89e4589ba8c96a418249cd2f9aa673acea646b reports 85 violations (65 undeclared, 9 budget, 11 orphan). Thus the document's explicit current-HEAD evidence boundary is stale even though the OCR-S-9 design itself is consistent.",
+      "required_change": "Recompute the origin/main baseline at 6222d118315e7001abcbdc786aca932e48c58232, update the documented baseline/current breakdown, and bind the statement to ce89e4589ba8c96a418249cd2f9aa673acea646b before recording the final spec_consistency pass."
+    }
+  ],
+  "traceability": {
+    "OCR-S-9": {
+      "status": "consistent",
+      "evidence": [
+        "Story Acceptance Criteria OCR-S-9 requires no undeclared probe Story and ownership derived from the selected Story PR route template.",
+        "Story Task 7 names the Architecture, Spec, test plan, execution-state owner, unit test, and Story E2E surfaces."
+      ]
+    },
+    "INV-OCR-7": {
+      "status": "consistent",
+      "evidence": [
+        "The invariant points back to OCR-S-9 and the Architecture section `Schema 0.2.0 reconciliation ownership`.",
+        "Its code refs resolve to managedWorktreeArtifactLocations and prRouteDirectoryIsStoryScoped in src/execution-state.js.",
+        "Its test refs exactly match the DRS-CONTRACT-009 unit case, the scenario:OCR-S-9 E2E case, and OCR-T-6 in the test plan."
+      ]
+    },
+    "schema_0_2_selected_story_pr_route": {
+      "status": "consistent",
+      "evidence": [
+        "managedWorktreeArtifactLocations resolves the selected Story's PR artifact and selected PR route in managed and source authorities.",
+        "prRouteDirectoryIsStoryScoped classifies the selected canonical template by a {story_id} or {feature_slug} variable in its parent directory.",
+        "The prior synthetic `${story_id}-ownership-probe` resolution is removed.",
+        "Story-scoped routes synchronize the selected directory; flat routes retain the explicit lifecycle file set."
+      ]
+    },
+    "e2e_evidence": {
+      "status": "demonstrated",
+      "evidence": [
+        ".vibepro/qa/targeted-status-ce89e458.json is head-bound to ce89e4589ba8c96a418249cd2f9aa673acea646b and reports 124/124 pass.",
+        ".vibepro/qa/targeted-ce89e458.tap records `scenario:OCR-S-9 schema 0.2 post-merge authority sync follows the selected Story PR route` as ok 64.",
+        ".vibepro/qa/targeted-ce89e458.tap records `DRS-CONTRACT-009 schema 0.2 linked artifact sync uses catalog routing without resolving a probe Story` as ok 77.",
+        "The schema 0.2 fixtures provide matching catalog metadata and Story mirrors in managed/source authorities, use a feature_packet route with {feature_slug}, copy managed pr-merge authority to source, and commit identical execution state."
+      ]
+    },
+    "responsibility_nonduplication": {
+      "status": "consistent",
+      "evidence": [
+        "The change remains inside the existing execution-state synchronization owner.",
+        "Existing artifact-routing continues to select and resolve routes; execution-state only consumes the selected route template to classify directory ownership.",
+        "No CLI dependency, route-selection owner, copy/rollback owner, or merge authority is introduced.",
+        "Legacy flat-route and rollback coverage remain in the same targeted 124-test passing run."
+      ]
+    }
+  },
+  "inspection_inputs": [
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    "src/execution-state.js",
+    "test/execution-state.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    ".vibepro/qa/targeted-status-ce89e458.json",
+    ".vibepro/qa/targeted-ce89e458.tap",
+    "git diff origin/main..HEAD -- <reviewed surfaces>",
+    "node bin/vibepro.js architecture conformance . --json",
+    "git diff --check origin/main..HEAD"
+  ],
+  "inspection_evidence": {
+    "head": "ce89e4589ba8c96a418249cd2f9aa673acea646b",
+    "base": "6222d118315e7001abcbdc786aca932e48c58232",
+    "targeted_tests": {
+      "status": "pass",
+      "passed": 124,
+      "failed": 0,
+      "status_artifact_sha256": "6b8ba40aa61cee2b28a402ccb3334386b462ad9968be4fb8536b2c2351548d22",
+      "tap_artifact_sha256": "fea32df751a2acf16451cffc096e0de02280e77db164d5d7e724ac7c80698ea3"
+    },
+    "current_head_conformance": {
+      "violation_count": 85,
+      "undeclared_dependency_count": 65,
+      "budget_violation_count": 9,
+      "orphan_file_count": 11,
+      "model_status": "draft",
+      "mode": "dry_run"
+    },
+    "diff_check": "pass"
+  }
+}

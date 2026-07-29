@@ -1,0 +1,17 @@
+{
+  "clauses": [
+    { "id": "S-001", "type": "scenario", "story_scenario_ids": ["DRS-STORY-S-003"] },
+    { "id": "S-002", "type": "scenario", "story_scenario_ids": ["DRS-STORY-S-005"] },
+    { "id": "S-003", "type": "scenario", "story_scenario_ids": ["DRS-STORY-S-001"] },
+    { "id": "S-004", "type": "scenario", "story_scenario_ids": ["DRS-STORY-S-002"] },
+    { "id": "S-005", "type": "scenario", "story_scenario_ids": ["DRS-STORY-S-003"] },
+    { "id": "S-006", "type": "scenario", "story_scenario_ids": ["DRS-STORY-UNVERIFIED-004"] },
+    { "id": "S-007", "type": "scenario", "story_scenario_ids": ["DRS-STORY-S-001"] },
+    { "id": "S-008", "type": "scenario", "story_scenario_ids": ["DRS-STORY-S-005"] },
+    { "id": "S-009", "type": "scenario", "story_scenario_ids": ["DRS-STORY-S-005"] },
+    { "id": "S-010", "type": "scenario", "story_scenario_ids": ["DRS-STORY-S-006"] },
+    { "id": "S-011", "type": "scenario", "story_scenario_ids": ["DRS-STORY-S-005"] },
+    { "id": "S-012", "type": "scenario", "story_scenario_ids": ["DRS-STORY-S-005", "DRS-STORY-TXN-007", "DRS-STORY-ROUTE-008"] },
+    { "id": "S-013", "type": "scenario", "story_scenario_ids": ["DRS-STORY-RECOVERY-009"] }
+  ]
+}

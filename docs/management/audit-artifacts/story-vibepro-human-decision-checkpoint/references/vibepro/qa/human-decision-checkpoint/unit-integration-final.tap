@@ -1,0 +1,466 @@
+TAP version 13
+# Subtest: GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams
+ok 1 - GRS-S-9 INV-004 factory rejects unknown dependencies and whole-service replacement seams
+  ---
+  duration_ms: 0.687375
+  type: 'test'
+  ...
+# Subtest: RCC-S-4 guarded Run persistence emits capsule refresh events after authority commit
+ok 2 - RCC-S-4 guarded Run persistence emits capsule refresh events after authority commit
+  ---
+  duration_ms: 14.048834
+  type: 'test'
+  ...
+# Subtest: HDC-S-3 HDC-S-6 waiting Run resumes only after its typed decision is resolved
+ok 3 - HDC-S-3 HDC-S-6 waiting Run resumes only after its typed decision is resolved
+  ---
+  duration_ms: 177.612041
+  type: 'test'
+  ...
+# Subtest: HDC-S-3 waiting Run is side-effect free until the human decision is answered
+ok 4 - HDC-S-3 waiting Run is side-effect free until the human decision is answered
+  ---
+  duration_ms: 86.239291
+  type: 'test'
+  ...
+# Subtest: HDC-S-3 HDC-S-6 CLI resume answers a typed decision and continues the same Run
+ok 5 - HDC-S-3 HDC-S-6 CLI resume answers a typed decision and continues the same Run
+  ---
+  duration_ms: 133.085667
+  type: 'test'
+  ...
+# Subtest: GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable
+ok 6 - GRS-S-1 GRS-S-2 GRS-S-4 C-003 INV-001 S-004 repository Run persists exact defaults, resumes advisory budget, and repeated cancel is byte-stable
+  ---
+  duration_ms: 185.978792
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and repairs only from authority
+ok 7 - GRS-S-8 GRS-S-10 S-002 C-007 managed Run commits authority then mirror and repairs only from authority
+  ---
+  duration_ms: 66.046958
+  type: 'test'
+  ...
+# Subtest: GRS-S-3 GRS-S-8 INV-004 symlink legacy source root is persisted canonically and remains an allowed control root
+ok 8 - GRS-S-3 GRS-S-8 INV-004 symlink legacy source root is persisted canonically and remains an allowed control root
+  ---
+  duration_ms: 211.24575
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 GRS-S-9 managed metadata cannot downgrade its Run authority kind
+ok 9 - GRS-S-8 GRS-S-9 managed metadata cannot downgrade its Run authority kind
+  ---
+  duration_ms: 54.401125
+  type: 'test'
+  ...
+# Subtest: GRS-S-3 GRS-S-8 S-001 S-009 C-007 source fallback survives restart paths and rejects repair without mutation, but pre-existing unavailable fails closed
+ok 10 - GRS-S-3 GRS-S-8 S-001 S-009 C-007 source fallback survives restart paths and rejects repair without mutation, but pre-existing unavailable fails closed
+  ---
+  duration_ms: 240.786167
+  type: 'test'
+  ...
+# Subtest: GRS-S-3 S-009 copied unavailable metadata cannot grant source fallback control to another root
+ok 11 - GRS-S-3 S-009 copied unavailable metadata cannot grant source fallback control to another root
+  ---
+  duration_ms: 58.473958
+  type: 'test'
+  ...
+# Subtest: GRS-S-3 GRS-S-7 S-005 source fallback authority and fingerprint failures are non-mutating
+ok 12 - GRS-S-3 GRS-S-7 S-005 source fallback authority and fingerprint failures are non-mutating
+  ---
+  duration_ms: 61.955292
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 S-008 existing creation lock fails closed without bootstrapping and preserves the lock
+ok 13 - GRS-S-8 S-008 existing creation lock fails closed without bootstrapping and preserves the lock
+  ---
+  duration_ms: 10.519792
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 INV-004 source and managed callers use the same Story creation lock
+ok 14 - GRS-S-8 INV-004 source and managed callers use the same Story creation lock
+  ---
+  duration_ms: 7.090125
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 INV-004 concurrent linked worktrees share the bootstrap lock before legacy authority exists
+ok 15 - GRS-S-8 INV-004 concurrent linked worktrees share the bootstrap lock before legacy authority exists
+  ---
+  duration_ms: 57.987458
+  type: 'test'
+  ...
+# Subtest: GRS-S-10 S-008 partial legacy bootstrap stops Run creation, releases the lock, and makes the next attempt fail closed
+ok 16 - GRS-S-10 S-008 partial legacy bootstrap stops Run creation, releases the lock, and makes the next attempt fail closed
+  ---
+  duration_ms: 29.860834
+  type: 'test'
+  ...
+# Subtest: GRS-S-10 C-006 bootstrap failure without a legacy commit uses the CLI internal-error path
+ok 17 - GRS-S-10 C-006 bootstrap failure without a legacy commit uses the CLI internal-error path
+  ---
+  duration_ms: 5.346833
+  type: 'test'
+  ...
+# Subtest: GRS-S-10 S-002 managed mirror failure reports the committed authority artifact and leaves no mirror Run
+ok 18 - GRS-S-10 S-002 managed mirror failure reports the committed authority artifact and leaves no mirror Run
+  ---
+  duration_ms: 11.096
+  type: 'test'
+  ...
+# Subtest: GRS-S-10 S-002 existing mutation commits once across mirror failure and explicit repair
+ok 19 - GRS-S-10 S-002 existing mutation commits once across mirror failure and explicit repair
+  ---
+  duration_ms: 76.13575
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 C-005 implicit Run selection orders by created_at then lexical run_id
+ok 20 - GRS-S-8 C-005 implicit Run selection orders by created_at then lexical run_id
+  ---
+  duration_ms: 177.0835
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 C-005 implicit Run selection fails closed when any candidate is rejected
+ok 21 - GRS-S-8 C-005 implicit Run selection fails closed when any candidate is rejected
+  ---
+  duration_ms: 60.402042
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 C-006 human errors expose linked-copy recovery handles and exact repair command
+ok 22 - GRS-S-6 C-006 human errors expose linked-copy recovery handles and exact repair command
+  ---
+  duration_ms: 0.291209
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 C-006 guarded CLI rejects incompatible target instead of ignoring it
+ok 23 - GRS-S-6 C-006 guarded CLI rejects incompatible target instead of ignoring it
+  ---
+  duration_ms: 6.850166
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 C-001 repair-linked-copy CLI returns repaired authority in JSON and human forms
+ok 24 - GRS-S-6 C-001 repair-linked-copy CLI returns repaired authority in JSON and human forms
+  ---
+  duration_ms: 50.793709
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 C-006 repair-linked-copy is rejected before dispatch for every non-watch execute surface
+ok 25 - GRS-S-6 C-006 repair-linked-copy is rejected before dispatch for every non-watch execute surface
+  ---
+  duration_ms: 2.410541
+  type: 'test'
+  ...
+# Subtest: GRS-S-5 GRS-S-7 INV-002 resume fails closed on a stale authoritative HEAD without mutating the Run
+ok 26 - GRS-S-5 GRS-S-7 INV-002 resume fails closed on a stale authoritative HEAD without mutating the Run
+  ---
+  duration_ms: 107.283583
+  type: 'test'
+  ...
+# Subtest: GRS-S-5 resume from another worktree fails closed without mutating either artifact
+ok 27 - GRS-S-5 resume from another worktree fails closed without mutating either artifact
+  ---
+  duration_ms: 67.829833
+  type: 'test'
+  ...
+# Subtest: GRS-S-4 GRS-S-5 INV-005 failed Run can return to running only through resume
+ok 28 - GRS-S-4 GRS-S-5 INV-005 failed Run can return to running only through resume
+  ---
+  duration_ms: 255.009334
+  type: 'test'
+  ...
+# Subtest: GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transition set
+ok 29 - GRS-S-4 GRS-S-5 INV-005 lifecycle matrix accepts only the closed transition set
+  ---
+  duration_ms: 5328.051
+  type: 'test'
+  ...
+# Subtest: GRS-S-5 unknown persisted status and transition target fail closed without mutation
+ok 30 - GRS-S-5 unknown persisted status and transition target fail closed without mutation
+  ---
+  duration_ms: 83.0585
+  type: 'test'
+  ...
+# Subtest: GRS-S-2 GRS-S-5 INV-002 recoverable transitions require a fresh typed stop reason without mutation
+ok 31 - GRS-S-2 GRS-S-5 INV-002 recoverable transitions require a fresh typed stop reason without mutation
+  ---
+  duration_ms: 310.940959
+  type: 'test'
+  ...
+# Subtest: GRS-S-2 GRS-S-5 INV-002 malformed transition metadata fails before persistence
+ok 32 - GRS-S-2 GRS-S-5 INV-002 malformed transition metadata fails before persistence
+  ---
+  duration_ms: 404.593
+  type: 'test'
+  ...
+# Subtest: GRS-S-2 GRS-S-7 INV-001 INV-002 nullable state unions reject canonical and predecessor values without mutation
+ok 33 - GRS-S-2 GRS-S-7 INV-001 INV-002 nullable state unions reject canonical and predecessor values without mutation
+  ---
+  duration_ms: 746.21425
+  type: 'test'
+  ...
+# Subtest: GRS-S-2 GRS-S-7 historical stopped null remains readable while valid typed stop surfaces are observable
+ok 34 - GRS-S-2 GRS-S-7 historical stopped null remains readable while valid typed stop surfaces are observable
+  ---
+  duration_ms: 82.997209
+  type: 'test'
+  ...
+# Subtest: GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt state is quarantined, and future schema is preserved
+ok 35 - GRS-S-7 GRS-S-9 S-005 S-006 S-007 migration changes schema only, corrupt state is quarantined, and future schema is preserved
+  ---
+  duration_ms: 115.946709
+  type: 'test'
+  ...
+# Subtest: GRS-S-4 GRS-S-7 S-005 predecessor cancellation migrates once and missing fields never default
+ok 36 - GRS-S-4 GRS-S-7 S-005 predecessor cancellation migrates once and missing fields never default
+  ---
+  duration_ms: 127.458292
+  type: 'test'
+  ...
+# Subtest: GRS-S-7 GRS-S-10 S-002 managed predecessor migration commits authority once and requires explicit mirror repair
+ok 37 - GRS-S-7 GRS-S-10 S-002 managed predecessor migration commits authority once and requires explicit mirror repair
+  ---
+  duration_ms: 47.564958
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 GRS-S-9 artifact path identity mismatches fail without mutation
+ok 38 - GRS-S-8 GRS-S-9 artifact path identity mismatches fail without mutation
+  ---
+  duration_ms: 43.948542
+  type: 'test'
+  ...
+# Subtest: GRS-S-9 malformed Story catalog and legacy JSON fail closed without mutating state
+ok 39 - GRS-S-9 malformed Story catalog and legacy JSON fail closed without mutating state
+  ---
+  duration_ms: 44.965459
+  type: 'test'
+  ...
+# Subtest: GRS-S-4 GRS-S-7 forbidden persisted transition history is invalid and non-mutating
+ok 40 - GRS-S-4 GRS-S-7 forbidden persisted transition history is invalid and non-mutating
+  ---
+  duration_ms: 42.745625
+  type: 'test'
+  ...
+# Subtest: GRS-S-9 INV-004 Gate readiness is the only positive pr_ready transition
+ok 41 - GRS-S-9 INV-004 Gate readiness is the only positive pr_ready transition
+  ---
+  duration_ms: 87.070958
+  type: 'test'
+  ...
+# Subtest: GRS-S-9 C-006 strict ids fail before path composition and CLI emits typed exit-2 JSON
+ok 42 - GRS-S-9 C-006 strict ids fail before path composition and CLI emits typed exit-2 JSON
+  ---
+  duration_ms: 2.302208
+  type: 'test'
+  ...
+# Subtest: GRS-S-1 GRS-S-9 C-001 C-006 execute run rejects supplied valid and invalid Run ids before every side effect
+ok 43 - GRS-S-1 GRS-S-9 C-001 C-006 execute run rejects supplied valid and invalid Run ids before every side effect
+  ---
+  duration_ms: 2.198
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 C-001 C-006 CLI success JSON equals persisted Run and legacy status without run-id stays on the legacy route
+ok 44 - GRS-S-6 C-001 C-006 CLI success JSON equals persisted Run and legacy status without run-id stays on the legacy route
+  ---
+  duration_ms: 81.10625
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 C-001 execute help advertises guarded commands without removing legacy commands
+ok 45 - GRS-S-6 C-001 execute help advertises guarded commands without removing legacy commands
+  ---
+  duration_ms: 0.561584
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 INV-002 production Git identity resolves a real repository and linked worktree
+ok 46 - GRS-S-8 INV-002 production Git identity resolves a real repository and linked worktree
+  ---
+  duration_ms: 495.069709
+  type: 'test'
+  ...
+# Subtest: GRS-S-8 INV-004 separate Git directories keep bootstrap locks repository-scoped
+ok 47 - GRS-S-8 INV-004 separate Git directories keep bootstrap locks repository-scoped
+  ---
+  duration_ms: 433.217875
+  type: 'test'
+  ...
+# Subtest: GRS-S-6 GRS-S-8 C-001 C-007 S-009 repository CLI survives fresh processes and repair is non-mutating
+ok 48 - GRS-S-6 GRS-S-8 C-001 C-007 S-009 repository CLI survives fresh processes and repair is non-mutating
+  ---
+  duration_ms: 2820.527166
+  type: 'test'
+  ...
+# Subtest: SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop
+ok 49 - SAO-S-1 SAO-S-4 execute orchestration persists journal and typed stop
+  ---
+  duration_ms: 234.753625
+  type: 'test'
+  ...
+# Subtest: NBA-S-7 production orchestration persists an escape decision after two no-progress checkpoints
+ok 50 - NBA-S-7 production orchestration persists an escape decision after two no-progress checkpoints
+  ---
+  duration_ms: 353.581833
+  type: 'test'
+  ...
+# Subtest: HDC-S-3 resume rejects a different pending decision without mutating the waiting Run
+ok 51 - HDC-S-3 resume rejects a different pending decision without mutating the waiting Run
+  ---
+  duration_ms: 105.890917
+  type: 'test'
+  ...
+# Subtest: HDC-S-3 resumed orchestration preserves its cursor across an action failure and restart
+ok 52 - HDC-S-3 resumed orchestration preserves its cursor across an action failure and restart
+  ---
+  duration_ms: 504.396125
+  type: 'test'
+  ...
+# Subtest: NBA persisted legacy decisions omit additive fields while malformed present fields fail closed
+ok 53 - NBA persisted legacy decisions omit additive fields while malformed present fields fail closed
+  ---
+  duration_ms: 211.108542
+  type: 'test'
+  ...
+# Subtest: NBA rollback switch ignores escape handling and restores the complete canonical plan
+ok 54 - NBA rollback switch ignores escape handling and restores the complete canonical plan
+  ---
+  duration_ms: 207.143792
+  type: 'test'
+  ...
+# Subtest: SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail
+ok 55 - SAO-S-3 SAO-S-5 human summary renders every actionable recovery detail
+  ---
+  duration_ms: 0.222834
+  type: 'test'
+  ...
+# Subtest: NBA-S-7 public CLI derives a bounded escape after repeated unchanged resumes
+ok 56 - NBA-S-7 public CLI derives a bounded escape after repeated unchanged resumes
+  ---
+  duration_ms: 363.795084
+  type: 'test'
+  ...
+# Subtest: SAO-S-5 verification block persists failed kinds for public JSON and human status
+ok 57 - SAO-S-5 verification block persists failed kinds for public JSON and human status
+  ---
+  duration_ms: 170.19875
+  type: 'test'
+  ...
+# Subtest: SAO-S-1 SAO-S-2 non-dry CLI run and resume --until preserve checkpoints and typed output
+ok 58 - SAO-S-1 SAO-S-2 non-dry CLI run and resume --until preserve checkpoints and typed output
+  ---
+  duration_ms: 289.988583
+  type: 'test'
+  ...
+# Subtest: SAO-S-2 action checkpoint survives a later action failure
+ok 59 - SAO-S-2 action checkpoint survives a later action failure
+  ---
+  duration_ms: 175.937042
+  type: 'test'
+  ...
+# Subtest: SAO-S-2 C-004 resume retries only the failed action and preserves the completed checkpoint
+ok 60 - SAO-S-2 C-004 resume retries only the failed action and preserves the completed checkpoint
+  ---
+  duration_ms: 324.623042
+  type: 'test'
+  ...
+# Subtest: SAO-S-2 pr_ready is revoked until a changed HEAD passes the Gate DAG
+ok 61 - SAO-S-2 pr_ready is revoked until a changed HEAD passes the Gate DAG
+  ---
+  duration_ms: 216.966375
+  type: 'test'
+  ...
+# Subtest: SAO-S-2 SAO-S-3 changed-HEAD Gate exception persists rebound and typed recovery
+ok 62 - SAO-S-2 SAO-S-3 changed-HEAD Gate exception persists rebound and typed recovery
+  ---
+  duration_ms: 229.4915
+  type: 'test'
+  ...
+# Subtest: SAO-S-1 dry-run CLI is side-effect free and unknown --until fails typed
+ok 63 - SAO-S-1 dry-run CLI is side-effect free and unknown --until fails typed
+  ---
+  duration_ms: 3.495125
+  type: 'test'
+  ...
+# Subtest: GRS-S-9 INV-004 guarded Run source surface excludes runtime/waiver/merge imports and service replacement
+ok 64 - GRS-S-9 INV-004 guarded Run source surface excludes runtime/waiver/merge imports and service replacement
+  ---
+  duration_ms: 0.477083
+  type: 'test'
+  ...
+# Subtest: HDC-S-1 HDC-S-2 duplicate material questions reuse one typed pending artifact
+ok 65 - HDC-S-1 HDC-S-2 duplicate material questions reuse one typed pending artifact
+  ---
+  duration_ms: 7.661792
+  type: 'test'
+  ...
+# Subtest: HDC-S-2 every supported material decision type persists and resolves through one contract
+ok 66 - HDC-S-2 every supported material decision type persists and resolves through one contract
+  ---
+  duration_ms: 21.601375
+  type: 'test'
+  ...
+# Subtest: HDC-S-2 duplicate creation repairs a missing decision index entry
+ok 67 - HDC-S-2 duplicate creation repairs a missing decision index entry
+  ---
+  duration_ms: 3.63375
+  type: 'test'
+  ...
+# Subtest: HDC-S-1 HDC-S-6 duplicate creation preserves an immutable resolved decision
+ok 68 - HDC-S-1 HDC-S-6 duplicate creation preserves an immutable resolved decision
+  ---
+  duration_ms: 3.6545
+  type: 'test'
+  ...
+# Subtest: HDC-S-1 HDC-S-6 duplicate material reason on a new HEAD creates a new decision
+ok 69 - HDC-S-1 HDC-S-6 duplicate material reason on a new HEAD creates a new decision
+  ---
+  duration_ms: 5.18575
+  type: 'test'
+  ...
+# Subtest: HDC-S-6 resolved replay repairs the decision index before Run resume continues
+ok 70 - HDC-S-6 resolved replay repairs the decision index before Run resume continues
+  ---
+  duration_ms: 3.922041
+  type: 'test'
+  ...
+# Subtest: HDC-S-2 malformed decision JSON fails with a typed error and remains inspectable
+ok 71 - HDC-S-2 malformed decision JSON fails with a typed error and remains inspectable
+  ---
+  duration_ms: 2.402708
+  type: 'test'
+  ...
+# Subtest: HDC-S-4 critical gate waiver is rejected without resolving the artifact
+ok 72 - HDC-S-4 critical gate waiver is rejected without resolving the artifact
+  ---
+  duration_ms: 2.072458
+  type: 'test'
+  ...
+# Subtest: HDC-S-5 Brainbase handoff reference is preserved as an opaque value
+ok 73 - HDC-S-5 Brainbase handoff reference is preserved as an opaque value
+  ---
+  duration_ms: 1.951083
+  type: 'test'
+  ...
+# Subtest: HDC-S-6 HDC-S-7 answer binds to Run and HEAD and records reflection targets
+ok 74 - HDC-S-6 HDC-S-7 answer binds to Run and HEAD and records reflection targets
+  ---
+  duration_ms: 2.679709
+  type: 'test'
+  ...
+# Subtest: HDC-S-7 invalid type and cancelled Run are rejected
+ok 75 - HDC-S-7 invalid type and cancelled Run are rejected
+  ---
+  duration_ms: 1.776334
+  type: 'test'
+  ...
+# Subtest: HDC-S-2 HDC-S-7 persisted unknown type is rejected without mutation
+ok 76 - HDC-S-2 HDC-S-7 persisted unknown type is rejected without mutation
+  ---
+  duration_ms: 1.637709
+  type: 'test'
+  ...
+1..76
+# tests 76
+# suites 0
+# pass 76
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 17033.420667

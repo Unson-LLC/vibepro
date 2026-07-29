@@ -1,0 +1,1 @@
+{"agent_id":"aad-preview-network-b998-light","head":"b998951b8a59776252d419582cd2172e45505fe2","role":"network_runtime","status":"pass","summary":"The change adds no network client or server boundary; missing runtime owners stop locally and fail closed.","required_changes":[]}

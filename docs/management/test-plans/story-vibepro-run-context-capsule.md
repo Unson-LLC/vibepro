@@ -20,7 +20,7 @@ updated_at: 2026-07-16
 ## Verification commands
 
 ```bash
-node --test test/run-context-capsule.test.js test/guarded-run-session.test.js test/decision-records.test.js
+node --test test/run-context-capsule.test.js test/run-context-capsule-lineage.test.js test/guarded-run-session.test.js test/decision-records.test.js
 node --test test/verification-evidence-artifact-check.test.js test/verification-observation.test.js test/review-inspection-first.test.js test/agent-review-independence.test.js
 node --test --test-concurrency=2
 node bin/vibepro.js skills lint .

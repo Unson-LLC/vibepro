@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "head": "c01a1fe4",
+  "command": "node --test test/safe-action-orchestrator.test.js test/guarded-run-session.test.js test/e2e/story-vibepro-autonomous-action-dag-main.spec.js",
+  "tests": 129,
+  "passed": 129,
+  "failed": 0,
+  "workflow_replay": "pass",
+  "artifact_version": "0.2.0-beta.1"
+}

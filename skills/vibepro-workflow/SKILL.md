@@ -58,7 +58,8 @@ Also use it when the user asks whether VibePro work is done, PR-ready, verified,
 18. Run parallel subagent review:
    - Run each listed `vibepro review prepare <repo> --id <story-id> --stage <stage>`.
    - Open the generated `.vibepro/reviews/<story-id>/<stage>/parallel-dispatch.md`.
-   - Register each review lifecycle with `vibepro review start` using the real subagent id, then dispatch the listed Codex/Claude Code subagents in parallel, one role per subagent. Close each lifecycle with `vibepro review close --close-reason completed` after the subagent returns. Use `vibepro review repair <repo> --story-id <id>` to generate the repair command sequence for incomplete review evidence.
+   - Before spawning, run `vibepro review authorize` for each role with the intended model, risk closure, judgment delta, reusable evidence, and freeze state. Spawn only roles whose authorization returns `action: dispatch`; a stop means no subagent is started.
+   - After an authorized spawn returns the real subagent id, immediately register it with `vibepro review start --dispatch-authorization <id>`. Authorized reservations count against the Story-wide budget so parallel coordinators cannot overbook it. Close each lifecycle with `vibepro review close --close-reason completed` after the subagent returns. Use `vibepro review repair <repo> --story-id <id>` to generate the repair command sequence for incomplete review evidence.
    - After each subagent returns, close/shutdown that review subagent before recording the result. Do not leave review subagents running.
    - Record every result with `vibepro review record` and include subagent provenance plus closed lifecycle evidence:
      - Codex: `--agent-system codex --execution-mode parallel_subagent --agent-id <spawned-agent-id> --agent-closed` plus `--agent-thread-id` or `--agent-call-id` when available.

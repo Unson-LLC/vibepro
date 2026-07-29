@@ -1,0 +1,17 @@
+{
+  "agent_id": "gate-review-aad-evidence-final-light",
+  "role": "gate_evidence",
+  "head": "d4a9d70d76a36de70b348c51a05f922f872d6194",
+  "status": "pass",
+  "summary": "The integration evidence count mismatch is resolved. The artifact and verification ledger both record 133 passing tests with strict binding to the current head.",
+  "required_changes": [],
+  "reviewed_inputs": [
+    ".vibepro/qa/autonomous-action-dag-integration-d4a9d70d.json",
+    ".vibepro/pr/story-vibepro-autonomous-action-dag/verification-evidence.json"
+  ],
+  "evidence_refs": [
+    "HEAD=d4a9d70d76a36de70b348c51a05f922f872d6194",
+    "integration artifact status=pass tests=133",
+    "verification evidence strict-head expected/current/recorded HEAD match"
+  ]
+}

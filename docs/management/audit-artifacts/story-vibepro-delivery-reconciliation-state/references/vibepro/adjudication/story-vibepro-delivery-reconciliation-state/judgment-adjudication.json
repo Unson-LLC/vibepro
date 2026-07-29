@@ -1,0 +1,1528 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-delivery-reconciliation-state",
+  "updated_at": "2026-07-24T05:08:55.771Z",
+  "events": [
+    {
+      "event_id": "0052993e-22e9-452a-a632-845fd95b5ede",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story, Architecture, Spec, and implementation consistently separate delivery fact from reconciliation drift.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:55.254Z"
+    },
+    {
+      "event_id": "3741b7f0-67e3-490c-a969-9cc006d464ea",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Reviewer directly inspected clean current HEAD and reran current-head typecheck and focused tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:55.484Z"
+    },
+    {
+      "event_id": "32bd50a3-0d47-4818-b326-1b5c322c2cfd",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Immutable delivery, fail-closed behavior, exact identity, no cleanup, and additive rollback are encoded and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:55.707Z"
+    },
+    {
+      "event_id": "389d928d-4000-4423-b390-6a5313f5e903",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Scope is limited to delivery/reconciliation, transaction/concurrency, and routed authority.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:55.918Z"
+    },
+    {
+      "event_id": "5365af87-7712-4d0b-951e-4d636b7310e9",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Parse, provider, retry, persistence, evidence lifecycle, and workflow regression paths map to code and tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:56.138Z"
+    },
+    {
+      "event_id": "75609db5-6993-4f58-8896-23a9733a84fe",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head typecheck, focused tests, guardrail tests, and E2E evidence satisfy done criteria.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:56.367Z"
+    },
+    {
+      "event_id": "5a73243f-4167-4c46-a238-abe5ed0e65e3",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Execute status/reconcile/merge exits, JSON fields, and recovery command are explicit and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:56.602Z"
+    },
+    {
+      "event_id": "4b750407-521c-40bf-aa53-b4d7fe5bb04b",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "All-authority CAS, transaction-owned restoration, and newer operator state protection make rollback safe.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:56.828Z"
+    },
+    {
+      "event_id": "efd71e61-69bf-4df2-afca-a035bdd73612",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Common Story lock, authority routes, configured selectors, and sync boundaries are explicit.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:57.055Z"
+    },
+    {
+      "event_id": "4ba8217c-888f-4415-a300-8ac889c11c41",
+      "type": "verdict",
+      "item_id": "axis:performance_semantic",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Work is bounded projection and validation without added provider polling or persistence loops.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:57.294Z"
+    },
+    {
+      "event_id": "96bc645f-ad10-4dcb-97d9-8af6d26ef0a6",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The focused atomic contract would lose shared identity, lock, CAS, and rollback guarantees if split.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:57.514Z"
+    },
+    {
+      "event_id": "fbf90e14-5602-443f-b6df-15bdd2d0564f",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Observe, recover, exit policy, local recovery, conflict handling, rollback, and next action are concrete.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:57.746Z"
+    },
+    {
+      "event_id": "f4ba8516-f00a-4ccc-9437-577f55b74e16",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed provider JSON is persisted as blocked and is never inferred as success.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:57.957Z"
+    },
+    {
+      "event_id": "0d719a83-83ba-41fa-87ee-05ea7fceff43",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Provider failure does not invent delivery or erase prior observed delivery.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:58.206Z"
+    },
+    {
+      "event_id": "ba5a8518-d94d-4733-8388-b7ee112e611f",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Sync failure exposes only execute reconcile and rejects invalid or stale recovery inputs.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:58.511Z"
+    },
+    {
+      "event_id": "0ea490d7-1a26-4028-be81-a571453576cb",
+      "type": "verdict",
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Canonical and final persistence failures exit non-zero while preserving reconstructable delivery state.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:58.859Z"
+    },
+    {
+      "event_id": "e73045dc-9783-4680-bd23-c4ed295bb3d6",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Stale evidence is not treated as fresh; current-head verification and fail-closed projection are enforced.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:59.086Z"
+    },
+    {
+      "event_id": "e38da464-b3e8-4148-8f9c-190b919a206f",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Sync failure precedence, local authority preference, identity-bound fallback, and convergence are tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:59.402Z"
+    },
+    {
+      "event_id": "bbf0c0cf-483f-4975-a20f-76f855b68a9d",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Dedicated auth_denied behavior is outside this Story's declared delivery/reconciliation boundary and lacks current-HEAD Story evidence; independent reviewer judged it non-release-blocking but not proven.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final.md"
+      },
+      "head_commit": "4d4576f1188f05c1dd23fd0a73b7caa69bf0568f",
+      "recorded_at": "2026-07-24T01:32:59.625Z"
+    },
+    {
+      "event_id": "ca63faf5-b3fb-45fe-9e52-b7e58a161506",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "spine:intent is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:21.754Z"
+    },
+    {
+      "event_id": "47014747-5359-4059-85dd-b30dd0fa2730",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "spine:current_reality is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:21.904Z"
+    },
+    {
+      "event_id": "16be7dd5-99ce-4903-ba78-749a83ae2830",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "spine:invariants is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:22.064Z"
+    },
+    {
+      "event_id": "5abe81cf-cdf1-4763-b625-c4de44ecc79b",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "spine:boundaries is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:22.236Z"
+    },
+    {
+      "event_id": "f5e022ec-b7ef-42d2-b809-50aceb71ff70",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "spine:failure_modes is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:22.377Z"
+    },
+    {
+      "event_id": "b84c7118-ddb4-49d1-87d3-db6042652683",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "spine:done_evidence is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:22.553Z"
+    },
+    {
+      "event_id": "ff475d36-093b-4b60-8b00-a1516a4ba8c0",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "axis:public_contract is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:22.724Z"
+    },
+    {
+      "event_id": "fb7c8f75-db60-4880-9e84-7eb8f80540b2",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "axis:rollback_sensitive is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:22.882Z"
+    },
+    {
+      "event_id": "c5565add-854e-4bf0-91aa-c9d6b69fc0a6",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "axis:execution_topology is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:23.044Z"
+    },
+    {
+      "event_id": "bb17bdb3-db82-4c55-af45-f38c20ef5a8d",
+      "type": "verdict",
+      "item_id": "axis:performance_semantic",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "axis:performance_semantic is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:23.227Z"
+    },
+    {
+      "event_id": "a3622b52-74fc-4025-ae1b-c83cc69ebe57",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "axis:scope_reviewability is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:23.433Z"
+    },
+    {
+      "event_id": "4234dd97-deea-4fd0-8d0f-e15af0cf5ec7",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "axis:release_ops is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:23.606Z"
+    },
+    {
+      "event_id": "c055d401-5a3c-429b-a9a6-0e0121957b44",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "failure_mode:parse_failure is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:23.781Z"
+    },
+    {
+      "event_id": "c323ff2d-8994-4a3c-97cf-cca10b698df5",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "failure_mode:provider_failure is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:23.949Z"
+    },
+    {
+      "event_id": "b8f9e388-d5ba-4d6a-8923-13ae7efd171f",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "failure_mode:retry_or_async_failure is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:24.125Z"
+    },
+    {
+      "event_id": "6b8f4c4c-21fb-4003-9729-c5d543762c6a",
+      "type": "verdict",
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "failure_mode:persistence_failure is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:24.280Z"
+    },
+    {
+      "event_id": "db3cd93e-8ba9-4eb9-831f-490097827991",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "failure_mode:evidence_lifecycle_regression is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:24.440Z"
+    },
+    {
+      "event_id": "38888e81-83d0-4aff-ba43-e50c3d3c35ff",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "failure_mode:workflow_state_regression is sound at current HEAD based on the independent architecture, gate-evidence, scope, and release-risk review",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:24.582Z"
+    },
+    {
+      "event_id": "cb3b0131-2a61-491c-8dbd-627d225d3efe",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Authorization denial is outside this Story delivery/reconciliation boundary and dedicated evidence is not present; independent reviewer classified it non-blocking rather than inventing proof",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-85abd23f.md"
+      },
+      "head_commit": "85abd23f5798ae5b3493b3abd19f86cbf7f863a6",
+      "recorded_at": "2026-07-24T01:44:24.728Z"
+    },
+    {
+      "event_id": "7287675c-8918-42ab-8f35-13150d3d8140",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Immutable delivery and mutable reconciliation remain consistently separated from Story through runtime.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:06.310Z"
+    },
+    {
+      "event_id": "4ae600a1-b051-403f-8343-3972d4cb4906",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The prior single-status model is concretely shown to misstate delivered facts and stale evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:06.469Z"
+    },
+    {
+      "event_id": "530bdb47-561d-4a09-8745-477ff22ed01d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Delivery identity, fail-closed reconciliation, and operator-state preservation are fixed invariants.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:06.606Z"
+    },
+    {
+      "event_id": "e5fccb01-7411-4306-8a26-20d6f062a957",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story excludes gate ledger redesign and stale-evidence regeneration, limiting itself to atomic recovery substrate.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:06.764Z"
+    },
+    {
+      "event_id": "7961143f-7662-4fda-8dce-16833c78e02c",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Provider, persistence, synchronization, concurrency, routing, and evidence drift are independent failure surfaces.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:06.943Z"
+    },
+    {
+      "event_id": "f6d6c438-b2a1-4892-982b-711cf3648191",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head typecheck, focused 48/48, and E2E 79/79 bind commands and raw artifacts.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:07.117Z"
+    },
+    {
+      "event_id": "994eec4b-7812-40d3-8e54-d5de10f964b4",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "JSON fields, recovery command, exits 0/1/2, and diagnostics are fixed in Spec and public-binary tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:07.279Z"
+    },
+    {
+      "event_id": "fc387c55-be6c-4661-b9f4-ab429841d8e3",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Rollback preserves additive delivery facts and restores only transaction-owned values.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:07.417Z"
+    },
+    {
+      "event_id": "766414f4-cd78-4389-9cb2-d7f08a9effac",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Local, canonical, manifest, and linked-state write order and commit-last boundary are explicit.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:07.558Z"
+    },
+    {
+      "event_id": "f7f2b498-2698-42f1-991d-82639e60a693",
+      "type": "verdict",
+      "item_id": "axis:performance_semantic",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Consistency is the dominant risk and the shared lock remains scoped per Story.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:07.724Z"
+    },
+    {
+      "event_id": "55a2659e-f281-4ef9-9ac7-7d0ae0f1dd73",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The large diff has one shared identity and transaction invariant with no second Story lineage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:07.877Z"
+    },
+    {
+      "event_id": "361a672c-9126-4c73-8e3b-9571e8bbea05",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Status, exact-selector reconcile, exits, degraded recovery, and rollback are operationally concrete.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:08.019Z"
+    },
+    {
+      "event_id": "224d8913-62b3-4520-94c9-98c3b3825896",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed provider or state JSON remains diagnostic evidence rather than success.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:08.157Z"
+    },
+    {
+      "event_id": "63ec2abd-8d8b-4845-aa1a-b953ed664b5e",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Non-zero provider results preserve blocked delivery evidence and retry context.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:08.307Z"
+    },
+    {
+      "event_id": "390a898e-62f6-49ca-9d4f-d2a7daa8b6af",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Retry is bound to stored base and PR identity and consumes only synchronization failure.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:08.488Z"
+    },
+    {
+      "event_id": "2c205191-43a6-474c-a3f5-25b5500c06b4",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Provider-specific live authorization proof is outside this Story; generic provider failure is fail-closed, so final authorization operations remain human-owned and nonblocking for this implementation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:08.648Z"
+    },
+    {
+      "event_id": "312939e5-f4d9-4fdb-ac63-c3c0bc3ae1a1",
+      "type": "verdict",
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Partial persistence never becomes success and branches to rollback, local recovery, or explicit CAS conflict.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:08.792Z"
+    },
+    {
+      "event_id": "bfb41c5c-07f0-419f-be13-f2009f296e09",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current local authority suppresses stale canonical and other-HEAD evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:08.926Z"
+    },
+    {
+      "event_id": "9ba996a8-59e2-45da-ab2b-1847cc684966",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Delivered facts persist while unreconciled state stays non-zero until convergence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f91a2-3779-7dd2-98bd-d533721af6b1",
+        "session_ref": ".vibepro/reviews/story-vibepro-delivery-reconciliation-state/gate/transcripts/019f91a2-3779-7dd2-98bd-d533721af6b1-final-4c86e1cc.md"
+      },
+      "head_commit": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+      "recorded_at": "2026-07-24T02:29:09.096Z"
+    },
+    {
+      "event_id": "0a125a85-f4cb-4962-83eb-aaf17ad8f0ac",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Immutable delivery and mutable reconciliation are consistently connected from Story through implementation",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:02.927Z"
+    },
+    {
+      "event_id": "1d37507a-2ce3-44dd-8160-fc82491973a3",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Provider merged view base ancestry and current evidence are treated as separate authorities",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:03.220Z"
+    },
+    {
+      "event_id": "2f5ca3b0-8bb5-4c85-ad73-fbf6c2a2adbb",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Delivery non-reversal fail-closed evidence and cleanup protection are fixed by negative-path tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:03.444Z"
+    },
+    {
+      "event_id": "418c72bb-7e7a-4c1b-a9e4-67622ee69a23",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "State projection transaction concurrency and routed authority lanes match implementation boundaries",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:03.650Z"
+    },
+    {
+      "event_id": "67f9450f-3dc9-47b8-9ccf-943f2e9fa90c",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Exact-head E2E focused tests typecheck and architecture runtime reviews cover primary surfaces",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:03.933Z"
+    },
+    {
+      "event_id": "bc72e53a-bc73-4e83-8c31-abacf91fe2a1",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Additive schema exit semantics JSON and legacy projection compatibility are fixed by shipped binary tests",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:04.208Z"
+    },
+    {
+      "event_id": "cc7750b2-77b9-4129-a12c-c781673ccf15",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CAS and per-write ownership protect newer operator state while preserving immutable delivery",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:04.450Z"
+    },
+    {
+      "event_id": "b4f80a34-3a30-44b0-9ec2-5e536f715c78",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Observation ancestry persistence linked synchronization reconciliation and lock order align in implementation and E2E",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:04.687Z"
+    },
+    {
+      "event_id": "d2505c1e-001d-4b81-b75e-fca6708ce4d1",
+      "type": "verdict",
+      "item_id": "axis:performance_semantic",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No added provider polling and bounded local validation preserves semantic correctness",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:05.065Z"
+    },
+    {
+      "event_id": "12b59afb-d91a-451d-966f-32a01a2f4584",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CHANGELOG release guide status exit policy recovery command and rollback path align with public CLI E2E",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:05.308Z"
+    },
+    {
+      "event_id": "66882905-8635-4ca3-9ad8-55d2bd44d878",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed provider data and corrupt execution state are isolated and fail closed",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:05.597Z"
+    },
+    {
+      "event_id": "4db3cc65-24a4-4ece-b2c3-376ac06e518c",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Provider failures do not infer delivery and preserve already observed delivery facts",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:05.993Z"
+    },
+    {
+      "event_id": "6b657928-8d96-4d9e-b20b-44d3921f3c78",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Exact identity reconciliation converges without repeating delivery",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:06.254Z"
+    },
+    {
+      "event_id": "972ec55d-bc62-4c85-9e36-24d674ba695b",
+      "type": "verdict",
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Canonical failure local recovery rollback damage and CAS conflict remain distinct and nonzero",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:06.516Z"
+    },
+    {
+      "event_id": "d64f36bd-98cf-40f1-86f6-d07c6a05923d",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Same-head readiness priority stale Gate DAG rejection and strict-head evidence are tested",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:06.801Z"
+    },
+    {
+      "event_id": "096e1a9d-9ce7-48cb-ab55-e05d0b3a98c7",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "All fourteen exits use the shared CAS baseline finalizer and preserve both state axes",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:07.035Z"
+    },
+    {
+      "event_id": "61d544d4-b1fa-4b10-80ab-c263e07cac18",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Current post-freeze E2E does not directly assert gate denial before provider operation for the auth boundary",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:15.783Z"
+    },
+    {
+      "event_id": "9442bacd-57e8-4328-b7f3-c0d6519dede8",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The coherent change is still too large for one engineer to read consistently in a single review pass",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:16.005Z"
+    },
+    {
+      "event_id": "b02670de-6e51-429f-b113-641244971165",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Scenario text alone does not directly execute and assert provider operation denial in the post-freeze E2E",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "5688806c80b337867f0f13de855bb6eaf71bc20e",
+      "recorded_at": "2026-07-24T04:39:16.271Z"
+    },
+    {
+      "event_id": "f6ac1d58-6628-4708-b8d2-1f37bd1f1347",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Ten ACs and nine scenarios map 23/23 to implementation and tests with no weak or unmapped lineage.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:51.819Z"
+    },
+    {
+      "event_id": "79080306-f64c-4b94-93f5-110c6139680e",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "External delivery, current-head authorization, and operator-visible execution state remain distinct authorities.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:52.061Z"
+    },
+    {
+      "event_id": "75ffe7cf-d32c-4377-8051-3f5f0ec48d4d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Immutable delivery, fail-closed reconciliation, identity-bound recovery, CAS, and owned rollback are executable invariants.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:52.273Z"
+    },
+    {
+      "event_id": "13367ceb-97f6-46db-8d8c-3ee45ec11afd",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Provider, gate authority, local/canonical/linked state, and execution state ownership are explicit.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:52.472Z"
+    },
+    {
+      "event_id": "fd2263b7-906f-4336-adbb-85922491df27",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Parse, provider, retry, auth denial, persistence, evidence lifecycle, and workflow-state failures have current executable evidence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:52.695Z"
+    },
+    {
+      "event_id": "ad0f2090-e2c4-4b39-80f5-130f211ccc39",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Strict-head E2E 11/11, focused 292/292, integration 2/2, and typecheck pass bind to ad4b4469.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:52.917Z"
+    },
+    {
+      "event_id": "5dabaa1d-1a75-4928-b2ba-7c67d95b8d7d",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Additive schema, compatible top-level status, CLI exits, and exact recovery command agree across spec and tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:53.133Z"
+    },
+    {
+      "event_id": "5db06a12-26bc-44ae-acf7-9b3314d8a27b",
+      "type": "verdict",
+      "item_id": "axis:rollback_sensitive",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Non-destructive delivery rollback, transaction ownership, CAS conflict, and local degraded recovery are verified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:53.347Z"
+    },
+    {
+      "event_id": "46dbb87a-5f5e-48f9-bf16-4b93475e8a88",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Lock, generation guard, heartbeat, CAS, follow-up transaction, and reconcile ordering are coherent.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:53.569Z"
+    },
+    {
+      "event_id": "5dd4bc50-06d7-4a47-9cec-a789e4c275ce",
+      "type": "verdict",
+      "item_id": "axis:performance_semantic",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change is semantic rather than performance-oriented; synchronization meaning and contention safety are contract-tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:53.799Z"
+    },
+    {
+      "event_id": "7d5bbad0-88c5-4016-98f6-e3e51a5084d2",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Despite 56 files, 23/23 traceability forms one authority contract whose split would create incomplete states.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:54.016Z"
+    },
+    {
+      "event_id": "d833a3ce-f93f-4bf0-9589-77dcd008fab3",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Release guide, status/reconcile operator path, nonzero exits, recovery, and additive rollback are present.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:54.227Z"
+    },
+    {
+      "event_id": "a3b26ed0-fa79-4aac-985d-a1f4321bee35",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed provider JSON and state fail closed into blocked or quarantine outcomes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:54.439Z"
+    },
+    {
+      "event_id": "6a5a1e2d-640a-453b-90c3-626ee96438a0",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Provider failures do not infer delivery and persist a blocked result.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:54.656Z"
+    },
+    {
+      "event_id": "7856482c-3486-4f12-8d9c-ee44527703af",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Retry idempotency, follow-up replay, exact identity, and duplicate avoidance are executable.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:54.875Z"
+    },
+    {
+      "event_id": "0aaa3c4f-c4fd-400e-827e-a5e56f785e06",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Missing, conflicting, stale, wrong-route, and missing-DAG authority stop before provider mutation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:55.096Z"
+    },
+    {
+      "event_id": "5a8a8594-5e1a-4280-a009-644041164203",
+      "type": "verdict",
+      "item_id": "failure_mode:persistence_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Canonical and execution persistence failures preserve delivery and use owned rollback or local recovery.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:55.320Z"
+    },
+    {
+      "event_id": "ddad1991-ff52-4886-859f-da2cf90c7061",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Strict-head binding, stale authority rejection, current reviews, and 23/23 traceability prevent stale green reuse.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:55.550Z"
+    },
+    {
+      "event_id": "1f57383b-7160-4313-aecd-53294b24d459",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Delivery, reconciliation, and completion remain separate and unresolved state cannot over-promote readiness.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f9096-aa57-7c71-a9fd-015d361cc2e5",
+        "session_ref": "019f9096-aa57-7c71-a9fd-015d361cc2e5"
+      },
+      "head_commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "recorded_at": "2026-07-24T05:08:55.769Z"
+    }
+  ]
+}

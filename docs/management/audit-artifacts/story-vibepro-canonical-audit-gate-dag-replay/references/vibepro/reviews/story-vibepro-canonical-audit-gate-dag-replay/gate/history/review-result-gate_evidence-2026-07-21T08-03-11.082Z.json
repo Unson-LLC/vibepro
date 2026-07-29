@@ -1,0 +1,139 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-canonical-audit-gate-dag-replay",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Corrected verification evidence cleanly separates unit CAGR contract coverage from integration persistence/replay coverage at final HEAD.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Independent lightweight review confirmed distinct commands and artifacts, strict final-HEAD binding, clean managed worktree, and no remaining scenario overclaim.",
+    "evidence": ".vibepro/pr/story-vibepro-canonical-audit-gate-dag-replay/verification-evidence.json",
+    "inputs": [
+      "src/canonical-audit.js",
+      "test/canonical-audit-self-contained.test.js",
+      "test/canonical-audit-idempotent-persistence.test.js",
+      "docs/specs/vibepro-canonical-audit-gate-dag-replay.md"
+    ]
+  },
+  "judgment_delta": [
+    "previous integration scenario overclaim detected -> corrected integration evidence is persistence/replay-only and unit evidence owns CAGR contracts"
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+    "expected_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+    "expected_head_sha": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+    "current_head_sha": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+      "path": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-canonical-audit-gate-dag-replay",
+      "branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+      "actual_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+      "current_head_sha": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-21T08:03:11.082Z",
+  "git_context": {
+    "head_sha": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+    "current_branch": "codex/story-vibepro-canonical-audit-gate-dag-replay",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-21T08:03:11.045Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Gate artifacts and verification evidence are final-head bound"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "b7f98e484d9c787b6cda7d725b82109605bf7e1a",
+    "surface_files": [
+      {
+        "path": "docs/specs/vibepro-canonical-audit-gate-dag-replay.md",
+        "sha256": "44193f4e4f327af43cb846c9b3f280285cda89bf1c4ea4b46da1d2a448ff7d2c",
+        "size": 1681
+      },
+      {
+        "path": "src/canonical-audit.js",
+        "sha256": "c746378ffb3e87802fbbf507e518942eb68195d52ec560bc3ef92d457cd431f5",
+        "size": 107341
+      },
+      {
+        "path": "test/canonical-audit-idempotent-persistence.test.js",
+        "sha256": "fb9b473a1755f11a9dbe97b1eff9fee6bf945535d896bf278f8a25d8e59edfcd",
+        "size": 11457
+      },
+      {
+        "path": "test/canonical-audit-self-contained.test.js",
+        "sha256": "48888f647cc0ec722be2f8afe794ef06a360b22b2cbba609c84b70598af8b37c",
+        "size": 37383
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "cffb43f25ec3d5bb7a6bcc58cf457e9a7c2ff2d417b43439504967e5627e3f83"
+  },
+  "source_fingerprint": "0dc7625c2e25673480a2efe75c0bfc7fa6982a3eb7e3ba3f01979d2d2a697cea",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/gate_evidence_b7f_retry_light",
+    "agent_role": null,
+    "model": "lightweight",
+    "reasoning_effort": "low",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-canonical-audit-gate-dag-replay/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/pr/story-vibepro-canonical-audit-gate-dag-replay/verification-evidence.json",
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

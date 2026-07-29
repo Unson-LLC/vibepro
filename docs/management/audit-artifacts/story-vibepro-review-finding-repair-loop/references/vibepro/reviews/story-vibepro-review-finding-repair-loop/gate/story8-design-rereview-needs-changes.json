@@ -1,0 +1,17 @@
+{
+  "status": "needs_changes",
+  "head_sha": "8703acbf3d79065e2a8145adbd25cd4b4400d075",
+  "inspection_summary": "Architecture registration was present, but the registered child lacked parent_design frontmatter.",
+  "findings": [
+    {
+      "id": "rfr-design-child-frontmatter-gap",
+      "severity": "medium",
+      "detail": "Add parent_design: vibepro-autonomy-roadmap-rebaseline and rerun reconciliation."
+    }
+  ],
+  "evidence": [
+    "docs/architecture/story-vibepro-review-finding-repair-loop.md",
+    ".vibepro/pr/story-vibepro-review-finding-repair-loop/design-ssot-reconciliation.json",
+    "59/59 focused tests passed"
+  ]
+}

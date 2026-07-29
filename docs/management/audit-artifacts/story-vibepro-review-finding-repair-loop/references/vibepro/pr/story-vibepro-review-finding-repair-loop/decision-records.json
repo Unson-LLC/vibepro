@@ -1,0 +1,566 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-review-finding-repair-loop",
+  "updated_at": "2026-07-20T14:28:02.343Z",
+  "warnings": [],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784557682343-7fddc7b8",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:senior_gap_judgment",
+      "source_status": "needs_review",
+      "summary": "Current-head senior gaps are explicitly reviewed and accepted",
+      "reason": "The remaining generated gaps are scope/design follow-ups already covered by current accepted decisions, 7/7 demonstrated ACs, 15/15 sound judgments, current responsibility authority, and a closed independent pass review.",
+      "reviewer": "codex-coordinator",
+      "artifact": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-metadata-rereview.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+        "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T14:28:02.342Z"
+      },
+      "recorded_at": "2026-07-20T14:28:02.343Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784557680778-ef9fd68d",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "No visual design lineage change is required at current HEAD",
+      "reason": "Story 8 adds only non-visual CLI/runtime behavior; CLI references, Story, architecture, Spec, and tests are aligned, and no UI route, token, component, or interaction surface changes.",
+      "reviewer": "codex-coordinator",
+      "artifact": "docs/architecture/story-vibepro-review-finding-repair-loop.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+        "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T14:28:00.776Z"
+      },
+      "recorded_at": "2026-07-20T14:28:00.778Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784557664422-0798bec1",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:senior_gap_judgment",
+      "source_status": "needs_review",
+      "summary": "Accept senior judgment closure from current-head adjudication and independent review",
+      "reason": "All seven ACs are demonstrated, all fifteen judgment items are judged_sound, responsibility authority passes, and independent current-head gate review passes; residual generated gaps do not identify a contradictory implementation finding.",
+      "reviewer": "codex-coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-review-finding-repair-loop/senior-gap-judgment.summary.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+        "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T14:27:44.421Z"
+      },
+      "recorded_at": "2026-07-20T14:27:44.422Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784557662865-0bf7e21d",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "Accept additive CLI design lineage for Story 8",
+      "reason": "The only user-facing design change is an additive CLI command family documented in both language references and aligned with Story, architecture, Spec, and tested output; no UI design surface is introduced.",
+      "reviewer": "codex-coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-review-finding-repair-loop/design-ssot-reconciliation.summary.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+        "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T14:27:42.864Z"
+      },
+      "recorded_at": "2026-07-20T14:27:42.865Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784557661122-864afde8",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "Accept Story 8 as one reviewable vertical slice",
+      "reason": "All six focused commits and seven changed files implement one Story 8 contract spanning SSOT, runtime, CLI docs, and tests; independent review found the slice coherent and no Story-external file is present.",
+      "reviewer": "codex-coordinator",
+      "artifact": ".vibepro/pr/story-vibepro-review-finding-repair-loop/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+        "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T14:27:41.121Z"
+      },
+      "recorded_at": "2026-07-20T14:27:41.122Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784557659566-a9f78c1e",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_execution_topology",
+      "source_status": "needs_evidence",
+      "summary": "Accept execution topology judgment from independent current-head review",
+      "reason": "The current independent review, architecture, crash-safe dispatch tests, and 1445-pass suite cover worker, retry, artifact, and evidence lifecycle topology; missing agent_review is a derived projection mismatch.",
+      "reviewer": "codex-coordinator",
+      "artifact": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-metadata-rereview.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+        "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T14:27:39.565Z"
+      },
+      "recorded_at": "2026-07-20T14:27:39.566Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784557657981-5023a313",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "source_status": "needs_evidence",
+      "summary": "Accept current closed independent review despite derived lifecycle false negative",
+      "reason": "pr-prepare embeds agent_reviews.status=pass with zero unmet, stale, timed-out, or blocked reviews at HEAD b8bf4fa6, but the derived lifecycle node remains needs_evidence; independent metadata rereview passed against the same 1445-pass artifact.",
+      "reviewer": "codex-coordinator",
+      "artifact": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-metadata-rereview.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+        "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T14:27:37.976Z"
+      },
+      "recorded_at": "2026-07-20T14:27:37.981Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784554061178-0cc05c9d",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": "needs_review",
+      "summary": "No visual design lineage change is required",
+      "reason": "This Story adds a non-visual CLI and runtime state-machine contract; it changes no UI routes, design tokens, component semantics, or visual interaction surfaces.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-review-finding-repair-loop.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "acf78949871c520892b1043d53e6815b9b0549d8",
+        "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T13:27:41.177Z"
+      },
+      "recorded_at": "2026-07-20T13:27:41.178Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784554059449-a7efc8e9",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "Keep VibePro diagnostics out of the committed PR",
+      "reason": ".vibepro artifacts remain ignored diagnostic evidence; the committed PR contains only source, tests, architecture, spec, config registration, and CLI references.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-review-finding-repair-loop.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "acf78949871c520892b1043d53e6815b9b0549d8",
+        "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T13:27:39.448Z"
+      },
+      "recorded_at": "2026-07-20T13:27:39.449Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784554057740-071ed211",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "Resolve split gate with bundled-scope justification",
+      "reason": "All seven changed product files implement or verify the same Story acceptance surface and can be reviewed as one coherent state machine; no unrelated intent is bundled.",
+      "reviewer": "codex",
+      "artifact": "docs/management/stories/active/story-vibepro-review-finding-repair-loop.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "acf78949871c520892b1043d53e6815b9b0549d8",
+        "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T13:27:37.739Z"
+      },
+      "recorded_at": "2026-07-20T13:27:37.740Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784554055991-6623075b",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_split",
+      "summary": "Keep the repair loop as one atomic PR surface",
+      "reason": "State transitions, public CLI adapters, canonical evidence guards, tests, and docs form one bounded repair-loop contract; splitting would separate runtime transitions from the only public and verified consumer paths.",
+      "reviewer": "codex",
+      "artifact": "docs/architecture/story-vibepro-review-finding-repair-loop.md",
+      "verification_evidence_summary": {
+        "count": 2,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "acf78949871c520892b1043d53e6815b9b0549d8",
+        "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T13:27:35.989Z"
+      },
+      "recorded_at": "2026-07-20T13:27:35.991Z"
+    }
+  ],
+  "summary": {
+    "total": 11,
+    "open": 0,
+    "by_type": {
+      "needs_review": 6,
+      "waiver": 5
+    },
+    "by_status": {
+      "accepted": 11
+    },
+    "warnings": [],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1784557682343-7fddc7b8",
+      "story_id": "story-vibepro-review-finding-repair-loop",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:senior_gap_judgment",
+      "source_status": "needs_review",
+      "summary": "Current-head senior gaps are explicitly reviewed and accepted",
+      "reason": "The remaining generated gaps are scope/design follow-ups already covered by current accepted decisions, 7/7 demonstrated ACs, 15/15 sound judgments, current responsibility authority, and a closed independent pass review.",
+      "reviewer": "codex-coordinator",
+      "artifact": ".vibepro/reviews/story-vibepro-review-finding-repair-loop/gate/story8-metadata-rereview.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/targeted-status.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/qa/story-vibepro-review-finding-repair-loop/full-suite-status.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [],
+      "git_context": {
+        "head_sha": "b8bf4fa6d4ed526884027a710e766553d387b8a3",
+        "current_branch": "codex/story-vibepro-review-finding-repair-loop",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-20T14:28:02.342Z"
+      },
+      "recorded_at": "2026-07-20T14:28:02.343Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-review-finding-repair-loop/decision-records.json"
+}

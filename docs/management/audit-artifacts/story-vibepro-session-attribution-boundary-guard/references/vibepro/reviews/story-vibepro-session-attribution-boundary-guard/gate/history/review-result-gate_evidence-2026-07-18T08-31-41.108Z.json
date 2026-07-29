@@ -1,0 +1,129 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-attribution-boundary-guard",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Current-head tests pass, but stale QA artifacts, overstated AC traceability, a contradictory inherited contract, and split misclassification require correction.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "GE-CURRENT-HEAD-ARTIFACT-MISMATCH",
+      "detail": "QA artifacts are bound to older heads and counts while verification claims current HEAD."
+    },
+    {
+      "severity": "high",
+      "id": "GE-AC-TRACEABILITY-OVERSTATED",
+      "detail": "AC-4 has no direct file or test mapping and relies on stale broad evidence."
+    },
+    {
+      "severity": "medium",
+      "id": "GE-SPEC-INHERITED-CONTRACT-CONTRADICTION",
+      "detail": "SAB-INHERITED-1 says unchanged although AC-6 intentionally changes no-session behavior."
+    },
+    {
+      "severity": "medium",
+      "id": "GE-SCOPE-SPLIT-MISCLASSIFICATION",
+      "detail": "All changed files are one atomic story despite generated split recommendation."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected Story, Spec, Architecture, full origin/main...HEAD diff, implementation and tests, then reran 56 focused tests and typecheck. The code behavior held, while the evidence chain and Spec contract did not.",
+    "evidence": "HEAD 29d14372; node --test --test-concurrency=2 test/session-efficiency-audit.test.js test/responsibility-authority.test.js => 56/56 pass; npm run typecheck => pass; inspected verification-evidence.json, traceability.json, evidence-reuse.json, pr-prepare.json and all QA status artifacts.",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/review-request-gate_evidence.md"
+    ]
+  },
+  "judgment_delta": [
+    "Fresh review shifts the blocking risk from runtime behavior to current-head evidence authenticity, direct AC-4 mapping, Spec consistency, and no-split adjudication."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+    "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+    "expected_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+    "expected_head_sha": "29d14372ad7572c38726462eaedfcc1165ec41b1",
+    "current_head_sha": "29d14372ad7572c38726462eaedfcc1165ec41b1",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/95a4/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-session-attribution-boundary-guard-1xifvm",
+      "branch": "codex/story-vibepro-session-attribution-boundary-guard",
+      "actual_branch": "codex/story-vibepro-session-attribution-boundary-guard",
+      "current_head_sha": "29d14372ad7572c38726462eaedfcc1165ec41b1",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ]
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-18T08:31:41.108Z",
+  "git_context": {
+    "head_sha": "29d14372ad7572c38726462eaedfcc1165ec41b1",
+    "current_branch": "codex/story-vibepro-session-attribution-boundary-guard",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-18T08:31:41.108Z"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "29d14372ad7572c38726462eaedfcc1165ec41b1",
+    "surface_files": [],
+    "missing_files": [],
+    "surface_hash": null
+  },
+  "source_fingerprint": "cca5e81988c2914b1daedded4b0c9e3f47e3c43b0925b598bde211c6e1eb676a",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019f7452-4d38-7121-a181-fb99ff3c4509",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-session-attribution-boundary-guard/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent_notification:019f7452-4d38-7121-a181-fb99ff3c4509",
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+  "updated_at": "2026-07-19T01:09:56.375Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "The workflow contract reaches deployment only after final-main synchronization and dependency installation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "docs_recovery_release_risk",
+        "session_ref": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-971be877.json"
+      },
+      "head_commit": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+      "recorded_at": "2026-07-19T01:09:56.361Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Focused regression test proves ordered final-main pull, lockfile-bound npm ci, then docs:deploy.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "docs_recovery_release_risk",
+        "session_ref": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-971be877.json"
+      },
+      "head_commit": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+      "recorded_at": "2026-07-19T01:09:53.668Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Committed .gitignore exact node_modules rule is selected and five clean-source guard tests pass.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "docs_recovery_release_risk",
+        "session_ref": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-971be877.json"
+      },
+      "head_commit": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+      "recorded_at": "2026-07-19T01:09:51.700Z"
+    }
+  ]
+}

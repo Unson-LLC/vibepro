@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "status": "pass",
+  "command": "node bin/vibepro.js architecture conformance . --json",
+  "baseline": {
+    "ref": "origin/main",
+    "sha": "236937dfe33eb407f912086d54bfbd3d7d699874",
+    "violation_count": 81
+  },
+  "observed": {
+    "exit_code": 0,
+    "head_sha": "d445b8f908fc57afcc686e1dbfa8ff4bdbc01f69",
+    "violation_count": 80,
+    "undeclared_dependency_count": 66,
+    "budget_violation_count": 5,
+    "orphan_file_count": 9,
+    "stale_pattern_count": 0,
+    "run_session_file_count": 11,
+    "new_reverse_cli_dependency": false
+  },
+  "comparison": "improved: 81 -> 80"
+}

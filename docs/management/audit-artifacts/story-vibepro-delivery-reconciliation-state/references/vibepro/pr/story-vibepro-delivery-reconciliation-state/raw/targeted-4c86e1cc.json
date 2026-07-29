@@ -1,0 +1,10 @@
+{
+  "head_sha": "4c86e1cc",
+  "command": "node --test --test-concurrency=2 --test-name-pattern='DRS-CONTRACT-007|DRS-CONTRACT-008|DRS-CONTRACT-009|DRS-S-5|ROLLBACK-OWNERSHIP-002|configured routes' test/execution-state.test.js test/traceability-usage-report.test.js test/story-transaction-lock.test.js",
+  "status": "pass",
+  "tests": 48,
+  "passed": 48,
+  "failed": 0,
+  "duration_ms": 5207.399708,
+  "exit_code": 0
+}

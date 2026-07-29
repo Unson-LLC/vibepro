@@ -10,6 +10,7 @@ import {
 import { loadCoverage } from './coverage-report.js';
 import { buildScanCoverage, resolveScanConclusiveness } from './scan-status.js';
 import { getWorkspaceDir } from './workspace.js';
+import { resolveArtifactRoute } from './artifact-routing.js';
 
 // Regression-risk scanner: blast-radius core, optionally sharpened by coverage.
 //
@@ -35,7 +36,12 @@ const CALL_RELATIONS = new Set(['calls', 'call', 'invokes', 'uses']);
 
 export async function scanRegressionRisk(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
-  const graphPath = path.join(getWorkspaceDir(root), 'graphify', 'graph.json');
+  const graphRoute = options.storyId
+    ? await resolveArtifactRoute(root, 'graphify', { storyId: options.storyId })
+    : null;
+  const graphPath = graphRoute
+    ? path.join(graphRoute.canonical.absolute_path, 'graph.json')
+    : path.join(getWorkspaceDir(root), 'graphify', 'graph.json');
 
   let graph;
   try {

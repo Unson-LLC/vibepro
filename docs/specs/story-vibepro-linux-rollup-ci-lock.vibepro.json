@@ -1,0 +1,88 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-linux-rollup-ci-lock",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "LRCL-001",
+      "type": "contract",
+      "statement": "The root package declares the exact Linux x64 GNU Rollup binary as an optional dependency.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "package.json", "anchor": "@rollup/rollup-linux-x64-gnu" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "LRCL-001/002" }]
+      }
+    },
+    {
+      "id": "LRCL-002",
+      "type": "invariant",
+      "statement": "The lockfile resolves the Linux x64 GNU Rollup binary as a concrete package entry.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "package-lock.json", "anchor": "node_modules/@rollup/rollup-linux-x64-gnu" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "LRCL-001/002" }]
+      }
+    },
+    {
+      "id": "LRCL-003",
+      "type": "contract",
+      "statement": "The Linux native Rollup package remains optional and platform-constrained so incompatible platforms can skip it without changing VibePro runtime behavior.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "package.json",
+            "anchor": "optionalDependencies"
+          },
+          {
+            "file": "package-lock.json",
+            "anchor": "optional"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/post-merge-release.test.js",
+            "must_contain": "LRCL-001/002"
+          }
+        ]
+      }
+    },
+    {
+      "id": "LRCL-004",
+      "type": "scenario",
+      "statement": "Repository-relative docs links in PR release prose are projected as absolute GitHub links that pass the public manual dead-link gate.",
+      "origin": {
+        "story_refs": [{ "kind": "acceptance_criteria" }],
+        "code_refs": [{ "file": "scripts/post-merge-release.mjs", "anchor": "https://github.com/Unson-LLC/vibepro/blob/main/docs/" }]
+      },
+      "verifiable_by": {
+        "test_pattern": [{ "file_glob": "test/post-merge-release.test.js", "must_contain": "makes repository docs links safe" }]
+      }
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "title": "Linux CI dependency install",
+      "mermaid": "flowchart LR\n  Package[Root optional dependency] --> Lock[Resolved lockfile entry]\n  Lock --> Install[npm ci on Linux]\n  Install --> Rollup[Native Rollup binary]\n  Rollup --> Docs[VitePress build]"
+    },
+    {
+      "kind": "threat_model",
+      "title": "Release-note input boundary",
+      "mermaid": "flowchart LR\n  PR[Untrusted PR release prose] --> Normalize[Escape HTML and normalize docs links]\n  Lock[Committed platform lock] --> CI[Linux npm ci]\n  Normalize --> Manual[Generated public manual]\n  CI --> Build[VitePress build]\n  Manual --> Build\n  Secrets[Deployment secrets] --> Deploy[Wrangler deploy]\n  Build --> Deploy"
+    }
+  ]
+}

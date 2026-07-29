@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-merge-waiver-propagation",
+      "decision_id": "decision-1784789856463-716de87b",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 14-file product diff has one control-plane intent: docs define the authority lineage, runtime enforces it, tests prove it, and registries declare its ownership. The independent current-HEAD judge found the split-plan advisory lanes are review views, not unrelated scope.",
+      "artifact": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-23T07:31:10.171Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:154|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-merge-waiver-propagation",
+      "decision_id": "decision-1784789856463-716de87b",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The 14-file product diff has one control-plane intent: docs define the authority lineage, runtime enforces it, tests prove it, and registries declare its ownership. The independent current-HEAD judge found the split-plan advisory lanes are review views, not unrelated scope.",
+      "artifact": ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-1c2267aa.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:154",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-23T08:05:53.475Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

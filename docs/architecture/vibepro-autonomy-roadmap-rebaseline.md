@@ -2,15 +2,15 @@
 
 ## 決定
 
-Guarded Autonomyは6 Story shorthandではなく、単一責務を持つ10 Storyの直列ロードマップとして管理する。完了済みは1と2、未完は3から10の8 Storyとする。
+Guarded Autonomyは6 Story shorthandではなく、単一責務を持つ10 Storyの直列ロードマップとして管理する。2026-07-19時点で1から4までが完了し、未完は5から10の6 Storyとする。
 
 | 順序 | Story | 状態 | 所有責務 | Entry gate |
 |---:|---|---|---|---|
 | 1 | `story-vibepro-guarded-run-session-contract` | completed | 単一Story Runの状態・停止・再開契約 | なし |
 | 2 | `story-vibepro-run-context-capsule` | completed | 再開可能なbounded context | 1 completed |
-| 3 | `story-vibepro-safe-action-orchestrator` | next | 許可済みtyped Actionの実行・journal・再束縛 | 1–2 completed、最新main再診断 |
-| 4 | `story-vibepro-next-best-action-controller` | pending | 許可済み候補から次Actionを選ぶ | 3 completed |
-| 5 | `story-vibepro-human-decision-checkpoint` | pending | Runのtyped pause/resume | 4 completed、Human Review Overrideとの境界合意 |
+| 3 | `story-vibepro-safe-action-orchestrator` | completed | 許可済みtyped Actionの実行・journal・再束縛 | 1–2 completed、最新main再診断 |
+| 4 | `story-vibepro-next-best-action-controller` | completed | 許可済み候補から次Actionを選ぶ | 3 completed |
+| 5 | `story-vibepro-human-decision-checkpoint` | next | Runのtyped pause/resume | 4 completed、Human Review Overrideとの境界合意 |
 | 6 | `story-vibepro-agent-runtime-adapters` | pending | provider-neutral runtime実行境界 | 5 completed、PR #338のreview surface契約確定 |
 | 7 | `story-vibepro-risk-adaptive-validation-sequencing` | pending | targeted/preflight/final検証順序 | 6 completed、content freshness契約確定 |
 | 8 | `story-vibepro-review-finding-repair-loop` | pending | 実findingsの修正・再検証・再review | 7 completed |
@@ -49,7 +49,15 @@ PR #321はhuman reviewのblock推奨を明示overrideなしで通さないmerge/
 2. 前StoryのPR mergeとaudit artifact確定を次Storyのentry gateとする。
 3. 各開始時に最新mainで`story diagnose --run-graphify`を再実行する。
 4. hot filesの一致はGit競合として扱い、所有責務の一致は設計競合として扱う。
-5. Story 10は既存機能を棚卸しし、不足分だけを実装する。
+5. Story 10は既存機能を棚卸しし、不足分だけを実装する。既存のbudget・cost accounting・review provenance・evidence freshnessは再実装せず、残存する統合ギャップだけを閉じる。
+
+## 進捗証跡（2026-07-19）
+
+- Story 1 `story-vibepro-guarded-run-session-contract`: completed。
+- Story 2 `story-vibepro-run-context-capsule`: completed。canonical audit artifactをmainへ永続化済み。
+- Story 3 `story-vibepro-safe-action-orchestrator`: completed。canonical audit artifactをmainへ永続化済み。
+- Story 4 `story-vibepro-next-best-action-controller`: completed。PR #352、merge commit `b89bf7f3fc89f74395625db1278774ad0f2e3993`、canonical audit commit `846d36bc73d00133bf6983310f3ed0c1b20fe9f4`。
+- 次の着手対象はStory 5 `story-vibepro-human-decision-checkpoint`。Story 6–10は直列依存のためpendingを維持する。
 
 ## Rollback
 

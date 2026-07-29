@@ -1,0 +1,24 @@
+{
+  "status": "pass",
+  "head_sha": "97c7684b94681cc4fe1c902d2b2cabb888175546",
+  "summary": "Current-HEAD guarded Run UX is understandable and actionable: material decisions are bounded, runtime stops provide a resumable recovery contract, repair re-verifies and re-reviews on the repaired HEAD, and external authority remains explicit. This is an implementation UX verdict, not PR/CI/merge lifecycle approval.",
+  "inspection_summary": "Read Story, Architecture, Spec, public execute help, action-owner/session/orchestrator composition, and the generated ux_completion request. Re-ran the standalone runtime E2E: 4/4 passed at 97c7684. S-001 creates real temporary Git worktrees and commits implementation plus repair, then verifies and re-reviews the repaired HEAD; S-002 covers typed no-progress, human decision, verification failure, CI wait, quota/resume, timeout, and cancellation. The current self-dogfood Run run-20260723T191944Z-7f564484 persists runtime_unavailable before mutation with provider, required/missing capability, runtime_available condition, and an exact resume command. Focused guarded-run and closure tests also passed. Regression guard: public legacy/disable paths and current-head Gate constraints remain covered. Path-surface coverage: CLI help, autonomous and legacy selection, action DAG, human-decision transport, state persistence, runtime fallback, repair replay, current-head final prepare, and external-authority exclusion were inspected; no silent suppression or conflicting user-facing surface was found.",
+  "inspection_inputs": [
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "src/cli.js",
+    "src/one-command-pr-ready-closure.js",
+    "src/guarded-run-session.js",
+    "src/safe-action-orchestrator.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/guarded-run-session.test.js"
+  ],
+  "judgment_delta": [
+    "Previous concern: runtime_unavailable did not persist a complete recovery condition and next command -> resolved by completeRuntimeRecovery plus the current self-dogfood state, which records provider, capabilities, runtime_available condition, and exact resume command.",
+    "Previous concern: repair convergence was not independently replayed -> resolved by standalone S-001, which makes a real implementation commit, returns needs_changes, makes a repair commit, and proves verify/review replay on the repaired HEAD.",
+    "Regression and path-surface check: no new CLI reverse dependency, PR/merge/waiver action, silent fallback, or legacy-path break was introduced by the recovery completion change."
+  ],
+  "findings": []
+}

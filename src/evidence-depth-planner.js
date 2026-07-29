@@ -1,4 +1,5 @@
 import { normalizeEvidenceDepth } from './evidence-cost-budget.js';
+import { detectDocsOnlyChange, isDocsOnlyChange } from './docs-only-change.js';
 
 export const EVIDENCE_DEPTH_PLANNER_VERSION = '0.1.0';
 export const EVIDENCE_DRILLDOWN_LOG_VERSION = '0.1.0';
@@ -61,6 +62,7 @@ const SUMMARY_SKIPPED_ARTIFACTS = [
 
 const SUMMARY_GENERATED_ARTIFACTS = [
   'evidence-reuse.json',
+  'decision-outcome-ledger.json',
   'evidence-plan.json',
   'decision-index.json',
   'senior-gap-judgment.json',
@@ -90,6 +92,7 @@ export function buildEvidencePlan({
   requestedDepthReason = null,
   requestedDepthConsumer = null,
   requestedDepthTargets = [],
+  docsOnlyChange = null,
   createdAt = new Date().toISOString()
 } = {}) {
   const changeClassification = prContext?.change_classification ?? {};
@@ -102,7 +105,18 @@ export function buildEvidencePlan({
     changeClassification,
     engineeringJudgment
   });
+  // docs-only detection is an *input* to the existing depth contract, not a
+  // replacement for it (DOE-S-4). The planner already defaults to `summary`;
+  // recording the docs-only verdict here makes that default attributable and
+  // gives downstream evidence-cost consumers a single resolved answer.
+  const docsOnly = docsOnlyChange ?? detectDocsOnlyChange({
+    diffStats: git?.diff_line_stats ?? null,
+    changedFiles: git?.changed_files ?? null
+  });
   const defaultDepth = 'summary';
+  const defaultDepthReason = isDocsOnlyChange(docsOnly)
+    ? 'docs_only_change'
+    : 'summary_first_default';
   const overrideDepth = normalizeEvidenceDepth(requestedDepth);
   const evidenceDepth = overrideDepth ?? defaultDepth;
   const drilldownTargets = normalizeDrilldownTargets(requestedDepthTargets);
@@ -141,6 +155,8 @@ export function buildEvidencePlan({
     created_at: createdAt,
     evidence_depth: evidenceDepth,
     default_depth: defaultDepth,
+    default_depth_reason: defaultDepthReason,
+    docs_only_change: docsOnly,
     manual_override: manualOverride,
     planner_inputs: {
       base_ref: git?.base_ref ?? null,
@@ -151,7 +167,9 @@ export function buildEvidencePlan({
       risk_profile: changeClassification?.profile ?? null,
       risk_surfaces: changeClassification?.risk_surfaces ?? [],
       pr_route: prRoute?.route_type ?? null,
-      engineering_route: engineeringJudgment?.route_type ?? null
+      engineering_route: engineeringJudgment?.route_type ?? null,
+      docs_only_status: docsOnly?.status ?? null,
+      docs_only_reason: docsOnly?.reason ?? null
     },
     risk_signals: riskSignals,
     targeted_full_surfaces: targetedFullSurfaces,
@@ -212,6 +230,7 @@ export function buildEvidenceDecisionIndex({
     story_id: story?.story_id ?? null,
     created_at: createdAt,
     evidence_depth: evidencePlan?.evidence_depth ?? null,
+    docs_only_change: evidencePlan?.docs_only_change ?? null,
     targeted_full_surfaces: evidencePlan?.targeted_full_surfaces ?? [],
     git: {
       base_ref: git?.base_ref ?? null,

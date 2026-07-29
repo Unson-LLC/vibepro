@@ -1,0 +1,171 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-delivery-reconciliation-state",
+  "created_at": "2026-07-24T05:28:40.804Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: 差分が 55 files あり、レビュー可能な目安 30 files を超えている; baseからのcommitが 26 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-delivery-reconciliation-state/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-delivery-reconciliation-state/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-delivery-reconciliation-state/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-delivery-reconciliation-state/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/story-vibepro-delivery-reconciliation-state.md)"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/vibepro-cli-status-honesty.md, docs/specs/vibepro-delivery-reconciliation-state.json, docs/specs/vibepro-delivery-reconciliation-state.md)"
+    },
+    "decision_records": {
+      "total": 7,
+      "open": 0,
+      "by_type": {
+        "needs_review": 7
+      },
+      "by_status": {
+        "accepted": 7
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+          "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+          "expected_root": null,
+          "expected_head_sha": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+          "current_head_sha": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1784861665330-41659d10",
+        "story_id": "story-vibepro-delivery-reconciliation-state",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_rollback_sensitive",
+        "source_status": null,
+        "summary": "Rollback plan accepted after current-head E2E verified transaction-owned rollback, additive disabled behavior, and upgrade/downgrade compatibility",
+        "reason": "Rollback does not erase observed delivery. The current E2E artifact verifies recovery and transaction ownership; Story and release guide define consumer rollback and execute reconcile ownership. No feature gate or destructive migration exists.",
+        "reviewer": "Codex on user-authorized merge",
+        "artifact": ".vibepro/pr/story-vibepro-delivery-reconciliation-state/raw/e2e-4c86e1cc.json",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-delivery-reconciliation-state/raw/e2e-4c86e1cc.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-delivery-reconciliation-state/raw/targeted-4c86e1cc.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-delivery-reconciliation-state/verification-evidence.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-delivery-reconciliation-state/raw/typecheck-4c86e1cc.json",
+              "type": "typecheck",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+            "actual_root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused",
+            "expected_root": null,
+            "expected_head_sha": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+            "current_head_sha": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "4c86e1cc66977bded5fa8a47857bdee6252707e8",
+          "current_branch": "codex/story-vibepro-delivery-reconciliation-state-focused",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-24T02:54:25.327Z"
+        },
+        "recorded_at": "2026-07-24T02:54:25.330Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-24T05:28:37.146Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/.codex/worktrees/95a4/vibepro/.worktrees/vibepro/story-vibepro-delivery-reconciliation-state-focused/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "ad4b44691ea6eb0cb1e6d782605d254e3ec0a19a",
+      "branch": "codex/story-vibepro-delivery-reconciliation-state-clean",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "118b68091b296f6bb8c4414cfc5eadb69ed73dc0",
+      "origin_main_relation": "ahead",
+      "dirty": true,
+      "dirty_summary": [
+        "?? docs/features/delivery-reconciliation-state/"
+      ]
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

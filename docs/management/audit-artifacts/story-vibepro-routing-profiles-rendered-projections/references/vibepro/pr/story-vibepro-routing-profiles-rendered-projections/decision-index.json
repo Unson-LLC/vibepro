@@ -1,0 +1,288 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-decision-index-v1",
+  "planner_version": "0.1.0",
+  "story_id": "story-vibepro-routing-profiles-rendered-projections",
+  "created_at": "2026-07-21T08:10:33.147Z",
+  "evidence_depth": "summary",
+  "targeted_full_surfaces": [
+    {
+      "surface": "gate_orchestration",
+      "reason": "risk surface detected",
+      "source": "change_classification",
+      "gate": null
+    },
+    {
+      "surface": "regression_blast_radius",
+      "reason": "risk surface detected",
+      "source": "change_classification",
+      "gate": null
+    },
+    {
+      "surface": "review_lifecycle",
+      "reason": "risk surface detected",
+      "source": "change_classification",
+      "gate": null
+    },
+    {
+      "surface": "test_coverage",
+      "reason": "risk surface detected",
+      "source": "change_classification",
+      "gate": null
+    },
+    {
+      "surface": "workflow_heavy",
+      "reason": "high-risk profile detected",
+      "source": "change_classification",
+      "gate": null
+    },
+    {
+      "surface": "agent_workflow",
+      "reason": "high-risk engineering judgment route detected",
+      "source": "engineering_judgment",
+      "gate": null
+    }
+  ],
+  "git": {
+    "base_ref": "main",
+    "head_ref": "HEAD",
+    "head_sha": "63c6a30ed16d624a1b70b45f9516298a7a68bbcb",
+    "changed_file_count": 24
+  },
+  "file_groups": {
+    "story_docs": 1,
+    "architecture_docs": 1,
+    "specifications": 1,
+    "policy_docs": 0,
+    "responsibility_authority_metadata": 0,
+    "contract_metadata": 0,
+    "source": 9,
+    "tests": 5,
+    "repo_control": 0,
+    "vibepro_artifacts": 1,
+    "other": 7
+  },
+  "scope": {
+    "status": "reviewable",
+    "recommended_strategy": "current_branch_pr",
+    "reasons": []
+  },
+  "gate_summary": {
+    "overall_status": "ready_for_review",
+    "ready_for_pr_create": true,
+    "unresolved_gate_count": 0,
+    "critical_unresolved_gate_count": 0,
+    "unresolved_gates": [],
+    "critical_unresolved_gates": []
+  },
+  "engineering_judgment": {
+    "route_type": "agent_workflow",
+    "route_dag": "agent_workflow_dag",
+    "confidence": 0.82,
+    "signals": [
+      "surface:agent_or_gate_workflow",
+      "risk_profile:workflow_heavy"
+    ],
+    "active_axis_count": 3,
+    "active_axes": [
+      "public_contract",
+      "execution_topology",
+      "scope_reviewability"
+    ],
+    "judgment_axes": [
+      {
+        "axis": "public_contract",
+        "status": "active_passed",
+        "reason": "pr_route:runtime_change; file_group:contract_docs; text:public_contract"
+      },
+      {
+        "axis": "rollback_sensitive",
+        "status": "inactive",
+        "reason": "No rollback_sensitive signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context"
+      },
+      {
+        "axis": "security_boundary",
+        "status": "inactive",
+        "reason": "No security_boundary signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context"
+      },
+      {
+        "axis": "data_state",
+        "status": "inactive",
+        "reason": "No data_state signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context"
+      },
+      {
+        "axis": "execution_topology",
+        "status": "active_passed",
+        "reason": "surface:workflow_or_agent; changed_path:execution_topology; text:execution_topology"
+      },
+      {
+        "axis": "ux_surface",
+        "status": "inactive",
+        "reason": "No ux_surface signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context"
+      },
+      {
+        "axis": "performance_semantic",
+        "status": "inactive",
+        "reason": "No performance_semantic signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context"
+      },
+      {
+        "axis": "scope_reviewability",
+        "status": "active_passed",
+        "reason": "changed_files:24; graphify:related_files"
+      },
+      {
+        "axis": "release_ops",
+        "status": "inactive",
+        "reason": "No release_ops signal detected in Story, diff, PR route, risk surfaces, optional Graphify context, or optional code topology context"
+      }
+    ]
+  },
+  "risk_signals": [
+    {
+      "kind": "risk_profile",
+      "value": "workflow_heavy",
+      "source": "change_classification"
+    },
+    {
+      "kind": "risk_surface",
+      "value": "gate_orchestration",
+      "source": "change_classification"
+    },
+    {
+      "kind": "risk_surface",
+      "value": "regression_blast_radius",
+      "source": "change_classification"
+    },
+    {
+      "kind": "risk_surface",
+      "value": "review_lifecycle",
+      "source": "change_classification"
+    },
+    {
+      "kind": "risk_surface",
+      "value": "test_coverage",
+      "source": "change_classification"
+    },
+    {
+      "kind": "engineering_route",
+      "value": "agent_workflow",
+      "source": "engineering_judgment"
+    }
+  ],
+  "pr_route": {
+    "route_type": "runtime_change",
+    "required_gates": [
+      "story",
+      "spec",
+      "verification",
+      "pr_body_contract",
+      "artifact_policy",
+      "workflow_heavy"
+    ],
+    "signals": [
+      "file_group:source",
+      "file_group:vibepro_artifacts",
+      "risk_profile:workflow_heavy"
+    ]
+  },
+  "traceability_clause_coverage": {
+    "clause_count": 18,
+    "acceptance_criteria_count": 14,
+    "scenario_clause_count": 4,
+    "mapped_count": 18,
+    "weakly_mapped_count": 0,
+    "unmapped_count": 0,
+    "examples": []
+  },
+  "split_plan": {
+    "status": "split_recommended",
+    "recommended_strategy": "split_by_lane_then_prepare",
+    "reasons": []
+  },
+  "evidence_reuse": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-evidence-summary-reuse-v1",
+    "story_id": "story-vibepro-routing-profiles-rendered-projections",
+    "evidence_key": "evk_1c9c959ed01430d567fd4431519298a5",
+    "status": "hit",
+    "reason": "evidence_key_match",
+    "stale_reasons": [],
+    "fresh_use_allowed": true,
+    "used_as_fresh": false,
+    "gate_status": "passed",
+    "artifact_value_ledger": {
+      "status": "present",
+      "model": "vibepro-artifact-value-ledger-v1",
+      "head_binding_status": "current_head_bound",
+      "artifact_count": 4,
+      "decision_bound_count": 4,
+      "decision_changed_count": 0,
+      "decision_change_unconfirmed_count": 4,
+      "unused_artifact_count": 0,
+      "linked_consumer_count": 4,
+      "session_attribution_status": "not_collected_in_pr_prepare",
+      "session_attribution_confidence": "none",
+      "total_token_estimate": 274
+    },
+    "session_attribution_ledger": {
+      "status": "not_collected_in_pr_prepare",
+      "model": "vibepro-session-attribution-ledger-v1",
+      "confidence": "none",
+      "reason": "PR prepare did not receive Codex session attribution; downstream usage mentions must not be treated as clean product-value adoption.",
+      "session_count": 0,
+      "unattributed_count": 0
+    },
+    "verification_summary_fingerprint": "sha256:3b27f4c60cdb0b6eb3fdeeb3f871e6e6047413a8dc45e740e0a3bb835f591023",
+    "verification_evidence_updated_at": "2026-07-21T08:09:26.903Z",
+    "verification_command_timestamps": [
+      {
+        "kind": "integration",
+        "executed_at": "2026-07-21T08:09:26.903Z",
+        "git_recorded_at": "2026-07-21T08:09:26.893Z"
+      },
+      {
+        "kind": "unit",
+        "executed_at": "2026-07-21T08:04:11.338Z",
+        "git_recorded_at": "2026-07-21T08:04:11.314Z"
+      },
+      {
+        "kind": "e2e",
+        "executed_at": "2026-07-21T07:59:17.232Z",
+        "git_recorded_at": "2026-07-21T07:59:17.219Z"
+      },
+      {
+        "kind": "build",
+        "executed_at": "2026-07-21T07:49:01.987Z",
+        "git_recorded_at": "2026-07-21T07:49:01.983Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-07-21T07:48:54.050Z",
+        "git_recorded_at": "2026-07-21T07:48:54.040Z"
+      }
+    ],
+    "full_evidence": {
+      "status": "reused",
+      "generation_count": 1,
+      "generation_count_scope": "same_evidence_key",
+      "same_key_generation_count": 1,
+      "cumulative_generation_count": 57,
+      "digest": "sha256:8e12ac8d7096007a8fda8e66183a0b0160c71c67adf234c4369e82c7a6247cc2",
+      "reference": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/decision-index.json"
+    },
+    "summary_artifacts": {
+      "evidence_reuse": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/evidence-reuse.json",
+      "evidence_plan": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/evidence-plan.json",
+      "decision_index": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/decision-index.json",
+      "pr_prepare": ".vibepro/pr/story-vibepro-routing-profiles-rendered-projections/pr-prepare.json",
+      "gate_dag": null
+    }
+  },
+  "senior_gap_judgment": {
+    "status": "passed_with_residual_risk",
+    "gap_count": 1,
+    "blocking_gap_count": 0,
+    "residual_risk_count": 1,
+    "followup_count": 1
+  }
+}

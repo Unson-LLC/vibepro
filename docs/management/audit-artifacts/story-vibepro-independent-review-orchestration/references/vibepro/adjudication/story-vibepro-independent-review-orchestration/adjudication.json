@@ -1,0 +1,104 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-independent-review-orchestration",
+  "updated_at": "2026-07-22T13:05:35.298Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "Run-session ownership, responsibility SSOT, no CLI reverse dependency, and conformance 69-to-69 are demonstrated.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_acceptance_adjudication",
+        "session_ref": "/root/iro_acceptance_adjudication"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:35.298Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Existing prepare, start, close, and record lifecycle remains canonical with repair-node compatibility.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_acceptance_adjudication",
+        "session_ref": "/root/iro_acceptance_adjudication"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:34.941Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Production composition E2E covers parallel review, needs_changes, block, same-session, and restart paths.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_acceptance_adjudication",
+        "session_ref": "/root/iro_acceptance_adjudication"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:34.577Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Runtime, auth, timeout, invalid-result, and provenance failures produce typed stops and blocking verdicts.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_acceptance_adjudication",
+        "session_ref": "/root/iro_acceptance_adjudication"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:34.163Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Pass, needs_changes, and block verdicts are preserved; aggregation prioritizes block then needs_changes.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_acceptance_adjudication",
+        "session_ref": "/root/iro_acceptance_adjudication"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:33.572Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Deterministic operation keys are reserved before effects and checkpoint reuse supports crash and restart.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_acceptance_adjudication",
+        "session_ref": "/root/iro_acceptance_adjudication"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:33.173Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Current-HEAD, read-only, distinct identity, session closure, and clean-worktree provenance are enforced fail-closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_acceptance_adjudication",
+        "session_ref": "/root/iro_acceptance_adjudication"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:32.702Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Gate projection is consumed and required roles are dispatched concurrently through Promise.all.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "iro_acceptance_adjudication",
+        "session_ref": "/root/iro_acceptance_adjudication"
+      },
+      "head_commit": "aee9e977a2391d8bd635047f818ea026570fdd21",
+      "recorded_at": "2026-07-22T13:05:32.066Z"
+    }
+  ]
+}

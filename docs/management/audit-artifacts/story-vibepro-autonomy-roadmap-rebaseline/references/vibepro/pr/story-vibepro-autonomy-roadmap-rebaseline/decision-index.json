@@ -3,40 +3,58 @@
   "model": "vibepro-evidence-decision-index-v1",
   "planner_version": "0.1.0",
   "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
-  "created_at": "2026-07-18T03:18:13.712Z",
+  "created_at": "2026-07-19T03:39:54.649Z",
   "evidence_depth": "summary",
   "targeted_full_surfaces": [
+    {
+      "surface": "test_coverage",
+      "reason": "risk surface detected",
+      "source": "change_classification",
+      "gate": null
+    },
     {
       "surface": "agent_workflow",
       "reason": "high-risk engineering judgment route detected",
       "source": "engineering_judgment",
+      "gate": null
+    },
+    {
+      "surface": "gate:pr_scope_judgment",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
+      "gate": null
+    },
+    {
+      "surface": "gate:split_resolution",
+      "reason": "accepted waiver requires targeted full evidence",
+      "source": "decision_record",
       "gate": null
     }
   ],
   "git": {
     "base_ref": "origin/main",
     "head_ref": "HEAD",
-    "head_sha": "e096fdb300a610e185f596dd2530dfcbe6605594",
-    "changed_file_count": 12
+    "head_sha": "be8236faf7bee8ac5612a2824c153089bd4f93dc",
+    "changed_file_count": 4
   },
   "file_groups": {
-    "story_docs": 9,
+    "story_docs": 1,
     "architecture_docs": 1,
     "specifications": 1,
     "policy_docs": 0,
     "responsibility_authority_metadata": 0,
     "contract_metadata": 0,
     "source": 0,
-    "tests": 0,
+    "tests": 1,
     "repo_control": 0,
     "vibepro_artifacts": 0,
-    "other": 1
+    "other": 0
   },
   "scope": {
     "status": "needs_clean_branch",
     "recommended_strategy": "clean_branch_or_split_pr",
     "reasons": [
-      "baseからのcommitが 2 件あり、Story外の変更混入を確認する必要がある"
+      "baseからのcommitが 3 件あり、Story外の変更混入を確認する必要がある"
     ]
   },
   "gate_summary": {
@@ -63,8 +81,8 @@
     "judgment_axes": [
       {
         "axis": "public_contract",
-        "status": "active_accepted_followup",
-        "reason": "file_group:contract_docs; text:public_contract"
+        "status": "active_passed",
+        "reason": "pr_route:test_only; file_group:contract_docs; text:public_contract"
       },
       {
         "axis": "rollback_sensitive",
@@ -98,7 +116,7 @@
       },
       {
         "axis": "scope_reviewability",
-        "status": "active_accepted_followup",
+        "status": "active_passed",
         "reason": "scope:needs_clean_branch"
       },
       {
@@ -110,29 +128,33 @@
   },
   "risk_signals": [
     {
+      "kind": "risk_surface",
+      "value": "test_coverage",
+      "source": "change_classification"
+    },
+    {
       "kind": "engineering_route",
       "value": "agent_workflow",
       "source": "engineering_judgment"
     }
   ],
   "pr_route": {
-    "route_type": "general_change",
+    "route_type": "test_only",
     "required_gates": [
-      "story",
-      "architecture",
-      "spec",
+      "test_intent",
       "pr_body_contract",
       "split_resolution"
     ],
     "signals": [
+      "file_group:tests",
       "scope:needs_clean_branch"
     ]
   },
   "traceability_clause_coverage": {
-    "clause_count": 6,
+    "clause_count": 8,
     "acceptance_criteria_count": 6,
-    "scenario_clause_count": 0,
-    "mapped_count": 6,
+    "scenario_clause_count": 2,
+    "mapped_count": 8,
     "weakly_mapped_count": 0,
     "unmapped_count": 0,
     "examples": []
@@ -146,7 +168,7 @@
     "schema_version": "0.1.0",
     "model": "vibepro-evidence-summary-reuse-v1",
     "story_id": "story-vibepro-autonomy-roadmap-rebaseline",
-    "evidence_key": "evk_0a035d322d36b10d5a6f581d8827756e",
+    "evidence_key": "evk_5eb7d3f4cda84f06f42004f5ea4ea72f",
     "status": "hit",
     "reason": "evidence_key_match",
     "stale_reasons": [],
@@ -175,23 +197,28 @@
       "session_count": 0,
       "unattributed_count": 0
     },
-    "verification_summary_fingerprint": "sha256:a9edd94be0103ae5ddbba0735e7e1ee245ef20f6f7e8f96bc136984bb82ffc38",
-    "verification_evidence_updated_at": "2026-07-18T03:11:49.925Z",
+    "verification_summary_fingerprint": "sha256:b51c545ef96a4c45208962f1f1c7e6f8af679655b0ca1d32b1fc986aee2f7a20",
+    "verification_evidence_updated_at": "2026-07-19T03:39:29.646Z",
     "verification_command_timestamps": [
       {
-        "kind": "e2e",
-        "executed_at": "2026-07-18T03:11:49.925Z",
-        "git_recorded_at": "2026-07-18T03:11:49.922Z"
+        "kind": "build",
+        "executed_at": "2026-07-19T03:39:29.646Z",
+        "git_recorded_at": "2026-07-19T03:39:29.638Z"
       },
       {
         "kind": "integration",
-        "executed_at": "2026-07-18T03:08:13.399Z",
-        "git_recorded_at": "2026-07-18T03:08:13.398Z"
+        "executed_at": "2026-07-19T03:39:07.070Z",
+        "git_recorded_at": "2026-07-19T03:39:07.069Z"
       },
       {
         "kind": "unit",
-        "executed_at": "2026-07-18T03:03:54.970Z",
-        "git_recorded_at": "2026-07-18T03:03:54.968Z"
+        "executed_at": "2026-07-19T03:39:06.487Z",
+        "git_recorded_at": "2026-07-19T03:39:06.487Z"
+      },
+      {
+        "kind": "typecheck",
+        "executed_at": "2026-07-19T03:39:05.874Z",
+        "git_recorded_at": "2026-07-19T03:39:05.873Z"
       }
     ],
     "full_evidence": {
@@ -199,8 +226,8 @@
       "generation_count": 1,
       "generation_count_scope": "same_evidence_key",
       "same_key_generation_count": 1,
-      "cumulative_generation_count": 15,
-      "digest": "sha256:6974ac087fd95246ae903fc60abe32a8c9489dff959e65c3c3e2472d1d3d8366",
+      "cumulative_generation_count": 18,
+      "digest": "sha256:9d476b090ac0b3fd4bf87941e77d43feecdd2b2544e92b11d2a046a051669776",
       "reference": ".vibepro/pr/story-vibepro-autonomy-roadmap-rebaseline/decision-index.json"
     },
     "summary_artifacts": {
@@ -213,9 +240,9 @@
   },
   "senior_gap_judgment": {
     "status": "passed_with_residual_risk",
-    "gap_count": 3,
+    "gap_count": 1,
     "blocking_gap_count": 0,
-    "residual_risk_count": 3,
-    "followup_count": 3
+    "residual_risk_count": 1,
+    "followup_count": 1
   }
 }

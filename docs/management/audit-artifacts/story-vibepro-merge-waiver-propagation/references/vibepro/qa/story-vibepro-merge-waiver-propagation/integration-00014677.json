@@ -1,0 +1,1 @@
+{"schema_version":"0.1.0","status":"pass","command":"node --test --test-name-pattern=story-vibepro-merge-waiver-propagation test/vibepro-cli.test.js","exit_code":0,"head_sha":"00014677d51664005b8cd0be5aa0a1f7aab078d3","pass":3,"fail":0}

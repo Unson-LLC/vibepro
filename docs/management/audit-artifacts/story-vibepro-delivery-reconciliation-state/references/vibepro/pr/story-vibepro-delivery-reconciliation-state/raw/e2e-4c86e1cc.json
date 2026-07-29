@@ -1,0 +1,11 @@
+{
+  "head_sha": "4c86e1cc",
+  "command": "npm run test:e2e:ts -- test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts",
+  "status": "pass",
+  "spec_files": 33,
+  "tests": 79,
+  "passed": 79,
+  "failed": 0,
+  "duration_ms": 274400.986417,
+  "exit_code": 0
+}

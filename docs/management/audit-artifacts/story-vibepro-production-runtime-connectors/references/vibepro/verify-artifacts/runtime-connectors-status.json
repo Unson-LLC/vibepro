@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "node --test test/agent-runtime-adapter.test.js test/agent-runtime-connectors.test.js",
+  "tests": 43,
+  "failures": 0,
+  "head_sha": "7763326c54791c9ec828b9cce4371e241ea1c7a7"
+}

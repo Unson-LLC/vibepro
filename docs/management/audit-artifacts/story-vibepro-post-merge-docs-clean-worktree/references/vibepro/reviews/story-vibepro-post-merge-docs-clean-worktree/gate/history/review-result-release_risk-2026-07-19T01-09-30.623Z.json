@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-post-merge-docs-clean-worktree",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Release risk passes at exact final HEAD",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected final clean HEAD, reconciliation, 19 workflow tests, 5 deploy guard tests, and ignore provenance",
+    "evidence": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-971be877.json",
+    "inputs": [
+      "test/post-merge-release.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Previous design linkage risk -> final pass after reconciliation reached zero action items"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+    "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+    "expected_root": null,
+    "expected_head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+    "current_head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+      "actual_root": "/Users/ksato/workspace/code/vibepro/.worktrees/vibepro/story-vibepro-post-merge-docs-clean-worktree",
+      "expected_root": null,
+      "expected_head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+      "current_head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-19T01:09:30.623Z",
+  "git_context": {
+    "head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+    "current_branch": "vibepro/story-vibepro-post-merge-docs-clean-worktree",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-07-19T01:09:30.616Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "preserve the recorded strict HEAD freshness policy during recovery"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "971be8775b4cf2012a661612e508723a0dc7ab1a",
+    "surface_files": [
+      {
+        "path": "test/post-merge-release.test.js",
+        "sha256": "223bf31e4e7c7e9beb5edb6e888d365312f047b5eb6692b1619fffc787d4c561",
+        "size": 14986
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "42d1634468ff698314875b31be4ad9583ff1ca5c672a3e464a8fd0bb7d21b310"
+  },
+  "source_fingerprint": "2c8449c2c5352e127be8977956431cbabc750036deadf3271442405b761a22c0",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "docs_recovery_release_risk",
+    "agent_role": null,
+    "model": "gpt-5",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/evidence/story-vibepro-post-merge-docs-clean-worktree/recovery-971be877.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-post-merge-docs-clean-worktree/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

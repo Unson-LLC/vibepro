@@ -1,0 +1,5 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "command": "npm run typecheck"
+}

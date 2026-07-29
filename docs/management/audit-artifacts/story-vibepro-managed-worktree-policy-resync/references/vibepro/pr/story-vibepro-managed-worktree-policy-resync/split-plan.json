@@ -1,0 +1,252 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-managed-worktree-policy-resync",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "rationale": [
+    "baseからのcommitが 7 件あり、Story外の変更混入を確認する必要がある",
+    "3 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 3 changed files が一致し、13 related files を影響調査候補にした"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 4870,
+    "edge_count": 10970,
+    "matched_file_count": 3,
+    "related_file_count": 13,
+    "investigation_files": [
+      "src/agent-review.js",
+      "src/artifact-routing.js",
+      "src/cli.js",
+      "src/decision-records.js",
+      "src/execution-state.js",
+      "src/git-fingerprint.js",
+      "src/guarded-run-session.js",
+      "src/managed-worktree-gate.js",
+      "src/managed-worktree.js",
+      "src/pr-manager.js",
+      "src/workspace.js",
+      "test/guarded-run-session.test.js",
+      "test/managed-worktree-policy-resync.test.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "src/execution-state.js",
+        "matched_nodes": [
+          "src_execution_state_js",
+          "src_execution_state_startexecution",
+          "src_execution_state_getexecutionstatus",
+          "src_execution_state_getexecutionnext",
+          "src_execution_state_reconcileexecutionstate",
+          "src_execution_state_reconcileallmergedexecutionstates",
+          "src_execution_state_updateexecutionstatefromprprepare",
+          "src_execution_state_updateexecutionstatefromprcreate"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/artifact-routing.js",
+          "src/cli.js",
+          "src/guarded-run-session.js",
+          "src/managed-worktree.js",
+          "src/workspace.js",
+          "test/guarded-run-session.test.js"
+        ]
+      },
+      {
+        "file": "src/managed-worktree.js",
+        "matched_nodes": [
+          "src_managed_worktree_js",
+          "src_managed_worktree_resolvemanagedworktreemode",
+          "src_managed_worktree_ensuremanagedworktree",
+          "src_managed_worktree_buildpendingmanagedworktree",
+          "src_managed_worktree_buildunavailablemanagedworktree",
+          "src_managed_worktree_refreshmanagedworktree",
+          "src_managed_worktree_buildmanagedworktreecommands",
+          "src_managed_worktree_ismanagedworktreecommandsafe"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/decision-records.js",
+          "src/execution-state.js",
+          "src/git-fingerprint.js",
+          "src/managed-worktree-gate.js",
+          "src/pr-manager.js",
+          "src/workspace.js",
+          "test/managed-worktree-policy-resync.test.js"
+        ]
+      },
+      {
+        "file": "test/managed-worktree-policy-resync.test.js",
+        "matched_nodes": [
+          "test_managed_worktree_policy_resync_test_js",
+          "test_managed_worktree_policy_resync_test_git",
+          "test_managed_worktree_policy_resync_test_readjson",
+          "test_managed_worktree_policy_resync_test_writejson",
+          "test_managed_worktree_policy_resync_test_baseconfig",
+          "test_managed_worktree_policy_resync_test_makerepowithmanagedworktree",
+          "test_managed_worktree_policy_resync_test_updateparentconfig",
+          "test_managed_worktree_policy_resync_test_worktreeconfigpath"
+        ],
+        "related_files": [
+          "src/managed-worktree.js"
+        ]
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "separate_pr",
+      "files": [
+        "docs/management/stories/active/story-vibepro-managed-worktree-policy-resync.md",
+        "docs/specs/story-vibepro-managed-worktree-policy-resync.md",
+        "docs/architecture/story-vibepro-managed-worktree-policy-resync.md"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 3,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-managed-worktree-policy-resync-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "src/execution-state.js",
+        "src/managed-worktree.js",
+        "test/e2e/story-vibepro-managed-worktree-policy-resync-main.spec.ts",
+        "test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js",
+        "test/managed-worktree-policy-resync.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 5,
+      "graph_investigation_files": [
+        "src/agent-review.js",
+        "src/artifact-routing.js",
+        "src/cli.js",
+        "src/decision-records.js",
+        "src/git-fingerprint.js",
+        "src/guarded-run-session.js",
+        "src/managed-worktree-gate.js",
+        "src/pr-manager.js",
+        "src/workspace.js",
+        "test/guarded-run-session.test.js"
+      ],
+      "suggested_branch": "feat/vibepro-managed-worktree-policy-resync-runtime-behavior"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "design-ssot.json"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 1,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-managed-worktree-policy-resync-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "requirements-ssot",
+    "runtime-behavior",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 3,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "node --test test/e2e/story-vibepro-managed-worktree-policy-resync-main.spec.ts test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js test/managed-worktree-policy-resync.test.js",
+          "npm run typecheck"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
+      "commands": [
+        "node --test test/e2e/story-vibepro-managed-worktree-policy-resync-main.spec.ts test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js test/managed-worktree-policy-resync.test.js",
+        "npm run typecheck"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-managed-worktree-policy-resync-requirements-ssot with 3 files",
+      "command": "git switch -c feat/vibepro-managed-worktree-policy-resync-requirements-ssot <base> && git add docs/management/stories/active/story-vibepro-managed-worktree-policy-resync.md docs/specs/story-vibepro-managed-worktree-policy-resync.md docs/architecture/story-vibepro-managed-worktree-policy-resync.md"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-managed-worktree-policy-resync-runtime-behavior with 5 files",
+      "command": "git switch -c feat/vibepro-managed-worktree-policy-resync-runtime-behavior <base> && git add src/execution-state.js src/managed-worktree.js test/e2e/story-vibepro-managed-worktree-policy-resync-main.spec.ts test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js test/managed-worktree-policy-resync.test.js"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-managed-worktree-policy-resync-misc-follow-up with 1 files",
+      "command": "git switch -c feat/vibepro-managed-worktree-policy-resync-misc-follow-up <base> && git add design-ssot.json"
+    }
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Exact current HEAD 3ba30980c378 passes release-risk review. The candidate preserves the existing CLI and rollback surfaces, composes the merged runtime-connector and independent-review owners inside the run-session boundary, reaches current-HEAD PR readiness only after verification and fresh review, and leaves PR creation, merge, waiver, deployment, publication, and material external side effects under explicit human authority. This role verdict is not Gate or merge authorization: the current pr-prepare remains fail-closed until the active gate_evidence and release_risk lifecycles are closed and recorded, pr-prepare is regenerated, and current-HEAD CI is run and imported before explicit execute merge.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected the exact clean HEAD and origin/main diff; canonical pr-prepare and validation sequence; current verification evidence (targeted 290/290, integration 64/64, public CLI E2E 4/4, typecheck/build pass); acceptance adjudication 8/8 and judgment adjudication 16/16 summarized by the exact-HEAD final adjudication; target-architecture conformance baseline/current totals 86/86; imported Node 20/22 CI artifacts; run-session composition and public help authority-boundary assertions; and confirmed the prior temporary review-budget override is absent from the final config diff.",
+    "evidence": ".vibepro/qa/review-release-final-3ba30980.json",
+    "inputs": [
+      "src/guarded-run-session.js",
+      "src/one-command-pr-ready-closure.js",
+      "test/guarded-run-session.test.js",
+      "test/one-command-pr-ready-closure.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: the prior release review was invalidated by later HEAD changes and a temporary review-budget amendment -> Final conclusion: the exact 3ba30980 diff contains only the intended Story status synchronization in .vibepro/config.json, the temporary budget override is absent, the tracked tree is clean, and exact-HEAD verification/adjudication/sequence evidence is green.\nInitial concern: the one-command path could duplicate predecessor owners or introduce a run-session-to-CLI reverse dependency -> Final conclusion: guarded-run-session imports and composes the existing independent-review orchestrator and one-command run-session owner, conformance is non-worsening at 86 baseline versus 86 current, and the inspected implementation adds no CLI-layer reverse call.\nInitial concern: automation could cross the human authority boundary -> Final conclusion: the autonomous plan terminates at final_prepare, local mutations require workspace_write plus local_workspace_only, and public help/tests explicitly reserve PR creation, merge, waiver, and material external effects for human operations.\nInitial concern: imported CI evidence is not bound to current HEAD -> Final conclusion: Node 20/22 imports are successful but bind 926227f9, so they are not treated as current-HEAD merge evidence; the workflow remains safe because current pr-prepare is fail-closed and current-HEAD CI must be run/imported after PR update and before explicit execute merge."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+    "current_head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-24T05:59:44.726Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-24T06:08:01.295Z",
+  "git_context": {
+    "head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T06:08:01.282Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "current-HEAD final release-risk approval required before PR publication and CI import"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "3ba30980c3780abeadc9945ed1d9cfec7342d646",
+    "surface_files": [
+      {
+        "path": "src/guarded-run-session.js",
+        "sha256": "0ab3a43b11663e93fdbac12768f9753dfc787a836cc907599abc57fa742cac00",
+        "size": 115052
+      },
+      {
+        "path": "src/one-command-pr-ready-closure.js",
+        "sha256": "930b0998ad4548fe692489e09adb79a48afd804a1be089c36c258fb56ebf3cbd",
+        "size": 28360
+      },
+      {
+        "path": "test/guarded-run-session.test.js",
+        "sha256": "696d68997a55f4ed27872636f376f6f489acebaeba75419de752b6cb795b2bf6",
+        "size": 230950
+      },
+      {
+        "path": "test/one-command-pr-ready-closure.test.js",
+        "sha256": "a806ff69b466508a83bf1954a5569358792e3946b2fb7e1454d97491cfc0fa8e",
+        "size": 21658
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "5fd87d912ed078945a4b822c2c68f505f50fd12e747679cecd936ae5db93598c"
+  },
+  "source_fingerprint": "ca5f72bbfbf678a1046edb47e1c6b08255da74d4b75a650191ac3b170cd672bf",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "release-final-3ba30980",
+    "agent_role": null,
+    "model": "gpt-5.6-terra",
+    "reasoning_effort": "high",
+    "cost_tier": "low",
+    "thread_id": "/root/repair_ac_evidence",
+    "session_id": "release-final-3ba30980",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/review-release-final-3ba30980.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/review-release-final-3ba30980.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "release-final-3ba30980",
+      "implementation_session_id": "/root",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,1 @@
+{"status":"pass","head":"8a1f0780ee0f8378b4c2a11870cb9e024f34c03d","command":"npm run typecheck && git diff --check","typecheck":"pass","diff_check":"pass","log":"/tmp/current-typecheck.log"}

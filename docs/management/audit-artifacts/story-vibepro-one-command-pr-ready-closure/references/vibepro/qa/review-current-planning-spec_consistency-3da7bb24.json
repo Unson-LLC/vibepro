@@ -1,0 +1,39 @@
+{
+  "status": "needs_changes",
+  "summary": "Story, Architecture, Spec, test plan, action DAG, and current-head evidence consistently define the run-session boundary, current-HEAD PR-ready authority, human authority exclusions, predecessor reuse, and compositional typed-stop coverage. They are inconsistent with one code invariant: the documents require the implementation step to produce a managed-worktree commit, but the implementation owner deliberately disables the existing HEAD-advance guard.",
+  "inspection_summary": "Compared the Story clauses and scenarios with the Architecture action contract, canonical Spec responsibilities/invariants, test-plan targets, source composition and result classification, public CLI/legacy paths, focused tests, target-model ownership, predecessor records, and current evidence artifacts. The inspected surfaces agree except for implementation completion: prepare_artifacts and repair enforce progress while implement accepts an unchanged HEAD despite the documented commit invariant.",
+  "inspection_evidence": ".vibepro/qa/review-current-planning-spec_consistency-3da7bb24.json",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/planning_spec/review-request-spec_consistency.md",
+    "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+    "docs/architecture/target-model.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+    "docs/specs/story-vibepro-one-command-pr-ready-closure-test-plan.md",
+    "docs/management/tasks/story-vibepro-one-command-pr-ready-closure.md",
+    "design-ssot.json",
+    "src/one-command-pr-ready-closure.js",
+    "src/safe-action-orchestrator.js",
+    "src/guarded-run-session.js",
+    "src/cli.js",
+    "test/one-command-pr-ready-closure.test.js",
+    "test/guarded-run-session.test.js",
+    "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+    ".vibepro/qa/e2e-3da7bb24.json",
+    ".vibepro/qa/expensive-verification-3da7bb24.json",
+    "node --test test/one-command-pr-ready-closure.test.js test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts (20/20 pass)"
+  ],
+  "judgment_delta": [
+    "Initial concern: the new owner might contradict the target architecture by reaching back into CLI or duplicating connector/review ownership -> Final conclusion: callback injection keeps the new module within run-session, the outer CLI remains the composition root, and existing connector and independent-review modules retain their contracts.",
+    "Initial concern: Story OCR-S-5 and the test plan's compositional matrix might disagree on executable coverage -> Final conclusion: S-001, S-002 and S-004 together execute the success/repair, producer-stop, persisted resume/render/cancel, and current-HEAD paths; inherited Guarded Run tests cover shared transport, so the literal marker is not the only evidence.",
+    "Initial concern: final readiness might be inferred from an earlier action or stale artifact -> Final conclusion: the DAG permits only final_prepare to return pr_ready, and it rejects a prepared HEAD that differs from the current managed-worktree HEAD or lacks ready_for_pr_create=true.",
+    "Initial expectation: OCR-S-2, Architecture, OCR-T-3, code, and tests all shared a mandatory implementation-commit invariant -> Final conclusion: the code passes requireHeadAdvance=false specifically for implement, contradicting that documented invariant and leaving the unchanged-HEAD path unspecified and untested."
+  ],
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "implementation-head-advance-contract-mismatch",
+      "detail": "The Story's OCR-S-2 requires an implementation commit, the Architecture's verification contract requires a real implementation commit when capability is available, and OCR-T-3 says the implementation connector advances the managed-worktree HEAD. In contrast, src/one-command-pr-ready-closure.js:105-116 sets requireHeadAdvance=false for implement, so runtimeActionResult accepts the unchanged input HEAD. Align code and documents by enforcing no_progress for same-HEAD implementation completion, or define and prove a bounded no-op condition that is distinct from an unproductive provider completion; add a regression test for that exact branch."
+    }
+  ]
+}

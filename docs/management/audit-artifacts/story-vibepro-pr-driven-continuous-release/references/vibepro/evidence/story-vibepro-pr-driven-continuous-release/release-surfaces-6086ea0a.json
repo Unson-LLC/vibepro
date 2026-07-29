@@ -1,0 +1,10 @@
+{
+  "status": "pass",
+  "head": "6086ea0a",
+  "focused_tests": 24,
+  "codeql_regression": "uppercase_script_filter_covered",
+  "approval_environment": "absent",
+  "trusted_post_merge_trigger": "pull_request_target.closed",
+  "fork_merge_contract": "pass",
+  "release_note_sources": ["Solution", "Compatibility", "User Action"]
+}

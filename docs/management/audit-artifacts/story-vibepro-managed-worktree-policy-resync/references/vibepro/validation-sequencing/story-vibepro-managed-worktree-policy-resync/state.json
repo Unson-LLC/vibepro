@@ -1,0 +1,170 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+  "story_id": "story-vibepro-managed-worktree-policy-resync",
+  "created_at": "2026-07-21T15:08:46.107Z",
+  "updated_at": "2026-07-21T15:54:51.091Z",
+  "plan": {
+    "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+    "story_id": "story-vibepro-managed-worktree-policy-resync",
+    "required": true,
+    "risk_profile": "workflow_heavy",
+    "risk_surfaces": [
+      "core_workflow_state",
+      "polling_retry",
+      "test_coverage"
+    ],
+    "preflight_roles": [
+      "architecture_boundary"
+    ],
+    "preflight_reviews": [
+      {
+        "stage": "architecture_spec",
+        "role": "architecture_boundary",
+        "surfaces": [
+          "core_workflow_state"
+        ]
+      }
+    ],
+    "preflight_surfaces": [
+      "core_workflow_state"
+    ],
+    "phases": [
+      "targeted_validation",
+      "preflight_review",
+      "code_frozen",
+      "expensive_verification",
+      "final_review"
+    ]
+  },
+  "frozen_binding": {
+    "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+    "test_fingerprint": "c7c89c4c1f25e9e631a0cb72e5d6490f59f752751007a804869b4afdd4ccce3e",
+    "verification_command": "node --test test/managed-worktree-policy-resync.test.js test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js"
+  },
+  "phases": {
+    "targeted_validation": {
+      "status": "passed",
+      "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-21T15:09:53.305Z",
+      "binding": {
+        "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+        "test_fingerprint": "c7c89c4c1f25e9e631a0cb72e5d6490f59f752751007a804869b4afdd4ccce3e",
+        "verification_command": "node --test test/managed-worktree-policy-resync.test.js test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js"
+      }
+    },
+    "preflight_review": {
+      "status": "passed",
+      "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-managed-worktree-policy-resync/architecture_spec/review-result-architecture_boundary.json"
+      ],
+      "record_type": "advisory_preflight",
+      "findings": [],
+      "dispositions": [],
+      "satisfies_final_review": false,
+      "recorded_at": "2026-07-21T15:18:44.718Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-managed-worktree-policy-resync",
+        "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+        "system": "claude_code",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "architecture_boundary",
+        "stage": "architecture_spec",
+        "inspection_summary": "reviewed core workflow state boundary of the managed worktree policy resync; risk_surfaces=core_workflow_state。delta fed325a0..78982951を全読: formatManagedWorktreeSummaryのpolicy_sync表示追加（display-only）と新e2e 2本。buildManagedWorktreeGate直接呼び出しテストが実同期+policy_sync/last_event表面化をgetExecutionStatus経由まで固定することを実行で確認（9/9 pass）。隣接4スイート（gate-evidence-edge-robustness/guarded-run-session/responsibility-authority/risk-adaptive-gate）をexit 0で完走確認。初回の自身のマスキング再現はfed325a0で解消確認済みで、本deltaが残っていたカバレッジギャップ（支配的gate経路の明示的テスト）を閉じた",
+        "inspection_inputs": [
+          "src/managed-worktree.js",
+          "src/managed-worktree-gate.js",
+          "src/execution-state.js",
+          "src/cli.js",
+          "test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js",
+          "docs/architecture/story-vibepro-managed-worktree-policy-resync.md",
+          "docs/specs/story-vibepro-managed-worktree-policy-resync.md"
+        ]
+      },
+      "binding": {
+        "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+        "test_fingerprint": "c7c89c4c1f25e9e631a0cb72e5d6490f59f752751007a804869b4afdd4ccce3e",
+        "verification_command": "node --test test/managed-worktree-policy-resync.test.js test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js"
+      }
+    },
+    "code_frozen": {
+      "status": "passed",
+      "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+      "reason": "全レビュー指摘反映済み。HEAD 78982951の凍結bindingでexpensive verification/final reviewを実施",
+      "evidence": [],
+      "recorded_at": "2026-07-21T15:18:46.489Z",
+      "binding": {
+        "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+        "test_fingerprint": "c7c89c4c1f25e9e631a0cb72e5d6490f59f752751007a804869b4afdd4ccce3e",
+        "verification_command": "node --test test/managed-worktree-policy-resync.test.js test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js"
+      }
+    },
+    "expensive_verification": {
+      "status": "passed",
+      "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-21T15:54:34.524Z",
+      "binding": {
+        "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+        "test_fingerprint": "c7c89c4c1f25e9e631a0cb72e5d6490f59f752751007a804869b4afdd4ccce3e",
+        "verification_command": "node --test test/managed-worktree-policy-resync.test.js test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js"
+      }
+    },
+    "final_review": {
+      "status": "passed",
+      "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-managed-worktree-policy-resync/implementation/review-result-runtime_contract.json"
+      ],
+      "source": "agent_review",
+      "recorded_at": "2026-07-21T15:54:51.091Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-managed-worktree-policy-resync",
+        "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+        "system": "claude_code",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "runtime_contract",
+        "stage": "implementation",
+        "inspection_summary": "story/spec/architecture docとdiff(ec36ed5b..78982951)全読、src/managed-worktree.js・managed-worktree-gate.js・execution-state.jsの全call site読解。story契約テスト6/6・e2e 3/3をfocused実行。regression確認としてguarded-run-session/gate-evidence-edge-robustness/risk-adaptive-gate系118/118と、vibepro-cli.test.jsのmanaged-worktree/execute status/next/gate関連26/26を実行し0 fail。decision-records.jsonにreviewerへの指示混入なしを確認",
+        "inspection_inputs": [
+          "src/managed-worktree.js",
+          "src/managed-worktree-gate.js",
+          "src/execution-state.js",
+          "test/managed-worktree-policy-resync.test.js",
+          "test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js",
+          "test/vibepro-cli.test.js",
+          "docs/specs/story-vibepro-managed-worktree-policy-resync.md"
+        ]
+      },
+      "binding": {
+        "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+        "test_fingerprint": "c7c89c4c1f25e9e631a0cb72e5d6490f59f752751007a804869b4afdd4ccce3e",
+        "verification_command": "node --test test/managed-worktree-policy-resync.test.js test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js"
+      }
+    }
+  },
+  "proposed_binding": {
+    "head_sha": "78982951496abee40e54e05001139098241e3f8a",
+    "test_fingerprint": "c7c89c4c1f25e9e631a0cb72e5d6490f59f752751007a804869b4afdd4ccce3e",
+    "verification_command": "node --test test/managed-worktree-policy-resync.test.js test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js"
+  },
+  "invalidations": []
+}

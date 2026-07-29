@@ -1,0 +1,92 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-human-decision-checkpoint",
+  "updated_at": "2026-07-19T10:53:12.618Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Duplicate, stale HEAD, cancelled Run, invalid/tampered type and mismatched pending decision are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/evidence_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:12.617Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Artifact, index, and Run journal retain provenance and missing index state self-repairs.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/evidence_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:12.365Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Brainbase handoff remains an unchanged opaque persisted reference.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/evidence_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:12.118Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Critical waiver is rejected before resolution and directs evidence, split, or block.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/evidence_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:11.876Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Waiting is side-effect free and matching answer resumes from a restart-safe cursor consumed only after success.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/evidence_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:11.615Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Closed five-type set is exercised end-to-end; input and persisted unknown types fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/evidence_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:11.361Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "HEAD-bound material fingerprint and duplicate test demonstrate deduplication with reason and scope.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/evidence_adjudicator_final",
+        "session_ref": null
+      },
+      "head_commit": "7f791922d25841dccb741e9bcd66d84f618a669c",
+      "recorded_at": "2026-07-19T10:53:11.110Z"
+    }
+  ]
+}

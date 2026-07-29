@@ -1,0 +1,178 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Exact-HEAD implementation and verification materially close the earlier gate-evidence gaps: the public CLI E2E now creates the managed worktree, prepares a missing artifact, commits implementation and repair, persists decision and verification-stop resume paths, performs fresh independent review, and reaches current-HEAD final prepare while Codex implementation dispatch is locally contained. Gate Evidence cannot pass yet because the authoritative validation-sequencing artifact marks all five phases invalidated, all current-HEAD acceptance and judgment adjudications are still absent, and pr-prepare reports stale review/artifact consistency plus unresolved critical gates. Rebind the sequence, complete current-HEAD independent adjudication and reviews without waiver, regenerate pr-prepare, and rerun this strict final review.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-evidence-validation-sequence-invalidated",
+      "detail": "The authoritative validation sequence marks targeted_validation, preflight_review, code_frozen, expensive_verification, and final_review all status=invalidated, leaves frozen_binding=null, and gate:validation_sequencing reports every phase incomplete. This remains true even though the phase entries and proposed binding name exact HEAD 56d69700, which means standalone exact-HEAD QA files cannot establish the required ordered freeze/verify/review lifecycle. Re-record or repair the sequence so the same frozen binding advances through all five phases, then regenerate pr-prepare."
+    },
+    {
+      "severity": "high",
+      "id": "gate-evidence-current-head-adjudication-missing",
+      "detail": "gate:evidence_adjudication reports 0/8 fresh AC verdicts and gate:judgment_dag_adjudication reports 0/16 fresh judgment verdicts at 56d69700. The ledgers contain older e6446920 and 3da7bb24 verdicts, including superseded not_demonstrated findings, but adjudication is strict current-HEAD and fail-closed. Dispatch fresh independent adjudicators after the review surface is frozen and record all AC and judgment items at 56d69700; do not treat the older verdicts or generated prepare requests as current proof."
+    },
+    {
+      "severity": "high",
+      "id": "gate-evidence-artifact-and-review-consistency",
+      "detail": "Current pr-prepare is overall needs_verification with ready_for_pr_create=false and nine critical unresolved gates. gate:artifact_consistency reports eight stale or unverified review/verification artifacts; gate_evidence and release_risk lifecycles are still running, while spec_consistency, code_spec_alignment, and product_requirement records have HEAD mismatch. Close and record the current gate reviewers, refresh the stale required review roles as directed, rerun pr-prepare, and verify artifact_consistency plus Agent Review clear on the same clean HEAD."
+    },
+    {
+      "severity": "medium",
+      "id": "gate-evidence-split-and-authority-boundary",
+      "detail": "The generated split plan is split_recommended across requirements-ssot, runtime-behavior, e2e-gate, and misc-follow-up, while responsibility_authority, common_judgment_spine, data_state, execution_topology, and senior-gap gates remain unresolved. This is not a code defect in the reviewed runtime contract, but a final Gate pass would ignore the machine-readable adjudication boundary. Either follow the split recommendation or record an explicit accepted non-split decision with the required owner/evidence; no waiver is currently recorded."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Inspected clean exact HEAD, the gate review request, Story/Architecture/Spec/topology replay, changed runtime and E2E code, exact-HEAD verification/conformance/review artifacts, validation sequence, review lifecycle, adjudication ledgers, split/decision/senior-gap outputs, and current pr-prepare; reran the focused runtime, connector, review-orchestration, closure, and E2E tests successfully and verified the installed Codex CLI supports the generated containment flags.",
+    "evidence": ".vibepro/qa/review-gate-evidence-56d69700.json",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+      "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+      "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+      "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "Initial expectation: exact-HEAD command artifacts might be enough to pass Gate Evidence -> Final decision: needs_changes because the authoritative sequence is invalidated, exact-HEAD adjudication is absent, artifact consistency is stale, required gate reviews remain running or stale, and no waiver exists."
+  ],
+  "managed_worktree_context": {
+    "status": "satisfied",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "review record is running inside the recorded managed worktree",
+    "repo_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "actual_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_root": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "expected_head_sha": "56d69700700016747741657b3af580bab5991777",
+    "current_head_sha": "56d69700700016747741657b3af580bab5991777",
+    "managed_worktree": {
+      "source_repo": "/Users/ksato/.codex/worktrees/7c58/vibepro",
+      "path": "/Users/ksato/.codex/worktrees/7c58/vibepro/.worktrees/vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "actual_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+      "current_head_sha": "56d69700700016747741657b3af580bab5991777",
+      "dirty": false,
+      "dirty_fingerprint": "clean",
+      "raw_dirty": false,
+      "raw_dirty_fingerprint": "clean",
+      "fingerprint_scope": {
+        "user_excludes": [
+          ".vibepro/",
+          ".worktrees/vibepro/"
+        ],
+        "user_includes": [
+          ".vibepro/config.json"
+        ]
+      },
+      "policy_sync": {
+        "status": "unchanged",
+        "reason": "policy sections already match the source repo config",
+        "sections_updated": [],
+        "last_event": {
+          "status": "synced",
+          "sections_updated": [
+            "budgets"
+          ],
+          "synced_at": "2026-07-23T21:02:29.971Z"
+        }
+      }
+    }
+  },
+  "warnings": [],
+  "recorded_at": "2026-07-24T04:16:36.172Z",
+  "git_context": {
+    "head_sha": "56d69700700016747741657b3af580bab5991777",
+    "current_branch": "vibepro/story-vibepro-one-command-pr-ready-closure-nqc6g8",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-24T04:16:36.161Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "Gate evidence is delivery-authoritative and must bind to exact final HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "56d69700700016747741657b3af580bab5991777",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "5a9b1b1cfeb47a1988cccf0cd0fa33f60edb9c8d127fca7284765e6b5d52c930",
+        "size": 10769
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-one-command-pr-ready-closure.md",
+        "sha256": "34c57a7fa00465330e59051ab00e7ac32990b3b2c860aa3cce749de8134ca8b9",
+        "size": 8697
+      },
+      {
+        "path": "docs/specs/story-vibepro-one-command-pr-ready-closure.vibepro.json",
+        "sha256": "741c0be39094bab46d93f905c183628c018f6527bd1157777b968bf26499fd50",
+        "size": 12288
+      },
+      {
+        "path": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+        "sha256": "414800e5c3aabcfe21c5140355cdadc20a1d3e813b4583ed06458396156071fb",
+        "size": 33189
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "89b37a12a7aa1ff6df3310b20bdbc4714adf13926a6853f24265d743d03f2060"
+  },
+  "source_fingerprint": "5609c68207f26725387bf88d7d16255e7048cf871764bbe89d2af2dc0adaba01",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "gate-evidence-56d69700",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "/root/gate_evidence_final",
+    "session_id": "gate-evidence-56d69700",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/qa/review-gate-evidence-56d69700.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-one-command-pr-ready-closure/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/qa/review-gate-evidence-56d69700.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "gate-evidence-56d69700",
+      "implementation_session_id": "/root",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,42 @@
+{
+  "status": "pass",
+  "summary": "HEAD 2411506a2ffdbe98d28776fcc5af44fd4e823f06 の gate_evidence は pass。gate_evidence/release_riskのcontent_surface既定、明示strict_head override、content-binding/merge-deltaのfail-closed、dirty fingerprint、inspection/provenance/lifecycle保証がcurrent-head verificationと独立preflight/runtime reviewで維持されている。",
+  "inspection_summary": "旧成果物を再ラベルせず、origin/mainからの18-file変更面、current review-plan/request、Story/Architecture/Spec、agent-review/content-binding実装、contract/inspection/CLI/E2E tests、2411506aにstrict-headで記録されたunit 39/39・acceptance E2E 8/8、current architecture preflight lifecycle、current runtime lifecycle、正式gate lifecycleを再確認した。追加のread-only再実行もexit 0で、tracked worktreeはclean。review requestの旧evidence reuse keyはHEADとverification timestamp差でstaleだが、まさに本レビューを要求するfail-closed状態であり、現行証跡自体はcurrentである。",
+  "inspection_evidence": "gate lifecycle c5fea099-8ba6-465a-a983-d6efc6922bb0; preflight lifecycle 58d25c85-823c-4489-9751-592c257e30c8; runtime lifecycle 9900af89-6211-42b9-87fc-808e99b5b86c; verification-evidence current unit 39/39 and E2E 8/8 at 2411506a",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/review-plan.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/review-request-gate_evidence.md",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/gate/lifecycle.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/lifecycle.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/architecture_spec/final-review-2411506a.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/lifecycle.json",
+    ".vibepro/reviews/story-vibepro-surface-aware-agent-review-freshness/implementation/review-result-runtime_contract.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-surface-aware-agent-review-freshness/pr-prepare.json",
+    ".vibepro/config.json",
+    "design-ssot.json",
+    "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+    "docs/specs/vibepro-surface-aware-agent-review-freshness.md",
+    "src/agent-review.js",
+    "src/content-binding.js",
+    "test/content-scoped-evidence-freshness.test.js",
+    "test/review-inspection-first.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+    "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+    "command: git diff origin/main...HEAD",
+    "command: node --test test/content-scoped-evidence-freshness.test.js test/review-inspection-first.test.js",
+    "command: node --test test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+    "command: git status --short"
+  ],
+  "judgment_delta": [
+    "初期懸念: gate_evidence/release_riskのbuilt-in strict_head削除が高リスクレビューを楽観再利用する可能性 -> 両ロールはinspection surfaceのhashでcontent-boundとなり、surface変更でstale、明示strict overrideは理由必須かつHEAD変更でstaleする契約テストがあるためpass",
+    "初期懸念: unrelated main advanceやrebase/mergeでreviewが全面失効する旧挙動が残る可能性 -> branch HEAD不変時とsurface不変rebase/mergeの双方でcurrent、projection lineage/release-impact変更時だけ該当ロールがstaleになるfixtureとAC別E2Eがcurrent HEADでpass",
+    "初期懸念: changed-files不明、missing surface、hash mismatchをmerge-delta reuseが通す可能性 -> content-bindingとlegacy merge-deltaは解決不能・missing・hash mismatch・inspection surface交差をstaleにするnegative coverageがありfail-closed",
+    "初期懸念: surface再利用がdirty fingerprint、inspection input、agent provenance、review lifecycleを迂回する可能性 -> current review-planのmandatory lenses、inspection-first tests、dirty fingerprint検査、別session provenance、authorize-start-close-record lifecycleが維持され、preflight/runtime reviewも2411506aへ正式にclosed/pass",
+    "初期懸念: CI互換性修正がsurface-aware既定を旧HEAD-bound契約へ戻す可能性 -> CLI fixtureだけが理由付き明示strictとしてHEAD失効を検証し、preflight DAG fixtureは新しいcontent-bound stale reasonを追加許容するだけでruntime policyを変更していない",
+    "初期懸念: review requestのreuse artifactがstaleで証跡不足となる可能性 -> stale理由は旧HEAD・旧verification timestampの不一致であり再レビュー要求として正しい。現行verificationは2411506a・dirty=false・missing surfaceなし・unit 39/39・E2E 8/8をstrict-headで記録済み"
+  ],
+  "findings": []
+}

@@ -1,0 +1,36 @@
+{
+  "head_sha": "56c0a2aed44156ccbce9080894eb5c007efa467e",
+  "status": "block",
+  "summary": "The exact same-status/different-node regression is repaired when both routed and embedded Gate DAGs exist, and current-HEAD parse/persistence evidence passes. Closure is incomplete because the comparison is optional when the embedded pr-prepare Gate DAG is missing; malformed authority can still reuse stale noncritical gate_status against a current critical routed DAG before GitHub.",
+  "findings": [
+    {
+      "severity": "critical",
+      "id": "missing-embedded-gate-dag-bypass",
+      "path": "src/merge-gate-authorization.js",
+      "line": 39,
+      "detail": "The guard runs only when gateDag && preparedGateDag. With a current routed critical DAG, current-head pr-prepare gate_status, and missing pr_context.gate_dag, resolveCurrentMergeGateStatus returns the stale status and buildMergeGateAuthorization returns allowed=true. Require preparedGateDag whenever a routed DAG is present, then compare exact normalized surfaces, and add unit/CLI coverage with GitHub uncalled."
+    }
+  ],
+  "inspection_inputs": [
+    "src/merge-gate-authorization.js",
+    "test/merge-gate-authorization.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-merge-waiver-propagation-main.spec.ts",
+    "docs/architecture/story-vibepro-merge-waiver-propagation.md",
+    "docs/specs/story-vibepro-merge-waiver-propagation.spec.md",
+    "docs/management/stories/active/story-vibepro-merge-waiver-propagation.md",
+    ".vibepro/qa/story-vibepro-merge-waiver-propagation/current-head-validation-56c0a2ae.json"
+  ],
+  "verification": [
+    "focused current-HEAD run: 9/9 unit+E2E passed",
+    "CLI auth/parse/persistence run: 3/3 passed",
+    "direct missing-embedded-DAG reproduction returned authorization.allowed=true"
+  ],
+  "judgment_delta": "Prior block for same-status/different-DAG was closed, but the overall verdict remains block because exact surface comparison is bypassed when the embedded DAG is absent, leaving malformed authority fail-open.",
+  "reviewer": {
+    "agent_system": "codex",
+    "agent_id": "/root/gate_evidence_review",
+    "agent_model": "gpt-5.6-terra",
+    "agent_reasoning_effort": "low"
+  }
+}

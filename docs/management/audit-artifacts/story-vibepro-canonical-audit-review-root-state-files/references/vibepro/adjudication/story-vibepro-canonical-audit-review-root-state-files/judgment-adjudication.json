@@ -1,0 +1,360 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-canonical-audit-review-root-state-files",
+  "updated_at": "2026-07-22T07:26:15.278Z",
+  "events": [
+    {
+      "event_id": "98da6f83-cf5f-49b2-847a-8922372e6319",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The story doc's reason frontmatter genuinely articulates intent: it names the concrete failure (authorize-flow stories always fail merge-time canonical audit, reproduced 2026-07-22), weighs alternatives (move authorize state files vs tolerate in audit), and justifies the choice with rollback and boundary; the stated code facts were verified against src/agent-review.js:3258 and src/canonical-audit.js:2655.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a35315e7dcba4fe7d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a35315e7dcba4fe7d.output"
+      },
+      "head_commit": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+      "recorded_at": "2026-07-22T07:16:12.703Z"
+    },
+    {
+      "event_id": "bb79756b-620c-4100-acb4-e53ae26c0688",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The flow_replay evidence reconstructs the actual failing reality - dispatch-authorizations.json plus stale .dispatch.lock under the review root, mirroring agent-review.js's real write paths (getDispatchAuthorizationsPath ~3258, mkdir-based withDirectoryLock ~3434) - and exercises the real promoteCanonicalAuditArtifacts merge-time entrypoint, so current reality was actually examined, not just tokenized.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a35315e7dcba4fe7d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a35315e7dcba4fe7d.output"
+      },
+      "head_commit": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+      "recorded_at": "2026-07-22T07:16:14.652Z"
+    },
+    {
+      "event_id": "c2668ba2-6ce7-4d9c-9398-46972bb97c5d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The load-bearing invariant (INV-001: extensionless stage-impostor files still fail loud with ENOTDIR so tolerance cannot mask a corrupted review tree) is explicitly stated in docs/specs/vibepro-canonical-audit-review-root-state-files.md and pinned by both the pre-existing ENOTDIR test passing on this head and the replay's assert.rejects; the diff confirms the throw path is retained after the two narrow continue branches.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a35315e7dcba4fe7d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a35315e7dcba4fe7d.output"
+      },
+      "head_commit": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+      "recorded_at": "2026-07-22T07:16:16.154Z"
+    },
+    {
+      "event_id": "2c7d4372-38f0-4472-8cc3-10f0da23f0d5",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The claimed boundary (readdir classification in one function only; authorize-side writes and REVIEW_AUDIT_FILES/REVIEW_HANDOFF_FILES collection untouched) matches the actual diff: src changes are 5 lines inside safeReaddirDirectories, agent-review.js is unchanged, and the stage-collection loops at lines 583 and 1176 are byte-identical; the cited no-split decision record exists with a substantive rationale.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a35315e7dcba4fe7d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a35315e7dcba4fe7d.output"
+      },
+      "head_commit": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+      "recorded_at": "2026-07-22T07:16:17.461Z"
+    },
+    {
+      "event_id": "22ac9368-f2a8-41a6-b69d-6181e150bdaf",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The matched replay evidence is not token-only: the replay script exercises both the previously-failing flow (state file + stale lock) and the guarded failure path (ENOTDIR on stage impostor), and CARS-S-1..S-3 plus the ENOTDIR test cover the same failure surface in the committed suite, so failure modes of this change were concretely examined.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a35315e7dcba4fe7d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a35315e7dcba4fe7d.output"
+      },
+      "head_commit": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+      "recorded_at": "2026-07-22T07:16:18.812Z"
+    },
+    {
+      "event_id": "012e8d35-918a-4644-ae1f-dea7c54c6d4e",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence is real and reproducible: status artifacts under .vibepro/evidence/<story>/ record actual exit codes, the coordinator's saved targeted-suite log shows 20/20 including all CARS cases on this head, and the replay artifact records promoted_artifact_count=2 with fail_loud_preserved=true, matching what the replay script actually asserts.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a35315e7dcba4fe7d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a35315e7dcba4fe7d.output"
+      },
+      "head_commit": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+      "recorded_at": "2026-07-22T07:16:20.448Z"
+    },
+    {
+      "event_id": "82657d71-9351-4cbb-a587-650f317ae115",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The spec's compatibility claim holds against the diff: the two new branches only skip entries that previously threw, so any tree that promoted successfully before promotes byte-identically, no CLI/output format changes, and the only behavior change is turning a merge-blocking internal error into tolerance of files the tool's own authorize flow writes; stage-directory collection patterns are unchanged.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a35315e7dcba4fe7d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a35315e7dcba4fe7d.output"
+      },
+      "head_commit": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+      "recorded_at": "2026-07-22T07:16:22.354Z"
+    },
+    {
+      "event_id": "7f0d4e63-31a5-4045-8bb7-4100eef97e7d",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The accepted_followup/no-split decision holds: the reviewable surface is one 5-line change in a single function plus its regression tests, with the remaining diff being story/spec/design-ssot registration that must land together for gate traceability, exactly as the decision record's reason states - one reviewer can read this as a single coherent judgment.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a35315e7dcba4fe7d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a35315e7dcba4fe7d.output"
+      },
+      "head_commit": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+      "recorded_at": "2026-07-22T07:16:24.116Z"
+    },
+    {
+      "event_id": "d93ec2b7-bde0-4411-b651-c45f24308f5b",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change never reads file contents - it classifies review-root entries by name only - so no new parse surface exists, readJsonIfExists is untouched in the diff, and the existing malformed-JSON fail-fast tests (CAGR-S-004 for evidence-plan and decision-index) pass on this head per the saved log, so the covered judgment holds substantively.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a35315e7dcba4fe7d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a35315e7dcba4fe7d.output"
+      },
+      "head_commit": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+      "recorded_at": "2026-07-22T07:16:25.476Z"
+    },
+    {
+      "event_id": "00b22594-5a57-4243-992d-25b993930458",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The matched citation (npm run typecheck) would be insufficient alone, but the judgment itself holds against the real diff: the REVIEW_AUDIT_FILES/REVIEW_HANDOFF_FILES promotion loops at src/canonical-audit.js:583 and :1176 are unchanged, and CARS-S-1 plus the replay positively assert that stage review artifacts are still promoted into the bundle with state files present, verified by the 20/20 suite pass on this head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a35315e7dcba4fe7d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a35315e7dcba4fe7d.output"
+      },
+      "head_commit": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+      "recorded_at": "2026-07-22T07:16:26.769Z"
+    },
+    {
+      "event_id": "4ffd1a82-2760-469c-aaf2-efdf11b0d8a9",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff writes no workflow state: authorize state files remain read/written only by agent-review.js while canonical audit now tolerates them without consuming or mutating them, and the replay demonstrates the merge flow completes with the stale .dispatch.lock skipped rather than being promoted or left over-green, so no new stale/pending/over-green state path is introduced.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a35315e7dcba4fe7d",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a35315e7dcba4fe7d.output"
+      },
+      "head_commit": "ebde526fdcbd11c24219cc0679802720b8b4c352",
+      "recorded_at": "2026-07-22T07:16:28.438Z"
+    },
+    {
+      "event_id": "2d712124-7920-46f1-b186-f80a3444cf8f",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The story doc contains genuine intent: User Value ties the fix to authorize+merge coexistence, Background states verifiable code facts (safeReaddirDirectories throw, agent-review.js state file writes confirmed at lines 3258/3434), and the reason key records alternatives, rollback, and boundary - not token-matching boilerplate.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:26:00.570Z"
+    },
+    {
+      "event_id": "992ed230-9c56-4a5b-90ce-d4ad811ad902",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The claimed current reality (authorize stories necessarily fail merge-time promotion with ENOTDIR) is verifiable from code: getDispatchAuthorizationsPath writes dispatch-authorizations.json directly under the review root and withDirectoryLock mkdirs .dispatch.lock there, while pre-change safeReaddirDirectories threw on any non-directory except *-final.md; the committed CARS-S-1 fixture reproduces the same reality and fails on the old code by construction.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:26:02.046Z"
+    },
+    {
+      "event_id": "48fdd446-7ee7-46cf-89df-c4162fa7741b",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The fail-loud invariant is explicitly carried as spec INV-001 in docs/specs/vibepro-canonical-audit-review-root-state-files.md and pinned by the retained ENOTDIR test; the diff confirms REVIEW_AUDIT_FILES/REVIEW_HANDOFF_FILES collection under stages is untouched (zero hits in the src diff), matching the spec's compatibility section.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:26:03.503Z"
+    },
+    {
+      "event_id": "fd21638d-19a3-4774-89d4-299de688eebf",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The stated boundary (readdir classification only, authorize side unchanged) matches the diff exactly: 5 added lines confined to safeReaddirDirectories in src/canonical-audit.js, no change to src/agent-review.js or stage-level collection patterns.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:26:04.820Z"
+    },
+    {
+      "event_id": "c26e0ed0-7ac8-421d-a317-927c10aff9e8",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The three named failure modes were actually considered against the diff, not just token-matched: the tolerance skips (never parses) tolerated .json files, the ENOTDIR fail-loud path for impostor stage files is test-pinned, and dot-skip behavior is pinned by CARS-S-3; the committed suite covers these even though the mechanically-matched replay script is uncommitted.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:26:06.560Z"
+    },
+    {
+      "event_id": "1fe2989c-b5af-4848-a115-766c386ff26d",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence is grounded in the committed targeted suite (20/20 on current head, /tmp/cars-test-output.txt) whose CARS tests map one-to-one onto the acceptance criteria; the uncommitted scratchpad replay is supplementary, not load-bearing, so done-ness does not rest on unreproducible evidence.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:26:08.477Z"
+    },
+    {
+      "event_id": "df3538ca-4575-4de9-bfa0-44d81041602b",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The spec explicitly scopes the change to the internal promotion contract between agent-review.js and canonical-audit.js with the public CLI contract unchanged; the diff is a pure tolerance widening at readdir classification with compatibility pinned (previously-valid trees promote identically, ENOTDIR retained), so no external CLI/API/output contract is broken.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:26:09.973Z"
+    },
+    {
+      "event_id": "ec3446f8-0639-4b98-9134-5fa8e7ece6b2",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The PR is a single coherent intent readable by one reviewer: one 5-line behavioral change, three targeted tests plus one retained regression, and story/spec/design-ssot registration (6 files, ~205 insertions), with docs directly describing the code change they accompany.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:26:11.675Z"
+    },
+    {
+      "event_id": "e831cbc2-0116-41f1-9c89-3ad64023acd0",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change adds filename pattern checks only and never parses the tolerated files, so malformed dispatch-authorizations.json cannot enter a parse path here; the existing malformed-JSON fail-fast tests (CAGR-S-004 evidence-plan/decision-index) still pass in the 20/20 suite, confirming the parse-failure surface is untouched.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:26:13.131Z"
+    },
+    {
+      "event_id": "0224eece-9a8f-4923-b99e-95c196334bd4",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Although the mechanically-matched evidence (npm run typecheck) alone could not demonstrate this, the diff shows stage-level collection (REVIEW_AUDIT_FILES/REVIEW_HANDOFF_FILES loops at lines ~585/~1178) is byte-identical, and CARS-S-1 positively asserts a stage review_request is still promoted into the bundle, so no misleading-green or lost-handoff regression is possible from this change.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:26:14.227Z"
+    },
+    {
+      "event_id": "84b8b179-4e76-4af8-9074-b3d90bd49d36",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change reads no workflow state and writes none: authorize state files remain owned by agent-review.js (read/write at getDispatchAuthorizationsPath, lock at withDirectoryLock) and canonical audit now tolerates them without consuming or mutating them; CARS-S-3 pins that a stale lock is skipped rather than surfaced as a phantom stage, and no gate state is derived from the tolerated entries, so no stale/over-green state can result.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0a372585ebeeba76",
+        "session_ref": "/private/tmp/claude-502/-Users-ksato-workspace-code-vibepro--claude-worktrees-affectionate-heisenberg-36d68d/8955af5d-947c-46ec-8f74-eccdab486856/tasks/a0a372585ebeeba76.output"
+      },
+      "head_commit": "44ebe87760f0284f8e83d7a33ff848b3c62015e1",
+      "recorded_at": "2026-07-22T07:26:15.271Z"
+    }
+  ]
+}

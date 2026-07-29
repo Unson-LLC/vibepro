@@ -62,13 +62,31 @@ test('story-vibepro-responsibility-authority-registry replays responsibility aut
   );
 
   const preEvidenceGateDagPath = path.join(repo, '.vibepro', 'pr', STORY_ID, 'gate-dag.json');
-  await writeFile(preEvidenceGateDagPath, `${JSON.stringify({
+  const currentHeadSha = preEvidence.result.preparation.git.head_sha;
+  const boundPreEvidenceGateDag = {
     schema_version: preEvidenceGateDag.schema_version,
     story_id: STORY_ID,
+    current_head_sha: currentHeadSha,
     overall_status: 'needs_verification',
     nodes: [preEvidenceResponsibilityGate],
     edges: []
-  }, null, 2)}\n`);
+  };
+  await writeFile(preEvidenceGateDagPath, `${JSON.stringify(boundPreEvidenceGateDag, null, 2)}\n`);
+  await writeFile(
+    path.join(repo, '.vibepro', 'pr', STORY_ID, 'pr-prepare.json'),
+    `${JSON.stringify({
+      ...preEvidence.result.preparation,
+      current_head_sha: currentHeadSha,
+      git: {
+        ...preEvidence.result.preparation.git,
+        head_sha: currentHeadSha
+      },
+      pr_context: {
+        ...preEvidence.result.preparation.pr_context,
+        gate_dag: boundPreEvidenceGateDag
+      }
+    }, null, 2)}\n`
+  );
   const preEvidenceState = await runCli(['execute', 'reconcile', repo, '--story-id', STORY_ID, '--base', 'main', '--json']);
   assert.equal(preEvidenceState.exitCode, 0, preEvidenceState.stderr);
   assert.equal(

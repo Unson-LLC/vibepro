@@ -1,8 +1,10 @@
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, readdir, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { resolveArtifactRoute, resolvePrArtifactFile } from './artifact-routing.js';
 
 import { resolveGitIdentity } from './git-identity.js';
+import { RUN_LINEAGE_SCHEMA_VERSION, validateRunLineageEnvelope } from './run-lineage.js';
 import { getWorkspaceDir } from './workspace.js';
 
 export const RUN_CONTEXT_CAPSULE_SCHEMA_VERSION = '0.1.0';
@@ -161,7 +163,7 @@ async function refreshCapsule(deps, repoRoot, options, behavior = {}) {
     run_status: context.state.status,
     objective: extractObjective(storyRaw),
     invariants: extractInvariants(storyRaw),
-    bottleneck: extractBottleneck(context.state, prPrepare),
+    bottleneck: extractBottleneck(context.state, prPrepare, sourceByKind.get('pr_prepare')),
     evidence_refs: buildEvidenceRefs({ sources, verification, reviewSources }),
     open_decisions: extractOpenDecisions(context.state, decisions, sourceByKind.get('decisions')),
     budget_state: {
@@ -172,6 +174,7 @@ async function refreshCapsule(deps, repoRoot, options, behavior = {}) {
       deadline: context.state.deadline ?? null
     },
     last_progress: extractLastProgress(context.state),
+    lineage: buildLineageProjection(context.state, context.authorityRoot, context.stateRaw),
     generation_reason: normalizeReason(options.reason),
     generated_at: toIso(deps.now()),
     event_fingerprint: eventFingerprint,
@@ -262,6 +265,7 @@ async function recoverCapsule(deps, repoRoot, options) {
     evidence_refs: capsule.evidence_refs,
     budget_state: capsule.budget_state,
     last_progress: capsule.last_progress,
+    lineage: capsule.lineage ?? null,
     truncated_sections: capsule.truncated_sections
   };
 }
@@ -342,14 +346,15 @@ async function collectSources(deps, context) {
     await loadSource(deps.artifactIo, context.authorityRoot, 'run_state', context.authorityFile, true),
     await loadSource(deps.artifactIo, context.authorityRoot, 'story', storyPath, true)
   ];
-  const workspace = getWorkspaceDir(context.authorityRoot);
   const storyId = context.state.story_id;
+  const reviewRoute = await resolveArtifactRoute(context.authorityRoot, 'review', { storyId });
+  const reviewRoot = reviewRoute.canonical.absolute_path;
   const optionalPaths = [
-    ['pr_prepare', path.join(workspace, 'pr', storyId, 'pr-prepare.json')],
-    ['verification', path.join(workspace, 'pr', storyId, 'verification-evidence.json')],
-    ['decisions', path.join(workspace, 'pr', storyId, 'decision-records.json')],
-    ['review_test_plan', path.join(workspace, 'reviews', storyId, 'test_plan', 'review-summary.json')],
-    ['review_gate', path.join(workspace, 'reviews', storyId, 'gate', 'review-summary.json')]
+    ['pr_prepare', await resolvePrArtifactFile(context.authorityRoot, storyId)],
+    ['verification', await resolvePrArtifactFile(context.authorityRoot, storyId, 'verification-evidence.json')],
+    ['decisions', await resolvePrArtifactFile(context.authorityRoot, storyId, 'decision-records.json')],
+    ['review_test_plan', path.join(reviewRoot, 'test_plan', 'review-summary.json')],
+    ['review_gate', path.join(reviewRoot, 'gate', 'review-summary.json')]
   ];
   const optional = [];
   for (const [kind, sourcePath] of optionalPaths) {
@@ -369,11 +374,24 @@ function fingerprintSources(sources) {
 }
 
 async function findStoryPath(io, root, storyId) {
+  const canonical = (await resolveArtifactRoute(root, 'story', { storyId })).canonical.absolute_path;
   const roots = [
     path.join(root, 'docs', 'management', 'stories', 'active'),
     path.join(root, 'docs', 'management', 'stories', 'completed'),
     path.join(root, 'docs', 'management', 'stories', 'done')
   ];
+  const configuredRaw = await readOptional(io, canonical);
+  if (configuredRaw !== null) {
+    const declaredStoryId = configuredRaw.match(/^story_id:\s*([^\s]+)\s*$/m)?.[1] ?? null;
+    if (declaredStoryId !== storyId) {
+      throw capsuleError('stale_binding', 'Story document identity does not match the Run Context Capsule binding.', {
+        expected_story_id: storyId,
+        actual_story_id: declaredStoryId,
+        source_ref: toRootRelative(root, canonical)
+      });
+    }
+    return canonical;
+  }
   for (const storyRoot of roots) {
     const direct = path.join(storyRoot, `${storyId}.md`);
     const raw = await readOptional(io, direct);
@@ -414,6 +432,87 @@ function buildEvidenceRefs({ sources, verification, reviewSources }) {
   return refs;
 }
 
+function buildLineageProjection(state, authorityRoot, stateRaw) {
+  const sourceRef = `.vibepro/executions/${state.story_id}/runs/${state.run_id}/state.json`;
+  const authority = {
+    story_id: state.story_id,
+    run_id: state.run_id,
+    worktree_root: state.worktree_root ?? state.root_realpath ?? state.execution_context?.root_realpath ?? authorityRoot,
+    branch: state.branch ?? state.current_branch ?? null,
+    head_sha: state.current_head_sha
+  };
+  const dispatches = Array.isArray(state.runtime_dispatches) ? state.runtime_dispatches : [];
+  const projected = [];
+  const unresolved = [];
+  for (const dispatch of dispatches) {
+    if (!dispatch || typeof dispatch !== 'object') continue;
+    try {
+      const envelope = validateRunLineageEnvelope(dispatch.lineage, authority);
+      projected.push({
+        dispatch_id: envelope.dispatch_id,
+        role: compactText(dispatch.role, 80),
+        adapter_id: compactText(dispatch.adapter_id, 120),
+        task_id: compactText(dispatch.task_id, 160),
+        status: compactText(dispatch.status, 80),
+        lineage: {
+          schema_version: envelope.schema_version,
+          story_id: envelope.story_id,
+          run_id: envelope.run_id,
+          dispatch_id: envelope.dispatch_id,
+          worktree_root: envelope.worktree_root,
+          branch: envelope.branch,
+          head_sha: envelope.head_sha
+        },
+        provider_observations: boundedProviderObservations(envelope)
+      });
+    } catch {
+      if (typeof dispatch.dispatch_id === 'string' && dispatch.dispatch_id.trim()) {
+        unresolved.push(compactText(dispatch.dispatch_id, 160));
+      }
+    }
+  }
+  const boundedDispatches = projected.slice(-32);
+  const omittedDispatchCount = Math.max(0, projected.length - boundedDispatches.length);
+  return {
+    schema_version: RUN_LINEAGE_SCHEMA_VERSION,
+    source_ref: sourceRef,
+    source_digest: digest(stateRaw),
+    authority,
+    summary: {
+      method: 'explicit_run_lineage',
+      dispatch_count: dispatches.length,
+      validated_dispatch_count: projected.length,
+      unresolved_dispatch_count: unresolved.length,
+      provider_observation_count: projected.reduce((sum, item) => sum + item.provider_observations.length, 0),
+      omitted_dispatch_count: omittedDispatchCount,
+      has_unresolved: unresolved.length > 0
+    },
+    dispatches: boundedDispatches,
+    unresolved_dispatch_ids: unresolved.slice(-32)
+  };
+}
+
+function boundedProviderObservations(envelope) {
+  const observations = Array.isArray(envelope.provider_observations)
+    ? envelope.provider_observations
+    : [];
+  const topLevel = {
+    provider_run_id: envelope.provider_run_id,
+    provider_session_id: envelope.provider_session_id,
+    thread_id: envelope.thread_id
+  };
+  const all = observations.length > 0 ? observations : [topLevel];
+  return all
+    .filter((item) => item && Object.values(item).some((value) => value !== null && value !== undefined))
+    .slice(-8)
+    .map((item) => ({
+      ...(typeof item.provider === 'string' ? { provider: compactText(item.provider, 80) } : {}),
+      ...(typeof item.provider_run_id === 'string' ? { provider_run_id: compactText(item.provider_run_id, 160) } : {}),
+      ...(typeof item.provider_session_id === 'string' ? { provider_session_id: compactText(item.provider_session_id, 160) } : {}),
+      ...(typeof item.thread_id === 'string' ? { thread_id: compactText(item.thread_id, 160) } : {})
+    }));
+}
+
 function reference(source, summary) {
   return {
     kind: source.kind,
@@ -438,7 +537,7 @@ function summarizeReview(value) {
   return compactText(`status=${status}`, 256);
 }
 
-function extractBottleneck(state, prPrepare) {
+function extractBottleneck(state, prPrepare, prPrepareSource) {
   const blocking = prPrepare?.gate_status?.execution_gate?.blocking_gates;
   if (Array.isArray(blocking) && blocking.length > 0) {
     const first = blocking[0];
@@ -448,7 +547,7 @@ function extractBottleneck(state, prPrepare) {
       status: compactText(first.status ?? 'unknown', 80),
       label: compactText(first.label ?? first.id ?? 'Blocking gate', 240),
       reason: compactText(first.reason ?? 'Gate is unresolved.', 512),
-      source_ref: `.vibepro/pr/${state.story_id}/pr-prepare.json`
+      source_ref: prPrepareSource?.sourceRef ?? `.vibepro/pr/${state.story_id}/pr-prepare.json`
     };
   }
   if (state.stop_reason) {
@@ -516,7 +615,12 @@ function extractLastProgress(state) {
 
 function fitCapsule(input) {
   const capsule = structuredClone(input);
+  if (capsule.lineage?.summary?.omitted_dispatch_count > 0) markTruncated(capsule, 'lineage');
   let raw = serializeCapsule(capsule);
+  if (Buffer.byteLength(raw) <= RUN_CONTEXT_CAPSULE_MAX_BYTES) return capsule;
+
+  compactLineage(capsule);
+  raw = serializeCapsule(capsule);
   if (Buffer.byteLength(raw) <= RUN_CONTEXT_CAPSULE_MAX_BYTES) return capsule;
 
   if (capsule.open_decisions.length > 8) {
@@ -554,6 +658,26 @@ function fitCapsule(input) {
     });
   }
   return capsule;
+}
+
+function compactLineage(capsule) {
+  if (!capsule.lineage) return;
+  if (capsule.lineage.dispatches.length > 8) {
+    capsule.lineage.dispatches = capsule.lineage.dispatches.slice(-8);
+    capsule.lineage.summary.omitted_dispatch_count += 1;
+    markTruncated(capsule, 'lineage');
+  }
+  capsule.lineage.dispatches = capsule.lineage.dispatches.map((dispatch) => ({
+    dispatch_id: dispatch.dispatch_id,
+    role: dispatch.role,
+    status: dispatch.status,
+    lineage: dispatch.lineage,
+    provider_observations: dispatch.provider_observations.slice(-2)
+  }));
+  if (capsule.lineage.unresolved_dispatch_ids.length > 8) {
+    capsule.lineage.unresolved_dispatch_ids = capsule.lineage.unresolved_dispatch_ids.slice(-8);
+    markTruncated(capsule, 'lineage');
+  }
 }
 
 function serializeCapsule(capsule) {

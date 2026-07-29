@@ -1,0 +1,128 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-target-architecture-conformance",
+  "updated_at": "2026-07-22T05:49:58.640Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Corrected re-adjudication at head f05f9b24: fail-loud behavior for missing/unparsable inputs unchanged and test-covered",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:49:58.306Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Corrected re-adjudication at head f05f9b24: draft advisory notice present in regenerated artifact and markdown",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:49:47.264Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Corrected re-adjudication at head f05f9b24: strict-only exit semantics verified (exit 0 with 68 violations live, exit 2 under --strict in test); no gate_status coupling",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:49:37.930Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Corrected re-adjudication at head f05f9b24: live conformance run reported 68 undeclared dependency violations with edge evidence into conformance.json; unit tests demonstrate each violation kind",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:49:26.152Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Corrected re-adjudication at head f05f9b24 (evidence counts regenerated from source logs: unit 12/12, telemetry 429, guarded 174): target-model.json SSOT and loadTargetModel enforcement demonstrated unchanged",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "f05f9b2401655828445858c7dc717f83d55017db",
+      "recorded_at": "2026-07-22T05:49:15.618Z"
+    },
+    {
+      "clause_id": "S-005",
+      "verdict": "demonstrated",
+      "reason": "loadGraph throws descriptive errors on ENOENT, JSON parse failure and empty nodes; loadTargetModel throws on missing/unparsable model; fail-loud tests assert rejection and pass in unit-test-run.log 12/12",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:04:25.425Z"
+    },
+    {
+      "clause_id": "S-004",
+      "verdict": "demonstrated",
+      "reason": "advisory_notice set when status=draft and rendered into markdown; live run returned the notice for the draft model and conformance.json contains the exact text; unit test confirms draft carries notice and adjudicated does not",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:04:23.721Z"
+    },
+    {
+      "clause_id": "S-003",
+      "verdict": "demonstrated",
+      "reason": "cli.js computes exitCode = strict && violation_count>0 ? 2 : 0; test asserts exit 0 with violations and exit 2 with --strict; live run: 66 violations exit 0; conformance writes only .vibepro/architecture/conformance/* with no gate/pr coupling verified in module and CLI block",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:04:22.040Z"
+    },
+    {
+      "clause_id": "S-002",
+      "verdict": "demonstrated",
+      "reason": "runArchitectureConformance matches model vs graph.json and emits undeclared_dependency with example_edges, budget_violation (line + module file-count) and orphan_file; live real-repo run produced 66 undeclared violations with edge evidence into conformance.json; unit tests demonstrate each kind separately",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:04:20.416Z"
+    },
+    {
+      "clause_id": "S-001",
+      "verdict": "demonstrated",
+      "reason": "target-model.json exists as canonical to-be model with 16 modules (name/responsibility/paths), allowed_dependencies incl. wildcard, budgets.default_max_file_lines + file_line_baseline, status=draft, adjudicated_by=null; loadTargetModel enforces modules presence and status enum; per-module max_files budget dimension exercised by unit test",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "claude-explore-accfacaf6c438849d",
+        "session_ref": null
+      },
+      "head_commit": "8a050820a65431c2936660da814839e2a0b3b2be",
+      "recorded_at": "2026-07-22T02:03:50.328Z"
+    }
+  ]
+}

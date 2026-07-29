@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "exit_code": 0,
+  "head_sha": "32f343628a3d9b89e140b9b53d26be2d00d2e7ef",
+  "focused": { "tests": 92, "passed": 92, "failed": 0 },
+  "full_suite": { "tests": 1469, "passed_in_sandbox": 1467, "environmental_failures": 2 },
+  "isolated_environmental_rerun": { "tests": 2, "passed": 2, "failed": 0 },
+  "note": "The full sandbox run reported listen EPERM and npm cache EPERM only; both exact tests passed outside the sandbox with a temporary npm cache."
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "story_id": "story-vibepro-one-command-pr-ready-closure",
+  "head_commit": "97c7684b94681cc4fe1c902d2b2cabb888175546",
+  "status": "pass",
+  "command": "node --test --test-concurrency=2",
+  "initial_run": {
+    "tests": 1891,
+    "pass": 1889,
+    "fail": 2,
+    "duration_ms": 1475080.893291,
+    "environment_failures": [
+      {
+        "test": "measure records command, HTTP, startup, and Prisma log metrics",
+        "cause": "sandbox denied localhost listen"
+      },
+      {
+        "test": "npm dry-run package excludes VibePro workspace and internal artifacts",
+        "cause": "default npm cache contained root-owned files"
+      }
+    ]
+  },
+  "environment_recheck": {
+    "command": "npm_config_cache=/private/tmp/vibepro-npm-cache node --test --test-name-pattern='measure records command, HTTP, startup, and Prisma log metrics|npm dry-run package excludes VibePro workspace and internal artifacts' test/vibepro-cli.test.js",
+    "tests": 2,
+    "pass": 2,
+    "fail": 0,
+    "duration_ms": 1577.219417
+  },
+  "conclusion": "All product tests passed. The two initial failures were environmental and passed unchanged with localhost permission and a writable temporary npm cache."
+}

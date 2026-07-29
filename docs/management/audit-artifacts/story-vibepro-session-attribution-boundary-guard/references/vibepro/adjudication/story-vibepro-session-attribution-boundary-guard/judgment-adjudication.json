@@ -1,0 +1,1352 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-session-attribution-boundary-guard",
+  "updated_at": "2026-07-21T18:07:02.388Z",
+  "events": [
+    {
+      "event_id": "legacy-verdict-cd99811f4da3486e3e35da72",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Session context does not mutate normal PR gate status or verdicts.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f75d8-ae0a-7161-9566-2a351067c31b",
+        "session_ref": "019f75d8-ae0a-7161-9566-2a351067c31b"
+      },
+      "head_commit": "960cb9386ee857763d837aad4e200b0bcc88283d",
+      "recorded_at": "2026-07-18T15:35:24.602Z",
+      "legacy_origin": {
+        "schema_version": "0.1.0",
+        "model": "vibepro-judgment-dag-adjudication-v1"
+      }
+    },
+    {
+      "event_id": "legacy-verdict-80936ee2b3fe627669788edd",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Head-bound evidence remains current and the advisory does not alter lifecycle gates.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f75d8-ae0a-7161-9566-2a351067c31b",
+        "session_ref": "019f75d8-ae0a-7161-9566-2a351067c31b"
+      },
+      "head_commit": "960cb9386ee857763d837aad4e200b0bcc88283d",
+      "recorded_at": "2026-07-18T15:35:24.240Z",
+      "legacy_origin": {
+        "schema_version": "0.1.0",
+        "model": "vibepro-judgment-dag-adjudication-v1"
+      }
+    },
+    {
+      "event_id": "legacy-verdict-1b497275245def375137be39",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed or unreadable JSONL fails closed without partial attribution.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f75d8-ae0a-7161-9566-2a351067c31b",
+        "session_ref": "019f75d8-ae0a-7161-9566-2a351067c31b"
+      },
+      "head_commit": "960cb9386ee857763d837aad4e200b0bcc88283d",
+      "recorded_at": "2026-07-18T15:35:23.894Z",
+      "legacy_origin": {
+        "schema_version": "0.1.0",
+        "model": "vibepro-judgment-dag-adjudication-v1"
+      }
+    },
+    {
+      "event_id": "legacy-verdict-ee3c66e789b862af17e3dc78",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The bounded detector, advisory, docs, and tests form one reviewable contract.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f75d8-ae0a-7161-9566-2a351067c31b",
+        "session_ref": "019f75d8-ae0a-7161-9566-2a351067c31b"
+      },
+      "head_commit": "960cb9386ee857763d837aad4e200b0bcc88283d",
+      "recorded_at": "2026-07-18T15:35:23.610Z",
+      "legacy_origin": {
+        "schema_version": "0.1.0",
+        "model": "vibepro-judgment-dag-adjudication-v1"
+      }
+    },
+    {
+      "event_id": "legacy-verdict-25f9b0a866b7a70b089de42d",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Attribution is additive, unavailable is explicit, and partial audits exit non-zero.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f75d8-ae0a-7161-9566-2a351067c31b",
+        "session_ref": "019f75d8-ae0a-7161-9566-2a351067c31b"
+      },
+      "head_commit": "960cb9386ee857763d837aad4e200b0bcc88283d",
+      "recorded_at": "2026-07-18T15:35:23.365Z",
+      "legacy_origin": {
+        "schema_version": "0.1.0",
+        "model": "vibepro-judgment-dag-adjudication-v1"
+      }
+    },
+    {
+      "event_id": "legacy-verdict-97fb1ef409cbd96acc83dfd9",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head verification and independent review agree with the implementation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f75d8-ae0a-7161-9566-2a351067c31b",
+        "session_ref": "019f75d8-ae0a-7161-9566-2a351067c31b"
+      },
+      "head_commit": "960cb9386ee857763d837aad4e200b0bcc88283d",
+      "recorded_at": "2026-07-18T15:35:23.007Z",
+      "legacy_origin": {
+        "schema_version": "0.1.0",
+        "model": "vibepro-judgment-dag-adjudication-v1"
+      }
+    },
+    {
+      "event_id": "legacy-verdict-6b8b7c9924d21044fda24857",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed input, read failure, unresolved sessions, mixed parents, and threshold paths fail explicitly.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f75d8-ae0a-7161-9566-2a351067c31b",
+        "session_ref": "019f75d8-ae0a-7161-9566-2a351067c31b"
+      },
+      "head_commit": "960cb9386ee857763d837aad4e200b0bcc88283d",
+      "recorded_at": "2026-07-18T15:35:22.652Z",
+      "legacy_origin": {
+        "schema_version": "0.1.0",
+        "model": "vibepro-judgment-dag-adjudication-v1"
+      }
+    },
+    {
+      "event_id": "legacy-verdict-52b2d7c88d8711a7fa68474a",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Session files remain read-only and the PR surface is advisory only.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f75d8-ae0a-7161-9566-2a351067c31b",
+        "session_ref": "019f75d8-ae0a-7161-9566-2a351067c31b"
+      },
+      "head_commit": "960cb9386ee857763d837aad4e200b0bcc88283d",
+      "recorded_at": "2026-07-18T15:35:22.181Z",
+      "legacy_origin": {
+        "schema_version": "0.1.0",
+        "model": "vibepro-judgment-dag-adjudication-v1"
+      }
+    },
+    {
+      "event_id": "legacy-verdict-950a52f36250adf30c718757",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Exclusive classification, accounting preservation, and normal gate stability are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f75d8-ae0a-7161-9566-2a351067c31b",
+        "session_ref": "019f75d8-ae0a-7161-9566-2a351067c31b"
+      },
+      "head_commit": "960cb9386ee857763d837aad4e200b0bcc88283d",
+      "recorded_at": "2026-07-18T15:35:21.813Z",
+      "legacy_origin": {
+        "schema_version": "0.1.0",
+        "model": "vibepro-judgment-dag-adjudication-v1"
+      }
+    },
+    {
+      "event_id": "legacy-verdict-1445bf1a308fbfef9da80035",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The reviewer reran 56 focused tests at the exact HEAD and observed the CLI behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f75d8-ae0a-7161-9566-2a351067c31b",
+        "session_ref": "019f75d8-ae0a-7161-9566-2a351067c31b"
+      },
+      "head_commit": "960cb9386ee857763d837aad4e200b0bcc88283d",
+      "recorded_at": "2026-07-18T15:35:21.471Z",
+      "legacy_origin": {
+        "schema_version": "0.1.0",
+        "model": "vibepro-judgment-dag-adjudication-v1"
+      }
+    },
+    {
+      "event_id": "legacy-verdict-70be2915fba0756ecdbd6d85",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The implementation follows the six acceptance clauses and keeps strict attribution primary.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f75d8-ae0a-7161-9566-2a351067c31b",
+        "session_ref": "019f75d8-ae0a-7161-9566-2a351067c31b"
+      },
+      "head_commit": "960cb9386ee857763d837aad4e200b0bcc88283d",
+      "recorded_at": "2026-07-18T15:35:21.178Z",
+      "legacy_origin": {
+        "schema_version": "0.1.0",
+        "model": "vibepro-judgment-dag-adjudication-v1"
+      }
+    },
+    {
+      "event_id": "bc1486f0-a265-4184-8fe8-24a359490b7b",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story intent and six acceptance criteria match strict attribution mixed-parent advisory implementation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f82dc-e1c6-7c50-9411-3d48da17aa8d",
+        "session_ref": "019f82dc-e1c6-7c50-9411-3d48da17aa8d"
+      },
+      "head_commit": "616b4f4a5ef6f194f9694607cd776e3cad77c80b",
+      "recorded_at": "2026-07-21T04:22:26.971Z"
+    },
+    {
+      "event_id": "bc8080eb-dc50-4a7e-b8bb-dcea2aed09f2",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current implementation and current-head tests establish runtime and PR advisory behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f82dc-e1c6-7c50-9411-3d48da17aa8d",
+        "session_ref": "019f82dc-e1c6-7c50-9411-3d48da17aa8d"
+      },
+      "head_commit": "616b4f4a5ef6f194f9694607cd776e3cad77c80b",
+      "recorded_at": "2026-07-21T04:22:27.411Z"
+    },
+    {
+      "event_id": "66ab3996-96ed-4bb6-9043-ff74cd27e01a",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Exclusive attribution event count token accounting and deterministic replay invariants are tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f82dc-e1c6-7c50-9411-3d48da17aa8d",
+        "session_ref": "019f82dc-e1c6-7c50-9411-3d48da17aa8d"
+      },
+      "head_commit": "616b4f4a5ef6f194f9694607cd776e3cad77c80b",
+      "recorded_at": "2026-07-21T04:22:27.692Z"
+    },
+    {
+      "event_id": "740683ab-d93d-40b3-8756-1d25f9f87acf",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Strict primary value worktree upper bound and nonblocking advisory boundaries are explicit and tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f82dc-e1c6-7c50-9411-3d48da17aa8d",
+        "session_ref": "019f82dc-e1c6-7c50-9411-3d48da17aa8d"
+      },
+      "head_commit": "616b4f4a5ef6f194f9694607cd776e3cad77c80b",
+      "recorded_at": "2026-07-21T04:22:28.201Z"
+    },
+    {
+      "event_id": "585935b0-0858-4c49-a062-39b5dcff1421",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed JSONL read failure unresolved session mixed-parent and threshold paths are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f82dc-e1c6-7c50-9411-3d48da17aa8d",
+        "session_ref": "019f82dc-e1c6-7c50-9411-3d48da17aa8d"
+      },
+      "head_commit": "616b4f4a5ef6f194f9694607cd776e3cad77c80b",
+      "recorded_at": "2026-07-21T04:22:28.591Z"
+    },
+    {
+      "event_id": "c0c7e36b-8d34-4f47-ad83-a66ba1b03f12",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head focused tests typecheck CI gate review and AC adjudication demonstrate completion conditions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f82dc-e1c6-7c50-9411-3d48da17aa8d",
+        "session_ref": "019f82dc-e1c6-7c50-9411-3d48da17aa8d"
+      },
+      "head_commit": "616b4f4a5ef6f194f9694607cd776e3cad77c80b",
+      "recorded_at": "2026-07-21T04:22:28.856Z"
+    },
+    {
+      "event_id": "32938040-8a8e-44a0-991f-a60bc7fac30b",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Session-cost output unavailable reason and existing gate verdict compatibility are preserved.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f82dc-e1c6-7c50-9411-3d48da17aa8d",
+        "session_ref": "019f82dc-e1c6-7c50-9411-3d48da17aa8d"
+      },
+      "head_commit": "616b4f4a5ef6f194f9694607cd776e3cad77c80b",
+      "recorded_at": "2026-07-21T04:22:29.430Z"
+    },
+    {
+      "event_id": "d284eeb1-0696-44a7-827f-86e70149cac6",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff is one coherent attribution boundary contract and remains reviewable as one focused PR.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f82dc-e1c6-7c50-9411-3d48da17aa8d",
+        "session_ref": "019f82dc-e1c6-7c50-9411-3d48da17aa8d"
+      },
+      "head_commit": "616b4f4a5ef6f194f9694607cd776e3cad77c80b",
+      "recorded_at": "2026-07-21T04:22:30.088Z"
+    },
+    {
+      "event_id": "4d578305-e1e5-4b51-adf2-ec1bbd8230a9",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Strict current-head evidence and stale evidence rejection preserve lifecycle integrity.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f82dc-e1c6-7c50-9411-3d48da17aa8d",
+        "session_ref": "019f82dc-e1c6-7c50-9411-3d48da17aa8d"
+      },
+      "head_commit": "616b4f4a5ef6f194f9694607cd776e3cad77c80b",
+      "recorded_at": "2026-07-21T04:22:30.581Z"
+    },
+    {
+      "event_id": "96ac3702-6920-4a8c-9d71-5646180954dc",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Tests prove session boundary advisory does not alter gate status verdict or next commands.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f82dc-e1c6-7c50-9411-3d48da17aa8d",
+        "session_ref": "019f82dc-e1c6-7c50-9411-3d48da17aa8d"
+      },
+      "head_commit": "616b4f4a5ef6f194f9694607cd776e3cad77c80b",
+      "recorded_at": "2026-07-21T04:22:30.901Z"
+    },
+    {
+      "event_id": "45e3d8d7-a226-401b-a1ad-8e2a22a58fae",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Classifier marked parse failure not required although malformed JSONL fail-closed implementation and tests exist.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f82dc-e1c6-7c50-9411-3d48da17aa8d",
+        "session_ref": "019f82dc-e1c6-7c50-9411-3d48da17aa8d"
+      },
+      "head_commit": "616b4f4a5ef6f194f9694607cd776e3cad77c80b",
+      "recorded_at": "2026-07-21T04:22:31.362Z"
+    },
+    {
+      "event_id": "6ed244c7-2f99-4272-95cf-b354e59551d9",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "45e3d8d7-a226-401b-a1ad-8e2a22a58fae",
+      "wrong_premise": "Parse failure is not required for this change.",
+      "corrected_premise": "Malformed JSONL parse failure is a required fail-closed boundary and is implemented and tested.",
+      "reason": "Current implementation and focused tests explicitly handle malformed JSONL without partial attribution.",
+      "replacement_evidence": [
+        {
+          "artifact": "test/session-efficiency-audit.test.js",
+          "sha256": "7e703019870b9d41c1ed1995d7c31eaa9cf022ad214f672910492ac1df37cf3b"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f82dc-e1c6-7c50-9411-3d48da17aa8d",
+        "session_ref": "019f82dc-e1c6-7c50-9411-3d48da17aa8d"
+      },
+      "head_commit": "616b4f4a5ef6f194f9694607cd776e3cad77c80b",
+      "recorded_at": "2026-07-21T04:22:46.535Z"
+    },
+    {
+      "event_id": "cbd67a64-0759-49a5-a4c6-35305681bc01",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "6ed244c7-2f99-4272-95cf-b354e59551d9",
+      "reason": "Corrected premise is supported: malformed JSONL returns unavailable and prevents partial attribution; replacement test verifies the fail-closed path at current HEAD.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f82ea-2a7e-7273-823f-b1247b9e0005",
+        "session_ref": "019f82ea-2a7e-7273-823f-b1247b9e0005"
+      },
+      "head_commit": "616b4f4a5ef6f194f9694607cd776e3cad77c80b",
+      "recorded_at": "2026-07-21T04:27:01.192Z"
+    },
+    {
+      "event_id": "5af58797-12d1-452a-b2a5-631738866949",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story, architecture, spec, implementation, and tests share the same attribution-boundary intent.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83b5-28a1-73a2-abfa-1b5cfc154416",
+        "session_ref": "019f83b5-28a1-73a2-abfa-1b5cfc154416"
+      },
+      "head_commit": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+      "recorded_at": "2026-07-21T08:10:53.827Z"
+    },
+    {
+      "event_id": "d928e54e-d35c-4816-83c3-44c1a5d8f5c1",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head tests, typecheck, and CI pass while unfinished readiness remains fail-closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83b5-28a1-73a2-abfa-1b5cfc154416",
+        "session_ref": "019f83b5-28a1-73a2-abfa-1b5cfc154416"
+      },
+      "head_commit": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+      "recorded_at": "2026-07-21T08:10:54.408Z"
+    },
+    {
+      "event_id": "a6e0127a-4858-4cbe-8ea0-1e2408a487a9",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Classification totals, determinism, and existing accounting preservation are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83b5-28a1-73a2-abfa-1b5cfc154416",
+        "session_ref": "019f83b5-28a1-73a2-abfa-1b5cfc154416"
+      },
+      "head_commit": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+      "recorded_at": "2026-07-21T08:10:54.895Z"
+    },
+    {
+      "event_id": "b8fc6961-005d-4d90-acd9-832f86b0c6b4",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Read-only advisory behavior and mixed or partial degradation match architecture and implementation.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83b5-28a1-73a2-abfa-1b5cfc154416",
+        "session_ref": "019f83b5-28a1-73a2-abfa-1b5cfc154416"
+      },
+      "head_commit": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+      "recorded_at": "2026-07-21T08:10:55.408Z"
+    },
+    {
+      "event_id": "1feb186c-a33d-4733-ab8c-f1c9c756b6f5",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed JSONL, read failure, unselected session, and mixed parent paths are covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83b5-28a1-73a2-abfa-1b5cfc154416",
+        "session_ref": "019f83b5-28a1-73a2-abfa-1b5cfc154416"
+      },
+      "head_commit": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+      "recorded_at": "2026-07-21T08:10:55.861Z"
+    },
+    {
+      "event_id": "ce505bfe-ff19-494b-9584-4098def9f664",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head verification exists and canonical gates retain incomplete review work.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83b5-28a1-73a2-abfa-1b5cfc154416",
+        "session_ref": "019f83b5-28a1-73a2-abfa-1b5cfc154416"
+      },
+      "head_commit": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+      "recorded_at": "2026-07-21T08:10:56.257Z"
+    },
+    {
+      "event_id": "49e80814-8b39-48ee-b9e8-e6305a7675e3",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Attribution is additive and preserves existing accounting and PR preparation contracts.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83b5-28a1-73a2-abfa-1b5cfc154416",
+        "session_ref": "019f83b5-28a1-73a2-abfa-1b5cfc154416"
+      },
+      "head_commit": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+      "recorded_at": "2026-07-21T08:10:56.893Z"
+    },
+    {
+      "event_id": "7e3230cd-532e-4595-85ba-fa038c35066d",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Diff remains focused on one story and design reconciliation reports no contradiction.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83b5-28a1-73a2-abfa-1b5cfc154416",
+        "session_ref": "019f83b5-28a1-73a2-abfa-1b5cfc154416"
+      },
+      "head_commit": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+      "recorded_at": "2026-07-21T08:10:57.496Z"
+    },
+    {
+      "event_id": "17c6a865-c080-47f3-aa4e-8a1a10b50a6a",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed rows are unclassified, unreadable inputs unavailable, and partial parse blocks.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83b5-28a1-73a2-abfa-1b5cfc154416",
+        "session_ref": "019f83b5-28a1-73a2-abfa-1b5cfc154416"
+      },
+      "head_commit": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+      "recorded_at": "2026-07-21T08:10:57.866Z"
+    },
+    {
+      "event_id": "4729fc90-6bf8-4e80-8064-8991a32734dd",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Stale old-head evidence is detected and cannot produce false green readiness.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83b5-28a1-73a2-abfa-1b5cfc154416",
+        "session_ref": "019f83b5-28a1-73a2-abfa-1b5cfc154416"
+      },
+      "head_commit": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+      "recorded_at": "2026-07-21T08:10:58.296Z"
+    },
+    {
+      "event_id": "3f1322a2-7cf3-4434-91d2-938d2d27cfd4",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Readiness remains false until reviews and adjudication are current while advisory output stays nonblocking.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83b5-28a1-73a2-abfa-1b5cfc154416",
+        "session_ref": "019f83b5-28a1-73a2-abfa-1b5cfc154416"
+      },
+      "head_commit": "07323fcd318786c1c5b32bfa620951f55bf27d9d",
+      "recorded_at": "2026-07-21T08:10:58.591Z"
+    },
+    {
+      "event_id": "bd51c1f2-7baf-4838-85be-f88015f6877b",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation and negative fixture preserve spine:intent",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83c8-0c9c-7722-a639-a5657e96c50a",
+        "session_ref": "019f83c8-0c9c-7722-a639-a5657e96c50a"
+      },
+      "head_commit": "58b9e2233297daff045a32cc1bfe26da08d323bf",
+      "recorded_at": "2026-07-21T08:28:14.060Z"
+    },
+    {
+      "event_id": "01e1343d-d754-4e06-8149-8822a8bb9d25",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation and negative fixture preserve spine:current_reality",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83c8-0c9c-7722-a639-a5657e96c50a",
+        "session_ref": "019f83c8-0c9c-7722-a639-a5657e96c50a"
+      },
+      "head_commit": "58b9e2233297daff045a32cc1bfe26da08d323bf",
+      "recorded_at": "2026-07-21T08:28:14.285Z"
+    },
+    {
+      "event_id": "3513ce79-6a0b-4f10-b5de-1797eae2d879",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation and negative fixture preserve spine:invariants",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83c8-0c9c-7722-a639-a5657e96c50a",
+        "session_ref": "019f83c8-0c9c-7722-a639-a5657e96c50a"
+      },
+      "head_commit": "58b9e2233297daff045a32cc1bfe26da08d323bf",
+      "recorded_at": "2026-07-21T08:28:14.553Z"
+    },
+    {
+      "event_id": "64e79ce8-2e0f-42e9-9273-1a388e94d344",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation and negative fixture preserve spine:boundaries",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83c8-0c9c-7722-a639-a5657e96c50a",
+        "session_ref": "019f83c8-0c9c-7722-a639-a5657e96c50a"
+      },
+      "head_commit": "58b9e2233297daff045a32cc1bfe26da08d323bf",
+      "recorded_at": "2026-07-21T08:28:14.820Z"
+    },
+    {
+      "event_id": "cb3dfb3a-bebe-447f-9e0d-0f7efff55cd9",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation and negative fixture preserve spine:failure_modes",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83c8-0c9c-7722-a639-a5657e96c50a",
+        "session_ref": "019f83c8-0c9c-7722-a639-a5657e96c50a"
+      },
+      "head_commit": "58b9e2233297daff045a32cc1bfe26da08d323bf",
+      "recorded_at": "2026-07-21T08:28:15.061Z"
+    },
+    {
+      "event_id": "5eecd612-627f-4bf7-afd8-1b16527893bf",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation and negative fixture preserve spine:done_evidence",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83c8-0c9c-7722-a639-a5657e96c50a",
+        "session_ref": "019f83c8-0c9c-7722-a639-a5657e96c50a"
+      },
+      "head_commit": "58b9e2233297daff045a32cc1bfe26da08d323bf",
+      "recorded_at": "2026-07-21T08:28:15.288Z"
+    },
+    {
+      "event_id": "7180a893-8419-4b8a-acea-dbdf8e96b3af",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation and negative fixture preserve axis:public_contract",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83c8-0c9c-7722-a639-a5657e96c50a",
+        "session_ref": "019f83c8-0c9c-7722-a639-a5657e96c50a"
+      },
+      "head_commit": "58b9e2233297daff045a32cc1bfe26da08d323bf",
+      "recorded_at": "2026-07-21T08:28:15.675Z"
+    },
+    {
+      "event_id": "255a7e52-5df5-4cea-992c-1b44162d97c0",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation and negative fixture preserve axis:scope_reviewability",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83c8-0c9c-7722-a639-a5657e96c50a",
+        "session_ref": "019f83c8-0c9c-7722-a639-a5657e96c50a"
+      },
+      "head_commit": "58b9e2233297daff045a32cc1bfe26da08d323bf",
+      "recorded_at": "2026-07-21T08:28:16.382Z"
+    },
+    {
+      "event_id": "b9109c76-f828-4790-adf1-fbf07a854650",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation and negative fixture preserve failure_mode:parse_failure",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83c8-0c9c-7722-a639-a5657e96c50a",
+        "session_ref": "019f83c8-0c9c-7722-a639-a5657e96c50a"
+      },
+      "head_commit": "58b9e2233297daff045a32cc1bfe26da08d323bf",
+      "recorded_at": "2026-07-21T08:28:17.148Z"
+    },
+    {
+      "event_id": "fc857448-4437-4ebe-a2b7-3be9634e0497",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation and negative fixture preserve failure_mode:evidence_lifecycle_regression",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83c8-0c9c-7722-a639-a5657e96c50a",
+        "session_ref": "019f83c8-0c9c-7722-a639-a5657e96c50a"
+      },
+      "head_commit": "58b9e2233297daff045a32cc1bfe26da08d323bf",
+      "recorded_at": "2026-07-21T08:28:17.852Z"
+    },
+    {
+      "event_id": "d3147f80-b2a6-4678-ad42-9956543ae686",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-head implementation and negative fixture preserve failure_mode:workflow_state_regression",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f83c8-0c9c-7722-a639-a5657e96c50a",
+        "session_ref": "019f83c8-0c9c-7722-a639-a5657e96c50a"
+      },
+      "head_commit": "58b9e2233297daff045a32cc1bfe26da08d323bf",
+      "recorded_at": "2026-07-21T08:28:18.160Z"
+    },
+    {
+      "event_id": "e2fe85cc-3b77-49cf-9c54-f8ea567fcb37",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head adjudication found the judgment sound in Story, architecture, implementation, and regression evidence",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f84d2-a2a1-7733-8db7-5d8512f2fda7",
+        "session_ref": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication-request.md"
+      },
+      "head_commit": "785eff5c8bf7d08c55624014b999048e3b343144",
+      "recorded_at": "2026-07-21T13:19:56.419Z"
+    },
+    {
+      "event_id": "acb2c487-c30f-47e2-8276-7d9d0507ab12",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head adjudication found the judgment sound in Story, architecture, implementation, and regression evidence",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f84d2-a2a1-7733-8db7-5d8512f2fda7",
+        "session_ref": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication-request.md"
+      },
+      "head_commit": "785eff5c8bf7d08c55624014b999048e3b343144",
+      "recorded_at": "2026-07-21T13:19:56.635Z"
+    },
+    {
+      "event_id": "07763a31-0f6f-4b1d-b526-f51a58d9c44b",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head adjudication found the judgment sound in Story, architecture, implementation, and regression evidence",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f84d2-a2a1-7733-8db7-5d8512f2fda7",
+        "session_ref": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication-request.md"
+      },
+      "head_commit": "785eff5c8bf7d08c55624014b999048e3b343144",
+      "recorded_at": "2026-07-21T13:19:56.845Z"
+    },
+    {
+      "event_id": "a23e35a9-36a5-4144-8871-be77f17ad03f",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head adjudication found the judgment sound in Story, architecture, implementation, and regression evidence",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f84d2-a2a1-7733-8db7-5d8512f2fda7",
+        "session_ref": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication-request.md"
+      },
+      "head_commit": "785eff5c8bf7d08c55624014b999048e3b343144",
+      "recorded_at": "2026-07-21T13:19:57.026Z"
+    },
+    {
+      "event_id": "48fd35be-6191-4a0d-b9d8-1ae6abb9ed92",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head adjudication found the judgment sound in Story, architecture, implementation, and regression evidence",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f84d2-a2a1-7733-8db7-5d8512f2fda7",
+        "session_ref": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication-request.md"
+      },
+      "head_commit": "785eff5c8bf7d08c55624014b999048e3b343144",
+      "recorded_at": "2026-07-21T13:19:57.231Z"
+    },
+    {
+      "event_id": "a9a62266-eb76-43f3-989a-c31f872e995e",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head adjudication found the judgment sound in Story, architecture, implementation, and regression evidence",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f84d2-a2a1-7733-8db7-5d8512f2fda7",
+        "session_ref": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication-request.md"
+      },
+      "head_commit": "785eff5c8bf7d08c55624014b999048e3b343144",
+      "recorded_at": "2026-07-21T13:19:57.400Z"
+    },
+    {
+      "event_id": "46478653-c85d-4b3c-9376-1da6bece1f97",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent current-head adjudication found the judgment sound in Story, architecture, implementation, and regression evidence",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f84d2-a2a1-7733-8db7-5d8512f2fda7",
+        "session_ref": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication-request.md"
+      },
+      "head_commit": "785eff5c8bf7d08c55624014b999048e3b343144",
+      "recorded_at": "2026-07-21T13:19:57.545Z"
+    },
+    {
+      "event_id": "2cd9b82e-7137-4446-a454-6d4cc77a7fc5",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Current-head DoD aggregation was incomplete because pr-prepare and canonical aggregate artifacts were stale",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f84d2-a2a1-7733-8db7-5d8512f2fda7",
+        "session_ref": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication-request.md"
+      },
+      "head_commit": "785eff5c8bf7d08c55624014b999048e3b343144",
+      "recorded_at": "2026-07-21T13:19:57.682Z"
+    },
+    {
+      "event_id": "d19c44d5-6ee0-4af9-9d33-be6d9f51f490",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Artifact consistency and gate review still referenced stale pre-current-head evidence",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f84d2-a2a1-7733-8db7-5d8512f2fda7",
+        "session_ref": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication-request.md"
+      },
+      "head_commit": "785eff5c8bf7d08c55624014b999048e3b343144",
+      "recorded_at": "2026-07-21T13:19:57.813Z"
+    },
+    {
+      "event_id": "24d25523-5f51-422a-be74-c124901f74ee",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "implementation_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The post-implementation delivery state had not yet converged through current-head PR preparation and adjudication",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f84d2-a2a1-7733-8db7-5d8512f2fda7",
+        "session_ref": ".vibepro/adjudication/story-vibepro-session-attribution-boundary-guard/judgment-adjudication-request.md"
+      },
+      "head_commit": "785eff5c8bf7d08c55624014b999048e3b343144",
+      "recorded_at": "2026-07-21T13:19:57.946Z"
+    },
+    {
+      "event_id": "5b291ff2-f36b-4a96-b4ae-0e92e2985705",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story intent, boundaries, and six acceptance criteria explicitly match the implemented surface.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f857c-6485-7951-b01e-f3862fb7966b",
+        "session_ref": "019f857c-6485-7951-b01e-f3862fb7966b"
+      },
+      "head_commit": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+      "recorded_at": "2026-07-21T16:29:23.415Z"
+    },
+    {
+      "event_id": "e4697c3a-b679-46f7-93bb-e11267acfb0b",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The request foregrounds stale replay artifacts; current focused tests only partially replace that premise.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f857c-6485-7951-b01e-f3862fb7966b",
+        "session_ref": "019f857c-6485-7951-b01e-f3862fb7966b"
+      },
+      "head_commit": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+      "recorded_at": "2026-07-21T16:29:23.686Z"
+    },
+    {
+      "event_id": "f6dd2a81-4af5-46ec-b56f-c45f11351c7e",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Declared bin, threshold, readiness, unavailable, and accounting invariants are implemented and covered.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f857c-6485-7951-b01e-f3862fb7966b",
+        "session_ref": "019f857c-6485-7951-b01e-f3862fb7966b"
+      },
+      "head_commit": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+      "recorded_at": "2026-07-21T16:29:23.928Z"
+    },
+    {
+      "event_id": "4a1b4e20-3ceb-4b5b-8368-7be751153452",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Attribution remains audit-side, PR preparation is advisory, and gate outputs are preserved.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f857c-6485-7951-b01e-f3862fb7966b",
+        "session_ref": "019f857c-6485-7951-b01e-f3862fb7966b"
+      },
+      "head_commit": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+      "recorded_at": "2026-07-21T16:29:24.136Z"
+    },
+    {
+      "event_id": "56024bf4-8bf2-4298-87b3-70bd3e207b1e",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The supplied flow and artifact replay premise points to an old HEAD despite current focused failure tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f857c-6485-7951-b01e-f3862fb7966b",
+        "session_ref": "019f857c-6485-7951-b01e-f3862fb7966b"
+      },
+      "head_commit": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+      "recorded_at": "2026-07-21T16:29:24.373Z"
+    },
+    {
+      "event_id": "b97ab6c5-87f2-4191-8b13-80f9a53409a0",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Current pr prepare still reports stale gate review and unresolved readiness, so done evidence is premature.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f857c-6485-7951-b01e-f3862fb7966b",
+        "session_ref": "019f857c-6485-7951-b01e-f3862fb7966b"
+      },
+      "head_commit": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+      "recorded_at": "2026-07-21T16:29:24.743Z"
+    },
+    {
+      "event_id": "7cf2c2dd-db78-4647-b46d-4d1dc71fd1a7",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Public attribution schema, unavailable behavior, advisory boundary, and additive accounting align.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f857c-6485-7951-b01e-f3862fb7966b",
+        "session_ref": "019f857c-6485-7951-b01e-f3862fb7966b"
+      },
+      "head_commit": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+      "recorded_at": "2026-07-21T16:29:25.095Z"
+    },
+    {
+      "event_id": "b48f62b5-0ca8-47c7-9a03-445914560a83",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The accepted-followup premise conflicts with current split and clean-branch readiness signals.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f857c-6485-7951-b01e-f3862fb7966b",
+        "session_ref": "019f857c-6485-7951-b01e-f3862fb7966b"
+      },
+      "head_commit": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+      "recorded_at": "2026-07-21T16:29:25.359Z"
+    },
+    {
+      "event_id": "cd7d1ddc-fd67-4c53-b433-2ab6b4fa7a7b",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Parse failure is directly relevant because JSONL parsing and malformed and unreadable paths are changed contracts.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f857c-6485-7951-b01e-f3862fb7966b",
+        "session_ref": "019f857c-6485-7951-b01e-f3862fb7966b"
+      },
+      "head_commit": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+      "recorded_at": "2026-07-21T16:29:25.756Z"
+    },
+    {
+      "event_id": "61947fe2-672f-4cb5-ad16-dc7e42b8b66a",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Covered classification relies on stale review and CI artifacts in the current request context.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f857c-6485-7951-b01e-f3862fb7966b",
+        "session_ref": "019f857c-6485-7951-b01e-f3862fb7966b"
+      },
+      "head_commit": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+      "recorded_at": "2026-07-21T16:29:26.074Z"
+    },
+    {
+      "event_id": "13e09d9a-8e64-4ac4-a0e6-0adc1e682861",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current tests show the advisory leaves gate status, next commands, and verdicts unchanged.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f857c-6485-7951-b01e-f3862fb7966b",
+        "session_ref": "019f857c-6485-7951-b01e-f3862fb7966b"
+      },
+      "head_commit": "b6c66dac3e48d93314df45beebcada4228dc99b0",
+      "recorded_at": "2026-07-21T16:29:26.347Z"
+    },
+    {
+      "event_id": "7c49bc0e-5e13-4042-8f3a-b10e2f761a1a",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story defines the mixed-parent attribution goal and all acceptance criteria; detector and regression tests implement them.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-ebcf-7903-aab7-9578c7d3b0f5",
+        "session_ref": "subagent:019f85d0-ebcf-7903-aab7-9578c7d3b0f5"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T18:00:20.828Z"
+    },
+    {
+      "event_id": "fbb10e93-56d4-4fc7-b3e9-662c8ca09b99",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Exact focused verification passed and exercises selected session JSONL, parser, detector, and unavailable paths.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-ebcf-7903-aab7-9578c7d3b0f5",
+        "session_ref": "subagent:019f85d0-ebcf-7903-aab7-9578c7d3b0f5"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T18:00:21.073Z"
+    },
+    {
+      "event_id": "3a467b2b-114c-445b-b868-64b0f5a2088b",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture defines invariants; tests verify classification totals, unchanged accounting, and threshold behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-ebcf-7903-aab7-9578c7d3b0f5",
+        "session_ref": "subagent:019f85d0-ebcf-7903-aab7-9578c7d3b0f5"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T18:00:21.283Z"
+    },
+    {
+      "event_id": "f9b88443-22f7-46c7-affd-59cf8bf400a7",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture prohibits token reassignment and gate blocking; PR manager and tests verify advisory-only behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-ebcf-7903-aab7-9578c7d3b0f5",
+        "session_ref": "subagent:019f85d0-ebcf-7903-aab7-9578c7d3b0f5"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T18:00:21.544Z"
+    },
+    {
+      "event_id": "b51b092a-6a45-4d5a-8ea9-a0fac1f8b08f",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mixed, unavailable, unreadable, and partial session behavior is implemented and exercised.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-ebcf-7903-aab7-9578c7d3b0f5",
+        "session_ref": "subagent:019f85d0-ebcf-7903-aab7-9578c7d3b0f5"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T18:00:21.782Z"
+    },
+    {
+      "event_id": "88620bc1-c8de-4922-bd32-b3f27ad90436",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Focused command passed all 64 tests including attribution, pre-PR workflow, responsibility, partial merge accounting, and AUTCOST-SCENARIO-002.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-ebcf-7903-aab7-9578c7d3b0f5",
+        "session_ref": "subagent:019f85d0-ebcf-7903-aab7-9578c7d3b0f5"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T18:00:22.035Z"
+    },
+    {
+      "event_id": "5e3fa9a6-173d-4a83-8a2f-69823ef3b087",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture defines additive attribution and advisory contracts; merge propagation is covered by CLI tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-ebcf-7903-aab7-9578c7d3b0f5",
+        "session_ref": "subagent:019f85d0-ebcf-7903-aab7-9578c7d3b0f5"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T18:00:22.275Z"
+    },
+    {
+      "event_id": "13c2d773-a2ac-4b12-ad3a-775af5b22d22",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The cohesive diff covers session attribution, readiness, PR advisory, merge propagation, and matching docs/tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-ebcf-7903-aab7-9578c7d3b0f5",
+        "session_ref": "subagent:019f85d0-ebcf-7903-aab7-9578c7d3b0f5"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T18:00:22.522Z"
+    },
+    {
+      "event_id": "1cf109ad-8f72-4934-a94e-dab59bfe33af",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The not_required premise is incorrect: parsing is central, SAB-CONTRACT-007 covers malformed and unreadable JSONL, and tests verify both paths.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-ebcf-7903-aab7-9578c7d3b0f5",
+        "session_ref": "subagent:019f85d0-ebcf-7903-aab7-9578c7d3b0f5"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T18:00:22.738Z"
+    },
+    {
+      "event_id": "e0b65905-9524-4a57-9ba5-31e0ed2175bb",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Explicit readiness blockers were added while PR advisory tests preserve gate outputs.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-ebcf-7903-aab7-9578c7d3b0f5",
+        "session_ref": "subagent:019f85d0-ebcf-7903-aab7-9578c7d3b0f5"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T18:00:22.990Z"
+    },
+    {
+      "event_id": "602d9870-e247-40e5-9c9f-f6e4a2c1c7b9",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Tests verify partial attribution remains non-blocking and merge accounting is available or explicitly unavailable.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-ebcf-7903-aab7-9578c7d3b0f5",
+        "session_ref": "subagent:019f85d0-ebcf-7903-aab7-9578c7d3b0f5"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T18:00:23.229Z"
+    },
+    {
+      "event_id": "e478b51a-bfa0-49f2-af6b-bef9698d7914",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "1cf109ad-8f72-4934-a94e-dab59bfe33af",
+      "wrong_premise": "parse_failure is not_required for this story",
+      "corrected_premise": "parse_failure is required because attribution parses session JSONL; SAB-CONTRACT-007 and malformed/unreadable regressions cover the failure mode",
+      "reason": "Independent judgment found the classifier premise unsound while implementation and evidence are sound; correct the premise to match the actual parser boundary.",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/specs/story-vibepro-session-attribution-boundary-guard.md",
+          "sha256": "cf8651084219a2ac1d13c676a175ef5d6304ebb3e53f331afcc77528c24dc05b"
+        },
+        {
+          "artifact": "test/session-efficiency-audit.test.js",
+          "sha256": "975cd93bcf2330389435c9d11d9c3ec8250c5f17eb9a4ee0acc5e45ede359386"
+        },
+        {
+          "artifact": "src/session-efficiency-audit.js",
+          "sha256": "e4da9b2216ce067ac922f43b056d2bab4ce530f159ba8e05499f5838f5b2d946"
+        }
+      ],
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d0-ebcf-7903-aab7-9578c7d3b0f5",
+        "session_ref": "subagent:019f85d0-ebcf-7903-aab7-9578c7d3b0f5"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T18:01:23.780Z"
+    },
+    {
+      "event_id": "edecefc7-0c4e-4eaa-839e-03a8bbd5f2fe",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "e478b51a-bfa0-49f2-af6b-bef9698d7914",
+      "reason": "SAB-CONTRACT-007 requires parse failure handling; unreadable JSONL is unavailable, while malformed JSONL preserves valid rows and reports partial parse plus unattributed exposure.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019f85d8-f68f-70c2-8472-c7dedb4eb22c",
+        "session_ref": "subagent:019f85d8-f68f-70c2-8472-c7dedb4eb22c"
+      },
+      "head_commit": "afd5a8ac37491afde0963cc2b0fc4493c8becd82",
+      "recorded_at": "2026-07-21T18:07:02.386Z"
+    }
+  ]
+}

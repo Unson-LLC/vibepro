@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-autonomous-action-dag",
+  "head_sha": "bbbc25107e694eee5da4e1a2c628c6ed432cc597",
+  "focused_verification": {
+    "typecheck": {"command": "npm run typecheck", "status": "pass"},
+    "e2e": {"command": "node --test test/e2e/story-vibepro-autonomous-action-dag-main.spec.js", "status": "pass", "passed": 1, "failed": 0},
+    "orchestrator": {"command": "node --test test/safe-action-orchestrator.test.js", "status": "pass", "passed": 57, "failed": 0},
+    "guarded_run": {"command": "node --test test/guarded-run-session.test.js", "status": "pass", "passed": 104, "failed": 0},
+    "controller": {"command": "node --test test/next-best-action-controller.test.js", "status": "pass", "passed": 12, "failed": 0}
+  },
+  "full_suite_diagnostic": {
+    "command": "node --test --test-concurrency=2",
+    "status": "not_passed",
+    "passed": 1676,
+    "failed": 6,
+    "classification": "loaded sandbox diagnostic, not release evidence",
+    "rechecks": [
+      "Autonomous DAG nested E2E passed standalone (1/1)",
+      "HTTP listen test passed standalone outside the network sandbox (1/1)"
+    ]
+  }
+}
