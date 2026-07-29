@@ -218,3 +218,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:396:start -->
 - [PR #396](https://github.com/Unson-LLC/vibepro/pull/396) — [2026-07](/releases/2026-07): story-vibepro-release-0-2-0-beta-2 - runner-direct evidence (PR #395) を含む #356〜#395 の約20PR分が npm 未公開のまま main に滞留している
 <!-- vibepro-release-index-pr:396:end -->
+
+<!-- vibepro-release-index-pr:397:start -->
+- [PR #397](https://github.com/Unson-LLC/vibepro/pull/397) — [2026-07](/releases/2026-07): story-vibepro-review-surface-violation-ledger - 先行 Story の round 6 で、実装エージェントがレビュー実行中にツリーを変更した。lifecycle は start 時の head_sha しか記録しないため機械検出されず、レビュアーが git status を偶然見て発見した。違反は stale と同じ failed 表示になり、レビュー再実行で痕跡ごと消えた
+<!-- vibepro-release-index-pr:397:end -->
