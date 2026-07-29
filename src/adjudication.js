@@ -85,6 +85,59 @@ async function readVerificationEvidenceEntries(repoRoot, storyId) {
   }
 }
 
+// Every value interpolated into this entry is agent-controlled text landing in a markdown
+// list, and the list is where the authoritative fields (evidence_source, the producer, the
+// discarded-input diff) are stated. A value containing a line break would render as its own
+// list item, so an observation value could write a second `- evidence_source: runner_direct`
+// line under a self_reported record.
+//
+// Folding only `\r\n|\r|\n` closed one instance of that hole and left the class open: U+2028
+// and U+2029 are ECMAScript LineTerminators, so `^` under the `m` flag starts a line at them —
+// the same forged item composes itself under a different codepoint, and the oracle that counts
+// `- evidence_source:` lines sees two. NEL, vertical tab and form feed break lines for markdown
+// renderers and terminals in the same way. The fold therefore covers the whole line-breaking
+// class, and every remaining C0 control (plus DEL) is escaped after it. The claim is scoped
+// to line structure: no agent-controlled codepoint can open a new line in the request. C1
+// controls and Unicode format characters (zero-width, bidi, BOM) pass through unescaped —
+// none of them starts a line in regex or markdown semantics, so they cannot displace the
+// authoritative fields, but they are not invisible-proofed. Characters are escaped, never
+// dropped: the judge still sees that the value carried a break, and which one (`\r\n` folds
+// with `\n` as one line break).
+const LINE_BREAK_ESCAPES = new Map([
+  ['\r\n', '\\n'],
+  ['\n', '\\n'],
+  ['\r', '\\r'],
+  ['\u000b', '\\v'],
+  ['\f', '\\f'],
+  ['\u0085', '\\u0085'],
+  ['\u2028', '\\u2028'],
+  ['\u2029', '\\u2029']
+]);
+const LINE_BREAK_PATTERN = /\r\n|[\n\r\u000b\f\u0085\u2028\u2029]/g;
+const CONTROL_CHARACTER_PATTERN = /[\u0000-\u0009\u000e-\u001f\u007f]/g;
+
+function inlineText(value) {
+  return String(value ?? '')
+    .replace(LINE_BREAK_PATTERN, (match) => LINE_BREAK_ESCAPES.get(match))
+    .replace(CONTROL_CHARACTER_PATTERN, (match) => (
+      match === '\t' ? '\\t' : `\\u${match.codePointAt(0).toString(16).padStart(4, '0')}`
+    ));
+}
+
+// A warning id names the category; the reason carries what the recording path actually
+// found — the rejected key and its quoted value, which head moved, how thin the counts were.
+// Rendering the id alone dropped exactly that: a caller-key rejection reached the judge as
+// the bare string `verification_observation_caller_key_rejected`, with the forged claim it
+// was reporting nowhere on the page. Both are rendered, and the reason goes through
+// inlineText like every other agent-reachable string.
+function formatWarningText(warning) {
+  if (typeof warning === 'string') return warning;
+  const id = warning?.id ?? warning?.code ?? null;
+  const reason = warning?.reason ?? warning?.message ?? null;
+  if (id && reason) return `${id}: ${reason}`;
+  return id ?? reason ?? JSON.stringify(warning);
+}
+
 function normalizeAcceptanceScope(scope, storyId, acceptanceCriteria = []) {
   if (scope != null && scope.source == null) {
     throw new Error('Invalid adjudication acceptance scope: source is required.');
@@ -185,25 +238,52 @@ async function resolveCurrentAcceptanceScope(root, storyId, storyClauses) {
 
 function formatEvidenceEntry(entry, index) {
   const lines = [
-    `### 証拠 E-${index + 1}: kind=${entry.kind ?? 'unknown'} status=${entry.status ?? 'unknown'}`,
+    `### 証拠 E-${index + 1}: kind=${inlineText(entry.kind ?? 'unknown')} status=${inlineText(entry.status ?? 'unknown')}`,
     '',
-    `- command: \`${entry.command ?? '-'}\``,
-    `- summary: ${entry.summary ?? '-'}`
+    `- command: \`${inlineText(entry.command ?? '-')}\``,
+    `- summary: ${inlineText(entry.summary ?? '-')}`
   ];
   const observation = entry.observation ?? {};
   const targets = Array.isArray(observation.targets) ? observation.targets : [];
   const scenarios = Array.isArray(observation.scenarios) ? observation.scenarios : [];
   const values = observation.values && typeof observation.values === 'object' ? observation.values : {};
-  if (targets.length > 0) lines.push(`- observation.targets: ${targets.join(', ')}`);
+  if (targets.length > 0) lines.push(`- observation.targets: ${targets.map(inlineText).join(', ')}`);
   if (scenarios.length > 0) {
     lines.push('- observation.scenarios:');
-    for (const scenario of scenarios) lines.push(`  - ${scenario}`);
+    for (const scenario of scenarios) lines.push(`  - ${inlineText(scenario)}`);
   }
   const valueEntries = Object.entries(values);
   if (valueEntries.length > 0) {
-    lines.push(`- observation.values: ${valueEntries.map(([key, value]) => `${key}=${value}`).join(', ')}`);
+    lines.push(`- observation.values: ${valueEntries.map(([key, value]) => `${inlineText(key)}=${inlineText(value)}`).join(', ')}`);
   }
-  if (entry.artifact) lines.push(`- artifact: ${entry.artifact}`);
+  // The adjudicator judges whether the evidence demonstrates the clause, so it has to see
+  // how the evidence was produced and what the producer already flagged about it. Without
+  // these, observation.values is the only thing on the page, and a value an agent wrote is
+  // indistinguishable from one an execution left behind.
+  lines.push(`- evidence_source: ${inlineText(entry.evidence_source ?? 'self_reported')}`);
+  const computed = entry.computed_observation;
+  if (computed && typeof computed === 'object') {
+    const computedKeys = Array.isArray(computed.computed_keys) ? computed.computed_keys : [];
+    lines.push(`- computed_observation.producer: ${inlineText(computed.producer ?? '-')}`);
+    if (computedKeys.length > 0) {
+      lines.push(`- computed_observation.computed_keys: ${computedKeys.map(inlineText).join(', ')}`);
+    }
+  }
+  const overrides = Array.isArray(entry.observation_overrides) ? entry.observation_overrides : [];
+  if (overrides.length > 0) {
+    lines.push('- observation_overrides (agent input discarded in favour of the computed value):');
+    for (const override of overrides) {
+      lines.push(`  - ${inlineText(override.key ?? '-')}: agent=${inlineText(override.agent_value ?? '-')} computed=${inlineText(override.computed_value ?? '-')}`);
+    }
+  }
+  const warnings = Array.isArray(entry.warnings) ? entry.warnings : [];
+  if (warnings.length > 0) {
+    lines.push('- warnings:');
+    for (const warning of warnings) {
+      lines.push(`  - ${inlineText(formatWarningText(warning))}`);
+    }
+  }
+  if (entry.artifact) lines.push(`- artifact: ${inlineText(entry.artifact)}`);
   return lines.join('\n');
 }
 

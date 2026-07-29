@@ -50,7 +50,7 @@ import {
   summarizeAgentReviewsForPr
 } from './agent-review.js';
 import { importCiEvidence } from './ci-evidence.js';
-import { recordVerificationEvidence } from './verification-evidence.js';
+import { RUNNER_EVIDENCE_RECEIPT, isCallerForbiddenObservationKey, recordVerificationEvidence } from './verification-evidence.js';
 import {
   renderExplorePrSection,
   summarizeExploreEvidenceForPr
@@ -1756,7 +1756,23 @@ export async function autopilotPullRequest(repoRoot, options = {}) {
       observed: [
         `exit_code=${run.exit_code}`,
         `head_sha=${run.head_sha ?? 'unknown'}`
-      ]
+      ],
+      // Autopilot executes the command itself and derives the status from the exit code,
+      // so the outcome is computed, not self-reported. It is marked as its own source
+      // rather than runner_direct: the command runs through a login shell, and the record
+      // carries no parsed counts, before/after tree sampling, or output hash.
+      evidenceReceipt: RUNNER_EVIDENCE_RECEIPT,
+      evidenceSource: 'autopilot_run',
+      computedObservation: {
+        producer: 'vibepro pr autopilot',
+        computed_keys: ['exit_code', 'head_sha'],
+        values: {
+          exit_code: String(run.exit_code),
+          head_sha: run.head_sha ?? null
+        },
+        run_artifact: toWorkspaceRelative(root, artifact),
+        output_metrics: 'exit_code_only'
+      }
     });
     operations.push({
       id: `verify_${command.kind}`,
@@ -9942,7 +9958,10 @@ function classifyCodeTopologyImpactEvidence(codeTopologyContext) {
   })];
 }
 
-function classifyVerificationEvidenceItem(item) {
+// Exported alongside buildVerificationCommandSearchText: the corpus rule above is only worth
+// what it changes here, so the kinds a single record earns are asserted on this function
+// directly rather than reconstructed from a gate DAG.
+export function classifyVerificationEvidenceItem(item) {
   const searchResolution = resolveVerificationCommandSearchText(item);
   const text = appendCanonicalEvidenceTokens(searchResolution.text.toLowerCase());
   const command = String(item.command ?? '').trim();
@@ -12361,7 +12380,7 @@ function deriveArtifactRootCause(artifact) {
   return status;
 }
 
-function buildArtifactRemediationCommands(artifact, storyId = null) {
+export function buildArtifactRemediationCommands(artifact, storyId = null) {
   const storyArg = storyId ? shellQuote(storyId) : '<story-id>';
   if (artifact.artifact_type === 'verification_command') {
     const kindArg = artifact.kind ? shellQuote(artifact.kind) : '<kind>';
@@ -12374,7 +12393,12 @@ function buildArtifactRemediationCommands(artifact, storyId = null) {
     const scenarioArgs = (artifact.observation?.scenarios ?? [])
       .map((scenario) => ` --scenario ${shellQuote(scenario)}`)
       .join('');
+    // Keys the record path refuses from a caller are dropped rather than replayed: a
+    // runner-produced record carries evidence_source in observation.values, and reconstructing
+    // it as `--observed evidence_source=...` would emit a command `verify record` rejects on
+    // sight. The predicate is imported so there is one set, not a copy that can drift.
     const observedArgs = Object.entries(artifact.observation?.values ?? {})
+      .filter(([key]) => !isCallerForbiddenObservationKey(key))
       .map(([key, value]) => ` --observed ${shellQuote(`${key}=${value}`)}`)
       .join('');
     const strictFreshnessArg = artifact.content_binding?.mode === 'strict_head'
@@ -12733,10 +12757,9 @@ function isExecutableFailureModeEvidence(command, mode) {
   const scenarioAssertion = (command?.observation?.scenarios ?? [])
     .map((scenario) => String(scenario))
     .join('\n');
-  const observedValues = command?.observation?.values;
-  const observedAssertion = observedValues && typeof observedValues === 'object'
-    ? Object.entries(observedValues).map(([key, value]) => `${key}=${String(value)}`).join('\n')
-    : '';
+  const observedAssertion = observationSearchValuePairs(command?.observation?.values)
+    .map(([key, value]) => `${key}=${String(value)}`)
+    .join('\n');
   return scoreFailureModeEvidence(mode, scenarioAssertion) > 0
     || scoreFailureModeEvidence(mode, observedAssertion) > 0;
 }
@@ -12864,16 +12887,35 @@ function isCuratedJourneyItemHandled(item) {
   return ['resolved', 'accepted', 'answered', 'deferred'].includes(status);
 }
 
-function buildVerificationCommandSearchText(command) {
+// Exported as the corpus seam: what the evidence classifiers are allowed to read out of a
+// record is a property worth asserting directly, not only through the kinds it happens to
+// produce today.
+export function buildVerificationCommandSearchText(command) {
   return resolveVerificationCommandSearchText(command).text;
+}
+
+// observation.values has two halves. The outcome half — counts, exit code, timings, the head
+// the work sits on — states what the run found, and is what the evidence classifiers are
+// meant to read. The provenance half — the run artifact and log paths, the output and worktree
+// hashes, the during-run mutation verdicts, the declared limits — states how the record was
+// produced, and the runner writes it on every record it makes regardless of what was verified.
+// Matching evidence kinds against that half lets a record earn a kind from its own filenames:
+// `run_artifact` is `.vibepro/pr/<story-id>/verification-runs/<kind>.json`, so the `story-`
+// alternative in the runtime_path_evidence pattern matched every runner_direct record, and
+// `timeout_ms`/`output_limit_exceeded` sit one keyword away from doing the same for failure
+// modes. The caller-forbidden set is exactly the provenance half, so it is the boundary here
+// too; the predicate is imported rather than restated so one set governs both what a caller
+// may write into observation.values and what the classifiers may read out of it.
+function observationSearchValuePairs(values) {
+  if (!values || typeof values !== 'object') return [];
+  return Object.entries(values).filter(([key]) => !isCallerForbiddenObservationKey(key));
 }
 
 function resolveVerificationCommandSearchText(command) {
   if (['recorded', 'partial'].includes(command?.observation_check?.status)) {
     const observation = command?.observation ?? {};
-    const observedValues = observation.values && typeof observation.values === 'object'
-      ? Object.entries(observation.values).flatMap(([key, value]) => [key, String(value)])
-      : [];
+    const observedValues = observationSearchValuePairs(observation.values)
+      .flatMap(([key, value]) => [key, String(value)]);
     const structuredText = [
       ...(observation.targets ?? []),
       ...(observation.scenarios ?? []),

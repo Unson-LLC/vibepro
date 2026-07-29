@@ -4,7 +4,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
-import { recordVerificationEvidence } from './verification-evidence.js';
+import { RUNNER_EVIDENCE_RECEIPT, recordVerificationEvidence } from './verification-evidence.js';
 import {
   readValidationSequence,
   recordValidationPhase,
@@ -81,7 +81,21 @@ export async function importCiEvidence(repoRoot, options = {}) {
         `head_sha=${currentHead}`
       ],
       managedWorktreeContext: options.managedWorktreeContext ?? null,
-      managedWorktreeWarning: options.managedWorktreeWarning ?? null
+      managedWorktreeWarning: options.managedWorktreeWarning ?? null,
+      evidenceReceipt: RUNNER_EVIDENCE_RECEIPT,
+      evidenceSource: 'ci_import',
+      computedObservation: {
+        producer: 'vibepro verify import-ci',
+        computed_keys: ['check', 'conclusion', 'run_url', 'head_sha'],
+        values: {
+          check: check.name,
+          conclusion: check.conclusion,
+          run_url: check.details_url || view.url || null,
+          head_sha: currentHead
+        },
+        run_artifact: toWorkspaceRelative(root, artifactPath),
+        output_metrics: 'ci_check_conclusion'
+      }
     });
     imported.push({
       check: check.name,
