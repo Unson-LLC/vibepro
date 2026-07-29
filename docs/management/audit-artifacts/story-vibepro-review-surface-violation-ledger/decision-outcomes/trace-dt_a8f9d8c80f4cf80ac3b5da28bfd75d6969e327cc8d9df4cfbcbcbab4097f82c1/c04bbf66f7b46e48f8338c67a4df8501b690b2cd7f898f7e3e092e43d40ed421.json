@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-review-surface-violation-ledger",
+  "ledger_path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_a8f9d8c80f4cf80ac3b5da28bfd75d6969e327cc8d9df4cfbcbcbab4097f82c1"
+  },
+  "parent_revision_fingerprint": "31287758f886042781896fb514984060521d9a281e4a47d706cae30263978657",
+  "revision_fingerprint": "c04bbf66f7b46e48f8338c67a4df8501b690b2cd7f898f7e3e092e43d40ed421",
+  "trace": {
+    "decision_trace_id": "dt_a8f9d8c80f4cf80ac3b5da28bfd75d6969e327cc8d9df4cfbcbcbab4097f82c1",
+    "collision_group": null,
+    "trace_source_ref": "tsr_470765517f5deee1b4b7d58de763eee8815c77e762c0ea37490771a9d8ed177b",
+    "normalized_subject_key": "finding:violations-cli-no-workspace-precondition",
+    "source_identity": {
+      "source_kind": "linked_sources",
+      "source_ref": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json,.vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+      "native_id": "violations-cli-no-workspace-precondition,violations-cli-no-workspace-precondition",
+      "digest": "4c700d4fc5d6c7f063c55fde411828ba17d045119f929ddf8e78ae632ef24b13",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+    "parent_revision_fingerprint": "31287758f886042781896fb514984060521d9a281e4a47d706cae30263978657",
+    "revision_fingerprint": "c04bbf66f7b46e48f8338c67a4df8501b690b2cd7f898f7e3e092e43d40ed421",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_a8f9d8c80f4cf80ac3b5da28bfd75d6969e327cc8d9df4cfbcbcbab4097f82c1"
+        },
+        "parent_revision_fingerprint": "6677e210817596ba2386e3ee955d3037bc0372302e52003c790616f5bd36956c"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "observed",
+      "value": {
+        "severity": "low",
+        "id": "violations-cli-no-workspace-precondition",
+        "detail": "review violations calls readers directly without requireStoryId or assertInitializedWorkspace; missing --id errors without naming the flag, and an uninitialized workspace reports readable true with zero violations and exit 0, a positive claim the gate path itself refuses to make"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+          "source_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+          "source_digest": "6eec558b3fe77fdf8faa3aaf12edcecb187b2e1aa608d899b8fbde2e5237b41e",
+          "native_id": "violations-cli-no-workspace-precondition"
+        }
+      ]
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "observed",
+      "value": {
+        "detected_by": "runtime_contract",
+        "stage": "implementation",
+        "detected_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+          "source_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+          "source_digest": "6eec558b3fe77fdf8faa3aaf12edcecb187b2e1aa608d899b8fbde2e5237b41e",
+          "native_id": "violations-cli-no-workspace-precondition"
+        }
+      ]
+    },
+    "disposition": {
+      "status": "observed",
+      "value": {
+        "finding_id": "violations-cli-no-workspace-precondition",
+        "disposition": "deferred",
+        "resolved_by": [],
+        "reason": "CLI ergonomics gap with no downstream dependency (gate path asserts initialization via pr prepare); follow-up alongside the reporting-only replay finding from the gate-stage review",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+          "source_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+          "source_digest": "05a89b3c7f31e22924ebbe4ae8c0266576a42949256a90dc9199896bf79ab416",
+          "native_id": "violations-cli-no-workspace-precondition"
+        }
+      ]
+    },
+    "decision": {
+      "status": "observed",
+      "value": {
+        "finding_id": "violations-cli-no-workspace-precondition",
+        "disposition": "deferred",
+        "resolved_by": [],
+        "reason": "CLI ergonomics gap with no downstream dependency (gate path asserts initialization via pr prepare); follow-up alongside the reporting-only replay finding from the gate-stage review",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+          "source_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+          "source_digest": "05a89b3c7f31e22924ebbe4ae8c0266576a42949256a90dc9199896bf79ab416",
+          "native_id": "violations-cli-no-workspace-precondition"
+        }
+      ]
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 397,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/397",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "e3ef7b963170f8500d370f6914037009944d3e0e",
+        "status": "merged",
+        "merged_at": "2026-07-29T10:38:00Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}
