@@ -125,6 +125,8 @@ import {
   renderAgentReviewPrepareSummary,
   renderAgentReviewRecordSummary,
   renderAgentReviewStatusSummary,
+  renderReviewSurfaceViolationSummary,
+  readReviewSurfaceViolationSummary,
   startAgentReviewLifecycle
 } from './agent-review.js';
 import {
@@ -194,6 +196,7 @@ import { importCiEvidence, renderCiImportSummary } from './ci-evidence.js';
 import { renderVerificationRunSummary, runVerificationCommand } from './verification-runner.js';
 import {
   getDecisionStatus,
+  readDecisionRecordsIfExists,
   recordDecision,
   renderDecisionRecordSummary,
   renderDecisionStatusSummary
@@ -520,6 +523,7 @@ Usage:
   vibepro review authorize [repo] --id <story-id> --stage <stage> --role <role> --review-kind preflight|final --closes-risk <risk> --expected-judgment-delta <text> [--reusable-evidence <ref>] [--freeze <source|spec|test|review_surface>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--timeout-ms <ms>] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-thread-id <id>] [--agent-session-id <id>] [--dispatch-authorization <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--cancellation-confirmed] [--close-evidence <ref>] [--json]
+  vibepro review violations [repo] --id <story-id> [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro checkpoint <story|implementation-start|test-plan|implementation-complete|verification|pr> [repo] [--story-id <id>] [--base <ref>] [--head <ref>] [--task <task-id>] [--group <group-id>] [--json]
@@ -796,6 +800,7 @@ Usage:
   vibepro review authorize [repo] --id <story-id> --stage <stage> --role <role> --review-kind preflight|final --closes-risk <risk> --expected-judgment-delta <text> [--reusable-evidence <ref>] [--freeze <source|spec|test|review_surface>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--timeout-ms <ms>] [--json]
   vibepro review start [repo] --id <story-id> --stage <stage> --role <role> --agent-system codex|claude_code --agent-id <id> [--agent-thread-id <id>] [--agent-session-id <id>] [--dispatch-authorization <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--allow-model-policy-override --model-policy-override-reason <text>] [--timeout-ms <ms>] [--replacement-for <lifecycle-id>] [--json]
   vibepro review close [repo] --id <story-id> --stage <stage> --role <role> --agent-id <id> [--close-reason completed|timeout|replaced|manual_shutdown] [--cancellation-confirmed] [--close-evidence <ref>] [--json]
+  vibepro review violations [repo] --id <story-id> [--json]
   vibepro review record [repo] --id <story-id> --stage <stage> --role <role> --status <pass|needs_changes|block> --summary <text> [--finding <severity:id:detail>] [--finding-disposition <finding-id:accepted|rejected|duplicate|deferred|false_positive[:reason]>] [--resolved-finding <finding-id:ref>] [--artifact <path>] [--from-stdin] [--agent-system codex|claude_code|human --execution-mode parallel_subagent|manual_review --agent-id <id>] [--agent-thread-id <id>] [--agent-session-id <id>] [--agent-call-id <id>] [--agent-model <name>] [--agent-reasoning-effort low|medium|high] [--agent-cost-tier low|medium|high] [--agent-input-tokens <n>] [--agent-output-tokens <n>] [--agent-total-tokens <n>] [--agent-cost-usd <n>] [--agent-transcript <path>] [--agent-closed] [--agent-close-evidence <ref>] [--reviewer-identity same_session|separate_session|unknown] [--implementation-session-id <id>] [--inspection-summary <text>] [--inspection-evidence <ref>] [--inspection-input <ref>] [--judgment-delta <text>] [--strict-head-binding --strict-head-reason <text>] [--json]
   vibepro review status [repo] --id <story-id> [--stage <stage>] [--all] [--history] [--json]
   vibepro execute <run|status|watch|resume|cancel|start|next|reconcile|merge> [repo] --story-id <id>|--all-merged [--run-id <id>] [--target pr_create|pr_ready] [--base <ref>] [--branch <name>] [--worktree-path <path>] [--strategy merge|squash|rebase] [--delete-branch] [--pr <url|number>] [--dry-run] [--json]
@@ -2116,6 +2121,16 @@ export async function runCli(argv, io = {}) {
           ? `${JSON.stringify(result, null, 2)}\n`
           : renderAgentReviewStatusSummary(result));
         return { exitCode: 0, command, subcommand, result };
+      }
+      if (subcommand === 'violations') {
+        const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+        const result = await readReviewSurfaceViolationSummary(repoRoot, storyId, {
+          decisionRecords: await readDecisionRecordsIfExists(repoRoot, storyId)
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderReviewSurfaceViolationSummary(result));
+        return { exitCode: result.unacknowledged_count > 0 ? 2 : 0, command, subcommand, result };
       }
       if (subcommand === 'repair') {
         const result = await buildReviewRepairPlan(repoRoot, {

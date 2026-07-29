@@ -49,6 +49,10 @@ import {
   renderAgentReviewPrSection,
   summarizeAgentReviewsForPr
 } from './agent-review.js';
+import {
+  REVIEW_SURFACE_INTEGRITY_GATE_ID,
+  buildReviewSurfaceViolationAcknowledgementCommand
+} from './review-surface-violations.js';
 import { importCiEvidence } from './ci-evidence.js';
 import { RUNNER_EVIDENCE_RECEIPT, isCallerForbiddenObservationKey, recordVerificationEvidence } from './verification-evidence.js';
 import {
@@ -6109,6 +6113,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     performanceEvidence,
     changeClassification,
     validationSequence,
+    decisionRecords,
     git
   });
   if (agentReviews) {
@@ -11460,6 +11465,7 @@ function buildGateDag({
   const agentReviewGate = buildAgentReviewGate(agentReviews, fileGroups, fastLane);
   const agentReviewDag = fastLane.applicable ? { nodes: [], terminal_nodes: [], stage_order: [] } : buildAgentReviewProcessDag(agentReviews);
   const fastLaneGate = fastLane.applicable ? buildFastLaneGate(fastLane) : null;
+  const reviewSurfaceIntegrityGate = buildReviewSurfaceIntegrityGate({ agentReviews });
   const reviewInspectionRequiredGate = buildReviewInspectionRequiredGate({
     agentReviews,
     changeClassification,
@@ -11561,6 +11567,7 @@ function buildGateDag({
     ...(fastLaneGate ? [fastLaneGate] : []),
     ...agentReviewDag.nodes,
     agentReviewGate,
+    reviewSurfaceIntegrityGate,
     reviewInspectionRequiredGate,
     definitionOfDoneGate,
     artifactConsistencyGate,
@@ -11705,7 +11712,8 @@ function buildGateDag({
         fastLaneNodeId: fastLaneGate ? 'gate:fast_lane' : null
       })
     ]),
-    { from: 'gate:agent_review', to: 'gate:review_inspection_required' },
+    { from: 'gate:agent_review', to: REVIEW_SURFACE_INTEGRITY_GATE_ID },
+    { from: REVIEW_SURFACE_INTEGRITY_GATE_ID, to: 'gate:review_inspection_required' },
     { from: 'gate:review_inspection_required', to: 'gate:definition_of_done' },
     { from: 'gate:definition_of_done', to: 'gate:artifact_consistency' },
     { from: 'gate:artifact_consistency', to: 'gate:validation_sequencing' },
@@ -11754,6 +11762,7 @@ function buildGateDag({
     ...workflowHeavyGates,
     ...agentReviewDag.nodes,
     agentReviewGate,
+    reviewSurfaceIntegrityGate,
     reviewInspectionRequiredGate,
     definitionOfDoneGate,
     artifactConsistencyGate,
@@ -14138,6 +14147,111 @@ function buildReviewInspectionRequiredGate({ agentReviews = null, changeClassifi
   };
 }
 
+// Distinct from gate:agent_review on purpose. gate:agent_review answers "is there
+// a passing review for the current surface", which a re-run legitimately flips.
+// This gate answers "did a review surface move while a review was running", which
+// a re-run cannot answer at all — only a human looking at the recorded fact can.
+// One blocking line per kind. The mid-review-mutation wording is wrong for an
+// erased entry or an unreadable artifact, and the headline is the only part most
+// readers ever see.
+function describeReviewSurfaceViolations(violations = []) {
+  const byKind = new Map();
+  for (const violation of violations) {
+    const kind = violation.kind ?? 'review_surface_mutated_during_review';
+    byKind.set(kind, [...(byKind.get(kind) ?? []), violation]);
+  }
+  const label = (violation) => `${violation.stage ?? '?'}:${violation.role ?? '?'}`;
+  return [...byKind.entries()].map(([kind, items]) => {
+    if (kind === 'review_surface_violation_entry_missing') {
+      return `${items.length} recorded violation(s) are missing from the ledger while the lifecycle still points at them (${items.map((item) => `${label(item)} -> ${item.erased_violation_id ?? item.violation_id}`).join('; ')}). The ledger was replaced or edited; append-only records cannot disappear.`;
+    }
+    if (kind === 'review_surface_ledger_unreadable') {
+      return 'The review surface violation ledger could not be read, so it is indistinguishable from an erased one.';
+    }
+    if (kind === 'review_surface_lifecycle_pointers_unreadable') {
+      return 'The lifecycle entries carrying surface_violation_id could not be read, so the ledger cross-check did not run and a ledger rewrite would go undetected.';
+    }
+    return `${items.length} review(s) had their review surface change mid-review (${items.map((item) => `${label(item)} [${(item.changed_fields ?? []).join(', ')}]`).join('; ')}).`;
+  });
+}
+
+export function buildReviewSurfaceIntegrityGate({ agentReviews = null } = {}) {
+  const violations = agentReviews?.surface_violations ?? null;
+  const storyId = agentReviews?.story_id ?? '<story-id>';
+  if (!violations) {
+    // The ledger was never opened. Saying "no violation was recorded" here would
+    // be a positive claim about a file nobody read; type the absence instead.
+    return {
+      id: REVIEW_SURFACE_INTEGRITY_GATE_ID,
+      type: 'review_surface_integrity_gate',
+      label: 'Review Surface Integrity Gate',
+      // needs_evidence, not not_generated: isUnresolvedGateStatus does not treat
+      // not_generated as blocking, so a "typed absence" with that status would be
+      // indistinguishable from a pass for every consumer that matters.
+      status: 'needs_evidence',
+      required: true,
+      ledger_read: false,
+      required_actions: [
+        'Run `vibepro pr prepare` with a resolvable story id so the review surface violation ledger is read.'
+      ],
+      reason: 'The Agent Review summary was not generated, so the review surface violation ledger was never read. This is not a clean result.'
+    };
+  }
+  const total = violations?.total_count ?? 0;
+  const unacknowledged = violations?.unacknowledged ?? [];
+  const acknowledgedCount = violations?.acknowledged_count ?? 0;
+  const status = unacknowledged.length > 0 ? 'failed' : 'passed';
+  const unevaluatedCount = violations?.unevaluated_lifecycle_count ?? 0;
+  return {
+    id: REVIEW_SURFACE_INTEGRITY_GATE_ID,
+    type: 'review_surface_integrity_gate',
+    label: 'Review Surface Integrity Gate',
+    status,
+    required: true,
+    evidence_class: 'violation',
+    distinct_from: 'stale_review',
+    artifact: violations?.artifact ?? null,
+    violation_count: total,
+    acknowledged_violation_count: acknowledgedCount,
+    unacknowledged_violation_count: unacknowledged.length,
+    violations: violations?.entries ?? [],
+    unacknowledged_violations: unacknowledged.map((violation) => ({
+      violation_id: violation.violation_id,
+      stage: violation.stage ?? null,
+      role: violation.role ?? null,
+      lifecycle_id: violation.lifecycle_id ?? null,
+      changed_fields: violation.changed_fields ?? [],
+      recorded_at: violation.recorded_at ?? null
+    })),
+    ledger_readable: violations?.readable !== false,
+    pointers_readable: violations?.pointers_readable !== false,
+    ...(violations?.readable === false ? { unreadable_reason: violations.unreadable_reason ?? null } : {}),
+    ...(violations?.pointers_readable === false ? {
+      warnings: ['Lifecycle surface_violation_id pointers could not be read, so the ledger cross-check did not run. A ledger rewrite would not be detected in this state.']
+    } : {}),
+    required_actions: unacknowledged.length === 0 ? [] : violations?.readable === false ? [
+      `The review surface violation ledger could not be read: ${violations.unreadable_reason ?? 'unknown reason'}`,
+      'An unreadable ledger fails closed because it is indistinguishable from an erased one. Restore the file if a copy exists (.vibepro artifacts are usually untracked, so git history may not have one), otherwise state what was lost and acknowledge it:',
+      ...unacknowledged.map((violation) => buildReviewSurfaceViolationAcknowledgementCommand(storyId, violation.violation_id))
+    ] : [
+      ...describeReviewSurfaceViolations(unacknowledged),
+      'Re-running the review does not clear any of these records. State what actually happened, then acknowledge each one with an accepted decision record:',
+      ...unacknowledged.map((violation) => buildReviewSurfaceViolationAcknowledgementCommand(storyId, violation.violation_id))
+    ],
+    evaluated_lifecycle_count: violations?.evaluated_lifecycle_count ?? null,
+    unevaluated_lifecycle_count: violations?.unevaluated_lifecycle_count ?? null,
+    reason: violations?.readable === false
+      ? `The review surface violation ledger is unreadable and is rejected rather than read as empty: ${violations.unreadable_reason ?? 'unknown reason'}`
+      : status === 'passed'
+      ? total === 0
+        ? unevaluatedCount > 0
+          ? `No review-surface mutation was recorded across ${violations?.evaluated_lifecycle_count ?? 0} evaluated review lifecycle(s). ${unevaluatedCount} closed lifecycle(s) predate surface detection and were never evaluated, so they are not covered by this result.`
+          : 'No review-surface mutation was recorded between any review start and its close'
+        : `All ${total} recorded review-surface violation(s) are acknowledged by an accepted decision record; the append-only records remain in ${violations?.artifact ?? 'the review surface violation ledger'}`
+      : `${unacknowledged.length} of ${total} recorded review-surface violation(s) are unacknowledged. These are violations, not stale evidence: they are append-only and survive every review re-run.`
+  };
+}
+
 function buildDefinitionOfDoneGate({ fileGroups = {}, verificationEvidence = null, flowVerification = null, agentReviewGate = null } = {}) {
   const sourceCount = fileGroups?.source?.count ?? 0;
   const testCount = fileGroups?.tests?.count ?? 0;
@@ -15287,6 +15401,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'path_surface_matrix_gate',
       'journey_context_gate',
       'design_diagrams_gate',
+      'review_surface_integrity_gate',
       'review_inspection_required_gate',
       'definition_of_done_gate',
       'visual_qa_gate',
