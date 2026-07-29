@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { buildMergeGateAuthorization } from '../../src/merge-gate-authorization.js';
 import { applyDecisionOutcomeBinding } from '../../src/merge-manager.js';
 
 const STORY_ID = 'story-vibepro-merge-binding-stale-stop-reason';
@@ -123,4 +124,9 @@ test(`${STORY_ID} AC:5 S-001 the failed-then-successful sequence is idempotent a
     assert.equal(merge.reconciliation.status, 'reconciled');
     assert.equal(merge.stop_reason, null);
   }
+});
+
+test(`${STORY_ID} S-002 denied merge gate authorization still fails closed (inherited behavior unchanged)`, () => {
+  const denied = buildMergeGateAuthorization({ overall_status: 'needs_verification' }, null);
+  assert.equal(denied.allowed, false, `${STORY_ID} S-002 !gateAuthorization.allowed keeps blocking executeMerge before any binding pass runs`);
 });
