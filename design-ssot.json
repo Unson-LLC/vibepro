@@ -7265,7 +7265,8 @@
         "gate:review_surface_integrity"
       ],
       "required_child_kinds": [
-        "story"
+        "story",
+        "spec"
       ],
       "reconciliation_policy": {
         "root_only_change": "needs_review",
@@ -7283,12 +7284,28 @@
             "relationship": "implements",
             "last_reviewed_root_hash": null
           }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
       },
       "child_links": [
         {
           "kind": "story",
           "path": "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-review-surface-violation-ledger.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
