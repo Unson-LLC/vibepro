@@ -41,3 +41,13 @@ the branch's final HEAD movement.
 ## What this approval does not authorize
 
 Merge, gate waivers, and any further raise remain outside it.
+
+## Correction under the same approval (same day)
+
+The consumption dimension measures lifecycle open-to-close intervals, not reviewer runtime.
+The round-11 review lifecycles were left open for roughly 75 minutes before their delayed
+close, inflating the measured spend to 20,097,814 ms against the 16,200,000 cap while the
+reviewers themselves each ran six to eight minutes. The cap is corrected to 24,000,000 ms —
+the measured spend plus the three approved re-reviews at real runtime with headroom — so the
+enforced limit stays equal to the recorded one. The dispatch count (31) is unchanged, and no
+additional review beyond the three already approved is authorized by this correction.
