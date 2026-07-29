@@ -205,3 +205,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:392:start -->
 - [PR #392](https://github.com/Unson-LLC/vibepro/pull/392) — [2026-07](/ja/releases/2026-07): story-vibepro-docs-only-evidence-profile - budget exceeded 19/71の大半が製品変更0行のdocs/roadmap Storyで、bundleが3,700〜5,000行に膨らみ、計測上もdiff base喪失でratioが壊れている
 <!-- vibepro-release-index-pr:392:end -->
+
+<!-- vibepro-release-index-pr:394:start -->
+- [PR #394](https://github.com/Unson-LLC/vibepro/pull/394) — [2026-07](/ja/releases/2026-07): feat: support task-scoped PR acceptance gates
+<!-- vibepro-release-index-pr:394:end -->

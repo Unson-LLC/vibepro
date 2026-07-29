@@ -53,6 +53,29 @@ function evidenceRefs(traceability, type) {
   return traceability.evidence.filter((item) => item.type === type).map((item) => item.ref);
 }
 
+test('TSPA-CONTRACT-002 explicit Task criteria replace Story criteria only for clause traceability', () => {
+  const result = buildTraceabilityClauseMap({
+    storyId: 'story-task-scope',
+    storyText: [
+      '## Acceptance Criteria',
+      '- Future live apply completes.',
+      '',
+      '## Scenarios',
+      '- `AUTH-STORY-001`: Future live apply completes.'
+    ].join('\n'),
+    acceptanceCriteria: ['Current bootstrap validator passes.'],
+    changedFiles: [],
+    tests: [],
+    evidence: []
+  });
+
+  assert.equal(result.acceptance_criteria.length, 1);
+  assert.equal(result.acceptance_criteria[0].source_text, 'Current bootstrap validator passes.');
+  assert.equal(result.acceptance_criteria.some((item) => /Future live apply/.test(item.source_text)), false);
+  assert.deepEqual(result.scenario_lineage.story_scenario_ids, []);
+  assert.deepEqual(result.scenario_lineage.missing_story_scenario_ids, []);
+});
+
 test('pr prepare sets story_doc_path and connects artifact evidence', async () => {
   const root = await setupPrepareRepo();
   await runCli([

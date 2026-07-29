@@ -94,6 +94,14 @@ function extractPrContextSummary(preparation) {
   const ctx = preparation.pr_context ?? {};
   return {
     story_source_path: ctx.story_source?.path ?? null,
+    acceptance_scope: ctx.acceptance_scope ? {
+      source: ctx.acceptance_scope.source ?? null,
+      story_id: ctx.acceptance_scope.story_id ?? null,
+      task_id: ctx.acceptance_scope.task_id ?? null,
+      acceptance_criteria: Array.isArray(ctx.acceptance_scope.acceptance_criteria)
+        ? [...ctx.acceptance_scope.acceptance_criteria]
+        : []
+    } : null,
     architecture_decision: ctx.architecture_decision ?? null,
     change_summary: ctx.change_summary ?? [],
     review_points: ctx.review_points ?? [],
@@ -161,7 +169,10 @@ function buildNumericalTruth({ preparation, drift, requirementConsistency }) {
     drift_high_count: driftItems.filter((item) => item.severity === 'high').length,
     requirement_invariant_count: requirementConsistency?.summary?.invariant_count ?? 0,
     requirement_contradiction_count: requirementConsistency?.summary?.contradiction_count ?? 0,
-    acceptance_criteria_count: preparation?.pr_context?.story_source?.acceptance_criteria?.length ?? 0
+    acceptance_criteria_count:
+      preparation?.pr_context?.acceptance_scope?.acceptance_criteria?.length
+      ?? preparation?.pr_context?.story_source?.acceptance_criteria?.length
+      ?? 0
   };
 }
 
