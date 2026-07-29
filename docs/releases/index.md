@@ -13,6 +13,7 @@ As of July 16, 2026, GitHub records **281 merged pull requests**, including **27
 
 | Published | Version | Channel | Summary |
 | --- | --- | --- | --- |
+| 2026-07-29 | [`0.2.0-beta.2`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.2) | npm `beta` / `latest` | Post-merge continuous release |
 | 2026-07-18 | [`0.2.0-beta.1`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.1) | npm `latest` / `beta` | Post-merge continuous release |
 | 2026-07-16 | [`0.2.0-beta.0`](https://www.npmjs.com/package/vibepro/v/0.2.0-beta.0) | npm `latest` / `beta` | Current published beta after the release workflow completes |
 | 2026-06-07 | [`0.1.0-beta.0`](https://www.npmjs.com/package/vibepro/v/0.1.0-beta.0) | npm | Previous published beta |
@@ -205,3 +206,15 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:392:start -->
 - [PR #392](https://github.com/Unson-LLC/vibepro/pull/392) — [2026-07](/releases/2026-07): story-vibepro-docs-only-evidence-profile - budget exceeded 19/71の大半が製品変更0行のdocs/roadmap Storyで、bundleが3,700〜5,000行に膨らみ、計測上もdiff base喪失でratioが壊れている
 <!-- vibepro-release-index-pr:392:end -->
+
+<!-- vibepro-release-index-pr:394:start -->
+- [PR #394](https://github.com/Unson-LLC/vibepro/pull/394) — [2026-07](/releases/2026-07): feat: support task-scoped PR acceptance gates
+<!-- vibepro-release-index-pr:394:end -->
+
+<!-- vibepro-release-index-pr:395:start -->
+- [PR #395](https://github.com/Unson-LLC/vibepro/pull/395) — [2026-07](/releases/2026-07): story-vibepro-runner-direct-evidence - 先行Storyで『441/441で再実行した』という真の主張ですら、artifactが前回と同一内容のためgit上で検証不能になり3ラウンド連続で指摘された。head_shaを手で足す対処をしたが、根本は実行した者と記録する者が同一であること
+<!-- vibepro-release-index-pr:395:end -->
+
+<!-- vibepro-release-index-pr:396:start -->
+- [PR #396](https://github.com/Unson-LLC/vibepro/pull/396) — [2026-07](/releases/2026-07): story-vibepro-release-0-2-0-beta-2 - runner-direct evidence (PR #395) を含む #356〜#395 の約20PR分が npm 未公開のまま main に滞留している
+<!-- vibepro-release-index-pr:396:end -->

@@ -42,7 +42,14 @@ export const GRANDFATHERED_OVERRIDE_DIGESTS = Object.freeze({
   'story-vibepro-one-command-pr-ready-closure': 'ac2d9a75e90bdfeb3c40e0eab15cddf9704be13b5a0744dd06995f8601a55c7b',
   'story-vibepro-atomic-scope-review-contract': 'bd669b78216cc005ee0ec9f0e131cf131a2d6d6faebca31d181a7e7cd9b4447c',
   'story-vibepro-symlinked-bin-entrypoint': '85eb24b5275b092c54bef1907251470747af829f680105f0dbf2fa52714d43f3',
-  'story-vibepro-ideal-state-inversion': '5dd26a0663ec1f562281c6664c3510bb7aeb7737853dc8331d4392a4469f2f7e'
+  'story-vibepro-ideal-state-inversion': '5dd26a0663ec1f562281c6664c3510bb7aeb7737853dc8331d4392a4469f2f7e',
+  // Added when this branch merged origin/main. Both Stories merged while this
+  // gate was still in review, so leaving them unpinned would retroactively make
+  // an already-merged Story's override inert -- exactly the outcome the
+  // grandfather policy exists to prevent. Pinned to their merged content, on the
+  // same snapshot-not-licence terms as the original thirteen.
+  'story-vibepro-task-scoped-pr-acceptance': 'c287f248c6d43a91fc4dec922e2500247ef1f41a358c07328b3dfdd2efd62ad6',
+  'story-vibepro-runner-direct-evidence': 'bbcbf3cbb63d704f3dc961093b51f3a704a83fc0d6fbb6589b4556d2af702029'
 });
 
 export function budgetApprovalSource(storyId) {

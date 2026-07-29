@@ -191,6 +191,7 @@ import { renderFlowVerificationSummary, runFlowVerification } from './flow-verif
 import { renderVisualVerificationSummary, runVisualVerification } from './visual-verifier.js';
 import { recordVerificationEvidence, renderVerificationEvidenceSummary } from './verification-evidence.js';
 import { importCiEvidence, renderCiImportSummary } from './ci-evidence.js';
+import { renderVerificationRunSummary, runVerificationCommand } from './verification-runner.js';
 import {
   getDecisionStatus,
   recordDecision,
@@ -495,6 +496,7 @@ Usage:
   vibepro uiux prepare [repo] --id <story-id> [--design-system-id <id>] [--base <ref>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
+  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
@@ -771,6 +773,7 @@ Usage:
   vibepro uiux prepare [repo] --id <story-id> [--design-system-id <id>] [--base <ref>] [--json]
   vibepro verify flow [repo] --base-url <url> [--id <story-id>] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
   vibepro verify visual [repo] --id <story-id> [--base-url <url>|--current-dir <dir>] [--qa-id <id>] [--threshold <pct>] [--update-baseline] [--run-id <id>] [--journey <id>] [--allow-mutation] [--headed] [--basic-auth-env <env>] [--basic-auth <user:pass>] [--json]
+  vibepro verify run [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> [--summary <text>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--timeout-ms <ms>] [--max-output-bytes <bytes>] [--strict-head-binding] [--json] -- <command> [args...]
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
@@ -1623,9 +1626,46 @@ export async function runCli(argv, io = {}) {
     if (command === 'verify') {
       const subcommand = rest[0];
       const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
-      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
-        write(stdout, renderHelp(getOption(rest, '--language')));
+      // `verify run` takes the command to execute after `--`; option lookups (including the
+      // help probe) must never reach into that argv or a `--help` in the executed command
+      // would hijack the CLI.
+      const separatorIndex = rest.indexOf('--');
+      const verifyArgs = separatorIndex === -1 ? rest : rest.slice(0, separatorIndex);
+      const runArgv = separatorIndex === -1 ? [] : rest.slice(separatorIndex + 1);
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(verifyArgs, '--help') || hasFlag(verifyArgs, '-h')) {
+        write(stdout, renderHelp(getOption(verifyArgs, '--language')));
         return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      if (subcommand === 'run') {
+        const storyId = getOption(verifyArgs, '--id') ?? getOption(verifyArgs, '--story-id');
+        const managedWorktreeContext = await assertManagedWorktreeCommandAllowed(repoRoot, {
+          storyId,
+          commandName: 'verify run'
+        });
+        const result = await runVerificationCommand(repoRoot, {
+          storyId,
+          kind: getOption(verifyArgs, '--kind'),
+          status: getOption(verifyArgs, '--status'),
+          summary: getOption(verifyArgs, '--summary'),
+          targets: getOptions(verifyArgs, '--target'),
+          scenarios: getOptions(verifyArgs, '--scenario'),
+          observed: getOptions(verifyArgs, '--observed'),
+          timeoutMs: getOption(verifyArgs, '--timeout-ms'),
+          maxOutputBytes: getOption(verifyArgs, '--max-output-bytes'),
+          strictHeadBinding: hasFlag(verifyArgs, '--strict-head-binding'),
+          argv: runArgv,
+          env: io.env,
+          managedWorktreeContext: buildManagedWorktreeCommandBinding(managedWorktreeContext),
+          managedWorktreeWarning: buildManagedWorktreeCommandWarning(managedWorktreeContext)
+        });
+        await reconcileExecutionState(repoRoot, {
+          storyId: result.story_id,
+          target: 'pr_create'
+        }).catch(() => null);
+        write(stdout, hasFlag(verifyArgs, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderVerificationRunSummary(result));
+        return { exitCode: result.status === 'pass' ? 0 : 1, command, subcommand, result };
       }
       if (subcommand === 'flow') {
         const storyId = getOption(rest, '--id');

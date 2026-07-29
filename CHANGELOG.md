@@ -4,6 +4,43 @@ All notable changes to VibePro will be documented in this file.
 
 ## Unreleased
 
+## 0.2.0-beta.2 - 2026-07-29
+
+- Add `vibepro verify run`: VibePro executes the verification command itself (argv,
+  no shell) and records the execution exhaust — exit code, parsed test counts,
+  duration, head sha and worktree fingerprints before/after, output hashes — without
+  passing through agent input. Records carry an `evidence_source` trust marker
+  (`runner_direct` / `autopilot_run` / `ci_import` / `self_reported`) set by the
+  recording path via an internal receipt; no CLI flag sets it, and records without
+  the field read as `self_reported`.
+
+- **Breaking (input contract)**: `verify record --observed` now rejects 26
+  provenance/integrity keys only a runner's own execution can produce
+  (`run_artifact`, `stdout_sha256`, `worktree_sha256_before`, `timed_out`, …; the
+  boundary is enumerated in the Spec). The same keys arriving inside a caller
+  `--artifact` are stripped and named on the record as a warning. The 12 outcome
+  keys (`tests`, `pass`, `fail`, `duration_ms`, `head_sha`, …) stay accepted.
+  Audit existing `--observed` usage against the Spec list, or migrate locally
+  runnable checks to `verify run`.
+
+- **Behavior change (read-time classification)**: the gate evidence classification
+  corpus excludes those provenance keys and their values, so classification derives
+  only from declared targets/scenarios and retained outcome keys. Existing
+  `runner_direct` records that earned `runtime_path_evidence` solely from their own
+  artifact path lose it on the next `pr prepare`, and spine gates requiring that
+  kind can flip to unmet; re-record with truthful targets/scenarios via
+  `verify run`. Recorded artifacts are never rewritten.
+
+- `npm run typecheck` now checks every file instead of silently stopping at the
+  first glob entry (`node --check` reads only its first positional). Previously
+  passing broken files may now be detected — an intended behavior change.
+
+- The adjudication request states how each record was produced: `evidence_source`,
+  the computed-observation producer and keys, discarded-input diffs, and the
+  record's own warnings are rendered, and every agent-controlled string has its
+  line breaks and control characters escaped so a value cannot forge an
+  authoritative line.
+
 - Add risk-adaptive validation sequencing for workflow-heavy and boundary-sensitive
   changes. High-risk PR preparation now requires targeted validation, advisory
   preflight disposition, an exact freeze binding, reusable expensive verification,
@@ -16,6 +53,9 @@ All notable changes to VibePro will be documented in this file.
   Passing `review record` calls must now include `--inspection-summary`, at least
   one existing non-`.vibepro` `--inspection-input`, and `--judgment-delta`;
   existing automation must add these arguments when upgrading.
+
+- Support task-scoped PR acceptance gates: task-scoped PRs keep Story context while
+  judging only the selected task's acceptance scope.
 
 ## 0.2.0-beta.1 - 2026-07-18
 
@@ -975,3 +1015,66 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-docs-only-ev
 なし
 
 <!-- vibepro-release-pr:392:end -->
+
+<!-- vibepro-release-pr:394:start -->
+## [#394](https://github.com/Unson-LLC/vibepro/pull/394) feat: support task-scoped PR acceptance gates
+
+- Author: @sintariran
+- Merged: 2026-07-29T02:01:53Z
+- Commit: `524037a634369c758c03444a123d56fc58397251`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:394:end -->
+
+<!-- vibepro-release-pr:395:start -->
+## [#395](https://github.com/Unson-LLC/vibepro/pull/395) story-vibepro-runner-direct-evidence - 先行Storyで『441/441で再実行した』という真の主張ですら、artifactが前回と同一内容のためgit上で検証不能になり3ラウンド連続で指摘された。head_shaを手で足す対処をしたが、根本は実行した者と記録する者が同一であること
+
+- Author: @sintariran
+- Merged: 2026-07-29T05:01:56Z
+- Commit: `6cc3b280ec1438d07dc787f862d6f3ee5f0675a2`
+
+### Change Summary
+
+`vibepro verify run &lt;repo&gt; --id &lt;story-id&gt; --kind &lt;kind&gt; -- &lt;command...&gt;` を追加し、VibePro 自身がそのコマンドを argv として（shell を介さず）実行する。status は観測した exit code から導出し、テスト計数は実際の出力から解析し、実行前後の head sha と working tree fingerprint、所要時間、stdout と stdout+stderr の SHA-256 を記録する。`--status` は拒否し、runner が計算するキーへの `--observed` は計算値で上書きして破棄した入力を `observation_overrides` として残す。証跡の出所は記録経路が決める（`runner_direct` / `autopilot_run` / `ci_import` / `self_reported`）。既存の `pr autopilot` もコマンドを自ら実行しているため `autopilot_run` として記録する。
+
+### Compatibility
+
+記録**形式**は追加のみで、既存フィールドの意味は変えず、未知フィールドを拒否する consumer はリポジトリ内に存在しない。`evidence_source` を持たない既存記録は self_reported として解釈する。一方、`verify record` の**入力契約は非互換に狭まる**: これまで受理されていた `--observed` のうち、runner の実行だけが生成できる provenance/integrity キー26個（`run_artifact`, `stdout_sha256`, `worktree_sha256_before` 等。境界は Spec に列挙）は拒否になり、caller 提供 artifact 経由の同キーは strip + 警告記録になる。影響範囲は誰でも再実行できる2つのスキャンで確認できる: (1) リポジトリ内の全 `verification-evidence.json` を走査し、非 runner 経路の記録に禁止キーが載っていないこと（`grep -rl verification-evidence.json` で列挙して各 command の `evidence_source` と `observation.values` を照合）、(2) `grep -rn -- '--observed' docs/ skills/ scripts/`...
+
+### User Action
+
+このリポジトリ内では必須の操作はない（互換性節の repo 内スキャンで確認済み）。**外部リポジトリでは2点確認が必要**。(1) `verify record --observed` を使っている場合: Spec に列挙された provenance/integrity キー26個（`run_artifact`, `stdout_sha256`, `timed_out` 等）を渡していると、このリリース以降はコマンドが失敗し記録は書かれない。既存スクリプトの `--observed` キーを Spec の一覧と照合し、該当キーは削除するか `verify run` へ移行すること（caller 提供 `--artifact` 経由の同キーはコマンドは成功するが該当キーは落ち、警告として記録される）。成果観測キー（tests / pass / fail / duration_ms / head_sha 等）はそのまま使える。(2) runner_direct 記録を既に持つ場合: 次回の `pr prepare` で gate 証跡分類が targets / scenarios 由来だけになるため、provenance パスでしか runtime_path_evidence を得ていなかった記録は spine gate（current_reality / failure_modes / done_evidence）を満たさなくなり得る。gate が unmet...
+
+<!-- vibepro-release-pr:395:end -->
+
+<!-- vibepro-release-pr:396:start -->
+## [#396](https://github.com/Unson-LLC/vibepro/pull/396) story-vibepro-release-0-2-0-beta-2 - runner-direct evidence (PR #395) を含む #356〜#395 の約20PR分が npm 未公開のまま main に滞留している
+
+- Author: @sintariran
+- Merged: 2026-07-29T07:56:26Z
+- Commit: `3b7a12bdfa193bdaa75e6fcb83b8c079c19de051`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-release-0-2-0-beta-2.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-release-0-2-0-beta-2.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:396:end -->
