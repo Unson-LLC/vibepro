@@ -5033,6 +5033,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "spec": [
@@ -5049,6 +5056,13 @@
         {
           "kind": "story",
           "path": "docs/management/stories/active/story-vibepro-gate-decision-outcome-ledger.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
@@ -7314,5 +7328,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-28T04:55:19.762Z"
+  "updated_at": "2026-07-29T15:48:37.888Z"
 }

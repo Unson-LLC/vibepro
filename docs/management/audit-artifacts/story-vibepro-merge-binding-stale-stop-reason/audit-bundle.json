@@ -1,0 +1,889 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-29T16:15:12.972Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [
+      "artifact_code_ratio_exceeded"
+    ],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:39aa63925bd5e7bdb79ef61ed8774d7a5b6de1c5811e4766e63f6a486a9b32cb",
+    "compressed_hash": "sha256:632bed4cbc4a303c62d4de6ea9988d2de0e6d99caf07fc98faf2ff075e7df67a",
+    "expanded_bytes": 16123,
+    "compressed_bytes": 3557,
+    "expanded_line_count": 428,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "decision_outcome_ledger",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-merge-binding-stale-stop-reason",
+    "cost": {
+      "compressed_bytes": 3557,
+      "expanded_bytes": 16123,
+      "expanded_line_count": 428,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged_externally",
+    "base": "main",
+    "delivery": {
+      "status": "merged_externally",
+      "source": "github_pr",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/398",
+      "merge_commit_sha": "412ecdc01877941491df99cb5378d832cd67ee3c",
+      "merged_at": "2026-07-29T16:13:45Z"
+    },
+    "reconciliation": {
+      "status": "reconciled",
+      "reasons": [],
+      "evaluated_at": "2026-07-29T16:15:12.623Z",
+      "head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69"
+    },
+    "decision_outcome_binding": {
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
+      "expected_entry_count": 34,
+      "promoted_count": 0,
+      "duplicate_count": 34,
+      "persistence_status": null
+    },
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/398",
+    "merge_commit_sha": "412ecdc01877941491df99cb5378d832cd67ee3c",
+    "merged_at": "2026-07-29T16:13:45Z",
+    "current_head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat '412ecdc01877941491df99cb5378d832cd67ee3c^1...a584ceb0333acdc5c256cb15ca6fa91f46473f69'"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 55,
+    "copied_reference_count": 43,
+    "unresolved_reference_count": 15,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-merge-binding-stale-stop-reason"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:39aa63925bd5e7bdb79ef61ed8774d7a5b6de1c5811e4766e63f6a486a9b32cb"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:6a0761a2366fc4449dd2a1d493e1e998e532e1a1d3fb5b0be1a280973b227705",
+      "audit_digest": "sha256:6a0761a2366fc4449dd2a1d493e1e998e532e1a1d3fb5b0be1a280973b227705",
+      "line_count": 742,
+      "raw_line_count": 742,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_outcome_ledger",
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-outcome-ledger.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:06d89a54f9059e3d96db8f723db270a8ce40ba6a04dd9afb37aa7509552b7afa",
+      "audit_digest": "sha256:06d89a54f9059e3d96db8f723db270a8ce40ba6a04dd9afb37aa7509552b7afa",
+      "line_count": 792,
+      "raw_line_count": 792,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:5a506d159dcf891bc24f5f99a0d23eb388c1481f6e82b1686c68f5e6e59e3758",
+      "audit_digest": "sha256:d07a352d45c6a13ba0cad57fd65f373f5b7e07940383b15d3f19d2181d97bdc6",
+      "line_count": 5518,
+      "raw_line_count": 39190,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:1454f6c1b87dac3e8b243bed3857b9b38dcab57e9dcb10189033542102e4caf8",
+      "audit_digest": "sha256:af3fde262da5e4ed9cca35547635f0abb3e6bcefd5b246621a15be7306aba1e6",
+      "line_count": 2586,
+      "raw_line_count": 4892,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:733c49d27780d934364a2714efc6c509cd0d60c062b77b6270479a6172703453",
+      "audit_digest": "sha256:bd9b4317b6b1e2a78cc1bf853550475bb7a251b6508d8c5d1b60b47c2b649854",
+      "line_count": 61,
+      "raw_line_count": 776,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:94be5504048878c393c0452ee80b464d76299cb8760fd4522b1ac4e55b5f7ad5",
+      "audit_digest": "sha256:77713451c33f1f9eaf7d90107cf75eba03211e018105db1d95c8ef4387ef4293",
+      "line_count": 2623,
+      "raw_line_count": 5036,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:561fe19e88eb295513c55cfc4f4ee6e2ab98f37d1757226a037f4873f852474e",
+      "audit_digest": "sha256:561fe19e88eb295513c55cfc4f4ee6e2ab98f37d1757226a037f4873f852474e",
+      "line_count": 382,
+      "raw_line_count": 382,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:5fec005c137aa51371d961f78909ea167117db29c22f2c81138b73e7f6bce3db",
+      "audit_digest": "sha256:e2e3c5febddbfed88c4f360a2f2ad821c934b18e890190edfdb200f0106f2dab",
+      "line_count": 52,
+      "raw_line_count": 946,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:2cd8c54fcdf08bbe969fda68520ac5792e1ab2a82ff3dd92a8d0e72e3d3051b5",
+      "audit_digest": "sha256:2cd8c54fcdf08bbe969fda68520ac5792e1ab2a82ff3dd92a8d0e72e3d3051b5",
+      "line_count": 806,
+      "raw_line_count": 806,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:0bd1463653ed2ad75a554171d6354d6f1f2cadec9fecdc1845fdfb40e4121f2e",
+      "audit_digest": "sha256:0bd1463653ed2ad75a554171d6354d6f1f2cadec9fecdc1845fdfb40e4121f2e",
+      "line_count": 831,
+      "raw_line_count": 831,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:22e58bc452eadaeaa67fc2f1d2e04d67019ce386bcb60179adf29f0e7d496fcf",
+      "audit_digest": "sha256:22e58bc452eadaeaa67fc2f1d2e04d67019ce386bcb60179adf29f0e7d496fcf",
+      "line_count": 403,
+      "raw_line_count": 403,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:a3744cf3ce057093faae99049ab397231a4469e8f8c88e5dfd8f7e65a1c3ce8a",
+      "audit_digest": "sha256:a3744cf3ce057093faae99049ab397231a4469e8f8c88e5dfd8f7e65a1c3ce8a",
+      "line_count": 154,
+      "raw_line_count": 154,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:1981ef13e8e67ca4391e8147c93c02b5ca9f57f3d1c9add645c2fade826c48a4",
+      "audit_digest": "sha256:1981ef13e8e67ca4391e8147c93c02b5ca9f57f3d1c9add645c2fade826c48a4",
+      "line_count": 163,
+      "raw_line_count": 163,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/audit-replay-bundle.json.gz",
+      "digest": "sha256:20702639c7446eb7adfd8dabda66156ef133774cb63ea8c9f03239dbe35c129a",
+      "audit_digest": "sha256:20702639c7446eb7adfd8dabda66156ef133774cb63ea8c9f03239dbe35c129a",
+      "line_count": 777,
+      "raw_line_count": 777,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-merge-binding-stale-stop-reason/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/adjudication/story-vibepro-merge-binding-stale-stop-reason/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-merge-binding-stale-stop-reason/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/adjudication/story-vibepro-merge-binding-stale-stop-reason/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-outcome-ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/pr/decision-outcome-ledger.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/pr/traceability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/history/review-result-gate_evidence-2026-07-29T15-45-08.979Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/history/review-result-gate_evidence-2026-07-29T15-45-08.979Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/history/review-result-gate_evidence-2026-07-29T15-53-13.632Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/history/review-result-gate_evidence-2026-07-29T15-53-13.632Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-merge-binding-stale-stop-reason/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/spec/story-vibepro-merge-binding-stale-stop-reason/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-merge-binding-stale-stop-reason/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/stories/story-vibepro-merge-binding-stale-stop-reason/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-merge-binding-stale-stop-reason/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/stories/story-vibepro-merge-binding-stale-stop-reason/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-merge-binding-stale-stop-reason/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/adjudication/story-vibepro-merge-binding-stale-stop-reason/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-merge-binding-stale-stop-reason/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/adjudication/story-vibepro-merge-binding-stale-stop-reason/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/diagnostics/2026-07-29T151136Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/history/review-result-gate_evidence-2026-07-29T15-45-08.979Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/history/review-result-gate_evidence-2026-07-29T15-45-08.979Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/history/review-result-gate_evidence-2026-07-29T15-53-13.632Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/history/review-result-gate_evidence-2026-07-29T15-53-13.632Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-merge-binding-stale-stop-reason/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/spec/story-vibepro-merge-binding-stale-stop-reason/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-merge-binding-stale-stop-reason/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/stories/story-vibepro-merge-binding-stale-stop-reason/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-merge-binding-stale-stop-reason/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-merge-binding-stale-stop-reason/references/vibepro/stories/story-vibepro-merge-binding-stale-stop-reason/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 7246322
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T151136Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 984387
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 7287755
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 579663
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/surface-violations.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-merge-binding-stale-stop-reason/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-merge-binding-stale-stop-reason/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-merge-binding-stale-stop-reason/state.json",
+      "reason": "source_missing"
+    }
+  ]
+}

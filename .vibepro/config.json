@@ -1038,6 +1038,18 @@
         "category": "architecture"
       },
       {
+        "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+        "title": "decision outcome bindingが成功に戻った時に残留したstop_reason/reconciliationフラグをクリアする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-30",
+        "due_at": null,
+        "category": "bugfix"
+      },
+      {
         "story_id": "story-vibepro-vacuous-e2e-test-elimination",
         "title": "製品コードを実行しないtest/e2eの自己充足テストを解消し再発をlintで止める",
         "ssot": "local",

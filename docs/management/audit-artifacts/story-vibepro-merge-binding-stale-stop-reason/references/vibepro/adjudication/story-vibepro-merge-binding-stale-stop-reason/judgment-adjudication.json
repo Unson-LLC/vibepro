@@ -1,0 +1,584 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+  "updated_at": "2026-07-29T15:54:13.684Z",
+  "events": [
+    {
+      "event_id": "06811c1e-1704-41fd-95db-309e56c4410c",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story documents the concrete observed defect (PR #397 pr-merge.json stuck with stale stop_reason despite binding bound) and five ACs; the diff maps one-to-one to that intent with no scope creep.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "recorded_at": "2026-07-29T15:46:09.046Z"
+    },
+    {
+      "event_id": "ff83542e-9013-420d-8184-e96c5d1ec2b5",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current reality is grounded: the story cites the real merged artifact state, and the e2e flow_replay/artifact_replay specs reproduce the failed-then-rebound lifecycle rather than a hypothetical.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "recorded_at": "2026-07-29T15:46:09.474Z"
+    },
+    {
+      "event_id": "ae63f508-c2ec-4a24-a281-d11806c64798",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Key invariants — only the self-set marker is cleared, foreign reasons/stop_reasons never touched, failure path fails closed unchanged — are each asserted by tests (GDO-S-5 mixed case, e2e AC:3, AC:4) and match the implementation guards.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "recorded_at": "2026-07-29T15:46:09.915Z"
+    },
+    {
+      "event_id": "06063b5c-24ba-49bb-90e7-629cf653fe18",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The story reason: frontmatter states the boundary decision (remove only the self-set marker, do not recompute the reconciliation block) and the rejected alternative; code respects exactly that boundary with a preservation test enforcing it.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "recorded_at": "2026-07-29T15:46:10.340Z"
+    },
+    {
+      "event_id": "499bc16b-2cf4-498f-aea2-60bb844a69e1",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Both directions exercised: negative path still stops (GDO-S-2/3, e2e AC:4), over-clearing risk bounded (foreign flags preserved), original failure mode replayed and cleared, rerun idempotence asserted (e2e AC:5).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "recorded_at": "2026-07-29T15:46:10.746Z"
+    },
+    {
+      "event_id": "94f57c5b-021c-46c2-834b-77766f87c9c3",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "E2e evidence recorded at current HEAD 5e11a57f (16/16 pass, run log verified); unit/integration recorded at 51d8b7c2 whose delta to HEAD touches only test/doc additions; unit suite rerun at HEAD with 17/17 pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "recorded_at": "2026-07-29T15:46:11.175Z"
+    },
+    {
+      "event_id": "d4c6bd32-e2d9-45ff-bfb0-dc876bd46d25",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change alters pr-merge.json output only by clearing a flag this same function previously set incorrectly; failed-path output shape unchanged and asserted; e2e artifact_replay asserts the canonical audit bundle still carries the bound binding summary. No CLI/config surface changed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "recorded_at": "2026-07-29T15:46:11.586Z"
+    },
+    {
+      "event_id": "15ad2ca0-d045-46b3-a34b-d8f4833d0c5d",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Five changed files but one intent: a single function's early-return branch plus its story, spec-mapped e2e spec, and coverage. A single reviewer reads the full diff as one coherent judgment; no split needed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "recorded_at": "2026-07-29T15:46:12.031Z"
+    },
+    {
+      "event_id": "ef8e9266-c488-4402-883a-617fb35ce27a",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No new operator surface: previously-written stale artifacts self-heal on the next successful binding pass; rollback is reverting the single function and stale-flag artifacts remain valid. The ops consequence is genuinely nil for a self-healing artifact-flag fix.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "recorded_at": "2026-07-29T15:46:12.459Z"
+    },
+    {
+      "event_id": "b296fd19-37b0-409f-8c0e-85f2e8879f64",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "e2e S-002 explicitly asserts denied merge gate authorization still fails closed after this change (inherited behavior unchanged), and the modified function does not touch any auth path.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "recorded_at": "2026-07-29T15:46:12.847Z"
+    },
+    {
+      "event_id": "b2ba2ab3-904a-4be0-b086-ad92aa521b36",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Over-green risk bounded by tests: stop flags cleared only when the binding is actually non-failed and only the self-set marker removed; failure still fails closed and foreign reasons survive. The change removes a misleading-red state without creating a misleading-green path.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "recorded_at": "2026-07-29T15:46:13.265Z"
+    },
+    {
+      "event_id": "a1c61e74-99a7-4501-b4fa-560f14444a4b",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change fixes exactly this failure mode (stale stop state surviving successful reruns); e2e AC:5 asserts repeated failed-then-successful reruns converge idempotently, and the mixed-reason case shows remaining reasons are not over-cleared.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "recorded_at": "2026-07-29T15:46:13.666Z"
+    },
+    {
+      "event_id": "8b089476-0348-4c00-9ab7-d446a4e5b30e",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story documents the concrete observed defect (PR #397 stale stop_reason despite bound binding) and five ACs; the diff maps one-to-one. The design-ssot.json registration only strengthens traceability.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "210502b9408abaa8adb4eb0b284faf3c0d8811f6",
+      "recorded_at": "2026-07-29T15:50:09.592Z"
+    },
+    {
+      "event_id": "ce98cfe7-e21f-440e-8fa2-b6eec39d6ab4",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Grounded in the real merged artifact state cited in the story; e2e flow_replay/artifact_replay reproduce the failed-then-rebound lifecycle. Unchanged at new head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "210502b9408abaa8adb4eb0b284faf3c0d8811f6",
+      "recorded_at": "2026-07-29T15:50:09.991Z"
+    },
+    {
+      "event_id": "9bea206b-da10-4bd8-afd4-2249eb18c929",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Only the self-set marker is cleared, foreign reasons/stop_reasons never touched, failure path fails closed unchanged — each asserted by GDO-S-5 mixed case, e2e AC:3, AC:4, matching the implementation guards.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "210502b9408abaa8adb4eb0b284faf3c0d8811f6",
+      "recorded_at": "2026-07-29T15:50:10.398Z"
+    },
+    {
+      "event_id": "48366ae3-83a7-4b70-ab71-672be1ae5db3",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story reason: frontmatter states the boundary decision with the rejected alternative; code respects it; foreign-reason preservation test enforces it. Design-root registration adds the story to the design SSOT boundary without altering it.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "210502b9408abaa8adb4eb0b284faf3c0d8811f6",
+      "recorded_at": "2026-07-29T15:50:10.809Z"
+    },
+    {
+      "event_id": "8a5025ad-5ac3-4917-afa7-77f7c98992be",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Negative path still stops, over-clearing risk bounded, original stale-flag failure mode replayed and cleared, rerun idempotence asserted (e2e AC:5). Unchanged at new head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "210502b9408abaa8adb4eb0b284faf3c0d8811f6",
+      "recorded_at": "2026-07-29T15:50:11.245Z"
+    },
+    {
+      "event_id": "a213b7a9-a384-4cde-8d05-fc42300cbad0",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "e2e 16/16 at 5e11a57f, unit/integration at 51d8b7c2 remain valid: deltas to 210502b9 touch only tests/docs outside the unit surface and design-ssot.json; unit suite reran in this worktree 17/17 pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "210502b9408abaa8adb4eb0b284faf3c0d8811f6",
+      "recorded_at": "2026-07-29T15:50:11.654Z"
+    },
+    {
+      "event_id": "a071d80b-124f-4dd8-8192-2436789bccc9",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Output change limited to clearing a flag the same function previously set incorrectly; failed-path output unchanged and asserted; canonical audit bundle carries the bound summary. design-ssot.json addition is registry metadata.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "210502b9408abaa8adb4eb0b284faf3c0d8811f6",
+      "recorded_at": "2026-07-29T15:50:12.067Z"
+    },
+    {
+      "event_id": "d7434268-7fa4-4a73-9237-d0fff4d61dc9",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "One intent across six files: a single function branch, story, design-SSOT registration, and unit/e2e coverage. A single reviewer reads the full diff coherently; no split warranted.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "210502b9408abaa8adb4eb0b284faf3c0d8811f6",
+      "recorded_at": "2026-07-29T15:50:12.465Z"
+    },
+    {
+      "event_id": "7ee492ee-2326-41fb-88de-dcdffc1ed575",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No new operator surface: stale artifacts self-heal on the next successful binding pass; rollback is reverting the single function. Ops consequence genuinely nil for this self-healing artifact-flag fix.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "210502b9408abaa8adb4eb0b284faf3c0d8811f6",
+      "recorded_at": "2026-07-29T15:50:12.865Z"
+    },
+    {
+      "event_id": "9b3a61b1-7437-4d3a-af5d-9bb97c7c31a2",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "e2e S-002 asserts denied merge gate authorization still fails closed; the modified function touches no auth path. Unchanged at new head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "210502b9408abaa8adb4eb0b284faf3c0d8811f6",
+      "recorded_at": "2026-07-29T15:50:13.284Z"
+    },
+    {
+      "event_id": "67c00384-f35f-41e7-9b39-09bae3ef68d8",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Stop flags clear only when the binding is actually non-failed, only the self-set marker removed; failure fails closed, foreign reasons survive; removes a misleading-red state without creating a misleading-green path.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "210502b9408abaa8adb4eb0b284faf3c0d8811f6",
+      "recorded_at": "2026-07-29T15:50:13.706Z"
+    },
+    {
+      "event_id": "8e0c5946-9cd7-43bc-9bab-1996d9da2cb7",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fixes exactly this failure mode; e2e AC:5 asserts repeated reruns converge idempotently; the mixed-reason case shows remaining reasons are not over-cleared.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "210502b9408abaa8adb4eb0b284faf3c0d8811f6",
+      "recorded_at": "2026-07-29T15:50:14.104Z"
+    },
+    {
+      "event_id": "1a23cb9c-5ab6-461c-aa71-83abf25bb0cd",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story documents the concrete observed defect and five ACs; the diff maps one-to-one. The parent_design line only declares design lineage.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "recorded_at": "2026-07-29T15:53:57.423Z"
+    },
+    {
+      "event_id": "704702e5-2e49-4177-9983-ab43554383d9",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Grounded in the real merged artifact state; e2e flow_replay/artifact_replay reproduce the failed-then-rebound lifecycle. Unchanged at new head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "recorded_at": "2026-07-29T15:53:59.345Z"
+    },
+    {
+      "event_id": "bbfca01e-533d-43b9-af41-459e771d298a",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Only the self-set marker is cleared, foreign flags never touched, failure fails closed unchanged — asserted by GDO-S-5 mixed case, e2e AC:3, AC:4, matching implementation guards.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "recorded_at": "2026-07-29T15:54:00.454Z"
+    },
+    {
+      "event_id": "097e1ab5-6422-4eb1-acd0-ac5865003e1e",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story reason: frontmatter states the boundary decision with the rejected alternative; code respects it; preservation test enforces it; parent_design anchors the story to its design root without altering the boundary.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "recorded_at": "2026-07-29T15:54:01.797Z"
+    },
+    {
+      "event_id": "a86e11c9-7446-4d5e-8d0b-1ca06db98ec8",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Negative path still stops, over-clearing bounded, original stale-flag failure mode replayed and cleared, rerun idempotence asserted. Unchanged at new head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "recorded_at": "2026-07-29T15:54:03.691Z"
+    },
+    {
+      "event_id": "f0b7165b-3df4-474e-9b95-2860b98bd1b3",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Recorded runs remain valid: 51d8b7c2..5e11a57f touches only tests/docs outside the unit surface, 5e11a57f..210502b9 only design-ssot.json, 210502b9..a584ceb0 only one frontmatter line; unit suite reran 17/17 pass.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "recorded_at": "2026-07-29T15:54:05.579Z"
+    },
+    {
+      "event_id": "4bc9ab75-e3a7-41d4-bd12-1a719b6974b6",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Output change limited to clearing a flag the same function previously set incorrectly; failed-path output unchanged and asserted; canonical audit bundle carries the bound summary. Frontmatter metadata is not a contract surface.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "recorded_at": "2026-07-29T15:54:07.542Z"
+    },
+    {
+      "event_id": "1c16cdbb-fb59-48dd-9707-86abc8687c73",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "One intent: a single function branch, its story with design lineage, design-SSOT registration, and unit/e2e coverage. A single reviewer reads the full diff coherently; no split.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "recorded_at": "2026-07-29T15:54:09.161Z"
+    },
+    {
+      "event_id": "191466c2-fd5d-4eb9-a105-47f771327d84",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No new operator surface: stale artifacts self-heal on the next successful binding pass; rollback is reverting the single function. Ops consequence genuinely nil.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "recorded_at": "2026-07-29T15:54:10.446Z"
+    },
+    {
+      "event_id": "0887c071-c573-4729-8dc9-0515b3232cec",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "e2e S-002 asserts denied merge gate authorization still fails closed; the modified function touches no auth path. Unchanged at new head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "recorded_at": "2026-07-29T15:54:11.368Z"
+    },
+    {
+      "event_id": "1042a7ac-ef0c-4a78-a6f9-a17560104a20",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Stop flags clear only when the binding is actually non-failed and only the self-set marker is removed; failure fails closed, foreign reasons survive; removes misleading-red without creating misleading-green.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "recorded_at": "2026-07-29T15:54:12.416Z"
+    },
+    {
+      "event_id": "41d9bf06-3b2b-44c0-8423-842a61d09631",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Fixes exactly this failure mode; e2e AC:5 asserts idempotent convergence; mixed-reason case shows remaining reasons are not over-cleared.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a6232f159b4256a82",
+        "session_ref": null
+      },
+      "head_commit": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+      "recorded_at": "2026-07-29T15:54:13.681Z"
+    }
+  ]
+}

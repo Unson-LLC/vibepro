@@ -1,0 +1,185 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+  "generated_at": "2026-07-30T00:00:00.000Z",
+  "generated_by": {
+    "caller": "claude_code",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "applyDecisionOutcomeBinding must never leave stop_reason=decision_outcome_binding_failed or the decision_outcome_binding_failed reconciliation reason on a merge whose current binding status is not failed; the failure marker it sets on a failed pass must be removed by any later non-failed pass.",
+      "rationale": "A transient first-pass binding failure must not become a permanent stop flag that idempotent successful reruns cannot clear.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "that reason is removed"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
+            "section": "Background",
+            "text_snippet": "early-returns on a non-failed binding without clearing"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/merge-manager.js",
+            "anchor": "applyDecisionOutcomeBinding"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/gate-outcome-ledger-central-promotion.test.js",
+            "case": "GDO-S-5: a successful rebinding clears stale binding-failure reconciliation flags"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/merge-manager.js",
+            "must_contain": "decision_outcome_binding_failed"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/**/*.test.js",
+            "must_cover": "successful rebinding clears stale binding-failure"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T15:17:30.466Z",
+      "last_revised_at": "2026-07-29T15:37:27.652Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given a merge object carrying reconciliation.reasons=[decision_outcome_binding_failed] and stop_reason=decision_outcome_binding_failed from a previous failed binding pass, when applyDecisionOutcomeBinding produces a bound or not_applicable binding, then the decision_outcome_binding_failed reason is removed, reconciliation.status becomes reconciled when no other reasons remain, and stop_reason becomes null; when other reasons remain, reconciliation.status stays reconciliation_required and stop_reason becomes delivery_reconciliation_required.",
+      "inherited_behavior": {
+        "condition": "a failed binding still sets reconciliation_required, appends decision_outcome_binding_failed, and sets stop_reason; stop_reason values set by other code paths are unchanged/existing",
+        "classification": "inherited",
+        "files": [
+          "src/merge-manager.js"
+        ]
+      },
+      "rationale": "Reruns of the reconciliation path against a persisted pr-merge.json must be able to self-heal a stale failure flag without touching failure markers owned by other code paths.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "a stop_reason set by other code paths is never touched"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
+            "section": "Acceptance Criteria",
+            "text_snippet": "Regression test covers the failed-then-successful sequence"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/merge-manager.js",
+            "anchor": "decision_outcome_binding_failed"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/gate-outcome-ledger-central-promotion.test.js",
+            "case": "GDO-S-5: a successful rebinding clears stale binding-failure reconciliation flags"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/**/*.test.js",
+            "must_cover": "stale binding-failure reconciliation flags"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T15:17:30.466Z",
+      "last_revised_at": "2026-07-29T15:37:27.652Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "When merge gate authorization is denied, executeMerge's existing fail-closed blocking behavior in src/merge-manager.js is unchanged by this story; the change only clears the stale decision_outcome_binding_failed markers after a non-failed binding pass.",
+      "inherited_behavior": {
+        "condition": "!gateAuthorization.allowed",
+        "classification": "inherited",
+        "files": [
+          "src/merge-manager.js"
+        ]
+      },
+      "rationale": "The gate authorization denial branch is an existing scenario adjacent to the changed code; it is inherited, not modified.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "Failure behavior is unchanged"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
+            "section": "Scope",
+            "text_snippet": "applyDecisionOutcomeBinding only"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/merge-manager.js",
+            "anchor": "gateAuthorization.allowed"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/merge-gate-authorization.test.js",
+            "case": "MWP-AC-3 malformed or critical waivers fail closed"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/**/*.test.js",
+            "must_cover": "fail closed"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T15:37:27.652Z",
+      "last_revised_at": "2026-07-29T15:37:27.652Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "state",
+      "mermaid": "stateDiagram-v2\n    [*] --> reconciled\n    reconciled --> reconciliation_required: binding failed (reason appended, stop_reason=decision_outcome_binding_failed)\n    reconciliation_required --> reconciled: rebinding bound and no other reasons remain (stop_reason cleared)\n    reconciliation_required --> reconciliation_required: rebinding bound but foreign reasons remain (stop_reason=delivery_reconciliation_required)",
+      "entities": [
+        "reconciled",
+        "reconciliation_required"
+      ],
+      "rationale": "AC-1..AC-3: reconciliation status/stop_reason transitions owned by applyDecisionOutcomeBinding in src/merge-manager.js"
+    },
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart TD\n    A[local gate-outcome ledger] --> B[applyDecisionOutcomeBinding]\n    B -->|failed| C[stop_reason=decision_outcome_binding_failed persisted in pr-merge.json]\n    B -->|bound| D[stale failure marker cleared]\n    C -->|threat: stale flag survives successful reruns and blocks delivery follow-up| B\n    D --> E[canonical ledger docs/management/roi-ledger/ledger.json unchanged by clearing]",
+      "entities": [
+        "local gate-outcome ledger",
+        "pr-merge.json",
+        "canonical ledger"
+      ],
+      "rationale": "AC-4: only the marker set by this function is cleared; failure fail-closed behavior and foreign stop_reasons are preserved, so no gate bypass is introduced"
+    }
+  ],
+  "previous_spec_id": "2026-07-30T00:00:00.000Z"
+}

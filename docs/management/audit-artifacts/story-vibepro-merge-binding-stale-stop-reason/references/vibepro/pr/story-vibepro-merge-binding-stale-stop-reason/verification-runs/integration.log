@@ -1,0 +1,10 @@
+✔ RML-CONTRACT-001 (integration): ledger promotion lands in the same commit as canonical audit persistence, not a follow-up commit (3874.381292ms)
+✔ RML-CONTRACT-002 (integration): re-promoting an already-present entry_key against the real pushed ledger dedupes instead of growing it (6927.9385ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 11920.592334

@@ -1137,3 +1137,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-review-surfa
 なし
 
 <!-- vibepro-release-pr:397:end -->
+
+<!-- vibepro-release-pr:398:start -->
+## [#398](https://github.com/Unson-LLC/vibepro/pull/398) story-vibepro-merge-binding-stale-stop-reason - Clear stale decision-outcome-binding failure flags when rebinding succeeds
+
+- Author: @sintariran
+- Merged: 2026-07-29T16:13:45Z
+- Commit: `412ecdc01877941491df99cb5378d832cd67ee3c`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:398:end -->

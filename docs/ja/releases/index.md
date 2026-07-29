@@ -222,3 +222,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:397:start -->
 - [PR #397](https://github.com/Unson-LLC/vibepro/pull/397) — [2026-07](/ja/releases/2026-07): story-vibepro-review-surface-violation-ledger - 先行 Story の round 6 で、実装エージェントがレビュー実行中にツリーを変更した。lifecycle は start 時の head_sha しか記録しないため機械検出されず、レビュアーが git status を偶然見て発見した。違反は stale と同じ failed 表示になり、レビュー再実行で痕跡ごと消えた
 <!-- vibepro-release-index-pr:397:end -->
+
+<!-- vibepro-release-index-pr:398:start -->
+- [PR #398](https://github.com/Unson-LLC/vibepro/pull/398) — [2026-07](/ja/releases/2026-07): story-vibepro-merge-binding-stale-stop-reason - Clear stale decision-outcome-binding failure flags when rebinding succeeds
+<!-- vibepro-release-index-pr:398:end -->

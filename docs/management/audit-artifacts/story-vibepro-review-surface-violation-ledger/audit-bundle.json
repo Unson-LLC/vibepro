@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-review-surface-violation-ledger",
   "source": "execute_merge",
-  "promoted_at": "2026-07-29T10:39:09.901Z",
+  "promoted_at": "2026-07-29T16:16:43.065Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-index.json",
@@ -38,10 +38,10 @@
     "path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:74c1953306b91e44acd4b2bf477efc812dc85056db37b512979ee18cfc27b760",
-    "compressed_hash": "sha256:89da9a122b4d18f31b4d1d114f18633fe7ae5d8e65dd9ae537fe0e61a0c82666",
-    "expanded_bytes": 28527,
-    "compressed_bytes": 6480,
+    "content_hash": "sha256:49541e7ecece232d5d9a5963495a08d468d869a183e7dc61e2058fd95d059daf",
+    "compressed_hash": "sha256:a22f6614fa5f84d3da62e82da123fb3db9274acdaa5d646fe437da99958361ba",
+    "expanded_bytes": 28459,
+    "compressed_bytes": 6488,
     "expanded_line_count": 627,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
@@ -62,8 +62,8 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-review-surface-violation-ledger",
     "cost": {
-      "compressed_bytes": 6480,
-      "expanded_bytes": 28527,
+      "compressed_bytes": 6488,
+      "expanded_bytes": 28459,
       "expanded_line_count": 627,
       "persisted_line_count": 1
     }
@@ -81,14 +81,14 @@
     "reconciliation": {
       "status": "reconciliation_required",
       "reasons": [
-        "decision_outcome_binding_failed"
+        "dirty_worktree"
       ],
-      "evaluated_at": "2026-07-29T10:39:04.005Z",
+      "evaluated_at": "2026-07-29T16:16:42.991Z",
       "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f"
     },
     "reconciliation_action": {
       "status": "required",
-      "reason": "decision_outcome_binding_failed",
+      "reason": "dirty_worktree",
       "commands": [
         "vibepro pr prepare . --story-id story-vibepro-review-surface-violation-ledger --base main",
         "vibepro execute merge . --story-id story-vibepro-review-surface-violation-ledger --base main --pr https://github.com/Unson-LLC/vibepro/pull/397"
@@ -131,7 +131,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:74c1953306b91e44acd4b2bf477efc812dc85056db37b512979ee18cfc27b760"
+      "content_hash": "sha256:49541e7ecece232d5d9a5963495a08d468d869a183e7dc61e2058fd95d059daf"
     }
   ],
   "raw_artifact_manifest": [
@@ -152,8 +152,8 @@
       "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-outcome-ledger.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
-      "digest": "sha256:1a8bed317dd53cc2760bbf5eee6debe6b4970f16426f81889bd36613d8432221",
-      "audit_digest": "sha256:1a8bed317dd53cc2760bbf5eee6debe6b4970f16426f81889bd36613d8432221",
+      "digest": "sha256:0f1cd66bdaaa7a7e5d4917200e3dcd911b2d68f0e67384efc77b9b8709dd4215",
+      "audit_digest": "sha256:0f1cd66bdaaa7a7e5d4917200e3dcd911b2d68f0e67384efc77b9b8709dd4215",
       "line_count": 935,
       "raw_line_count": 935,
       "audit_scope": "judgment_evidence_v1",
@@ -221,10 +221,10 @@
       "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
-      "digest": "sha256:f1ad3d7d8ed33b5a062b4c297bcf6baa3883724c210ef18282795f48cdbf41ba",
-      "audit_digest": "sha256:c3ba2d6a3190fa00de2b77e041028368b45edae3c3fbd3720828afccb9b843d2",
+      "digest": "sha256:3759abe1e981783e6c88979f28203312d18fb6953b313566ce5bde3bda931504",
+      "audit_digest": "sha256:597ce4ba6742cf8125e465af431cea3e463bf8918fa1ed567525c3021f7590a9",
       "line_count": 3382,
-      "raw_line_count": 7117,
+      "raw_line_count": 7119,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -239,8 +239,8 @@
       "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/traceability.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
-      "digest": "sha256:c16501bbff62ae273a6ae328d21c2e57e412b799f50a6a63834579a45d969639",
-      "audit_digest": "sha256:c16501bbff62ae273a6ae328d21c2e57e412b799f50a6a63834579a45d969639",
+      "digest": "sha256:f45c3dd2a471ec0f5848546cfd47ee1ec0dd1ac5378002b5fb15cb9bc4456506",
+      "audit_digest": "sha256:f45c3dd2a471ec0f5848546cfd47ee1ec0dd1ac5378002b5fb15cb9bc4456506",
       "line_count": 735,
       "raw_line_count": 735,
       "audit_scope": "judgment_evidence_v1",

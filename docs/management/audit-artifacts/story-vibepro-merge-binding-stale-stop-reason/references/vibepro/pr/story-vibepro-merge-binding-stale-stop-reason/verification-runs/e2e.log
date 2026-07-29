@@ -1,0 +1,26 @@
+✔ story-vibepro-gate-decision-outcome-ledger replays finding through bounded review and delivery states (35.622333ms)
+✔ story-vibepro-gate-decision-outcome-ledger binds promoted gate outcomes to the immutable delivery revision (137.540833ms)
+✔ story-vibepro-gate-decision-outcome-ledger persists one canonical revision and rejects selector drift (2224.130459ms)
+✔ story-vibepro-gate-decision-outcome-ledger keeps decision-ledger wording separate from Japanese runtime bug physics (8268.377667ms)
+✔ story-vibepro-gate-decision-outcome-ledger keeps design SSOT in the requirements split lane (3676.838792ms)
+✔ story-vibepro-gate-decision-outcome-ledger rejects path-traversing story IDs before outcome state lookup (3607.401416ms)
+✔ story-vibepro-gate-decision-outcome-ledger runs the public outcome CLI from record through canonical refresh (15276.96975ms)
+✔ story-vibepro-gate-decision-outcome-ledger records generated null-ID and explicit multi-source selectors through the public CLI (8312.226791ms)
+✔ story-vibepro-gate-decision-outcome-ledger reports redacted live-authority denials through JSON and text CLI modes (5843.04925ms)
+✔ story-vibepro-gate-decision-outcome-ledger enforces production content bindings through the public outcome CLI (10052.532416ms)
+(node:86438) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-merge-binding-stale-stop-reason AC:1 AC:2 a successful rebinding removes the stale failure reason and reconciles (6.074667ms)
+✔ story-vibepro-merge-binding-stale-stop-reason AC:2 AC:3 other reconciliation reasons keep reconciliation_required and a delivery stop_reason (1.019875ms)
+✔ story-vibepro-merge-binding-stale-stop-reason AC:3 a stop_reason owned by another code path is never touched (0.5985ms)
+✔ story-vibepro-merge-binding-stale-stop-reason AC:4 S-001 failure behavior is unchanged: a failed binding still flags reconciliation (0.692333ms)
+✔ story-vibepro-merge-binding-stale-stop-reason AC:5 S-001 the failed-then-successful sequence is idempotent across repeated reruns (1.836625ms)
+✔ story-vibepro-merge-binding-stale-stop-reason S-002 denied merge gate authorization still fails closed (inherited behavior unchanged) (0.590167ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 57675.606292

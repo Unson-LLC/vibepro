@@ -1,0 +1,156 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "The applyDecisionOutcomeBinding change correctly clears the stale decision_outcome_binding_failed reconciliation reason and stop_reason on a non-failed rebinding while preserving failure behavior, other reconciliation reasons, and foreign stop_reasons. Recorded gate evidence honestly covers every acceptance criterion.",
+  "findings": [
+    {
+      "severity": "minor",
+      "id": "unit-integration-evidence-head-lag",
+      "detail": "unit.json and integration.json record head_sha 51d8b7c2 while current head is 5e11a57f; acceptable because intervening commits touched only spec.json and e2e test files, and the e2e run at 5e11a57f covers the same behavior"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "unit-integration-evidence-head-lag",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "content-surface freshness policy applies; src/merge-manager.js and the unit test surface are unchanged since those runs",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read src/merge-manager.js applyDecisionOutcomeBinding and both call sites (631/680); read GDO-S-5 in test/gate-outcome-ledger-central-promotion.test.js and the full story e2e spec (AC:1-5, S-001, S-002); read story doc, spec.json, verification-evidence.json and verification-runs; diffed 51d8b7c2..5e11a57f confirming the changed-surface lag is benign",
+    "evidence": null,
+    "inputs": [
+      "src/merge-manager.js",
+      "test/gate-outcome-ledger-central-promotion.test.js",
+      "test/e2e/story-vibepro-merge-binding-stale-stop-reason-main.spec.ts",
+      "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern about unit/integration evidence head lag resolved by diffing the intervening commits (only spec.json and e2e files changed); additionally verified stop_reason clearing is gated on equality with decision_outcome_binding_failed so foreign stop_reasons are provably untouched, and only this function appends the failure reason"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/nice-raman-8e6b75",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/nice-raman-8e6b75",
+    "expected_root": null,
+    "expected_head_sha": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+    "current_head_sha": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/nice-raman-8e6b75",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/nice-raman-8e6b75",
+      "expected_root": null,
+      "expected_head_sha": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "current_head_sha": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-29T15:45:08.979Z",
+  "git_context": {
+    "head_sha": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+    "current_branch": "claude/nice-raman-8e6b75",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-29T15:45:08.958Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "5e11a57f7d776686efba5a1d9e71dda12aed592d",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
+        "sha256": "a96b0116db2f3c8ff678d1c3812dacebdc342ed52c4b0144c2aa59192c9fffc2",
+        "size": 2709
+      },
+      {
+        "path": "src/merge-manager.js",
+        "sha256": "b21f40ee91911a9e761bec340f4db20935c34dba1de72396131318de99460255",
+        "size": 82556
+      },
+      {
+        "path": "test/e2e/story-vibepro-merge-binding-stale-stop-reason-main.spec.ts",
+        "sha256": "d0087e7682216a4dc2b1b72aec7771f1e61159f909d9e05d9525dac9b5c430fb",
+        "size": 5001
+      },
+      {
+        "path": "test/gate-outcome-ledger-central-promotion.test.js",
+        "sha256": "ebc31a648fc8661849dd66fcd0b864417814a1d53ba2d014b588ff1a22616bab",
+        "size": 18772
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "850bac1e80d9a9f277c66245040e64c7c04c4e0555d475a0f0963aaacdca8c6e"
+  },
+  "source_fingerprint": "5767db11ab126507108500aaf83e74951bc0e5bccba3c22d329f5854f3aac362",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a4533ff32fca52386",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-nice-raman-8e6b75/79c30178-41a4-4dfc-a5f3-ef8ef090f171/tasks/a4533ff32fca52386.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "review close recorded with close-reason completed at lifecycle cb10f449",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

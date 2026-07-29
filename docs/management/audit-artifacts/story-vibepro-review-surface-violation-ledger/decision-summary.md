@@ -15,7 +15,7 @@
 - evidence_reuse: hit key=evk_9be111cc77852da5592dad45fcbc2b9d verification_updated_at=2026-07-29T10:37:27.467Z verification_fingerprint=sha256:a8c5925e2ab2d2f58c07787211231509fa5324b8f88664d84d5aae5f0ee7690f
 - senior_gap_judgment: present gaps=4 blocking=0 residual=0
 - pr_create: updated_existing_pr
-- pr_merge: merged_externally delivery=merged_externally reconciliation=reconciliation_required reasons=decision_outcome_binding_failed action=vibepro pr prepare . --story-id story-vibepro-review-surface-violation-ledger --base main -> vibepro execute merge . --story-id story-vibepro-review-surface-violation-ledger --base main --pr https://github.com/Unson-LLC/vibepro/pull/397
+- pr_merge: merged_externally delivery=merged_externally reconciliation=reconciliation_required reasons=dirty_worktree action=vibepro pr prepare . --story-id story-vibepro-review-surface-violation-ledger --base main -> vibepro execute merge . --story-id story-vibepro-review-surface-violation-ledger --base main --pr https://github.com/Unson-LLC/vibepro/pull/397
 - verification: commands=4 pass=4 fail=0
 - review: summaries=3 results=4 pass=4 block=0
 - missing_artifacts: 0
