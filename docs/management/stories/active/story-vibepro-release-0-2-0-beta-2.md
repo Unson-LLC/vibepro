@@ -36,8 +36,16 @@ npm は 0.2.0-beta.1（7月18日）のまま止まっている。Unreleased に�
       利用者影響（verify run 追加、--observed の26キー拒否、読み取り時分類の狭まり、
       typecheck の全ファイル検査化、validation sequencing、content-surface binding、
       task-scoped acceptance）が列挙されている。Unreleased 節は空で残る。
-- [ ] REL-3: 本PRの変更は package.json の version 文字列と CHANGELOG と本Story文書
-      （および catalog 登録）のみで、src / test / bin / 依存の変更を含まない。
+- [ ] REL-3: 本PRの変更は package.json の version 文字列、CHANGELOG、本Story文書と
+      Spec（および catalog / design SSOT 登録）、そしてリリース機構としてのテスト内
+      ピン更新2行のみで、src / bin / 依存の変更とテストの挙動変更を含まない。
+      ピン更新2行とは: (1) test/vibepro-cli.test.js の OSS メタデータ検査が
+      ハードコードする version 期待値を新 version へ更新（このピンがある限り
+      bump PR は必ず同PRで更新する必要がある）、(2) PR #394 と #395 の合流で
+      adjudication テストが18本から19本になったのに対し、件数ピン
+      （test/e2e/story-vibepro-evidence-adjudication-gate-main.test.js の
+      /pass 18/）が未更新で main の CI 自体が赤だったため /pass 19/ へ訂正
+      （#395 merge のクロスPR競合の後始末で、本リリースの前提）。
 
 ## Non Goals
 

@@ -19,9 +19,15 @@ status: active
   per-file typecheck, risk-adaptive validation sequencing, content-surface review
   binding, and task-scoped acceptance — and the `## Unreleased` section remains
   present and empty.
-- REL-3 (invariant): the release diff contains no `src`, `test`, `bin` or dependency
-  changes; the published package content is byte-identical to merged main, and the
-  recorded typecheck and unit runs prove the unchanged tree still passes.
+- REL-3 (invariant): the release diff contains no `src`, `bin` or dependency changes
+  and no test behavior changes; the published package content is byte-identical to
+  merged main, and the recorded typecheck and unit runs prove the unchanged tree
+  still passes. Two test-expectation pins are updated as release mechanics: the OSS
+  metadata check's hardcoded version expectation moves to `0.2.0-beta.2` (a bump PR
+  must always update this pin in the same PR), and the adjudication suite count pin
+  moves from `/pass 18/` to `/pass 19/`, correcting the cross-PR conflict between
+  merged PR #394 (which pinned 18) and merged PR #395 (which added a 19th test) that
+  left main's own CI red.
 
 ## Operations
 
