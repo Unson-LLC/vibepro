@@ -29,6 +29,7 @@ import { runCli } from '../src/cli.js';
 import { createTasksFromPlan } from '../src/task-manager.js';
 import { createUsageReport } from '../src/usage-report.js';
 import { importGraphifyArtifacts } from '../src/graphify-adapter.js';
+import { resolvePrTaskStatePath } from '../src/pr-manager.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -113,6 +114,25 @@ test('named artifact-routing profile: schema 0.2 selects a complete profile from
   assert.equal(resolved.routes.task_plan.canonical.relative_path, `.vibepro/stories/${storyId}/tasks/tasks.json`);
   await writeFile(path.join(root, `docs/management/stories/active/${storyId}.md`), '---\nartifact_profile: governance_packet\nfeature_slug: payments\n---\n');
   await assert.rejects(() => resolveArtifactRoutes(root, { storyId }), (error) => error.code === 'metadata_mismatch');
+});
+
+test('TSPA-CONTRACT-004 PR task lookup uses the named profile canonical JSON authority', async () => {
+  const { root, storyId } = await namedProfileRepo({
+    task_plan: {
+      canonical: 'docs/features/{feature_slug}/tasks.json',
+      ownership: 'generated',
+      projections: [{
+        path: 'docs/features/{feature_slug}/06_tasks.md',
+        ownership: 'generated',
+        renderer: { id: 'tasks_markdown', version: '1' }
+      }]
+    }
+  });
+
+  assert.equal(
+    await resolvePrTaskStatePath(root, storyId),
+    path.join(root, 'docs/features/payments/tasks.json')
+  );
 });
 
 test('PR artifact discovery includes profile-only schema 0.2 routes', async () => {

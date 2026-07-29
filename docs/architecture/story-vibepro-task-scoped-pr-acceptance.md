@@ -1,0 +1,80 @@
+---
+story_id: story-vibepro-task-scoped-pr-acceptance
+spec_ref: docs/specs/story-vibepro-task-scoped-pr-acceptance.md
+status: accepted
+---
+
+# Architecture Decision: Task-scoped PR acceptance authority
+
+## Context
+
+`vibepro pr prepare/create --task <task-id>` resolves a Task for operational
+context, but outcome gates still consume the parent Story's complete acceptance
+criteria. A Story that intentionally sequences later live or human-approved
+Tasks therefore blocks an earlier completed Task even when the requested PR is
+correctly scoped.
+
+Feature-packet routing also permits the canonical task-plan artifact to live
+outside `.vibepro/stories/<story-id>/tasks/tasks.json`; PR preparation currently
+hard-codes that legacy location.
+
+## Decision
+
+PR context exposes an explicit `acceptance_scope`:
+
+- with `--task`, the selected Task is the acceptance authority;
+- without `--task`, the Story remains the acceptance authority;
+- the scope records its source, Story ID, Task ID, and normalized criteria;
+- a requested Task with missing, mismatched, or empty acceptance criteria fails
+  closed instead of silently falling back to Story criteria.
+
+Only outcome/readiness consumers use `acceptance_scope`: Story E2E coverage,
+Gate DAG acceptance nodes and counts, clause traceability, evidence
+adjudication, and senior gap ideal-state counts. Evidence adjudication records
+carry the normalized acceptance scope and its fingerprint. A verdict or human
+closure is fresh only when both HEAD and acceptance scope match, so switching
+Tasks at the same HEAD invalidates the previous Task's evidence.
+
+Story source integrity, Architecture, Accepted Spec, requirement consistency,
+risk classification, and responsibility authority continue to use the complete
+Story. Task scoping therefore changes delivery closure, not design authority.
+
+Task state resolution uses the configured `task_plan` artifact route. A
+configured JSON route is the read authority; legacy Markdown routing continues
+to use its established sibling machine state.
+
+The normalized acceptance authority is projected into both machine-readable
+PR context and the human review surfaces (`pr-body.md`, `pr-prepare.html`, and
+`review-cockpit.html`). Explicit Task criteria are expanded there so a reviewer
+can identify the exact Task being gated without reverse-engineering JSON. Story
+fallback keeps the established compact PR body while its complete criteria
+remain in machine-readable artifacts and HTML review surfaces. Malformed routed
+JSON fails with its resolved repository-relative path and an actionable repair
+instruction.
+
+rollback_plan: Revert the acceptance-scope consumer changes and their focused
+tests together. This restores Story-wide PR acceptance evaluation without
+rewriting existing Story, Task, adjudication, or review artifacts; any artifacts
+created by the reverted shape must be regenerated before the next PR prepare.
+
+## Consequences
+
+- A completed Task can reach PR readiness while later Story Tasks remain
+  intentionally incomplete.
+- Machine-readable PR evidence states exactly which acceptance authority was
+  evaluated.
+- Human-facing PR and review-cockpit surfaces state the same acceptance
+  authority; explicit Task scopes also expose their complete criteria.
+- Evidence verdicts cannot make a different Task green merely because its
+  clause IDs and HEAD happen to match.
+- Routed feature packets no longer require a compatibility copy in the legacy
+  Story task directory.
+- Invalid Task acceptance state blocks early with a specific error.
+
+## Alternatives rejected
+
+- Treating every task PR as Story-complete: prevents incremental, reviewable
+  delivery for Stories with explicit HITL or live follow-up Tasks.
+- Weakening all Story gates: loses Architecture/Spec/risk integrity.
+- Falling back to Story criteria when Task criteria are missing: hides malformed
+  task plans and produces misleading evidence.
