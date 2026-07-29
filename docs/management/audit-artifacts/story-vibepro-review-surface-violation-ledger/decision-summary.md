@@ -3,9 +3,9 @@
 - story: story-vibepro-review-surface-violation-ledger
 - evidence_depth: standard
 - budget_status: within_budget
-- artifact_lines: 1815
+- artifact_lines: 1843
 - product_changed_lines: 2511
-- artifact_code_ratio: 0.723
+- artifact_code_ratio: 0.734
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
