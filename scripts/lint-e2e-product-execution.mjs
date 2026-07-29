@@ -63,7 +63,17 @@ export function listE2eTestFiles(e2eDir, readdir = readdirSync) {
   const walk = (absoluteDir, relativeDir) => {
     // Any failure to enumerate a directory is a lint failure, not an empty set.
     // Returning [] here would let a moved or deleted directory read as "clean".
-    const entries = readdir(absoluteDir, { withFileTypes: true });
+    // Re-throw with the directory that actually failed, so a nested failure is
+    // not reported against the root.
+    let entries;
+    try {
+      entries = readdir(absoluteDir, { withFileTypes: true });
+    } catch (error) {
+      throw Object.assign(
+        new Error(`${absoluteDir}: ${error.message}`),
+        { code: error.code, scanPath: absoluteDir }
+      );
+    }
     for (const entry of entries) {
       // Support both Dirent and plain-string readdir injections in tests.
       const name = typeof entry === 'string' ? entry : entry.name;
@@ -94,7 +104,8 @@ export function lintE2eProductExecution({
   try {
     files = listE2eTestFiles(e2eDir, readdir);
   } catch (error) {
-    log(`::error::Could not scan ${relative(rootDir, e2eDir) || e2eDir}: ${error.message}. The e2e product-execution lint fails closed rather than reporting clean on a directory it cannot read.`);
+    const failedPath = error.scanPath ?? e2eDir;
+    log(`::error::Could not scan ${relative(rootDir, failedPath) || failedPath}: ${error.message}. The e2e product-execution lint fails closed rather than reporting clean on a directory it cannot read.`);
     return 1;
   }
 

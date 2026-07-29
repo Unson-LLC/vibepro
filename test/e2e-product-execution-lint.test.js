@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -174,6 +174,18 @@ test('LINT-10 a nested directory under test/e2e is scanned, not silently skipped
     const { status, output } = runLint(root);
     assert.equal(status, 1, 'a vacuous file in a subdirectory must fail the lint');
     assert.match(output, /story-nested-main\.test\.js/);
+
+    // A scan failure at depth must name the directory that actually failed,
+    // not the root, or the operator is sent to the wrong place.
+    const nested = join(root, 'test', 'e2e', 'merge');
+    const failure = runLint(root, {
+      readdir: (dir, options) => {
+        if (dir === nested) throw Object.assign(new Error('EACCES: permission denied'), { code: 'EACCES' });
+        return readdirSync(dir, options);
+      }
+    });
+    assert.equal(failure.status, 1);
+    assert.match(failure.output, /Could not scan[^:]*merge/);
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
@@ -257,6 +269,18 @@ test('LINT-9 the lint ships with an operator-facing release note, observability 
   // The documented partial-rollback lever must actually exist in CI.
   const ci = readFileSync(join(repoRoot, '.github', 'workflows', 'ci.yml'), 'utf8');
   assert.match(ci, /npm run lint:e2e-product-execution/);
+
+  // The note must enumerate every signal the lint actually accepts. Without
+  // this, widening or narrowing the signal set silently leaves contributors
+  // reading a stale contract — which is exactly what happened when
+  // browser_automation was added.
+  for (const signal of PRODUCT_EXECUTION_SIGNALS) {
+    assert.match(
+      entry,
+      new RegExp(signal.id.replaceAll('_', '[_ ]')),
+      `release note must document the ${signal.id} signal`
+    );
+  }
 });
 
 test('LINT-8 the lint is runnable as a standalone command and reports through its exit code', () => {

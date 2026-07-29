@@ -20,9 +20,14 @@ All notable changes to VibePro will be documented in this file.
 
 - Add `npm run lint:e2e-product-execution`
   (`scripts/lint-e2e-product-execution.mjs`), which fails when a `test/e2e`
-  file executes no product behaviour — none of: importing repository product
-  code (`src/`, `scripts/`, `bin/`), starting a process, or touching the
-  filesystem. It runs in CI after `npm run test:e2e:ts`.
+  file executes no product behaviour. A file clears the lint by doing any one
+  of: `product_import` (resolving a module inside this repository — a relative
+  path, a `#subpath` import, or an `@/` alias, so reaching product code through
+  a shared test helper counts), `process_start` (starting a child process or
+  running the CLI), `filesystem_access` (reading or writing the filesystem), or
+  `browser_automation` (driving Playwright, Cypress, or Puppeteer). It scans
+  `test/e2e` recursively, so nested directories are not a blind spot. It runs
+  in CI after `npm run test:e2e:ts`.
 
   **Operator action**: none for existing consumers; this is a repository-internal
   test-quality gate and changes no published CLI surface, artifact schema, or
