@@ -1036,8 +1036,20 @@
         "started_at": "2026-07-27",
         "due_at": null,
         "category": "architecture"
+      },
+      {
+        "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+        "title": "decision outcome bindingが成功に戻った時に残留したstop_reason/reconciliationフラグをクリアする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-30",
+        "due_at": null,
+        "category": "bugfix"
       }
     ],
-    "current_story_id": "story-vibepro-review-surface-violation-ledger"
+    "current_story_id": "story-vibepro-merge-binding-stale-stop-reason"
   }
 }
