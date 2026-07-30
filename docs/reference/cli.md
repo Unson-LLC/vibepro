@@ -6,6 +6,8 @@ The running binary is authoritative. Check its package version with `vibepro ver
 
 Run `story diagnose --phase design-input --run-graphify` before finalizing Architecture/Spec. Before implementation or PR readiness, run `story diagnose --phase pre-implementation --run-graphify`. The normal shipping path is `story diagnose` → Architecture / Spec → implementation → `verify record` → `review prepare/start/close/record` → `adjudicate` → `guard check` → `pr prepare` → `pr create` → `verify import-ci` → `execute merge`. A `review record --status pass` now requires `--inspection-summary`, an existing non-`.vibepro` `--inspection-input`, and `--judgment-delta`. Legacy assertion-only pass records intentionally fail closed, so existing automation must migrate. Use the generated Usage below for the complete argument contract.
 
+A budget grant via `decision record --source budget:delivery_efficiency:<story-id>` also writes a tracked decision document under `docs/management/decisions/` (`type: budget_override_approval`) and records its path as `budget_approval.decision_doc`. The workspace decision store is gitignored, so this document is what makes the grantor, digest, and timestamp reviewable in the PR diff; the command fails if that path is gitignored.
+
 ## Current Usage
 
 ```text
