@@ -1092,8 +1092,20 @@
         "started_at": "2026-07-30",
         "due_at": null,
         "category": "bugfix"
+      },
+      {
+        "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+        "title": "budget grantをdiffでレビュー可能にする: decision recordがtracked decision documentを必ず書く",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-30",
+        "due_at": null,
+        "category": "governance"
       }
     ],
-    "current_story_id": "story-vibepro-budget-override-residual-findings"
+    "current_story_id": "story-vibepro-budget-grant-tracked-decision-doc"
   }
 }
