@@ -60,9 +60,25 @@ Options offered:
 
 ## Owner's answer
 
-Option 1: raise the budget and complete the final pass. Given in this session
-(`70ea817c-ee56-48c0-ab7c-612da8629872`) through the AskUserQuestion prompt on 2026-07-30,
-as a blanket approval for the closing round.
+Option 1: raise the budget and complete the final pass, through to merge. Given on
+2026-07-30 through the AskUserQuestion prompt in the **orchestrator session**
+`70ea817c-ee56-48c0-ab7c-612da8629872`, as a blanket approval for the closing round.
+
+### Provenance of this answer
+
+The orchestrator session observed the owner's answer first-hand. The implementing agent did
+**not**: it received the answer as a relay from the orchestrator and cannot attest to the
+exchange itself. This section exists so that distinction is on the record rather than
+implied, because a budget record whose only support is the implementing agent's own prose
+would be the defect this Story removes, one level up.
+
+The checkable primary record is the orchestrator session transcript:
+
+    ~/.claude/projects/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872.jsonl
+
+That file, not this document, is the artifact to audit for the question put to the owner and
+the answer returned. This document is a secondary account written by the party that acted on
+the approval.
 
 ## What is changed under this approval
 
