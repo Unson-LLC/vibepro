@@ -1,0 +1,235 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+  "generated_by": {
+    "caller": "unknown",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "A passing verification record whose command names a repo-relative test file path (node --test, npm/pnpm/yarn/bun test with explicit paths, npx vitest/jest/playwright with explicit paths) must be rejected when any named path does not exist in the repository, and the error must name every missing path; the evidence file must not be written on rejection.",
+      "rationale": "node --test <missing-file> prints 'Could not find' and exits 0, so without deterministic path resolution a passing record credits coverage that never executed, as happened with test/pr-manager.test.js during story-vibepro-owner-gated-budget-override closure.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "record は拒否され、エラーメッセージに欠損パスが列挙される"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+            "section": "Story",
+            "text_snippet": "実行されていないカバレッジが gate DAG 上でクレジットされた"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/verification-evidence.js",
+            "anchor": "assertCommandNamedTestPathsExist"
+          },
+          {
+            "file": "src/verification-evidence.js",
+            "anchor": "missingNamedTestPaths"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/verification-command-test-path-guard.test.js",
+            "case": "node --testが実在しないtestファイルを名指しするpassing unit recordは_欠損パスを名指しして拒否される"
+          },
+          {
+            "file": "test/verification-command-test-path-guard.test.js",
+            "case": "npm test -- が実在しないtestパスを名指しする場合は拒否される"
+          },
+          {
+            "file": "test/verification-command-test-path-guard.test.js",
+            "case": "npx playwright testが実在しないspecを名指しするpassing e2e recordは拒否される"
+          },
+          {
+            "file": "test/verification-command-test-path-guard.test.js",
+            "case": "npx vitestが実在しないtestファイルを名指しする場合は拒否される"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/verification-evidence.js",
+            "must_contain": "assertCommandNamedTestPathsExist"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/verification-command-test-path-guard.test.js",
+            "must_cover": "欠損パスを名指しして拒否される"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T09:45:33.133Z",
+      "last_revised_at": "2026-07-30T09:48:49.378Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "The guard is deterministic and scoped: it resolves only unquoted-flag positional arguments matching test file extensions (.test/.spec .js/.ts/.jsx/.tsx/.cjs/.mjs) inside the repository; glob patterns, value-taking flag values such as --test-name-pattern, URL-like tokens, paths escaping the repo root, non-pass statuses, and commands that name no test paths are never rejected by it.",
+      "rationale": "The guard must not parse runner output or guess; over-matching would reject legitimate evidence (npm test, globs, name patterns) and break every existing recording path.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "ガードは決定的である"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "glob パターン（`*` `?` `[`）、`--test-name-pattern` の値、フラグ引数、パスを名指ししないコマンド（`npm test` 等）は対象外"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+            "section": "Acceptance Criteria",
+            "text_snippet": "ファイル実在チェックのみで、ランナー出力のパースや推測を行わない"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/verification-evidence.js",
+            "anchor": "missingNamedTestPaths"
+          },
+          {
+            "file": "src/verification-evidence.js",
+            "anchor": "tokenizeCommand"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/verification-command-test-path-guard.test.js",
+            "case": "globパターン引数は実在チェックの対象外として受理される"
+          },
+          {
+            "file": "test/verification-command-test-path-guard.test.js",
+            "case": "--test-name-patternの値はパスとして解決されない"
+          },
+          {
+            "file": "test/verification-command-test-path-guard.test.js",
+            "case": "パスを名指ししないコマンドは従来どおり受理される"
+          },
+          {
+            "file": "test/verification-command-test-path-guard.test.js",
+            "case": "failing recordはコマンドのパス実在に関係なく従来どおり記録できる"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/verification-evidence.js",
+            "must_contain": "VALUE_TAKING_FLAGS"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/verification-command-test-path-guard.test.js",
+            "must_cover": "対象外として受理される"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T09:45:33.133Z",
+      "last_revised_at": "2026-07-30T09:48:49.378Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given a repository where test/delivery-efficiency-guardrail.test.js exists and test/pr-manager.test.js does not, when a passing unit record is submitted with command 'node --test test/delivery-efficiency-guardrail.test.js test/pr-manager.test.js', then recording fails with an error naming test/pr-manager.test.js (and not the existing file), and verification-evidence.json is not created; the same command with only existing paths is accepted.",
+      "inherited_behavior": {
+        "condition": "kind/command compatibility (assertCommandMatchesVerificationKind), artifact cross-check contradictions, and shell-substitution rejection behave as before; verify run additionally rejects such commands pre-flight before executing them",
+        "classification": "inherited",
+        "files": [
+          "src/verification-evidence.js",
+          "src/verification-runner.js"
+        ]
+      },
+      "rationale": "This reproduces the exact incident: a multi-file node --test command where one named file was missing was accepted as passing evidence and credited pr-manager coverage in the gate DAG.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "実在しないものが含まれる場合、record は拒否され"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "verification-evidence.json は書き込まれない"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+            "section": "Story",
+            "text_snippet": "node --test test/pr-manager.test.js"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/verification-evidence.js",
+            "anchor": "recordVerificationEvidence"
+          },
+          {
+            "file": "src/verification-runner.js",
+            "anchor": "runVerificationCommand"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/verification-command-test-path-guard.test.js",
+            "case": "node --testが実在しないtestファイルを名指しするpassing unit recordは_欠損パスを名指しして拒否される"
+          },
+          {
+            "file": "test/verification-command-test-path-guard.test.js",
+            "case": "名指しされたtestファイルが全て実在するpassing unit recordは受理される"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/verification-runner.js",
+            "must_contain": "assertCommandNamedTestPathsExist"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/verification-command-test-path-guard.test.js",
+            "must_cover": "全て実在するpassing unit recordは受理される"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T09:45:33.133Z",
+      "last_revised_at": "2026-07-30T09:48:49.378Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "state",
+      "title": "verification record acceptance states with named-test-path guard",
+      "entities": [
+        "verification record"
+      ],
+      "mermaid": "stateDiagram-v2\n  [*] --> Submitted\n  Submitted --> KindChecked: kind/command check passes\n  KindChecked --> Recorded: all named test paths exist\n  KindChecked --> Rejected: a named test path is missing\n  Rejected --> [*]\n  Recorded --> [*]"
+    },
+    {
+      "kind": "threat_model",
+      "title": "fabricated coverage via nonexistent named test paths",
+      "mermaid": "flowchart LR\n  agent[agent records passing evidence] --> cmd[command names test file absent from repo]\n  cmd --> runner[node --test exits 0 despite Could-not-find]\n  runner --> credit[gate DAG credits coverage that never ran]\n  cmd --> guard[assertCommandNamedTestPathsExist]\n  guard --> reject[record rejected before write, missing paths named]"
+    }
+  ],
+  "generated_at": "2026-07-30T09:48:49.376Z",
+  "previous_spec_id": "2026-07-30T09:45:33.129Z"
+}

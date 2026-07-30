@@ -36,6 +36,10 @@ VibePro は、検証コマンドが repo 相対の test パスを名指しする
 - glob パターン（`*` `?` `[`）、`--test-name-pattern` の値、フラグ引数、パスを名指ししないコマンド（`npm test` 等）は対象外で、従来どおり受理される。
 - 実在する test パスを名指しした passing record は従来どおり受理される。
 
+## Inherited Behavior
+
+- Kind/command compatibility checks (assertCommandMatchesVerificationKind), artifact cross-check contradictions, and shell-substitution rejection are unchanged/existing; verify run additionally rejects nonexistent named test paths pre-flight before executing the command.
+
 ## Non Goals
 
 - ランナー出力（"Could not find" 等）のパースによる検知。
