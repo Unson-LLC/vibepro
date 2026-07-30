@@ -1125,6 +1125,8 @@ test('Story Architecture Spec Task Graphify Review Gate PR status migration use 
   await execFileAsync('git', ['init', '-b', 'main'], { cwd: root });
   await execFileAsync('git', ['config', 'user.email', 'vibepro@example.com'], { cwd: root });
   await execFileAsync('git', ['config', 'user.name', 'VibePro Test'], { cwd: root });
+  await mkdir(path.join(root, 'test'), { recursive: true });
+  await writeFile(path.join(root, 'test/routing.test.js'), "import test from 'node:test';\ntest('routing', () => {});\n");
   await runCli(['init', root, '--story-id', 'story-routing-lifecycle', '--title', 'Routing lifecycle']);
   const configPath = path.join(root, '.vibepro/config.json');
   const config = JSON.parse(await readFile(configPath, 'utf8'));

@@ -622,6 +622,28 @@ pr_scope_dependency_boundaries:
   return 'docs/stories/story-pr-prepare.md';
 }
 
+// Passing verification evidence whose command names repo-relative test paths is rejected
+// unless those paths exist in the fixture repo, so fixtures create the named files.
+async function writeFixtureTestFiles(repo, relPaths) {
+  for (const relPath of relPaths) {
+    const absolute = path.join(repo, relPath);
+    await mkdir(path.dirname(absolute), { recursive: true });
+    await writeFile(absolute, "import test from 'node:test';\ntest('fixture', () => {});\n");
+  }
+}
+
+// Same as writeFixtureTestFiles, but lands the files in the base branch history so they
+// stay out of the changed-path inventory diffed against the base.
+async function commitFixtureTestFilesToBase(repo, relPaths, base = 'main') {
+  const branch = (await git(repo, ['branch', '--show-current'])).stdout.trim();
+  await git(repo, ['switch', base]);
+  await writeFixtureTestFiles(repo, relPaths);
+  await git(repo, ['add', ...relPaths]);
+  await git(repo, ['commit', '-m', 'test: add fixture test files named by verification commands']);
+  await git(repo, ['switch', branch]);
+  await git(repo, ['merge', base]);
+}
+
 async function writeMinimalTaskState(repo, storyId = 'story-pr-prepare') {
   const tasksDir = path.join(repo, '.vibepro', 'stories', storyId, 'tasks');
   await mkdir(tasksDir, { recursive: true });
@@ -3897,6 +3919,7 @@ test('pr prepare does not let structured path surface evidence cover an unrelate
   await writeFile(path.join(repo, 'docs', 'reference.md'), '# Reference\n');
   await git(repo, ['add', 'src/cli.js', 'docs/reference.md', storyPath]);
   await git(repo, ['commit', '-m', 'feat: update cli contract']);
+  await writeFixtureTestFiles(repo, ['test/integration/docs-build.test.js']);
 
   const record = await runCli([
     'verify', 'record', repo, '--id', 'story-pr-prepare', '--kind', 'integration', '--status', 'pass',
@@ -3923,6 +3946,7 @@ test('pr prepare preserves legacy surface-signal coverage for Stories without at
   await writeFile(path.join(repo, 'docs', 'reference.md'), '# Reference\n');
   await git(repo, ['add', 'src/cli.js', 'docs/reference.md']);
   await git(repo, ['commit', '-m', 'feat: update legacy cli contract']);
+  await writeFixtureTestFiles(repo, ['test/integration/docs-build.test.js']);
 
   const record = await runCli([
     'verify', 'record', repo, '--id', 'story-pr-prepare', '--kind', 'integration', '--status', 'pass',
@@ -3968,6 +3992,7 @@ test('pr prepare requires structured evidence to cover every changed path in one
   await writeFile(path.join(repo, 'src', 'canonical-persistence-b.js'), 'export const persistB = () => "saved";\n');
   await git(repo, ['add', '.vibepro/config.json', 'src/canonical-persistence-a.js', 'src/canonical-persistence-b.js', storyPath]);
   await git(repo, ['commit', '-m', 'feat: update two persistence paths']);
+  await commitFixtureTestFilesToBase(repo, ['test/integration/surface.test.js', 'test/integration/inventory.test.js']);
 
   const record = await runCli([
     'verify', 'record', repo, '--id', 'story-pr-prepare', '--kind', 'integration', '--status', 'pass',
@@ -4062,6 +4087,7 @@ test('pr prepare requires structured evidence for CLI state persistence and mana
   await writeFile(path.join(repo, 'test', 'surface.test.js'), 'export const checked = true;\n');
   await git(repo, ['add', 'src', 'test/surface.test.js', storyPath]);
   await git(repo, ['commit', '-m', 'feat: update guarded command surfaces']);
+  await writeFixtureTestFiles(repo, ['test/integration/surface.test.js']);
 
   const before = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
   assert.equal(before.exitCode, 0);
@@ -4184,6 +4210,7 @@ test('pr prepare rejects legacy keyword evidence for atomic changed-path coverag
   await writeFile(path.join(repo, 'src', 'pr-manager.js'), 'export function buildGateDag() { return "changed"; }\n');
   await git(repo, ['add', 'src/pr-manager.js', storyPath]);
   await git(repo, ['commit', '-m', 'feat: update atomic review surface']);
+  await writeFixtureTestFiles(repo, ['test/integration/surface.test.js']);
 
   const record = await runCli([
     'verify', 'record', repo, '--id', 'story-pr-prepare', '--kind', 'integration', '--status', 'pass',
@@ -9000,7 +9027,8 @@ test('PBL-SCENARIO-001 story-pr-prepare PR artifacts acceptance coverage', async
   expect('Task/HandoffがPR本文に入る').toContain('Task/Handoff');
 });
 `);
-  await git(repo, ['add', 'tests/e2e/story-pr-prepare-pr-artifacts.spec.ts']);
+  await writeFixtureTestFiles(repo, ['test/integration/story-pr-prepare-runtime-path.test.js']);
+  await git(repo, ['add', 'tests/e2e/story-pr-prepare-pr-artifacts.spec.ts', 'test/integration/story-pr-prepare-runtime-path.test.js']);
   await git(repo, ['commit', '-m', 'test: add story acceptance e2e evidence']);
   const visualQaHeadSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const visualQaBranch = (await git(repo, ['branch', '--show-current'])).stdout.trim();
@@ -12718,6 +12746,7 @@ architecture_docs:
 
 test('execute state tracks next action before and after pr prepare', async () => {
   const repo = await makeGitRepoWithStory();
+  await commitFixtureTestFilesToBase(repo, ['test/cli-helper-runtime.test.js']);
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'specs'), { recursive: true });
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -17698,6 +17727,7 @@ test('pr body verification checklist checks exact current evidence even when the
   await writeJson(integrationArtifact, { status: 'pass', tests: 1 });
   await git(repo, ['add', 'src/pr-body-typecheck.js']);
   await git(repo, ['commit', '-m', 'feat: add pr body typecheck fixture']);
+  await writeFixtureTestFiles(repo, ['test/integration/risk-adaptive-gate.test.js']);
 
   assert.equal((await runCli([
     'verify', 'record', repo,
@@ -17731,6 +17761,7 @@ test('pr body final E2E prefers exact e2e evidence over unit workflow summaries'
   await writeFile(path.join(repo, 'src', 'final-e2e-selection.js'), 'export const finalE2eSelection = true;\n');
   await git(repo, ['add', 'src/final-e2e-selection.js']);
   await git(repo, ['commit', '-m', 'feat: add final e2e selection fixture']);
+  await writeFixtureTestFiles(repo, ['test/responsibility-authority.test.js', 'test/e2e/story-vibepro-design-input-judgment-flow.spec.ts']);
 
   await mkdir(path.join(repo, '.vibepro', 'verification', 'story-pr-prepare'), { recursive: true });
   await writeJson(path.join(repo, '.vibepro', 'verification', 'story-pr-prepare', 'responsibility-authority-current-head-status.json'), {
@@ -17774,6 +17805,7 @@ test('pr body final E2E prefers current passing e2e-surface evidence over stale 
   await writeFile(path.join(repo, 'src', 'final-e2e-freshness.js'), 'export const finalE2eFreshness = 1;\n');
   await git(repo, ['add', 'src/final-e2e-freshness.js']);
   await git(repo, ['commit', '-m', 'feat: add stale final e2e fixture']);
+  await writeFixtureTestFiles(repo, ['test/e2e/story-vibepro-design-input-judgment-flow.spec.ts']);
 
   const verificationDir = path.join(repo, '.vibepro', 'verification', 'story-pr-prepare');
   await mkdir(verificationDir, { recursive: true });
@@ -17838,6 +17870,7 @@ test('pr body final E2E keeps current failing e2e evidence visible over stale pa
   await writeFile(path.join(repo, 'src', 'final-e2e-current-failure.js'), 'export const currentFailureVisible = true;\n');
   await git(repo, ['add', 'src/final-e2e-current-failure.js']);
   await git(repo, ['commit', '-m', 'feat: add current final e2e failure fixture']);
+  await writeFixtureTestFiles(repo, ['test/e2e/story-vibepro-design-input-judgment-flow.spec.ts']);
 
   const verificationDir = path.join(repo, '.vibepro', 'verification', 'story-pr-prepare');
   await mkdir(verificationDir, { recursive: true });
@@ -18287,6 +18320,7 @@ test('VQG-S-2 pr prepare accepts current visual verification evidence when resid
   await mkdir(path.join(repo, 'artifacts', 'visual'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'components', 'PrimaryButton.tsx'), 'export function PrimaryButton() { return <button>Save</button>; }\n');
   await writeFile(path.join(repo, 'artifacts', 'visual', 'story-pr-prepare-home.png'), 'fake screenshot\n');
+  await writeFixtureTestFiles(repo, ['test/e2e/story-pr-prepare-visual.spec.ts']);
 
   assert.equal((await runCli([
     'verify',
@@ -18836,6 +18870,7 @@ test('VQG-S-4 residual Visual QA evidence remains authoritative over verificatio
   await writeJson(path.join(repo, '.vibepro', 'qa', 'story-pr-prepare-visual', 'visual-residual.json'), {
     meanAbsResidualPct: 13.41
   });
+  await writeFixtureTestFiles(repo, ['test/e2e/story-pr-prepare-visual.spec.ts']);
 
   assert.equal((await runCli([
     'verify',
@@ -20918,6 +20953,7 @@ test('common judgment spine requires surface-specific evidence instead of generi
   await writeFile(path.join(authRepo, 'src', 'auth-permission.js'), 'export function checkPermission(token) { return token === "ok"; }\n');
   await git(authRepo, ['add', 'src/auth-permission.js']);
   await git(authRepo, ['commit', '-m', 'feat: add auth permission token check']);
+  await writeFixtureTestFiles(authRepo, ['test/auth-permission.test.js']);
   assert.equal((await runCli([
     'verify', 'record', authRepo,
     '--id', 'story-pr-prepare',
@@ -21107,6 +21143,7 @@ test('explicit verification evidence tokens satisfy judgment axis requirements',
   await writeFile(path.join(repo, 'artifacts', 'data-state-replay.json'), JSON.stringify({ status: 'pass', replay: true }, null, 2));
   await git(repo, ['add', 'src/pr-manager.js', 'test/pr-manager-state.test.js', 'artifacts/data-state-replay.json']);
   await git(repo, ['commit', '-m', 'feat: adjust pr manager state classification']);
+  await writeFixtureTestFiles(repo, ['test/integration/pr-manager-state.test.js']);
 
   await runCli([
     'verify', 'record', repo,
@@ -21164,6 +21201,7 @@ spec_docs:
     'artifacts/public-contract.json'
   ]);
   await git(repo, ['commit', '-m', 'feat: add public contract fixture']);
+  await writeFixtureTestFiles(repo, ['test/integration/formatter-contract.test.js']);
 
   await runCli([
     'verify', 'record', repo,
@@ -21709,6 +21747,7 @@ title: Public Contract Block
   await writeFile(path.join(repo, 'src', 'formatter.js'), 'export function renderConfig(){ return "cli output format"; }\n');
   await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/formatter.js']);
   await git(repo, ['commit', '-m', 'feat: change cli output format']);
+  await commitFixtureTestFilesToBase(repo, ['test/vibepro-cli.test.js']);
   await runCli([
     'verify',
     'record',
@@ -21760,6 +21799,7 @@ title: Security Boundary Block
   await writeFile(path.join(repo, 'src', 'auth.js'), 'export function authorize(token) { return token === "root"; }\n');
   await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/auth.js']);
   await git(repo, ['commit', '-m', 'feat: change auth boundary']);
+  await writeFixtureTestFiles(repo, ['test/vibepro-cli.test.js']);
   await runCli([
     'verify',
     'record',
@@ -21794,6 +21834,7 @@ test('gate evidence classifier normalizes canonical token variants across observ
   await writeFile(path.join(authRepo, 'src', 'auth-permission.js'), 'export function checkPermission(token) { return token === "ok"; }\n');
   await git(authRepo, ['add', 'src/auth-permission.js']);
   await git(authRepo, ['commit', '-m', 'feat: add auth permission token check']);
+  await writeFixtureTestFiles(authRepo, ['test/auth-permission.test.js']);
 
   const missingAuthPrepare = await runCli(['pr', 'prepare', authRepo, '--base', 'main', '--story-id', 'story-pr-prepare']);
   assert.equal(missingAuthPrepare.exitCode, 0);
@@ -21857,6 +21898,7 @@ test('gate evidence classifier normalizes canonical token variants across observ
   );
   await git(parseRepo, ['add', 'src/auth-json-parser.js', 'src/auth-schema-validator.js']);
   await git(parseRepo, ['commit', '-m', 'feat: add auth json parser']);
+  await writeFixtureTestFiles(parseRepo, ['test/json-parser.test.js']);
 
   assert.equal((await runCli([
     'verify', 'record', parseRepo,
@@ -22133,6 +22175,7 @@ title: Release Ops Block
   await writeFile(path.join(repo, 'src', 'release-workflow.js'), 'export const releaseWorkflow = "operator rollout rollback observability";\n');
   await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/release-workflow.js']);
   await git(repo, ['commit', '-m', 'feat: change operator rollout workflow']);
+  await writeFixtureTestFiles(repo, ['test/vibepro-cli.test.js']);
   await runCli([
     'verify',
     'record',
@@ -22178,6 +22221,7 @@ title: Public Contract Blocker Waiver
   await writeFile(path.join(repo, 'src', 'formatter.js'), 'export function renderConfig(){ return "cli output format"; }\n');
   await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/formatter.js']);
   await git(repo, ['commit', '-m', 'feat: change cli output format with blocker waiver']);
+  await writeFixtureTestFiles(repo, ['test/vibepro-cli.test.js']);
   await runCli([
     'verify',
     'record',
@@ -22244,6 +22288,7 @@ title: Public Contract Blocker Waiver Missing Decision Id
   await writeFile(path.join(repo, 'src', 'formatter.js'), 'export function renderConfig(){ return "cli output format"; }\n');
   await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/formatter.js']);
   await git(repo, ['commit', '-m', 'feat: change cli output format with malformed blocker waiver']);
+  await writeFixtureTestFiles(repo, ['test/vibepro-cli.test.js']);
   await runCli([
     'verify',
     'record',
@@ -22319,6 +22364,7 @@ title: Public Contract Blocker Waiver Missing Status
   await writeFile(path.join(repo, 'src', 'formatter.js'), 'export function renderConfig(){ return "cli output format"; }\n');
   await git(repo, ['add', 'docs/management/stories/active/story-pr-prepare.md', 'src/formatter.js']);
   await git(repo, ['commit', '-m', 'feat: change cli output format with missing waiver status']);
+  await writeFixtureTestFiles(repo, ['test/vibepro-cli.test.js']);
   await runCli([
     'verify',
     'record',

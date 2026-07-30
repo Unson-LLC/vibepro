@@ -43,6 +43,8 @@ test('ERAL-S-10 guarded Run lineage reaches evidence, session-cost, and transcri
   }, null, 2)}\n`);
   await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', `${STORY_ID}.md`), `---\nstory_id: ${STORY_ID}\ntitle: Explicit Run attribution lineage\nstatus: active\n---\n`);
   await writeFile(path.join(repo, 'README.md'), '# ERAL E2E\n');
+  await mkdir(path.join(repo, 'test', 'e2e'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'e2e', 'story-vibepro-explicit-run-attribution-lineage-main.test.js'), "import test from 'node:test';\ntest('x', () => {});\n");
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'test: initialize ERAL E2E fixture']);
 

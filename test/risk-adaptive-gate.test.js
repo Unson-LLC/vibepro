@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { mkdir, mkdtemp, readFile, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -582,6 +582,8 @@ Monitoring needs one authoritative signal source instead of ambiguous indicators
 - [ ] Current-head structured verification proves signal availability
 `);
   await writeFile(path.join(repo, 'src', 'observability.js'), 'export const signalSource = "verification-evidence";\n');
+  await mkdir(path.join(repo, 'test', 'integration'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'integration', 'observability.test.js'), 'import test from "node:test";\ntest("observability signal", () => {});\n');
   await execFileAsync('git', ['add', '.'], { cwd: repo });
   await execFileAsync('git', ['commit', '-m', 'add observability fixture'], { cwd: repo });
 
@@ -810,6 +812,8 @@ Terminal rendering has an illegal-state-representable surface plus deterministic
 - [ ] Harness contradiction loops back to triage
 `);
   await writeFile(path.join(repo, 'src', 'terminal-renderer.js'), 'export function renderTerminal(){ return "xterm"; }\n');
+  await mkdir(path.join(repo, 'test', 'unit'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'unit', 'risk-adaptive-gate.test.js'), 'import test from "node:test";\ntest("invariant unit", () => {});\n');
   assert.equal((await runCli([
     'verify', 'record', repo,
     '--id', 'story-risk-adaptive',
@@ -856,6 +860,8 @@ The running session reads an unexpected artifact version. The deployment probe e
 - [ ] Deployment bugs bypass code gates with typed N/A and require version-stamp propagation evidence
 `);
   await writeFile(path.join(repo, 'src', 'artifact-version.js'), 'export const artifactVersion = "test";\n');
+  await mkdir(path.join(repo, 'test', 'integration'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'integration', 'risk-adaptive-gate.test.js'), 'import test from "node:test";\ntest("version stamp", () => {});\n');
   assert.equal((await runCli([
     'verify', 'record', repo,
     '--id', 'story-risk-adaptive',
@@ -914,6 +920,9 @@ Sample generation must run a preflight workflow, start detection, poll status, r
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'formProjectStartService.ts'), 'export function startFormWorkflow(){ return "retry-status"; }\n');
   await writeFile(path.join(repo, 'src', 'workers', 'formDetectionWorker.ts'), 'export function enqueueFormDetectionJob(){ return "queued"; }\n');
   await writeFile(path.join(repo, 'test', 'integration', 'workflow-validation.test.js'), 'import test from "node:test";\nimport assert from "node:assert/strict";\ntest("workflow validation", () => assert.equal(true, true));\n');
+  await writeFile(path.join(repo, 'test', 'risk-adaptive-gate.test.js'), 'import test from "node:test";\ntest("targeted workflow contract validation", () => {});\n');
+  await mkdir(path.join(repo, 'test', 'e2e'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'e2e', 'risk-adaptive-gate.spec.js'), 'import test from "node:test";\ntest("e2e replay", () => {});\n');
 
   const freshPrepare = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
   assert.equal(freshPrepare.exitCode, 0);
@@ -1618,6 +1627,12 @@ test('story-risk-adaptive marker only', async () => {
   assert.equal(flowReplayOnlyGate.status, 'needs_evidence');
   assert.match(flowReplayOnlyGate.reason, /explicit flow replay observations|executable assertions|Story E2E coverage needs evidence/);
 
+  await writeFile(path.join(repo, 'tests', 'e2e', 'missing-workflow-replay.spec.ts'), `
+import { test } from '@playwright/test';
+test('story-risk-adaptive marker only replay', async () => {
+  // story-risk-adaptive ac:1
+});
+`);
   assert.equal((await runCli([
     'verify', 'record', repo,
     '--id', 'story-risk-adaptive',
@@ -1630,6 +1645,7 @@ test('story-risk-adaptive marker only', async () => {
     '--observed', 'flow_replay=true',
     '--observed', 'scenario_clause_e2e=true'
   ])).exitCode, 0);
+  await rm(path.join(repo, 'tests', 'e2e', 'missing-workflow-replay.spec.ts'));
 
   const missingTargetReplay = await runCli(['pr', 'prepare', repo, '--story-id', 'story-risk-adaptive', '--base', 'main', '--json']);
   assert.equal(missingTargetReplay.exitCode, 0);
@@ -1637,6 +1653,12 @@ test('story-risk-adaptive marker only', async () => {
   assert.equal(missingTargetReplayGate.status, 'needs_evidence');
   assert.match(missingTargetReplayGate.reason, /executable assertions|Story E2E coverage needs evidence|current passing Flow Verification or E2E replay evidence/);
 
+  await writeFile(path.join(repo, 'tests', 'e2e', 'workflow-replay.spec.ts'), `
+import { test } from '@playwright/test';
+test('story-risk-adaptive replay placeholder', async () => {
+  // story-risk-adaptive ac:1
+});
+`);
   assert.equal((await runCli([
     'verify', 'record', repo,
     '--id', 'story-risk-adaptive',
@@ -1655,6 +1677,12 @@ test('story-risk-adaptive marker only', async () => {
   const nonE2eTargetReplayGate = nonE2eTargetReplay.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'gate:workflow_flow_replay');
   assert.equal(nonE2eTargetReplayGate.status, 'needs_evidence');
 
+  await writeFile(path.join(repo, 'tests', 'e2e', 'nonexistent.spec.ts'), `
+import { test } from '@playwright/test';
+test('story-risk-adaptive route grep placeholder', async () => {
+  // story-risk-adaptive ac:1
+});
+`);
   assert.equal((await runCli([
     'verify', 'record', repo,
     '--id', 'story-risk-adaptive',
@@ -1685,6 +1713,14 @@ test('story-risk-adaptive workflow replay', async () => {
 });
 `);
 
+  await writeFile(path.join(repo, 'workflow-replay.spec.ts'), `
+import { test } from '@playwright/test';
+test('story-risk-adaptive basename placeholder', async () => {
+  // story-risk-adaptive ac:1
+});
+`);
+  await git(repo, ['add', 'workflow-replay.spec.ts']);
+  await git(repo, ['commit', '-m', 'test: add basename replay stub']);
   assert.equal((await runCli([
     'verify', 'record', repo,
     '--id', 'story-risk-adaptive',
