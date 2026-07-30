@@ -142,8 +142,12 @@ config 中の全 override が `grandfathered` か `unauthorized` のどちらか
       decision record の**書き込み時**にも throw する（無効な記録を黙って作らない）。
 - [ ] OGB-S-7: 既存16件は grandfather されて挙動不変。内容を編集すると
       `unauthorized` に落ちる。
-- [ ] OGB-S-8: `.vibepro/config.json` の全 override が `grandfathered` か
-      `unauthorized` のいずれかに解決される（黙って効く override が無い）。
+- [ ] OGB-S-8: `.vibepro/config.json` の全 override が `grandfathered` /
+      `unauthorized` / `authorized` のいずれかに解決され、`authorized` のものは
+      必ず accepted な decision record（human grantor・config から計算した digest に
+      一致）で裏付けられる。黙って効く override が無い、が本質であり、
+      「grant が1件も無い世界」を前提にした検査ではこの不変条件を守れない
+      （architecture_boundary preflight の指摘。検査は実際の decision store を読む）。
 - [ ] OGB-S-9: `unauthorized` な override は efficiency debt
       `budget_override_unauthorized` として報告される。
 - [ ] OGB-S-10: `vibepro decision record --source budget:delivery_efficiency:<id>` は
@@ -179,10 +183,25 @@ config 中の全 override が `grandfathered` か `unauthorized` のどちらか
 自己承認は「gate の抜け道」から「名前と digest と時刻が残る偽造」になった。
 偽造を検出するのは人間だが、検出に必要な材料は自由文ではなく構造化された記録である。
 
+**予算消費は Story 単位で単調増加し、リセット経路が無い。**
+`aggregateDeliveryMetrics` は lifecycle entry を全件数えるため、`timed_out` /
+`obsolete` / `orphaned_agent` といった terminal debt も `subagent_count` と
+`agent_consumption_ms` に加算され続ける。つまり budget が縛るのは「同時に走っている
+作業量」ではなく「その Story が生涯で消費した量」であり、stop を越える方法は
+より大きい grant を取ることだけである（本 Story 自身が2回の owner grant を
+要したのはこのため）。設計としては意図的だが、Story を読んだ人間は前者を想像するので
+ここに明記する。加えて `agent_consumption_ms` は開いている lifecycle が1件でもあると
+`unknown` に落ちて未強制になるため、granted された数値は文面より弱い。
+いずれも architecture_boundary preflight の指摘であり、消費のリセット／
+debt state 除外は本 Story の範囲外。
+
 ## 検証済みの範囲（Evidence）
 
 - `test/delivery-efficiency-guardrail.test.js`: OGB-S-1〜S-9（21 tests pass）。
   OGB-S-7 / S-8 は実際の `.vibepro/config.json` を読んで、件数を literal で固定せず pin と config の対応を invariant として検査する。
+  OGB-S-8 は Story ごとの実 decision store も読み、`authorized` に解決された
+  override については human grantor と digest 一致を検査し、`authorized` 分岐が
+  1件も踏まれない場合は fail する（stub された `decisions: []` 形へ退化しないため）。
 - `test/decision-records.test.js`: OGB-S-10〜S-12（8 tests pass）。
 - 旧契約を encode していた既存テスト
   `story budget override preserves global defaults and merges role limits` は

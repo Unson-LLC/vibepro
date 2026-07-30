@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+
+import { readDecisionRecordsIfExists } from '../src/decision-records.js';
 
 import {
   GRANDFATHERED_OVERRIDE_DIGESTS,
@@ -205,16 +208,52 @@ test('grandfathered overrides are pinned by story-scoped content digest', () => 
   assert.deepEqual(edited.reasons, ['missing_approval']);
 });
 
-// OGB-S-8. Every configured override is either grandfathered or inert; no entry
-// is silently effective because this gate forgot about it.
-test('every configured story override resolves to a known authority status', () => {
+// OGB-S-8. No configured override is silently effective. The earlier form of
+// this test passed `decisions: []`, which asserted the invariant only in a world
+// where no grant exists -- precisely the world this Story exists to leave. The
+// architecture_boundary preflight caught that: once this repository's own
+// override became authorized by a real grant, the stubbed form kept reporting
+// `unauthorized` and would have stayed green while production resolved
+// `authorized`. It now reads the real decision store, so an override that is
+// effective without a matching accepted grant reddens the suite.
+test('every configured story override resolves to a known authority status', async () => {
+  const repoRoot = fileURLToPath(new URL('..', import.meta.url));
   const config = JSON.parse(readFileSync(new URL('../.vibepro/config.json', import.meta.url), 'utf8'));
   const entries = Object.entries(config.budgets.delivery_efficiency_by_story ?? {});
   assert.ok(entries.length > 0);
+  let authorizedCount = 0;
   for (const [storyId, override] of entries) {
-    const resolved = resolveBudgetOverrideAuthority({ storyId, override, decisions: [] });
-    assert.ok(['grandfathered', 'unauthorized'].includes(resolved.status), `${storyId}: ${resolved.status}`);
+    // Decision records are stored per Story, so a single repo-wide read returns
+    // nothing and would silently reduce this back to the stubbed form.
+    const records = await readDecisionRecordsIfExists(repoRoot, storyId).catch(() => null);
+    const resolved = resolveBudgetOverrideAuthority({
+      storyId, override, decisions: records?.decisions ?? []
+    });
+    if (resolved.status === 'authorized') authorizedCount += 1;
+    assert.ok(['grandfathered', 'unauthorized', 'authorized'].includes(resolved.status),
+      `${storyId}: ${resolved.status}`);
+    // The load-bearing half: an override may only be effective by a pin or by a
+    // named accepted grant. `authorized` without an approval object, or with a
+    // non-human grantor, would mean something made an override effective that
+    // this gate cannot name.
+    if (resolved.status === 'authorized') {
+      assert.ok(resolved.approval, `${storyId} resolved authorized with no approval record to name`);
+      assert.equal(resolved.approval.grantor_kind, 'human',
+        `${storyId} may only be authorized by a human grantor`);
+      assert.ok(String(resolved.approval.grantor ?? '').trim(),
+        `${storyId} must name the human who granted it`);
+      assert.equal(resolved.approval.override_digest, computeBudgetOverrideDigest(storyId, override),
+        `${storyId} grant must be bound to the override content actually configured`);
+    }
+    assert.deepEqual(resolved.status === 'grandfathered' ? resolved.reasons : [], [],
+      `${storyId} grandfathered entries must carry no disqualifying reason`);
   }
+  // This repository currently ships exactly one override that is effective by a
+  // grant rather than by a pin: this Story's own closure budget. Asserting that
+  // the authorized branch is reached keeps the checks above from decaying into
+  // dead code the way the stubbed `decisions: []` form did.
+  assert.ok(authorizedCount > 0,
+    'the authorized branch must be exercised against the real decision store, otherwise this test is only re-checking the pinned entries');
 });
 
 // OGB-S-9. An inert override is reported as debt rather than passing unnoticed.
