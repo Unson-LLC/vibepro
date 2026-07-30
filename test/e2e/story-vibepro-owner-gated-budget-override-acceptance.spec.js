@@ -90,10 +90,12 @@ test('ac:1 S-001 OGB-E2E-1 flow_replay: an override is inert until the real CLI 
   await execFileAsync(process.execPath, grantArgs(root, ['--budget-grantor', 'sato-keigo', '--json']));
 
   const after = resolveEfficiencyPolicyDecision(await readConfig(root), STORY_ID, { decisions: await readDecisions(root) });
-  assert.equal(after.policy.max_subagent_count, 9);
-  assert.equal(after.override.status, 'authorized');
-  assert.equal(after.override.approval.grantor, 'sato-keigo');
-  assert.deepEqual(after.override.approval.recorded_by, { agent_system: 'claude_code', agent_id: 'agent-ogb-e2e' });
+  assert.equal(after.policy.max_subagent_count, 9,
+    'ac2 a decision record satisfying every condition -- budget source, accepted status, matching digest, human grantor kind, grantor distinct from the recording agent, stated reason -- is what makes the override apply');
+  assert.equal(after.override.status, 'authorized', 'ac2 the fully-formed grant resolves authorized');
+  assert.equal(after.override.approval.grantor, 'sato-keigo', 'ac2 the authorizing grant names its human grantor');
+  assert.deepEqual(after.override.approval.recorded_by, { agent_system: 'claude_code', agent_id: 'agent-ogb-e2e' },
+    'ac2 the recording agent identity is carried on the grant and differs from the grantor');
 });
 
 // The receiver of the budget cannot grant it, enforced at the real command boundary.
@@ -396,10 +398,12 @@ test('ac:12 S-012 the real CLI rejects a mismatched or non-budget source', async
   };
   await assert.rejects(
     execFileAsync(process.execPath, swap('--source', 'budget:delivery_efficiency:story-other')),
-    (error) => /does not match --id/.test(`${error.stderr ?? ''}${error.stdout ?? ''}${error.message}`)
+    (error) => /does not match --id/.test(`${error.stderr ?? ''}${error.stdout ?? ''}${error.message}`),
+    'ac12 a grant whose --source names a different story than --id is refused at the real command boundary'
   );
   await assert.rejects(
     execFileAsync(process.execPath, swap('--source', 'gate:agent_review')),
-    (error) => /budget approval flags require --source/.test(`${error.stderr ?? ''}${error.stdout ?? ''}${error.message}`)
+    (error) => /budget approval flags require --source/.test(`${error.stderr ?? ''}${error.stdout ?? ''}${error.message}`),
+    'ac12 budget approval flags attached to a non-budget source are refused rather than silently ignored'
   );
 });
