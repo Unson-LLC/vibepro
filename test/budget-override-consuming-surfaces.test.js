@@ -11,8 +11,8 @@ import {
   prepareAgentReview,
   renderAgentReviewDispatchAuthorizationSummary
 } from '../src/agent-review.js';
-import { computeBudgetOverrideDigest } from '../src/budget-override-authority.js';
-import { recordDecision } from '../src/decision-records.js';
+import { GRANDFATHERED_OVERRIDE_DIGESTS, computeBudgetOverrideDigest } from '../src/budget-override-authority.js';
+import { readDecisionRecordsIfExists, recordDecision } from '../src/decision-records.js';
 import {
   buildAgentReviewEfficiencySummary,
   buildDeliveryEfficiencyContext,
@@ -271,4 +271,66 @@ test('OGB-SURF-6 the authorize text output states the override status in every b
   assert.match(withApproval, /- budget_override: authorized/);
   assert.ok(!withApproval.includes('sato-keigo'),
     'the text surface must not print the grantor identity');
+});
+
+// Raised by the clause adjudicator against AC-7: edit-revokes-grandfathering was
+// asserted, but nothing observed the other half of the compatibility claim -- that
+// an override which IS pinned still yields its raised policy on the production
+// surface. Without this, "already-shipped overrides keep working" was inferred
+// from reading the resolver rather than observed, so deleting the grandfathered
+// branch from the policy application would have left the suite green.
+test('OGB-SURF-8 a pinned override still yields its raised policy on the pr prepare surface', async () => {
+  const repoConfig = JSON.parse(await readFile(new URL('../.vibepro/config.json', import.meta.url), 'utf8'));
+  const pinnedEntry = Object.entries(repoConfig.budgets.delivery_efficiency_by_story ?? {})
+    .find(([storyId, override]) =>
+      GRANDFATHERED_OVERRIDE_DIGESTS[storyId] === computeBudgetOverrideDigest(storyId, override));
+  assert.ok(pinnedEntry, 'this repository must ship at least one pinned override to exercise the grandfathered branch');
+  const [pinnedStoryId, pinnedOverride] = pinnedEntry;
+  assert.ok(Number.isInteger(pinnedOverride.max_subagent_count) && pinnedOverride.max_subagent_count > 6,
+    'the fixture override must actually raise the base limit, otherwise the assertion below proves nothing');
+
+  const repo = await makePrRepo();
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  config.budgets.delivery_efficiency_by_story = { [pinnedStoryId]: pinnedOverride };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`, 'utf8');
+
+  const context = await buildDeliveryEfficiencyContext(repo, pinnedStoryId, { stages: [] });
+  assert.equal(context.budget_override.status, 'grandfathered',
+    'a pinned override must resolve grandfathered on the production surface, not unauthorized');
+  assert.deepEqual(context.budget_override.reasons, [],
+    'a grandfathered override must carry no disqualifying reason');
+  assert.equal(context.policy.max_subagent_count, pinnedOverride.max_subagent_count,
+    'and the raised limit must actually be applied, which is what makes the change backward compatible');
+});
+
+// Raised by the judgment adjudicator against failure_mode:parse_failure: the
+// acceptance spec parsed the records file inside the test with its own try/catch,
+// so production's guard -- readDecisionRecordsIfExists(...).catch(() => null) --
+// was never driven against a corrupt file. Deleting that .catch would have left
+// the suite green while pr prepare crashed on an unreadable records file.
+test('OGB-SURF-9 parse_failure: an unreadable records file falls back to the base budget on the production path', async () => {
+  const repo = await makePrRepo();
+  await recordDecision(repo, {
+    storyId: STORY_ID, type: 'waiver', status: 'accepted',
+    source: `budget:delivery_efficiency:${STORY_ID}`,
+    summary: 'raise the cap to 9', reason: 'owner approved the raise',
+    budgetGrantor: 'sato-keigo', budgetGrantorKind: 'human',
+    agentSystem: 'claude_code', agentId: 'agent-parse-failure'
+  });
+  const granted = await buildDeliveryEfficiencyContext(repo, STORY_ID, { stages: [] });
+  assert.equal(granted.policy.max_subagent_count, 9,
+    'precondition: the grant must be effective before the records file is corrupted');
+
+  const recordsPath = path.join(repo, '.vibepro', 'pr', STORY_ID, 'decision-records.json');
+  await writeFile(recordsPath, '{"decisions": [ this is not json', 'utf8');
+  await assert.rejects(() => readDecisionRecordsIfExists(repo, STORY_ID),
+    'precondition: the reader itself must reject on a corrupt file, so the guard below is load-bearing');
+
+  const corrupted = await buildDeliveryEfficiencyContext(repo, STORY_ID, { stages: [] });
+  assert.equal(corrupted.budget_override.status, 'unauthorized',
+    'an unreadable records file must resolve the override inert on the production surface, not crash');
+  assert.deepEqual(corrupted.budget_override.reasons, ['missing_approval']);
+  assert.equal(corrupted.policy.max_subagent_count, 6,
+    'and the applied budget must fall back to the base limit, never stay at the wider granted one');
 });
