@@ -45,6 +45,11 @@ test(`${STORY_ID} replays the incident and exercises AC-1 through AC-6`, async (
   const repo = await makeWorkspaceRepo();
   const evidencePath = path.join(repo, '.vibepro', 'pr', STORY_ID, 'verification-evidence.json');
 
+  // story-vibepro-verify-command-test-path-existence-guard S-001
+  // Given a repository where test/delivery-efficiency-guardrail.test.js exists and test/pr-manager.test.js does not,
+  // when a passing unit record is submitted with command 'node --test test/delivery-efficiency-guardrail.test.js test/pr-manager.test.js',
+  // then recording fails with an error naming test/pr-manager.test.js (and not the existing file), and
+  // verification-evidence.json is not created; the same command with only existing paths is accepted.
   // ${STORY_ID} ac:1
   // 実在しないtestパスを名指しするpassing recordは拒否され、欠損パスがエラーに列挙される
   const incident = await verifyRecord(
