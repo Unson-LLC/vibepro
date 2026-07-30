@@ -234,3 +234,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:403:start -->
 - [PR #403](https://github.com/Unson-LLC/vibepro/pull/403) — [2026-07](/ja/releases/2026-07): story-vibepro-process-record-worktree-durability - プロセス記録をworktreeライフサイクルから切り離して永続化する
 <!-- vibepro-release-index-pr:403:end -->
+
+<!-- vibepro-release-index-pr:404:start -->
+- [PR #404](https://github.com/Unson-LLC/vibepro/pull/404) — [2026-07](/ja/releases/2026-07): story-vibepro-task-atomic-repo-control-contract - Taskが同一HEADを要求するworkflowとruntimeを現行split policyが強制分離する矛盾を解消する
+<!-- vibepro-release-index-pr:404:end -->
