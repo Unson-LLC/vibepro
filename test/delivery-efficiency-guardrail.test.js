@@ -174,7 +174,7 @@ test('buildBudgetApproval rejects a grantor equal to the recording agent', () =>
   }), /grantor kind must be one of/);
 });
 
-// OGB-S-7. The 13 pre-existing overrides keep working as merged, pinned to the
+// OGB-S-7. Overrides that predate this gate keep working as merged, pinned to the
 // digest of their exact content -- a snapshot, not a per-story licence.
 test('grandfathered overrides are pinned by story-scoped content digest', () => {
   // The literal count used to be pinned here at 13. Merging origin/main brought

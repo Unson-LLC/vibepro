@@ -1,0 +1,288 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+  "story_id": "story-vibepro-review-surface-violation-ledger",
+  "created_at": "2026-07-29T08:53:37.969Z",
+  "updated_at": "2026-07-29T10:35:48.710Z",
+  "plan": {
+    "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+    "story_id": "story-vibepro-review-surface-violation-ledger",
+    "required": true,
+    "risk_profile": "workflow_heavy",
+    "risk_surfaces": [
+      "core_workflow_state",
+      "gate_orchestration",
+      "regression_blast_radius",
+      "review_lifecycle",
+      "service_orchestration",
+      "test_coverage"
+    ],
+    "preflight_roles": [
+      "architecture_boundary"
+    ],
+    "preflight_reviews": [
+      {
+        "stage": "architecture_spec",
+        "role": "architecture_boundary",
+        "surfaces": [
+          "core_workflow_state",
+          "gate_orchestration",
+          "review_lifecycle"
+        ]
+      }
+    ],
+    "preflight_surfaces": [
+      "core_workflow_state",
+      "gate_orchestration",
+      "review_lifecycle"
+    ],
+    "preflight_required_inspection_inputs": [
+      "design-ssot.json",
+      "docs/architecture/vibepro-review-surface-violation-ledger.md",
+      "docs/ja/reference/cli.md",
+      "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+      "docs/reference/cli.md",
+      "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+      "responsibility-authority.json",
+      "src/agent-review.js",
+      "src/cli.js",
+      "src/independent-review-orchestrator.js",
+      "src/pr-manager.js",
+      "src/review-surface-violations.js",
+      "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts",
+      "test/independent-review-orchestrator.test.js",
+      "test/public-release-notes.test.js",
+      "test/review-surface-violation-ledger.test.js"
+    ],
+    "phases": [
+      "targeted_validation",
+      "preflight_review",
+      "code_frozen",
+      "expensive_verification",
+      "final_review"
+    ]
+  },
+  "frozen_binding": {
+    "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+    "test_fingerprint": "2162cdaf56cb3f80ec84e382b42fee461edf43f632779f8e8d2bddb3daed5716",
+    "verification_command": "node --test test/review-surface-violation-ledger.test.js test/independent-review-orchestrator.test.js test/responsibility-authority.test.js test/verification-runner.test.js test/adjudication.test.js test/ci-evidence-import.test.js test/session-efficiency-audit.test.js"
+  },
+  "phases": {
+    "targeted_validation": {
+      "status": "passed",
+      "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-29T10:35:16.842Z",
+      "binding": {
+        "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+        "test_fingerprint": "2162cdaf56cb3f80ec84e382b42fee461edf43f632779f8e8d2bddb3daed5716",
+        "verification_command": "node --test test/review-surface-violation-ledger.test.js test/independent-review-orchestrator.test.js test/responsibility-authority.test.js test/verification-runner.test.js test/adjudication.test.js test/ci-evidence-import.test.js test/session-efficiency-audit.test.js"
+      }
+    },
+    "preflight_review": {
+      "status": "passed",
+      "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/review-result-architecture_boundary.json",
+        ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/review-result-architecture_boundary.json",
+        ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/review-result-architecture_boundary.json",
+        ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/review-result-architecture_boundary.json",
+        ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/review-result-architecture_boundary.json"
+      ],
+      "record_type": "advisory_preflight",
+      "findings": [],
+      "dispositions": [],
+      "satisfies_final_review": false,
+      "recorded_at": "2026-07-29T10:35:17.596Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-review-surface-violation-ledger",
+        "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+        "system": "claude_code",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "architecture_boundary",
+        "stage": "architecture_spec",
+        "inspection_summary": "Read all 16 changed paths at depth (the 953-line unit suite: titles enumerated, ~5 load-bearing bodies read verbatim, whole file executed). risk_surfaces=core_workflow_state,gate_orchestration,review_lifecycle. Attacks: (a) append-only: grepped every writer of surface-violations.json across src/, test/, bin/; writeViolations private with one caller; appendReviewSurfaceViolation called only from recordReviewSurfaceViolationForClose in agent-review.js; no truncate/rewrite path. (b) fail-closed: readReviewSurfaceViolations 47-73: ENOENT reads clean, JSON.parse failure and non-array entries throw VIBEPRO_REVIEW_SURFACE_LEDGER_UNREADABLE; readReviewSurfaceViolationSummary converts only that code to a blocking summary so pr prepare cannot pass on corruption. (c) RSV-8: reconcileReviewSurfaceViolationPointers 192-227 is a real set-difference over lifecycle pointers with a distinct missing:<id> namespace; readStoryLifecyclePointers applies strict failure policy closing the one-malformed-byte bypass. (d) idempotency: dedup key checked before append (agent-review.js 1002-1004); keyed replay neither duplicates nor re-appends; unkeyed replay dies on already-closed guard. (e) executed node --test on ledger+orchestrator suites: 49/49; concurrency test fails without the mkdir lock; RSV-8 tests assert exact orphan id and kind; RSV-5 drives real pr prepare artifact. (f) locks: ledger uses story-level .surface-violations.lock with read-modify-write fully inside it; append vs lifecycle pointer stamp non-atomicity resolves fail-closed and is documented in architecture doc and Spec residual risk. Backward compat: buildReviewSurfaceIntegrityGate fails only when unacknowledged>0, so no-ledger and legacy-lifecycle repos pass; legacy counted as unevaluated_lifecycle_count so pass reason never overclaims. New gate node has incoming+outgoing edges, registered in nodes, requiredGates, collectUnresolvedRequiredGates. listExistingReviewStages filtered by REVIEW_STAGES so the lock dir cannot be mistaken for a stage. All close callers after assertRecognizedCloseReason verified migrated. Delta commit bb1a463f re-inspected on request: exactly one file, test/public-release-notes.test.js lines 64-67, the npm dist-tag regex pins beta.1 -> beta.2; verified the diff stat (1 file, +4/-4), that the new expectations match the npm latest/beta rows of docs/reference/version-history.md and docs/ja/reference/version-history.md on this branch, and that the commit touches no source, gate, ledger or owned artifact, so all three role verdicts hold. Second delta commit 42a4d181 re-inspected: exactly one file, test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts (+4/-2), widening the wrapper summary assertions from the spec-reporter form to accept both the spec and tap reporter forms ((?:i|#) fail 0) after CI Node 22 emitted the tap form; judged a reporter-format widening only, not a semantic loosening - both forms are node:test summary lines meaning zero failures, the pass-count floor >= 23 still binds, and the reporter-agnostic assert.doesNotMatch(/^not ok/m) guard remains, so falsifying power is intact and all three role verdicts hold at 42a4d181.",
+        "inspection_inputs": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/vibepro-review-surface-violation-ledger.md",
+          "docs/ja/reference/cli.md",
+          "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+          "docs/reference/cli.md",
+          "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+          "responsibility-authority.json",
+          "src/agent-review.js",
+          "src/cli.js",
+          "src/independent-review-orchestrator.js",
+          "src/pr-manager.js",
+          "src/review-surface-violations.js",
+          "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts",
+          "test/independent-review-orchestrator.test.js",
+          "test/review-surface-violation-ledger.test.js",
+          "test/public-release-notes.test.js"
+        ]
+      },
+      "binding": {
+        "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+        "test_fingerprint": "2162cdaf56cb3f80ec84e382b42fee461edf43f632779f8e8d2bddb3daed5716",
+        "verification_command": "node --test test/review-surface-violation-ledger.test.js test/independent-review-orchestrator.test.js test/responsibility-authority.test.js test/verification-runner.test.js test/adjudication.test.js test/ci-evidence-import.test.js test/session-efficiency-audit.test.js"
+      }
+    },
+    "code_frozen": {
+      "status": "passed",
+      "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "reason": null,
+      "evidence": [],
+      "recorded_at": "2026-07-29T10:35:17.984Z",
+      "binding": {
+        "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+        "test_fingerprint": "2162cdaf56cb3f80ec84e382b42fee461edf43f632779f8e8d2bddb3daed5716",
+        "verification_command": "node --test test/review-surface-violation-ledger.test.js test/independent-review-orchestrator.test.js test/responsibility-authority.test.js test/verification-runner.test.js test/adjudication.test.js test/ci-evidence-import.test.js test/session-efficiency-audit.test.js"
+      }
+    },
+    "expensive_verification": {
+      "status": "passed",
+      "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-29T10:35:47.993Z",
+      "binding": {
+        "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+        "test_fingerprint": "2162cdaf56cb3f80ec84e382b42fee461edf43f632779f8e8d2bddb3daed5716",
+        "verification_command": "node --test test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+      }
+    },
+    "final_review": {
+      "status": "passed",
+      "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+        ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+        ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+        ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+        ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json"
+      ],
+      "source": "agent_review",
+      "recorded_at": "2026-07-29T10:35:48.710Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-review-surface-violation-ledger",
+        "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+        "system": "claude_code",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "runtime_contract",
+        "stage": "implementation",
+        "inspection_summary": "risk_surfaces=core_workflow_state,gate_orchestration,review_lifecycle. src/review-surface-violations.js read in full (343 lines, line by line: lock loop, append idempotency, reconcile, summarize, unreadable summary, atomic write). src/agent-review.js: complete close path 870-1024 and record-side close 455-549 read in source, plus findLifecycleEntry, buildSyntheticLifecycleEntryFromReviewResult, readStoryLifecyclePointers, assertRecognizedCloseReason; every lifecycle-close write site enumerated by grep. src/pr-manager.js: full gate builder 14150-14252, both node arrays, edge array, collectUnresolvedRequiredGates, isUnresolvedGateStatus, isCriticalUnresolvedGate, buildPrPrepareGateStatus/buildExecutionGateStatus, remediation fallthrough. src/cli.js: review close block and new violations block plus exit-code convention grep. src/independent-review-orchestrator.js: close boundary, runRole, closeStoppedLifecycle/runtimeStopCloseReason, isStop. src/artifact-routing.js and src/decision-records.js read to confirm path resolution and acknowledgement command enums. Spec and architecture docs checked against behavior. Probes: rendered close summary for violation/no-violation/legacy-shaped results; lock race probe with pre-planted 120s-stale lock, 2 and 6 concurrent appenders, 40 iterations each: 0 lost entries; live state probe on this story: readable true, 3 evaluated lifecycles, 0 violations. Targeted run: node --test on ledger+orchestrator suites 49/49 pass.",
+        "inspection_inputs": [
+          "src/review-surface-violations.js",
+          "src/agent-review.js",
+          "src/pr-manager.js",
+          "src/cli.js",
+          "src/independent-review-orchestrator.js",
+          "test/review-surface-violation-ledger.test.js",
+          "test/independent-review-orchestrator.test.js",
+          "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+          "docs/architecture/vibepro-review-surface-violation-ledger.md",
+          "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+          "docs/reference/cli.md",
+          "src/artifact-routing.js",
+          "src/decision-records.js"
+        ]
+      },
+      "binding": {
+        "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+        "test_fingerprint": "2162cdaf56cb3f80ec84e382b42fee461edf43f632779f8e8d2bddb3daed5716",
+        "verification_command": "node --test test/review-surface-violation-ledger.test.js test/independent-review-orchestrator.test.js test/responsibility-authority.test.js test/verification-runner.test.js test/adjudication.test.js test/ci-evidence-import.test.js test/session-efficiency-audit.test.js"
+      }
+    }
+  },
+  "proposed_binding": {
+    "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+    "test_fingerprint": "2162cdaf56cb3f80ec84e382b42fee461edf43f632779f8e8d2bddb3daed5716",
+    "verification_command": "node --test test/review-surface-violation-ledger.test.js test/independent-review-orchestrator.test.js test/responsibility-authority.test.js test/verification-runner.test.js test/adjudication.test.js test/ci-evidence-import.test.js test/session-efficiency-audit.test.js"
+  },
+  "invalidations": [
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current change-risk classification differs from the persisted validation plan",
+      "invalidated_at": "2026-07-29T09:33:37.654Z"
+    },
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current HEAD differs from the persisted validation binding",
+      "invalidated_at": "2026-07-29T10:08:46.676Z"
+    },
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current change-risk classification differs from the persisted validation plan",
+      "invalidated_at": "2026-07-29T10:33:41.492Z"
+    },
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current change-risk classification differs from the persisted validation plan",
+      "invalidated_at": "2026-07-29T10:34:31.759Z"
+    }
+  ]
+}

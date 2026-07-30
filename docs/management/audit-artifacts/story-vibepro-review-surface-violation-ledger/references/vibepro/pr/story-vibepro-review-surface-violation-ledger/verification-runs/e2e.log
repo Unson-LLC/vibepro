@@ -1,0 +1,19 @@
+(node:87975) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-review-surface-violation-ledger RSV-1 close records the close-time head and surface digest (26639.944458ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-2 S-001 a mid-review surface change becomes a violation entry (0.414125ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-3 INV-003 a later clean round never removes the earlier violation (0.306209ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-4 replayed closes do not duplicate the record (0.249958ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-5 C-001 pr prepare blocks and only a decision record clears it (1.018833ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-6 S-002 INV-004 stale stays separate from violation and the review workflow state machine is unchanged (0.786875ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-7 legacy artifacts read clean, a corrupt ledger fails closed, and the evidence lifecycle is unchanged (1.353875ms)
+✔ story-vibepro-review-surface-violation-ledger RSV-8 RSV-9 the erase paths are recorded, not silently allowed (0.815ms)
+✔ story-vibepro-review-surface-violation-ledger acceptance suite is fully green (2.541417ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 26968.818917

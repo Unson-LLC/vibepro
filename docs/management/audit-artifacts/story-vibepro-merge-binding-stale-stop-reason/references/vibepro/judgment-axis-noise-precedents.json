@@ -1,0 +1,37 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "release_ops|changed_path:release_ops",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+      "decision_id": "decision-1785340008109-5e65101d",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "release_note: this fix ships in the next vibepro release; stale pr-merge.json artifacts written by earlier versions self-heal on the next successful binding pass, no operator action needed. rollout_plan: normal npm release, no migration. rollback_instruction: revert the single applyDecisionOutcomeBinding change; artifacts written with the stale flag remain valid and are cleared again by any later fixed run. observability_evidence: the stop_reason and reconciliation fields in .vibepro/pr/<story>/pr-merge.json are the owner-visible signal, asserted by the recorded e2e artifact_replay evidence.",
+      "artifact": "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
+      "activation_candidates": [
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-29T15:46:52.781Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+      "decision_id": "decision-1785340006990-7aaab2c1",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: the diff is a single function change in src/merge-manager.js plus its regression tests, story, and spec registration — one intent readable in one pass. review_owner_map: one reviewer owns all five files (merge-manager maintainer); no cross-team ownership. related_file_blast_radius: applyDecisionOutcomeBinding is called only from executeMerge lines 631/680, verified by grep; no other caller exists.",
+      "artifact": "docs/management/stories/active/story-vibepro-merge-binding-stale-stop-reason.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-29T15:46:52.781Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

@@ -922,7 +922,25 @@ export function applyDecisionOutcomeBinding(merge, {
 } = {}) {
   const binding = buildDecisionOutcomeBinding({ localEntries, promotion, merge, localLedgerSource, persistence });
   merge.decision_outcome_binding = binding;
-  if (binding.status !== 'failed') return binding;
+  if (binding.status !== 'failed') {
+    // A prior failed pass (earlier call in this run, or a persisted pr-merge.json
+    // from a previous run) may have left the failure marker; only this function
+    // sets it, so a successful rebinding must also clear it.
+    const staleReasons = merge.reconciliation?.reasons ?? [];
+    if (staleReasons.includes('decision_outcome_binding_failed')) {
+      const remaining = staleReasons.filter((reason) => reason !== 'decision_outcome_binding_failed');
+      merge.reconciliation = {
+        ...merge.reconciliation,
+        status: remaining.length > 0 ? 'reconciliation_required' : 'reconciled',
+        reasons: remaining,
+        evaluated_at: new Date().toISOString()
+      };
+      if (merge.stop_reason === 'decision_outcome_binding_failed') {
+        merge.stop_reason = remaining.length > 0 ? 'delivery_reconciliation_required' : null;
+      }
+    }
+    return binding;
+  }
 
   merge.reconciliation = {
     ...merge.reconciliation,

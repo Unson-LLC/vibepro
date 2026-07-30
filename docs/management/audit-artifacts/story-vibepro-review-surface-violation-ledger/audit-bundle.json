@@ -1,0 +1,1332 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-review-surface-violation-ledger",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-29T16:16:43.065Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:49541e7ecece232d5d9a5963495a08d468d869a183e7dc61e2058fd95d059daf",
+    "compressed_hash": "sha256:a22f6614fa5f84d3da62e82da123fb3db9274acdaa5d646fe437da99958361ba",
+    "expanded_bytes": 28459,
+    "compressed_bytes": 6488,
+    "expanded_line_count": 627,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "decision_outcome_ledger",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-review-surface-violation-ledger",
+    "cost": {
+      "compressed_bytes": 6488,
+      "expanded_bytes": 28459,
+      "expanded_line_count": 627,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged_externally",
+    "base": "main",
+    "delivery": {
+      "status": "merged_externally",
+      "source": "github_pr",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/397",
+      "merge_commit_sha": "e3ef7b963170f8500d370f6914037009944d3e0e",
+      "merged_at": "2026-07-29T10:38:00Z"
+    },
+    "reconciliation": {
+      "status": "reconciliation_required",
+      "reasons": [
+        "dirty_worktree"
+      ],
+      "evaluated_at": "2026-07-29T16:16:42.991Z",
+      "head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f"
+    },
+    "reconciliation_action": {
+      "status": "required",
+      "reason": "dirty_worktree",
+      "commands": [
+        "vibepro pr prepare . --story-id story-vibepro-review-surface-violation-ledger --base main",
+        "vibepro execute merge . --story-id story-vibepro-review-surface-violation-ledger --base main --pr https://github.com/Unson-LLC/vibepro/pull/397"
+      ]
+    },
+    "decision_outcome_binding": {
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
+      "expected_entry_count": 63,
+      "promoted_count": 0,
+      "duplicate_count": 63,
+      "persistence_status": null
+    },
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/397",
+    "merge_commit_sha": "e3ef7b963170f8500d370f6914037009944d3e0e",
+    "merged_at": "2026-07-29T10:38:00Z",
+    "current_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat 'e3ef7b963170f8500d370f6914037009944d3e0e^1...42a4d1813acefe02e6860d8b5f21e845f621e79f'"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 89,
+    "copied_reference_count": 71,
+    "unresolved_reference_count": 16,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-review-surface-violation-ledger"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:49541e7ecece232d5d9a5963495a08d468d869a183e7dc61e2058fd95d059daf"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:1564955872f4b304a335852e3335ed1489004940251a36db6ef7d2ede3d54b67",
+      "audit_digest": "sha256:1564955872f4b304a335852e3335ed1489004940251a36db6ef7d2ede3d54b67",
+      "line_count": 821,
+      "raw_line_count": 821,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_outcome_ledger",
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-outcome-ledger.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:0f1cd66bdaaa7a7e5d4917200e3dcd911b2d68f0e67384efc77b9b8709dd4215",
+      "audit_digest": "sha256:0f1cd66bdaaa7a7e5d4917200e3dcd911b2d68f0e67384efc77b9b8709dd4215",
+      "line_count": 935,
+      "raw_line_count": 935,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:52c98f218db8f5145e170357d2476df4b160e8c4331f48e7f36b7a213c5b211f",
+      "audit_digest": "sha256:e5b935115ee7a3804e6aac5400e6eef7666b2af3777d19919e7325a6afbb1618",
+      "line_count": 8777,
+      "raw_line_count": 47234,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:5fbe73e350632b547c9fdac0f8bc8a048adccde055ef71f4ca23d85493062710",
+      "audit_digest": "sha256:4a3ea087468d1e819e980425808d3b4ad194ab766728f91fc8241b5a9344ed4b",
+      "line_count": 3334,
+      "raw_line_count": 6935,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:7d29206459c101a58fff45bf66356a950c23ba0128c43de8de76fe470acb50c2",
+      "audit_digest": "sha256:87f3d780aefc27dcd14c89ee0145cca4cf827569e3a7fb6cb50c8f0d260eebab",
+      "line_count": 123,
+      "raw_line_count": 1085,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:3759abe1e981783e6c88979f28203312d18fb6953b313566ce5bde3bda931504",
+      "audit_digest": "sha256:597ce4ba6742cf8125e465af431cea3e463bf8918fa1ed567525c3021f7590a9",
+      "line_count": 3382,
+      "raw_line_count": 7119,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:f45c3dd2a471ec0f5848546cfd47ee1ec0dd1ac5378002b5fb15cb9bc4456506",
+      "audit_digest": "sha256:f45c3dd2a471ec0f5848546cfd47ee1ec0dd1ac5378002b5fb15cb9bc4456506",
+      "line_count": 735,
+      "raw_line_count": 735,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:4cc4233c815db9df87d1c1d13119112cb410a09df7b009aa6ecf8d38e49a20b4",
+      "audit_digest": "sha256:638b5c6672fdfd8c912a991836b1bfa8be05602a5dc5161c8dfbced336705d55",
+      "line_count": 66,
+      "raw_line_count": 1463,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:fdc16e242dfd3e365f1bf3af3295587dda7da45cc82c6b99fb433c0c62a6d204",
+      "audit_digest": "sha256:fdc16e242dfd3e365f1bf3af3295587dda7da45cc82c6b99fb433c0c62a6d204",
+      "line_count": 967,
+      "raw_line_count": 967,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:1f7a9a53b7adfb23738e48acf4b9887b8e25017e203e5756102f96e7e39fa961",
+      "audit_digest": "sha256:1f7a9a53b7adfb23738e48acf4b9887b8e25017e203e5756102f96e7e39fa961",
+      "line_count": 967,
+      "raw_line_count": 967,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:78c59b4de681c06186b9a8b0ad78923afafd3811e1919b10ff7a451e9f4d55c9",
+      "audit_digest": "sha256:78c59b4de681c06186b9a8b0ad78923afafd3811e1919b10ff7a451e9f4d55c9",
+      "line_count": 205,
+      "raw_line_count": 205,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/review-request-architecture_boundary.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:9997618bdb3bdd7ac0690175e4fdaf4ab542f6edfadfdb3585794bd3ca7fcfed",
+      "audit_digest": "sha256:9997618bdb3bdd7ac0690175e4fdaf4ab542f6edfadfdb3585794bd3ca7fcfed",
+      "line_count": 148,
+      "raw_line_count": 148,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/review-result-architecture_boundary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:8f33350a69683468d9442da19c223d9085e0c3433b90d71c5aeb363e62e83c1a",
+      "audit_digest": "sha256:8f33350a69683468d9442da19c223d9085e0c3433b90d71c5aeb363e62e83c1a",
+      "line_count": 221,
+      "raw_line_count": 221,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:4a2c677771534cb9b7a8817da743af325d30e3638640d2b4a2dac4f52a40c45a",
+      "audit_digest": "sha256:4a2c677771534cb9b7a8817da743af325d30e3638640d2b4a2dac4f52a40c45a",
+      "line_count": 591,
+      "raw_line_count": 591,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:4a8f279744e9123ab82c734fb02a8f4bdcba7a166b7ba4d75c580752ea3b4109",
+      "audit_digest": "sha256:4a8f279744e9123ab82c734fb02a8f4bdcba7a166b7ba4d75c580752ea3b4109",
+      "line_count": 401,
+      "raw_line_count": 401,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:eb3486935314ed7bf37bf4d34cd7462c5c0e2a1d90b109f1c74983e949c67692",
+      "audit_digest": "sha256:eb3486935314ed7bf37bf4d34cd7462c5c0e2a1d90b109f1c74983e949c67692",
+      "line_count": 148,
+      "raw_line_count": 148,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:c1dc999f9a5a6936dc0160a8a2eab31e693b15861bfb79d115f6e023d023705f",
+      "audit_digest": "sha256:c1dc999f9a5a6936dc0160a8a2eab31e693b15861bfb79d115f6e023d023705f",
+      "line_count": 148,
+      "raw_line_count": 148,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:dbed95e626e14bef21097631986b900fb19dc2de83deddaa7253f8afc5733034",
+      "audit_digest": "sha256:dbed95e626e14bef21097631986b900fb19dc2de83deddaa7253f8afc5733034",
+      "line_count": 221,
+      "raw_line_count": 221,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/review-result-release_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:ae726e9ff55fd9680e0f30f93b5fab8753af61c64cc38ed651840ba844d35a16",
+      "audit_digest": "sha256:ae726e9ff55fd9680e0f30f93b5fab8753af61c64cc38ed651840ba844d35a16",
+      "line_count": 221,
+      "raw_line_count": 221,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:39426012ccedbddfc2e230189cb1a2e92d90592f774bfd2eeea72b5ae44c06ff",
+      "audit_digest": "sha256:39426012ccedbddfc2e230189cb1a2e92d90592f774bfd2eeea72b5ae44c06ff",
+      "line_count": 1125,
+      "raw_line_count": 1125,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:e46dfccd65f13038431a90b10f100c869c357c85d3347795f7ce95dc419341d6",
+      "audit_digest": "sha256:e46dfccd65f13038431a90b10f100c869c357c85d3347795f7ce95dc419341d6",
+      "line_count": 205,
+      "raw_line_count": 205,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-request-runtime_contract.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:db8a74cab45cff53080165ce44eecca149e098ab47df33939cf5973edfeb1d83",
+      "audit_digest": "sha256:db8a74cab45cff53080165ce44eecca149e098ab47df33939cf5973edfeb1d83",
+      "line_count": 152,
+      "raw_line_count": 152,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:3178126c5b74ff805ecf06721a896c766eb60276b9a24d38838f8dae84d09886",
+      "audit_digest": "sha256:3178126c5b74ff805ecf06721a896c766eb60276b9a24d38838f8dae84d09886",
+      "line_count": 223,
+      "raw_line_count": 223,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/audit-replay-bundle.json.gz",
+      "digest": "sha256:1a75bd1dd8e8b546f7c9b83bf2a1519ce3b1b5713c86e18be3798daadfe3cd90",
+      "audit_digest": "sha256:1a75bd1dd8e8b546f7c9b83bf2a1519ce3b1b5713c86e18be3798daadfe3cd90",
+      "line_count": 604,
+      "raw_line_count": 604,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-review-surface-violation-ledger/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/adjudication/story-vibepro-review-surface-violation-ledger/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-review-surface-violation-ledger/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/adjudication/story-vibepro-review-surface-violation-ledger/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-outcome-ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/pr/decision-outcome-ledger.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/split-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/split-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/pr/traceability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-06-58.240Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-06-58.240Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-07-58.478Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-07-58.478Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-09-34.640Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-09-34.640Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-10-57.925Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-10-57.925Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-17-51.397Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-17-51.397Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-38-38.227Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-38-38.227Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-40-39.086Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-40-39.086Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T10-04-06.269Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T10-04-06.269Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/review-request-architecture_boundary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/reviews/architecture_spec/review-request-architecture_boundary.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/review-result-architecture_boundary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/reviews/architecture_spec/review-result-architecture_boundary.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-06-55.666Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-06-55.666Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-07-55.768Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-07-55.768Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-10-55.324Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-10-55.324Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-17-48.839Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-17-48.839Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-38-35.473Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-38-35.473Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T10-04-02.841Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T10-04-02.841Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-06-56.961Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-06-56.961Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-07-57.206Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-07-57.206Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-10-56.631Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-10-56.631Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-17-50.147Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-17-50.147Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-38-36.836Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-38-36.836Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T10-04-04.883Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T10-04-04.883Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/review-request-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/reviews/gate/review-request-release_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/review-result-release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/reviews/gate/review-result-release_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/history/review-result-runtime_contract-2026-07-29T09-23-17.246Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/history/review-result-runtime_contract-2026-07-29T09-23-17.246Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/history/review-result-runtime_contract-2026-07-29T09-38-56.134Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/history/review-result-runtime_contract-2026-07-29T09-38-56.134Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/history/review-result-runtime_contract-2026-07-29T10-04-07.624Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/history/review-result-runtime_contract-2026-07-29T10-04-07.624Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-request-runtime_contract.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/reviews/implementation/review-request-runtime_contract.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/reviews/implementation/review-result-runtime_contract.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/transcripts/reviewer-a9f6a046653563c22.jsonl",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/transcripts/reviewer-a9f6a046653563c22.jsonl",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-review-surface-violation-ledger/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/spec/story-vibepro-review-surface-violation-ledger/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-review-surface-violation-ledger/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/stories/story-vibepro-review-surface-violation-ledger/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-review-surface-violation-ledger/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/stories/story-vibepro-review-surface-violation-ledger/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-review-surface-violation-ledger/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/validation-sequencing/story-vibepro-review-surface-violation-ledger/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-review-surface-violation-ledger/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/adjudication/story-vibepro-review-surface-violation-ledger/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-review-surface-violation-ledger/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/adjudication/story-vibepro-review-surface-violation-ledger/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/diagnostics/2026-07-29T084338Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/split-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/split-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-06-58.240Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-06-58.240Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-07-58.478Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-07-58.478Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-09-34.640Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-09-34.640Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-10-57.925Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-10-57.925Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-17-51.397Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-17-51.397Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-38-38.227Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-38-38.227Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-40-39.086Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T09-40-39.086Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T10-04-06.269Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/history/review-result-architecture_boundary-2026-07-29T10-04-06.269Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-06-55.666Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-06-55.666Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-07-55.768Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-07-55.768Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-10-55.324Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-10-55.324Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-17-48.839Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-17-48.839Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-38-35.473Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T09-38-35.473Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T10-04-02.841Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-gate_evidence-2026-07-29T10-04-02.841Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-06-56.961Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-06-56.961Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-07-57.206Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-07-57.206Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-10-56.631Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-10-56.631Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-17-50.147Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-17-50.147Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-38-36.836Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T09-38-36.836Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T10-04-04.883Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/history/review-result-release_risk-2026-07-29T10-04-04.883Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/history/review-result-runtime_contract-2026-07-29T09-23-17.246Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/history/review-result-runtime_contract-2026-07-29T09-23-17.246Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/history/review-result-runtime_contract-2026-07-29T09-38-56.134Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/history/review-result-runtime_contract-2026-07-29T09-38-56.134Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/history/review-result-runtime_contract-2026-07-29T10-04-07.624Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/history/review-result-runtime_contract-2026-07-29T10-04-07.624Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/transcripts/reviewer-a9f6a046653563c22.jsonl",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/reviews/story-vibepro-review-surface-violation-ledger/transcripts/reviewer-a9f6a046653563c22.jsonl",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-review-surface-violation-ledger/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/spec/story-vibepro-review-surface-violation-ledger/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-review-surface-violation-ledger/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/stories/story-vibepro-review-surface-violation-ledger/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-review-surface-violation-ledger/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/stories/story-vibepro-review-surface-violation-ledger/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-review-surface-violation-ledger/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-review-surface-violation-ledger/references/vibepro/validation-sequencing/story-vibepro-review-surface-violation-ledger/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 7262510
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-29T084338Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 983327
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 7287755
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 580470
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/surface-violations.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/transcripts/reviewer-addb689254e63607c.jsonl",
+      "reason": "source_too_large",
+      "size_bytes": 549565
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-review-surface-violation-ledger/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-review-surface-violation-ledger/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    }
+  ]
+}

@@ -575,6 +575,40 @@
         "current_head_verification"
       ],
       "unknown_policy": "block_or_review"
+    },
+    {
+      "id": "vibepro.agent_review.surface_violation_ledger",
+      "primary_authority": {
+        "kind": "architecture",
+        "ref": "docs/architecture/vibepro-review-surface-violation-ledger.md"
+      },
+      "supporting_authority": [
+        "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md"
+      ],
+      "owned_surfaces": {
+        "paths": [
+          "src/review-surface-violations.js",
+          "test/review-surface-violation-ledger.test.js"
+        ],
+        "symbols": [
+          "gate:review_surface_integrity",
+          "review_surface_integrity_gate",
+          "review_surface_mutated_during_review",
+          "appendReviewSurfaceViolation",
+          "reconcileReviewSurfaceViolationPointers"
+        ],
+        "risk_surfaces": [
+          "core_workflow_state",
+          "review_lifecycle",
+          "gate_orchestration"
+        ]
+      },
+      "required_evidence": [
+        "unit_regression",
+        "negative_path",
+        "current_head_verification"
+      ],
+      "unknown_policy": "block_or_review"
     }
   ]
 }

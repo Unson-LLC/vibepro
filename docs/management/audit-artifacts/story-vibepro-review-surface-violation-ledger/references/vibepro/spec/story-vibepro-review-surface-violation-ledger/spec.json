@@ -1,0 +1,455 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-review-surface-violation-ledger",
+  "generated_by": {
+    "caller": "claude-code",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "Every operation that closes a review lifecycle records closed_head_sha and closed_surface_digest on the lifecycle entry, including closes where nothing moved and the review record --agent-closed path that closes without an explicit review close.",
+      "rationale": "RSV-1: choosing how to close a lifecycle must not change whether the close-time snapshot is recorded.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "RSV-1: lifecycle を閉じる操作は毎回、close 時点の head sha と surface digest を lifecycle entry に記録する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/agent-review.js",
+            "anchor": "closed_head_sha"
+          },
+          {
+            "file": "src/agent-review.js",
+            "anchor": "recordReviewSurfaceViolationForClose"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/review-surface-violation-ledger.test.js"
+          },
+          {
+            "file": "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T08:43:58.899Z",
+      "last_revised_at": "2026-07-29T08:43:58.899Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "violation_id is derived from story, stage, role, lifecycle id, kind and both the start-side and close-side values, so repeating a close, including an idempotency-key replay, resolves to the entry already on disk instead of appending a second one.",
+      "rationale": "RSV-4: a derived id makes a replayed close a no-op rather than a duplicate record.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "RSV-4: 同一 lifecycle に対する close の再実行は違反を重複記録しない"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/review-surface-violations.js",
+            "anchor": "buildReviewSurfaceViolationId"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/review-surface-violation-ledger.test.js"
+          },
+          {
+            "file": "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T08:43:58.899Z",
+      "last_revised_at": "2026-07-29T08:43:58.899Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "The ledger is append-only: the module exposes no delete or update operation, and starting, closing and recording a new lifecycle for the same story, stage and role leaves existing entries unchanged and never reduces the entry count.",
+      "rationale": "RSV-3: a re-run must not be able to wash away a recorded violation, which is what happened in the parent Story.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "RSV-3: ledger はレビュー再実行で消えない"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/review-surface-violations.js",
+            "anchor": "appendReviewSurfaceViolation"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/review-surface-violation-ledger.test.js"
+          },
+          {
+            "file": "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T08:43:58.899Z",
+      "last_revised_at": "2026-07-29T08:43:58.899Z"
+    },
+    {
+      "id": "INV-004",
+      "type": "invariant",
+      "statement": "Staleness and violation stay separated by storage location, record shape and gate: a commit landed after the close records no ledger entry and gate:review_surface_integrity stays passed at zero entries, while post-close drift remains the concern of the existing freshness machinery.",
+      "rationale": "RSV-6: the parent Story's failure was treating a mid-review mutation and ordinary staleness as the same thing.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "RSV-6: stale と violation は型として分離されている"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/review-surface-violations.js",
+            "anchor": "REVIEW_SURFACE_MUTATION_KIND"
+          },
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "review_surface_integrity_gate"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/review-surface-violation-ledger.test.js"
+          },
+          {
+            "file": "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T08:43:58.899Z",
+      "last_revised_at": "2026-07-29T08:43:58.899Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "pr prepare emits gate:review_surface_integrity; while one or more entries are unacknowledged its status is failed and re-running the review does not change that, and the only resolution path is an accepted decision record sourced at gate:review_surface_integrity:<violation-id>, after which the entry remains in the artifact.",
+      "rationale": "RSV-5: the gate must be resolvable only by a human judgement that leaves the recorded fact in place.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "RSV-5: pr prepare は gate:review_surface_integrity を出力する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "review_surface_integrity_gate"
+          },
+          {
+            "file": "src/review-surface-violations.js",
+            "anchor": "summarizeReviewSurfaceViolations"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/review-surface-violation-ledger.test.js"
+          },
+          {
+            "file": "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T08:43:58.899Z",
+      "last_revised_at": "2026-07-29T08:43:58.899Z"
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "When the close-time head sha or surface digest differs from the start-time value and close_reason is completed, the close appends exactly one entry with kind review_surface_mutated_during_review and evidence_class violation, listing the moved field names in changed_fields, including for uncommitted working tree edits and for the default close form the CLI actually emits.",
+      "rationale": "RSV-2: detection is computed from the two recorded snapshots, never from the implementing agent's self-report.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "RSV-2: close 時点の head sha または surface digest が start 時点と異なり、かつ close_reason が completed の場合"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/review-surface-violations.js",
+            "anchor": "detectReviewSurfaceMutation"
+          },
+          {
+            "file": "src/agent-review.js",
+            "anchor": "recordReviewSurfaceViolationForClose"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/review-surface-violation-ledger.test.js"
+          },
+          {
+            "file": "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T08:43:58.899Z",
+      "last_revised_at": "2026-07-29T08:43:58.899Z"
+    },
+    {
+      "id": "C-003",
+      "type": "contract",
+      "statement": "A lifecycle entry without closed_head_sha and a story with no ledger file read as zero violations without throwing and the gate passes, while a ledger that exists but cannot be parsed, or whose entries member is not an array, is rejected with VIBEPRO_REVIEW_SURFACE_LEDGER_UNREADABLE, reports readable false with one counted violation, and makes review close throw rather than drop the record.",
+      "rationale": "RSV-7: an unreadable ledger and a deleted ledger are indistinguishable, so both must block; an absent ledger is different and reads clean.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 6,
+            "text_snippet": "RSV-7: 既存 artifact の後方互換と、破損 ledger の fail-closed"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/review-surface-violations.js",
+            "anchor": "REVIEW_SURFACE_LEDGER_UNREADABLE"
+          },
+          {
+            "file": "src/review-surface-violations.js",
+            "anchor": "readReviewSurfaceViolations"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/review-surface-violation-ledger.test.js"
+          },
+          {
+            "file": "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T08:43:58.899Z",
+      "last_revised_at": "2026-07-29T08:43:58.899Z"
+    },
+    {
+      "id": "C-004",
+      "type": "contract",
+      "statement": "review close stamps surface_violation_id and accumulates surface_violation_ids on the lifecycle entry, and reconciliation reports every pointer with no matching ledger entry as review_surface_violation_entry_missing under its own missing:<violation-id> id, so replacing the ledger with an empty one exchanges one counted violation for another; lifecycles that predate detection are reported as unevaluated_lifecycle_count so a passing gate never claims that nothing moved.",
+      "rationale": "RSV-8: a well-formed rewrite is detected by the second copy of the fact, and a pass reason must not assert anything about what nobody evaluated.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 7,
+            "text_snippet": "RSV-8: ledger を well-formed な空 ledger へ差し替えても違反は消えない"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/review-surface-violations.js",
+            "anchor": "reconcileReviewSurfaceViolationPointers"
+          },
+          {
+            "file": "src/review-surface-violations.js",
+            "anchor": "REVIEW_SURFACE_LEDGER_ENTRY_MISSING_KIND"
+          },
+          {
+            "file": "src/agent-review.js",
+            "anchor": "surface_violation_ids"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/review-surface-violation-ledger.test.js"
+          },
+          {
+            "file": "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T08:43:58.899Z",
+      "last_revised_at": "2026-07-29T08:43:58.899Z"
+    },
+    {
+      "id": "C-005",
+      "type": "contract",
+      "statement": "Appending runs under a story level lock so two closes recording different entries for the same story both survive; an unrecognized close reason is rejected instead of being coerced to completed; generated close command templates emit the reason matching their purpose; and an unreadable ledger is acknowledgeable through an accepted decision on gate:review_surface_integrity:ledger_unreadable so the block has an exit.",
+      "rationale": "RSV-9: append-only is only durable if simultaneous writers cannot drop each other, and a block with no exit is not a gate.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 8,
+            "text_snippet": "RSV-9: 並行 close で違反が失われない"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/review-surface-violations.js",
+            "anchor": "appendReviewSurfaceViolation"
+          },
+          {
+            "file": "src/independent-review-orchestrator.js",
+            "anchor": "runtimeStopCloseReason"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/review-surface-violation-ledger.test.js"
+          },
+          {
+            "file": "test/independent-review-orchestrator.test.js"
+          },
+          {
+            "file": "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T08:43:58.899Z",
+      "last_revised_at": "2026-07-29T08:43:58.899Z"
+    },
+    {
+      "id": "C-006",
+      "type": "contract",
+      "statement": "Review dispatch gating and recorder lineage resolution are inherited unchanged: this Story adds close-time snapshot recording and the ledger, and does not alter how a role decides to stop before dispatch, how a non-dispatch decision is refused, or when a recorder lineage envelope is omitted.",
+      "rationale": "Names the pre-existing branches this change deliberately leaves alone, so the Requirement Gate does not read them as undeclared new behavior.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "background",
+            "text_snippet": "本 Story は close 時点の検出と記録、および pr prepare での表示のみを対象にする"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/independent-review-orchestrator.js",
+            "anchor": "runtimeStopCloseReason"
+          },
+          {
+            "file": "src/agent-review.js",
+            "anchor": "recordReviewSurfaceViolationForClose"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/independent-review-orchestrator.test.js"
+          }
+        ]
+      },
+      "inherited_behaviors": [
+        {
+          "condition": "!supplied && !runAuthority",
+          "classification": "unchanged",
+          "files": [
+            "src/agent-review.js"
+          ]
+        },
+        {
+          "condition": "!startedEntry?.dispatch_authorization_id",
+          "classification": "unchanged",
+          "files": [
+            "src/agent-review.js"
+          ]
+        },
+        {
+          "condition": "isStop(authorization",
+          "classification": "unchanged",
+          "files": [
+            "src/independent-review-orchestrator.js"
+          ]
+        },
+        {
+          "condition": "authorization.action && authorization.action !== 'dispatch'",
+          "classification": "unchanged",
+          "files": [
+            "src/independent-review-orchestrator.js"
+          ]
+        }
+      ],
+      "first_seen_at": "2026-07-29T08:43:58.899Z",
+      "last_revised_at": "2026-07-29T08:43:58.899Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given a review workflow in the started state, when the review surface changes between start and close and the close reason is completed, then the flow transitions to violation recorded and one append-only entry is added to the ledger.",
+      "rationale": "RSV-2 walked as a workflow state transition.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "RSV-2: close 時点の head sha または surface digest が start 時点と異なり"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/review-surface-violations.js",
+            "anchor": "detectReviewSurfaceMutation"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T08:43:58.899Z",
+      "last_revised_at": "2026-07-29T08:43:58.899Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "Given a review workflow whose close was clean, when an unrelated commit lands after the close, then no ledger entry is appended and the review workflow state machine keeps its existing transitions and statuses.",
+      "rationale": "RSV-6 walked as a workflow state transition: staleness must not enter the violation flow.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "RSV-6: stale と violation は型として分離されている"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/agent-review.js",
+            "anchor": "closed_surface_digest"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/e2e/story-vibepro-review-surface-violation-ledger-acceptance.spec.ts"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-29T08:43:58.899Z",
+      "last_revised_at": "2026-07-29T08:43:58.899Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "rationale": "The close-time comparison and the two outcomes it can produce; cited by RSV-1, RSV-2 and RSV-5.",
+      "mermaid": "flowchart LR\n  Start[review start] --> Snapshot[head_sha and surface_digest recorded]\n  Snapshot --> Running[reviewer inspects]\n  Running --> Close[lifecycle close]\n  Close --> Compare{surface moved and close_reason completed}\n  Compare -- no --> Lifecycle[closed_head_sha and closed_surface_digest only]\n  Compare -- yes --> Ledger[append-only surface-violations.json]\n  Ledger --> Gate[gate:review_surface_integrity failed]\n  Gate --> Ack[accepted decision record]\n  Ack --> Gate"
+    },
+    {
+      "kind": "threat_model",
+      "rationale": "The four ways a recorded violation could be made to disappear, and the control that answers each; cited by RSV-3, RSV-7, RSV-8 and RSV-9.",
+      "mermaid": "flowchart LR\n  Actor[Implementing agent or operator] --> Surface[Review surface between start and close]\n  Surface --> Asset[Recorded review verdict and the PR gate decision it feeds]\n  Threat1[Mutate the tree while a review is running] --> Surface\n  Threat2[Re-run the review so the finding is overwritten] --> Asset\n  Threat3[Rewrite the ledger to a well-formed empty file] --> Asset\n  Threat4[Corrupt the ledger so it reads as empty] --> Asset\n  Surface --> Control1[close computes closed_head_sha and closed_surface_digest without agent self-report]\n  Control1 --> Control2[append-only ledger with no delete or update operation]\n  Control2 --> Control3[lifecycle surface_violation_ids reconciled against ledger entries]\n  Control3 --> Control4[unreadable ledger fails closed while an absent ledger reads clean]\n  Control4 --> Asset"
+    }
+  ],
+  "generated_at": "2026-07-29T08:43:58.898Z",
+  "previous_spec_id": null
+}

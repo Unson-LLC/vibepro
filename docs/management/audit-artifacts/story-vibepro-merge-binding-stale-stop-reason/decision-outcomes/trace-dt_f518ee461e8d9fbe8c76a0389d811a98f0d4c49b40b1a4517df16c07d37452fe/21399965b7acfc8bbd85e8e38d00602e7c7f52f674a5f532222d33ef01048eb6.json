@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-merge-binding-stale-stop-reason",
+  "ledger_path": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_f518ee461e8d9fbe8c76a0389d811a98f0d4c49b40b1a4517df16c07d37452fe"
+  },
+  "parent_revision_fingerprint": "3763e9357ab477ba6473468a1e324e897d4e4bd7c4cec5eca7d130daf021894c",
+  "revision_fingerprint": "21399965b7acfc8bbd85e8e38d00602e7c7f52f674a5f532222d33ef01048eb6",
+  "trace": {
+    "decision_trace_id": "dt_f518ee461e8d9fbe8c76a0389d811a98f0d4c49b40b1a4517df16c07d37452fe",
+    "collision_group": null,
+    "trace_source_ref": "tsr_d83f8ddc7f89fdc958acd183ed8e981a34b7ec1ef515b3171b1c8524f64d53f1",
+    "normalized_subject_key": "finding:unit-integration-evidence-head-lag",
+    "source_identity": {
+      "source_kind": "linked_sources",
+      "source_ref": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/review-result-gate_evidence.json,.vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/review-result-gate_evidence.json",
+      "native_id": "unit-integration-evidence-head-lag,unit-integration-evidence-head-lag",
+      "digest": "c4243411ba450bc63d4bef7a2e7521f91ee1a224270a8dd049383e536a861541",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+    "parent_revision_fingerprint": "3763e9357ab477ba6473468a1e324e897d4e4bd7c4cec5eca7d130daf021894c",
+    "revision_fingerprint": "21399965b7acfc8bbd85e8e38d00602e7c7f52f674a5f532222d33ef01048eb6",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_f518ee461e8d9fbe8c76a0389d811a98f0d4c49b40b1a4517df16c07d37452fe"
+        },
+        "parent_revision_fingerprint": "4c32d6cb8f05c9f69b140717d7cb0c9b28d8900c54c04179907f5c76416dbe87"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "observed",
+      "value": {
+        "severity": "minor",
+        "id": "unit-integration-evidence-head-lag",
+        "detail": "unit.json and integration.json record head_sha 51d8b7c2 while head is two metadata commits past 5e11a57f; every intervening commit leaves src/merge-manager.js and the unit test file unchanged"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/review-result-gate_evidence.json",
+          "source_head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+          "source_digest": "323cea0161b39e566a41009b8cf63fbf24b046d08833380c7d946bfd9ca6ffb7",
+          "native_id": "unit-integration-evidence-head-lag"
+        }
+      ]
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "observed",
+      "value": {
+        "detected_by": "gate_evidence",
+        "stage": "gate",
+        "detected_head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/review-result-gate_evidence.json",
+          "source_head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+          "source_digest": "323cea0161b39e566a41009b8cf63fbf24b046d08833380c7d946bfd9ca6ffb7",
+          "native_id": "unit-integration-evidence-head-lag"
+        }
+      ]
+    },
+    "disposition": {
+      "status": "observed",
+      "value": {
+        "finding_id": "unit-integration-evidence-head-lag",
+        "disposition": "accepted",
+        "resolved_by": [],
+        "reason": "content-surface freshness policy applies; the lag is design-lineage metadata only, not drift",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/review-result-gate_evidence.json",
+          "source_head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+          "source_digest": "22e61e7af6c87ac6e5c3c9484d774f89d200932557069c0f8c1004dc6991a99e",
+          "native_id": "unit-integration-evidence-head-lag"
+        }
+      ]
+    },
+    "decision": {
+      "status": "observed",
+      "value": {
+        "finding_id": "unit-integration-evidence-head-lag",
+        "disposition": "accepted",
+        "resolved_by": [],
+        "reason": "content-surface freshness policy applies; the lag is design-lineage metadata only, not drift",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-merge-binding-stale-stop-reason/gate/review-result-gate_evidence.json",
+          "source_head_sha": "a584ceb0333acdc5c256cb15ca6fa91f46473f69",
+          "source_digest": "22e61e7af6c87ac6e5c3c9484d774f89d200932557069c0f8c1004dc6991a99e",
+          "native_id": "unit-integration-evidence-head-lag"
+        }
+      ]
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 398,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/398",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "412ecdc01877941491df99cb5378d832cd67ee3c",
+        "status": "merged_externally",
+        "merged_at": "2026-07-29T16:13:45Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-merge-binding-stale-stop-reason/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

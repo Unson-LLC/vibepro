@@ -24,8 +24,8 @@ const NON_LIMIT_KEYS = new Set(['amendment_reason']);
 const GRANTOR_KINDS = new Set(['human', 'agent']);
 
 // Overrides that predate this gate, pinned to the digest of their exact content.
-// Grandfathering the *content* and not merely the *story* means these 13 entries
-// keep working exactly as merged, while any edit to one of them changes its
+// Grandfathering the *content* and not merely the *story* means each pinned entry
+// keeps working exactly as merged, while any edit to one of them changes its
 // digest and drops it to `unauthorized` -- a snapshot, not a licence. Extending
 // this map requires a code diff that a reviewer sees; it cannot be widened by
 // editing `.vibepro/config.json`.
@@ -47,9 +47,13 @@ export const GRANDFATHERED_OVERRIDE_DIGESTS = Object.freeze({
   // gate was still in review, so leaving them unpinned would retroactively make
   // an already-merged Story's override inert -- exactly the outcome the
   // grandfather policy exists to prevent. Pinned to their merged content, on the
-  // same snapshot-not-licence terms as the original thirteen.
+  // same snapshot-not-licence terms as the pins above.
   'story-vibepro-task-scoped-pr-acceptance': 'c287f248c6d43a91fc4dec922e2500247ef1f41a358c07328b3dfdd2efd62ad6',
-  'story-vibepro-runner-direct-evidence': 'bbcbf3cbb63d704f3dc961093b51f3a704a83fc0d6fbb6589b4556d2af702029'
+  'story-vibepro-runner-direct-evidence': 'bbcbf3cbb63d704f3dc961093b51f3a704a83fc0d6fbb6589b4556d2af702029',
+  // Same reason, second delta merge: this Story merged to main while this gate
+  // was still in review, so its override predates the gate from main's point of
+  // view and must stay effective rather than be retroactively voided.
+  'story-vibepro-review-surface-violation-ledger': '34a18c23a5dc18aafdb66e998ea8566185800e329fedb058ade726801de1b5f4'
 });
 
 export function budgetApprovalSource(storyId) {

@@ -163,6 +163,15 @@ test(`${STORY_ID} binds promoted gate outcomes to the immutable delivery revisio
   assert.equal(failedMerge.reconciliation.status, 'reconciliation_required');
   assert.equal(failedMerge.stop_reason, 'decision_outcome_binding_failed');
 
+  const reboundBinding = applyDecisionOutcomeBinding(failedMerge, {
+    localEntries,
+    promotion: { status: 'promoted', promoted_count: 0, duplicate_count: 2 }
+  });
+  assert.equal(reboundBinding.status, 'bound', `${STORY_ID} a successful idempotent rerun rebinds every local outcome`);
+  assert.equal(failedMerge.reconciliation.status, 'reconciled', `${STORY_ID} a successful rebinding clears the stale binding-failure reconciliation flag`);
+  assert.deepEqual(failedMerge.reconciliation.reasons, []);
+  assert.equal(failedMerge.stop_reason, null, `${STORY_ID} a successful rebinding clears the stale decision_outcome_binding_failed stop_reason`);
+
   const notApplicableBinding = buildDecisionOutcomeBinding({
     localEntries: [],
     promotion: { status: 'no_entries', promoted_count: 0, duplicate_count: 0 }

@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-review-surface-violation-ledger",
+  "ledger_path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_bb89c3c18b9457b03e62f1c37363af59464108cf794616704b9df8fcccb7a473"
+  },
+  "parent_revision_fingerprint": "797f9429d3a502e9e56336b7d88ab448b7cdfe3c05e7e2e85decff61bb246977",
+  "revision_fingerprint": "28ffda15ac583623cfc696982c27df8a9995999b6296a09af20a92a44b8ef88d",
+  "trace": {
+    "decision_trace_id": "dt_bb89c3c18b9457b03e62f1c37363af59464108cf794616704b9df8fcccb7a473",
+    "collision_group": null,
+    "trace_source_ref": "tsr_ef3bf21da3fb221e23ecbc83505be9d06b4f4fd434e79fe3707a4f40cb08c7e9",
+    "normalized_subject_key": "finding:stale-lock-reclaim-toctou",
+    "source_identity": {
+      "source_kind": "linked_sources",
+      "source_ref": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json,.vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+      "native_id": "stale-lock-reclaim-toctou,stale-lock-reclaim-toctou",
+      "digest": "187ca22e48ad9a594d75d6b208013f448bfdb1721403826af3b011d70f3a3c10",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+    "parent_revision_fingerprint": "797f9429d3a502e9e56336b7d88ab448b7cdfe3c05e7e2e85decff61bb246977",
+    "revision_fingerprint": "28ffda15ac583623cfc696982c27df8a9995999b6296a09af20a92a44b8ef88d",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_bb89c3c18b9457b03e62f1c37363af59464108cf794616704b9df8fcccb7a473"
+        },
+        "parent_revision_fingerprint": "15f067bf974f9958d4226bbc5ea9f24085103bcf4ad94d3ede6e0fe2477ac8e1"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "observed",
+      "value": {
+        "severity": "low",
+        "id": "stale-lock-reclaim-toctou",
+        "detail": "withDirectoryLock stale reclaim is check-then-act and the finally-rm deletes whatever directory is at the lock path, so two waiters racing a stale lock can both enter the read-modify-write and drop one entry; fails closed via pointer reconciliation (blocking missing:<id> violation) but the emitted detail then wrongly accuses ledger tampering; fix is an atomic rename-based reclaim plus a holder token checked before the finally-rm"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+          "source_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+          "source_digest": "a30ac518f0400eb4705425ab8dbf3869a3f2d30344a9a43476fda0f71d732e2e",
+          "native_id": "stale-lock-reclaim-toctou"
+        }
+      ]
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "observed",
+      "value": {
+        "detected_by": "runtime_contract",
+        "stage": "implementation",
+        "detected_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+          "source_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+          "source_digest": "a30ac518f0400eb4705425ab8dbf3869a3f2d30344a9a43476fda0f71d732e2e",
+          "native_id": "stale-lock-reclaim-toctou"
+        }
+      ]
+    },
+    "disposition": {
+      "status": "observed",
+      "value": {
+        "finding_id": "stale-lock-reclaim-toctou",
+        "disposition": "deferred",
+        "resolved_by": [],
+        "reason": "fail-closed impact bounded by pointer reconciliation; empirically unreproducible in 240 probed concurrent appends; fix (atomic rename reclaim + holder token) is a focused follow-up outside this frozen review surface",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+          "source_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+          "source_digest": "e107ef4a2d93e7741d9d20a0237a8a96d5839a02f5231bee13f10f2c29e0b60e",
+          "native_id": "stale-lock-reclaim-toctou"
+        }
+      ]
+    },
+    "decision": {
+      "status": "observed",
+      "value": {
+        "finding_id": "stale-lock-reclaim-toctou",
+        "disposition": "deferred",
+        "resolved_by": [],
+        "reason": "fail-closed impact bounded by pointer reconciliation; empirically unreproducible in 240 probed concurrent appends; fix (atomic rename reclaim + holder token) is a focused follow-up outside this frozen review surface",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-review-surface-violation-ledger/implementation/review-result-runtime_contract.json",
+          "source_head_sha": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+          "source_digest": "e107ef4a2d93e7741d9d20a0237a8a96d5839a02f5231bee13f10f2c29e0b60e",
+          "native_id": "stale-lock-reclaim-toctou"
+        }
+      ]
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 397,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/397",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "e3ef7b963170f8500d370f6914037009944d3e0e",
+        "status": "merged_externally",
+        "merged_at": "2026-07-29T10:38:00Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

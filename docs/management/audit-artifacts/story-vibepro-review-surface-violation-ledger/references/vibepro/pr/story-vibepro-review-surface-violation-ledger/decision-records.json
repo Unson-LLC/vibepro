@@ -1,0 +1,582 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-review-surface-violation-ledger",
+  "updated_at": "2026-07-29T09:36:21.867Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+      "expected_root": null,
+      "expected_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "current_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785317781867-268418d4",
+      "story_id": "story-vibepro-review-surface-violation-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": "needs_evidence",
+      "summary": "rollback_sensitive axis: the change set reverts atomically; feature-gate and upgrade/downgrade legs are non-applicable to an additive ledger file plus a test-pin realignment",
+      "reason": "Rollback plan: the entire PR (ledger commits + pin commit bb1a463f) reverts with git revert of the set; no migration, no schema change, no dependency change. Stored-object safety: the only new stored object is .vibepro/reviews/<story>/surface-violations.json, which is additive-only, is read clean when absent, and whose corrupt/truncated states fail closed with a typed error, so a revert leaves no unreadable state behind. Version skew: an older vibepro binary running against a repo that already has a ledger file simply never reads it (the file is namespaced under .vibepro/reviews and old readers do not reference it), degrading to pre-ledger behavior without error; a newer binary against a repo without a ledger reads clean by design (AC-7). Feature gate: none exists and none is required - the gate blocks only on unacknowledged violations, and repos with no violations see a passed gate, so disabled-behavior testing has no subject. Upgrade/downgrade test: non-applicable for the same reason; the acceptance suite already covers the legacy-artifact leg (RSV-7 legacy lifecycles read clean). The npm-side rollback path for the version pin is owned by docs/specs/story-vibepro-release-0-2-0-beta-2.md Operations and unchanged here.",
+      "reviewer": "orchestrating-session-3850f7a1(fable-5)",
+      "artifact": "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "expected_root": null,
+          "expected_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+          "current_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+        "current_branch": "claude/story-vibepro-review-surface-violation-ledger",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-29T09:36:21.861Z"
+      },
+      "recorded_at": "2026-07-29T09:36:21.867Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785317780818-444cacc2",
+      "story_id": "story-vibepro-review-surface-violation-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": "block",
+      "summary": "release_ops axis activated by the version-pin realignment commit bb1a463f; no new operator or user action is introduced by this PR",
+      "reason": "The release_ops axis fired because the diff now touches test/public-release-notes.test.js. That commit only realigns the hardcoded npm dist-tag expectation (0.2.0-beta.1 -> 0.2.0-beta.2) with the registry state published by merged PR #396, repairing main's own red CI (same cross-PR pin-conflict class as the /pass 18 -> 19/ correction shipped in #396). The operator path for the release itself is owned and documented by the release story: CHANGELOG 0.2.0-beta.2 is the release note authority, and docs/specs/story-vibepro-release-0-2-0-beta-2.md Operations documents rollout (post-merge workflow), rollback (npm deprecate + dist-tag repoint to beta.1 + revert main before any workflow re-run), and observability (workflow run log, GitHub Release, npm view vibepro version). This PR adds no operator action, no release note obligation beyond the already-merged one, and no support path change; the ledger feature itself ships inside the normal package release train. Owner-visible evidence: npm view vibepro dist-tags returns latest=0.2.0-beta.2 beta=0.2.0-beta.2, matching both docs/*/reference/version-history.md tables and the updated pin.",
+      "reviewer": "orchestrating-session-3850f7a1(fable-5)",
+      "artifact": "docs/specs/story-vibepro-release-0-2-0-beta-2.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "expected_root": null,
+          "expected_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+          "current_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+        "current_branch": "claude/story-vibepro-review-surface-violation-ledger",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-29T09:36:20.812Z"
+      },
+      "recorded_at": "2026-07-29T09:36:20.819Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785315355841-6fb3b511",
+      "story_id": "story-vibepro-review-surface-violation-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:bug_physics_triage",
+      "source_status": "needs_evidence",
+      "summary": "Bug physics selected the deployment class from a Japanese keyword; the version-stamp probe it asks for is this Story's actual mechanism",
+      "reason": "The deployment class was selected because the Story text repeatedly says 'レビュー実行中' and the classifier matches the substring 実行中. This Story is not a deployment fix and ships no artifact-versioning change, so that label should not be read as one. The probe the deployment profile asks for - evidence that the running session reads the expected artifact version - is nevertheless satisfied on its merits rather than by coincidence: review close records closed_head_sha and closed_surface_digest as the running review session's stamp of the surface it actually read, compares that stamp against the start-time stamp instead of assuming they agree, and RSV-8 reconciles the lifecycle pointer against the ledger entry so a substituted artifact version is reported rather than trusted. The recorded evidence is the unit run's version_stamp scenario at the current head, not a text match. A reviewer should read this gate as covered by that mechanism, not as a claim that a deployment bug was diagnosed and fixed.",
+      "reviewer": "sato_keigo",
+      "artifact": "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "expected_root": null,
+          "expected_head_sha": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+          "current_head_sha": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+        "current_branch": "claude/story-vibepro-review-surface-violation-ledger",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-29T08:55:55.835Z"
+      },
+      "recorded_at": "2026-07-29T08:55:55.842Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785315354859-6829d908",
+      "story_id": "story-vibepro-review-surface-violation-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": "needs_evidence",
+      "summary": "One reviewable unit: the new ledger module, the call sites that consume it, its gate node and its tests are a single contract",
+      "reason": "The diff is one decision read end to end: src/review-surface-violations.js is the only new module, and src/agent-review.js, src/independent-review-orchestrator.js, src/pr-manager.js and src/cli.js each touch it for the same reason - record the close-time snapshot, append the typed entry, surface it as gate:review_surface_integrity, and expose it read-only on the CLI. Splitting would leave a gate reading a ledger no writer maintains, so the blast radius is deliberately bundled and is bounded by the design root's owned surfaces. Review ownership is the gate stage: gate_evidence owns the gate node and the evidence shape, release_risk owns the operational exit. The remaining review_owner_map evidence is produced by that pending gate-stage agent review and is dispatched separately; it is not waived here. What is decided here is only the scope question - this PR is one reviewable unit and is not to be split.",
+      "reviewer": "sato_keigo",
+      "artifact": "docs/architecture/vibepro-review-surface-violation-ledger.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "expected_root": null,
+          "expected_head_sha": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+          "current_head_sha": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "1ea3d5db1a83eb19b2312b045a223f80ed3862d4",
+        "current_branch": "claude/story-vibepro-review-surface-violation-ledger",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-29T08:55:54.854Z"
+      },
+      "recorded_at": "2026-07-29T08:55:54.860Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785313623341-99a823cc",
+      "story_id": "story-vibepro-review-surface-violation-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": "needs_review",
+      "summary": "No split: one contract, revert-safe as a set",
+      "reason": "The module and its gate output are consumed across agent-review, orchestrator and pr-manager in the same change; a partial revert would leave a gate reading a ledger that no writer maintains",
+      "reviewer": "sato_keigo",
+      "artifact": "docs/architecture/vibepro-review-surface-violation-ledger.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "expected_root": null,
+          "expected_head_sha": "190d6d0227c2a360bd48c1e678f6e690cfa7500e",
+          "current_head_sha": "190d6d0227c2a360bd48c1e678f6e690cfa7500e",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "190d6d0227c2a360bd48c1e678f6e690cfa7500e",
+        "current_branch": "claude/story-vibepro-review-surface-violation-ledger",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-29T08:27:03.336Z"
+      },
+      "recorded_at": "2026-07-29T08:27:03.341Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785313622375-fafc6018",
+      "story_id": "story-vibepro-review-surface-violation-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": "needs_review",
+      "summary": "Bundled scope justified: one new module, its integrations, its tests and its docs are one contract",
+      "reason": "The 15 files are the violation-ledger contract surface: the new module, its consumers (agent-review close path, orchestrator, pr-manager gate output, cli), two test surfaces, the acceptance spec, the architecture doc, CLI references, and the three registrations. Splitting would separate the gate from the ledger it reads",
+      "reviewer": "sato_keigo",
+      "artifact": "docs/architecture/vibepro-review-surface-violation-ledger.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "expected_root": null,
+          "expected_head_sha": "190d6d0227c2a360bd48c1e678f6e690cfa7500e",
+          "current_head_sha": "190d6d0227c2a360bd48c1e678f6e690cfa7500e",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "190d6d0227c2a360bd48c1e678f6e690cfa7500e",
+        "current_branch": "claude/story-vibepro-review-surface-violation-ledger",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-29T08:27:02.370Z"
+      },
+      "recorded_at": "2026-07-29T08:27:02.376Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785313621373-c93f0219",
+      "story_id": "story-vibepro-review-surface-violation-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": "needs_review",
+      "summary": "The committed .vibepro/config.json change is the Story catalog registration, not diagnostic evidence",
+      "reason": "The only .vibepro path in the diff is config.json whose brainbase.stories registration is the documented self-dogfood prerequisite, committed by every Story PR in this repository",
+      "reviewer": "sato_keigo",
+      "artifact": "docs/management/stories/active/story-vibepro-review-surface-violation-ledger.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "expected_root": null,
+          "expected_head_sha": "190d6d0227c2a360bd48c1e678f6e690cfa7500e",
+          "current_head_sha": "190d6d0227c2a360bd48c1e678f6e690cfa7500e",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "190d6d0227c2a360bd48c1e678f6e690cfa7500e",
+        "current_branch": "claude/story-vibepro-review-surface-violation-ledger",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-29T08:27:01.366Z"
+      },
+      "recorded_at": "2026-07-29T08:27:01.374Z"
+    }
+  ],
+  "summary": {
+    "total": 7,
+    "open": 0,
+    "by_type": {
+      "needs_review": 7
+    },
+    "by_status": {
+      "accepted": 7
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+        "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+        "expected_root": null,
+        "expected_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+        "current_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785317781867-268418d4",
+      "story_id": "story-vibepro-review-surface-violation-ledger",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": "needs_evidence",
+      "summary": "rollback_sensitive axis: the change set reverts atomically; feature-gate and upgrade/downgrade legs are non-applicable to an additive ledger file plus a test-pin realignment",
+      "reason": "Rollback plan: the entire PR (ledger commits + pin commit bb1a463f) reverts with git revert of the set; no migration, no schema change, no dependency change. Stored-object safety: the only new stored object is .vibepro/reviews/<story>/surface-violations.json, which is additive-only, is read clean when absent, and whose corrupt/truncated states fail closed with a typed error, so a revert leaves no unreadable state behind. Version skew: an older vibepro binary running against a repo that already has a ledger file simply never reads it (the file is namespaced under .vibepro/reviews and old readers do not reference it), degrading to pre-ledger behavior without error; a newer binary against a repo without a ledger reads clean by design (AC-7). Feature gate: none exists and none is required - the gate blocks only on unacknowledged violations, and repos with no violations see a passed gate, so disabled-behavior testing has no subject. Upgrade/downgrade test: non-applicable for the same reason; the acceptance suite already covers the legacy-artifact leg (RSV-7 legacy lifecycles read clean). The npm-side rollback path for the version pin is owned by docs/specs/story-vibepro-release-0-2-0-beta-2.md Operations and unchanged here.",
+      "reviewer": "orchestrating-session-3850f7a1(fable-5)",
+      "artifact": "docs/specs/story-vibepro-review-surface-violation-ledger.md",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/happy-turing-71022f",
+          "expected_root": null,
+          "expected_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+          "current_head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "bb1a463fbcf64557f962b42e9831ddb9a12f729f",
+        "current_branch": "claude/story-vibepro-review-surface-violation-ledger",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-29T09:36:21.861Z"
+      },
+      "recorded_at": "2026-07-29T09:36:21.867Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-review-surface-violation-ledger/decision-records.json"
+}

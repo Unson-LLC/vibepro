@@ -1,0 +1,269 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-review-surface-violation-ledger",
+  "updated_at": "2026-07-29T10:08:30.277Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-9",
+      "verdict": "demonstrated",
+      "reason": "Evidence E-2 at 42a4d181. appendReviewSurfaceViolation serialises the entire read-modify-write under withDirectoryLock (src/review-surface-violations.js:155-182), an atomic mkdir lock with stale reclaim and a finally release. Test :689 fires two distinct appends through Promise.all, exactly the falsification the Story specifies, and asserts both survive with entry count 2. Test :714 proves an unrecognized close reason is rejected and mints no violation; :728 and :756 prove an unreadable ledger stays acknowledgeable and the CLI exits non-zero.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-review-surface-violation-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "RSV-1: lifecycle を閉じる操作は毎回、close 時点の head sha と surface digest を",
+          "RSV-2: close 時点の head sha または surface digest が start 時点と異なり、",
+          "RSV-3: ledger はレビュー再実行で消えない。違反の記録後に同一 story/stage/role で",
+          "RSV-4: 同一 lifecycle に対する close の再実行（冪等キー再送を含む）は",
+          "RSV-5: `pr prepare` は `gate:review_surface_integrity` を出力する。未承認の",
+          "RSV-6: stale と violation は型として分離されている。レビュー close 後の",
+          "RSV-7: 既存 artifact の後方互換と、破損 ledger の fail-closed。",
+          "RSV-8: ledger を well-formed な空 ledger（`{\"entries\": []}`）へ差し替えても",
+          "RSV-9: 並行 close で違反が失われない。append は story 単位のロック下で"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d90e8edd2b868daac42c605c7230b18375ae5aac77d9aa6398c937706706bae2",
+      "recorded_at": "2026-07-29T10:08:30.276Z"
+    },
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "I verified reconcileReviewSurfaceViolationPointers (src/review-surface-violations.js:192-218): each lifecycle surface_violation_id with no matching ledger entry becomes a missing-prefixed entry under a deliberately new id, so an earlier acknowledgement cannot also acknowledge the erasure. Evidence E-2 at 42a4d181. Test :563 replaces the ledger with valid empty JSON and asserts unacknowledged_count stays 1 with kind review_surface_violation_entry_missing; :601 proves acknowledgement does not carry over; :861 reports both ids for one lifecycle.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-review-surface-violation-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "RSV-1: lifecycle を閉じる操作は毎回、close 時点の head sha と surface digest を",
+          "RSV-2: close 時点の head sha または surface digest が start 時点と異なり、",
+          "RSV-3: ledger はレビュー再実行で消えない。違反の記録後に同一 story/stage/role で",
+          "RSV-4: 同一 lifecycle に対する close の再実行（冪等キー再送を含む）は",
+          "RSV-5: `pr prepare` は `gate:review_surface_integrity` を出力する。未承認の",
+          "RSV-6: stale と violation は型として分離されている。レビュー close 後の",
+          "RSV-7: 既存 artifact の後方互換と、破損 ledger の fail-closed。",
+          "RSV-8: ledger を well-formed な空 ledger（`{\"entries\": []}`）へ差し替えても",
+          "RSV-9: 並行 close で違反が失われない。append は story 単位のロック下で"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d90e8edd2b868daac42c605c7230b18375ae5aac77d9aa6398c937706706bae2",
+      "recorded_at": "2026-07-29T10:08:29.765Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "Evidence E-2 at 42a4d181. readReviewSurfaceViolations (src/review-surface-violations.js:47-66) returns an empty ledger only on ENOENT and throws the typed VIBEPRO_REVIEW_SURFACE_LEDGER_UNREADABLE on malformed JSON or a non-array entries field. Test :432 shows legacy lifecycle entries lacking closed_head_sha plus an absent ledger read as zero violations without throwing; :478 shows a truncated ledger is rejected, readable false, unacknowledged_count 1, and the close over it throws rather than silently dropping the violation.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-review-surface-violation-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "RSV-1: lifecycle を閉じる操作は毎回、close 時点の head sha と surface digest を",
+          "RSV-2: close 時点の head sha または surface digest が start 時点と異なり、",
+          "RSV-3: ledger はレビュー再実行で消えない。違反の記録後に同一 story/stage/role で",
+          "RSV-4: 同一 lifecycle に対する close の再実行（冪等キー再送を含む）は",
+          "RSV-5: `pr prepare` は `gate:review_surface_integrity` を出力する。未承認の",
+          "RSV-6: stale と violation は型として分離されている。レビュー close 後の",
+          "RSV-7: 既存 artifact の後方互換と、破損 ledger の fail-closed。",
+          "RSV-8: ledger を well-formed な空 ledger（`{\"entries\": []}`）へ差し替えても",
+          "RSV-9: 並行 close で違反が失われない。append は story 単位のロック下で"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d90e8edd2b868daac42c605c7230b18375ae5aac77d9aa6398c937706706bae2",
+      "recorded_at": "2026-07-29T10:08:29.187Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "Evidence E-2 at 42a4d181. Separation is structural: detectReviewSurfaceMutation returns null unless close_reason is completed and compares only the start and close endpoints, so anything after close falls outside the detection window (src/review-surface-violations.js:86-97). Test :374 commits an unrelated file after a clean start-close-record and asserts the ledger stays empty; :405 proves a non-completed close records nothing and cannot smuggle a result through; :461 covers the timeout close. The gate carries distinct_from stale_review.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-review-surface-violation-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "RSV-1: lifecycle を閉じる操作は毎回、close 時点の head sha と surface digest を",
+          "RSV-2: close 時点の head sha または surface digest が start 時点と異なり、",
+          "RSV-3: ledger はレビュー再実行で消えない。違反の記録後に同一 story/stage/role で",
+          "RSV-4: 同一 lifecycle に対する close の再実行（冪等キー再送を含む）は",
+          "RSV-5: `pr prepare` は `gate:review_surface_integrity` を出力する。未承認の",
+          "RSV-6: stale と violation は型として分離されている。レビュー close 後の",
+          "RSV-7: 既存 artifact の後方互換と、破損 ledger の fail-closed。",
+          "RSV-8: ledger を well-formed な空 ledger（`{\"entries\": []}`）へ差し替えても",
+          "RSV-9: 並行 close で違反が失われない。append は story 単位のロック下で"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d90e8edd2b868daac42c605c7230b18375ae5aac77d9aa6398c937706706bae2",
+      "recorded_at": "2026-07-29T10:08:28.678Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Evidence E-2 and E-3, both refreshed at 42a4d181. Test :288 runs the real pr prepare CLI against a real temp repo, reads the produced pr-prepare.json, and asserts gate:review_surface_integrity is failed, required, on the DAG with both an incoming and outgoing edge, and ready_for_pr_create false; it then records an accepted decision, re-runs pr prepare, and asserts the gate flips to passed while violation_count stays 1. Test :247 proves a clean re-run does not clear it. Code pr-manager.js:14178-14253.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-review-surface-violation-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "RSV-1: lifecycle を閉じる操作は毎回、close 時点の head sha と surface digest を",
+          "RSV-2: close 時点の head sha または surface digest が start 時点と異なり、",
+          "RSV-3: ledger はレビュー再実行で消えない。違反の記録後に同一 story/stage/role で",
+          "RSV-4: 同一 lifecycle に対する close の再実行（冪等キー再送を含む）は",
+          "RSV-5: `pr prepare` は `gate:review_surface_integrity` を出力する。未承認の",
+          "RSV-6: stale と violation は型として分離されている。レビュー close 後の",
+          "RSV-7: 既存 artifact の後方互換と、破損 ledger の fail-closed。",
+          "RSV-8: ledger を well-formed な空 ledger（`{\"entries\": []}`）へ差し替えても",
+          "RSV-9: 並行 close で違反が失われない。append は story 単位のロック下で"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d90e8edd2b868daac42c605c7230b18375ae5aac77d9aa6398c937706706bae2",
+      "recorded_at": "2026-07-29T10:08:28.168Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Evidence E-2 at 42a4d181. buildReviewSurfaceViolationId (src/review-surface-violations.js:107-120) derives the id from story, stage, role, lifecycle_id, kind and both endpoint snapshots; the append dedupes on it at :144-145, and agent-review.js:994-997 short-circuits a replayed idempotency key before detection runs at all. Test :209 calls close twice with the same operationIdempotencyKey and asserts a single entry; :222 proves a direct re-append of the same fact is a no-op returning appended false.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-review-surface-violation-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "RSV-1: lifecycle を閉じる操作は毎回、close 時点の head sha と surface digest を",
+          "RSV-2: close 時点の head sha または surface digest が start 時点と異なり、",
+          "RSV-3: ledger はレビュー再実行で消えない。違反の記録後に同一 story/stage/role で",
+          "RSV-4: 同一 lifecycle に対する close の再実行（冪等キー再送を含む）は",
+          "RSV-5: `pr prepare` は `gate:review_surface_integrity` を出力する。未承認の",
+          "RSV-6: stale と violation は型として分離されている。レビュー close 後の",
+          "RSV-7: 既存 artifact の後方互換と、破損 ledger の fail-closed。",
+          "RSV-8: ledger を well-formed な空 ledger（`{\"entries\": []}`）へ差し替えても",
+          "RSV-9: 並行 close で違反が失われない。append は story 単位のロック下で"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d90e8edd2b868daac42c605c7230b18375ae5aac77d9aa6398c937706706bae2",
+      "recorded_at": "2026-07-29T10:08:27.664Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Append-only is structural: src/review-surface-violations.js exports no delete or update function, and appendReviewSurfaceViolation:132-150 only concatenates. Evidence E-2 (185/185) and E-3 (9/9), both runner_direct at 42a4d181. Test :172 records a violation, saves it, runs a full clean second round of start, close and record for the same story/stage/role, then asserts the survivor is deepEqual to the original and the count never decreases. The e2e wrapper re-runs that same suite in a clean child process at this head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-review-surface-violation-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "RSV-1: lifecycle を閉じる操作は毎回、close 時点の head sha と surface digest を",
+          "RSV-2: close 時点の head sha または surface digest が start 時点と異なり、",
+          "RSV-3: ledger はレビュー再実行で消えない。違反の記録後に同一 story/stage/role で",
+          "RSV-4: 同一 lifecycle に対する close の再実行（冪等キー再送を含む）は",
+          "RSV-5: `pr prepare` は `gate:review_surface_integrity` を出力する。未承認の",
+          "RSV-6: stale と violation は型として分離されている。レビュー close 後の",
+          "RSV-7: 既存 artifact の後方互換と、破損 ledger の fail-closed。",
+          "RSV-8: ledger を well-formed な空 ledger（`{\"entries\": []}`）へ差し替えても",
+          "RSV-9: 並行 close で違反が失われない。append は story 単位のロック下で"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d90e8edd2b868daac42c605c7230b18375ae5aac77d9aa6398c937706706bae2",
+      "recorded_at": "2026-07-29T10:08:27.144Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "I verified the mechanism directly: detectReviewSurfaceMutation (src/review-surface-violations.js:80-105) compares start and close head plus digest, firing only when close_reason is completed, and is invoked from both the close path (agent-review.js:1009) and the record --agent-closed path (agent-review.js:477-488). Evidence E-2 at 42a4d181. Test :129 shows an uncommitted mid-review edit yields changed_fields of surface_digest; :159 shows a mid-review commit adds head_sha; :779 shows the default close still records. I ran all three; unchanged at this head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-review-surface-violation-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "RSV-1: lifecycle を閉じる操作は毎回、close 時点の head sha と surface digest を",
+          "RSV-2: close 時点の head sha または surface digest が start 時点と異なり、",
+          "RSV-3: ledger はレビュー再実行で消えない。違反の記録後に同一 story/stage/role で",
+          "RSV-4: 同一 lifecycle に対する close の再実行（冪等キー再送を含む）は",
+          "RSV-5: `pr prepare` は `gate:review_surface_integrity` を出力する。未承認の",
+          "RSV-6: stale と violation は型として分離されている。レビュー close 後の",
+          "RSV-7: 既存 artifact の後方互換と、破損 ledger の fail-closed。",
+          "RSV-8: ledger を well-formed な空 ledger（`{\"entries\": []}`）へ差し替えても",
+          "RSV-9: 並行 close で違反が失われない。append は story 単位のロック下で"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d90e8edd2b868daac42c605c7230b18375ae5aac77d9aa6398c937706706bae2",
+      "recorded_at": "2026-07-29T10:08:26.642Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Evidence E-2 refreshed at 42a4d181 (unit 185/185, runner_direct). Test review-surface-violation-ledger.test.js:114 asserts both fields exist and equal the start values on an unmoved tree; :802 covers the review record --agent-closed close path so detection is not opt-out by skipping close; :905 types a missing start snapshot as skipped rather than clean. Code src/agent-review.js:930-936 and :526-530 assign on every close path. The delta since my hands-on run touched only the e2e wrapper, so these files are byte-identical to what I executed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a8e9fdbe618303d7c",
+        "session_ref": "claude-code-session:3850f7a1-ab42-45b1-870d-95778e0dfddf/subagent:a8e9fdbe618303d7c"
+      },
+      "head_commit": "42a4d1813acefe02e6860d8b5f21e845f621e79f",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-review-surface-violation-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "RSV-1: lifecycle を閉じる操作は毎回、close 時点の head sha と surface digest を",
+          "RSV-2: close 時点の head sha または surface digest が start 時点と異なり、",
+          "RSV-3: ledger はレビュー再実行で消えない。違反の記録後に同一 story/stage/role で",
+          "RSV-4: 同一 lifecycle に対する close の再実行（冪等キー再送を含む）は",
+          "RSV-5: `pr prepare` は `gate:review_surface_integrity` を出力する。未承認の",
+          "RSV-6: stale と violation は型として分離されている。レビュー close 後の",
+          "RSV-7: 既存 artifact の後方互換と、破損 ledger の fail-closed。",
+          "RSV-8: ledger を well-formed な空 ledger（`{\"entries\": []}`）へ差し替えても",
+          "RSV-9: 並行 close で違反が失われない。append は story 単位のロック下で"
+        ]
+      },
+      "acceptance_scope_fingerprint": "d90e8edd2b868daac42c605c7230b18375ae5aac77d9aa6398c937706706bae2",
+      "recorded_at": "2026-07-29T10:08:26.146Z"
+    }
+  ]
+}
