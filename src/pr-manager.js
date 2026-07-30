@@ -712,7 +712,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     split_plan: splitPlan,
     pr_context: prContext,
     toolchain,
-    task_context: taskContext,
+    task_context: sanitizeTaskContextForOutput(taskContext),
     latest_story_run: latestStoryRun,
     gate_outcome_ledger: gateOutcomeLedger,
     suggested_branch: suggestedBranch,
@@ -3557,6 +3557,12 @@ function sanitizeFileGroupsForOutput(fileGroups) {
       ? group.items.map(sanitizeChangedFileItemForOutput)
       : group?.items
   }]));
+}
+
+function sanitizeTaskContextForOutput(taskContext) {
+  if (!taskContext || typeof taskContext !== 'object') return taskContext;
+  const { rerun_command: _rerunCommand, ...safeTaskContext } = taskContext;
+  return safeTaskContext;
 }
 
 function isSourcePath(filePath) {

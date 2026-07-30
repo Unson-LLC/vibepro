@@ -20609,6 +20609,11 @@ test('TAR-CLI-001 pr prepare persists Task-bound repo-control proof and still bl
   assert.equal(positiveSignal.task_binding.reason_code, 'task_bound_repo_control_connected');
   assert.deepEqual(positiveSignal.task_binding.proof, expectedProof);
   assert.deepEqual(positivePreparation.split_plan.task_bound_repo_control, positiveSignal.task_binding);
+  assert.equal(
+    Object.hasOwn(positivePreparation.task_context, 'rerun_command'),
+    false,
+    'error-only repair commands with local repo paths must not persist in successful PR evidence'
+  );
   assert.notEqual(positivePreparation.split_plan.atomic_scope.status, 'accepted');
   assert.match(
     positivePreparation.split_plan.atomic_scope.rejection_reasons.join('\n'),
