@@ -1,0 +1,901 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-30T03:26:26.187Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:91765444cbda8b6ad91cab258f475f248c4e36f0a5efaa62e41a21f2ef3d73e3",
+    "compressed_hash": "sha256:030fe9321a4167986b4958085522fa44647f7cb0990e3f45083fedbb48d87a8e",
+    "expanded_bytes": 16806,
+    "compressed_bytes": 3509,
+    "expanded_line_count": 448,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "decision_outcome_ledger",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-session-cost-source-health-fail-soft",
+    "cost": {
+      "compressed_bytes": 3509,
+      "expanded_bytes": 16806,
+      "expanded_line_count": 448,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "base": "main",
+    "delivery": {
+      "status": "merged",
+      "source": "github_pr",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/399",
+      "merge_commit_sha": "17d9e139c87eebfffa07dd658ff40d9dbefd096b",
+      "merged_at": "2026-07-30T03:26:23Z"
+    },
+    "reconciliation": {
+      "status": "reconciliation_required",
+      "reasons": [
+        "decision_outcome_binding_failed"
+      ],
+      "evaluated_at": "2026-07-30T03:26:26.167Z",
+      "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600"
+    },
+    "reconciliation_action": {
+      "status": "required",
+      "reason": "decision_outcome_binding_failed",
+      "commands": [
+        "vibepro pr prepare . --story-id story-vibepro-session-cost-source-health-fail-soft --base main",
+        "vibepro execute merge . --story-id story-vibepro-session-cost-source-health-fail-soft --base main --pr https://github.com/Unson-LLC/vibepro/pull/399"
+      ]
+    },
+    "decision_outcome_binding": {
+      "status": "failed",
+      "reason": "central_ledger_parse_failed",
+      "expected_entry_count": 45,
+      "promoted_count": 0,
+      "duplicate_count": 0,
+      "persistence_status": null
+    },
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/399",
+    "merge_commit_sha": "17d9e139c87eebfffa07dd658ff40d9dbefd096b",
+    "merged_at": "2026-07-30T03:26:23Z",
+    "current_head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...f8929a3f1dcbc3a366df45d064303e8b1573e600"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 57,
+    "copied_reference_count": 45,
+    "unresolved_reference_count": 11,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-session-cost-source-health-fail-soft"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:91765444cbda8b6ad91cab258f475f248c4e36f0a5efaa62e41a21f2ef3d73e3"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:dd5cc573596fa5ae9ae9c35bed56c035185a7d7335f9597e32862ee7afa12a77",
+      "audit_digest": "sha256:dd5cc573596fa5ae9ae9c35bed56c035185a7d7335f9597e32862ee7afa12a77",
+      "line_count": 539,
+      "raw_line_count": 539,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_outcome_ledger",
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-outcome-ledger.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:e6b04288ff9b1bc5f949ef6a44be093f8c8cc291051f8b457a6f106e2430db71",
+      "audit_digest": "sha256:e6b04288ff9b1bc5f949ef6a44be093f8c8cc291051f8b457a6f106e2430db71",
+      "line_count": 467,
+      "raw_line_count": 467,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:4ecddc47c8a80fa86d49295b8a06be08624f1691934a5448a27d8ce311260b07",
+      "audit_digest": "sha256:f2cfb7127dad1ba3b589b42300dd3b7be6b4f525ffcf9b22a8269be2d3c6a575",
+      "line_count": 4679,
+      "raw_line_count": 36969,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:8c2b1a7ec14ff5276bd353728a26c31e1e8865b1d0c93573c1a502eb5e267be5",
+      "audit_digest": "sha256:11635ed60ed31f45a26d411f50ac8c9a62175826c444c8f2d67ab8935f63a29d",
+      "line_count": 1934,
+      "raw_line_count": 4099,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:260c28c7f9e725c6bcdc2ff62039c12165445ebed4c41987d1441c409482d6db",
+      "audit_digest": "sha256:ca417560c481c522a921eea92e19a479b905dbff75abb8b9a60cb61e1f5165c1",
+      "line_count": 14,
+      "raw_line_count": 524,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:2f35b3986b714273a0def6c512d5b779988e354610438614a79b072de73021e6",
+      "audit_digest": "sha256:234f3173da9158d6a48fd664e48316a7d045c5a777159a4f27e66282c63a5c1e",
+      "line_count": 1991,
+      "raw_line_count": 4281,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:6312fe3e22e20e663dd86929ce20f7e63b6ee6a45c1969a497bfc40056fb596a",
+      "audit_digest": "sha256:6312fe3e22e20e663dd86929ce20f7e63b6ee6a45c1969a497bfc40056fb596a",
+      "line_count": 377,
+      "raw_line_count": 377,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:9f9757dbb4d851de2eae78238636fd4247c08a8c2177d144602c16e549dd47cd",
+      "audit_digest": "sha256:9e75065460553eb9491dfecd99364501eadb10f657cc78d8921f2b35a6bb29fe",
+      "line_count": 86,
+      "raw_line_count": 1060,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:4ca2bd79b2fecded419f434dc3a405f2e97fd09c45f065ee357bbcbd0d026839",
+      "audit_digest": "sha256:4ca2bd79b2fecded419f434dc3a405f2e97fd09c45f065ee357bbcbd0d026839",
+      "line_count": 579,
+      "raw_line_count": 579,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:615add80723de5f4cd61594aa8f0ece3870a37126def0d5f204d1963d6a10b54",
+      "audit_digest": "sha256:615add80723de5f4cd61594aa8f0ece3870a37126def0d5f204d1963d6a10b54",
+      "line_count": 609,
+      "raw_line_count": 609,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:89bbc6f70032d0a6c280e00c6d8ba685e5494c9fe70ae218d23ed496d8c82d30",
+      "audit_digest": "sha256:89bbc6f70032d0a6c280e00c6d8ba685e5494c9fe70ae218d23ed496d8c82d30",
+      "line_count": 793,
+      "raw_line_count": 793,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:85e66f96e185572763cd305aafc3082f31c3ebc66c8f5f408c82d89de823292b",
+      "audit_digest": "sha256:85e66f96e185572763cd305aafc3082f31c3ebc66c8f5f408c82d89de823292b",
+      "line_count": 156,
+      "raw_line_count": 156,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:0586b5a44a72d98aabf4816c6837990f45bf552ec2792b54bac9fe1d7ff405da",
+      "audit_digest": "sha256:0586b5a44a72d98aabf4816c6837990f45bf552ec2792b54bac9fe1d7ff405da",
+      "line_count": 143,
+      "raw_line_count": 143,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/audit-replay-bundle.json.gz",
+      "digest": "sha256:511d80fc9ed336411b903f43e492e3c139f4c0912c2303bdac8fc3ad87d8051b",
+      "audit_digest": "sha256:511d80fc9ed336411b903f43e492e3c139f4c0912c2303bdac8fc3ad87d8051b",
+      "line_count": 1158,
+      "raw_line_count": 1158,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-session-cost-source-health-fail-soft/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/adjudication/story-vibepro-session-cost-source-health-fail-soft/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-outcome-ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/pr/decision-outcome-ledger.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/pr/traceability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-19-41.069Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-19-41.069Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-25-45.128Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-25-45.128Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-34-11.372Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-34-11.372Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-42-11.687Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-42-11.687Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-session-cost-source-health-fail-soft/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/stories/story-vibepro-session-cost-source-health-fail-soft/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-session-cost-source-health-fail-soft/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/stories/story-vibepro-session-cost-source-health-fail-soft/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-session-cost-source-health-fail-soft/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/adjudication/story-vibepro-session-cost-source-health-fail-soft/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/diagnostics/2026-07-30T020928Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-19-41.069Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-19-41.069Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-25-45.128Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-25-45.128Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-34-11.372Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-34-11.372Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-42-11.687Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/history/review-result-gate_evidence-2026-07-30T02-42-11.687Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-session-cost-source-health-fail-soft/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/stories/story-vibepro-session-cost-source-health-fail-soft/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-session-cost-source-health-fail-soft/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-session-cost-source-health-fail-soft/references/vibepro/stories/story-vibepro-session-cost-source-health-fail-soft/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-session-cost-source-health-fail-soft/judgment-adjudication.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/design-ssot/story-vibepro-session-cost-source-health-fail-soft.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 7279287
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T020928Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 985129
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 7292166
+    },
+    {
+      "source": ".vibepro/pr",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 584743
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/surface-violations.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-session-cost-source-health-fail-soft/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-session-cost-source-health-fail-soft/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-session-cost-source-health-fail-soft/state.json",
+      "reason": "source_missing"
+    }
+  ]
+}
