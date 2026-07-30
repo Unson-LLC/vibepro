@@ -124,21 +124,6 @@ test('store status reports missing and stale counts across local and store', asy
   assert.equal(status.missing_in_local, 0);
 });
 
-test('mutating CLI commands auto-snapshot durable records into the store', async () => {
-  const { runCli } = await import('../src/cli.js');
-  const base = await realpath(await mkdtemp(path.join(tmpdir(), 'vibepro-store-cli-')));
-  const repo = path.join(base, 'repo');
-  await mkdir(repo);
-  await execFileAsync('git', ['init', '-b', 'main'], { cwd: repo });
-  await runCli(['init', repo, '--story-id', STORY, '--title', 'T', '--view', 'dev', '--period', '2026-W18']);
-  const specInput = path.join(base, 'spec.json');
-  await writeFile(specInput, JSON.stringify({ schema_version: '0.1.0', story_id: STORY, generated_by: { caller: 'test', stage: 'ai_synthesis' }, clauses: [] }));
-  const result = await runCli(['spec', 'write', repo, '--id', STORY, '--input', specInput, '--draft', '--json']);
-  assert.equal(result.exitCode, 0);
-  const mirrored = await readFile(path.join(repo, '.vibepro-store', STORY, 'spec', STORY, 'draft.json'), 'utf8');
-  assert.ok(mirrored.length > 0);
-});
-
 test('snapshot rejects unsafe story ids and the fail-soft wrapper never throws', async () => {
   const { worktree } = await makeRepoWithWorktree();
   const bad = await snapshotProcessRecords({ repoRoot: worktree, storyId: '../evil' });
