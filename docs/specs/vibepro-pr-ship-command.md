@@ -1,6 +1,8 @@
 ---
 story_id: story-vibepro-pr-ship-command
 title: VibePro PR ship Command Spec
+architecture_ref: docs/architecture/vibepro-pr-ship-command.md
+parent_design: vibepro-pr-ship-command
 ---
 
 # 仕様

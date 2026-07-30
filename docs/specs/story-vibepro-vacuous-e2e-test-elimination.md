@@ -1,3 +1,11 @@
+---
+story_id: story-vibepro-vacuous-e2e-test-elimination
+title: Vacuous e2e Test Elimination Spec
+architecture_ref: docs/architecture/story-vibepro-vacuous-e2e-test-elimination.md
+parent_design: vibepro-vacuous-e2e-test-elimination
+status: accepted
+---
+
 # Spec: 製品コードを実行しないtest/e2eの自己充足テストを解消し再発をlintで止める
 
 - Story: `story-vibepro-vacuous-e2e-test-elimination`

@@ -1,6 +1,8 @@
 ---
 story_id: story-vibepro-vacuous-e2e-test-elimination
 title: 製品コードを実行しないtest/e2eの自己充足テストを解消し再発をlintで止める
+architecture_ref: docs/architecture/story-vibepro-vacuous-e2e-test-elimination.md
+parent_design: vibepro-vacuous-e2e-test-elimination
 status: active
 view: dev
 period: 2026-07
