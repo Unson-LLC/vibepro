@@ -223,10 +223,6 @@ test('every configured story override resolves to a known authority status', asy
   const entries = Object.entries(config.budgets.delivery_efficiency_by_story ?? {});
   assert.ok(entries.length > 0);
   for (const [storyId, override] of entries) {
-    // Decision records are stored per Story, so a single repo-wide read returns
-    // nothing and would silently reduce this back to the stubbed form.
-    const storePath = path.join(repoRoot, '.vibepro', 'pr', storyId, 'decision-records.json');
-    const storeExists = existsSync(storePath);
     const records = await readDecisionRecordsIfExists(repoRoot, storyId).catch(() => null);
     const decisions = records?.decisions ?? [];
     // The anti-decay guard. `.gitignore` keeps `.vibepro/*` untracked except
@@ -236,7 +232,16 @@ test('every configured story override resolves to a known authority status', asy
     // What must hold everywhere is consistency: wherever a store does exist on
     // disk, this test has to have actually read it. Reverting to `decisions: []`
     // trips this on any checkout that has the artifacts.
-    if (storeExists) {
+    //
+    // The path is taken from the reader's own returned `artifact` rather than
+    // rebuilt here. An earlier form hardcoded `.vibepro/pr/<id>/decision-records.json`
+    // while production resolved it through resolvePrArtifactFile, so a change to
+    // artifact routing would have moved the store, left this literal pointing at
+    // nothing, and silently turned the guard off instead of failing.
+    const storePath = records?.artifact ? path.join(repoRoot, records.artifact) : null;
+    if (storePath) {
+      assert.ok(existsSync(storePath),
+        `${storyId}: the reader reported ${records.artifact} but nothing is there; artifact routing and this probe disagree`);
       assert.ok(decisions.length > 0,
         `${storyId} has a decision store on disk but none of its decisions were read; this test is not consulting the real store`);
     }
@@ -272,6 +277,68 @@ test('every configured story override resolves to a known authority status', asy
     assert.deepEqual(resolved.status === 'grandfathered' ? resolved.reasons : [], [],
       `${storyId} grandfathered entries must carry no disqualifying reason`);
   }
+});
+
+// OGB-S-8, authorized branch, unconditionally.
+//
+// The test above is honest about the real config, but its `authorized` leg only
+// runs where a decision store happens to exist on disk. `.vibepro/*` is
+// gitignored, so on CI and on any fresh clone that leg never executed: the
+// evidence adjudicator judged AC-8 not demonstrated for exactly that reason --
+// the surviving assertions there were satisfiable without ever reaching the
+// branch this Story exists to enforce.
+//
+// This test removes the condition by supplying the grant from a tracked fixture
+// instead of from workspace artifacts. It runs identically everywhere, and it is
+// the load-bearing half: it fails if an accepted, digest-matched, human-granted
+// approval stops producing `authorized`, and it fails if `authorized` starts
+// being reachable without one.
+test('a committed fixture grant drives the authorized branch on every checkout', () => {
+  const fixture = JSON.parse(readFileSync(
+    new URL('./fixtures/budget-override-authority/authorized-grant-store.json', import.meta.url), 'utf8'));
+  const { story_id: storyId, override, decisions } = fixture;
+
+  // The digest is compared against the literal pinned in the fixture rather than
+  // recomputed into its own expectation, so this also pins the digest contract.
+  assert.equal(computeBudgetOverrideDigest(storyId, override), fixture.override_digest);
+
+  const resolved = resolveBudgetOverrideAuthority({ storyId, override, decisions });
+  assert.equal(resolved.status, 'authorized', `fixture grant must authorize; got ${resolved.status} ${JSON.stringify(resolved.reasons)}`);
+  assert.deepEqual(resolved.reasons, []);
+  assert.equal(resolved.digest, fixture.override_digest);
+  assert.equal(resolved.approval.grantor_kind, 'human');
+  assert.equal(resolved.approval.grantor, 'fixture_owner');
+  assert.equal(resolved.approval.override_digest, fixture.override_digest);
+  assert.ok(resolved.approval.recorded_by.agent_id);
+
+  // Negative legs, so the positive one above cannot be satisfied by a resolver
+  // that returns `authorized` unconditionally. Each mutates exactly one field of
+  // the same accepted grant and must drop it out of `authorized`.
+  const mutate = (patch) => [{ ...decisions[0], ...patch }];
+  const mutateApproval = (patch) => [{ ...decisions[0], budget_approval: { ...decisions[0].budget_approval, ...patch } }];
+
+  for (const [label, mutated, expectedReason] of [
+    ['not accepted', mutate({ status: 'proposed' }), 'approval_not_accepted'],
+    ['no reason', mutate({ reason: '' }), 'approval_missing_reason'],
+    ['digest mismatch', mutateApproval({ override_digest: 'f'.repeat(64) }), 'approval_digest_mismatch'],
+    ['agent grantor', mutateApproval({ grantor_kind: 'agent' }), 'grantor_not_human'],
+    ['unnamed grantor', mutateApproval({ grantor: '   ' }), 'grantor_missing'],
+    ['unidentified recorder', mutateApproval({ recorded_by: { agent_system: 'claude_code' } }), 'recording_agent_unidentified'],
+    ['self approved', mutateApproval({ grantor: 'fixture-recording-agent' }), 'self_approved']
+  ]) {
+    const bad = resolveBudgetOverrideAuthority({ storyId, override, decisions: mutated });
+    assert.notEqual(bad.status, 'authorized', `${label} must not authorize`);
+    assert.ok(bad.reasons.includes(expectedReason), `${label} must report ${expectedReason}, got ${JSON.stringify(bad.reasons)}`);
+  }
+
+  // Editing the approved numbers after the grant invalidates it (OGB-S-3), and
+  // reworded prose does not (OGB-S-4). Both checked against the same fixture.
+  assert.equal(resolveBudgetOverrideAuthority({
+    storyId, override: { ...override, max_subagent_count: 99 }, decisions
+  }).status, 'unauthorized');
+  assert.equal(resolveBudgetOverrideAuthority({
+    storyId, override: { ...override, amendment_reason: 'reworded, same limits' }, decisions
+  }).status, 'authorized');
 });
 
 // OGB-S-9. An inert override is reported as debt rather than passing unnoticed.

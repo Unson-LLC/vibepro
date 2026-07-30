@@ -1,0 +1,32 @@
+{
+  "_purpose": "Committed decision store that exercises the resolveBudgetOverrideAuthority authorized branch unconditionally, on every checkout including a fresh clone and CI. The real per-Story stores live under .vibepro/pr/<story-id>/decision-records.json, which .gitignore excludes, so OGB-S-8 had no authorized-branch coverage anywhere the artifacts are absent. This fixture supplies that coverage from a tracked file.",
+  "_digest_note": "override_digest below is a literal, not a value recomputed by the test. computeBudgetOverrideDigest is therefore checked against a pinned expectation rather than against itself, so a change to the digest algorithm or to its canonical-JSON shape reddens this fixture instead of silently agreeing with it. Updating this digest must be a deliberate, reviewable edit.",
+  "story_id": "story-vibepro-budget-override-authority-fixture",
+  "override": {
+    "max_subagent_count": 9,
+    "max_agent_consumption_ms": 2400000,
+    "amendment_reason": "Fixture-only amendment prose. Excluded from the digest on purpose so this file can document itself without re-approval."
+  },
+  "override_digest": "80284645573cecec6bfbfc29cdffc604c02ae3229dca8383781764cd33beefb7",
+  "decisions": [
+    {
+      "decision_id": "fixture-budget-grant-authorized",
+      "story_id": "story-vibepro-budget-override-authority-fixture",
+      "source": "budget:delivery_efficiency:story-vibepro-budget-override-authority-fixture",
+      "status": "accepted",
+      "reason": "Fixture grant. Present so the authorized branch, and every field the gate requires it to name, is executed on checkouts that have no .vibepro artifacts.",
+      "recorded_at": "2026-07-30T00:00:00.000Z",
+      "budget_approval": {
+        "story_id": "story-vibepro-budget-override-authority-fixture",
+        "override_digest": "80284645573cecec6bfbfc29cdffc604c02ae3229dca8383781764cd33beefb7",
+        "grantor_kind": "human",
+        "grantor": "fixture_owner",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "fixture-recording-agent"
+        },
+        "config_ref": ".vibepro/config.json"
+      }
+    }
+  ]
+}
