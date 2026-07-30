@@ -394,6 +394,7 @@ export function renderSessionEfficiencyAudit(result) {
     `Session cost audit: ${result.story_id}`,
     `- session: ${result.session_id}`,
     `- observed_worktree: ${result.observed_worktree} (${result.observed_worktree_source})`,
+    `- process_manager: ${result.process_manager?.status ?? 'unknown'} reason=${result.process_manager?.reason_code ?? '-'}`,
     renderLineageAttribution(result),
     `- tokens: ${token.status} total=${token.total_tokens ?? '未確認'} source=${token.source ?? '-'}`,
     `- session_jsonl_parse: ${result.session.parse_diagnostics?.status ?? 'unknown'} malformed_rows=${result.session.parse_diagnostics?.malformed_row_count ?? '未確認'} confidence=${result.session.parse_diagnostics?.confidence ?? '未確認'}`,
@@ -498,11 +499,11 @@ async function readProcessMetadata(codexHome, sessionId) {
   let entries;
   try {
     entries = JSON.parse(raw);
-  } catch (error) {
+  } catch {
     return buildProcessMetadataResult({
       status: 'degraded',
       reasonCode: 'invalid_json',
-      reason: `process_manager source JSON could not be parsed: ${error.message}`,
+      reason: 'process_manager source JSON could not be parsed',
       sourcePath: filePath,
       byteLength: Buffer.byteLength(raw)
     });

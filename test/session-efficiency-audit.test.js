@@ -250,7 +250,8 @@ test('SCSH-SCENARIO-002 malformed process-manager input returns safe diagnostics
     `${sessionLines({ sessionId, cwd: root, storyId }).map((line) => JSON.stringify(line)).join('\n')}\n`
   );
   const processManagerPath = path.join(codexHome, 'process_manager', 'chat_processes.json');
-  await writeFile(processManagerPath, '[{"conversationId":');
+  const secretFragment = 'SECRET_TOKEN_DO_NOT_EXPOSE';
+  await writeFile(processManagerPath, secretFragment);
 
   const result = await collectSessionEfficiencyAudit(root, {
     storyId,
@@ -264,9 +265,38 @@ test('SCSH-SCENARIO-002 malformed process-manager input returns safe diagnostics
   assert.equal(result.process_manager.reason_code, 'invalid_json');
   assert.equal(result.process_manager.source_path, processManagerPath);
   assert.match(result.process_manager.reason, /could not be parsed/);
-  assert.doesNotMatch(result.process_manager.reason, /conversationId/);
+  assert.doesNotMatch(JSON.stringify(result.process_manager), new RegExp(secretFragment));
   assert.equal(result.observed_worktree_source, 'session_meta');
   assert.equal(result.session.token_accounting.status, 'available');
+
+  const rendered = renderSessionEfficiencyAudit(result);
+  assert.match(rendered, /process_manager: degraded reason=invalid_json/);
+  assert.doesNotMatch(rendered, new RegExp(secretFragment));
+});
+
+test('SCSH-SCENARIO-003 missing process-manager input falls back without suppressing token accounting', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  await writeFile(
+    sessionPath,
+    `${sessionLines({ sessionId, cwd: root, storyId }).map((line) => JSON.stringify(line)).join('\n')}\n`
+  );
+  const processManagerPath = path.join(codexHome, 'process_manager', 'chat_processes.json');
+  await rm(processManagerPath);
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.process_manager.status, 'unavailable');
+  assert.equal(result.process_manager.reason_code, 'source_not_found');
+  assert.equal(result.observed_worktree, root);
+  assert.equal(result.observed_worktree_source, 'session_meta');
+  assert.equal(result.session.token_accounting.status, 'available');
+  assert.equal(result.session.token_accounting.total_tokens, 150);
 });
 
 test('SCSH source health distinguishes wrong shape and unmatched valid input', async () => {
@@ -990,7 +1020,7 @@ test('SAI-SCENARIO-003 session inference keeps low-confidence candidates unavail
 });
 
 test('audit session-cost CLI exposes JSON contract for active session cost audits', async () => {
-  const { root, codexHome, storyId, sessionId } = await createFixture();
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
   const { stdout } = await execFileAsync(
     process.execPath,
     [
@@ -1015,11 +1045,42 @@ test('audit session-cost CLI exposes JSON contract for active session cost audit
   assert.equal(result.session.token_accounting.total_tokens, 250);
   assert.equal(result.cost_breakdown.buckets.some((bucket) => bucket.label === 'src/ コード本体'), true);
 
+  const processManagerPath = path.join(codexHome, 'process_manager', 'chat_processes.json');
+  const secretFragment = 'SECRET_TOKEN_DO_NOT_EXPOSE';
+  await writeFile(
+    sessionPath,
+    `${sessionLines({ sessionId, cwd: root, storyId }).map((line) => JSON.stringify(line)).join('\n')}\n`
+  );
+  await writeFile(processManagerPath, secretFragment);
+  const degradedJson = await execFileAsync(
+    process.execPath,
+    [
+      CLI_BIN,
+      'audit',
+      'session-cost',
+      root,
+      '--story-id',
+      storyId,
+      '--session-id',
+      sessionId,
+      '--codex-home',
+      codexHome,
+      '--base',
+      'base',
+      '--json'
+    ],
+    { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }
+  );
+  assert.equal(JSON.parse(degradedJson.stdout).process_manager.reason_code, 'invalid_json');
+  assert.doesNotMatch(degradedJson.stdout, new RegExp(secretFragment));
+
   const rendered = await execFileAsync(
     process.execPath,
     [CLI_BIN, 'audit', 'session-cost', root, '--story-id', storyId, '--session-id', sessionId, '--codex-home', codexHome, '--base', 'base'],
     { cwd: root, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }
   );
+  assert.match(rendered.stdout, /process_manager: degraded reason=invalid_json/);
+  assert.doesNotMatch(rendered.stdout, new RegExp(secretFragment));
   assert.match(rendered.stdout, /exposure_dedup: unique=/);
   assert.match(rendered.stdout, /carryover_control:/);
   assert.match(rendered.stdout, /\| mixed_tool_output \|/);
