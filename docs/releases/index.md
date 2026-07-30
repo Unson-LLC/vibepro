@@ -226,3 +226,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:398:start -->
 - [PR #398](https://github.com/Unson-LLC/vibepro/pull/398) — [2026-07](/releases/2026-07): story-vibepro-merge-binding-stale-stop-reason - Clear stale decision-outcome-binding failure flags when rebinding succeeds
 <!-- vibepro-release-index-pr:398:end -->
+
+<!-- vibepro-release-index-pr:399:start -->
+- [PR #399](https://github.com/Unson-LLC/vibepro/pull/399) — [2026-07](/releases/2026-07): fix: keep session-cost available on corrupt process metadata
+<!-- vibepro-release-index-pr:399:end -->

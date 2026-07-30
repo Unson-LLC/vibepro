@@ -9,7 +9,6 @@ architecture_docs:
   - docs/architecture/vibepro-pr-ship-command.md
 spec_docs:
   - docs/specs/vibepro-pr-ship-command.md
-parent_design: vibepro-pr-ship-command
 status: active
 created_at: 2026-06-02
 updated_at: 2026-06-02

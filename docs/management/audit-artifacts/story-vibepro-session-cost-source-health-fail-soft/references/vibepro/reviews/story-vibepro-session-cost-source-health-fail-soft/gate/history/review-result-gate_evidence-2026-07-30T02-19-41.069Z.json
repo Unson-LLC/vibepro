@@ -1,0 +1,157 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "block",
+  "summary": "Malformed metadata can leak source fragments and degraded CLI coverage is incomplete",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "source-content-diagnostic-leak",
+      "detail": "JSON.parse error text can expose malformed source fragments"
+    },
+    {
+      "severity": "medium",
+      "id": "missing-source-fixture-absent",
+      "detail": "ENOENT fallback lacks an executable fixture"
+    },
+    {
+      "severity": "medium",
+      "id": "degraded-health-hidden-on-rendered-surface",
+      "detail": "non-JSON output suppresses degraded source health"
+    },
+    {
+      "severity": "medium",
+      "id": "verification-overclaims-corrupt-cli-path",
+      "detail": "e2e evidence uses valid metadata rather than corruption"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Independent review reproduced source-fragment leakage, confirmed pre-fix regression detection, and found missing ENOENT, rendered-health, and corrupt-CLI coverage",
+    "evidence": "focused current-HEAD tests and isolated origin/main regression run",
+    "inputs": [
+      "src/session-efficiency-audit.js",
+      "test/session-efficiency-audit.test.js",
+      "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json"
+    ]
+  },
+  "judgment_delta": [
+    "fail-soft implementation appeared sufficient -> blocked after reproducing source-fragment leakage and unsupported CLI claims"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/6c87/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/6c87/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "300a7681f8b8ade9f6af2ac12fe79c56b179fc9c",
+    "current_head_sha": "300a7681f8b8ade9f6af2ac12fe79c56b179fc9c",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/6c87/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/6c87/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "300a7681f8b8ade9f6af2ac12fe79c56b179fc9c",
+      "current_head_sha": "300a7681f8b8ade9f6af2ac12fe79c56b179fc9c",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-30T02:19:41.069Z",
+  "git_context": {
+    "head_sha": "300a7681f8b8ade9f6af2ac12fe79c56b179fc9c",
+    "current_branch": "codex/story-vibepro-session-cost-source-health-fail-soft",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-30T02:19:41.030Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "300a7681f8b8ade9f6af2ac12fe79c56b179fc9c",
+    "surface_files": [
+      {
+        "path": "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+        "sha256": "4888e402710d1e3e17907dd2b9b757d41d7371e7fe607c585f1aa6153ca784bf",
+        "size": 6226
+      },
+      {
+        "path": "src/session-efficiency-audit.js",
+        "sha256": "2c82bd86021681b14b64126696e8ea33c28d732f9dde127289f4d5d0c467cae2",
+        "size": 106565
+      },
+      {
+        "path": "test/session-efficiency-audit.test.js",
+        "sha256": "d6773392895736d22384ef1a15c0d79dc3aaa7a9b7a6b282fb9897a2d67b2358",
+        "size": 71258
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "2431da2a9977c6ffafcf0c90a346a877f0aa884f9b0f6ad0f50a7a5f724be8f4"
+  },
+  "source_fingerprint": "cd013d84d9293c977f0c9a2065d92faa9982e9d8bb9915acd80eaed37252a2ce",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019fb0cf-120e-7520-a83f-8e2cfc1b2679",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": "high",
+    "cost_tier": "medium",
+    "thread_id": "019fb0cf-120e-7520-a83f-8e2cfc1b2679",
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "multi-agent close_agent confirmed",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "019fb0cf-120e-7520-a83f-8e2cfc1b2679",
+      "implementation_session_id": "019fb052-b7ba-7ba1-963d-3488763468d5",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

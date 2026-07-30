@@ -1,0 +1,39 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "decision_id": "decision-1785378536509-8b437151",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The review surface is bounded to one parser/fallback function, one renderer line, one test file, and their Story/Architecture/Spec contract; independent gate review passed this exact current-HEAD surface",
+      "artifact": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/review-result-gate_evidence.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-30T02:29:29.997Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:86|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "decision_id": "decision-1785378536509-8b437151",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The review surface is bounded to one parser/fallback function, one renderer line, one test file, and their Story/Architecture/Spec contract; independent gate review passed this exact current-HEAD surface",
+      "artifact": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/review-result-gate_evidence.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:86",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-30T02:49:54.966Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}
