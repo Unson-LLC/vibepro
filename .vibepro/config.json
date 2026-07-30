@@ -291,20 +291,20 @@
     },
     "delivery_efficiency_by_story": {
       "story-vibepro-task-atomic-repo-control-contract": {
-        "max_subagent_count": 32,
+        "max_subagent_count": 35,
         "max_agent_consumption_ms": 14000000,
         "max_repair_batches": 5,
         "max_review_dispatches_by_role": {
-          "product_requirement": 5,
-          "architecture_boundary": 7,
-          "spec_consistency": 7,
+          "product_requirement": 6,
+          "architecture_boundary": 8,
+          "spec_consistency": 8,
           "regression_risk": 5,
           "runtime_contract": 4,
           "gate_evidence": 4,
           "release_risk": 4,
           "pr_split_scope": 4
         },
-        "amendment_reason": "Six pre-implementation review lifecycles exhausted the shared Story budget while finding concrete Task-schema, target-file, connectivity, and executable-test defects; those findings were repaired before Code. The user explicitly instructed continuation on 2026-07-30. Reserve a bounded total of twenty lifecycles for the six historical reviews, one corrected planning round, the required architecture and implementation reviews, the three final Gate roles, and at most one focused repair round. The corrected planning review then found a stale current-Spec drift artifact and consumed the third product_requirement slot; raise only that role from 3 to 4 for one final repair review after refreshing the exact Accepted Spec identity. The first implementation replacement round found and repaired two fail-closed defects: Task proof could bypass missing atomic Story authority, and malformed Task repair guidance lost exact repo/Story/Task/group context on some paths. That round consumed the originally reserved aggregate cap before ux_completion and the final Gate roles, and this tracked amendment itself invalidates strict review evidence. The user explicitly instructed continuation again on 2026-07-30. Reserve exactly twelve additional current-HEAD lifecycles for the configured planning_spec, architecture_spec, implementation, and gate roles, with 2,000,000 ms of bounded consumption headroom. Role caps increase only by the corresponding current-HEAD uses. This Story-local amendment changes no global budget and grants no review waiver, AWS apply, state migration, live negative-test, or open-ended repair authority."
+        "amendment_reason": "Six pre-implementation review lifecycles exhausted the shared Story budget while finding concrete Task-schema, target-file, connectivity, and executable-test defects; those findings were repaired before Code. The user explicitly instructed continuation on 2026-07-30. Reserve a bounded total of twenty lifecycles for the six historical reviews, one corrected planning round, the required architecture and implementation reviews, the three final Gate roles, and at most one focused repair round. The corrected planning review then found a stale current-Spec drift artifact and consumed the third product_requirement slot; raise only that role from 3 to 4 for one final repair review after refreshing the exact Accepted Spec identity. The first implementation replacement round found and repaired two fail-closed defects: Task proof could bypass missing atomic Story authority, and malformed Task repair guidance lost exact repo/Story/Task/group context on some paths. That round consumed the originally reserved aggregate cap before ux_completion and the final Gate roles, and this tracked amendment itself invalidates strict review evidence. The user explicitly instructed continuation again on 2026-07-30. Reserve exactly twelve additional current-HEAD lifecycles for the configured planning_spec, architecture_spec, implementation, and gate roles, with 2,000,000 ms of bounded consumption headroom. Role caps increase only by the corresponding current-HEAD uses. The current-head architecture review then found that the error-only rerun command, including a local absolute repository path, was serialized into successful PR evidence. The focused TDD repair removes that field only from successful output while preserving complete failure guidance, and necessarily invalidates the three planning reviews. The user instructed continuation on 2026-07-30. Add exactly three aggregate slots and one slot each for product_requirement, architecture_boundary, and spec_consistency so the twelve configured roles can bind to the repaired final HEAD. This Story-local amendment changes no global budget and grants no review waiver, AWS apply, state migration, live negative-test, or open-ended repair authority."
       },
       "story-vibepro-task-scoped-pr-acceptance": {
         "max_subagent_count": 109,
