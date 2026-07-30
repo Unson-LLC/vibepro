@@ -45,12 +45,12 @@ validator、negative testを同じcurrent HEADで成立させると明示し、t
 
 ## Acceptance Criteria
 
-- [ ] `TAR-S-1`: `pr prepare --task`で、changed repo-control pathがすべて選択Taskの`classification: repo_control` target groupにexactに含まれ、そのgroupがtyped `depends_on` graphで少なくとも一つのnon-repo-control groupへ接続される場合だけ、`mixed_repo_control_surface`をatomic review可能として分類する。
-- [ ] `TAR-S-2`: Task未指定、`target_groups`欠落・malformed、repo-control group欠落、未接続group、changed pathの部分coverage、余分なrepo-control pathでは従来の`unsafe_for_atomic_override: true`を維持する。
+- [ ] `TAR-S-1`: `pr prepare --task`で、changed repo-control pathがすべて選択Taskの`classification: repo_control` target groupにexactに含まれ、宣言された全repo-control groupがtyped `depends_on` graphで少なくとも一つのnon-repo-control groupへ接続される場合だけ、`mixed_repo_control_surface`をatomic review可能として分類する。
+- [ ] `TAR-S-2`: Task未指定、repo-control group欠落、未接続group、changed pathの部分coverage、余分なchanged repo-control pathでは従来の`unsafe_for_atomic_override: true`を維持する。canonical Task stateの`target_groups`がmalformedなら、scope判定へ進まず修復手順付きで`pr prepare --task`をfail-closedに拒否する。
 - [ ] `TAR-S-3`: task-bound分類後もStoryの`atomic_single_pr`宣言、全generated laneのreview facet/dependency coverage、current-HEAD reviewer owner map、verification evidenceを省略せず、いずれか不足時はatomic scopeをrejectする。
 - [ ] `TAR-S-4`: 判定根拠としてTask ID、task state path、covered repo-control paths、repo-control group IDs、dependency edgesをmachine-readableなscope signalとsplit planへ残す。
-- [ ] `TAR-S-5`: `--task`なしの既存Story、`.vibepro/config.json`だけの既存例外、通常のunsafe repo-control split、strict target validationの挙動を変えない。
-- [ ] `TAR-S-6`: unit/CLI integration/E2Eでpositive、missing Task、malformed groups、uncovered extra workflow、disconnected group、Story atomic metadata不足を再現し、fail-closedを確認する。
+- [ ] `TAR-S-5`: `--task`なしの既存Story、`.vibepro/config.json`だけの既存例外、通常のunsafe repo-control split、strict target validationの挙動を変えない。`classification`を一つも持たないlegacy Task groupは従来どおりload可能だがtyped proofとは扱わずunsafeを維持する。一つでも`classification`を宣言してtyped proofを開始したTaskは、全groupに完全なtyped schemaを要求する。
+- [ ] `TAR-S-6`: unit/CLI integration/E2Eでpositive、missing Task、legacy untyped Task、malformed groupsのCLI拒否、uncovered extra changed workflow、disconnected declared repo-control group、config-only例外、strict target validation、Story atomic metadataまたはreview不足を実際の`pr prepare --task`経路で再現し、fail-closedを確認する。
 
 ## Non Goals
 

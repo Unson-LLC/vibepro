@@ -7,8 +7,8 @@ title: Task-bound Atomic Repo-control Contract Architecture
 
 ## Context
 
-`pr prepare --task` already loads a canonical Task before assessing the changed
-scope. The selected Task may describe workflow files in a typed
+`pr prepare --task` already loads and minimally validates a canonical Task
+before assessing the changed scope. The selected Task may describe workflow files in a typed
 `classification: repo_control` target group and connect that group to runtime,
 requirements, or tests through `depends_on`. Today `assessScope` does not use
 that contract: every independent `.github/*`, `.claude/*`, package, or lockfile
@@ -20,7 +20,7 @@ typed dependency connection from repo-control to a non-repo-control group.
 
 ## Decision
 
-Pass the already validated Task context from `preparePullRequest` into
+Pass the loaded Task context from `preparePullRequest` into
 `assessScope`. A pure evaluator builds a task-bound repo-control proof from:
 
 - selected Task ID and canonical Task state path;
@@ -33,12 +33,15 @@ The evaluator returns eligible only when all of these conditions hold:
 
 1. a Task was explicitly selected;
 2. `target_groups` is a non-empty array with unique, non-empty IDs;
-3. every relevant group has a string classification, an array of exact string
-   target files, and an array of string dependency IDs;
+3. typed proof is activated only when at least one group declares
+   `classification`; once activated, every group has a string classification,
+   an array of exact string target files, and an array of string dependency
+   IDs. A legacy Task whose groups declare no classification remains loadable
+   but is ineligible for this exception;
 4. every dependency resolves to another group in the same Task;
 5. every changed independent repo-control path is exactly covered by at least
    one `classification: repo_control` group;
-6. each covering repo-control group belongs to a dependency-graph connected
+6. every declared repo-control group belongs to a dependency-graph connected
    component containing at least one non-repo-control group.
 
 The graph is treated as undirected for connected-component membership. This
@@ -85,8 +88,11 @@ atomic scope. The existing `atomic_single_pr` Story declaration, generated lane
 facet and dependency coverage, strict current-HEAD review ownership, verification
 evidence, Gate DAG, and PR creation rules remain authoritative.
 
-Malformed groups, missing Tasks, unknown dependency IDs, partial coverage,
-disconnected repo-control groups, or an extra changed workflow all fail closed.
+Malformed typed canonical Task state is rejected by `pr prepare --task` with the
+configured Task state path and repair guidance before scope assessment. Missing
+Task selection, unknown dependency IDs, partial coverage, disconnected
+repo-control groups, or an extra changed workflow all fail closed in the scope
+signal.
 Strict target validation remains unchanged.
 
 ## Compatibility and rollback
@@ -94,7 +100,9 @@ Strict target validation remains unchanged.
 - Story-scoped `pr prepare` without `--task` retains the existing unsafe signal.
 - `.vibepro/config.json` as the only mixed repo-control path retains its current
   exception.
-- Tasks without the new typed proof retain the existing split behavior.
+- Legacy Tasks whose groups declare no `classification` retain the existing
+  load behavior and unsafe split result. Partial typed declarations are
+  rejected instead of being downgraded to legacy.
 - Rollback removes the evaluator input and restores the unconditional
   independent repo-control unsafe flag.
 

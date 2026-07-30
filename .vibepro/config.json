@@ -290,6 +290,22 @@
       "require_known_attribution": false
     },
     "delivery_efficiency_by_story": {
+      "story-vibepro-task-atomic-repo-control-contract": {
+        "max_subagent_count": 20,
+        "max_agent_consumption_ms": 12000000,
+        "max_repair_batches": 5,
+        "max_review_dispatches_by_role": {
+          "product_requirement": 4,
+          "architecture_boundary": 5,
+          "spec_consistency": 5,
+          "regression_risk": 3,
+          "runtime_contract": 3,
+          "gate_evidence": 3,
+          "release_risk": 3,
+          "pr_split_scope": 3
+        },
+        "amendment_reason": "Six pre-implementation review lifecycles exhausted the shared Story budget while finding concrete Task-schema, target-file, connectivity, and executable-test defects; those findings were repaired before Code. The user explicitly instructed continuation on 2026-07-30. Reserve a bounded total of twenty lifecycles for the six historical reviews, one corrected planning round, the required architecture and implementation reviews, the three final Gate roles, and at most one focused repair round. The corrected planning review then found a stale current-Spec drift artifact and consumed the third product_requirement slot; raise only that role from 3 to 4 for one final repair review after refreshing the exact Accepted Spec identity. This Story-local review amendment is tracked as part of TAR-TASK-01; it changes no global budget and grants no review waiver, merge authority, AWS apply, state migration, or live negative-test authority."
+      },
       "story-vibepro-task-scoped-pr-acceptance": {
         "max_subagent_count": 109,
         "max_agent_consumption_ms": 52000000,

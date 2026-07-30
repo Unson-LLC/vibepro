@@ -23,7 +23,7 @@ const expectedNestedTests = [
   'passed split resolution gate',
   'foreign work-item lineage',
   'accepts a versioned branch merge only when canonical remote topology resolves to a merge parent',
-  'independent repo-control unsafe for atomic scope',
+  'no-Task independent repo-control remains unsafe for atomic scope',
   'incomplete typed atomic',
   'prose-only atomic',
   'malformed or disconnected',

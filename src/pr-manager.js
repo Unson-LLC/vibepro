@@ -108,6 +108,7 @@ import { buildCodeTopologyContext } from './code-topology-provider.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { recordResolvedGateOutcomes } from './gate-outcome-ledger.js';
 import { assertArtifactWritePath, collectCurrentGeneratedProjectionPaths, projectArtifact, resolveArtifactRoute, resolveGraphifyArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
+import { evaluateTaskBoundRepoControl, inspectTypedTaskGroups } from './task-bound-repo-control.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -287,6 +288,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     dirtyFilesAffectScope: reviewGit.includes_dirty_in_changed_files,
     commits: reviewGit.commits,
     storyId: story.story_id,
+    taskContext,
     maxReviewableFiles: options.maxReviewableFiles ?? DEFAULT_MAX_REVIEWABLE_FILES
   });
   const latestStoryRun = findLatestStoryRun(manifest, story.story_id);
@@ -3629,7 +3631,7 @@ function isContractMetadataPath(filePath) {
     || filePath.startsWith('docs/management/contracts/');
 }
 
-function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectScope = true, commits, storyId = null, maxReviewableFiles }) {
+function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectScope = true, commits, storyId = null, taskContext = null, maxReviewableFiles }) {
   const reasons = [];
   const signals = [];
   if (changedFiles.length > maxReviewableFiles) {
@@ -3639,14 +3641,26 @@ function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectSco
   if (hasMixedRepoControlChanges(fileGroups)) {
     reasons.push('repo制御ファイルやagent設定が差分に含まれている');
     const repoControlFiles = fileGroups.repo_control.files ?? [];
-    const hasIndependentRepoControlSurface = repoControlFiles.some((file) => file !== '.vibepro/config.json');
+    const independentRepoControlFiles = repoControlFiles.filter((file) => file !== '.vibepro/config.json');
+    const hasIndependentRepoControlSurface = independentRepoControlFiles.length > 0;
+    const taskBinding = hasIndependentRepoControlSurface
+      ? evaluateTaskBoundRepoControl({
+        taskContext,
+        repoControlFiles: independentRepoControlFiles
+      })
+      : null;
     signals.push({
       id: 'mixed_repo_control_surface',
-      unsafe_for_atomic_override: hasIndependentRepoControlSurface,
+      unsafe_for_atomic_override: hasIndependentRepoControlSurface
+        ? taskBinding.unsafe_for_atomic_override
+        : false,
       repo_control_files: repoControlFiles,
-      reason: hasIndependentRepoControlSurface
+      ...(taskBinding ? { task_binding: taskBinding } : {}),
+      reason: hasIndependentRepoControlSurface && taskBinding.unsafe_for_atomic_override
         ? 'repository execution or agent-control changes remain independently releasable and cannot be absorbed by an atomic Story declaration'
-        : '.vibepro/config.json is the Story registration/control-plane half of the same declared release contract and may proceed only through typed atomic review'
+        : (hasIndependentRepoControlSurface
+          ? 'repository-control changes are exactly covered by a connected typed Task graph and remain subject to typed atomic review authority'
+          : '.vibepro/config.json is the Story registration/control-plane half of the same declared release contract and may proceed only through typed atomic review')
     });
   }
   const nonWorkspaceDirty = dirtyFiles.filter((file) => !file.path.startsWith('.vibepro/'));
@@ -5200,7 +5214,10 @@ async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prCon
     scope,
     lanes,
     automaticSplitRequired,
-    agentReviews: prContext.agent_reviews
+    agentReviews: prContext.agent_reviews,
+    taskBoundRepoControl: (scope?.signals ?? [])
+      .find((signal) => signal.id === 'mixed_repo_control_surface')
+      ?.task_binding ?? null
   });
   const splitRequired = automaticSplitRequired && atomicScope.status !== 'accepted';
   const mergeOrder = lanes
@@ -5221,6 +5238,9 @@ async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prCon
       recommended_strategy: automaticSplitRequired ? 'split_by_lane_then_prepare' : 'keep_current_pr'
     },
     accepted_current_story_lineage: collectAcceptedCurrentStoryLineage(scope),
+    task_bound_repo_control: (scope?.signals ?? [])
+      .find((signal) => signal.id === 'mixed_repo_control_surface')
+      ?.task_binding ?? null,
     atomic_scope: atomicScope,
     rationale: buildSplitRationale({ scope, lanes, graphContext, atomicScope }),
     graph_context: graphContext,
@@ -5247,13 +5267,20 @@ function collectAcceptedCurrentStoryLineage(scope) {
     }));
 }
 
-function evaluateAtomicScopeDeclaration({ storySource, scope, lanes, automaticSplitRequired, agentReviews = null }) {
+function evaluateAtomicScopeDeclaration({
+  storySource,
+  scope,
+  lanes,
+  automaticSplitRequired,
+  agentReviews = null,
+  taskBoundRepoControl = null
+}) {
   const strategy = storySource?.pr_scope_strategy ?? null;
   const reason = storySource?.pr_scope_reason ?? null;
   const reviewFacets = storySource?.pr_scope_review_facets ?? [];
   const dependencyBoundaryDeclarations = storySource?.pr_scope_dependency_boundaries ?? [];
   const laneIds = lanes.map((lane) => lane.id);
-  if (strategy !== 'atomic_single_pr') {
+  if (strategy !== 'atomic_single_pr' && !taskBoundRepoControl) {
     return {
       status: 'not_requested',
       strategy,
@@ -15710,6 +15737,13 @@ async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
   ))) {
     throw taskPlanRepairError(
       'Invalid Task state schema for PR prepare: target_groups must contain objects with non-empty id values',
+      taskStatePath
+    );
+  }
+  const typedGroupInspection = inspectTypedTaskGroups(targetGroups);
+  if (typedGroupInspection.mode === 'invalid') {
+    throw taskPlanRepairError(
+      `Invalid typed Task target_groups schema for PR prepare: ${typedGroupInspection.reason_code}`,
       taskStatePath
     );
   }

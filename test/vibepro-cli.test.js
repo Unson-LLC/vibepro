@@ -20517,7 +20517,301 @@ test('pr prepare does not trust a merge-like versioned Story title on a single-p
   }]);
 });
 
-test('pr prepare keeps independent repo-control unsafe for atomic scope while reserving the config registration exception', async () => {
+async function writeTaskBoundPrFixtureState(repo) {
+  const taskStatePath = path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'tasks.json');
+  await mkdir(path.dirname(taskStatePath), { recursive: true });
+  const taskState = {
+    schema_version: '0.1.0',
+    story: {
+      story_id: 'story-pr-prepare',
+      title: 'PR準備'
+    },
+    source_run: {
+      run_id: 'tar-cli-fixture',
+      gate_status: 'pass'
+    },
+    tasks: [{
+      id: 'TASK-001',
+      title: 'Task-bound repo-control fixture',
+      target_files: ['src/feature/pr-prepare.js'],
+      target_groups: [],
+      acceptance_criteria: ['Task-bound repo-control proof remains fail-closed']
+    }]
+  };
+  await writeJson(taskStatePath, taskState);
+  return { taskStatePath, taskState };
+}
+
+test('TAR-CLI-001 pr prepare persists Task-bound repo-control proof and still blocks missing atomic authority', async () => {
+  const repo = await makeGitRepoWithStory();
+  const { taskStatePath, taskState } = await writeTaskBoundPrFixtureState(repo);
+  const taskBinding = {
+    ...taskState.tasks[0],
+    target_files: [
+      ...new Set([
+        ...(taskState.tasks[0].target_files ?? []),
+        '.github/workflows/task-bound.yml',
+        'src/feature/pr-prepare.js'
+      ])
+    ],
+    target_groups: [
+      {
+        id: 'repo-control',
+        classification: 'repo_control',
+        target_files: ['.github/workflows/task-bound.yml'],
+        depends_on: ['runtime']
+      },
+      {
+        id: 'runtime',
+        classification: 'runtime',
+        target_files: ['src/feature/pr-prepare.js'],
+        depends_on: []
+      }
+    ]
+  };
+  await writeJson(taskStatePath, {
+    ...taskState,
+    tasks: [taskBinding, ...taskState.tasks.slice(1)]
+  });
+  await mkdir(path.join(repo, '.github', 'workflows'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'feature'), { recursive: true });
+  await writeFile(path.join(repo, '.github', 'workflows', 'task-bound.yml'), 'name: task-bound\n');
+  await writeFile(path.join(repo, 'src', 'feature', 'pr-prepare.js'), 'export const ok = "task-bound";\n');
+  await git(repo, ['add', '.github/workflows/task-bound.yml', 'src/feature/pr-prepare.js']);
+  await git(repo, ['commit', '-m', 'feat: add task-bound repo-control fixture']);
+
+  const positive = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ]);
+  assert.equal(positive.exitCode, 0);
+  const positivePreparation = positive.result.preparation;
+  const positiveSignal = positivePreparation.scope.signals
+    .find((signal) => signal.id === 'mixed_repo_control_surface');
+  const expectedProof = {
+    task_id: 'TASK-001',
+    task_state_path: '.vibepro/stories/story-pr-prepare/tasks/tasks.json',
+    covered_repo_control_paths: ['.github/workflows/task-bound.yml'],
+    repo_control_group_ids: ['repo-control'],
+    dependency_edges: [{ from: 'repo-control', to: 'runtime' }]
+  };
+  assert.equal(positiveSignal.unsafe_for_atomic_override, false);
+  assert.equal(positiveSignal.task_binding.reason_code, 'task_bound_repo_control_connected');
+  assert.deepEqual(positiveSignal.task_binding.proof, expectedProof);
+  assert.deepEqual(positivePreparation.split_plan.task_bound_repo_control, positiveSignal.task_binding);
+  assert.notEqual(positivePreparation.split_plan.atomic_scope.status, 'accepted');
+  assert.match(
+    positivePreparation.split_plan.atomic_scope.rejection_reasons.join('\n'),
+    /reviewer owner map|review facets|dependency boundaries/i
+  );
+
+  await writeFile(path.join(repo, '.github', 'workflows', 'extra.yml'), 'name: extra\n');
+  await git(repo, ['add', '.github/workflows/extra.yml']);
+  await git(repo, ['commit', '-m', 'test: add uncovered repo-control fixture']);
+  const uncovered = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ]);
+  assert.equal(uncovered.exitCode, 0);
+  const uncoveredSignal = uncovered.result.preparation.scope.signals
+    .find((signal) => signal.id === 'mixed_repo_control_surface');
+  assert.equal(uncoveredSignal.unsafe_for_atomic_override, true);
+  assert.equal(uncoveredSignal.task_binding.reason_code, 'repo_control_path_coverage_mismatch');
+  assert.deepEqual(uncovered.result.preparation.split_plan.task_bound_repo_control, uncoveredSignal.task_binding);
+  assert.equal(uncovered.result.preparation.split_plan.atomic_scope.status, 'rejected');
+});
+
+test('TAR-CLI-002 malformed typed Task state is rejected with repair guidance', async () => {
+  const repo = await makeGitRepoWithStory();
+  const { taskStatePath, taskState } = await writeTaskBoundPrFixtureState(repo);
+  await writeJson(taskStatePath, {
+    ...taskState,
+    tasks: [{
+      ...taskState.tasks[0],
+      target_groups: [{
+        id: 'repo-control',
+        classification: 'repo_control',
+        target_files: 'invalid',
+        depends_on: []
+      }]
+    }, ...taskState.tasks.slice(1)]
+  });
+
+  let stderr = '';
+  const result = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ], {
+    stderr: { write: (text) => { stderr += text; } }
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.match(stderr, /Invalid typed Task target_groups schema for PR prepare/);
+  assert.match(stderr, /\.vibepro\/stories\/story-pr-prepare\/tasks\/tasks\.json/);
+  assert.match(stderr, /Repair the configured canonical Task plan and rerun vibepro pr prepare/);
+  assert.doesNotMatch(stderr, /TypeError/);
+});
+
+test('TAR-CLI-003 disconnected declared repo-control group remains unsafe through the public CLI', async () => {
+  const repo = await makeGitRepoWithStory();
+  const { taskStatePath, taskState } = await writeTaskBoundPrFixtureState(repo);
+  await writeJson(taskStatePath, {
+    ...taskState,
+    tasks: [{
+      ...taskState.tasks[0],
+      target_files: [
+        '.github/workflows/task-bound.yml',
+        '.github/workflows/disconnected.yml',
+        'src/feature/pr-prepare.js'
+      ],
+      target_groups: [
+        {
+          id: 'repo-control',
+          classification: 'repo_control',
+          target_files: ['.github/workflows/task-bound.yml'],
+          depends_on: ['runtime']
+        },
+        {
+          id: 'repo-control-disconnected',
+          classification: 'repo_control',
+          target_files: ['.github/workflows/disconnected.yml'],
+          depends_on: []
+        },
+        {
+          id: 'runtime',
+          classification: 'runtime',
+          target_files: ['src/feature/pr-prepare.js'],
+          depends_on: []
+        }
+      ]
+    }, ...taskState.tasks.slice(1)]
+  });
+  await mkdir(path.join(repo, '.github', 'workflows'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'feature'), { recursive: true });
+  await writeFile(path.join(repo, '.github', 'workflows', 'task-bound.yml'), 'name: task-bound\n');
+  await writeFile(path.join(repo, 'src', 'feature', 'pr-prepare.js'), 'export const ok = "task-bound";\n');
+  await git(repo, ['add', '.github/workflows/task-bound.yml', 'src/feature/pr-prepare.js']);
+  await git(repo, ['commit', '-m', 'test: add disconnected declared repo-control fixture']);
+
+  const result = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ]);
+  assert.equal(result.exitCode, 0);
+  const signal = result.result.preparation.scope.signals
+    .find((item) => item.id === 'mixed_repo_control_surface');
+  assert.equal(signal.unsafe_for_atomic_override, true);
+  assert.equal(signal.task_binding.reason_code, 'repo_control_group_disconnected');
+  assert.deepEqual(result.result.preparation.split_plan.task_bound_repo_control, signal.task_binding);
+  assert.equal(result.result.preparation.split_plan.atomic_scope.status, 'rejected');
+});
+
+test('TAR-CLI-004 legacy untyped Task groups remain loadable but cannot authorize repo-control scope', async () => {
+  const repo = await makeGitRepoWithStory();
+  const { taskStatePath, taskState } = await writeTaskBoundPrFixtureState(repo);
+  await writeJson(taskStatePath, {
+    ...taskState,
+    tasks: [{
+      ...taskState.tasks[0],
+      target_files: ['.github/workflows/legacy.yml', 'src/feature/pr-prepare.js'],
+      target_groups: [
+        {
+          id: 'legacy-repo-control',
+          target_files: ['.github/workflows/legacy.yml'],
+          depends_on: ['legacy-runtime']
+        },
+        {
+          id: 'legacy-runtime',
+          target_files: ['src/feature/pr-prepare.js'],
+          depends_on: []
+        }
+      ]
+    }, ...taskState.tasks.slice(1)]
+  });
+  await mkdir(path.join(repo, '.github', 'workflows'), { recursive: true });
+  await mkdir(path.join(repo, 'src', 'feature'), { recursive: true });
+  await writeFile(path.join(repo, '.github', 'workflows', 'legacy.yml'), 'name: legacy\n');
+  await writeFile(path.join(repo, 'src', 'feature', 'pr-prepare.js'), 'export const ok = "legacy";\n');
+  await git(repo, ['add', '.github/workflows/legacy.yml', 'src/feature/pr-prepare.js']);
+  await git(repo, ['commit', '-m', 'test: add legacy untyped Task fixture']);
+
+  const result = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ]);
+  assert.equal(result.exitCode, 0);
+  const signal = result.result.preparation.scope.signals
+    .find((item) => item.id === 'mixed_repo_control_surface');
+  assert.equal(signal.unsafe_for_atomic_override, true);
+  assert.equal(signal.task_binding.reason_code, 'legacy_untyped_task_groups');
+  assert.equal(result.result.preparation.split_plan.atomic_scope.status, 'rejected');
+});
+
+test('TAR-CLI-005 strict target validation still rejects non-test files outside the selected Task', async () => {
+  const repo = await makeGitRepoWithStory();
+  const { taskStatePath, taskState } = await writeTaskBoundPrFixtureState(repo);
+  await writeJson(taskStatePath, {
+    ...taskState,
+    tasks: [{
+      ...taskState.tasks[0],
+      target_files: ['src/feature/pr-prepare.js']
+    }, ...taskState.tasks.slice(1)]
+  });
+  const artifactDir = path.join(repo, '.vibepro', 'stories', 'story-pr-prepare', 'tasks', 'TASK-001');
+  await mkdir(artifactDir, { recursive: true });
+  for (const artifact of ['briefing.md', 'plan.md', 'handoff.md']) {
+    await writeFile(path.join(artifactDir, artifact), `# ${artifact}\n`);
+  }
+  await mkdir(path.join(repo, 'src', 'feature'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'feature', 'pr-prepare.js'), 'export const ok = true;\n');
+  await writeFile(path.join(repo, 'src', 'outside-task.js'), 'export const outside = true;\n');
+  await git(repo, ['add', 'src/feature/pr-prepare.js', 'src/outside-task.js']);
+  await git(repo, ['commit', '-m', 'test: add strict target validation fixture']);
+
+  let stderr = '';
+  const result = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001', '--strict'
+  ], {
+    stderr: { write: (text) => { stderr += text; } }
+  });
+  assert.equal(result.exitCode, 1);
+  assert.match(stderr, /files outside task\.target_files/);
+  assert.match(stderr, /src\/outside-task\.js/);
+});
+
+test('TAR-CLI-006 config-only registration exception remains compatible through task-scoped pr prepare', async () => {
+  const repo = await makeGitRepoWithStory();
+  const { taskStatePath, taskState } = await writeTaskBoundPrFixtureState(repo);
+  await writeJson(taskStatePath, {
+    ...taskState,
+    tasks: [{
+      ...taskState.tasks[0],
+      target_files: ['.vibepro/config.json']
+    }, ...taskState.tasks.slice(1)]
+  });
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = await readJson(configPath);
+  config.brainbase = {
+    ...(config.brainbase ?? {}),
+    stories: [
+      ...(config.brainbase?.stories ?? []),
+      { story_id: 'story-pr-prepare', path: 'docs/stories/story-pr-prepare.md' }
+    ]
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await git(repo, ['add', '-f', '.vibepro/config.json']);
+  await git(repo, ['commit', '-m', 'chore: register task-scoped story fixture']);
+
+  const result = await runCli([
+    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+  ]);
+  assert.equal(result.exitCode, 0);
+  const signal = result.result.preparation.scope.signals
+    .find((item) => item.id === 'mixed_repo_control_surface');
+  assert.equal(signal, undefined);
+  assert.equal(
+    result.result.preparation.split_plan.atomic_scope.unsafe_scope_signals
+      .some((item) => item.id === 'mixed_repo_control_surface'),
+    false
+  );
+});
+
+test('TAR-INV-004 no-Task independent repo-control remains unsafe for atomic scope', async () => {
   const repo = await makeGitRepoWithStory();
   const storyPath = path.join(repo, 'docs', 'stories', 'story-pr-prepare.md');
   await mkdir(path.dirname(storyPath), { recursive: true });
