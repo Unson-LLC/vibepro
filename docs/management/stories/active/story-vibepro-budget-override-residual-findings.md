@@ -64,4 +64,7 @@ delivery-efficiency-guardrail.js / pr-manager.js）の drift を検出できな�
   （owned_surfaces は reconciliation には読まれない宣言的メタデータであり、
   統治対象の記録として登録する）。
 - BRF-S-4: override の実挙動（authority 判定・digest・grandfather・merge 順）は
-  一切変更しない。既存テストが全て green のまま。
+  一切変更しない。既存テストが全て green のまま。The existing fallback branch
+  where authority.status !== 'authorized' && authority.status !== 'grandfathered'
+  returns the base policy is unchanged/existing behavior, declared as
+  inherited_behavior on spec clause INV-001.
