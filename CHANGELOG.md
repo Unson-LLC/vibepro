@@ -40,10 +40,12 @@ All notable changes to VibePro will be documented in this file.
   `evidence-user-fingerprint`, `keyword-gate-structured-migration`,
   `pr-ship-command`, `execute-merge-command`,
   `engineering-judgment-activation-precision`, and `merge-delta-review-reuse` —
-  no longer have any `test/e2e/<slug>-*` file. `buildStoryE2eCoverage()` derives
-  per-Story e2e acceptance coverage from exactly that glob, so a replayed audit
-  of those Stories will now report uncovered acceptance criteria. That is by
-  design: the deleted files never executed product code, so the coverage they
+  no longer have any `test/e2e/<slug>-*` file, so a replayed audit of those
+  Stories will now report uncovered acceptance criteria. (`isStoryE2eCandidate()`
+  also matches on content mentioning a Story id, so those slugs still resolve one
+  candidate file — this acceptance spec, which names them — but it carries no
+  `ac:N` marker for them, so the reported outcome is the same.) That outcome is
+  by design: the deleted files never executed product code, so the coverage they
   reported was not real. None of the seven is registered in
   `.vibepro/config.json`, so no active Story's gate changes.
 

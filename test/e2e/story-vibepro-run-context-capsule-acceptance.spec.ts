@@ -18,7 +18,11 @@ test('story-vibepro-run-context-capsule AC-1 through AC-7 and S-001 acceptance a
     maxBuffer: 4 * 1024 * 1024
   });
 
-  assert.match(result.stdout, /(?:ℹ|#) pass (?:1[4-9]|[2-9]\d)\b/);
+  // Assert a floor numerically rather than as a digit pattern: a bounded
+  // alternation silently caps out (the previous form stopped matching above 99)
+  // and pinning an exact total makes every added contract test an unrelated red.
+  const passed = Number(/(?:ℹ|#) pass (\d+)\b/.exec(result.stdout)?.[1] ?? NaN);
+  assert.ok(passed >= 14, `expected at least 14 contract tests, saw ${passed}`);
   assert.match(result.stdout, /(?:ℹ|#) fail 0\b/);
 
   const acceptanceBindings = [

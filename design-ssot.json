@@ -7326,7 +7326,131 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-vacuous-e2e-test-elimination",
+      "title": "Vacuous e2e Test Elimination",
+      "root_doc": "docs/architecture/story-vibepro-vacuous-e2e-test-elimination.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "Structural detection that a test/e2e file executes product behaviour, and the CI lint that keeps the e2e pass count honest",
+      "owned_surfaces": [
+        "test/e2e product-execution lint",
+        "e2e pass-count trustworthiness",
+        "scripts/lint-e2e-product-execution.mjs"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-vacuous-e2e-test-elimination.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-vacuous-e2e-test-elimination.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-pr-ship-command",
+      "title": "VibePro PR ship Command",
+      "root_doc": "docs/architecture/vibepro-pr-ship-command.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "Orchestration between pr prepare and pr create, separating safe automatic operations from human stop points",
+      "owned_surfaces": [
+        "vibepro pr ship",
+        "PR ship dry-run contract",
+        "Agent Review handoff from ship"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-pr-ship-command.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/vibepro-pr-ship-command.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-pr-ship-command.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/vibepro-pr-ship-command.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-29T15:48:37.888Z"
+  "updated_at": "2026-07-30T00:00:00.000Z"
 }
