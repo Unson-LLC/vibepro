@@ -19779,6 +19779,7 @@ pr_scope_dependency_boundaries:
   assert.match(splitPlan.atomic_scope.rejection_reasons.join('\n'), /current-head reviewer owner map/i);
   assert.deepEqual(splitPlan.atomic_scope.next_actions.map((action) => action.type), [
     'record_current_head_review_owners',
+    'record_current_head_verification',
     'rerun_atomic_scope_decision'
   ]);
   const ownerRepair = splitPlan.atomic_scope.next_actions[0];
@@ -19793,7 +19794,8 @@ pr_scope_dependency_boundaries:
   assert.match(ownerRepair.follow_up_command, /review status/);
   assert.doesNotMatch(ownerRepair.follow_up_command, /[<>]|\.\.\./);
   assert.equal(ownerRepair.follow_up, ownerRepair.follow_up_command);
-  assert.match(splitPlan.atomic_scope.next_actions[1].command, /pr prepare/);
+  assert.match(splitPlan.atomic_scope.next_actions[1].command, /verify record/);
+  assert.match(splitPlan.atomic_scope.next_actions[2].command, /pr prepare/);
   assert.equal(splitPlan.status, 'split_recommended');
   assert.equal(splitPlan.recommended_strategy, 'split_by_lane_then_prepare');
   assert.equal(splitPlan.stacked_gate_plan.summary.requires_atomic_head_validation, false);
@@ -20344,9 +20346,38 @@ pr_scope_dependency_boundaries:
     });
   }
 
+  const reviewedWithoutVerification = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
+  assert.equal(reviewedWithoutVerification.exitCode, 0);
+  assert.equal(reviewedWithoutVerification.result.preparation.split_plan.atomic_scope.status, 'rejected');
+  assert.equal(reviewedWithoutVerification.result.preparation.split_plan.atomic_scope.verification_ready, false);
+  assert.match(
+    reviewedWithoutVerification.result.preparation.split_plan.atomic_scope.rejection_reasons.join('\n'),
+    /current-head passing verification evidence/
+  );
+  const unresolvedSplitResolutionGate = reviewedWithoutVerification.result.preparation.pr_context.gate_dag.nodes
+    .find((node) => node.id === 'gate:split_resolution');
+  assert.equal(unresolvedSplitResolutionGate.status, 'needs_review');
+  assert.equal(
+    reviewedWithoutVerification.result.preparation.gate_status.unresolved_gates
+      .some((gate) => gate.id === 'gate:split_resolution'),
+    true
+  );
+
+  await execFileAsync(process.execPath, ['--test', 'src/atomic.js'], { cwd: repo, encoding: 'utf8' });
+  const verification = await runCliWithStdout([
+    'verify', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--kind', 'unit',
+    '--status', 'pass',
+    '--command', 'node --test src/atomic.js',
+    '--summary', 'atomic fixture unit execution passed on the reviewed current HEAD'
+  ]);
+  assert.equal(verification.exitCode, 0, verification.stderr);
+
   const accepted = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare']);
   assert.equal(accepted.exitCode, 0);
   assert.equal(accepted.result.preparation.split_plan.atomic_scope.status, 'accepted');
+  assert.equal(accepted.result.preparation.split_plan.atomic_scope.verification_ready, true);
   assert.deepEqual(accepted.result.preparation.split_plan.atomic_scope.next_actions, [{
     type: 'continue_atomic_pr',
     command: 'vibepro pr prepare . --story-id story-pr-prepare'

@@ -5221,6 +5221,8 @@ async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prCon
     lanes,
     automaticSplitRequired,
     agentReviews: prContext.agent_reviews,
+    verificationEvidence: prContext.verification_evidence,
+    flowVerification: prContext.flow_verification,
     taskBoundRepoControl: (scope?.signals ?? [])
       .find((signal) => signal.id === 'mixed_repo_control_surface')
       ?.task_binding ?? null
@@ -5279,6 +5281,8 @@ function evaluateAtomicScopeDeclaration({
   lanes,
   automaticSplitRequired,
   agentReviews = null,
+  verificationEvidence = null,
+  flowVerification = null,
   taskBoundRepoControl = null
 }) {
   const strategy = storySource?.pr_scope_strategy ?? null;
@@ -5313,6 +5317,9 @@ function evaluateAtomicScopeDeclaration({
   });
   const reviewOwnerMap = buildAgentReviewOwnerMapEvidence(agentReviews, lanes);
   const reviewOwnerMapVerified = reviewOwnerMap.verified;
+  const currentPassingVerification = collectCurrentPassingVerificationEvidence(verificationEvidence);
+  const currentPassingFlow = getCurrentPassingFlowEvidence(flowVerification);
+  const verificationReady = currentPassingVerification.length > 0 || Boolean(currentPassingFlow);
   const rejectionReasons = [];
   if (strategy !== 'atomic_single_pr') {
     rejectionReasons.push('pr_scope_strategy must be atomic_single_pr before Task-bound proof can authorize one atomic PR');
@@ -5326,6 +5333,9 @@ function evaluateAtomicScopeDeclaration({
   if (unsafeScopeSignals.length > 0) rejectionReasons.push('unsafe scope signals cannot be overridden by Story metadata');
   if (!reviewOwnerMapVerified) {
     rejectionReasons.push('atomic scope requires a current-head reviewer owner map with every configured role passing');
+  }
+  if (!verificationReady) {
+    rejectionReasons.push('atomic scope requires current-head passing verification evidence');
   }
   const nextActions = buildAtomicScopeNextActions({
     storyId: storySource?.story_id ?? null,
@@ -5348,6 +5358,12 @@ function evaluateAtomicScopeDeclaration({
     unsafe_scope_signals: unsafeScopeSignals,
     unsafe_scope_reasons: unsafeScopeReasons,
     review_owner_map_verified: reviewOwnerMapVerified,
+    verification_ready: verificationReady,
+    current_passing_verification_count: currentPassingVerification.length + (currentPassingFlow ? 1 : 0),
+    verification_evidence_refs: [
+      ...currentPassingVerification.map((command) => command.artifact ?? command.command ?? command.kind),
+      ...(currentPassingFlow ? [currentPassingFlow.artifact] : [])
+    ].filter(Boolean),
     next_actions: nextActions,
     review_owner_map: reviewOwnerMap.facets,
     unowned_review_facets: reviewOwnerMap.unowned_facets,
@@ -5389,6 +5405,13 @@ function buildAtomicScopeNextActions({ storyId, rejectionReasons = [], reviewOwn
       follow_up_command: `vibepro review status . --id ${quotedStoryId}`,
       command: prepareCommands[0] ?? `vibepro review status . --id ${quotedStoryId}`,
       follow_up: `vibepro review status . --id ${quotedStoryId}`
+    });
+  }
+  if (rejectionReasons.some((reason) => reason.includes('current-head passing verification evidence'))) {
+    actions.push({
+      type: 'record_current_head_verification',
+      command: `vibepro verify record . --id ${quotedStoryId} --kind unit --status pass --command "<focused command>" --strict-head-binding`,
+      follow_up: `vibepro pr prepare . --story-id ${quotedStoryId}`
     });
   }
   if (rejectionReasons.some((reason) => /pr_scope_|typed dependency|generated review facets/.test(reason))) {
