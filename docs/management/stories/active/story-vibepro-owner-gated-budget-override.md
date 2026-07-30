@@ -207,9 +207,17 @@ debt state 除外は本 Story の範囲外。
     `.gitignore` が `.vibepro/*` を除外するため、fresh clone と CI には decision store が無く、
     その環境ではこの leg は skip される。したがって
     **「`authorized` 分岐が1件も踏まれない場合に fail する」保証はこの leg にはない**。
-    store が routed location に存在する場合に、それを実際に読んだことだけを保証する
-    （routed path は production と同じ `resolvePrArtifactFile` で解決するため、
-    artifact routing が変わればこの leg は silent skip ではなく fail する）。
+    この leg が保証するのは、**store が routed location に存在する場合に、それを実際に読み、
+    空でなかったこと** だけである（stub された `decisions: []` 形へ退化すれば、
+    artifact を持つ checkout では赤くなる）。
+    routed path は production と同じ `resolvePrArtifactFile` で解決するため、
+    hardcode された literal のような **routing との drift は起きない**。
+    ただしこれは重複の除去であって loudness の獲得ではない。
+    reader も同じ関数で同じ path を解決するので両者は原理的に不一致になり得ず、
+    **routing が変わって store が移動した場合、この leg は fail ではなく skip される**
+    （hardcode 形と同じ挙動）。この点は review で実証的に反証されたため、
+    以前ここにあった「routing が変われば fail する」という記述は誤りだった。
+    OGB-S-8 の無条件な coverage は次の fixture leg が担う。
   - **fixture 由来の leg**（`a committed fixture grant drives the authorized branch on every checkout`）:
     `test/fixtures/budget-override-authority/authorized-grant-store.json` という
     **追跡される** decision store から grant を供給するため、fresh clone と CI を含む

@@ -240,20 +240,22 @@ test('every configured story override resolves to a known authority status', asy
     // would have moved the store, left the literal pointing at nothing, and
     // silently turned this guard off.
     //
-    // Resolving it independently of the read result is what makes the skip
-    // loud. Keying off `records?.artifact` alone cannot fail: the reader returns
-    // null on ENOENT and only reports `artifact` after a successful read, so the
-    // path would be non-null exactly when the file was just read. Asking the
-    // router where the store *should* be lets this assert that a store present
-    // at the routed location was actually read.
+    // Scope, stated precisely because an earlier revision of this comment
+    // overclaimed and a reviewer disproved it: this is a duplication fix, not a
+    // loudness fix. `readDecisionRecordsIfExists` resolves the same path through
+    // the same function, so probe and reader cannot disagree, and asserting that
+    // they agree would be unfalsifiable. A routing change that moves the store
+    // away leaves this leg *skipped*, not red -- exactly as the hardcoded form
+    // behaved.
+    //
+    // What this leg does enforce: wherever a store exists at the routed
+    // location, this test actually read it and it was non-empty, so reverting to
+    // a stubbed `decisions: []` reddens any checkout that has the artifacts.
+    // AC-8's unconditional coverage comes from the fixture leg below, not here.
     const routedStorePath = await resolvePrArtifactFile(repoRoot, storyId, 'decision-records.json');
     if (existsSync(routedStorePath)) {
-      assert.ok(records,
-        `${storyId} has a decision store at the routed location ${routedStorePath} but the reader returned nothing; artifact routing and this probe disagree`);
-      assert.equal(path.resolve(repoRoot, records.artifact), path.resolve(routedStorePath),
-        `${storyId}: the reader read ${records.artifact} but routing points at ${routedStorePath}`);
       assert.ok(decisions.length > 0,
-        `${storyId} has a decision store on disk but none of its decisions were read; this test is not consulting the real store`);
+        `${storyId} has a decision store at the routed location ${routedStorePath} but none of its decisions were read; this test is not consulting the real store`);
     }
     const resolved = resolveBudgetOverrideAuthority({ storyId, override, decisions });
     // Bind the read to the resolver's own output. Checking only that decisions
