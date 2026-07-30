@@ -47,7 +47,7 @@
         ]
       },
       "first_seen_at": "2026-07-30T10:52:49.040Z",
-      "last_revised_at": "2026-07-30T10:52:49.040Z"
+      "last_revised_at": "2026-07-30T10:56:55.041Z"
     },
     {
       "id": "INV-002",
@@ -90,7 +90,7 @@
         ]
       },
       "first_seen_at": "2026-07-30T10:52:49.040Z",
-      "last_revised_at": "2026-07-30T10:52:49.040Z"
+      "last_revised_at": "2026-07-30T10:56:55.041Z"
     },
     {
       "id": "S-001",
@@ -127,7 +127,7 @@
         ]
       },
       "first_seen_at": "2026-07-30T10:52:49.040Z",
-      "last_revised_at": "2026-07-30T10:52:49.040Z"
+      "last_revised_at": "2026-07-30T10:56:55.041Z"
     },
     {
       "id": "C-001",
@@ -164,9 +164,22 @@
         ]
       },
       "first_seen_at": "2026-07-30T10:52:49.040Z",
-      "last_revised_at": "2026-07-30T10:52:49.040Z"
+      "last_revised_at": "2026-07-30T10:56:55.041Z"
     }
   ],
-  "generated_at": "2026-07-30T10:52:49.038Z",
-  "previous_spec_id": null
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart TD\n    A[agent records budget grant via decision record --source budget:delivery_efficiency] --> B[buildBudgetApprovalForSource: digest computed from config]\n    B --> C[writeBudgetApprovalDoc: tracked doc under docs/management/decisions/]\n    C -->|path gitignored| F[fail closed: no workspace record written]\n    C -->|tracked| D[workspace decision store .vibepro/pr gitignored]\n    C --> E[PR diff shows grantor, digest, timestamp to human reviewer]\n    D -.->|threat closed: grant no longer invisible to review| E\n    E -->|threat residual: agent can still write a forged human name; detection is human, materials now in-diff| A",
+      "entities": [
+        "decision record CLI",
+        "tracked decision document",
+        "workspace decision store",
+        "PR reviewer"
+      ],
+      "rationale": "The enforcement path (digest-bound workspace record) is unchanged; the threat addressed is the reviewability gap where the grant's grantor/digest/timestamp never reached the PR diff. Fail-closed on a gitignored document path prevents silent regression to the untracked-only channel."
+    }
+  ],
+  "generated_at": "2026-07-30T10:56:55.031Z",
+  "previous_spec_id": "2026-07-30T10:52:49.038Z"
 }

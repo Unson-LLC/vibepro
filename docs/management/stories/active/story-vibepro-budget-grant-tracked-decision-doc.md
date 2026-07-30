@@ -93,4 +93,7 @@ repository には既に tracked channel が存在する:
 ## 検証
 
 - unit: `test/decision-records.test.js` に BGT-S-1〜S-5 を追加。
-- 親 Story の residual 節に本 Story への解消ポインタを追記する。
+- 親 Story との相互参照は backfill document
+  （`docs/management/decisions/2026-07-30-budget-override-story-vibepro-owner-gated-budget-override-1f29ffff.md`）
+  が担う。親 Story の doc 自体は本 PR では編集しない
+  （story_source_integrity: 1 PR = 1 Story doc）。
