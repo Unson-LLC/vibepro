@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
@@ -221,15 +222,38 @@ test('every configured story override resolves to a known authority status', asy
   const config = JSON.parse(readFileSync(new URL('../.vibepro/config.json', import.meta.url), 'utf8'));
   const entries = Object.entries(config.budgets.delivery_efficiency_by_story ?? {});
   assert.ok(entries.length > 0);
-  let authorizedCount = 0;
   for (const [storyId, override] of entries) {
     // Decision records are stored per Story, so a single repo-wide read returns
     // nothing and would silently reduce this back to the stubbed form.
+    const storePath = path.join(repoRoot, '.vibepro', 'pr', storyId, 'decision-records.json');
+    const storeExists = existsSync(storePath);
     const records = await readDecisionRecordsIfExists(repoRoot, storyId).catch(() => null);
-    const resolved = resolveBudgetOverrideAuthority({
-      storyId, override, decisions: records?.decisions ?? []
-    });
-    if (resolved.status === 'authorized') authorizedCount += 1;
+    const decisions = records?.decisions ?? [];
+    // The anti-decay guard. `.gitignore` keeps `.vibepro/*` untracked except
+    // config.json, so a fresh clone or CI has no decision stores at all and every
+    // override correctly resolves grandfathered|unauthorized -- asserting that
+    // some override is `authorized` would fail there for a non-defect reason.
+    // What must hold everywhere is consistency: wherever a store does exist on
+    // disk, this test has to have actually read it. Reverting to `decisions: []`
+    // trips this on any checkout that has the artifacts.
+    if (storeExists) {
+      assert.ok(decisions.length > 0,
+        `${storyId} has a decision store on disk but none of its decisions were read; this test is not consulting the real store`);
+    }
+    const resolved = resolveBudgetOverrideAuthority({ storyId, override, decisions });
+    // Bind the read to the resolver's own output. Checking only that decisions
+    // were loaded is not enough: passing them to the reader but not to the
+    // resolver would still look green. If an accepted grant exists on disk whose
+    // digest matches the configured content, the resolver must actually say
+    // `authorized`, so stubbing the resolver's input reddens this.
+    const matchingGrant = decisions.some((decision) => (
+      decision?.status === 'accepted'
+      && decision?.budget_approval?.override_digest === computeBudgetOverrideDigest(storyId, override)
+    ));
+    if (matchingGrant) {
+      assert.equal(resolved.status, 'authorized',
+        `${storyId} has an accepted grant matching its configured content on disk, so the resolver must report authorized; a stubbed decision list would report ${resolved.status}`);
+    }
     assert.ok(['grandfathered', 'unauthorized', 'authorized'].includes(resolved.status),
       `${storyId}: ${resolved.status}`);
     // The load-bearing half: an override may only be effective by a pin or by a
@@ -248,12 +272,6 @@ test('every configured story override resolves to a known authority status', asy
     assert.deepEqual(resolved.status === 'grandfathered' ? resolved.reasons : [], [],
       `${storyId} grandfathered entries must carry no disqualifying reason`);
   }
-  // This repository currently ships exactly one override that is effective by a
-  // grant rather than by a pin: this Story's own closure budget. Asserting that
-  // the authorized branch is reached keeps the checks above from decaying into
-  // dead code the way the stubbed `decisions: []` form did.
-  assert.ok(authorizedCount > 0,
-    'the authorized branch must be exercised against the real decision store, otherwise this test is only re-checking the pinned entries');
 });
 
 // OGB-S-9. An inert override is reported as debt rather than passing unnoticed.
