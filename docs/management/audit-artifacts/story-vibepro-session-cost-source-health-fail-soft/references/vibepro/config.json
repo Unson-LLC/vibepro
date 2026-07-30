@@ -445,18 +445,6 @@
   "brainbase": {
     "stories": [
       {
-        "story_id": "story-vibepro-owner-gated-budget-override",
-        "title": "予算 override を「エージェントが書けば効く」から「人間の承認記録が無ければ効かない」へ変える",
-        "ssot": "local",
-        "status": "active",
-        "horizon": "now",
-        "view": "dev",
-        "period": "2026-07",
-        "started_at": "2026-07-27",
-        "due_at": null,
-        "category": "architecture"
-      },
-      {
         "story_id": "story-vibepro-session-cost-source-health-fail-soft",
         "title": "Session Cost入力障害を局所化して監査を継続する",
         "ssot": "local",
@@ -1074,6 +1062,6 @@
         "category": "bugfix"
       }
     ],
-    "current_story_id": "story-vibepro-owner-gated-budget-override"
+    "current_story_id": "story-vibepro-session-cost-source-health-fail-soft"
   }
 }

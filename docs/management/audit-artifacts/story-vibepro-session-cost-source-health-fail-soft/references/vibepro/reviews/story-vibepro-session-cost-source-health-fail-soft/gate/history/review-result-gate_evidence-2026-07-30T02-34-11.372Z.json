@@ -1,0 +1,135 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "Design SSOT lineage frontmatter requires correction",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "design-ssot-architecture-parent-missing",
+      "detail": "Architecture frontmatter lacks parent_design"
+    },
+    {
+      "severity": "high",
+      "id": "design-ssot-spec-parent-mismatch",
+      "detail": "Spec parent_design does not reference the Story ID"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Independent reviewer confirmed two design lineage gaps on HEAD 6ec3320b",
+    "evidence": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/design-ssot-reconciliation.json",
+    "inputs": [
+      "docs/architecture/vibepro-session-cost-source-health-fail-soft.md"
+    ]
+  },
+  "judgment_delta": [
+    "implementation appeared releasable -> needs changes because handoff lineage cannot be reconstructed"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/6c87/vibepro",
+    "actual_root": "/Users/ksato/.codex/worktrees/6c87/vibepro",
+    "expected_root": null,
+    "expected_head_sha": "6ec3320b9d0a46634001ac2cd64298fa6f5c4b03",
+    "current_head_sha": "6ec3320b9d0a46634001ac2cd64298fa6f5c4b03",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/6c87/vibepro",
+      "actual_root": "/Users/ksato/.codex/worktrees/6c87/vibepro",
+      "expected_root": null,
+      "expected_head_sha": "6ec3320b9d0a46634001ac2cd64298fa6f5c4b03",
+      "current_head_sha": "6ec3320b9d0a46634001ac2cd64298fa6f5c4b03",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-30T02:34:11.372Z",
+  "git_context": {
+    "head_sha": "6ec3320b9d0a46634001ac2cd64298fa6f5c4b03",
+    "current_branch": "codex/story-vibepro-session-cost-source-health-fail-soft",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-30T02:34:11.360Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "final review was bound to the frozen candidate"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "6ec3320b9d0a46634001ac2cd64298fa6f5c4b03",
+    "surface_files": [
+      {
+        "path": "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+        "sha256": "3efec9dce22eff80825a1b851820ee32bbc24fb8b4f45952f58ceeddcf21e3d8",
+        "size": 1195
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "db1e05e9594a9ea40ec614feb894f981dfe7722a8624e3bbe262c696c6622216"
+  },
+  "source_fingerprint": "7c6c71c8091759b829f646ff78d5bd907723275b7472597f1ad8dae8f63bf0f6",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "019fb0de-3f48-75b0-b2d2-f99e27e1f6e0",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": null,
+    "thread_id": "019fb0de-3f48-75b0-b2d2-f99e27e1f6e0",
+    "session_id": "019fb0de-3f48-75b0-b2d2-f99e27e1f6e0",
+    "tool_call_id": null,
+    "transcript_artifact": "codex-agent:019fb0de-3f48-75b0-b2d2-f99e27e1f6e0",
+    "request_artifact": ".vibepro/reviews/story-vibepro-session-cost-source-health-fail-soft/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent closed after needs_changes final",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "019fb0de-3f48-75b0-b2d2-f99e27e1f6e0",
+      "implementation_session_id": "019fb052-b7ba-7ba1-963d-3488763468d5",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

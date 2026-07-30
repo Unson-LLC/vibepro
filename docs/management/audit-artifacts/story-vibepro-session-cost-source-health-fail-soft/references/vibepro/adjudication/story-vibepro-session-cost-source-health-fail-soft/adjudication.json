@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+  "updated_at": "2026-07-30T02:48:35.543Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "Focused zero-byte and malformed fixtures preserve token accounting; current-HEAD unit suite passes 37/37.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019fb0e8-8596-7c20-a8ba-a5366e81cb29",
+        "session_ref": "codex-agent:019fb0e8-8596-7c20-a8ba-a5366e81cb29"
+      },
+      "head_commit": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`SCSH-AC-001`: Missing, empty, malformed, and non-array process-manager input does not abort",
+          "`SCSH-AC-002`: When session JSONL contains `session_meta.cwd`, degraded process-manager input",
+          "`SCSH-AC-003`: The JSON result reports process-manager status, reason, source path, and parse",
+          "`SCSH-AC-004`: A valid matching process-manager entry retains precedence over session",
+          "`SCSH-AC-005`: Focused unit tests reproduce zero-byte and malformed JSON inputs and prove"
+        ]
+      },
+      "acceptance_scope_fingerprint": "51968f3171d7c912267ad23252e1b3913db0ff0069c858cc525950a3c2dfab68",
+      "recorded_at": "2026-07-30T02:48:35.538Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "A deliberately conflicting session cwd fixture proves valid process-manager cwd retains precedence.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019fb0e8-8596-7c20-a8ba-a5366e81cb29",
+        "session_ref": "codex-agent:019fb0e8-8596-7c20-a8ba-a5366e81cb29"
+      },
+      "head_commit": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`SCSH-AC-001`: Missing, empty, malformed, and non-array process-manager input does not abort",
+          "`SCSH-AC-002`: When session JSONL contains `session_meta.cwd`, degraded process-manager input",
+          "`SCSH-AC-003`: The JSON result reports process-manager status, reason, source path, and parse",
+          "`SCSH-AC-004`: A valid matching process-manager entry retains precedence over session",
+          "`SCSH-AC-005`: Focused unit tests reproduce zero-byte and malformed JSON inputs and prove"
+        ]
+      },
+      "acceptance_scope_fingerprint": "51968f3171d7c912267ad23252e1b3913db0ff0069c858cc525950a3c2dfab68",
+      "recorded_at": "2026-07-30T02:48:34.803Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "JSON and rendered CLI expose safe status/reason/path/byte-length fields and negative assertions prove secret source fragments are absent.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019fb0e8-8596-7c20-a8ba-a5366e81cb29",
+        "session_ref": "codex-agent:019fb0e8-8596-7c20-a8ba-a5366e81cb29"
+      },
+      "head_commit": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`SCSH-AC-001`: Missing, empty, malformed, and non-array process-manager input does not abort",
+          "`SCSH-AC-002`: When session JSONL contains `session_meta.cwd`, degraded process-manager input",
+          "`SCSH-AC-003`: The JSON result reports process-manager status, reason, source path, and parse",
+          "`SCSH-AC-004`: A valid matching process-manager entry retains precedence over session",
+          "`SCSH-AC-005`: Focused unit tests reproduce zero-byte and malformed JSON inputs and prove"
+        ]
+      },
+      "acceptance_scope_fingerprint": "51968f3171d7c912267ad23252e1b3913db0ff0069c858cc525950a3c2dfab68",
+      "recorded_at": "2026-07-30T02:48:34.246Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Degraded process metadata falls back to session_meta.cwd while token accounting remains available in empty and malformed fixtures.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019fb0e8-8596-7c20-a8ba-a5366e81cb29",
+        "session_ref": "codex-agent:019fb0e8-8596-7c20-a8ba-a5366e81cb29"
+      },
+      "head_commit": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`SCSH-AC-001`: Missing, empty, malformed, and non-array process-manager input does not abort",
+          "`SCSH-AC-002`: When session JSONL contains `session_meta.cwd`, degraded process-manager input",
+          "`SCSH-AC-003`: The JSON result reports process-manager status, reason, source path, and parse",
+          "`SCSH-AC-004`: A valid matching process-manager entry retains precedence over session",
+          "`SCSH-AC-005`: Focused unit tests reproduce zero-byte and malformed JSON inputs and prove"
+        ]
+      },
+      "acceptance_scope_fingerprint": "51968f3171d7c912267ad23252e1b3913db0ff0069c858cc525950a3c2dfab68",
+      "recorded_at": "2026-07-30T02:48:33.589Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "ENOENT, zero-byte, malformed JSON, and non-array roots are converted to structured health; integration 6/6 covers all four.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "019fb0e8-8596-7c20-a8ba-a5366e81cb29",
+        "session_ref": "codex-agent:019fb0e8-8596-7c20-a8ba-a5366e81cb29"
+      },
+      "head_commit": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`SCSH-AC-001`: Missing, empty, malformed, and non-array process-manager input does not abort",
+          "`SCSH-AC-002`: When session JSONL contains `session_meta.cwd`, degraded process-manager input",
+          "`SCSH-AC-003`: The JSON result reports process-manager status, reason, source path, and parse",
+          "`SCSH-AC-004`: A valid matching process-manager entry retains precedence over session",
+          "`SCSH-AC-005`: Focused unit tests reproduce zero-byte and malformed JSON inputs and prove"
+        ]
+      },
+      "acceptance_scope_fingerprint": "51968f3171d7c912267ad23252e1b3913db0ff0069c858cc525950a3c2dfab68",
+      "recorded_at": "2026-07-30T02:48:32.953Z"
+    }
+  ]
+}

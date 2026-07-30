@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1.0",
   "model": "vibepro-gate-outcome-ledger-v3",
-  "updated_at": "2026-07-29T16:11:54.615Z",
+  "updated_at": "2026-07-30T03:17:33.391Z",
   "entries": [
     {
       "schema_version": "0.1.0",
@@ -106357,6 +106357,1354 @@
           "test/session-efficiency-audit.test.js",
           "test/session-efficiency-run-lineage.test.js",
           "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:agent_review|needs_review|passed|2026-07-30T02:14:15.164Z|2026-07-30T02:26:42.528Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:14:15.164Z",
+      "resolved_at": "2026-07-30T02:26:42.528Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:agent_review|needs_review|passed|2026-07-30T02:36:47.447Z|2026-07-30T02:43:25.285Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:36:47.447Z",
+      "resolved_at": "2026-07-30T02:43:25.285Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:artifact_consistency|stale_evidence|passed|2026-07-30T02:36:47.447Z|2026-07-30T02:43:25.285Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:36:47.447Z",
+      "resolved_at": "2026-07-30T02:43:25.285Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:common_judgment_spine|needs_evidence|passed|2026-07-30T02:14:15.164Z|2026-07-30T02:26:42.528Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:14:15.164Z",
+      "resolved_at": "2026-07-30T02:26:42.528Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:common_judgment_spine|needs_evidence|passed|2026-07-30T02:30:46.111Z|2026-07-30T02:33:28.072Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:30:46.111Z",
+      "resolved_at": "2026-07-30T02:33:28.072Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "6ec3320b9d0a46634001ac2cd64298fa6f5c4b03",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:common_judgment_spine|needs_evidence|passed|2026-07-30T02:49:55.054Z|2026-07-30T02:51:08.780Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:49:55.054Z",
+      "resolved_at": "2026-07-30T02:51:08.780Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:common_judgment_spine|needs_evidence|passed|2026-07-30T03:15:23.191Z|2026-07-30T03:16:01.820Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T03:15:23.191Z",
+      "resolved_at": "2026-07-30T03:16:01.820Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:definition_of_done|needs_evidence|passed|2026-07-30T02:14:15.164Z|2026-07-30T02:26:42.528Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:14:15.164Z",
+      "resolved_at": "2026-07-30T02:26:42.528Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:definition_of_done|needs_evidence|passed|2026-07-30T02:36:47.447Z|2026-07-30T02:43:25.285Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:36:47.447Z",
+      "resolved_at": "2026-07-30T02:43:25.285Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:design_diagrams|needs_evidence|satisfied|2026-07-30T02:12:34.253Z|2026-07-30T02:14:15.164Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:design_diagrams",
+      "gate_type": "design_diagrams_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "satisfied",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:12:34.253Z",
+      "resolved_at": "2026-07-30T02:14:15.164Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "300a7681f8b8ade9f6af2ac12fe79c56b179fc9c",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:design_diagrams|needs_evidence|satisfied|2026-07-30T02:49:55.054Z|2026-07-30T02:51:08.780Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:design_diagrams",
+      "gate_type": "design_diagrams_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "satisfied",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:49:55.054Z",
+      "resolved_at": "2026-07-30T02:51:08.780Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:design_ssot_reconciliation|needs_review|passed|2026-07-30T02:33:28.072Z|2026-07-30T02:36:47.447Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:design_ssot_reconciliation",
+      "gate_type": "design_ssot_reconciliation_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:33:28.072Z",
+      "resolved_at": "2026-07-30T02:36:47.447Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:e2e|needs_evidence|passed|2026-07-30T02:49:55.054Z|2026-07-30T02:51:08.780Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:e2e",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:49:55.054Z",
+      "resolved_at": "2026-07-30T02:51:08.780Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:evidence_adjudication|needs_evidence|passed|2026-07-30T02:14:15.164Z|2026-07-30T02:26:42.528Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:14:15.164Z",
+      "resolved_at": "2026-07-30T02:26:42.528Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:evidence_adjudication|needs_evidence|passed|2026-07-30T02:43:50.695Z|2026-07-30T02:48:45.962Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:43:50.695Z",
+      "resolved_at": "2026-07-30T02:48:45.962Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:integration|needs_evidence|passed|2026-07-30T02:12:34.253Z|2026-07-30T02:14:15.164Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:integration",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "verification_command",
+          "command": "node --test --test-name-pattern \"integration|audit session-cost CLI exposes|SCSH\" test/session-efficiency-audit.test.js",
+          "status": "pass",
+          "recorded_at": "2026-07-30T02:13:59.847Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:12:34.253Z",
+      "resolved_at": "2026-07-30T02:14:15.164Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "300a7681f8b8ade9f6af2ac12fe79c56b179fc9c",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:integration|needs_evidence|passed|2026-07-30T02:30:46.111Z|2026-07-30T02:33:28.072Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:integration",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "verification_command",
+          "command": "node --test --test-name-pattern \"integration|SCSH|audit session-cost CLI exposes|session efficiency audit uses process-manager\" test/session-efficiency-audit.test.js",
+          "status": "pass",
+          "recorded_at": "2026-07-30T02:32:30.059Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:30:46.111Z",
+      "resolved_at": "2026-07-30T02:33:28.072Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "6ec3320b9d0a46634001ac2cd64298fa6f5c4b03",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:judgment_axis_public_contract|needs_evidence|passed|2026-07-30T02:09:37.591Z|2026-07-30T02:10:48.921Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:09:37.591Z",
+      "resolved_at": "2026-07-30T02:10:48.921Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "6cc2ac560c112fe9f1e8547ff63bf474b365d909",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:judgment_axis_public_contract|needs_evidence|passed|2026-07-30T02:30:46.111Z|2026-07-30T02:33:28.072Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:30:46.111Z",
+      "resolved_at": "2026-07-30T02:33:28.072Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "6ec3320b9d0a46634001ac2cd64298fa6f5c4b03",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:judgment_axis_scope_reviewability|needs_evidence|accepted_followup|2026-07-30T02:28:23.804Z|2026-07-30T02:29:30.106Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:judgment_axis_scope_reviewability",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "accepted_followup",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:28:23.804Z",
+      "resolved_at": "2026-07-30T02:29:30.106Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js",
+          "design-ssot.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:judgment_dag_adjudication|needs_evidence|not_applicable|2026-07-30T02:49:55.054Z|2026-07-30T02:51:08.780Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "not_applicable",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:49:55.054Z",
+      "resolved_at": "2026-07-30T02:51:08.780Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:requirement|needs_review|passed|2026-07-30T02:49:55.054Z|2026-07-30T02:51:08.780Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:requirement",
+      "gate_type": "requirement_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "source_fix",
+      "classification": "resolving_diff_contains_source_changes_for_source_sensitive_gate",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:49:55.054Z",
+      "resolved_at": "2026-07-30T02:51:08.780Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:responsibility_authority|needs_evidence|passed|2026-07-30T02:27:15.259Z|2026-07-30T02:28:02.853Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:27:15.259Z",
+      "resolved_at": "2026-07-30T02:28:02.853Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:responsibility_authority|needs_evidence|passed|2026-07-30T02:48:45.962Z|2026-07-30T02:49:38.101Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:48:45.962Z",
+      "resolved_at": "2026-07-30T02:49:38.101Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:responsibility_authority|needs_evidence|passed|2026-07-30T02:49:55.054Z|2026-07-30T02:51:08.780Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:49:55.054Z",
+      "resolved_at": "2026-07-30T02:51:08.780Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:responsibility_authority|needs_evidence|passed|2026-07-30T03:16:39.368Z|2026-07-30T03:17:33.391Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T03:16:39.368Z",
+      "resolved_at": "2026-07-30T03:17:33.391Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:senior_gap_judgment|block|passed|2026-07-30T02:49:55.054Z|2026-07-30T02:51:08.780Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "block",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:49:55.054Z",
+      "resolved_at": "2026-07-30T02:51:08.780Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:senior_gap_judgment|needs_review|passed|2026-07-30T02:48:45.962Z|2026-07-30T02:49:38.101Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:48:45.962Z",
+      "resolved_at": "2026-07-30T02:49:38.101Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:senior_gap_judgment|needs_review|passed|2026-07-30T03:16:39.368Z|2026-07-30T03:17:33.391Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T03:16:39.368Z",
+      "resolved_at": "2026-07-30T03:17:33.391Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:split_resolution|needs_review|passed|2026-07-30T02:14:15.164Z|2026-07-30T02:26:42.528Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:split_resolution",
+      "gate_type": "split_resolution_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:14:15.164Z",
+      "resolved_at": "2026-07-30T02:26:42.528Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:story_source_integrity|story_source_mismatch|passed|2026-07-30T02:49:55.054Z|2026-07-30T02:51:08.780Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:story_source_integrity",
+      "gate_type": "story_source_integrity_gate",
+      "previous_status": "story_source_mismatch",
+      "resolved_status": "passed",
+      "outcome": "source_fix",
+      "classification": "resolving_diff_contains_source_changes_for_source_sensitive_gate",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:49:55.054Z",
+      "resolved_at": "2026-07-30T02:51:08.780Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-30T02:09:37.591Z|2026-07-30T02:10:48.921Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:09:37.591Z",
+      "resolved_at": "2026-07-30T02:10:48.921Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "6cc2ac560c112fe9f1e8547ff63bf474b365d909",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-30T02:28:23.804Z|2026-07-30T02:29:30.106Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:28:23.804Z",
+      "resolved_at": "2026-07-30T02:29:30.106Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js",
+          "design-ssot.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:traceability_clause_coverage|needs_evidence|passed|2026-07-30T02:30:46.111Z|2026-07-30T02:33:28.072Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:30:46.111Z",
+      "resolved_at": "2026-07-30T02:33:28.072Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "6ec3320b9d0a46634001ac2cd64298fa6f5c4b03",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:unit|needs_evidence|passed|2026-07-30T02:30:46.111Z|2026-07-30T02:33:28.072Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:unit",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:30:46.111Z",
+      "resolved_at": "2026-07-30T02:33:28.072Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "6ec3320b9d0a46634001ac2cd64298fa6f5c4b03",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|gate:vibepro_artifact_policy|needs_review|passed|2026-07-30T02:14:15.164Z|2026-07-30T02:26:42.528Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "gate:vibepro_artifact_policy",
+      "gate_type": "vibepro_artifact_policy_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:14:15.164Z",
+      "resolved_at": "2026-07-30T02:26:42.528Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|review:dispatch_batch:gate|failed|passed|2026-07-30T02:36:47.447Z|2026-07-30T02:43:25.285Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:36:47.447Z",
+      "resolved_at": "2026-07-30T02:43:25.285Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|review:dispatch_batch:gate|needs_review|passed|2026-07-30T02:14:15.164Z|2026-07-30T02:26:42.528Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:14:15.164Z",
+      "resolved_at": "2026-07-30T02:26:42.528Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|review:gate:gate_evidence|missing|passed|2026-07-30T02:14:15.164Z|2026-07-30T02:26:42.528Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "review:gate:gate_evidence",
+      "gate_type": "agent_review_role_gate",
+      "previous_status": "missing",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:14:15.164Z",
+      "resolved_at": "2026-07-30T02:26:42.528Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|review:join:gate|needs_review|passed|2026-07-30T02:14:15.164Z|2026-07-30T02:26:42.528Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:14:15.164Z",
+      "resolved_at": "2026-07-30T02:26:42.528Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|review:join:gate|needs_review|passed|2026-07-30T02:36:47.447Z|2026-07-30T02:43:25.285Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:36:47.447Z",
+      "resolved_at": "2026-07-30T02:43:25.285Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|review:preflight:gate:gate_evidence|failed|passed|2026-07-30T02:36:47.447Z|2026-07-30T02:43:25.285Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "review:preflight:gate:gate_evidence",
+      "gate_type": "agent_review_dispatch_preflight_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:36:47.447Z",
+      "resolved_at": "2026-07-30T02:43:25.285Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|review:prepare:gate|needs_review|passed|2026-07-30T02:14:15.164Z|2026-07-30T02:26:42.528Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "review:prepare:gate",
+      "gate_type": "agent_review_prepare_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:14:15.164Z",
+      "resolved_at": "2026-07-30T02:26:42.528Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|review:record:gate:gate_evidence|needs_review|passed|2026-07-30T02:14:15.164Z|2026-07-30T02:26:42.528Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:14:15.164Z",
+      "resolved_at": "2026-07-30T02:26:42.528Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "e7d521315cc47695b7a51a4e381ffd5b1696bbd5",
+        "changed_files": [
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-session-cost-source-health-fail-soft|review:record:gate:gate_evidence|needs_review|passed|2026-07-30T02:36:47.447Z|2026-07-30T02:43:25.285Z",
+      "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-07-30T02:36:47.447Z",
+      "resolved_at": "2026-07-30T02:43:25.285Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-session-cost-source-health-fail-soft.md",
+          "docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md",
+          "docs/specs/story-vibepro-session-cost-source-health-fail-soft.vibepro.json",
+          "docs/specs/vibepro-session-cost-source-health-fail-soft.md",
+          "src/session-efficiency-audit.js",
+          "test/session-efficiency-audit.test.js"
         ]
       }
     },

@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+  "ledger_path": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_e94446fcd89b8735b73fc46de09611e163cb966c87778d9c1c11127d163b8350"
+  },
+  "parent_revision_fingerprint": "00a7465768e204a34cb1b35289deffc48cfabd41a07b77e68c3e7ea8d0496577",
+  "revision_fingerprint": "df50c8d94fd6960da43c826126fc76f7fd02c47bbd1ea17a9e37738812c55d61",
+  "trace": {
+    "decision_trace_id": "dt_e94446fcd89b8735b73fc46de09611e163cb966c87778d9c1c11127d163b8350",
+    "collision_group": null,
+    "trace_source_ref": "tsr_5841d695235ac5e4a4588cb08045cb5b111a0343f0db1d6d9b2ec4b40e960c54",
+    "normalized_subject_key": "gate:vibepro_artifact_policy",
+    "source_identity": {
+      "source_kind": "decision_record",
+      "source_ref": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/decision-records.json",
+      "native_id": "decision-1785378392214-5312cc22",
+      "digest": "6216dabdb97a9925d15938bdbc0f5ae2417c6a8a9cc3adfd15c3a3ac9b3581eb",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "f8929a3f1dcbc3a366df45d064303e8b1573e600",
+    "parent_revision_fingerprint": "00a7465768e204a34cb1b35289deffc48cfabd41a07b77e68c3e7ea8d0496577",
+    "revision_fingerprint": "df50c8d94fd6960da43c826126fc76f7fd02c47bbd1ea17a9e37738812c55d61",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_e94446fcd89b8735b73fc46de09611e163cb966c87778d9c1c11127d163b8350"
+        },
+        "parent_revision_fingerprint": "bef36c7dee282165b0d13cca7ee1bb891c1f7404d20d0ed28b88806fe385c8e3"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 399,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/399",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "17d9e139c87eebfffa07dd658ff40d9dbefd096b",
+        "status": "merged",
+        "merged_at": "2026-07-30T03:26:23Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-session-cost-source-health-fail-soft/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

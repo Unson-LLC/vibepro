@@ -1150,3 +1150,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-merge-bindin
 なし
 
 <!-- vibepro-release-pr:398:end -->
+
+<!-- vibepro-release-pr:399:start -->
+## [#399](https://github.com/Unson-LLC/vibepro/pull/399) fix: keep session-cost available on corrupt process metadata
+
+- Author: @sintariran
+- Merged: 2026-07-30T03:26:23Z
+- Commit: `17d9e139c87eebfffa07dd658ff40d9dbefd096b`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-session-cost-source-health-fail-soft.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:399:end -->
