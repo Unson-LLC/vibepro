@@ -1,0 +1,584 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-process-record-worktree-durability",
+  "updated_at": "2026-07-30T13:04:19.347Z",
+  "events": [
+    {
+      "event_id": "e6d04b52-0ad6-4dd5-a36a-2b07dd717540",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "change directly serves the story intent (decouple process-record lifetime from worktree lifetime after the 2026-07-30 record-loss incidents); all 7 ACs map to concrete code and executable tests",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "recorded_at": "2026-07-30T12:58:27.694Z"
+    },
+    {
+      "event_id": "6e4566c1-b742-4dfc-8dce-e1279fd7723a",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "e2e flow_replay reproduces the actual incident class through the real CLI: records in a linked worktree, .vibepro wiped and regenerated, hydrate restores review + trip state",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "recorded_at": "2026-07-30T12:58:28.166Z"
+    },
+    {
+      "event_id": "296648b0-4d4b-40ab-a35f-d70275f281b6",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "non-destructive hydrate, entry_key union fail-closed, unmergeable-ledger conflict surfacing, isSafeStoryId rejection each have a failing-direction test; round-1 fail-open merge hole closed",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "recorded_at": "2026-07-30T12:58:28.861Z"
+    },
+    {
+      "event_id": "979d0108-fb7a-43c3-8732-52e07b580baf",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "worktree gitdir -> main checkout .vibepro-store boundary explicit and tested against a real git worktree; record-class boundaries realigned to actual writer directories per round-1 findings",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "recorded_at": "2026-07-30T12:58:29.319Z"
+    },
+    {
+      "event_id": "573888f7-4ec0-4d61-83e8-4b8cac16d98f",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "failure modes exercised not asserted: unwritable-store fail-soft, unmergeable ledger conflict, unsafe story id, durability opt-out, missing-store fallback; hook cannot alter handler results",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "recorded_at": "2026-07-30T12:58:29.750Z"
+    },
+    {
+      "event_id": "44846614-c58a-4788-ad62-d1ac24edcbd9",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "all four verification runs at 8610156 == current HEAD with unchanged worktree hashes; story spec file binds S-001/S-002 to named replays; independent re-run of unit suite: fail 0",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "recorded_at": "2026-07-30T12:58:30.357Z"
+    },
+    {
+      "event_id": "b2b87bdf-8770-46d4-94ff-39fba923f006",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "additive change: new store subcommands documented in both CLI references, added to TOP_LEVEL_COMMANDS and cli-smoke; hook never changes exit codes or results of existing commands",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "recorded_at": "2026-07-30T12:58:30.820Z"
+    },
+    {
+      "event_id": "efef330e-8853-42d8-9884-58a64e2bc139",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "12 changed files one coherent intent; core module 277 lines; single reviewer can walk store module -> dispatch hook -> tests as one judgment; bundled-scope decision record exists",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "recorded_at": "2026-07-30T12:58:31.262Z"
+    },
+    {
+      "event_id": "2196e60e-98b7-4995-83ea-dd67c74340fe",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed ledger or config input verified: parse failure returns unmergeable surfacing conflict with warning; config parse failure defaults durability enabled; exceeds the mechanical requirement",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "recorded_at": "2026-07-30T12:58:31.705Z"
+    },
+    {
+      "event_id": "df2c73bf-d235-4a10-8acd-2e6487306fe7",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "hook runs only after handler success, fail-soft, mirrors rather than mutates; skipped_newer_destination prevents stale store copies overwriting newer local evidence; adjacent suites pass at head",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "recorded_at": "2026-07-30T12:58:32.148Z"
+    },
+    {
+      "event_id": "cb244269-8dc9-401d-a2a2-2ca284b3ecdc",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "the over-green risk (clear ledger over recorded trip) is the exact e2e-exercised state: clear->block preserved via entry_key union; unmergeable path surfaces conflict instead of silently keeping clear ledger",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "recorded_at": "2026-07-30T12:58:32.584Z"
+    },
+    {
+      "event_id": "0826d260-50d4-43ea-87a3-29db77c4275d",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "schema-sensitive surfaces verified in the failing direction: ledger merge rejects malformed/partial data (parse failure, non-array entries, schema/model mismatch all unmergeable, surfaced as conflicts + warning, tested); unsafe story ids rejected via isSafeStoryId; malformed config fails safe to durability enabled; bad data never fails the producing command",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "recorded_at": "2026-07-30T13:00:38.376Z"
+    },
+    {
+      "event_id": "f1cb7a3d-5399-4c97-880a-cd1b39f832c7",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "change directly serves the story intent; all 7 ACs map to concrete code and executable tests (re-recorded at current head after docs-only design-ssot registration commit 93fe646c; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+      "recorded_at": "2026-07-30T13:02:53.516Z"
+    },
+    {
+      "event_id": "fc144ed8-cc8d-4a31-9ee6-ff845a841a3a",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "e2e flow_replay reproduces the actual incident class through the real CLI (re-recorded at current head after docs-only design-ssot registration commit 93fe646c; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+      "recorded_at": "2026-07-30T13:02:54.110Z"
+    },
+    {
+      "event_id": "1855d0e3-ecf0-4492-a6df-3ac0bbf3685d",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "non-destructive hydrate, entry_key union fail-closed, unmergeable-ledger conflict surfacing, isSafeStoryId rejection each have a failing-direction test (re-recorded at current head after docs-only design-ssot registration commit 93fe646c; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+      "recorded_at": "2026-07-30T13:02:54.673Z"
+    },
+    {
+      "event_id": "d1fcf339-ccda-40a5-aff1-a582592fd699",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "worktree gitdir -> main checkout boundary explicit and tested; record classes realigned to actual writer directories (re-recorded at current head after docs-only design-ssot registration commit 93fe646c; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+      "recorded_at": "2026-07-30T13:02:55.355Z"
+    },
+    {
+      "event_id": "b3bc66ca-fdda-4798-8bb6-dade59d85b64",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "unwritable-store fail-soft, unmergeable ledger conflict, unsafe story id, durability opt-out, missing-store fallback all tested; hook cannot alter handler results (re-recorded at current head after docs-only design-ssot registration commit 93fe646c; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+      "recorded_at": "2026-07-30T13:02:56.083Z"
+    },
+    {
+      "event_id": "8a152532-b68a-4cf7-89c8-03dedd503844",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "all four verification runs head-bound with unchanged worktree hashes; story spec file binds S-001/S-002 to named replays; independent re-run fail 0 (re-recorded at current head after docs-only design-ssot registration commit 93fe646c; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+      "recorded_at": "2026-07-30T13:02:56.643Z"
+    },
+    {
+      "event_id": "1bc8227e-2bb4-4e96-b5be-1a1d561745c4",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "additive change: store subcommands documented in both CLI references, in TOP_LEVEL_COMMANDS and cli-smoke; hook never changes exit codes or results (re-recorded at current head after docs-only design-ssot registration commit 93fe646c; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+      "recorded_at": "2026-07-30T13:02:57.250Z"
+    },
+    {
+      "event_id": "443ef329-abaf-4e6f-9d9f-f37913e97ca1",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "one coherent intent, single reviewer can walk store module -> dispatch hook -> tests; review_owner_map and bundled-scope decision records exist (re-recorded at current head after docs-only design-ssot registration commit 93fe646c; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+      "recorded_at": "2026-07-30T13:02:57.995Z"
+    },
+    {
+      "event_id": "c7b286a3-7f5e-4ec4-b867-eaa05350535d",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed ledger/config verified: parse failure unmergeable -> conflict + warning; config parse failure defaults durability enabled (re-recorded at current head after docs-only design-ssot registration commit 93fe646c; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+      "recorded_at": "2026-07-30T13:02:58.554Z"
+    },
+    {
+      "event_id": "793af1d8-afea-45ff-b5fa-78d87baca38e",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "hook runs only after handler success, fail-soft, mirrors not mutates; skipped_newer_destination prevents stale overwrite; adjacent suites pass (re-recorded at current head after docs-only design-ssot registration commit 93fe646c; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+      "recorded_at": "2026-07-30T13:02:59.192Z"
+    },
+    {
+      "event_id": "08ed6040-a6ae-4322-87a3-5df0fa194189",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "clear ledger over recorded trip is the exact e2e-exercised state: clear->block preserved via entry_key union; unmergeable path surfaces conflict (re-recorded at current head after docs-only design-ssot registration commit 93fe646c; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+      "recorded_at": "2026-07-30T13:03:00.078Z"
+    },
+    {
+      "event_id": "1e514872-18da-429b-8127-ce12bdb1ecf5",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "schema-sensitive surfaces verified in failing direction: malformed/partial ledger data unmergeable -> conflicts + warning; unsafe story ids rejected; malformed config fails safe to enabled; bad data never fails the producing command (re-recorded at current head after docs-only design-ssot registration commit 93fe646c; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+      "recorded_at": "2026-07-30T13:03:00.853Z"
+    },
+    {
+      "event_id": "25669ab5-88ad-49e3-87fb-39ce0c201635",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "change directly serves the story intent; all 7 ACs map to concrete code and executable tests (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "recorded_at": "2026-07-30T13:04:13.002Z"
+    },
+    {
+      "event_id": "04fa0f7c-bf0d-4b7d-8517-a555bd5ad378",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "e2e flow_replay reproduces the actual incident class through the real CLI (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "recorded_at": "2026-07-30T13:04:13.876Z"
+    },
+    {
+      "event_id": "2f2a393e-798e-4089-bf6d-5a975aefdb6a",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "non-destructive hydrate, entry_key union fail-closed, unmergeable-ledger conflict surfacing, isSafeStoryId rejection each have a failing-direction test (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "recorded_at": "2026-07-30T13:04:14.544Z"
+    },
+    {
+      "event_id": "500e1102-91df-4b58-9f9c-7ee0e5af232c",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "worktree gitdir -> main checkout boundary explicit and tested; record classes realigned to actual writer directories (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "recorded_at": "2026-07-30T13:04:15.093Z"
+    },
+    {
+      "event_id": "da0c49ec-774f-4f2e-8160-8d7ee64232e0",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "unwritable-store fail-soft, unmergeable ledger conflict, unsafe story id, durability opt-out, missing-store fallback all tested (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "recorded_at": "2026-07-30T13:04:15.633Z"
+    },
+    {
+      "event_id": "a63372f0-2c3f-4f80-81ad-4d73ab841d21",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "verification runs head-bound with unchanged worktree hashes; story spec file binds S-001/S-002 to named replays; independent re-run fail 0 (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "recorded_at": "2026-07-30T13:04:16.243Z"
+    },
+    {
+      "event_id": "006411c3-22c1-4f77-b622-32e7bbe504e0",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "additive change: store subcommands documented in both CLI references, in TOP_LEVEL_COMMANDS and cli-smoke; hook never changes exit codes or results (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "recorded_at": "2026-07-30T13:04:16.747Z"
+    },
+    {
+      "event_id": "23860208-c484-458f-bcb7-c667ca54af2d",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "one coherent intent, single reviewer; review_owner_map and bundled-scope decision records exist (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "recorded_at": "2026-07-30T13:04:17.261Z"
+    },
+    {
+      "event_id": "11ea68e2-a2a5-415d-8def-cba71ba93217",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed ledger/config verified: parse failure unmergeable -> conflict + warning; config parse failure defaults durability enabled (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "recorded_at": "2026-07-30T13:04:17.812Z"
+    },
+    {
+      "event_id": "487bdd6a-5699-4626-9373-d306001d74f6",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "hook runs only after handler success, fail-soft, mirrors not mutates; skipped_newer_destination prevents stale overwrite (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "recorded_at": "2026-07-30T13:04:18.303Z"
+    },
+    {
+      "event_id": "39c4aa06-1a55-452f-92b9-823452ace12c",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "clear ledger over recorded trip is the exact e2e-exercised state; unmergeable path surfaces conflict (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "recorded_at": "2026-07-30T13:04:18.816Z"
+    },
+    {
+      "event_id": "d35a6404-4d7c-41b6-895f-75ffa80cf2aa",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed/partial ledger data unmergeable -> conflicts + warning; unsafe story ids rejected; malformed config fails safe to enabled (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "recorded_at": "2026-07-30T13:04:19.345Z"
+    }
+  ]
+}
