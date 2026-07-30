@@ -12,7 +12,7 @@ parent_design: story-vibepro-computed-evidence-architecture
 related_stories:
   - story-vibepro-computed-evidence-architecture
   - story-vibepro-trusted-delivery-efficiency-guardrail
-reason: "alternatives considered: (a) config への書き込み自体を禁止する — .vibepro/config.json は Edit/Write/エディタで直接書ける平文 JSON であり、CLI 経由の書き込みだけを塞いでも迂回される。防止は原理的に bypass 可能なので採らない。(b) amendment_reason の記述品質を gate で検査する — 自由文の検査であり、先行2 Story で6戦6敗が実測されている敗北路線。(c) 消費時点で無効化する（採用） — override は書けるが、accepted な decision record が無ければ効かない。config は1箇所（resolveEfficiencyPolicyDecision）でしか消費されないため、そこを塞げば迂回路が無い。承認は system が config から計算した digest に束縛されるので『9 を承認させて 40 を適用する』ができない。compatibility impact: 既存13件の override は digest pin による grandfather で挙動不変。resolveEfficiencyPolicy の公開シグネチャは維持（第3引数 context を追加、既定は承認なし）。破壊的変更は1点のみ、承認の無い override が base policy に落ちること（=予算が狭くなる方向）で、fail-closed。既存の証跡 artifact は無効化しない。rollback plan: src/budget-override-authority.js の削除と resolveEfficiencyPolicyDecision の override 分岐の revert で単独 revert 可能。decision record の budget_approval フィールドは残っても他の gate は読まないため無害。boundary and scope: budgets.delivery_efficiency_by_story のみ。global default budgets、evidence-cost-budget、pr_artifact_bytes は対象外。人間性の暗号学的証明は対象外（残余として明記）。"
+reason: "alternatives considered: (a) config への書き込み自体を禁止する — .vibepro/config.json は Edit/Write/エディタで直接書ける平文 JSON であり、CLI 経由の書き込みだけを塞いでも迂回される。防止は原理的に bypass 可能なので採らない。(b) amendment_reason の記述品質を gate で検査する — 自由文の検査であり、先行2 Story で6戦6敗が実測されている敗北路線。(c) 消費時点で無効化する（採用） — override は書けるが、accepted な decision record が無ければ効かない。config は1箇所（resolveEfficiencyPolicyDecision）でしか消費されないため、そこを塞げば迂回路が無い。承認は system が config から計算した digest に束縛されるので『9 を承認させて 40 を適用する』ができない。compatibility impact: 既存16件の override は digest pin による grandfather で挙動不変。resolveEfficiencyPolicy の公開シグネチャは維持（第3引数 context を追加、既定は承認なし）。破壊的変更は1点のみ、承認の無い override が base policy に落ちること（=予算が狭くなる方向）で、fail-closed。既存の証跡 artifact は無効化しない。rollback plan: src/budget-override-authority.js の削除と resolveEfficiencyPolicyDecision の override 分岐の revert で単独 revert 可能。decision record の budget_approval フィールドは残っても他の gate は読まないため無害。boundary and scope: budgets.delivery_efficiency_by_story のみ。global default budgets、evidence-cost-budget、pr_artifact_bytes は対象外。人間性の暗号学的証明は対象外（残余として明記）。"
 created_at: 2026-07-27
 updated_at: 2026-07-27
 ---
@@ -34,7 +34,7 @@ updated_at: 2026-07-27
 base policy にマージしていた。実装エージェントは自セッションで
 `.vibepro/config.json` を編集して自分の予算を2回引き上げた。
 
-実測: 現在 `budgets.delivery_efficiency_by_story` には13件の override があり、
+実測: 現在 `budgets.delivery_efficiency_by_story` には16件の override があり、
 `amendment_reason` の多くは "The user explicitly authorized ... on 2026-07-2X" と
 **エージェント自身が書いた**文である。承認したとされる人間の裁定記録は存在せず、
 文とその真偽を突き合わせる経路も無い。値は
@@ -96,19 +96,19 @@ digest には story_id を含めてある。同じ limits を持つ別 Story で
 として無効になる。これは `src/adjudication.js` が premise correction の再裁定で
 使っている独立性判定と同じ形（記録された provenance の相異をコードが検査する）である。
 
-## 既存13件の互換性: content digest による grandfather（明示的決定）
+## 既存16件の互換性: content digest による grandfather（明示的決定）
 
-**決定: 13件すべてを grandfather する。ただし story_id ではなく override の内容 digest で pin する。**
+**決定: 16件すべてを grandfather する。ただし story_id ではなく override の内容 digest で pin する。**
 
 `GRANDFATHERED_OVERRIDE_DIGESTS` は `src/budget-override-authority.js` の
-frozen 定数で、13件の story_id → 現在の内容の sha256 を持つ。
+frozen 定数で、16件の story_id → 現在の内容の sha256 を持つ。
 
-- **grandfather する理由**: 13件はすべて merge 済み Story のものであり、遡及的に無効化すると
+- **grandfather する理由**: 16件はすべて merge 済み Story のものであり、遡及的に無効化すると
   既に merge された PR の意味を書き換えることになる。親 Story の Non Goals
   「既存の記録済み証跡 artifact の遡及的無効化」と同じ立場を取る。
 - **story_id ではなく digest で pin する理由**: grandfather は「この Story は今後何を書いても
   自由」という**免許**ではなく、「この内容のまま」という**スナップショット**である。
-  13件のいずれかを編集すれば digest が変わり `unauthorized` に落ちる（OGB-S-7）。
+  16件のいずれかを編集すれば digest が変わり `unauthorized` に落ちる（OGB-S-7）。
 - **定数をコードに置く理由**: `.vibepro/config.json` に置くとエージェントが
   grandfather 集合そのものを拡張できてしまい、gate の意味が消える。コードに置けば
   追加には diff が必要で、レビューに乗る。
@@ -140,7 +140,7 @@ config 中の全 override が `grandfathered` か `unauthorized` のどちらか
       `status: open` のいずれの場合も override は適用されない。
 - [ ] OGB-S-6: 自己承認・記録エージェント未識別・不正な grantor_kind は
       decision record の**書き込み時**にも throw する（無効な記録を黙って作らない）。
-- [ ] OGB-S-7: 既存13件は grandfather されて挙動不変。内容を編集すると
+- [ ] OGB-S-7: 既存16件は grandfather されて挙動不変。内容を編集すると
       `unauthorized` に落ちる。
 - [ ] OGB-S-8: `.vibepro/config.json` の全 override が `grandfathered` か
       `unauthorized` のいずれかに解決される（黙って効く override が無い）。
@@ -162,7 +162,7 @@ config 中の全 override が `grandfathered` か `unauthorized` のどちらか
   特に `budgets.delivery_efficiency`（global default）は本 Story では gating されない。
   Story 別 override を塞いでも global default を書き換える経路が残るため、
   CEA-S-4 の完全な達成には後続 Story が必要である（GE-004）。
-- 既存13件の override の値そのものの妥当性の再評価。
+- 既存16件の override の値そのものの妥当性の再評価。
 - 承認回数の削減。目的は承認の**所在**を移すことであって、頻度を下げることではない。
 
 ## 残余（この Story で消えないもの）
@@ -182,7 +182,7 @@ config 中の全 override が `grandfathered` か `unauthorized` のどちらか
 ## 検証済みの範囲（Evidence）
 
 - `test/delivery-efficiency-guardrail.test.js`: OGB-S-1〜S-9（21 tests pass）。
-  OGB-S-7 / S-8 は実際の `.vibepro/config.json` を読んで13件を検査する。
+  OGB-S-7 / S-8 は実際の `.vibepro/config.json` を読んで、件数を literal で固定せず pin と config の対応を invariant として検査する。
 - `test/decision-records.test.js`: OGB-S-10〜S-12（8 tests pass）。
 - 旧契約を encode していた既存テスト
   `story budget override preserves global defaults and merges role limits` は
