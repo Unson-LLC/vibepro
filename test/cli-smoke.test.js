@@ -86,7 +86,8 @@ const SMOKE = {
   uiux: { setup: 'story', args: (r) => ['uiux', 'intake', 'template', r, '--id', 'story-x'] },
   explore: { setup: 'story', args: (r) => ['explore', r] },
   performance: { setup: 'story', args: (r) => ['performance', r] },
-  workspace: { setup: 'story', args: (r) => ['workspace', 'status', r, '--json'] }
+  workspace: { setup: 'story', args: (r) => ['workspace', 'status', r, '--json'] },
+  store: { setup: 'story', args: (r) => ['store', 'status', r, '--story-id', 'story-x', '--json'] }
 };
 
 async function repoFor(setup) {

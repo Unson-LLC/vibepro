@@ -230,3 +230,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:399:start -->
 - [PR #399](https://github.com/Unson-LLC/vibepro/pull/399) — [2026-07](/ja/releases/2026-07): fix: keep session-cost available on corrupt process metadata
 <!-- vibepro-release-index-pr:399:end -->
+
+<!-- vibepro-release-index-pr:403:start -->
+- [PR #403](https://github.com/Unson-LLC/vibepro/pull/403) — [2026-07](/ja/releases/2026-07): story-vibepro-process-record-worktree-durability - プロセス記録をworktreeライフサイクルから切り離して永続化する
+<!-- vibepro-release-index-pr:403:end -->

@@ -1,0 +1,11 @@
+✔ mutating CLI commands auto-snapshot durable records into the store (1745.683ms)
+✔ auto-snapshot is fail-soft: an unwritable store never fails the producing command (591.613916ms)
+✔ durability.enabled=false disables the auto-snapshot hook (426.690167ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3492.870709
