@@ -79,7 +79,7 @@ function grantArgs(root, extra = []) {
 
 // flow_replay: the full owner-gated budget override lifecycle is replayed through
 // the real `vibepro decision record` CLI subprocess, not through in-process calls.
-test('ac:1 S-001 OGB-E2E-1 flow_replay: an override is inert until the real CLI records a human grant', async () => {
+test('ac:1 S-001 S-013 OGB-E2E-1 flow_replay: an override is inert until the real CLI records a human grant, the absent -> unauthorized -> authorized leg of the workflow state matrix', async () => {
   const root = await makeRepo();
 
   const before = resolveEfficiencyPolicyDecision(await readConfig(root), STORY_ID, { decisions: await readDecisions(root) });
@@ -116,7 +116,7 @@ test('ac:5 ac:6 OGB-E2E-2 flow_replay: the real CLI refuses a self-grant and lea
 });
 
 // Approving 9 and then applying 40 is the concrete abuse this gate exists to stop.
-test('ac:3 S-003 OGB-E2E-3 flow_replay: raising the limit after a real grant reverts to the base budget', async () => {
+test('ac:3 S-003 S-013 OGB-E2E-3 flow_replay: raising the limit after a real grant reverts to the base budget, the authorized -> unauthorized revocation leg of the workflow state matrix', async () => {
   const root = await makeRepo();
   await execFileAsync(process.execPath, grantArgs(root, ['--budget-grantor', 'sato-keigo']));
 
@@ -258,7 +258,7 @@ test('ac:6 S-006 buildBudgetApproval throws at write time on a self-grant or mis
 // change ships. What OGB-S-7/S-8 actually require is that a pinned override is
 // grandfathered, that editing it revokes that, and that nothing resolves to an
 // unknown status.
-test('ac:7 ac:8 S-002 every shipped override resolves to a known authority status', async () => {
+test('ac:7 ac:8 S-002 S-013 every shipped override resolves to a known authority status, and the grandfathered leg of the workflow state matrix revokes on edit', async () => {
   const repoConfig = JSON.parse(await readFile(new URL('../../.vibepro/config.json', import.meta.url), 'utf8'));
   const entries = Object.entries(repoConfig.budgets.delivery_efficiency_by_story ?? {});
   assert.ok(entries.length > 0, 'ac8 the repository configures at least one Story override to resolve');
