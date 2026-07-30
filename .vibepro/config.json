@@ -445,6 +445,18 @@
   "brainbase": {
     "stories": [
       {
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "title": "プロセス記録をworktreeライフサイクルから切り離して永続化する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-30",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
         "story_id": "story-vibepro-session-cost-source-health-fail-soft",
         "title": "Session Cost入力障害を局所化して監査を継続する",
         "ssot": "local",
@@ -1062,6 +1074,6 @@
         "category": "bugfix"
       }
     ],
-    "current_story_id": "story-vibepro-session-cost-source-health-fail-soft"
+    "current_story_id": "story-vibepro-process-record-worktree-durability"
   }
 }
