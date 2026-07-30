@@ -1060,6 +1060,18 @@
         "started_at": "2026-07-30",
         "due_at": null,
         "category": "bugfix"
+      },
+      {
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "title": "Task依存グラフに束縛されたrepo-controlをatomic単一PRとしてfail-closedに裁定する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-30",
+        "due_at": null,
+        "category": "architecture"
       }
     ],
     "current_story_id": "story-vibepro-session-cost-source-health-fail-soft"
