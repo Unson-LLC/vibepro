@@ -290,3 +290,97 @@ test('OGB-S-12 budget approval requires a configured override and a matching sto
     /budget approval flags require --source/
   );
 });
+
+// BGT-S-1 ... BGT-S-5: the tracked mirror of a budget grant. The workspace
+// decision store is gitignored, so the grant must also land in
+// docs/management/decisions/ where a PR reviewer sees it in the diff.
+function budgetGrantOptions(storyId, overrides = {}) {
+  return {
+    storyId,
+    type: 'waiver',
+    status: 'accepted',
+    source: `budget:delivery_efficiency:${storyId}`,
+    summary: 'owner approved raising the Story subagent cap',
+    reason: 'owner approved the raise for the closure sequence',
+    budgetGrantor: 'sato-keigo',
+    budgetGrantorKind: 'human',
+    agentSystem: 'claude_code',
+    agentId: 'agent-bgt-1',
+    ...overrides
+  };
+}
+
+test('BGT-S-1/S-2 a budget grant writes a tracked decision document cross-referenced from budget_approval', async () => {
+  const storyId = 'story-bgt-doc';
+  const override = { max_subagent_count: 9, amendment_reason: 'one extra round' };
+  const root = await makeBudgetWorkspaceRepo(storyId, override);
+
+  const { decision } = await recordDecision(root, budgetGrantOptions(storyId));
+
+  const docPath = decision.budget_approval.decision_doc;
+  assert.ok(docPath, 'expected budget_approval.decision_doc to be set');
+  assert.match(docPath, /^docs\/management\/decisions\/\d{4}-\d{2}-\d{2}-budget-override-story-bgt-doc-[0-9a-f]{8}\.md$/);
+  const doc = await readFile(path.join(root, docPath), 'utf8');
+  assert.match(doc, /type: budget_override_approval/);
+  assert.match(doc, new RegExp(`decision_id: ${decision.decision_id}`));
+  assert.match(doc, /approver: sato-keigo/);
+  assert.match(doc, /approver_kind: human/);
+  assert.match(doc, new RegExp(`override_digest: ${decision.budget_approval.override_digest}`));
+  assert.match(doc, new RegExp(`approved_at: ${decision.recorded_at}`));
+  assert.match(doc, /agent_id: agent-bgt-1/);
+  assert.match(doc, /owner approved the raise for the closure sequence/);
+});
+
+test('BGT-S-3 a budget grant fails when the tracked document path is gitignored', async () => {
+  const storyId = 'story-bgt-ignored';
+  const root = await makeBudgetWorkspaceRepo(storyId, { max_subagent_count: 9, amendment_reason: 'raise' });
+  await execFileAsync('git', ['init'], { cwd: root });
+  await writeFile(path.join(root, '.gitignore'), 'docs/\n');
+
+  await assert.rejects(
+    recordDecision(root, budgetGrantOptions(storyId)),
+    /gitignored.*reviewable in the PR diff/s
+  );
+  const records = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'decision-records.json'), 'utf8')
+    .then((text) => JSON.parse(text))
+    .catch(() => null);
+  assert.equal(records, null, 'expected no workspace record when the tracked mirror cannot be written');
+});
+
+test('BGT-S-4 a decision without a budget grant writes no tracked document', async () => {
+  const root = await makeWorkspaceRepo();
+  const { decision } = await recordDecision(root, {
+    storyId: 'story-bgt-plain',
+    type: 'needs_review',
+    summary: 'plain decision',
+    status: 'accepted'
+  });
+  assert.equal(decision.budget_approval, null);
+  const docsDirError = await readFile(path.join(root, 'docs')).catch((error) => error.code);
+  assert.equal(docsDirError, 'ENOENT', 'expected no docs/ directory to be created');
+});
+
+test('BGT-S-5 same digest overwrites the same document; a changed budget produces a new file', async () => {
+  const storyId = 'story-bgt-digest';
+  const override = { max_subagent_count: 9, amendment_reason: 'first raise' };
+  const root = await makeBudgetWorkspaceRepo(storyId, override);
+
+  const first = await recordDecision(root, budgetGrantOptions(storyId));
+  const second = await recordDecision(root, budgetGrantOptions(storyId));
+  assert.equal(first.decision.budget_approval.decision_doc, second.decision.budget_approval.decision_doc);
+
+  await writeFile(
+    path.join(root, '.vibepro', 'config.json'),
+    JSON.stringify({
+      schema_version: '0.1.0',
+      budgets: {
+        delivery_efficiency: { max_subagent_count: 6 },
+        delivery_efficiency_by_story: { [storyId]: { max_subagent_count: 12, amendment_reason: 'second raise' } }
+      }
+    }, null, 2)
+  );
+  const third = await recordDecision(root, budgetGrantOptions(storyId));
+  assert.notEqual(third.decision.budget_approval.decision_doc, first.decision.budget_approval.decision_doc);
+  assert.ok(await readFile(path.join(root, first.decision.budget_approval.decision_doc), 'utf8'));
+  assert.ok(await readFile(path.join(root, third.decision.budget_approval.decision_doc), 'utf8'));
+});
