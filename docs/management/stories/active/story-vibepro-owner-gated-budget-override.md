@@ -183,6 +183,17 @@ config 中の全 override が `grandfathered` か `unauthorized` のどちらか
 自己承認は「gate の抜け道」から「名前と digest と時刻が残る偽造」になった。
 偽造を検出するのは人間だが、検出に必要な材料は自由文ではなく構造化された記録である。
 
+**（解消済み）その構造化された記録は当初 PR diff に現れなかった。**
+最終 runtime_contract レビューの medium finding
+`budget-grant-record-not-reviewable-in-diff`: grant の正本
+`.vibepro/pr/<story-id>/decision-records.json` は gitignore されており、
+レビュアには config の数値と `amendment_reason` しか見えなかった。
+後続 Story story-vibepro-budget-grant-tracked-decision-doc が、grant 記録時に
+`docs/management/decisions/` へ tracked document を必ず生成する形で解消し、
+本 Story の 3 grant にも backfill document
+（`docs/management/decisions/2026-07-30-budget-override-story-vibepro-owner-gated-budget-override-1f29ffff.md`）
+を追加した。
+
 **予算消費は Story 単位で単調増加し、リセット経路が無い。**
 `aggregateDeliveryMetrics` は lifecycle entry を全件数えるため、`timed_out` /
 `obsolete` / `orphaned_agent` といった terminal debt も `subagent_count` と
