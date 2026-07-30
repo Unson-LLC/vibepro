@@ -7,3 +7,4 @@
 .worktrees/vibepro/
 node_modules/
 docs/.vitepress/dist/
+.vibepro-store/
