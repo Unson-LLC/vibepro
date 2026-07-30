@@ -20,10 +20,12 @@ pr_scope_review_facets:
   - requirements-ssot
   - runtime-behavior
   - e2e-gate
+  - misc-follow-up
 pr_scope_dependency_boundaries:
   - repo-control->requirements-ssot
   - requirements-ssot->runtime-behavior
   - runtime-behavior->e2e-gate
+  - e2e-gate->misc-follow-up
 created_at: 2026-07-30
 updated_at: 2026-07-30
 reason: "alternatives considered: keep every workflow change permanently unsafe, allow every Task-scoped workflow change, or accept only repo-control paths covered by a typed Task group connected to non-repo-control groups; selected the third. compatibility impact: Story-scoped PRs, Tasks without typed dependency groups, uncovered paths, and independently releasable repo-control remain unsafe. rollback plan: remove the task-bound exception and restore the existing unconditional independent repo-control signal. boundary: this changes PR split adjudication only; it grants no cloud mutation, Gate waiver, merge authority, or review bypass."
