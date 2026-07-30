@@ -92,8 +92,9 @@ repository には既に tracked channel が存在する:
 
 ## 検証
 
-- unit: `test/decision-records.test.js` に BGT-S-1〜S-5 を追加。
-- 親 Story との相互参照は backfill document
-  （`docs/management/decisions/2026-07-30-budget-override-story-vibepro-owner-gated-budget-override-1f29ffff.md`）
-  が担う。親 Story の doc 自体は本 PR では編集しない
-  （story_source_integrity: 1 PR = 1 Story doc）。
+unit は `test/decision-records.test.js` の BGT-S-1〜S-5、integration は
+`test/integration/story-vibepro-budget-grant-tracked-decision-doc.test.js`、
+e2e は acceptance spec が担う。親 Story との相互参照は backfill document
+（`docs/management/decisions/2026-07-30-budget-override-story-vibepro-owner-gated-budget-override-1f29ffff.md`）
+が担い、親 Story の doc 自体は本 PR では編集しない
+（story_source_integrity: 1 PR = 1 Story doc）。
