@@ -665,7 +665,15 @@ export async function preparePullRequest(repoRoot, options = {}) {
       summary_status: entry.summary_status
     }))
   };
-  const scannedArtifactFilenames = artifactBudgetInputs.map((input) => input.filename);
+  // The canonical Gate DAG can be routed outside the PR artifact directory.
+  // Still scan its PR-local summary sibling so a summary from an earlier route
+  // cannot survive and misrepresent the current canonical Gate DAG.
+  const scannedArtifactFilenames = [
+    ...artifactBudgetInputs.map((input) => input.filename),
+    ...(!artifactBudgetInputs.some((input) => input.filename === 'gate-dag.json')
+      ? ['gate-dag.json']
+      : [])
+  ];
   const prBodyNarrative = await progress.stage('read_pr_body_narrative', () => readNarrative(root, story.story_id, 'pr-body'));
   const prBody = await progress.stage('render_pr_body', () => renderPrBody({
     story,
