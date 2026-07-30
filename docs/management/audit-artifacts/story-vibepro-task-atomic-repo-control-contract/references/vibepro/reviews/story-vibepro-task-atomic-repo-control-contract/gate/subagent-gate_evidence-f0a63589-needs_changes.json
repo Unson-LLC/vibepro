@@ -1,0 +1,15 @@
+{
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "head_sha": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+  "agent_id": "/root/tar_planning_architecture_v2",
+  "status": "needs_changes",
+  "summary": "Implementation, contract, and tests are consistent, but current verification observations do not expose the required path-surface and failure-mode vocabulary.",
+  "findings": [
+    "path_surface:changed_path_inventory and path_surface:review_surface are missing",
+    "failure_mode:parse_failure, failure_mode:schema_failure, and failure_mode:evidence_lifecycle_regression are missing",
+    "strict PR preparation must be rerun after evidence repair"
+  ],
+  "read_only": true
+}

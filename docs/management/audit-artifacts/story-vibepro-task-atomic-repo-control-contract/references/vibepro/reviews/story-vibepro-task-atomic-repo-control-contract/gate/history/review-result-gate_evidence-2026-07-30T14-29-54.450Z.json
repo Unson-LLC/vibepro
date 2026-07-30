@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "現行HEADのテスト実行自体は信頼できるが、current-HEAD Gateはpath surface、failure mode、artifact freshnessの必須証跡が未充足でPR-readyではない。",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-evidence-path-surface-unbound",
+      "detail": "changed_path_inventoryにcurrent-HEAD構造化verification evidenceがない"
+    },
+    {
+      "severity": "high",
+      "id": "gate-evidence-failure-modes-unbound",
+      "detail": "parse_failureとschema_failureのverification observationがない"
+    },
+    {
+      "severity": "high",
+      "id": "gate-evidence-current-head-artifact-consistency",
+      "detail": "6 review artifactsがstale evidenceとしてblocking"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "risk_surfaces=evidence freshness, command reliability, current-HEAD binding, regression guards, changed-path inventory, parse/schema failure modes, legacy/config-only compatibility, generated Gate artifacts; HEAD 0c4b1ac20351d18539e5bef2f6b5378a4c8ea839、clean worktree、verification run JSON/log、Gate DAG、PR prepare、traceability、split plan、E2E source/diffを確認し、focused E2Eを再実行した。",
+    "evidence": "focused E2E rerun: node --test test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts; exit 0; five TAR markers verified",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/gate/review-request-gate_evidence.md",
+      ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/pr-prepare.json",
+      ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/gate-dag.json",
+      ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/evidence-reuse.json",
+      ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/evidence-plan.json",
+      ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/split-plan.json",
+      ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/traceability.json",
+      ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/unit.json",
+      ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/integration.json",
+      ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/e2e.json",
+      ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/typecheck.json",
+      ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/build.json",
+      "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "fresh verification aloneではGate passにならず、changed_path_inventory、parse_failure、schema_failure、旧review bindingの更新が必要と確定した。"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+    "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+    "expected_root": null,
+    "expected_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+    "current_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+      "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+      "expected_root": null,
+      "expected_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+      "current_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-30T14:29:54.450Z",
+  "git_context": {
+    "head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+    "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-30T14:29:54.446Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "current-HEAD Gate evidence audit"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+    "surface_files": [
+      {
+        "path": "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+        "sha256": "96771af01a89ac5be989388b0896b4c0ba971accd0218cc6442e699db75d23a0",
+        "size": 2017
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "2fbe7dcc53060c676f96338a38e8b65cddc1b902493ec3c75487d287ad68763c"
+  },
+  "source_fingerprint": "34d4fccff17a13532e77c1ae48fe69d8aaa510630a793baff6b3607d48cbc127",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "tar_planning_spec_v2",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "/root/tar_planning_spec_v2",
+    "session_id": "tar_planning_spec_v2-0c4b1ac2-gate",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/gate/subagent-gate_evidence-0c4b1ac2.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/gate/subagent-gate_evidence-0c4b1ac2.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "tar_planning_spec_v2-0c4b1ac2-gate",
+      "implementation_session_id": "root-gate-0c4b1ac2",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

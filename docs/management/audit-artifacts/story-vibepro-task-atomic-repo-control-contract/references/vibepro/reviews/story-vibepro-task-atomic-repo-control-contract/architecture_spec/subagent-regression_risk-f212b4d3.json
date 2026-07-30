@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "summary": "Current-HEADの互換・negative・隣接経路に回帰は見つからない。",
+  "findings": [],
+  "inspection_summary": "Task-bound例外はexact path coverageとtyped dependency connectivityに限定され、no-Task、legacy、config-only、strict target、未被覆・未接続・malformed Taskはfail-closed。Story専用E2Eも再実行してpass。",
+  "inspection_evidence": "unit 313/313、integration 10/10、E2E 1/1、typecheck、build、追加Story E2E 1/1、git diff --check pass。",
+  "inspection_inputs": ["src/task-bound-repo-control.js", "src/pr-manager.js", "test/task-bound-repo-control.test.js", "test/vibepro-cli.test.js", "test/pr-artifact-size-budget.test.js", "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts"],
+  "judgment_delta": "最終パッチによるrisk surface変化 -> obsolete summaryだけの限定修正でauthority・互換・Gate verdict契約へのデグレなし、current-HEAD pass。"
+}

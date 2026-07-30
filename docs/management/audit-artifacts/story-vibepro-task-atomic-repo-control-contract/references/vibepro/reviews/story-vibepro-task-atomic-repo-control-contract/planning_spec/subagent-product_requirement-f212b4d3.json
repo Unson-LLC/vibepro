@@ -1,0 +1,56 @@
+{
+  "status": "pass",
+  "summary": "current HEAD f212b4d3da8d3509ca0aa46b589518a03c5cbaed において、Task-scoped repo-control contract は product requirement を満たしています。型付きTaskの完全かつ接続済みの明示宣言だけを許可し、missing・malformed・partial・uncovered・disconnected・legacy・no-Task をfail closedに保ちます。Task proofだけではStory atomic authority、review owner map、current-HEAD verificationを迂回できません。",
+  "findings": [],
+  "inspection_summary": "Story、Architecture、Spec、Task、実装、unit、公開CLI integration、E2E、PR scope/split-plan artifacts、pre-fix failure surfaceをread-onlyで照合しました。CLIローカルのPR判定契約が対象であり、API、DB、UI、accessibility、性能、外部クラウド作用は非該当です。現在の実Storyでtask_bound_repo_controlがnullなのは変更対象がconfig-only例外だけであるため正当です。現在のatomic rejectionはreview owner mapとGate path coverage未完了によるもので、Task証拠による自己承認は起きていません。",
+  "inspection_evidence": {
+    "head": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+    "worktree": "clean",
+    "source": [
+      "src/task-bound-repo-control.js",
+      "src/pr-manager.js"
+    ],
+    "tests": [
+      {
+        "command": "node --test test/task-bound-repo-control.test.js",
+        "result": "6 passed, 0 failed"
+      },
+      {
+        "command": "node --test --test-name-pattern='TAR-CLI-00[1-6]|TAR-INV-004|pr prepare writes PR artifacts for the selected story' test/vibepro-cli.test.js",
+        "result": "8 selected tests passed, 0 failed"
+      },
+      {
+        "command": "node --test test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+        "result": "1 outer test passed; nested public CLI suite reported 6 passed"
+      }
+    ],
+    "recorded_current_head_verification": [
+      "unit 313/313",
+      "integration 10/10",
+      "E2E passed",
+      "build passed",
+      "typecheck passed"
+    ],
+    "pre_fix_failure_proof": [
+      "Before the feature implementation the evaluator module and task-binding result did not exist, so the added unit and CLI assertions could not pass.",
+      "The former scope adjudication treated independent repo-control changes as unconditionally unsafe; TAR-CLI-001 requires the new exact Task-bound acceptance path.",
+      "Before f212, routed gate-dag.summary.json was not included in synthetic cleanup scanning, so the stale-summary regression test would leave the artifact behind."
+    ]
+  },
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/planning_spec/review-request-product_requirement.md",
+    "docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/management/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/management/specs/story-vibepro-task-atomic-repo-control-contract.md",
+    ".vibepro/stories/story-vibepro-task-atomic-repo-control-contract/tasks/tasks.json",
+    "src/task-bound-repo-control.js",
+    "src/pr-manager.js",
+    "test/task-bound-repo-control.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+    "test/pr-artifact-size-budget.test.js",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/split-plan.json"
+  ],
+  "judgment_delta": []
+}

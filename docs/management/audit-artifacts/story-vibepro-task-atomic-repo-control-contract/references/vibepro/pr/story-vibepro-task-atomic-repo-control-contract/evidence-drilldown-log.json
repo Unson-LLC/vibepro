@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "recorded_at": "2026-07-30T15:40:32.106Z",
+      "head_sha": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+      "base_ref": "origin/main",
+      "head_ref": "HEAD",
+      "depth": "standard",
+      "consumer": "VibePro PR creation",
+      "reason": "final current-HEAD gate and artifact consistency verification",
+      "targets": [
+        "gate:agent_review"
+      ],
+      "risk_surfaces": [
+        "gate_orchestration",
+        "regression_blast_radius",
+        "test_coverage",
+        "agent_workflow",
+        "gate:judgment_agent_workflow_evidence_lifecycle",
+        "gate:agent_review",
+        "gate:artifact_consistency",
+        "agent_review_findings"
+      ]
+    }
+  ]
+}

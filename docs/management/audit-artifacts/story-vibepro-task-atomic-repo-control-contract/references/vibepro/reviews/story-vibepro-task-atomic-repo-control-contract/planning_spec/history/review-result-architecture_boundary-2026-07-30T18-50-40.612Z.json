@@ -1,0 +1,143 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "stage": "planning_spec",
+  "role": "architecture_boundary",
+  "status": "pass",
+  "summary": "The correction remains inside the existing PR artifact cleanup boundary and preserves canonical Gate routing and Task atomic authority.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed exact commit and parent, Story Architecture Spec, artifact policy and cleanup paths, summary references, and focused regression tests.",
+    "evidence": "Focused artifact and evidence-depth suites 16/16; real CLI regression fails pre-fix and passes at exact current HEAD; diff check clean.",
+    "inputs": [
+      ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/planning_spec/review-request-architecture_boundary.md",
+      "src/pr-manager.js",
+      "src/pr-artifact-budget.js",
+      "test/pr-artifact-size-budget.test.js",
+      "test/evidence-depth-pr-prepare.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern that cleanup could cross canonical routing or delete a valid summary -> final pass because generated summaries are protected and deletion is confined to the obsolete PR-local sibling."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+    "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+    "expected_root": null,
+    "expected_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+    "current_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+      "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+      "expected_root": null,
+      "expected_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "current_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-30T18:50:40.612Z",
+  "git_context": {
+    "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+    "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-30T18:50:40.590Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "preserve the recorded strict HEAD freshness policy during recovery"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+    "surface_files": [
+      {
+        "path": "src/pr-artifact-budget.js",
+        "sha256": "9ee4de0e0e05e2676094cd53b89622d1207dd936a6cfa90f02ef95733884ad8b",
+        "size": 11607
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "8c14a274471768b6968af85dbc43b07dbf4ccba93a86ae40eceac0b52d9475af",
+        "size": 726832
+      },
+      {
+        "path": "test/evidence-depth-pr-prepare.test.js",
+        "sha256": "24e0ec0697651a82510fdd6fc9777c432932ff432a1d70f7096acd446f8ba711",
+        "size": 11453
+      },
+      {
+        "path": "test/pr-artifact-size-budget.test.js",
+        "sha256": "39574d838931e22e126e0337e2efe7b4fbb2eac85018c04bc3d0defccdf69b28",
+        "size": 14648
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "e30b18245ec34999247a4be00e3c296a3b8cc811bd36554c3b03f4649801550b"
+  },
+  "source_fingerprint": "9027225bc9b665d100c4ddbb318dfe472afd22fe92624a666dcde3460bb06d56",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/tar_planning_architecture_v2",
+    "agent_role": null,
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "cost_tier": "high",
+    "thread_id": "/root/tar_planning_architecture_v2",
+    "session_id": "planning-arch-f212",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/planning_spec/subagent-architecture_boundary-f212b4d3.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/planning_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/planning_spec/subagent-architecture_boundary-f212b4d3.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "planning-arch-f212",
+      "implementation_session_id": "019f9e95-3829-71d0-b47f-e057fff8d171",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}
