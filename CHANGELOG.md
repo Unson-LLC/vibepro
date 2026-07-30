@@ -17,9 +17,12 @@ All notable changes to VibePro will be documented in this file.
 
   **Upgrade action**: if your repository configures `delivery_efficiency_by_story`,
   the override stops applying on upgrade. Either record an approval with
-  `vibepro decision record --source budget:delivery_efficiency:<story-id>
-  --budget-grantor <human> --budget-grantor-kind human --agent-system <system>
-  --agent-id <id>` (the recording agent identity must differ from the grantor), or
+  `vibepro decision record --id <story-id> --type waiver --status accepted
+  --summary <text> --reason <what the human approved> --source
+  budget:delivery_efficiency:<story-id> --budget-grantor <human>
+  --budget-grantor-kind human --agent-system <system> --agent-id <id>`
+  (`--reason` and all four budget flags are required, and the recording agent
+  identity must differ from the grantor), or
   accept the base budget. Overrides that predate this gate *inside this repository*
   are grandfathered by content digest and keep working exactly as merged; editing
   one changes its digest and drops it to `unauthorized`. Grandfathering does not

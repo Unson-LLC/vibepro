@@ -114,7 +114,7 @@ test('ac:5 ac:6 OGB-E2E-2 flow_replay: the real CLI refuses a self-grant and lea
 });
 
 // Approving 9 and then applying 40 is the concrete abuse this gate exists to stop.
-test('ac:3 OGB-E2E-3 flow_replay: raising the limit after a real grant reverts to the base budget', async () => {
+test('ac:3 S-003 OGB-E2E-3 flow_replay: raising the limit after a real grant reverts to the base budget', async () => {
   const root = await makeRepo();
   await execFileAsync(process.execPath, grantArgs(root, ['--budget-grantor', 'sato-keigo']));
 
@@ -165,7 +165,7 @@ test('ac:1 OGB-E2E-4 parse_failure: unreadable grant records resolve to the base
 
 // evidence_lifecycle_regression: a grant that is later superseded or rejected must
 // stop authorizing; an accepted grant must not survive its own withdrawal.
-test('ac:5 OGB-E2E-5 evidence_lifecycle_regression: a superseded grant stops authorizing the override', async () => {
+test('ac:5 S-005 OGB-E2E-5 evidence_lifecycle_regression: a superseded grant stops authorizing the override', async () => {
   const root = await makeRepo();
   await execFileAsync(process.execPath, grantArgs(root, ['--budget-grantor', 'sato-keigo']));
 
@@ -204,7 +204,7 @@ test('ac:2 OGB-E2E-6 the resolver exposes a stable digest and applied flag to it
 // asserted here as executable acceptance assertions so the Story's AC set is
 // covered in one place, alongside the CLI replays above.
 
-test('ac:4 digest is scoped to the story and blind to amendment_reason prose', () => {
+test('ac:4 S-004 digest is scoped to the story and blind to amendment_reason prose', () => {
   const a = computeBudgetOverrideDigest(STORY_ID, { max_subagent_count: 9, amendment_reason: 'first wording' });
   assert.equal(a, computeBudgetOverrideDigest(STORY_ID, { max_subagent_count: 9, amendment_reason: 'rewritten' }),
     'ac4 digest excludes amendment_reason so reworded prose preserves an existing grant');
@@ -214,7 +214,7 @@ test('ac:4 digest is scoped to the story and blind to amendment_reason prose', (
     'ac4 digest includes story_id so identical limits under another Story are not transplantable');
 });
 
-test('ac:5 non-human grantor and unidentified recorder never authorize', () => {
+test('ac:5 S-005 non-human grantor and unidentified recorder never authorize', () => {
   const digest = computeBudgetOverrideDigest(STORY_ID, OVERRIDE);
   const decision = (approval) => ({
     decision_id: 'd1', story_id: STORY_ID, status: 'accepted',
@@ -237,7 +237,7 @@ test('ac:5 non-human grantor and unidentified recorder never authorize', () => {
   }
 });
 
-test('ac:6 buildBudgetApproval throws at write time on a self-grant or missing identity', () => {
+test('ac:6 S-006 buildBudgetApproval throws at write time on a self-grant or missing identity', () => {
   assert.throws(() => buildBudgetApproval({
     storyId: STORY_ID, overrideDigest: 'abc', grantorKind: 'human',
     grantor: 'agent-x', agentSystem: 'claude_code', agentId: 'agent-x'
@@ -298,7 +298,7 @@ test('ac:1 the absent state is asserted, not just unauthorized', () => {
 // GE-002: the bare agent_system self-grant form was named in the AC but untested.
 // GE-011: the seventh condition of the invariant table (non-empty reason) had
 // no behavioural coverage -- deleting it left all 55 recorded tests green.
-test('ac:2 a grant with no reason does not authorize the override', () => {
+test('ac:2 S-002 a grant with no reason does not authorize the override', () => {
   const digest = computeBudgetOverrideDigest(STORY_ID, OVERRIDE);
   const grant = (reason) => ({
     story_id: STORY_ID, status: 'accepted', source: `budget:delivery_efficiency:${STORY_ID}`,
@@ -321,7 +321,7 @@ test('ac:2 a grant with no reason does not authorize the override', () => {
     'ac2 the same grant with a stated reason does authorize, so the check is the reason and nothing else');
 });
 
-test('ac:5 a grantor equal to the bare agent_system is a self-grant', () => {
+test('ac:5 S-005 a grantor equal to the bare agent_system is a self-grant', () => {
   const digest = computeBudgetOverrideDigest(STORY_ID, OVERRIDE);
   const resolved = resolveBudgetOverrideAuthority({
     storyId: STORY_ID,
@@ -340,7 +340,7 @@ test('ac:5 a grantor equal to the bare agent_system is a self-grant', () => {
     'ac5 naming the recording agent_system as grantor is a self-grant, like agent_id and system:id');
 });
 
-test('ac:9 an unauthorized override is reported as efficiency debt', () => {
+test('ac:9 S-009 an unauthorized override is reported as efficiency debt', () => {
   const debt = summarizeEfficiencyDebt({
     correctness_ready: true,
     budget_override: { status: 'unauthorized', reasons: ['self_approved'] }
@@ -351,7 +351,7 @@ test('ac:9 an unauthorized override is reported as efficiency debt', () => {
     'ac9 the debt entry names budget_override_unauthorized and carries its reasons');
 });
 
-test('ac:10 the recorded digest comes from config and ignores any caller-supplied value', async () => {
+test('ac:10 S-010 the recorded digest comes from config and ignores any caller-supplied value', async () => {
   const root = await makeRepo();
   await execFileAsync(process.execPath, grantArgs(root, ['--budget-grantor', 'sato-keigo']));
   const [decision] = await readDecisions(root);
@@ -359,7 +359,7 @@ test('ac:10 the recorded digest comes from config and ignores any caller-supplie
     'ac10 the recorded override_digest is computed from .vibepro/config.json, not from caller-supplied input');
 });
 
-test('ac:11 the real CLI requires reason, grantor, grantor kind and agent identity', async () => {
+test('ac:11 S-011 the real CLI requires reason, grantor, grantor kind and agent identity', async () => {
   const root = await makeRepo();
   const omit = (flag) => {
     const args = grantArgs(root, ['--budget-grantor', 'sato-keigo']);
@@ -387,7 +387,7 @@ test('ac:11 the real CLI requires reason, grantor, grantor kind and agent identi
     'ac11 each omitted required approval flag is rejected with its own specific error');
 });
 
-test('ac:12 the real CLI rejects a mismatched or non-budget source', async () => {
+test('ac:12 S-012 the real CLI rejects a mismatched or non-budget source', async () => {
   const root = await makeRepo();
   const swap = (flag, value) => {
     const args = grantArgs(root, ['--budget-grantor', 'sato-keigo']);
