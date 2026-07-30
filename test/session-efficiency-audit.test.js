@@ -218,6 +218,85 @@ test('session efficiency audit uses process-manager worktree and Codex token_cou
   assert.equal(result.cost_breakdown.total_tokens, 250);
 });
 
+test('SCSH-SCENARIO-001 empty process-manager input falls back to session metadata', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  await writeFile(
+    sessionPath,
+    `${sessionLines({ sessionId, cwd: root, storyId }).map((line) => JSON.stringify(line)).join('\n')}\n`
+  );
+  await writeFile(path.join(codexHome, 'process_manager', 'chat_processes.json'), '');
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.process_manager.status, 'degraded');
+  assert.equal(result.process_manager.reason_code, 'empty_file');
+  assert.equal(result.process_manager.byte_length, 0);
+  assert.equal(result.observed_worktree, root);
+  assert.equal(result.observed_worktree_source, 'session_meta');
+  assert.equal(result.session.token_accounting.status, 'available');
+  assert.equal(result.session.token_accounting.total_tokens, 150);
+});
+
+test('SCSH-SCENARIO-002 malformed process-manager input returns safe diagnostics', async () => {
+  const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+  await writeFile(
+    sessionPath,
+    `${sessionLines({ sessionId, cwd: root, storyId }).map((line) => JSON.stringify(line)).join('\n')}\n`
+  );
+  const processManagerPath = path.join(codexHome, 'process_manager', 'chat_processes.json');
+  await writeFile(processManagerPath, '[{"conversationId":');
+
+  const result = await collectSessionEfficiencyAudit(root, {
+    storyId,
+    sessionId,
+    codexHome,
+    baseRef: 'base',
+    now: '2026-06-27T14:00:00.000Z'
+  });
+
+  assert.equal(result.process_manager.status, 'degraded');
+  assert.equal(result.process_manager.reason_code, 'invalid_json');
+  assert.equal(result.process_manager.source_path, processManagerPath);
+  assert.match(result.process_manager.reason, /could not be parsed/);
+  assert.doesNotMatch(result.process_manager.reason, /conversationId/);
+  assert.equal(result.observed_worktree_source, 'session_meta');
+  assert.equal(result.session.token_accounting.status, 'available');
+});
+
+test('SCSH source health distinguishes wrong shape and unmatched valid input', async () => {
+  const cases = [
+    { value: { processes: [] }, status: 'degraded', reasonCode: 'invalid_shape' },
+    { value: [], status: 'unavailable', reasonCode: 'session_not_found' }
+  ];
+  for (const fixture of cases) {
+    const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
+    await writeFile(
+      sessionPath,
+      `${sessionLines({ sessionId, cwd: root, storyId }).map((line) => JSON.stringify(line)).join('\n')}\n`
+    );
+    await writeJson(path.join(codexHome, 'process_manager', 'chat_processes.json'), fixture.value);
+
+    const result = await collectSessionEfficiencyAudit(root, {
+      storyId,
+      sessionId,
+      codexHome,
+      baseRef: 'base',
+      now: '2026-06-27T14:00:00.000Z'
+    });
+
+    assert.equal(result.process_manager.status, fixture.status);
+    assert.equal(result.process_manager.reason_code, fixture.reasonCode);
+    assert.equal(result.observed_worktree_source, 'session_meta');
+    assert.equal(result.session.token_accounting.status, 'available');
+  }
+});
+
 test('session efficiency audit estimates audit artifact token exposure from Codex transcript entries', async () => {
   const { root, codexHome, storyId, sessionId, sessionPath } = await createFixture();
   const artifactPath = path.join(root, '.vibepro', 'pr', storyId, 'pr-prepare.json');

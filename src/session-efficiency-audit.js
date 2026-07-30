@@ -154,9 +154,15 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     windowEnd: effectiveWindowEnd
   });
   const selectedSessionId = sessionSelection.session_id;
-  const processMetadata = selectedSessionId
+  const processMetadataResult = selectedSessionId
     ? await readProcessMetadata(resolvedCodexHome, selectedSessionId)
-    : null;
+    : buildProcessMetadataResult({
+      status: 'unavailable',
+      reasonCode: 'session_id_unavailable',
+      reason: 'process_manager lookup requires a selected session id',
+      sourcePath: path.join(resolvedCodexHome, 'process_manager', 'chat_processes.json')
+    });
+  const processMetadata = processMetadataResult.entry;
   const sessionFiles = selectedSessionId
     ? sessionSelection.source_paths ?? (sessionSelection.source_path ? [sessionSelection.source_path] : await findCodexSessionFiles(resolvedCodexHome, selectedSessionId))
     : [];
@@ -251,7 +257,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
     lineage_attribution: session.lineage_attribution,
     session,
     process_manager: processMetadata ? {
-      status: 'available',
+      ...processMetadataResult.health,
       cwd: processMetadata.cwd ?? null,
       command: processMetadata.command ?? null,
       turn_id: processMetadata.turnId ?? null,
@@ -260,10 +266,7 @@ export async function collectSessionEfficiencyAudit(repoRoot, {
       os_pid: processMetadata.osPid ?? null,
       started_at_ms: processMetadata.startedAtMs ?? null,
       updated_at_ms: processMetadata.updatedAtMs ?? null
-    } : {
-      status: 'unavailable',
-      reason: 'process_manager entry was not found for session id'
-    },
+    } : processMetadataResult.health,
     story_artifacts: artifactInventory,
     git,
     cost_breakdown: costBreakdown,
@@ -469,17 +472,81 @@ function renderLineageAttribution(result) {
 
 async function readProcessMetadata(codexHome, sessionId) {
   const filePath = path.join(codexHome, 'process_manager', 'chat_processes.json');
-  let entries;
+  let raw;
   try {
-    entries = JSON.parse(await readFile(filePath, 'utf8'));
+    raw = await readFile(filePath, 'utf8');
   } catch (error) {
-    if (error.code === 'ENOENT') return null;
+    if (error.code === 'ENOENT') {
+      return buildProcessMetadataResult({
+        status: 'unavailable',
+        reasonCode: 'source_not_found',
+        reason: 'process_manager source file was not found',
+        sourcePath: filePath
+      });
+    }
     throw error;
   }
-  if (!Array.isArray(entries)) return null;
+  if (raw.trim().length === 0) {
+    return buildProcessMetadataResult({
+      status: 'degraded',
+      reasonCode: 'empty_file',
+      reason: 'process_manager source file was empty',
+      sourcePath: filePath,
+      byteLength: Buffer.byteLength(raw)
+    });
+  }
+  let entries;
+  try {
+    entries = JSON.parse(raw);
+  } catch (error) {
+    return buildProcessMetadataResult({
+      status: 'degraded',
+      reasonCode: 'invalid_json',
+      reason: `process_manager source JSON could not be parsed: ${error.message}`,
+      sourcePath: filePath,
+      byteLength: Buffer.byteLength(raw)
+    });
+  }
+  if (!Array.isArray(entries)) {
+    return buildProcessMetadataResult({
+      status: 'degraded',
+      reasonCode: 'invalid_shape',
+      reason: 'process_manager source root must be an array',
+      sourcePath: filePath,
+      byteLength: Buffer.byteLength(raw)
+    });
+  }
   const matches = entries.filter((entry) => entry?.conversationId === sessionId);
   matches.sort((a, b) => Number(b.updatedAtMs ?? 0) - Number(a.updatedAtMs ?? 0));
-  return matches[0] ?? null;
+  const entry = matches[0] ?? null;
+  return buildProcessMetadataResult({
+    entry,
+    status: entry ? 'available' : 'unavailable',
+    reasonCode: entry ? null : 'session_not_found',
+    reason: entry ? null : 'process_manager entry was not found for session id',
+    sourcePath: filePath,
+    byteLength: Buffer.byteLength(raw)
+  });
+}
+
+function buildProcessMetadataResult({
+  entry = null,
+  status,
+  reasonCode = null,
+  reason = null,
+  sourcePath,
+  byteLength = null
+}) {
+  return {
+    entry,
+    health: {
+      status,
+      reason_code: reasonCode,
+      reason,
+      source_path: sourcePath,
+      byte_length: byteLength
+    }
+  };
 }
 
 async function findCodexSessionFile(codexHome, sessionId) {
