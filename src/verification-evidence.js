@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -71,6 +72,7 @@ export async function recordVerificationEvidence(repoRoot, options = {}) {
   const artifactObservedValues = artifactFilter.values;
   const observation = buildObservation(options, artifactObservedValues, { receiptBacked });
   assertCommandMatchesVerificationKind(options.kind, options.command, options.status, observation, artifactCheck, artifactObservedValues);
+  assertCommandNamedTestPathsExist(root, options.command, options.status);
   const observationCheck = buildObservationCheck({ status: options.status, observation });
   const evidencePath = await resolvePrArtifactFile(root, storyId, 'verification-evidence.json');
   await mkdir(path.dirname(evidencePath), { recursive: true });
@@ -269,6 +271,87 @@ export function assertCommandMatchesVerificationKind(kind, command, status, obse
       `verify record --kind ${kind} requires a recognized executable ${kind} check; inspection-only or arbitrary command is not valid passing evidence: ${normalized}`
     );
   }
+}
+
+// Runner prefixes whose positional file arguments name the tests the command claims to have
+// executed. `node --test <missing>` prints "Could not find" and still exits 0, so a passing
+// record naming a nonexistent file credits coverage that never ran; the only deterministic
+// check is resolving the named paths themselves.
+const TEST_RUNNER_COMMAND_PREFIX = /^(?:node\s+--test\b|(?:npm|pnpm|yarn|bun)(?:\s+run)?\s+test\b|(?:npx\s+)?(?:vitest|jest|playwright)\b)/i;
+const TEST_FILE_ARGUMENT = /\.(?:test|spec)\.[cm]?[jt]sx?$/i;
+// Flags whose value is a separate token; the value must not be resolved as a path.
+const VALUE_TAKING_FLAGS = new Set([
+  '--test-name-pattern', '--test-reporter', '--test-reporter-destination', '--test-concurrency',
+  '--config', '-c', '--reporter', '--grep', '-g', '-t', '--testNamePattern',
+  '--project', '--workers', '--retries', '--timeout', '--shard', '--output',
+  '--environment', '--dir', '--root', '--outputFile', '--maxWorkers'
+]);
+
+export function assertCommandNamedTestPathsExist(repoRoot, command, status) {
+  if (!PASS_STATUSES.has(status)) return;
+  const missing = missingNamedTestPaths(repoRoot, command);
+  if (missing.length > 0) {
+    throw new Error(
+      'passing verification evidence names test paths that do not exist in the repository, '
+      + `so the named coverage cannot have executed: ${missing.join(', ')}`
+    );
+  }
+}
+
+function missingNamedTestPaths(repoRoot, command) {
+  const normalized = String(command ?? '').trim();
+  if (!TEST_RUNNER_COMMAND_PREFIX.test(normalized)) return [];
+  const tokens = tokenizeCommand(normalized);
+  const missing = [];
+  for (let index = 0; index < tokens.length; index += 1) {
+    const token = tokens[index];
+    const value = token.value;
+    if (value === '--') continue;
+    if (value.startsWith('-')) {
+      const name = value.includes('=') ? value.slice(0, value.indexOf('=')) : value;
+      if (!value.includes('=') && VALUE_TAKING_FLAGS.has(name)) index += 1;
+      continue;
+    }
+    if (!TEST_FILE_ARGUMENT.test(value)) continue;
+    if (/[*?[\]{}]/.test(value)) continue;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(value)) continue;
+    const absolute = path.resolve(repoRoot, value);
+    const relative = path.relative(path.resolve(repoRoot), absolute);
+    if (relative.startsWith('..') || path.isAbsolute(relative)) continue;
+    if (!existsSync(absolute)) missing.push(value);
+  }
+  return missing;
+}
+
+function tokenizeCommand(command) {
+  const tokens = [];
+  let current = '';
+  let quote = null;
+  let quoted = false;
+  const push = () => {
+    if (current.length > 0 || quoted) tokens.push({ value: current, quoted });
+    current = '';
+    quoted = false;
+  };
+  for (const char of String(command ?? '')) {
+    if (quote) {
+      if (char === quote) quote = null;
+      else current += char;
+      continue;
+    }
+    if (char === "'" || char === '"') {
+      quote = char;
+      quoted = true;
+      continue;
+    }
+    if (/\s/.test(char)) {
+      push();
+      continue;
+    }
+    current += char;
+  }
+  push();
+  return tokens;
 }
 
 export function renderVerificationEvidenceSummary(result) {

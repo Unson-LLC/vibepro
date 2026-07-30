@@ -1060,8 +1060,20 @@
         "started_at": "2026-07-30",
         "due_at": null,
         "category": "bugfix"
+      },
+      {
+        "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+        "title": "verify record/runのコマンドが名指しするtest fileパスの実在を検証する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-30",
+        "due_at": null,
+        "category": "bugfix"
       }
     ],
-    "current_story_id": "story-vibepro-session-cost-source-health-fail-soft"
+    "current_story_id": "story-vibepro-verify-command-test-path-existence-guard"
   }
 }
