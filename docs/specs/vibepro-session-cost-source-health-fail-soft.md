@@ -1,7 +1,7 @@
 ---
 story_id: story-vibepro-session-cost-source-health-fail-soft
 title: Session Cost Source Health Fail-Soft Spec
-parent_design: vibepro-session-cost-source-health-fail-soft
+parent_design: story-vibepro-session-cost-source-health-fail-soft
 ---
 
 # Spec

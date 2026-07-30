@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-session-cost-source-health-fail-soft
 title: Session Cost Source Health Fail-Soft Architecture
+parent_design: story-vibepro-session-cost-source-health-fail-soft
 ---
 
 # Architecture
