@@ -8,7 +8,9 @@ category: architecture
 source:
   type: parent_story
   title: "story-vibepro-owner-gated-budget-override の architecture_boundary preflight が挙げ、gate:judgment_axis_public_contract の decision record で residual として受け入れられた low finding 2件への後続対応"
-parent_design: story-vibepro-owner-gated-budget-override
+parent_design:
+  - vibepro-owner-gated-budget-override
+  - story-vibepro-owner-gated-budget-override
 related_stories:
   - story-vibepro-owner-gated-budget-override
   - story-vibepro-session-cost-source-health-fail-soft

@@ -7420,6 +7420,15 @@
             "relationship": "implements",
             "last_reviewed_root_hash": null
           }
+        ],
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-budget-override-residual-findings.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
       },
       "child_links": [
@@ -7429,10 +7438,17 @@
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-budget-override-residual-findings.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
         }
       ],
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-30T03:38:11.602Z"
+  "updated_at": "2026-07-30T09:30:28.624Z"
 }

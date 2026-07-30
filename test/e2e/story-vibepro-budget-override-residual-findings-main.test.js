@@ -48,7 +48,7 @@ test('story-vibepro-budget-override-residual-findings acceptance coverage', () =
   const ownerRoot = ssot.design_roots.find((r) => r.id === 'vibepro-owner-gated-budget-override');
   assert.equal(ownerRoot.owned_surfaces.length, 6);
   assert.ok(ownerRoot.required_child_kinds.includes('architecture'));
-  assert.equal(ownerRoot.child_links.filter((c) => c.required).length, 1);
+  assert.ok(ownerRoot.child_links.filter((c) => c.kind === 'architecture' && c.required).length >= 1);
   // story-vibepro-budget-override-residual-findings ac:4 runtime behavior unchanged: unauthorized override still falls back to base with applied=false
   const decision = resolveEfficiencyPolicyDecision({
     budgets: {
