@@ -165,6 +165,17 @@
       ],
       "rationale": "Shows that source failure degrades locally while cwd fallback and accounting continue.",
       "mermaid": "flowchart TD\n  PM[process-manager source] --> Reader[source-local reader]\n  Reader -->|matching entry| PMRoot[process-manager cwd]\n  Reader -->|missing empty malformed wrong shape| Health[degraded or unavailable health]\n  Health --> Session[session metadata cwd]\n  Session --> Repo[CLI repository fallback]\n  PMRoot --> Result[session-cost result]\n  Repo --> Result\n  Health --> Result"
+    },
+    {
+      "kind": "threat_model",
+      "entities": [
+        "external process metadata",
+        "bounded parser",
+        "safe source health",
+        "session-cost output"
+      ],
+      "rationale": "Treats process-manager metadata as fallible external state: corruption cannot terminate the audit and diagnostics disclose metadata shape only, never source contents.",
+      "mermaid": "flowchart LR\n  External[external process metadata] -->|missing empty malformed wrong shape| Parser[bounded parser]\n  Parser -->|status reason_code byte_length only| Health[safe source health]\n  Parser -. never include source contents .-> Output[session-cost output]\n  Health --> Output"
     }
   ]
 }
