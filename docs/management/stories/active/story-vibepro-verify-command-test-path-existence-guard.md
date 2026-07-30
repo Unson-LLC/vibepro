@@ -39,6 +39,7 @@ VibePro は、検証コマンドが repo 相対の test パスを名指しする
 ## Inherited Behavior
 
 - Kind/command compatibility checks (assertCommandMatchesVerificationKind), artifact cross-check contradictions, and shell-substitution rejection are unchanged/existing; verify run additionally rejects nonexistent named test paths pre-flight before executing the command.
+- The `!supplied && !runAuthority` early return in resolveRecorderLineage (no lineage envelope is attached when neither a supplied lineage nor a run authority exists) is unchanged/existing.
 
 ## Non Goals
 
