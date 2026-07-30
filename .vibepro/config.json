@@ -445,6 +445,18 @@
   "brainbase": {
     "stories": [
       {
+        "story_id": "story-vibepro-session-cost-source-health-fail-soft",
+        "title": "Session Cost入力障害を局所化して監査を継続する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-30",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
         "story_id": "story-vibepro-merge-waiver-propagation",
         "title": "PR作成時の監査可能なGate waiverをexecute mergeへ安全に伝播する",
         "ssot": "local",
@@ -1050,6 +1062,6 @@
         "category": "bugfix"
       }
     ],
-    "current_story_id": "story-vibepro-merge-binding-stale-stop-reason"
+    "current_story_id": "story-vibepro-session-cost-source-health-fail-soft"
   }
 }
