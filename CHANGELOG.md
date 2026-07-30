@@ -36,7 +36,17 @@ All notable changes to VibePro will be documented in this file.
   reintroduction of the shape removed here; it does not certify that a test
   verifies anything.
 
-  **Cross-story effect**: seven Story slugs — `cli-status-honesty`,
+- `npm run typecheck` now also parses `scripts/*.mjs`, not only `bin/vibepro.js`
+  and `src/*.js`. All eight existing scripts already parse, so no result
+  changes, but a syntax error in a `scripts/*.mjs` file is now caught in CI.
+
+- Six `test/e2e/*-acceptance.spec.ts` files asserted their nested runner's
+  output as TAP (`/# pass N/`). Node emits the spec reporter (`ℹ`) from v23, so
+  those specs failed locally on newer Node for a reason unrelated to product
+  behaviour. They now accept either format. One exact `pass 14` pin became a
+  floor, so adding a test to that contract suite is no longer an unrelated red.
+
+- **Cross-story effect** of the removals: seven Story slugs — `cli-status-honesty`,
   `evidence-user-fingerprint`, `keyword-gate-structured-migration`,
   `pr-ship-command`, `execute-merge-command`,
   `engineering-judgment-activation-precision`, and `merge-delta-review-reuse` —

@@ -60,6 +60,11 @@ ESMではこの3つはいずれもimport/require無しには到達できない�
 lintのCIステップ + Story acceptance replay spec を1つのPRに含め、
 VET-S-1 から VET-S-6 までを同一HEADで満たす。
 
+加えて、本Story自身の証跡を空虚でないものにするために不可欠な派生修正3件
+(reporter形式修正6件、typecheck globへの `scripts/*.mjs` 追加とfixture更新、
+`02_functional_spec.md` の origin ref 1行修正)を同一PRに含める。
+いずれも単独では出荷単位を構成しない。列挙と根拠はStoryの Delivery 節を正とする。
+
 旧記載は以下で、これは撤回した。
 
 > lintは19ファイルが存在する状態では失敗するため、順序を入れ替えられない。

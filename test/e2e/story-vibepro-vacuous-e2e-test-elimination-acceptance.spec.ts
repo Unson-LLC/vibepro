@@ -59,14 +59,118 @@ const REMOVED_VACUOUS_FILES = [
   'test/e2e/story-vibepro-usage-report-main.spec.ts'
 ];
 
-const REPLACEMENT_SUITES = [
-  'test/cli-status-honesty.test.js',
-  'test/engineering-judgment-activation-precision.test.js',
-  'test/managed-worktree-policy-resync.test.js',
-  'test/traceability-usage-report.test.js'
+// VET-S-2 is a per-file claim: each removed file's Story acceptance criteria
+// must still be executed by a behavioural test elsewhere. Asserting that the
+// replacement suites merely CONTAIN the string "../src/" would be the same
+// defect this Story removes, so each removed path is mapped to a named test
+// case and that case is required to actually run and pass.
+const REPLACEMENT_COVERAGE: { removed: string[]; suite: string; testName: string }[] = [
+  {
+    removed: [
+      'test/e2e/story-vibepro-cli-status-honesty-main.spec.ts',
+      'test/e2e/story-vibepro-cli-status-honesty-main.test.js'
+    ],
+    suite: 'test/cli-status-honesty.test.js',
+    testName: 'DRS-CONTRACT-005 execute status fails closed when execution state is missing'
+  },
+  {
+    removed: [
+      'test/e2e/story-vibepro-execute-merge-command-flow.spec.ts',
+      'test/e2e/story-vibepro-execute-merge-command-main.test.js'
+    ],
+    suite: 'test/cli-status-honesty.test.js',
+    testName: 'GDO-S-3 execute merge fails closed on a corrupt local gate outcome ledger without losing verified delivery'
+  },
+  {
+    removed: [
+      'test/e2e/story-vibepro-engineering-judgment-activation-precision-main.spec.ts',
+      'test/e2e/story-vibepro-engineering-judgment-activation-precision-main.test.js'
+    ],
+    suite: 'test/engineering-judgment-activation-precision.test.js',
+    testName: 'non-text workflow corroboration activates execution topology axis'
+  },
+  {
+    removed: ['test/e2e/story-vibepro-managed-worktree-policy-resync-main.spec.ts'],
+    suite: 'test/managed-worktree-policy-resync.test.js',
+    testName: 'refreshManagedWorktree resyncs policy sections while non-policy sections stay frozen'
+  },
+  {
+    removed: ['test/e2e/story-vibepro-usage-report-main.spec.ts'],
+    suite: 'test/traceability-usage-report.test.js',
+    testName: 'declared and merged_outside states surface as separate signals'
+  },
+  {
+    removed: ['test/e2e/story-vibepro-managed-worktree-execution-dag-main.spec.ts'],
+    suite: 'test/execution-state.test.js',
+    testName: 'execution DAG preserves external delivery without inventing historical merge readiness'
+  },
+  {
+    removed: ['test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts'],
+    suite: 'test/vibepro-cli.test.js',
+    testName: 'pr prepare keeps legacy full-fingerprint evidence stale when tracked VibePro manifest changes'
+  },
+  {
+    removed: ['test/e2e/story-vibepro-keyword-gate-structured-migration-main.spec.ts'],
+    suite: 'test/vibepro-cli.test.js',
+    testName: 'pr prepare rejects legacy keyword evidence for atomic changed-path coverage'
+  },
+  {
+    removed: ['test/e2e/story-vibepro-merge-delta-review-reuse-main.test.js'],
+    suite: 'test/vibepro-cli.test.js',
+    testName: 'review status keeps content-bound review current after merge delta outside inspected inputs'
+  },
+  {
+    removed: [
+      'test/e2e/story-vibepro-pr-ship-command-main.spec.ts',
+      'test/e2e/story-vibepro-pr-ship-command-main.test.js'
+    ],
+    suite: 'test/vibepro-cli.test.js',
+    testName: 'pr ship dry-run reruns prepare and stops with Agent Review commands instead of raw gh create'
+  },
+  {
+    removed: ['test/e2e/story-vibepro-review-status-required-only-main.spec.ts'],
+    suite: 'test/vibepro-cli.test.js',
+    testName: 'review status focuses required current blockers and moves optional history behind flags'
+  },
+  // These two were rewritten into behavioural tests rather than deleted, so the
+  // covering case lives in the surviving file itself.
+  {
+    removed: ['test/e2e/story-vibepro-execution-judgment-status-integrity-main.spec.ts'],
+    suite: 'test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js',
+    testName: 'story-vibepro-execution-judgment-status-integrity ac:1 ac:2 S-001 a merged artifact without explicit delivery leaves neither agent_review_recorded nor pr_created pending'
+  },
+  {
+    removed: ['test/e2e/story-vibepro-managed-worktree-gate-main.spec.ts'],
+    suite: 'test/e2e/story-vibepro-managed-worktree-gate-main.test.js',
+    testName: 'story-vibepro-managed-worktree-gate ac:5 an accepted waiver decision record turns the gate bypassed and names the decision'
+  }
 ];
 
-const replacementRun = replay(...REPLACEMENT_SUITES);
+function escapeForTestNamePattern(name: string) {
+  return name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// One targeted child run per suite, selecting only the mapped cases by name.
+// test/vibepro-cli.test.js is far too large to replay whole, and replaying it
+// whole would prove less: a named-pattern run fails loudly if a mapped case has
+// been renamed or removed, because the child then reports zero matching tests.
+const replacementRuns = new Map<string, ReturnType<typeof execFileAsync>>();
+for (const suite of new Set(REPLACEMENT_COVERAGE.map((entry) => entry.suite))) {
+  const names = REPLACEMENT_COVERAGE
+    .filter((entry) => entry.suite === suite)
+    .map((entry) => `^${escapeForTestNamePattern(entry.testName)}$`);
+  replacementRuns.set(suite, execFileAsync(process.execPath, [
+    '--test',
+    '--test-name-pattern',
+    names.join('|'),
+    suite
+  ], {
+    cwd: repoRoot,
+    encoding: 'utf8',
+    env: childEnv,
+    maxBuffer: 16 * 1024 * 1024
+  }));
+}
 const executionStateRun = replay('test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js');
 const managedWorktreeRun = replay('test/e2e/story-vibepro-managed-worktree-gate-main.test.js');
 const specGateRun = replay('test/node20-e2e-ts-ci-visibility.test.js');
@@ -81,20 +185,38 @@ test('story-vibepro-vacuous-e2e-test-elimination ac:2 VET-S-2 the removed files 
     );
   }
 
-  const { stdout } = await replacementRun;
-  assert.match(stdout, REPORTER_FAIL_ZERO);
-  assert.doesNotMatch(stdout, /^not ok/m);
-  const passed = Number(REPORTER_PASS_COUNT.exec(stdout)?.[1] ?? 0);
-  assert.ok(passed > 0, `replacement coverage suites must execute tests, saw ${passed}`);
+  // Every removed path must map to a named case, or the mapping has drifted
+  // away from the deletion set and this clause is no longer being checked.
+  const mapped = new Set(REPLACEMENT_COVERAGE.flatMap((entry) => entry.removed));
+  assert.deepEqual(
+    REMOVED_VACUOUS_FILES.filter((removed) => !mapped.has(removed)),
+    [],
+    'every removed file must be mapped to a named replacement test case'
+  );
 
-  // Each replacement suite must actually drive product code rather than assert
-  // on its own literals: that is the defect this Story removes.
-  for (const suite of REPLACEMENT_SUITES) {
-    const source = readFileSync(path.join(repoRoot, suite), 'utf8');
-    assert.match(
-      source,
-      /from '\.\.\/src\/|require\('\.\.\/src\/|VIBEPRO_BIN|bin\/vibepro\.js/,
-      `${suite} must import product code or run the CLI to be real replacement coverage`
+  // Each mapped case must actually have run and passed in its child process.
+  for (const [suite, run] of replacementRuns) {
+    const { stdout } = await run;
+    assert.match(stdout, REPORTER_FAIL_ZERO, `${suite} replacement run must have no failures`);
+    assert.doesNotMatch(stdout, /^not ok/m);
+
+    const expected = REPLACEMENT_COVERAGE.filter((entry) => entry.suite === suite);
+    for (const entry of expected) {
+      assert.ok(
+        stdout.includes(entry.testName),
+        `${entry.suite} must still contain and execute "${entry.testName}" as replacement coverage for ${entry.removed.join(', ')}`
+      );
+    }
+
+    // A renamed or deleted case makes --test-name-pattern select nothing, which
+    // would otherwise report a vacuous "fail 0". The per-name assertions above
+    // already catch that; this floor additionally rejects a run that reported no
+    // passing test at all. It is a floor rather than an equality because a
+    // matched subtest also marks its parent suite passed.
+    const passed = Number(REPORTER_PASS_COUNT.exec(stdout)?.[1] ?? 0);
+    assert.ok(
+      passed >= expected.length,
+      `${suite} must execute at least the ${expected.length} mapped case(s), saw ${passed}`
     );
   }
 });

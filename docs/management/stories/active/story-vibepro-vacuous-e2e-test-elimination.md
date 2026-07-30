@@ -14,7 +14,7 @@ related_stories:
   - story-vibepro-fake-value-hardening
   - story-vibepro-content-scoped-evidence-freshness
   - story-vibepro-engineering-judgment-surface-evidence
-reason: "alternatives considered: (a) 19ファイルを一括削除してカバレッジの穴を許容する、(b) 全ファイルを実挙動テストへ書き換える、(c) ファイルごとに実カバレッジの有無を実測し、存在するものは削除・存在しないものだけ書き換える。(c)を選択した。(a)は実カバレッジが別ファイルに存在することを確認せずに消すため、実際に未検証な分岐(execution-state.jsのmerged->agent_review導出、managed-worktree-gate.jsのbypassed分岐)を見逃す。(b)は既にtest/vibepro-cli.test.js等が実git repo + runCliで同一ACを検証している15ファイル分の重複テストを新規に増やし、CI時間と保守面を悪化させる。compatibility impact: 削除対象はいずれも製品コードを一切importせず実行しないため、製品挙動の検証範囲は縮小しない。scripts/run-e2e-ts-specs.mjsはtest/e2e/*.spec.tsが0件になるとerror扱いになるが、削除後も22件のspec.tsが残るためgateは維持される。docs/management/audit-artifacts/とroi-ledgerおよび過去Storyのpr-prepare.json内のtest_refsは凍結された監査記録であり書き換えない。一方 .vibepro/spec/ 配下はgit追跡されvalidateSpecで機械検証される現行SSOTなので、削除ファイルを指すtest_refは現に存在する実挙動テストへ張り替える。rollback plan: 本コミットをrevertすれば削除ファイルとlintが同時に戻る。データ移行なし。boundary and scope: test/e2e配下のTier A(src import・プロセス起動・fsアクセスのいずれも無い)ファイルと再発防止lintのみを対象とする。docs/srcをreadFileして単語をgrepするだけのTier B 8件、製品コードの実装変更、mutation testingの導入は対象外。"
+reason: "alternatives considered: (a) 19ファイルを一括削除してカバレッジの穴を許容する、(b) 全ファイルを実挙動テストへ書き換える、(c) ファイルごとに実カバレッジの有無を実測し、存在するものは削除・存在しないものだけ書き換える。(c)を選択した。(a)は実カバレッジが別ファイルに存在することを確認せずに消すため、実際に未検証な分岐(execution-state.jsのmerged->agent_review導出、managed-worktree-gate.jsのbypassed分岐)を見逃す。(b)は既にtest/vibepro-cli.test.js等が実git repo + runCliで同一ACを検証している15ファイル分の重複テストを新規に増やし、CI時間と保守面を悪化させる。compatibility impact: 削除対象はいずれも製品コードを一切importせず実行しないため、製品挙動の検証範囲は縮小しない。scripts/run-e2e-ts-specs.mjsはtest/e2e/*.spec.tsが0件になるとerror扱いになるが、削除後も22件のspec.tsが残るためgateは維持される。docs/management/audit-artifacts/とroi-ledgerおよび過去Storyのpr-prepare.json内のtest_refsは凍結された監査記録であり書き換えない。一方 .vibepro/spec/ 配下はgit追跡されvalidateSpecで機械検証される現行SSOTなので、削除ファイルを指すtest_refは現に存在する実挙動テストへ張り替える。rollback plan: 本コミットをrevertすれば削除ファイルとlintが同時に戻る。データ移行なし。boundary and scope: 主対象は test/e2e配下のTier A(src import・プロセス起動・fsアクセスのいずれも無い)ファイルと再発防止lintである。加えて、本Story自身の証跡を空虚でないものにするために不可欠な派生修正だけを同一PRに含める: (1) 入れ子runnerの出力をTAP形式だけでassertしていた test/e2e/*-acceptance.spec.ts 6件のreporter形式修正(これが無いと .spec.ts レーンをe2e証跡として記録できない)、(2) package.json の typecheck glob への scripts/*.mjs 追加とそのfixture更新(拡張前はtypecheck証跡が対象ファイルを一度も読まない空虚な主張だった)、(3) 削除ファイルを指す origin ref 1行の docs/features/routing-profiles-rendered-projections/02_functional_spec.md 修正(同一SSOT対の食い違いを残さないため)。詳細と根拠は Delivery 節に列挙する。docs/srcをreadFileして単語をgrepするだけのTier B 8件、製品コードの実装変更、mutation testingの導入は対象外。"
 spec_docs:
   - docs/specs/story-vibepro-vacuous-e2e-test-elimination.md
 created_at: 2026-07-28
@@ -79,6 +79,29 @@ assert.match('activation_candidates activation_signals activation_precision', /a
 `docs/specs/vibepro-pr-ship-command.md` の記述修正・`scripts/lint-e2e-product-execution.mjs`・
 `test/e2e-product-execution-lint.test.js`・CIステップ追加・Story acceptance replay specを
 1つのPRに含め、VET-S-1 から VET-S-6 までを同一HEADで満たす。
+
+加えて、本Storyの証跡を空虚でないものにするために必要になった派生修正を同一PRに含める。
+いずれも本Story自身のgateを閉じるために不可欠で、単独では出荷単位を構成しない。
+
+1. **`test/e2e/*-acceptance.spec.ts` 6件のreporter形式修正**:
+   `story-vibepro-{agent-runtime-adapters, guarded-run-session-contract,
+   human-decision-checkpoint, next-best-action-controller, run-context-capsule,
+   safe-action-orchestrator}-acceptance.spec.ts`。入れ子の `node --test` 出力を
+   TAP形式の `/# pass N/` だけでassertしていたため、Node 23以降がspec reporterを
+   既定にすると製品挙動と無関係に失敗する。`/(?:ℹ|#) pass N/` へ広げた。
+   これが無いと `.spec.ts` レーン全体をe2e証跡として記録できず、
+   VET-S-6 の根拠が「ローカルでは検証不能」という注記付きのままになる。
+   `run-context-capsule` の `pass 14` 固定値は下限へ緩めた
+   (契約スイートへのテスト追加が無関係な赤にならないようにするため)。
+2. **`package.json` の typecheck glob 拡張と `test/verification-runner.test.js` のfixture拡張**:
+   `bin/vibepro.js src/*.js` に `scripts/*.mjs` を追加した。拡張前は
+   `scripts/lint-e2e-product-execution.mjs` をtypecheck証跡のtargetに挙げながら
+   globが同ファイルを一度も読まないという、まさに本Storyが除去する形の空虚な主張に
+   なっていた。fixtureは実script文字列を実行するため、glob拡張に合わせて
+   `scripts/` を作る形へ更新した。
+3. **`docs/features/routing-profiles-rendered-projections/02_functional_spec.md`**:
+   削除ファイルを指す origin ref 1行を、`.vibepro/spec/` 側の張り替え先と同じ
+   `test/vibepro-cli.test.js` へ合わせた。同一SSOT対の2面が食い違う状態を残さない。
 
 ### 旧方針(superseded: 2 PR分割)とその撤回理由
 
