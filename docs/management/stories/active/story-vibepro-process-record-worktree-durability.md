@@ -2,6 +2,7 @@
 story_id: story-vibepro-process-record-worktree-durability
 title: プロセス記録をworktreeライフサイクルから切り離して永続化する
 status: active
+parent_design: vibepro-process-record-worktree-durability
 reason: >
   2026-07-30に同型事故が2回発生した。(1) story-vibepro-finding-class-recurrence-breaker の
   worktree再生成で trip ledger・レビュー7ラウンド・裁定・owner block decision record が全消滅し、
