@@ -25,7 +25,8 @@ test('story-vibepro-process-record-worktree-durability S-001 snapshot mirrors st
     'test/process-record-store.test.js',
     'test/e2e/process-record-store-worktree-loss.e2e.test.js'
   ]);
-  assert.match(result.stdout, /(?:#|ℹ) fail 0\b/);
+  const S001 = 'snapshot mirrors story-scoped durable record classes to the store, and hydrate restores them into a regenerated worktree.';
+  assert.match(result.stdout, /(?:#|ℹ) fail 0\b/, `S-001 ${S001}`);
   for (const scenario of [
     { clause: 'AC-1', pattern: /resolveDurableStoreRoot points a linked worktree at the main checkout/ },
     { clause: 'AC-2', pattern: /records survive worktree deletion via snapshot then hydrate into a regenerated worktree/ },
@@ -43,7 +44,8 @@ test('story-vibepro-process-record-worktree-durability S-002 Mutating CLI comman
     'test/process-record-store.integration.test.js',
     'test/process-record-store.test.js'
   ]);
-  assert.match(result.stdout, /(?:#|ℹ) fail 0\b/);
+  const S002 = 'Mutating CLI commands (verify, review, adjudicate record, spec write, pr prepare, decision record) trigger a fail-soft auto-snapshot that never fails the producing command.';
+  assert.match(result.stdout, /(?:#|ℹ) fail 0\b/, `S-002 ${S002}`);
   for (const scenario of [
     { clause: 'AC-6', pattern: /mutating CLI commands auto-snapshot durable records into the store/ },
     { clause: 'AC-7 fail-soft fallback', pattern: /snapshot rejects unsafe story ids and the fail-soft wrapper never throws/ }
