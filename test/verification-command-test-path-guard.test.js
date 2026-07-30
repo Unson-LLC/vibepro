@@ -146,6 +146,21 @@ test('npx vitestが実在しないtestファイルを名指しする場合は拒
   );
 });
 
+test('npx jestが実在しないtestファイルを名指しする場合は拒否される', async () => {
+  const repo = await makeWorkspaceRepo();
+
+  await assert.rejects(
+    recordVerificationEvidence(repo, {
+      storyId: 'story-a',
+      kind: 'unit',
+      status: 'pass',
+      command: 'npx jest test/pr-manager.test.js'
+    }),
+    /test\/pr-manager\.test\.js/
+  );
+  assert.equal(await evidenceFileExists(repo, 'story-a'), false);
+});
+
 test('failing recordはコマンドのパス実在に関係なく従来どおり記録できる', async () => {
   const repo = await makeWorkspaceRepo();
 
