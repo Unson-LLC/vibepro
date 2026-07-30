@@ -12,12 +12,18 @@ test('TAR-INV-003 Task proof cannot bypass atomic authority in pr prepare', asyn
   const criteria = [
     'TAR-S-1からTAR-S-6を満たす',
     'Taskなし・不正Taskはfail-closedを維持する',
-    'machine-readable evidenceにTask bindingを残す'
+    'machine-readable evidenceにTask bindingを残す',
+    'scope signalとsplit planへtyped Task proofを残す',
+    'legacy Taskとstrict target validationの互換性を維持する',
+    'positiveとnegativeの実CLI経路を同一E2Eで再生する'
   ];
   const markers = [
     'story-vibepro-task-atomic-repo-control-contract ac:1',
     'story-vibepro-task-atomic-repo-control-contract ac:2',
-    'story-vibepro-task-atomic-repo-control-contract ac:3'
+    'story-vibepro-task-atomic-repo-control-contract ac:3',
+    'story-vibepro-task-atomic-repo-control-contract ac:4',
+    'story-vibepro-task-atomic-repo-control-contract ac:5',
+    'story-vibepro-task-atomic-repo-control-contract ac:6'
   ];
   const { stdout, stderr } = await execFileAsync(process.execPath, [
     '--test',
@@ -33,6 +39,9 @@ test('TAR-INV-003 Task proof cannot bypass atomic authority in pr prepare', asyn
   assert.match(stdout, /TAR-CLI-001/, `${markers[0]} ${criteria[0]}`);
   assert.match(stdout, /TAR-CLI-002/, `${markers[1]} ${criteria[1]}`);
   assert.match(stdout, /TAR-CLI-001/, `${markers[2]} ${criteria[2]}`);
-  assert.match(stdout, /pass 5/);
+  assert.match(stdout, /TAR-CLI-001/, `${markers[3]} ${criteria[3]}`);
+  assert.match(stdout, /TAR-CLI-004/, `${markers[4]} ${criteria[4]}`);
+  assert.match(stdout, /TAR-CLI-003/, `${markers[5]} ${criteria[5]}`);
+  assert.match(stdout, /pass 5/, `${markers[5]} ${criteria[5]}`);
   assert.equal(stderr, '');
 });
