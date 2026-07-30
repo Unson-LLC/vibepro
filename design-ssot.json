@@ -7408,10 +7408,10 @@
         "spec": [
           {
             "kind": "spec",
-            "path": ".vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json",
+            "path": "docs/specs/story-vibepro-verify-command-test-path-existence-guard.md",
             "required": true,
             "relationship": "implements",
-            "last_reviewed_root_hash": null
+            "last_reviewed_root_hash": "8c355eb60560c59f204a7a36e2440e845d62983356aab2d76ef086455eed6813"
           }
         ]
       },
@@ -7421,11 +7421,11 @@
           "path": ".vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json",
           "required": true,
           "relationship": "implements",
-          "last_reviewed_root_hash": null
+          "last_reviewed_root_hash": "8c355eb60560c59f204a7a36e2440e845d62983356aab2d76ef086455eed6813"
         }
       ],
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-30T10:32:52.144Z"
+  "updated_at": "2026-07-30T10:39:54.732Z"
 }

@@ -70,7 +70,7 @@
         ]
       },
       "first_seen_at": "2026-07-30T09:45:33.133Z",
-      "last_revised_at": "2026-07-30T09:48:49.378Z"
+      "last_revised_at": "2026-07-30T10:39:41.062Z"
     },
     {
       "id": "INV-002",
@@ -141,7 +141,7 @@
         ]
       },
       "first_seen_at": "2026-07-30T09:45:33.133Z",
-      "last_revised_at": "2026-07-30T09:48:49.378Z"
+      "last_revised_at": "2026-07-30T10:39:41.062Z"
     },
     {
       "id": "S-001",
@@ -212,7 +212,7 @@
         ]
       },
       "first_seen_at": "2026-07-30T09:45:33.133Z",
-      "last_revised_at": "2026-07-30T09:48:49.378Z"
+      "last_revised_at": "2026-07-30T10:39:41.062Z"
     }
   ],
   "diagrams": [
@@ -230,6 +230,9 @@
       "mermaid": "flowchart LR\n  agent[agent records passing evidence] --> cmd[command names test file absent from repo]\n  cmd --> runner[node --test exits 0 despite Could-not-find]\n  runner --> credit[gate DAG credits coverage that never ran]\n  cmd --> guard[assertCommandNamedTestPathsExist]\n  guard --> reject[record rejected before write, missing paths named]"
     }
   ],
-  "generated_at": "2026-07-30T09:48:49.376Z",
-  "previous_spec_id": "2026-07-30T09:45:33.129Z"
+  "parent_design": [
+    "story-vibepro-verify-command-test-path-existence-guard"
+  ],
+  "generated_at": "2026-07-30T10:39:41.058Z",
+  "previous_spec_id": "2026-07-30T09:48:49.376Z"
 }
