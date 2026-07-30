@@ -27,7 +27,7 @@ test('TAR-INV-003 Task proof cannot bypass atomic authority in pr prepare', asyn
   ];
   const { stdout, stderr } = await execFileAsync(process.execPath, [
     '--test',
-    '--test-name-pattern=TAR-CLI-00[1-5]',
+    '--test-name-pattern=TAR-CLI-00[1-5]|pr prepare writes PR artifacts for the selected story',
     'test/vibepro-cli.test.js'
   ], {
     cwd: repoRoot,
@@ -42,6 +42,11 @@ test('TAR-INV-003 Task proof cannot bypass atomic authority in pr prepare', asyn
   assert.match(stdout, /TAR-CLI-001/, `${markers[3]} ${criteria[3]}`);
   assert.match(stdout, /TAR-CLI-004/, `${markers[4]} ${criteria[4]}`);
   assert.match(stdout, /TAR-CLI-003/, `${markers[5]} ${criteria[5]}`);
-  assert.match(stdout, /pass 5/, `${markers[5]} ${criteria[5]}`);
+  assert.match(
+    stdout,
+    /pr prepare writes PR artifacts for the selected story/,
+    `${markers[1]} malformed canonical Task JSON parse failure is executed`
+  );
+  assert.match(stdout, /pass 6/, `${markers[5]} ${criteria[5]}`);
   assert.equal(stderr, '');
 });
