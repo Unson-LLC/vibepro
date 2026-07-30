@@ -1,5 +1,5 @@
 ---
-parent_design: story-vibepro-owner-gated-budget-override
+parent_design: vibepro-owner-gated-budget-override
 story_id: story-vibepro-budget-grant-tracked-decision-doc
 status: active
 ---
