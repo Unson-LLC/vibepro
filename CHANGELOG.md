@@ -29,6 +29,24 @@ All notable changes to VibePro will be documented in this file.
   `test/e2e` recursively, so nested directories are not a blind spot. It runs
   in CI after `npm run test:e2e:ts`.
 
+  **What it is not**: a structural tripwire, not a proof of behavioural
+  coverage. It reads module specifiers and call names, so a single unused
+  import clears it, and a file that imports product code and then still
+  asserts only its own literals will pass. It catches the accidental
+  reintroduction of the shape removed here; it does not certify that a test
+  verifies anything.
+
+  **Cross-story effect**: seven Story slugs — `cli-status-honesty`,
+  `evidence-user-fingerprint`, `keyword-gate-structured-migration`,
+  `pr-ship-command`, `execute-merge-command`,
+  `engineering-judgment-activation-precision`, and `merge-delta-review-reuse` —
+  no longer have any `test/e2e/<slug>-*` file. `buildStoryE2eCoverage()` derives
+  per-Story e2e acceptance coverage from exactly that glob, so a replayed audit
+  of those Stories will now report uncovered acceptance criteria. That is by
+  design: the deleted files never executed product code, so the coverage they
+  reported was not real. None of the seven is registered in
+  `.vibepro/config.json`, so no active Story's gate changes.
+
   **Operator action**: none for existing consumers; this is a repository-internal
   test-quality gate and changes no published CLI surface, artifact schema, or
   runtime behaviour. Contributors adding a `test/e2e` file must assert on real

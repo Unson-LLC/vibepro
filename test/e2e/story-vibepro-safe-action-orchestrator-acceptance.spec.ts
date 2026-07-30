@@ -19,8 +19,8 @@ test('story-vibepro-safe-action-orchestrator ac:1 ac:2 ac:3 ac:4 ac:5 ac:6 ac:7 
     maxBuffer: 4 * 1024 * 1024
   });
 
-  assert.match(result.stdout, /# pass [1-9]\d*\b/, 'focused Safe Action suites must pass');
-  assert.match(result.stdout, /# fail 0\b/, 'focused Safe Action suites must have no failures');
+  assert.match(result.stdout, /(?:ℹ|#) pass [1-9]\d*\b/, 'focused Safe Action suites must pass');
+  assert.match(result.stdout, /(?:ℹ|#) fail 0\b/, 'focused Safe Action suites must have no failures');
 
   assert.match(result.stdout, /SAO-S-1 injected plan cannot omit, reorder, or duplicate canonical dependencies/,
     'ac1 SAO-S-1 binds execution to the closed dependency-ordered plan');

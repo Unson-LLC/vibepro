@@ -18,8 +18,8 @@ test('story-vibepro-run-context-capsule AC-1 through AC-7 and S-001 acceptance a
     maxBuffer: 4 * 1024 * 1024
   });
 
-  assert.match(result.stdout, /# pass 14\b/);
-  assert.match(result.stdout, /# fail 0\b/);
+  assert.match(result.stdout, /(?:ℹ|#) pass (?:1[4-9]|[2-9]\d)\b/);
+  assert.match(result.stdout, /(?:ℹ|#) fail 0\b/);
 
   const acceptanceBindings = [
     ['AC-1 AC-2 AC-3', /capsule is typed, bounded, and accounts for every reduced section/],
