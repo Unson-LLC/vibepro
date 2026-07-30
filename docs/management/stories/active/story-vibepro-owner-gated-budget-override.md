@@ -197,11 +197,28 @@ debt state 除外は本 Story の範囲外。
 
 ## 検証済みの範囲（Evidence）
 
-- `test/delivery-efficiency-guardrail.test.js`: OGB-S-1〜S-9（21 tests pass）。
+- `test/delivery-efficiency-guardrail.test.js`: OGB-S-1〜S-9（22 tests pass）。
   OGB-S-7 / S-8 は実際の `.vibepro/config.json` を読んで、件数を literal で固定せず pin と config の対応を invariant として検査する。
-  OGB-S-8 は Story ごとの実 decision store も読み、`authorized` に解決された
-  override については human grantor と digest 一致を検査し、`authorized` 分岐が
-  1件も踏まれない場合は fail する（stub された `decisions: []` 形へ退化しないため）。
+- OGB-S-8 の証跡は **2つに分かれている**。この分割は evidence adjudicator の指摘によるもので、
+  以前の単一形は AC-8 を demonstrated にできなかった。
+  - **config 由来の leg**（`every configured story override resolves to a known authority status`）:
+    実 config と Story ごとの実 decision store を読み、`authorized` に解決された override について
+    human grantor と digest 一致を検査する。ただしこの leg は **artifact の存在が前提** である。
+    `.gitignore` が `.vibepro/*` を除外するため、fresh clone と CI には decision store が無く、
+    その環境ではこの leg は skip される。したがって
+    **「`authorized` 分岐が1件も踏まれない場合に fail する」保証はこの leg にはない**。
+    store が routed location に存在する場合に、それを実際に読んだことだけを保証する
+    （routed path は production と同じ `resolvePrArtifactFile` で解決するため、
+    artifact routing が変わればこの leg は silent skip ではなく fail する）。
+  - **fixture 由来の leg**（`a committed fixture grant drives the authorized branch on every checkout`）:
+    `test/fixtures/budget-override-authority/authorized-grant-store.json` という
+    **追跡される** decision store から grant を供給するため、fresh clone と CI を含む
+    すべての checkout で `authorized` 分岐を無条件に踏む。
+    positive leg と、単一fieldだけを壊す7本の negative leg を持つので、
+    accepted かつ digest 一致の human grant が `authorized` を生まなくなった場合にも、
+    grant 無しで `authorized` に到達できるようになった場合にも fail する。
+    fixture の `override_digest` は literal で pin してあり、自分自身を再計算した期待値ではないため、
+    digest algorithm や canonical JSON 形状の変更は fixture を赤にする。
 - `test/decision-records.test.js`: OGB-S-10〜S-12（8 tests pass）。
 - 旧契約を encode していた既存テスト
   `story budget override preserves global defaults and merges role limits` は

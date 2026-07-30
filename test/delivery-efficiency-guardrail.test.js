@@ -5,6 +5,7 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 import { readDecisionRecordsIfExists } from '../src/decision-records.js';
+import { resolvePrArtifactFile } from '../src/artifact-routing.js';
 
 import {
   GRANDFATHERED_OVERRIDE_DIGESTS,
@@ -233,15 +234,24 @@ test('every configured story override resolves to a known authority status', asy
     // disk, this test has to have actually read it. Reverting to `decisions: []`
     // trips this on any checkout that has the artifacts.
     //
-    // The path is taken from the reader's own returned `artifact` rather than
-    // rebuilt here. An earlier form hardcoded `.vibepro/pr/<id>/decision-records.json`
-    // while production resolved it through resolvePrArtifactFile, so a change to
-    // artifact routing would have moved the store, left this literal pointing at
-    // nothing, and silently turned the guard off instead of failing.
-    const storePath = records?.artifact ? path.join(repoRoot, records.artifact) : null;
-    if (storePath) {
-      assert.ok(existsSync(storePath),
-        `${storyId}: the reader reported ${records.artifact} but nothing is there; artifact routing and this probe disagree`);
+    // The routed path is resolved the same way production resolves it, rather
+    // than rebuilt from a literal. An earlier form hardcoded
+    // `.vibepro/pr/<id>/decision-records.json`, so a change to artifact routing
+    // would have moved the store, left the literal pointing at nothing, and
+    // silently turned this guard off.
+    //
+    // Resolving it independently of the read result is what makes the skip
+    // loud. Keying off `records?.artifact` alone cannot fail: the reader returns
+    // null on ENOENT and only reports `artifact` after a successful read, so the
+    // path would be non-null exactly when the file was just read. Asking the
+    // router where the store *should* be lets this assert that a store present
+    // at the routed location was actually read.
+    const routedStorePath = await resolvePrArtifactFile(repoRoot, storyId, 'decision-records.json');
+    if (existsSync(routedStorePath)) {
+      assert.ok(records,
+        `${storyId} has a decision store at the routed location ${routedStorePath} but the reader returned nothing; artifact routing and this probe disagree`);
+      assert.equal(path.resolve(repoRoot, records.artifact), path.resolve(routedStorePath),
+        `${storyId}: the reader read ${records.artifact} but routing points at ${routedStorePath}`);
       assert.ok(decisions.length > 0,
         `${storyId} has a decision store on disk but none of its decisions were read; this test is not consulting the real store`);
     }
