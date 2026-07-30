@@ -3,6 +3,7 @@ story_id: story-vibepro-budget-grant-tracked-decision-doc
 title: "budget grant を diff でレビュー可能にする: decision record --source budget:delivery_efficiency:* が tracked decision document を必ず書く"
 status: active
 parent_story_id: story-vibepro-owner-gated-budget-override
+parent_design: story-vibepro-owner-gated-budget-override
 reason:
   finding: >
     story-vibepro-owner-gated-budget-override の最終 runtime_contract レビューが

@@ -1,8 +1,10 @@
-# Architecture: tracked decision documents for budget grants
+---
+parent_design: story-vibepro-owner-gated-budget-override
+story_id: story-vibepro-budget-grant-tracked-decision-doc
+status: active
+---
 
-- story: story-vibepro-budget-grant-tracked-decision-doc
-- parent design root: vibepro-owner-gated-budget-override
-- status: active
+# Architecture: tracked decision documents for budget grants
 
 ## Contract change (old → new)
 
