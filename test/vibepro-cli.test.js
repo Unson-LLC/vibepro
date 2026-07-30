@@ -20601,6 +20601,11 @@ test('TAR-CLI-001 pr prepare persists Task-bound repo-control proof and still bl
   assert.notEqual(positivePreparation.split_plan.atomic_scope.status, 'accepted');
   assert.match(
     positivePreparation.split_plan.atomic_scope.rejection_reasons.join('\n'),
+    /pr_scope_strategy must be atomic_single_pr/i,
+    'Task-bound proof must not become an alternate authority when the Story omits atomic_single_pr'
+  );
+  assert.match(
+    positivePreparation.split_plan.atomic_scope.rejection_reasons.join('\n'),
     /reviewer owner map|review facets|dependency boundaries/i
   );
 
@@ -20646,6 +20651,7 @@ test('TAR-CLI-002 malformed typed Task state is rejected with repair guidance', 
   assert.match(stderr, /Invalid typed Task target_groups schema for PR prepare/);
   assert.match(stderr, /\.vibepro\/stories\/story-pr-prepare\/tasks\/tasks\.json/);
   assert.match(stderr, /Repair the configured canonical Task plan and rerun vibepro pr prepare/);
+  assert.match(stderr, /--story-id story-pr-prepare --task TASK-001/);
   assert.doesNotMatch(stderr, /TypeError/);
 });
 

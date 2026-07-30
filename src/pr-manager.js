@@ -5308,6 +5308,9 @@ function evaluateAtomicScopeDeclaration({
   const reviewOwnerMap = buildAgentReviewOwnerMapEvidence(agentReviews, lanes);
   const reviewOwnerMapVerified = reviewOwnerMap.verified;
   const rejectionReasons = [];
+  if (strategy !== 'atomic_single_pr') {
+    rejectionReasons.push('pr_scope_strategy must be atomic_single_pr before Task-bound proof can authorize one atomic PR');
+  }
   if (!reason || reason.trim().length < 80) rejectionReasons.push('pr_scope_reason must explain the atomic release boundary in at least 80 characters');
   if (dependencyBoundaryDeclarations.length === 0 && laneIds.length > 1) rejectionReasons.push('pr_scope_dependency_boundaries must declare typed lane dependencies');
   if (dependencyBoundaryResult.invalid.length > 0) rejectionReasons.push(`invalid typed dependency boundaries: ${dependencyBoundaryResult.invalid.join(', ')}`);
@@ -15683,26 +15686,45 @@ function assertStrictTargetFiles(taskContext, changedFiles, options) {
 }
 
 async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
-  const { state: taskState, relativePath: taskStatePath } = await readTaskState(repoRoot, storyId);
+  const rerunCommand = [
+    'vibepro pr prepare',
+    shellQuote(repoRoot),
+    '--story-id',
+    shellQuote(storyId),
+    '--task',
+    shellQuote(taskId),
+    ...(groupId ? ['--group', shellQuote(groupId)] : [])
+  ].join(' ');
+  const { state: taskState, relativePath: taskStatePath } = await readTaskState(
+    repoRoot,
+    storyId,
+    rerunCommand
+  );
   const taskStateStoryId = typeof taskState?.story?.story_id === 'string'
     ? taskState.story.story_id.trim()
     : '';
   if (!taskStateStoryId) {
     throw taskPlanRepairError(
       `Task state story_id is required for PR prepare: ${storyId}`,
-      taskStatePath
+      taskStatePath,
+      null,
+      rerunCommand
     );
   }
   if (taskStateStoryId !== storyId) {
     throw taskPlanRepairError(
       `Task state story mismatch for PR prepare: expected ${storyId}, received ${taskStateStoryId}`,
-      taskStatePath
+      taskStatePath,
+      null,
+      rerunCommand
     );
   }
   if (!Array.isArray(taskState.tasks)) {
     throw taskPlanRepairError(
       'Invalid Task state schema for PR prepare: tasks must be an array',
-      taskStatePath
+      taskStatePath,
+      null,
+      rerunCommand
     );
   }
   if (taskState.tasks.some((item) => (
@@ -15714,18 +15736,22 @@ async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
   ))) {
     throw taskPlanRepairError(
       'Invalid Task state schema for PR prepare: tasks must contain objects with non-empty id values',
-      taskStatePath
+      taskStatePath,
+      null,
+      rerunCommand
     );
   }
   const task = taskState.tasks.find((item) => item.id === taskId);
   if (!task) {
-    throw taskPlanRepairError(`Task not found for PR prepare: ${taskId}`, taskStatePath);
+    throw taskPlanRepairError(`Task not found for PR prepare: ${taskId}`, taskStatePath, null, rerunCommand);
   }
   const targetGroups = task.target_groups ?? [];
   if (!Array.isArray(targetGroups)) {
     throw taskPlanRepairError(
       'Invalid Task state schema for PR prepare: target_groups must be an array',
-      taskStatePath
+      taskStatePath,
+      null,
+      rerunCommand
     );
   }
   if (targetGroups.some((item) => (
@@ -15737,19 +15763,23 @@ async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
   ))) {
     throw taskPlanRepairError(
       'Invalid Task state schema for PR prepare: target_groups must contain objects with non-empty id values',
-      taskStatePath
+      taskStatePath,
+      null,
+      rerunCommand
     );
   }
   const typedGroupInspection = inspectTypedTaskGroups(targetGroups);
   if (typedGroupInspection.mode === 'invalid') {
     throw taskPlanRepairError(
       `Invalid typed Task target_groups schema for PR prepare: ${typedGroupInspection.reason_code}`,
-      taskStatePath
+      taskStatePath,
+      null,
+      rerunCommand
     );
   }
   const group = groupId ? targetGroups.find((item) => item.id === groupId) : null;
   if (groupId && !group) {
-    throw taskPlanRepairError(`Target group not found for PR prepare: ${groupId}`, taskStatePath);
+    throw taskPlanRepairError(`Target group not found for PR prepare: ${groupId}`, taskStatePath, null, rerunCommand);
   }
   const artifacts = resolveTaskArtifacts(repoRoot, storyId, taskId, groupId);
   return {
@@ -15762,7 +15792,7 @@ async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
   };
 }
 
-async function readTaskState(repoRoot, storyId) {
+async function readTaskState(repoRoot, storyId, rerunCommand = null) {
   const taskPath = await resolvePrTaskStatePath(repoRoot, storyId);
   const relativePath = toWorkspaceRelative(repoRoot, taskPath);
   try {
@@ -15772,20 +15802,23 @@ async function readTaskState(repoRoot, storyId) {
     };
   } catch (error) {
     if (error.code === 'ENOENT') {
-      throw taskPlanRepairError('Task state not found for PR prepare', relativePath);
+      throw taskPlanRepairError('Task state not found for PR prepare', relativePath, null, rerunCommand);
     }
     throw taskPlanRepairError(
       'Invalid Task state JSON for PR prepare',
       relativePath,
-      error.message
+      error.message,
+      rerunCommand
     );
   }
 }
 
-function taskPlanRepairError(detail, relativePath, cause = null) {
+function taskPlanRepairError(detail, relativePath, cause = null, rerunCommand = null) {
   return new Error(
     `${detail}: ${relativePath}. `
-    + `Repair the configured canonical Task plan and rerun vibepro pr prepare.`
+    + `Repair the configured canonical Task plan and rerun vibepro pr prepare`
+    + (rerunCommand ? ` with \`${rerunCommand}\`` : '')
+    + '.'
     + (cause ? ` Cause: ${cause}` : '')
   );
 }
