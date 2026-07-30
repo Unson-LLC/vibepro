@@ -26,17 +26,32 @@ status: accepted
 
 ## 判定基準（lint）
 
-e2eテストは最低でも次のいずれかを行っていなければならない。
+e2eテストは最低でも次の4 signalのいずれかを示していなければならない
+（正本は `.vibepro/spec/story-vibepro-vacuous-e2e-test-elimination/spec.json` の INV-002、
+実装は `scripts/lint-e2e-product-execution.mjs` の `PRODUCT_EXECUTION_SIGNALS`）。
 
-| capability | 判定に使うmodule specifier |
+| signal id | 判定内容 |
 |---|---|
-| 製品コードのimport | `src/` `bin/` `scripts/` を含むパス |
-| 子プロセス起動 | `child_process` / `node:child_process` |
-| ファイルシステムアクセス | `fs` / `node:fs` / `node:fs/promises` |
+| `product_import` | このrepository内部に解決されるmodule specifier（相対パス `./` `../`、`#` subpath、`@/` alias） |
+| `process_start` | 子プロセス起動またはCLI実行（`node:child_process` / `execFile` 系 / `spawn` 系 / `runCli` / `VIBEPRO_BIN`） |
+| `filesystem_access` | ファイルシステムの読み書き（`node:fs` / `fs/promises` / `readFile` `writeFile` `mkdtemp` 等） |
+| `browser_automation` | 実ブラウザ駆動（Playwright / Cypress / Puppeteer、`page.goto` `cy.visit` 等） |
 
-ESMではこの3つはいずれもimport/require無しには到達できないため、
-判定はmodule specifierだけで完結する。コメントは先に除去するので、
-コメントアウトされたimportはカバレッジとして数えない。
+`product_import` を「`src/` を含むパス」ではなく「repository内部に解決される任意のspecifier」と
+定義しているのは意図的である。共有helper経由・subpath import・path alias経由で製品コードへ
+到達するテストも製品挙動を実行しており、リテラル `../src/` を要求するとそれらを誤って落とす。
+本Storyが削除した17ファイルはいずれも `node:test` と `node:assert` しかimportしていないため、
+signalを広げてもすべて棄却される。
+
+### この判定が保証しないこと
+
+判定は生のファイルテキストに対する正規表現signal検出であり、
+JSON/ASTのparseもコメント除去も行わない。したがって
+**コメントアウトされたimportもsignalとして検出され、gateを通過させる**。
+これは既知かつ意図的なescape hatchであり、このlintがcoverageの証明ではなく
+構造的なtripwire（製品コードを一切実行しないファイルの再混入を止めるだけ）
+であることの裏返しである。未使用importを1行足すだけでも通過する。
+lintのpass数を behavioural coverage の証拠として読んではならない。
 
 ## 削除と書き換えの判定
 

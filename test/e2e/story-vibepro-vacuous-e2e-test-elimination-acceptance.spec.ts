@@ -258,7 +258,7 @@ test('story-vibepro-vacuous-e2e-test-elimination ac:4 S-002 the managed-worktree
   assert.match(source, /findAcceptedManagedWorktreeBypass/);
 });
 
-test('story-vibepro-vacuous-e2e-test-elimination ac:6 INV-003 the .spec.ts gate still fails closed on an empty spec set after the deletions', async () => {
+test('story-vibepro-vacuous-e2e-test-elimination ac:6 INV-001 the .spec.ts gate still fails closed on an empty spec set after the deletions', async () => {
   // Real call into the runner used by `npm run test:e2e:ts`.
   const specs = listE2eTsSpecs(repoRoot);
   assert.ok(specs.length > 0, 'the .spec.ts gate must not degrade into a silent no-op');
