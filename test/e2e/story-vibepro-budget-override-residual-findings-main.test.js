@@ -44,9 +44,11 @@ test('story-vibepro-budget-override-residual-findings acceptance coverage', () =
   // story-vibepro-budget-override-residual-findings ac:2 source comment no longer claims the fallback is the tighter budget
   assert.match(guardrail, /no direction is enforced/);
   assert.doesNotMatch(guardrail, /which is the tighter budget/);
-  // story-vibepro-budget-override-residual-findings ac:3 design root owns the six governed src surfaces
+  // story-vibepro-budget-override-residual-findings ac:3 design root declares its six governed src surfaces and gains a required architecture child link that reconciliation actually consumes
   const ownerRoot = ssot.design_roots.find((r) => r.id === 'vibepro-owner-gated-budget-override');
   assert.equal(ownerRoot.owned_surfaces.length, 6);
+  assert.ok(ownerRoot.required_child_kinds.includes('architecture'));
+  assert.equal(ownerRoot.child_links.filter((c) => c.required).length, 1);
   // story-vibepro-budget-override-residual-findings ac:4 runtime behavior unchanged: unauthorized override still falls back to base with applied=false
   const decision = resolveEfficiencyPolicyDecision({
     budgets: {

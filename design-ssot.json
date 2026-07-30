@@ -7401,7 +7401,9 @@
         "src/pr-manager.js budget_override_unauthorized efficiency debt",
         "src/cli.js decision record budget flags"
       ],
-      "required_child_kinds": [],
+      "required_child_kinds": [
+        "architecture"
+      ],
       "reconciliation_policy": {
         "root_only_change": "needs_review",
         "missing_required_child": "block",
@@ -7409,8 +7411,26 @@
         "stale_review_hash": "needs_review",
         "accepted_adr_supersession_conflict": "block"
       },
-      "children": {},
-      "child_links": [],
+      "children": {
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-owner-gated-budget-override.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-owner-gated-budget-override.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
       "source": "design-ssot.json"
     }
   ],

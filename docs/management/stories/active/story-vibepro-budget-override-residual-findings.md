@@ -53,8 +53,15 @@ delivery-efficiency-guardrail.js / pr-manager.js）の drift を検出できな�
   （base の方が緩い場合は緩くなる）が明示される。
 - BRF-S-2: src/delivery-efficiency-guardrail.js のソースコメントが同様に、
   base への fallback は方向を保証しないことを正確に述べる。
-- BRF-S-3: design-ssot.json の `vibepro-owner-gated-budget-override` root が
-  この Story の統治する src 6ファイルを `owned_surfaces` に持ち、
-  reconciliation が root 本文以外の drift を検出可能になる。
+- BRF-S-3: design-ssot.json の `vibepro-owner-gated-budget-override` root が、
+  (a) この Story の統治する src 6ファイルを `owned_surfaces` に宣言し、
+  (b) `docs/architecture/vibepro-owner-gated-budget-override.md` を required な
+  architecture child として `children` / `child_links` /
+  `required_child_kinds` に持つ。reconciliation は child_links を通じて
+  drift（missing_required_child / frontmatter_gap / stale_child_review）を
+  検出するため、child link の追加によって root は
+  `root_only_change: needs_review` しか返せない不活性状態から脱する
+  （owned_surfaces は reconciliation には読まれない宣言的メタデータであり、
+  統治対象の記録として登録する）。
 - BRF-S-4: override の実挙動（authority 判定・digest・grandfather・merge 順）は
   一切変更しない。既存テストが全て green のまま。

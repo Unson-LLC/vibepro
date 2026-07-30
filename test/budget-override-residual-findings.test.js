@@ -40,3 +40,14 @@ test('C-003: the owner-gated-budget-override design root owns its six governed s
     assert.ok(joined.includes(f), `owned_surfaces missing ${f}`);
   }
 });
+
+test('C-003: the design root has a required architecture child so reconciliation can detect drift', () => {
+  const ssot = JSON.parse(read('design-ssot.json'));
+  const ownerRoot = ssot.design_roots.find((r) => r.id === 'vibepro-owner-gated-budget-override');
+  assert.ok(ownerRoot.required_child_kinds.includes('architecture'));
+  const links = ownerRoot.child_links.filter((c) => c.kind === 'architecture' && c.required);
+  assert.equal(links.length, 1);
+  assert.equal(links[0].path, 'docs/architecture/vibepro-owner-gated-budget-override.md');
+  const child = read(links[0].path);
+  assert.match(child, /parent_design: vibepro-owner-gated-budget-override/);
+});
