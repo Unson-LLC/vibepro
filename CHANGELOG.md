@@ -11,9 +11,12 @@ All notable changes to VibePro will be documented in this file.
   identify the recording agent, and carry the `override_digest` VibePro computes
   from the override itself, so approving a budget approves specific numbers and a
   grant cannot be transplanted to another Story. An ungranted override falls back
-  to the base budget — the tighter one — and reports why, as `budget_override`
-  on `review authorize` / dispatch stops and as `budget_override_unauthorized`
-  efficiency debt in `pr prepare`. It never fails open.
+  to the base budget — regardless of direction — and reports why, as
+  `budget_override` on `review authorize` / dispatch stops and as
+  `budget_override_unauthorized` efficiency debt in `pr prepare`. Note that the
+  fallback is to the base policy as written, not to the stricter of the two: if
+  you used a Story override to *tighten* a limit below the base budget, the
+  ungranted override reverts to the looser base until you record the grant.
 
   **Upgrade action**: if your repository configures `delivery_efficiency_by_story`,
   the override stops applying on upgrade. Either record an approval with

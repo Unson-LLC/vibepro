@@ -7393,7 +7393,14 @@
       "status": "active",
       "authority_level": "design_root",
       "scope": null,
-      "owned_surfaces": [],
+      "owned_surfaces": [
+        "src/budget-override-authority.js",
+        "src/delivery-efficiency-guardrail.js",
+        "src/decision-records.js budget grant fields",
+        "src/agent-review.js budget override stops",
+        "src/pr-manager.js budget_override_unauthorized efficiency debt",
+        "src/cli.js decision record budget flags"
+      ],
       "required_child_kinds": [],
       "reconciliation_policy": {
         "root_only_change": "needs_review",

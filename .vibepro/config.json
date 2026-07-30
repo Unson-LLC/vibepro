@@ -453,6 +453,18 @@
   "brainbase": {
     "stories": [
       {
+        "story_id": "story-vibepro-budget-override-residual-findings",
+        "title": "owner-gated budget override の残余 low finding 2件（fallback 方向性の文書精度 / design root の空登録）を解消する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-30",
+        "due_at": null,
+        "category": "architecture"
+      },
+      {
         "story_id": "story-vibepro-owner-gated-budget-override",
         "title": "予算 override を「エージェントが書けば効く」から「人間の承認記録が無ければ効かない」へ変える",
         "ssot": "local",
@@ -1082,6 +1094,6 @@
         "category": "bugfix"
       }
     ],
-    "current_story_id": "story-vibepro-owner-gated-budget-override"
+    "current_story_id": "story-vibepro-budget-override-residual-findings"
   }
 }

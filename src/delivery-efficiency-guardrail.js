@@ -68,7 +68,8 @@ export function resolveEfficiencyPolicy(config = {}, storyId = null, context = {
 
 // A Story override only takes effect when an accepted decision record grants it
 // (CEA-S-4). An unauthorized override is inert rather than fatal: the base
-// policy applies, which is the tighter budget, and `override` carries the reason
+// policy applies as written — no direction is enforced, so a tightening
+// override also reverts to the base — and `override` carries the reason
 // so `pr prepare` and `review authorize` can show the human why the raise did
 // not land instead of silently honouring an agent's self-approval.
 export function resolveEfficiencyPolicyDecision(config = {}, storyId = null, context = {}) {
