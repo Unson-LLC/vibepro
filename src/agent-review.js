@@ -19,7 +19,6 @@ import {
   buildReviewDispatchDecision,
   evaluateDeliveryBudget,
   planLifecycleTerminalization,
-  resolveEfficiencyPolicy,
   resolveEfficiencyPolicyDecision,
   selectRiskAdaptiveReviewCoverage
 } from './delivery-efficiency-guardrail.js';

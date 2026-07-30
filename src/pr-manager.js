@@ -9,7 +9,6 @@ import { formatCounts } from './refactoring-delta-reporter.js';
 import {
   aggregateDeliveryMetrics,
   evaluateDeliveryBudget,
-  resolveEfficiencyPolicy,
   resolveEfficiencyPolicyDecision,
   summarizeEfficiencyDebt
 } from './delivery-efficiency-guardrail.js';

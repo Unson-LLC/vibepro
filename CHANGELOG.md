@@ -4,6 +4,33 @@ All notable changes to VibePro will be documented in this file.
 
 ## Unreleased
 
+- **Breaking (behavior)**: a Story-local delivery-efficiency budget override
+  (`budgets.delivery_efficiency_by_story.<story-id>` in `.vibepro/config.json`) is
+  now inert unless an accepted decision record grants it. Writing
+  `amendment_reason` is no longer sufficient: the grant must name a human grantor,
+  identify the recording agent, and carry the `override_digest` VibePro computes
+  from the override itself, so approving a budget approves specific numbers and a
+  grant cannot be transplanted to another Story. An ungranted override falls back
+  to the base budget — the tighter one — and reports why, as `budget_override`
+  on `review authorize` / dispatch stops and as `budget_override_unauthorized`
+  efficiency debt in `pr prepare`. It never fails open.
+
+  **Upgrade action**: if your repository configures `delivery_efficiency_by_story`,
+  the override stops applying on upgrade. Either record an approval with
+  `vibepro decision record --source budget:delivery_efficiency:<story-id>
+  --budget-grantor <human> --budget-grantor-kind human --agent-system <system>
+  --agent-id <id>` (the recording agent identity must differ from the grantor), or
+  accept the base budget. Overrides that predate this gate *inside this repository*
+  are grandfathered by content digest and keep working exactly as merged; editing
+  one changes its digest and drops it to `unauthorized`. Grandfathering does not
+  extend to consumer repositories.
+
+- Add `--budget-grantor`, `--budget-grantor-kind`, `--agent-system` and `--agent-id`
+  to `vibepro decision record` for recording a budget-override approval. All four are
+  required when the decision source is a `budget:delivery_efficiency:` grant, and a
+  grantor equal to the recording agent identity is rejected at write time: the
+  session that consumes a raised budget cannot also grant it.
+
 ## 0.2.0-beta.2 - 2026-07-29
 
 - Add `vibepro verify run`: VibePro executes the verification command itself (argv,
