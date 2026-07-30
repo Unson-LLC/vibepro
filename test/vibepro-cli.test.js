@@ -64,8 +64,8 @@ async function firstExistingReviewFixture(repo) {
   return null;
 }
 
-async function makeRepo() {
-  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-test-'));
+async function makeRepo(prefix = 'vibepro-test-') {
+  const root = await mkdtemp(path.join(os.tmpdir(), prefix));
   await writeFile(path.join(root, 'index.html'), '<!doctype html><title>Test</title>');
   return root;
 }
@@ -349,7 +349,7 @@ async function collectUntrackedFingerprint(repo) {
 }
 
 async function makeGitRepoWithStory(options = {}) {
-  const repo = await makeRepo();
+  const repo = await makeRepo(options.repoPrefix);
   await git(repo, ['init', '-b', 'main']);
   await git(repo, ['config', 'user.email', 'vibepro@example.com']);
   await git(repo, ['config', 'user.name', 'VibePro Test']);
@@ -8228,7 +8228,7 @@ test('brainbase import uses selected local story and excludes archived stories',
 });
 
 test('pr prepare writes PR artifacts for the selected story', async () => {
-  const repo = await makeGitRepoWithStory();
+  const repo = await makeGitRepoWithStory({ repoPrefix: "vibepro test's-" });
   await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'management', 'architecture'), { recursive: true });
   await mkdir(path.join(repo, 'docs', 'architecture'), { recursive: true });
@@ -8631,11 +8631,18 @@ Weighted semantic/layout residual: **34%**
   const validTaskState = await readJson(taskStatePath);
   await writeJson(taskStatePath, {
     ...validTaskState,
-    tasks: validTaskState.tasks.map((task) => ({ ...task, acceptance_criteria: [] }))
+    tasks: validTaskState.tasks.map((task) => task.id === 'TASK-001'
+      ? {
+          ...task,
+          acceptance_criteria: [],
+          target_groups: [{ id: 'group-one', type: 'file_set', targets: ['src/feature/pr-prepare.js'] }]
+        }
+      : task)
   });
   let emptyTaskCriteriaStderr = '';
   const emptyTaskCriteria = await runCli([
-    'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001'
+    'pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare',
+    '--task', 'TASK-001', '--group', 'group-one'
   ], {
     stderr: { write: (text) => { emptyTaskCriteriaStderr += text; } }
   });
@@ -8643,6 +8650,10 @@ Weighted semantic/layout residual: **34%**
   assert.match(emptyTaskCriteriaStderr, /Task acceptance criteria are required for PR prepare: TASK-001/);
   assert.match(emptyTaskCriteriaStderr, /\.vibepro\/stories\/story-pr-prepare\/tasks\/tasks\.json/);
   assert.match(emptyTaskCriteriaStderr, /Repair the configured canonical Task plan and rerun vibepro pr prepare/);
+  const quotedRepo = `'${repo.replaceAll("'", "'\\''")}'`;
+  assert.ok(emptyTaskCriteriaStderr.includes(
+    `vibepro pr prepare ${quotedRepo} --story-id story-pr-prepare --task TASK-001 --group group-one`
+  ));
   await writeJson(taskStatePath, validTaskState);
 
   await writeJson(taskStatePath, {

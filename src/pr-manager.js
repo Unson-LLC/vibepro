@@ -15787,6 +15787,7 @@ async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
     task,
     group,
     task_state_path: taskStatePath,
+    rerun_command: rerunCommand,
     source_run: taskState.source_run ?? null,
     artifacts: await filterExistingArtifacts(repoRoot, artifacts)
   };
@@ -15848,7 +15849,9 @@ function buildAcceptanceScope(story, storySource, taskContext) {
   if (acceptanceCriteria.length === 0) {
     throw taskPlanRepairError(
       `Task acceptance criteria are required for PR prepare: ${taskContext.task?.id ?? 'unknown task'}`,
-      taskContext.task_state_path
+      taskContext.task_state_path,
+      null,
+      taskContext.rerun_command
     );
   }
   return {
