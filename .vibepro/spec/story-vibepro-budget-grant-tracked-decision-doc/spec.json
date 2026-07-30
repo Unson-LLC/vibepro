@@ -1,0 +1,172 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+  "generated_by": {
+    "caller": "unknown",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "Every decision record that mints a budget_approval must also write a tracked decision document under docs/management/decisions/ with frontmatter type budget_override_approval, and record that document's repo-relative path as budget_approval.decision_doc, so the grantor, override digest, and timestamp of an owner grant are reviewable in the PR diff.",
+      "rationale": "The workspace decision store (.vibepro/pr/) is gitignored; a grant recorded only there never reaches the reviewer, silently superseding the repository's tracked budget_override_approval channel.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "tracked decision document"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/decision-records.js",
+            "anchor": "writeBudgetApprovalDoc"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/decision-records.test.js",
+            "case": "BGT-S-1/S-2 a budget grant writes a tracked decision document cross-referenced from budget_approval"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/decision-records.js",
+            "must_contain": "decision_doc"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/decision-records.test.js",
+            "must_cover": "tracked decision document cross-referenced from budget_approval"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:52:49.040Z",
+      "last_revised_at": "2026-07-30T10:52:49.040Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "When the tracked decision document path is gitignored, recording the budget grant must fail before the workspace decision store is written; a budget grant must never fall back silently to the untracked channel alone.",
+      "rationale": "Fail-closed on the reviewability channel: an environment whose .gitignore swallows docs/management/decisions/ would otherwise reproduce the original finding invisibly.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "gitignore"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/decision-records.js",
+            "anchor": "check-ignore"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/decision-records.test.js",
+            "case": "BGT-S-3 a budget grant fails when the tracked document path is gitignored"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/decision-records.js",
+            "must_contain": "check-ignore"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/decision-records.test.js",
+            "must_cover": "fails when the tracked document path is gitignored"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:52:49.040Z",
+      "last_revised_at": "2026-07-30T10:52:49.040Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Re-recording a grant for the same story and unchanged override content overwrites the same document path deterministically, while a grant over changed override content produces a new file whose name embeds the new digest prefix, so a changed budget appears in the diff as a new file rather than an easily-missed edit.",
+      "rationale": "The filename digest makes budget changes structurally visible in review.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "digest"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/decision-records.js",
+            "anchor": "override_digest.slice(0, 8)"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/decision-records.test.js",
+            "case": "BGT-S-5 same digest overwrites the same document; a changed budget produces a new file"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/decision-records.test.js",
+            "must_cover": "a changed budget produces a new file"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:52:49.040Z",
+      "last_revised_at": "2026-07-30T10:52:49.040Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "A decision record without a budget grant writes no document and its output shape is unchanged; resolveBudgetOverrideAuthority does not inspect decision_doc, so existing grants and grandfathered overrides resolve exactly as before.",
+      "rationale": "The change adds a reviewability channel without touching enforcement semantics.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "従来と同一"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/decision-records.js",
+            "anchor": "if (budgetApproval)"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/decision-records.test.js",
+            "case": "BGT-S-4 a decision without a budget grant writes no tracked document"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/decision-records.test.js",
+            "must_cover": "writes no tracked document"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:52:49.040Z",
+      "last_revised_at": "2026-07-30T10:52:49.040Z"
+    }
+  ],
+  "generated_at": "2026-07-30T10:52:49.038Z",
+  "previous_spec_id": null
+}
