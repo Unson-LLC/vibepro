@@ -55,24 +55,31 @@ test('resolveDurableStoreRoot points a linked worktree at the main checkout', as
 
 test('records survive worktree deletion via snapshot then hydrate into a regenerated worktree', async () => {
   const { main, worktree } = await makeRepoWithWorktree();
+  // Paths mirror the real VibePro writers: agent-review (reviews/), adjudication.js
+  // (adjudication/ singular), execution-state (verification/), spec store, executions
+  // decisions, and artifact-routing's pr/<story>/ verification + decision ledgers.
   await writeRecord(worktree, `reviews/${STORY}/round-1/architect.json`, '{"status":"block"}\n');
-  await writeRecord(worktree, `adjudications/${STORY}/verdicts.json`, '{"verdicts":20}\n');
+  await writeRecord(worktree, `adjudication/${STORY}/adjudication.json`, '{"verdicts":20}\n');
   await writeRecord(worktree, `verification/${STORY}/unit.json`, '{"status":"pass"}\n');
   await writeRecord(worktree, `spec/${STORY}/spec.json`, '{"clauses":[]}\n');
   await writeRecord(worktree, `executions/${STORY}/runs/r1/decisions/d1.json`, '{"decision":"block"}\n');
+  await writeRecord(worktree, `pr/${STORY}/verification-evidence.json`, '{"commands":[]}\n');
+  await writeRecord(worktree, `pr/${STORY}/decision-outcome-ledger.json`, '{"entries":[]}\n');
 
   const snap = await snapshotProcessRecords({ repoRoot: worktree, storyId: STORY });
   assert.equal(snap.status, 'ok');
-  assert.equal(snap.copied.length, 5);
+  assert.equal(snap.copied.length, 7);
 
   // Simulate the incident: the worktree (and everything under .vibepro) vanishes.
   await rm(path.join(worktree, '.vibepro'), { recursive: true, force: true });
 
   const hydrate = await hydrateProcessRecords({ repoRoot: worktree, storyId: STORY });
   assert.equal(hydrate.status, 'ok');
-  assert.equal(hydrate.copied.length, 5);
+  assert.equal(hydrate.copied.length, 7);
   const restored = await readFile(path.join(worktree, '.vibepro', 'reviews', STORY, 'round-1', 'architect.json'), 'utf8');
   assert.equal(restored, '{"status":"block"}\n');
+  const restoredEvidence = await readFile(path.join(worktree, '.vibepro', 'pr', STORY, 'verification-evidence.json'), 'utf8');
+  assert.equal(restoredEvidence, '{"commands":[]}\n');
   assert.ok(hydrate.store_root.startsWith(path.join(main, '.vibepro-store')));
 });
 
@@ -112,16 +119,50 @@ test('gate-outcome ledger hydration unions entries so a cleared local ledger can
   assert.deepEqual(keys, ['other-1', 'trip-1']);
 });
 
-test('store status reports missing and stale counts across local and store', async () => {
-  const { worktree } = await makeRepoWithWorktree();
+test('store status reports missing, stale, and conflict counts across local and store', async () => {
+  const { main, worktree } = await makeRepoWithWorktree();
   await writeRecord(worktree, `reviews/${STORY}/a.json`, '1\n');
+  await writeRecord(worktree, `reviews/${STORY}/stale-store.json`, 'v1\n');
+  await writeRecord(worktree, `reviews/${STORY}/stale-local.json`, 'v1\n');
   await snapshotProcessRecords({ repoRoot: worktree, storyId: STORY });
   await writeRecord(worktree, `reviews/${STORY}/b.json`, '2\n');
+  // Local advanced after snapshot -> store copy is stale.
+  const staleStore = path.join(worktree, '.vibepro', 'reviews', STORY, 'stale-store.json');
+  await writeFile(staleStore, 'v2\n');
+  const future = new Date(Date.now() + 5000);
+  await utimes(staleStore, future, future);
+  // Store advanced after snapshot -> local copy is stale.
+  const staleLocalStore = path.join(main, '.vibepro-store', STORY, 'reviews', STORY, 'stale-local.json');
+  await writeFile(staleLocalStore, 'v2\n');
+  await utimes(staleLocalStore, future, future);
   const status = await processRecordStoreStatus({ repoRoot: worktree, storyId: STORY });
   assert.equal(status.status, 'ok');
   assert.equal(status.in_sync, 1);
   assert.equal(status.missing_in_store, 1);
   assert.equal(status.missing_in_local, 0);
+  assert.equal(status.stale_in_store, 1);
+  assert.equal(status.stale_in_local, 1);
+  assert.equal(status.conflicts, 0);
+});
+
+test('unmergeable gate-outcome ledgers surface as conflicts instead of silently keeping the clear local ledger', async () => {
+  const { worktree } = await makeRepoWithWorktree();
+  await writeRecord(worktree, 'gate-outcomes/ledger.json', JSON.stringify({
+    schema_version: '0.1.0', model: 'vibepro-gate-outcome-ledger-v3',
+    entries: [{ entry_key: 'trip-1', story_id: STORY, resolved_status: 'block' }]
+  }));
+  await snapshotProcessRecords({ repoRoot: worktree, storyId: STORY });
+  // Regenerated worktree carries a ledger from a different schema generation.
+  await writeRecord(worktree, 'gate-outcomes/ledger.json', JSON.stringify({
+    schema_version: '0.2.0', model: 'vibepro-gate-outcome-ledger-v4', entries: []
+  }));
+  const hydrate = await hydrateProcessRecords({ repoRoot: worktree, storyId: STORY });
+  assert.deepEqual(hydrate.conflicts, [path.join('gate-outcomes', 'ledger.json')]);
+  const status = await processRecordStoreStatus({ repoRoot: worktree, storyId: STORY });
+  assert.equal(status.conflicts, 1);
+  const warnings = [];
+  await snapshotProcessRecordsFailSoft({ repoRoot: worktree, storyId: STORY, logger: { warn: (m) => warnings.push(m) } });
+  assert.ok(warnings.some((m) => m.includes('unmergeable ledger conflict')));
 });
 
 test('snapshot rejects unsafe story ids and the fail-soft wrapper never throws', async () => {

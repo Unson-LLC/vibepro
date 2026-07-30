@@ -35,9 +35,9 @@ reason: >
 ## 受け入れ基準
 
 - worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。
-- `vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（`reviews/` `adjudications/` `verification/` `spec/` `gate-outcomes/` `evidence/` `executions/<id>/**/decisions/`）を安定ストアへミラーできる。
+- `vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（実writerのディレクトリに一致する `reviews/` `adjudication/` `verification/` `spec/` `evidence/` `executions/` `pr/`（verification-evidence・verification-runs・decision-records・decision-outcome-ledger を含む）と `gate-outcomes/ledger.json`）を安定ストアへミラーできる。
 - `vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。
-- block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。
+- block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。schema/model 不一致や破損で union できない ledger は silent skip せず conflict として表面化する。
 - `vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。
 - mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。
 - store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。

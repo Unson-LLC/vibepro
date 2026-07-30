@@ -7,13 +7,20 @@ import { isSafeStoryId } from './story-id.js';
 // Process records whose loss caused the 2026-07-30 fail-open incidents:
 // reviews, adjudications, verification evidence, spec, decision records under
 // executions, evidence observations, and the gate-outcome ledger (trip state).
+// Class names must match the directories real VibePro writers use:
+// reviews/<story> (agent-review), adjudication/<story> (adjudication.js),
+// verification/<story> (execution-state), spec/<story> (spec-store),
+// evidence/<story>, executions/<story> (runs + decisions), and
+// pr/<story> (verification-evidence.json, verification-runs/,
+// decision-outcome-ledger.json via artifact-routing).
 export const STORY_SCOPED_RECORD_CLASSES = Object.freeze([
   'reviews',
-  'adjudications',
+  'adjudication',
   'verification',
   'spec',
   'evidence',
-  'executions'
+  'executions',
+  'pr'
 ]);
 export const REPO_SCOPED_RECORD_FILES = Object.freeze([
   path.join('gate-outcomes', 'ledger.json')
@@ -95,6 +102,7 @@ export async function processRecordStoreStatus({ repoRoot, storyId }) {
     missing_in_local: 0,
     stale_in_store: 0,
     stale_in_local: 0,
+    conflicts: 0,
     in_sync: 0
   };
   const all = new Set([...localFiles.keys(), ...storeFiles.keys()]);
@@ -103,7 +111,10 @@ export async function processRecordStoreStatus({ repoRoot, storyId }) {
     const stored = storeFiles.get(rel);
     if (!stored) summary.missing_in_store += 1;
     else if (!local) summary.missing_in_local += 1;
-    else if (isNewer(local, stored)) summary.stale_in_store += 1;
+    else if (rel === GATE_OUTCOME_LEDGER_RELATIVE
+      && !(await ledgersAreMergeable(path.join(context.localRoot, rel), path.join(context.storeRoot, rel)))) {
+      summary.conflicts += 1;
+    } else if (isNewer(local, stored)) summary.stale_in_store += 1;
     else if (isNewer(stored, local)) summary.stale_in_local += 1;
     else summary.in_sync += 1;
   }
@@ -120,6 +131,8 @@ export async function snapshotProcessRecordsFailSoft({ repoRoot, storyId, logger
     const result = await snapshotProcessRecords({ repoRoot, storyId });
     if (result.status === 'failed') {
       logger.warn?.(`[vibepro] process-record snapshot failed (records remain local only): ${result.reason}`);
+    } else if (result.conflicts?.length) {
+      logger.warn?.(`[vibepro] process-record snapshot left unmergeable ledger conflict(s): ${result.conflicts.join(', ')} — resolve with vibepro store status/hydrate`);
     }
     return result;
   } catch (error) {
@@ -154,6 +167,7 @@ async function transferProcessRecords({ repoRoot, storyId, direction }) {
     copied: [],
     skipped_newer_destination: [],
     merged: [],
+    conflicts: [],
     unchanged: 0
   };
   for (const [rel, sourceInfo] of fromFiles) {
@@ -163,6 +177,7 @@ async function transferProcessRecords({ repoRoot, storyId, direction }) {
     if (destInfo && rel === GATE_OUTCOME_LEDGER_RELATIVE) {
       const merged = await mergeGateOutcomeLedgerFiles(sourcePath, destPath);
       if (merged === 'merged') summary.merged.push(rel);
+      else if (merged === 'unmergeable') summary.conflicts.push(rel);
       else summary.unchanged += 1;
       continue;
     }
@@ -197,10 +212,13 @@ async function mergeGateOutcomeLedgerFiles(sourcePath, destPath) {
     source = JSON.parse(await readFile(sourcePath, 'utf8'));
     dest = JSON.parse(await readFile(destPath, 'utf8'));
   } catch {
-    return 'unchanged';
+    // A ledger that cannot be parsed cannot be safely unioned; surface it as a
+    // conflict instead of silently keeping the destination (which would turn
+    // fail-closed into fail-open exactly on the state this store protects).
+    return 'unmergeable';
   }
-  if (!Array.isArray(source?.entries) || !Array.isArray(dest?.entries)) return 'unchanged';
-  if (source.schema_version !== dest.schema_version || source.model !== dest.model) return 'unchanged';
+  if (!Array.isArray(source?.entries) || !Array.isArray(dest?.entries)) return 'unmergeable';
+  if (source.schema_version !== dest.schema_version || source.model !== dest.model) return 'unmergeable';
   const byKey = new Map();
   for (const entry of [...dest.entries, ...source.entries]) {
     const key = typeof entry?.entry_key === 'string' ? entry.entry_key : JSON.stringify(entry);
@@ -210,6 +228,18 @@ async function mergeGateOutcomeLedgerFiles(sourcePath, destPath) {
   const merged = { ...dest, entries: [...byKey.values()] };
   await writeFile(destPath, `${JSON.stringify(merged, null, 2)}\n`);
   return 'merged';
+}
+
+async function ledgersAreMergeable(localPath, storePath) {
+  let local, stored;
+  try {
+    local = JSON.parse(await readFile(localPath, 'utf8'));
+    stored = JSON.parse(await readFile(storePath, 'utf8'));
+  } catch {
+    return false;
+  }
+  return Array.isArray(local?.entries) && Array.isArray(stored?.entries)
+    && local.schema_version === stored.schema_version && local.model === stored.model;
 }
 
 async function collectDurableFiles(baseRoot, storyId) {

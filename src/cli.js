@@ -4294,10 +4294,11 @@ function renderProcessRecordStoreResult(subcommand, result) {
       `missing in store: ${result.missing_in_store}`,
       `missing in local: ${result.missing_in_local}`,
       `stale in store: ${result.stale_in_store}`,
-      `stale in local: ${result.stale_in_local}`
+      `stale in local: ${result.stale_in_local}`,
+      `conflicts: ${result.conflicts}`
     );
   } else {
-    lines.push(`copied: ${result.copied.length}`, `merged: ${result.merged.length}`, `skipped (newer destination): ${result.skipped_newer_destination.length}`);
+    lines.push(`copied: ${result.copied.length}`, `merged: ${result.merged.length}`, `conflicts: ${result.conflicts.length}`, `skipped (newer destination): ${result.skipped_newer_destination.length}`);
   }
   return `${lines.join('\n')}\n`;
 }
