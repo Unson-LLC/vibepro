@@ -32,7 +32,7 @@ test('story-vibepro-process-record-worktree-durability S-001 snapshot mirrors st
     { clause: 'AC-2', pattern: /records survive worktree deletion via snapshot then hydrate into a regenerated worktree/ },
     { clause: 'AC-3', pattern: /hydrate never overwrites a newer local record and never deletes local files/ },
     { clause: 'AC-4', pattern: /gate-outcome ledger hydration unions entries so a cleared local ledger cannot erase a recorded trip/ },
-    { clause: 'AC-5', pattern: /store status reports missing and stale counts across local and store/ },
+    { clause: 'AC-5', pattern: /store status reports missing, stale, and conflict counts across local and store/ },
     { clause: 'AC-2 full CLI incident replay', pattern: /worktree loss e2e: CLI snapshot, worktree wipe, hydrate restores records and trip state/ }
   ]) assert.match(result.stdout, scenario.pattern, `${scenario.clause} executable replay`);
 });
