@@ -1,0 +1,10 @@
+✔ story-vibepro-process-record-worktree-durability S-001 snapshot mirrors story-scoped durable record classes to the store, and hydrate restores them into a regenerated worktree. (AC-1 AC-2 AC-3 AC-4 AC-5) (3285.164417ms)
+✔ story-vibepro-process-record-worktree-durability S-002 Mutating CLI commands (verify, review, adjudicate record, spec write, pr prepare, decision record) trigger a fail-soft auto-snapshot that never fails the producing command. (AC-6 AC-7) (3400.466125ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6841.838666

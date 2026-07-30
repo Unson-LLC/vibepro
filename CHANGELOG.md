@@ -1216,3 +1216,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-session-cost
 なし
 
 <!-- vibepro-release-pr:399:end -->
+
+<!-- vibepro-release-pr:403:start -->
+## [#403](https://github.com/Unson-LLC/vibepro/pull/403) story-vibepro-process-record-worktree-durability - プロセス記録をworktreeライフサイクルから切り離して永続化する
+
+- Author: @sintariran
+- Merged: 2026-07-30T13:18:00Z
+- Commit: `0d89fd8819654684ddecc61738a8ae31224be6b3`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-process-record-worktree-durability.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-process-record-worktree-durability.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:403:end -->
