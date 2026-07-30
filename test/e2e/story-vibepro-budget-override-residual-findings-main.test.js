@@ -33,6 +33,31 @@ test('S: an ungranted tightening override reverts to the looser base, as the rew
   assert.doesNotMatch(changelog, /It never fails open/);
 });
 
+test('story-vibepro-budget-override-residual-findings acceptance coverage', () => {
+  const changelog = readFileSync(path.join(root, 'CHANGELOG.md'), 'utf8');
+  const guardrail = readFileSync(path.join(root, 'src/delivery-efficiency-guardrail.js'), 'utf8');
+  const ssot = JSON.parse(readFileSync(path.join(root, 'design-ssot.json'), 'utf8'));
+  // story-vibepro-budget-override-residual-findings ac:1 CHANGELOG states the fallback is to base regardless of direction and warns tightening consumers
+  assert.match(changelog, /regardless of direction/);
+  assert.match(changelog, /reverts to the looser base/);
+  assert.doesNotMatch(changelog, /It never fails open/);
+  // story-vibepro-budget-override-residual-findings ac:2 source comment no longer claims the fallback is the tighter budget
+  assert.match(guardrail, /no direction is enforced/);
+  assert.doesNotMatch(guardrail, /which is the tighter budget/);
+  // story-vibepro-budget-override-residual-findings ac:3 design root owns the six governed src surfaces
+  const ownerRoot = ssot.design_roots.find((r) => r.id === 'vibepro-owner-gated-budget-override');
+  assert.equal(ownerRoot.owned_surfaces.length, 6);
+  // story-vibepro-budget-override-residual-findings ac:4 runtime behavior unchanged: unauthorized override still falls back to base with applied=false
+  const decision = resolveEfficiencyPolicyDecision({
+    budgets: {
+      delivery_efficiency: { max_commits: 40 },
+      delivery_efficiency_by_story: { 'story-y': { amendment_reason: 'raise', max_commits: 90 } }
+    }
+  }, 'story-y', { decisions: [] });
+  assert.equal(decision.override.applied, false);
+  assert.equal(decision.policy.max_commits, 40);
+});
+
 test('S: the design root registers the guardrail surface so reconciliation sees this file family', () => {
   const ssot = JSON.parse(readFileSync(path.join(root, 'design-ssot.json'), 'utf8'));
   const ownerRoot = ssot.design_roots.find((r) => r.id === 'vibepro-owner-gated-budget-override');
