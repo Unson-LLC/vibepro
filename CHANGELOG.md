@@ -1183,3 +1183,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-task-atomic-
 なし
 
 <!-- vibepro-release-pr:404:end -->
+
+<!-- vibepro-release-pr:405:start -->
+## [#405](https://github.com/Unson-LLC/vibepro/pull/405) fix: recover terminal review replacement lifecycle
+
+- Author: @sintariran
+- Merged: 2026-07-31T10:15:29Z
+- Commit: `31d84833cd2059843593169cc6d7aa3d804a3f07`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:405:end -->
