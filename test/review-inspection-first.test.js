@@ -715,6 +715,63 @@ test('delivery efficiency lifecycle collects a completed result after explicit c
   assert.equal(lifecycle.entries[0].result_status, 'pass');
 });
 
+test('delivery efficiency manual shutdown requires fresh authorization and latest replacement lineage', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    budgets: { delivery_efficiency: { max_subagent_count: 2 } }
+  }));
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  const originalAuthorization = await authorizeAgentReviewDispatch(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    reviewKind: 'preflight',
+    closesRisks: ['manual shutdown recovery'],
+    expectedJudgmentDelta: 'Identify recovery gaps before replacement.'
+  });
+  const original = await startAgentReviewLifecycle(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    agentSystem: 'codex',
+    agentId: 'original-agent',
+    dispatchAuthorization: originalAuthorization.authorization.authorization_id
+  });
+  await closeAgentReviewLifecycle(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    lifecycleId: original.lifecycle.lifecycle_id,
+    closeReason: 'manual_shutdown',
+    closeEvidence: 'provider agent shutdown confirmed',
+    cancellationConfirmed: true
+  });
+
+  const replacementAuthorization = await authorizeAgentReviewDispatch(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    reviewKind: 'preflight',
+    closesRisks: ['manual shutdown recovery'],
+    expectedJudgmentDelta: 'Confirm replacement preserves authorization and lineage.'
+  });
+  const replacement = await startAgentReviewLifecycle(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    agentSystem: 'codex',
+    agentId: 'replacement-agent',
+    dispatchAuthorization: replacementAuthorization.authorization.authorization_id,
+    replacementFor: original.lifecycle.lifecycle_id
+  });
+
+  assert.equal(
+    replacement.lifecycle.dispatch_authorization_id,
+    replacementAuthorization.authorization.authorization_id
+  );
+  assert.equal(replacement.lifecycle.replacement_for, original.lifecycle.lifecycle_id);
+});
+
 test('review record persists no result after timeout, replacement, or manual shutdown', async () => {
   for (const closeReason of ['timeout', 'replaced', 'manual_shutdown']) {
     const root = await setupRepo();
