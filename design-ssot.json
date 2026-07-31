@@ -7487,6 +7487,72 @@
       "source": "design-ssot.json"
     },
     {
+      "id": "vibepro-review-replacement-recovery",
+      "title": "Agent Review Replacement Recovery",
+      "root_doc": "docs/architecture/story-vibepro-review-replacement-recovery.md",
+      "owner": "codex",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "Terminal Agent Review lifecycle normalization and replacement authorization recovery",
+      "owned_surfaces": [
+        "Agent Review dispatch lifecycle normalization",
+        "delivery efficiency duplicate-dispatch decision",
+        "terminal review replacement authorization",
+        "review status next-action recovery commands",
+        "review repair recovery commands",
+        "PR recovery commands",
+        "bilingual parallel-dispatch coordinator recovery instructions"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-review-replacement-recovery.md",
+            "required": true,
+            "relationship": "defines",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-review-replacement-recovery.md",
+            "required": true,
+            "relationship": "specifies",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-review-replacement-recovery.md",
+          "required": true,
+          "relationship": "defines",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-review-replacement-recovery.md",
+          "required": true,
+          "relationship": "specifies",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
       "id": "vibepro-task-atomic-repo-control-contract",
       "title": "Task-bound Atomic Repo-control Contract",
       "root_doc": "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
