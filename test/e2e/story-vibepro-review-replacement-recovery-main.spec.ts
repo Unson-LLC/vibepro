@@ -9,14 +9,21 @@ const execFileAsync = promisify(execFile);
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const storyId = 'story-vibepro-review-replacement-recovery';
 const expectedNestedTests = [
+  'review authorize prevents spawn before evidence, freeze, Story-wide budget, and idempotency checks',
+  'HEAD mutation remains orphaned until explicit cancellation confirmation persists obsolete',
+  'parallel dispatch record command and prompt include inspection fields',
+  'Japanese parallel dispatch authorizes terminal replacement before spawn',
   'delivery efficiency manual shutdown requires fresh authorization and latest replacement lineage',
   'unknown or missing close reason never infers a collected result',
   'completed and terminal close reasons preserve correction and replacement boundaries',
+  'review record persists no result after timeout, replacement, or manual shutdown',
   'terminal review close reasons require explicit latest-lineage replacement',
+  'review status emits authorize-first replacement for every terminal close reason',
   'review status authorizes before terminal replacement and only emits actions for the latest lifecycle per role',
   'emitted repair chain executes with one replacement lifecycle identity',
   'review repair replaces every already-closed terminal lifecycle without closing it again',
-  'pr prepare routes every already-closed terminal lifecycle through replacement recovery'
+  'pr prepare routes every already-closed terminal lifecycle through replacement recovery',
+  'review replacement lifecycle enforces same-role lineage and prior closure evidence'
 ];
 
 test('VRR-E2E-001 replays terminal replacement and fail-closed recovery artifacts', async () => {
@@ -53,6 +60,16 @@ test('VRR-E2E-001 replays terminal replacement and fail-closed recovery artifact
     tap,
     /unknown or missing close reason never infers a collected result/,
     `${storyId} S-002 ac:1 ac:2 ac:3 ac:5 ac:6 ac:8 negative path must fail closed`
+  );
+  assert.match(
+    tap,
+    /review authorize prevents spawn before evidence, freeze, Story-wide budget, and idempotency checks/,
+    `${storyId} S-002 ac:1 ac:2 ac:3 ac:5 ac:6 ac:8 budget exhaustion must fail closed before replacement dispatch`
+  );
+  assert.match(
+    tap,
+    /HEAD mutation remains orphaned until explicit cancellation confirmation persists obsolete/,
+    `${storyId} S-002 ac:1 ac:2 ac:3 ac:5 ac:6 ac:8 stale HEAD cancellation must remain unconfirmed until durable evidence exists`
   );
   assert.match(
     tap,
