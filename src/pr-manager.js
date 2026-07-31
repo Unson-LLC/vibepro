@@ -12145,13 +12145,13 @@ function buildAgentReviewDispatchPreflight(stage, role) {
       reason: `A ${stage}:${role.role} review lifecycle timed out; close it and record replacement evidence before starting a new dispatch batch`
     };
   }
-  if (lifecycle.effective_status === 'manual_shutdown' || latestCloseReason === 'manual_shutdown') {
+  if (['timeout', 'replaced', 'manual_shutdown'].includes(latestCloseReason)) {
     return {
       id: preflightId,
       role: role.role,
       status: 'needs_review',
       kind: 'lifecycle_recovery',
-      reason: `A ${stage}:${role.role} review lifecycle ended with manual_shutdown; record closure/replacement intent before re-dispatching`
+      reason: `A ${stage}:${role.role} review lifecycle ended with ${latestCloseReason}; preserve replacement lineage and authorize before re-dispatching`
     };
   }
   if (role.effective_status === 'pass') {
@@ -14032,8 +14032,9 @@ function mergeAgentReviewRecoveryDetails(primary, secondary) {
 
 function buildAgentReviewRecoveryItem(item, role, storyId) {
   const lifecycle = role?.lifecycle ?? null;
-  const lifecycleStatus = lifecycle?.latest?.close_reason === 'manual_shutdown'
-    ? 'manual_shutdown'
+  const latestCloseReason = lifecycle?.latest?.close_reason ?? null;
+  const lifecycleStatus = ['timeout', 'replaced', 'manual_shutdown'].includes(latestCloseReason)
+    ? (latestCloseReason === 'timeout' ? 'timed_out' : latestCloseReason)
     : lifecycle?.effective_status ?? lifecycle?.latest?.effective_status ?? null;
   const recoveryKind = classifyAgentReviewRecoveryKind(item, role, lifecycleStatus);
   const lifecycleRecovery = buildAgentReviewLifecycleRecovery({
@@ -14064,6 +14065,7 @@ function buildAgentReviewRecoveryItem(item, role, storyId) {
 
 function classifyAgentReviewRecoveryKind(item, role, lifecycleStatus) {
   if (lifecycleStatus === 'timed_out' || item.status === 'timed_out') return 'timed_out';
+  if (lifecycleStatus === 'replaced' || item.status === 'replaced') return 'replaced';
   if (lifecycleStatus === 'manual_shutdown' || item.status === 'manual_shutdown') return 'manual_shutdown';
   if (lifecycleStatus === 'running' || item.status === 'running') return 'running';
   if (role?.stale || item.status === 'stale' || role?.effective_status === 'stale') return 'stale';
@@ -14075,6 +14077,7 @@ function classifyAgentReviewRecoveryKind(item, role, lifecycleStatus) {
 function recoveryPriority(kind) {
   return {
     timed_out: 60,
+    replaced: 58,
     manual_shutdown: 55,
     running: 50,
     stale: 40,
@@ -14085,7 +14088,8 @@ function recoveryPriority(kind) {
 
 function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, recoveryKind }) {
   const latest = lifecycle?.latest ?? null;
-  if (!latest && !['timed_out', 'manual_shutdown', 'running'].includes(recoveryKind)) return null;
+  const replacementKinds = ['timed_out', 'replaced', 'manual_shutdown', 'running'];
+  if (!latest && !replacementKinds.includes(recoveryKind)) return null;
   const agentId = latest?.agent_id ?? null;
   const lifecycleId = latest?.lifecycle_id ?? null;
   const selector = agentId
@@ -14093,13 +14097,17 @@ function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, re
     : `--lifecycle-id ${shellQuote(lifecycleId ?? '<lifecycle-id>')}`;
   const closeReason = recoveryKind === 'timed_out'
     ? 'timeout'
+    : recoveryKind === 'replaced'
+      ? 'replaced'
     : recoveryKind === 'manual_shutdown'
       ? 'manual_shutdown'
       : 'completed';
-  const closeCommand = ['timed_out', 'manual_shutdown', 'running'].includes(recoveryKind)
+  const alreadyTerminallyClosed = ['closed', 'replaced'].includes(latest?.status)
+    && ['timeout', 'replaced', 'manual_shutdown'].includes(latest?.close_reason);
+  const closeCommand = replacementKinds.includes(recoveryKind) && !alreadyTerminallyClosed
     ? `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} ${selector} --close-reason ${shellQuote(closeReason)} --close-evidence ${shellQuote('<close-evidence>')}`
     : null;
-  const replacementCommand = ['timed_out', 'manual_shutdown', 'running'].includes(recoveryKind)
+  const replacementCommand = replacementKinds.includes(recoveryKind)
     ? `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-system ${shellQuote(latest?.agent_system ?? '<codex|claude_code>')} --agent-id ${shellQuote('<replacement-agent-id>')} --agent-thread-id ${shellQuote('<replacement-agent-thread-id>')} --agent-session-id ${shellQuote('<replacement-agent-session-id>')} --dispatch-authorization ${shellQuote('<dispatch-authorization-id>')} --timeout-ms 600000 --replacement-for ${shellQuote(lifecycleId ?? '<previous-lifecycle-id>')}`
     : null;
   return {
@@ -14126,7 +14134,7 @@ export function buildAgentReviewRecoveryCommands({ storyId, stage, role, recover
     identity: 'replacement-agent',
     agentSystem: lifecycleRecovery?.agent_system ?? '<codex|claude_code>'
   });
-  if (['timed_out', 'manual_shutdown', 'running'].includes(recoveryKind)) {
+  if (['timed_out', 'replaced', 'manual_shutdown', 'running'].includes(recoveryKind)) {
     return [
       lifecycleRecovery?.close_command,
       prepareCommand,

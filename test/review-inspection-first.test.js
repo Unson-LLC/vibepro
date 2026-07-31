@@ -758,6 +758,54 @@ test('review record persists no result after timeout, replacement, or manual shu
   }
 });
 
+test('terminal review close reasons require explicit latest-lineage replacement', async () => {
+  for (const closeReason of ['timeout', 'replaced', 'manual_shutdown']) {
+    const root = await setupRepo();
+    await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+    const started = await startCloseable(root);
+    await closeAgentReviewLifecycle(root, {
+      storyId: 'story-test',
+      stage: 'gate',
+      role: 'gate_evidence',
+      lifecycleId: started.lifecycle.lifecycle_id,
+      closeReason,
+      closeEvidence: `${closeReason} fixture`,
+      cancellationConfirmed: closeReason !== 'timeout'
+    });
+
+    await assert.rejects(() => startAgentReviewLifecycle(root, {
+      storyId: 'story-test',
+      stage: 'gate',
+      role: 'gate_evidence',
+      agentSystem: 'codex',
+      agentId: `replacement-without-lineage-${closeReason}`
+    }), new RegExp(`prior lifecycle ${started.lifecycle.lifecycle_id}.*--replacement-for`));
+  }
+});
+
+test('review status emits authorize-first replacement for every terminal close reason', async () => {
+  for (const closeReason of ['timeout', 'replaced', 'manual_shutdown']) {
+    const root = await setupRepo();
+    await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+    const started = await startCloseable(root);
+    await closeAgentReviewLifecycle(root, {
+      storyId: 'story-test',
+      stage: 'gate',
+      role: 'gate_evidence',
+      lifecycleId: started.lifecycle.lifecycle_id,
+      closeReason,
+      closeEvidence: `${closeReason} fixture`,
+      cancellationConfirmed: closeReason !== 'timeout'
+    });
+
+    const status = await getAgentReviewStatus(root, { storyId: 'story-test', stage: 'gate' });
+    const actions = status.stages[0].next_actions.join('\n');
+    assert.match(actions, /review authorize/, `${closeReason} must authorize before replacement`);
+    assert.match(actions, /review start .*--dispatch-authorization/, `${closeReason} must consume authorization`);
+    assert.match(actions, new RegExp(`--replacement-for ${started.lifecycle.lifecycle_id}`));
+  }
+});
+
 test('review status authorizes before terminal replacement and only emits actions for the latest lifecycle per role', async () => {
   const root = await setupRepo();
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });

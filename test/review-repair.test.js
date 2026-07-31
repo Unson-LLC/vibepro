@@ -105,6 +105,22 @@ async function setupRepairRepo() {
         }
       }
     }),
+    ...['timeout', 'replaced', 'manual_shutdown'].map((closeReason) => role(`terminal_${closeReason}`, {
+      status: 'missing',
+      effective_status: 'missing',
+      lifecycle: {
+        effective_status: 'closed',
+        latest: {
+          lifecycle_id: `lifecycle-terminal-${closeReason}`,
+          status: closeReason === 'replaced' ? 'replaced' : 'closed',
+          effective_status: closeReason === 'replaced' ? 'replaced' : 'closed',
+          close_reason: closeReason,
+          close_evidence: `${closeReason} fixture`,
+          agent_system: 'codex',
+          agent_id: `agent-terminal-${closeReason}`
+        }
+      }
+    })),
     role('security_boundary', { status: 'pass', effective_status: 'pass' }),
     role('architecture_fit', {
       status: 'pass',
@@ -275,6 +291,20 @@ test('stale role becomes rerun_stale_review and timed_out becomes replace_timed_
   assert.match(recovery, /review start[\s\S]*review close .*--agent-id "<replacement-agent-id>".*--close-reason completed[\s\S]*review record/);
   assert.match(recovery, /review record .*--agent-id "<replacement-agent-id>".*--agent-thread-id "<replacement-agent-thread-id>".*--agent-session-id "<replacement-agent-session-id>"/);
   assert.match(recovery, /review record .*--agent-transcript "<replacement-agent-transcript>".*--agent-close-evidence "<replacement-agent-close-evidence>"/, 'one replacement lifecycle identity and its evidence must survive the full emitted chain');
+});
+
+test('review repair replaces every already-closed terminal lifecycle without closing it again', async () => {
+  const root = await setupRepairRepo();
+  const { result } = await runCli(['review', 'repair', root, '--json']);
+  for (const closeReason of ['timeout', 'replaced', 'manual_shutdown']) {
+    const candidate = findCandidate(result, 'story-repair-broken', `terminal_${closeReason}`);
+    assert.equal(candidate.action, 'replace_terminal_review');
+    const commands = candidate.next_commands.join('\n');
+    assert.doesNotMatch(commands, /review close .*agent-terminal-/);
+    assert.match(commands, /review authorize/);
+    assert.match(commands, /review start .*--dispatch-authorization/);
+    assert.match(commands, new RegExp(`--replacement-for lifecycle-terminal-${closeReason}`));
+  }
 });
 
 test('stale result with a latest running lifecycle closes and replaces that lifecycle', async () => {

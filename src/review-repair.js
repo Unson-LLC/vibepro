@@ -10,6 +10,7 @@ export const REPAIR_ACTIONS = [
   'run_review',
   'rerun_stale_review',
   'replace_timed_out_review',
+  'replace_terminal_review',
   'rerecord_with_provenance',
   'close_and_rerecord'
 ];
@@ -93,6 +94,13 @@ export function renderReviewRepair(result) {
 function evaluateRoleRepair(role) {
   const roleName = role?.role ?? 'unknown';
   const effective = role?.effective_status ?? role?.status ?? 'missing';
+  const terminalCloseReason = getTerminalCloseReason(role);
+  if (terminalCloseReason) {
+    return {
+      action: 'replace_terminal_review',
+      reason: `review role ${roleName} lifecycle closed as ${terminalCloseReason} and requires explicit replacement lineage`
+    };
+  }
   if (hasTimedOutLifecycle(role)) {
     return { action: 'replace_timed_out_review', reason: `review role ${roleName} lifecycle timed out without a recorded result` };
   }
@@ -137,13 +145,13 @@ function buildRepairCommands({ storyId, stage, role, action }) {
   const replacementSystem = latestLifecycle?.agent_system ?? '"<codex|claude_code>"';
   const startCommand = [
     `vibepro review start . --id ${storyId} --stage ${stage} --role ${roleName}`,
-    `--agent-system ${action === 'replace_timed_out_review' ? replacementSystem : '"<codex|claude_code>"'}`,
+    `--agent-system ${['replace_timed_out_review', 'replace_terminal_review'].includes(action) ? replacementSystem : '"<codex|claude_code>"'}`,
     '--agent-id "<replacement-agent-id>"',
     '--agent-thread-id "<replacement-agent-thread-id>"',
     '--agent-session-id "<replacement-agent-session-id>"',
     '--dispatch-authorization "<dispatch-authorization-id>"',
     '--timeout-ms 600000',
-    ['replace_timed_out_review', 'close_and_rerecord'].includes(action) ? `--replacement-for ${replacementFor}` : null
+    ['replace_timed_out_review', 'replace_terminal_review', 'close_and_rerecord'].includes(action) ? `--replacement-for ${replacementFor}` : null
   ].filter(Boolean).join(' ');
   const authorizeCommand = [
     `vibepro review authorize . --id ${storyId} --stage ${stage} --role ${roleName}`,
@@ -189,6 +197,11 @@ function buildRepairCommands({ storyId, stage, role, action }) {
 function hasTimedOutLifecycle(role) {
   const lifecycle = role?.lifecycle;
   return lifecycle?.effective_status === 'timed_out' || lifecycle?.latest?.effective_status === 'timed_out';
+}
+
+function getTerminalCloseReason(role) {
+  const reason = role?.lifecycle?.latest?.close_reason;
+  return ['timeout', 'replaced', 'manual_shutdown'].includes(reason) ? reason : null;
 }
 
 function hasOpenAgentLifecycle(role) {

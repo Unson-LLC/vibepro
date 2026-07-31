@@ -686,8 +686,8 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
       if (latest && ['running', 'timed_out'].includes(resolveLifecycleEffectiveStatus(latest))) {
         throw new Error(`review start found an open prior lifecycle ${latest.lifecycle_id}; close it with evidence and start the replacement with --replacement-for`);
       }
-      if (latest?.close_reason === 'manual_shutdown') {
-        throw new Error(`review start found a manually shut down prior lifecycle ${latest.lifecycle_id}; start the replacement with --replacement-for`);
+      if (isTerminalReplacementCloseReason(latest?.close_reason)) {
+        throw new Error(`review start found terminal prior lifecycle ${latest.lifecycle_id} closed as ${latest.close_reason}; start the replacement with --replacement-for`);
       }
     }
     lifecycle.entries.push(entry);
@@ -4046,8 +4046,8 @@ function buildLifecycleNextActions({ storyId, stage, lifecycleSummary }) {
       actions.push(`After cancellation is confirmed, authorize a current-HEAD replacement for ${stage}:${entry.role}: ${authorizeCommand}`);
       actions.push(`Only when authorization returns action: dispatch, start the current-HEAD replacement: ${replacementCommand}`);
     }
-    if (entry.close_reason === 'manual_shutdown') {
-      actions.push(`Authorize replacement for manually shut down ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: ${authorizeCommand}`);
+    if (isTerminalReplacementCloseReason(entry.close_reason)) {
+      actions.push(`Authorize replacement for ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id} closed as ${entry.close_reason}: ${authorizeCommand}`);
       actions.push(`Only when authorization returns action: dispatch, start the replacement: ${replacementCommand}`);
     }
   }
@@ -4072,6 +4072,11 @@ function addViolationPointer(existing, violationId) {
 }
 
 const REVIEW_CLOSE_REASONS = ['completed', 'timeout', 'replaced', 'manual_shutdown'];
+const TERMINAL_REPLACEMENT_CLOSE_REASONS = ['timeout', 'replaced', 'manual_shutdown'];
+
+function isTerminalReplacementCloseReason(value) {
+  return TERMINAL_REPLACEMENT_CLOSE_REASONS.includes(value);
+}
 
 function assertRecognizedCloseReason(value) {
   if (value === undefined || value === null || String(value).trim() === '') return;
