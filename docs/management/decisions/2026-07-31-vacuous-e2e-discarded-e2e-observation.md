@@ -54,6 +54,16 @@ head `36e09524` に対する `vibepro verify run --kind e2e` の1回目の実行
 恒久対策が必要なら、別Storyとして `test/guarded-run-session.test.js` の
 timeout設計を扱うべきである。
 
+**申し送り範囲の訂正**: 当初この申し送りは `test/guarded-run-session.test.js`
+だけを対象にしていたが、それでは対象の半分しか捉えていない。
+同一Storyの `2026-07-31-vacuous-e2e-discarded-unit-observation.md` が、
+unit laneでの同種の破棄 (head `c364fb61`, 2293/2294,
+`test/codex-subagent-host.test.js` の shutdown containment) を開示し、
+申し送り対象を (1) guarded-run-session の timeout設計、
+(2) codex-subagent-host の `waitFor` 待ち時間、
+(3) runnerが破棄runを保持しない問題 の3件へ広げている。
+別Storyを起こす際はそちらを正とすること。
+
 ## なぜwaiverではないか
 
 これはgateのwaiverではない。記録されているe2e証跡は実際にpassした実行であり、
