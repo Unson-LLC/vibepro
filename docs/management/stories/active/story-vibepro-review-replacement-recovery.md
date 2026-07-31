@@ -61,6 +61,35 @@ review lifecycleを完了できる。
   needs_changes・blockの全artifact状態で`result_uncollected`とし、artifact欠落pass、
   budget exceededはfail-closedを維持する。
 
+## Scenario Clauses
+
+### S-001 / AC-1, AC-2, AC-3, AC-4, AC-5, AC-7, AC-8
+
+Given 最新の同一role lifecycleが`timeout`、`replaced`、または
+`manual_shutdown`として非空の停止確認証跡とともにcloseされているとき、when
+coordinatorが新しいdispatch authorizationを取得し、そのIDと旧lifecycle IDを
+`review start --dispatch-authorization ... --replacement-for ...`へ渡すと、then
+VibeProはStory/stage/role、最新lineage、close evidence、Story-wide budgetを検証した
+単一のreplacementだけを開始し、status、repair、PR recovery、英日両方の
+parallel-dispatch artifactにもauthorize-firstの同じ順序を出力する。
+
+### S-002 / AC-1, AC-2, AC-3, AC-5, AC-6, AC-8
+
+Given lifecycleがrunning、結果artifact未回収の`completed`、unknown/missing reason、
+予算超過、古い同一role lineage、またはcancellation未確認のstale HEADであるとき、
+when coordinatorが再dispatchまたはreplacementを試みると、then VibeProは
+`await_result`、duplicate suppression、budget rejection、lineage rejection、または
+`orphaned_agent`としてfail-closedにし、停止未確認のagentを並行実行しない。
+
+## Runtime Evidence Contract
+
+- `current_reality`: terminal replacementの正規化、authorization、lineage検証と、
+  status/repair/PR/parallel-dispatchの生成artifactをStory専用E2Eでflow replayする。
+- `failure_modes`: result未回収、unknown reason、予算超過、古いlineage、
+  stale HEAD cancellation未確認をnegative pathとして実行する。
+- `done_evidence`: current HEADに束縛された`vibepro verify run`のunitとE2Eが、
+  S-001/S-002およびAC-1〜AC-8をrunner-directで成功し、artifact replayを含む。
+
 ## Tasks
 
 1. VP-TASK-REVIEW-REPLACEMENT-001: terminal closeのreplacement経路を回復する
