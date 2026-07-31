@@ -349,3 +349,44 @@ test('story-vibepro-vacuous-e2e-test-elimination ac:5 VET-S-5 the lint detects a
   assert.match(stdout, REPORTER_FAIL_ZERO);
   assert.doesNotMatch(stdout, /^not ok/m);
 });
+
+// Regression guard for a defect this Story actually hit. Commit 36e09524 listed
+// the seven affected Story slugs as indented markdown bullets underneath
+// VET-S-2, inside the "## Acceptance Criteria" section. extractAcceptanceCriteria
+// (src/pr-manager.js) treats every bullet in that section as a criterion, so
+// pr prepare parsed thirteen criteria instead of six and gate:e2e demanded
+// ac:7..ac:13 for criteria that do not exist. The prose was fixed in a7de3eca,
+// but nothing pinned the shape, so the same authoring mistake could return
+// silently. This replicates the parser's rule against the real Story file.
+test('story-vibepro-vacuous-e2e-test-elimination the Acceptance Criteria section parses to exactly the six VET criteria', () => {
+  const storyPath = path.join(
+    repoRoot,
+    'docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md'
+  );
+  const content = readFileSync(storyPath, 'utf8');
+
+  const section = content.match(
+    /^##+\s+.*Acceptance Criteria.*\n([\s\S]*?)(?=^##+\s+|(?![\s\S]))/m
+  );
+  assert.ok(section, 'the Story must keep an Acceptance Criteria section');
+
+  const parsed = section[1]
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => /^-\s+(?:\[[ xX]\]\s+)?\S/.test(line))
+    .map((line) => line.replace(/^-\s+(?:\[[ xX]\]\s+)?/, '').trim())
+    .filter(Boolean);
+
+  assert.equal(
+    parsed.length,
+    6,
+    `expected exactly 6 parsed acceptance criteria, got ${parsed.length}: ${JSON.stringify(parsed.map((c) => c.slice(0, 40)))}`
+  );
+  for (const [index, criterion] of parsed.entries()) {
+    assert.match(
+      criterion,
+      new RegExp(`^VET-S-${index + 1}:`),
+      `parsed criterion ${index + 1} must be VET-S-${index + 1}, got: ${criterion.slice(0, 80)}`
+    );
+  }
+});
