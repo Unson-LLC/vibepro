@@ -687,6 +687,9 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
         throw new Error(`review start found an open prior lifecycle ${latest.lifecycle_id}; close it with evidence and start the replacement with --replacement-for`);
       }
       if (isTerminalReplacementCloseReason(latest?.close_reason)) {
+        if (latest.close_reason === 'manual_shutdown') {
+          throw new Error(`review start found a manually shut down prior lifecycle ${latest.lifecycle_id}; start the replacement with --replacement-for`);
+        }
         throw new Error(`review start found terminal prior lifecycle ${latest.lifecycle_id} closed as ${latest.close_reason}; start the replacement with --replacement-for`);
       }
     }
@@ -4047,7 +4050,10 @@ function buildLifecycleNextActions({ storyId, stage, lifecycleSummary }) {
       actions.push(`Only when authorization returns action: dispatch, start the current-HEAD replacement: ${replacementCommand}`);
     }
     if (isTerminalReplacementCloseReason(entry.close_reason)) {
-      actions.push(`Authorize replacement for ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id} closed as ${entry.close_reason}: ${authorizeCommand}`);
+      const terminalCloseDescription = entry.close_reason === 'manual_shutdown'
+        ? 'manually shut down'
+        : `closed as ${entry.close_reason}`;
+      actions.push(`Authorize replacement for ${terminalCloseDescription} ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: ${authorizeCommand}`);
       actions.push(`Only when authorization returns action: dispatch, start the replacement: ${replacementCommand}`);
     }
   }
