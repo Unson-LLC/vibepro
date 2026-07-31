@@ -65,6 +65,14 @@ status next action、review repair、PR recovery、英日両方の
 実行時IDを固定値として生成してはならず、authorizationが`dispatch`を返した場合
 だけreplacement agentを起動するよう案内する。
 
+```yaml
+inherited_behavior:
+  condition: "!supplied && !runAuthority"
+  classification: unchanged
+  files:
+    - src/agent-review.js
+```
+
 ### VRR-CONTRACT-007: stale HEAD cancellation boundary
 
 stale HEADの`orphaned_agent`は同一HEADのterminal replacement reasonとして
