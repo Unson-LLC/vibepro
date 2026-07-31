@@ -141,9 +141,17 @@ function buildRepairCommands({ storyId, stage, role, action }) {
     '--agent-id "<replacement-agent-id>"',
     '--agent-thread-id "<replacement-agent-thread-id>"',
     '--agent-session-id "<replacement-agent-session-id>"',
+    '--dispatch-authorization "<dispatch-authorization-id>"',
     '--timeout-ms 600000',
     ['replace_timed_out_review', 'close_and_rerecord'].includes(action) ? `--replacement-for ${replacementFor}` : null
   ].filter(Boolean).join(' ');
+  const authorizeCommand = [
+    `vibepro review authorize . --id ${storyId} --stage ${stage} --role ${roleName}`,
+    '--review-kind preflight',
+    `--closes-risk "complete ${stage}:${roleName} independent review"`,
+    `--expected-judgment-delta "resolve ${stage}:${roleName} review state from current evidence"`,
+    '--json'
+  ].join(' ');
   const commands = [];
   if (action === 'replace_timed_out_review' || action === 'close_and_rerecord') {
     commands.push(
@@ -152,6 +160,7 @@ function buildRepairCommands({ storyId, stage, role, action }) {
   }
   commands.push(
     `vibepro review prepare . --id ${storyId} --stage ${stage} --role ${roleName}`,
+    authorizeCommand,
     startCommand,
     `vibepro review close . --id ${storyId} --stage ${stage} --role ${roleName} --agent-id "<replacement-agent-id>" --close-reason completed --close-evidence "<replacement-agent-close-evidence>"`,
     [

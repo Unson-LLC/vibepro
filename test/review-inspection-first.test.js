@@ -16,6 +16,7 @@ import {
   prepareAgentReview,
   recordAgentReview,
   getAgentReviewStatus,
+  normalizeLifecycleForDispatch,
   startAgentReviewLifecycle,
   closeAgentReviewLifecycle
 } from '../src/agent-review.js';
@@ -271,6 +272,45 @@ test('parallel dispatch record command and prompt include inspection fields', as
   assert.match(content, /generated `.vibepro` artifact alone is not a content surface/i);
   assert.match(content, /Do not add `--strict-head-binding` unless making a deliberate CLI override/i);
   assert.match(content, /`--strict-head-reason` is required/i);
+  assert.match(content, /close --close-reason timeout.*review authorize.*action: dispatch.*--dispatch-authorization <authorization-id>.*--replacement-for <lifecycle-id>/is);
+});
+
+test('Japanese parallel dispatch authorizes terminal replacement before spawn', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'ja' });
+  const content = await readFile(path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'parallel-dispatch.md'), 'utf8');
+  assert.match(content, /close --close-reason timeout.*review authorize.*action: dispatch.*--dispatch-authorization <authorization-id>.*--replacement-for <lifecycle-id>/is);
+});
+
+test('unknown or missing close reason never infers a collected result', () => {
+  for (const closeReason of [null, undefined, 'unknown_reason']) {
+    for (const resultStatus of [null, 'pass', 'needs_changes', 'block']) {
+      const normalized = normalizeLifecycleForDispatch({
+        status: 'closed',
+        close_reason: closeReason,
+        result_status: resultStatus,
+        result_artifact: resultStatus ? '.vibepro/reviews/result.json' : null
+      });
+      assert.equal(normalized.status, 'result_uncollected', `${closeReason ?? 'missing'} with ${resultStatus ?? 'no result'} must fail closed`);
+    }
+  }
+});
+
+test('completed and terminal close reasons preserve correction and replacement boundaries', () => {
+  assert.equal(normalizeLifecycleForDispatch({
+    status: 'closed', close_reason: 'completed', result_status: 'pass', result_artifact: 'result.json'
+  }).status, 'completed_pass');
+  assert.equal(normalizeLifecycleForDispatch({
+    status: 'closed', close_reason: 'completed', result_status: 'needs_changes', result_artifact: 'result.json'
+  }).status, 'closed');
+  assert.equal(normalizeLifecycleForDispatch({
+    status: 'closed', close_reason: 'completed', result_status: 'pass', result_artifact: null
+  }).status, 'result_uncollected');
+  for (const closeReason of ['timeout', 'replaced', 'manual_shutdown']) {
+    assert.equal(normalizeLifecycleForDispatch({
+      status: 'closed', close_reason: closeReason, result_status: null, result_artifact: null
+    }).status, 'closed');
+  }
 });
 
 test('architecture boundary request and dispatch emit the complete aggregate inspection surface', async () => {
@@ -298,6 +338,8 @@ test('PR readiness recovery emits the complete aggregate inspection surface', ()
     lifecycleRecovery: null
   });
   assert.match(commands[0], /review prepare .*--stage architecture_spec.*--role architecture_boundary/);
+  assert.match(commands[1], /review authorize .*--review-kind preflight/);
+  assert.match(commands[2], /review start .*--dispatch-authorization '<dispatch-authorization-id>'/);
   const command = commands.find((item) => item.startsWith('vibepro review record'));
   assert.ok(command, 'PR recovery output must contain a record command');
   assert.match(command, /--inspection-input '<design-story-spec-path>'/);
@@ -714,6 +756,44 @@ test('review record persists no result after timeout, replacement, or manual shu
       `${closeReason} must not leave review history`
     );
   }
+});
+
+test('review status authorizes before terminal replacement and only emits actions for the latest lifecycle per role', async () => {
+  const root = await setupRepo();
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
+  const first = await startCloseable(root);
+  await closeAgentReviewLifecycle(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    lifecycleId: first.lifecycle.lifecycle_id,
+    closeReason: 'timeout',
+    closeEvidence: 'first timeout'
+  });
+  const second = await startAgentReviewLifecycle(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    agentSystem: 'codex',
+    agentId: 'latest-agent',
+    replacementFor: first.lifecycle.lifecycle_id
+  });
+  await closeAgentReviewLifecycle(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    lifecycleId: second.lifecycle.lifecycle_id,
+    closeReason: 'manual_shutdown',
+    closeEvidence: 'latest shutdown',
+    cancellationConfirmed: true
+  });
+
+  const status = await getAgentReviewStatus(root, { storyId: 'story-test', stage: 'gate' });
+  const actions = status.stages[0].next_actions.join('\n');
+  assert.doesNotMatch(actions, new RegExp(first.lifecycle.lifecycle_id));
+  assert.match(actions, /review authorize/);
+  assert.match(actions, /review start .*--dispatch-authorization/);
+  assert.match(actions, new RegExp(`--replacement-for ${second.lifecycle.lifecycle_id}`));
 });
 
 test('getAgentReviewStatus surfaces empty handoff arrays for missing roles', async () => {

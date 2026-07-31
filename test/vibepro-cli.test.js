@@ -10406,7 +10406,10 @@ test('review prepare generates stage role requests', async () => {
   assert.match(dispatch, /vibepro review start .*--role e2e_ux/);
   assert.match(dispatch, /vibepro review close .*--role e2e_ux/);
   assert.match(dispatch, /--close-reason timeout/);
-  assert.match(dispatch, /Start replacement/);
+  assert.match(dispatch, /vibepro review authorize .*--role e2e_ux/);
+  assert.match(dispatch, /action: dispatch/);
+  assert.match(dispatch, /--dispatch-authorization <authorization-id>/);
+  assert.match(dispatch, /--replacement-for <lifecycle-id>/);
   assert.match(dispatch, /Required provenance/);
   assert.match(dispatch, /--agent-system codex --execution-mode parallel_subagent/);
   assert.match(dispatch, /--agent-system claude_code --execution-mode parallel_subagent/);
@@ -10714,7 +10717,9 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   assert.equal(manualClose.exitCode, 0);
   assert.equal(manualClose.result.lifecycle.close_reason, 'manual_shutdown');
   const manualStatus = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
-  assert.equal(manualStatus.result.stages[0].next_actions.some((action) => action.includes('manually shut down') && action.includes('--replacement-for')), true);
+  const manualActions = manualStatus.result.stages[0].next_actions;
+  assert.equal(manualActions.some((action) => action.includes('Authorize replacement for manually shut down') && action.includes('review authorize')), true);
+  assert.equal(manualActions.some((action) => action.includes('action: dispatch') && action.includes('--dispatch-authorization') && action.includes('--replacement-for')), true);
 });
 
 test('artifact-backed accepted scope decision marks scope_reviewed without inventing review ownership', async () => {

@@ -852,10 +852,17 @@ function normalizeReviewFreeze(value) {
   return Object.fromEntries(['source', 'spec', 'test', 'review_surface'].map((key) => [key, selected.has(key)]));
 }
 
-function normalizeLifecycleForDispatch(entry) {
+export function normalizeLifecycleForDispatch(entry) {
   let status = entry.status;
-  if (status === 'closed' && entry.result_status === 'pass') status = 'completed_pass';
-  else if (status === 'closed' && !entry.result_artifact) status = 'result_uncollected';
+  if (status === 'closed') {
+    const closeReason = normalizeNullable(entry.close_reason);
+    if (!REVIEW_CLOSE_REASONS.includes(closeReason)) {
+      status = 'result_uncollected';
+    } else if (closeReason === 'completed') {
+      if (!entry.result_artifact) status = 'result_uncollected';
+      else if (entry.result_status === 'pass') status = 'completed_pass';
+    }
+  }
   return { ...entry, status };
 }
 
@@ -2581,7 +2588,7 @@ If your coordinator runtime supports subagents, start them as part of this gate 
 2. Start only authorized subagents in parallel, then immediately record \`vibepro review start\` with the real agent id and \`--dispatch-authorization\` id.
 3. Give each subagent only its own review request.
 4. Do not let subagents edit files during review.
-5. If a subagent times out, close/shutdown it, record \`vibepro review close --close-reason timeout\`, then Start replacement with \`vibepro review start --replacement-for <lifecycle-id>\`.
+5. If a subagent times out, close/shutdown it, record \`vibepro review close --close-reason timeout\`, run \`vibepro review authorize\`, and only when it returns \`action: dispatch\` start the replacement with both \`--dispatch-authorization <authorization-id>\` and \`--replacement-for <lifecycle-id>\`.
 6. After each subagent returns its result, close/shutdown that subagent thread/session. Do not leave review subagents running.
 7. Record each result with the listed \`vibepro review record\` command and include \`--agent-closed\`. Do not add \`--strict-head-binding\` unless making a deliberate CLI override; \`--strict-head-reason\` is required for that override. Configured strict roles apply automatically.
 8. Do not dispatch any other Agent Review stage in the same batch. Run \`vibepro review status . --id ${storyId} --stage ${stage}\` and then \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\` to advance to the next stage.
@@ -2618,7 +2625,7 @@ coordinator runtimeがsubagentを使える場合は、このgate workflowの一�
 2. authorization済みsubagentだけparallel開始し、直後に実agent idと \`--dispatch-authorization\` idを付けて \`vibepro review start\` を記録する。
 3. 各subagentには自身のreview requestだけを渡す。
 4. review中にsubagentへfile編集させない。
-5. subagentがtimeoutしたらclose/shutdownし、\`vibepro review close --close-reason timeout\` を記録してから \`vibepro review start --replacement-for <lifecycle-id>\` でreplacementを開始する。
+5. subagentがtimeoutしたらclose/shutdownし、\`vibepro review close --close-reason timeout\` を記録して \`vibepro review authorize\` を実行する。\`action: dispatch\` の場合だけ、\`--dispatch-authorization <authorization-id>\` と \`--replacement-for <lifecycle-id>\` の両方を付けてreplacementを開始する。
 6. 各subagentの結果受領後、そのsubagent thread/sessionをclose/shutdownする。review subagentを走らせたままにしない。
 7. listed \`vibepro review record\` commandで各結果を記録し、\`--agent-closed\` を含める。意図的なCLI overrideの場合を除き、\`--strict-head-binding\` を追加しない。overrideには \`--strict-head-reason\` が必須。設定済みstrict roleは自動適用される。
 8. 他のAgent Review stageを同じbatchでdispatchしない。\`vibepro review status . --id ${storyId} --stage ${stage}\` を実行し、その後 \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\` で次stageへ進む。
@@ -4016,23 +4023,32 @@ function summarizeLifecycle(entries) {
 
 function buildLifecycleNextActions({ storyId, stage, lifecycleSummary }) {
   const actions = [];
+  const latestByRole = new Map();
   for (const entry of lifecycleSummary.entries ?? []) {
+    latestByRole.set(entry.role, entry);
+  }
+  for (const entry of latestByRole.values()) {
     const closeSelector = entry.agent_id
       ? `--agent-id ${shellQuote(entry.agent_id)}`
       : `--lifecycle-id ${shellQuote(entry.lifecycle_id)}`;
+    const authorizeCommand = `vibepro review authorize . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(entry.role)} --review-kind preflight --closes-risk ${shellQuote(`complete ${stage}:${entry.role} independent review`)} --expected-judgment-delta ${shellQuote(`resolve ${stage}:${entry.role} review state from current evidence`)} --json`;
+    const replacementCommand = `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(entry.role)} --agent-system ${shellQuote(entry.agent_system)} --agent-id ${shellQuote('<replacement-subagent-id>')} --agent-thread-id ${shellQuote('<replacement-subagent-thread-id>')} --agent-session-id ${shellQuote('<replacement-subagent-session-id>')} --dispatch-authorization ${shellQuote('<dispatch-authorization-id>')} --replacement-for ${shellQuote(entry.lifecycle_id)}`;
     if (entry.effective_status === 'running') {
       actions.push(`Wait for running ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}, then close it before recording: vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(entry.role)} ${closeSelector} --close-reason completed --close-evidence ${shellQuote('<evidence>')}`);
     }
     if (entry.effective_status === 'timed_out') {
       actions.push(`Close timed-out ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(entry.role)} ${closeSelector} --close-reason timeout --close-evidence ${shellQuote('<timeout-close-evidence>')}`);
-      actions.push(`Start replacement for ${stage}:${entry.role}: vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(entry.role)} --agent-system ${shellQuote(entry.agent_system)} --agent-id ${shellQuote('<replacement-subagent-id>')} --agent-thread-id ${shellQuote('<replacement-subagent-thread-id>')} --agent-session-id ${shellQuote('<replacement-subagent-session-id>')} --replacement-for ${shellQuote(entry.lifecycle_id)}`);
+      actions.push(`Authorize replacement for ${stage}:${entry.role}: ${authorizeCommand}`);
+      actions.push(`Only when authorization returns action: dispatch, start replacement for ${stage}:${entry.role}: ${replacementCommand}`);
     }
     if (entry.effective_status === 'orphaned_agent') {
       actions.push(`Fail closed and confirm cancellation for stale-HEAD ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(entry.role)} ${closeSelector} --close-reason replaced --cancellation-confirmed --close-evidence ${shellQuote('<cancellation-evidence>')}`);
-      actions.push(`After cancellation is confirmed, start a current-HEAD replacement for ${stage}:${entry.role} with --replacement-for ${shellQuote(entry.lifecycle_id)}`);
+      actions.push(`After cancellation is confirmed, authorize a current-HEAD replacement for ${stage}:${entry.role}: ${authorizeCommand}`);
+      actions.push(`Only when authorization returns action: dispatch, start the current-HEAD replacement: ${replacementCommand}`);
     }
     if (entry.close_reason === 'manual_shutdown') {
-      actions.push(`Record replacement intent for manually shut down ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(entry.role)} --agent-system ${shellQuote(entry.agent_system)} --agent-id ${shellQuote('<replacement-subagent-id>')} --agent-thread-id ${shellQuote('<replacement-subagent-thread-id>')} --agent-session-id ${shellQuote('<replacement-subagent-session-id>')} --replacement-for ${shellQuote(entry.lifecycle_id)}`);
+      actions.push(`Authorize replacement for manually shut down ${stage}:${entry.role} subagent ${entry.agent_id ?? entry.lifecycle_id}: ${authorizeCommand}`);
+      actions.push(`Only when authorization returns action: dispatch, start the replacement: ${replacementCommand}`);
     }
   }
   return actions;
