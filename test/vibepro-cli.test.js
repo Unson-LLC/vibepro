@@ -10406,7 +10406,10 @@ test('review prepare generates stage role requests', async () => {
   assert.match(dispatch, /vibepro review start .*--role e2e_ux/);
   assert.match(dispatch, /vibepro review close .*--role e2e_ux/);
   assert.match(dispatch, /--close-reason timeout/);
-  assert.match(dispatch, /Start replacement/);
+  assert.match(dispatch, /vibepro review authorize .*--role e2e_ux/);
+  assert.match(dispatch, /action: dispatch/);
+  assert.match(dispatch, /--dispatch-authorization <authorization-id>/);
+  assert.match(dispatch, /--replacement-for <lifecycle-id>/);
   assert.match(dispatch, /Required provenance/);
   assert.match(dispatch, /--agent-system codex --execution-mode parallel_subagent/);
   assert.match(dispatch, /--agent-system claude_code --execution-mode parallel_subagent/);
@@ -10714,7 +10717,9 @@ test('review lifecycle tracks timed out subagents and replacement closure', asyn
   assert.equal(manualClose.exitCode, 0);
   assert.equal(manualClose.result.lifecycle.close_reason, 'manual_shutdown');
   const manualStatus = await runCli(['review', 'status', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--json']);
-  assert.equal(manualStatus.result.stages[0].next_actions.some((action) => action.includes('manually shut down') && action.includes('--replacement-for')), true);
+  const manualActions = manualStatus.result.stages[0].next_actions;
+  assert.equal(manualActions.some((action) => action.includes('Authorize replacement for manually shut down') && action.includes('review authorize')), true);
+  assert.equal(manualActions.some((action) => action.includes('action: dispatch') && action.includes('--dispatch-authorization') && action.includes('--replacement-for')), true);
 });
 
 test('artifact-backed accepted scope decision marks scope_reviewed without inventing review ownership', async () => {
@@ -17386,6 +17391,45 @@ architecture_docs:
   assert.equal(unverifiedPreflight.status, 'needs_review');
   assert.equal(unverifiedPreflight.preflight_kind, 'provenance_recovery');
   assert.match(unverifiedPreflight.reason, /human manual review provenance|parallel subagent provenance|manual_review/);
+});
+
+test('pr prepare routes every already-closed terminal lifecycle through replacement recovery', async () => {
+  for (const closeReason of ['timeout', 'replaced', 'manual_shutdown']) {
+    const repo = await makeGitRepoWithStory();
+    await mkdir(path.join(repo, 'docs', 'management', 'stories', 'active'), { recursive: true });
+    await mkdir(path.join(repo, 'src'), { recursive: true });
+    await writeFile(path.join(repo, 'docs', 'management', 'stories', 'active', 'story-pr-prepare.md'), `---
+story_id: story-pr-prepare
+title: PR準備
+architecture_docs:
+  reason: CLI-only utility change
+---
+
+# PR準備
+`);
+    await writeFile(path.join(repo, 'src', 'cli-helper.js'), 'export function normalize(value) { return String(value).trim(); }\n');
+    await recordAgentReviewStage(repo, 'story-pr-prepare', 'gate', ['gate_evidence', 'pr_split_scope', 'release_risk']);
+    const started = await runCli([
+      'review', 'start', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
+      '--agent-system', 'codex', '--agent-id', `agent-${closeReason}`
+    ]);
+    assert.equal(started.exitCode, 0);
+    const closed = await runCli([
+      'review', 'close', repo, '--id', 'story-pr-prepare', '--stage', 'gate', '--role', 'gate_evidence',
+      '--agent-id', `agent-${closeReason}`, '--close-reason', closeReason,
+      '--close-evidence', `${closeReason} fixture`,
+      ...(closeReason === 'timeout' ? [] : ['--cancellation-confirmed'])
+    ]);
+    assert.equal(closed.exitCode, 0);
+
+    const result = await runCli(['pr', 'prepare', repo, '--base', 'main', '--story-id', 'story-pr-prepare', '--json']);
+    const preflight = result.result.preparation.pr_context.gate_dag.nodes.find((node) => node.id === 'review:preflight:gate:gate_evidence');
+    assert.equal(preflight.preflight_kind, 'lifecycle_recovery');
+    assert.match(preflight.reason, new RegExp(closeReason));
+    const recovery = JSON.stringify(result.result.preparation);
+    assert.match(recovery, /review authorize/);
+    assert.match(recovery, new RegExp(`--replacement-for ${started.result.lifecycle.lifecycle_id}`));
+  }
 });
 
 test('pr prepare marks recorded blocker dispatch preflight and pr ship excludes internal review gates from human judgments', async () => {
