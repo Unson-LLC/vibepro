@@ -60,14 +60,7 @@ assert.match('activation_candidates activation_signals activation_precision', /a
 
 - [ ] VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。
 - [ ] VET-S-2: 削除した17ファイルそれぞれについて、**代表となる実挙動テストケース**(製品コードをimportまたはCLI実行するもの)が別ファイルに実在し、名前で特定できる形で対応づけられている。対応表は網羅的(未対応の削除ファイルが0件)であり、各対応先ケースは実際に実行されてpassする。
-      これは「削除ファイルが主張していた全ACが1対1で別テストへ移った」ことは主張しない。下記7 Story slugは `test/e2e/<slug>-*` を失い、再生auditではACがuncoveredとして報告される。これは意図した結果であり、CHANGELOGで開示済みである(削除したファイルは製品コードを一切実行しておらず、報告していたカバレッジは実体が無かったため、false greenの除去であって生成ではない)。
-      - `cli-status-honesty`
-      - `evidence-user-fingerprint`
-      - `keyword-gate-structured-migration`
-      - `pr-ship-command`
-      - `execute-merge-command`
-      - `engineering-judgment-activation-precision`
-      - `merge-delta-review-reuse`
+      これは「削除ファイルが主張していた全ACが1対1で別テストへ移った」ことは主張しない。次の7 Story slug — `cli-status-honesty` / `evidence-user-fingerprint` / `keyword-gate-structured-migration` / `pr-ship-command` / `execute-merge-command` / `engineering-judgment-activation-precision` / `merge-delta-review-reuse` — は `test/e2e/<slug>-*` を失い、再生auditではACがuncoveredとして報告される。これは意図した結果であり、CHANGELOGで開示済みである(削除したファイルは製品コードを一切実行しておらず、報告していたカバレッジは実体が無かったため、false greenの除去であって生成ではない)。
 
       > **Superseded (2026-07-31, owner裁定)**: 旧文言は
       > 「削除した各ファイルについて、対応StoryのACを検証する実挙動テスト(製品コードをimportまたはCLI実行するもの)が別ファイルに存在する。」
