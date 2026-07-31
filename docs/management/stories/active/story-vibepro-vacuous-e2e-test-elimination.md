@@ -59,7 +59,23 @@ assert.match('activation_candidates activation_signals activation_precision', /a
 ## Acceptance Criteria
 
 - [ ] VET-S-1: `test/e2e` 配下に、src import・プロセス起動・fsアクセスのいずれも持たないテストファイルが0件になる。
-- [ ] VET-S-2: 削除した各ファイルについて、対応StoryのACを検証する実挙動テスト(製品コードをimportまたはCLI実行するもの)が別ファイルに存在する。
+- [ ] VET-S-2: 削除した17ファイルそれぞれについて、**代表となる実挙動テストケース**(製品コードをimportまたはCLI実行するもの)が別ファイルに実在し、名前で特定できる形で対応づけられている。対応表は網羅的(未対応の削除ファイルが0件)であり、各対応先ケースは実際に実行されてpassする。
+      これは「削除ファイルが主張していた全ACが1対1で別テストへ移った」ことは主張しない。下記7 Story slugは `test/e2e/<slug>-*` を失い、再生auditではACがuncoveredとして報告される。これは意図した結果であり、CHANGELOGで開示済みである(削除したファイルは製品コードを一切実行しておらず、報告していたカバレッジは実体が無かったため、false greenの除去であって生成ではない)。
+      - `cli-status-honesty`
+      - `evidence-user-fingerprint`
+      - `keyword-gate-structured-migration`
+      - `pr-ship-command`
+      - `execute-merge-command`
+      - `engineering-judgment-activation-precision`
+      - `merge-delta-review-reuse`
+
+      > **Superseded (2026-07-31, owner裁定)**: 旧文言は
+      > 「削除した各ファイルについて、対応StoryのACを検証する実挙動テスト(製品コードをimportまたはCLI実行するもの)が別ファイルに存在する。」
+      > だった。独立裁定により、実証されているのは *代表ケース単位* の置換であって
+      > *AC単位* の等価な移設ではないと判定された(削除ファイルの一部は7 ACや4 ACを主張していたが、
+      > 対応先は各1ケース)。旧文言は実証範囲を超えて主張していたため、
+      > owner (sato_keigo) の承認(2026-07-31, session 70ea817c-ee56-48c0-ab7c-612da8629872)のもと、
+      > 実証済みの範囲へ再スコープした。7 slugのカバレッジ喪失は隠さず上記に明記する。
 - [ ] VET-S-3: 実カバレッジが無かった `src/execution-state.js` の `deriveCompletedPhases` における `merged && !hasExplicitDelivery -> agent_review` 導出が、実挙動テストで検証される。
 - [ ] VET-S-4: 実カバレッジが無かった `src/managed-worktree-gate.js` の `buildManagedWorktreeGate` bypassed分岐(accepted waiver decision record経由)が、実挙動テストで検証される。
 - [ ] VET-S-5: 新たに追加されたlintテストは、製品コードを実行しないtest/e2eファイルを検出して失敗する。lint自身が対象ディレクトリを走査できない場合も失敗する。

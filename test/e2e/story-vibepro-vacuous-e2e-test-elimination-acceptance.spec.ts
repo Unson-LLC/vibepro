@@ -176,7 +176,7 @@ const managedWorktreeRun = replay('test/e2e/story-vibepro-managed-worktree-gate-
 const specGateRun = replay('test/node20-e2e-ts-ci-visibility.test.js');
 const lintRun = replay('test/e2e-product-execution-lint.test.js');
 
-test('story-vibepro-vacuous-e2e-test-elimination ac:2 VET-S-2 the removed files leave no coverage hole: their Story ACs still execute in behavioural suites', async () => {
+test('story-vibepro-vacuous-e2e-test-elimination ac:2 VET-S-2 every removed file maps to a representative behavioural test case that exists and passes', async () => {
   for (const removed of REMOVED_VACUOUS_FILES) {
     assert.equal(
       existsSync(path.join(repoRoot, removed)),
