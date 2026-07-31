@@ -98,6 +98,25 @@ lifecycleが存在する場合、古いterminal entry向けのauthorize/startを
 | VRR-CONTRACT-007 | status action、`authorizeAgentReviewDispatch`既存契約 | stale HEAD orphanがcancellation confirmation/evidenceなしでfail closed |
 | VRR-CONTRACT-008 | `buildLifecycleNextActions` | 古い同一role terminal entryと新lifecycleの併存時に旧entry向け復旧actionを生成しない |
 
+## Threat Model
+
+```mermaid
+flowchart LR
+  Closed["証跡付きterminal lifecycle"] --> Authorize["review authorize"]
+  Authorize -->|dispatch + runtime authorization ID| Start["review start"]
+  Start -->|latest same-role replacement_for| Replacement["replacement agent"]
+  Missing["authorization欠落"] --> Reject["fail closed"]
+  Stale["古いlineage / stale HEAD orphan"] --> Reject
+  Unproven["close evidence欠落"] --> Reject
+  Budget["aggregate / role budget超過"] --> Reject
+  Replacement --> Record["closeしてresultを記録"]
+```
+
+この境界は、停止確認できない旧agentとの二重実行、古いlifecycleへの誤束縛、
+予算外dispatch、stale HEADの無確認再実行を防ぐ。`manual_shutdown`と`replaced`は
+非空のclose evidence、replacementは実行時authorization IDと最新同一roleの
+`replacement_for`を必須とし、いずれかを満たさない場合は起動しない。
+
 ## Non-goals
 
 - terminal closeへ結果を後付けしない。
