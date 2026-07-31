@@ -1,0 +1,292 @@
+TAP version 13
+# Subtest: resolvePrArtifactBudgetBytes falls back to the documented default
+ok 1 - resolvePrArtifactBudgetBytes falls back to the documented default
+  ---
+  duration_ms: 0.3925
+  type: 'test'
+  ...
+# Subtest: PAB-S-1/PAB-CONTRACT-002 over-budget artifact gets a bounded summary under 10% of source
+ok 2 - PAB-S-1/PAB-CONTRACT-002 over-budget artifact gets a bounded summary under 10% of source
+  ---
+  duration_ms: 0.607583
+  type: 'test'
+  ...
+# Subtest: PAB-S-2 within-budget artifact produces no summary
+ok 3 - PAB-S-2 within-budget artifact produces no summary
+  ---
+  duration_ms: 0.0875
+  type: 'test'
+  ...
+# Subtest: EDL-S3 bounded senior-gap summary preserves decision-use counts
+ok 4 - EDL-S3 bounded senior-gap summary preserves decision-use counts
+  ---
+  duration_ms: 0.388167
+  type: 'test'
+  ...
+# Subtest: PAB-CONTRACT-005 unparseable over-budget artifact degrades to failed with no summary
+ok 5 - PAB-CONTRACT-005 unparseable over-budget artifact degrades to failed with no summary
+  ---
+  duration_ms: 0.135125
+  type: 'test'
+  ...
+# Subtest: resolveHandoffArtifact routes to summary and keeps a full pointer when generated
+ok 6 - resolveHandoffArtifact routes to summary and keeps a full pointer when generated
+  ---
+  duration_ms: 0.045083
+  type: 'test'
+  ...
+# Subtest: buildArtifactSummaryContent returns null when it cannot fit within 10%
+ok 7 - buildArtifactSummaryContent returns null when it cannot fit within 10%
+  ---
+  duration_ms: 0.425333
+  type: 'test'
+  ...
+# Subtest: findBudgetSummaryPath reads a persisted artifact_budget report
+ok 8 - findBudgetSummaryPath reads a persisted artifact_budget report
+  ---
+  duration_ms: 0.058958
+  type: 'test'
+  ...
+# Subtest: PAB-S-3/S-5/S-7 pr prepare enforces the budget, keeps full artifacts, and does not change gate verdicts
+ok 9 - PAB-S-3/S-5/S-7 pr prepare enforces the budget, keeps full artifacts, and does not change gate verdicts
+  ---
+  duration_ms: 6151.982333
+  type: 'test'
+  ...
+# Subtest: PAB-S-4 parallel-dispatch references the summary and keeps a full-artifact pointer
+ok 10 - PAB-S-4 parallel-dispatch references the summary and keeps a full-artifact pointer
+  ---
+  duration_ms: 2269.259208
+  type: 'test'
+  ...
+# Subtest: resolver matches cleanup responsibility contract and blocks without current evidence
+ok 11 - resolver matches cleanup responsibility contract and blocks without current evidence
+  ---
+  duration_ms: 208.546417
+  type: 'test'
+  ...
+# Subtest: resolver passes matched contract when current-head evidence is bound to required observations
+ok 12 - resolver passes matched contract when current-head evidence is bound to required observations
+  ---
+  duration_ms: 199.2115
+  type: 'test'
+  ...
+# Subtest: resolver accepts verify-record git context and observed values as current responsibility evidence
+ok 13 - resolver accepts verify-record git context and observed values as current responsibility evidence
+  ---
+  duration_ms: 200.370459
+  type: 'test'
+  ...
+# Subtest: resolver accepts evidence whose user scope is clean while generated artifacts leave the raw worktree dirty
+ok 14 - resolver accepts evidence whose user scope is clean while generated artifacts leave the raw worktree dirty
+  ---
+  duration_ms: 197.508875
+  type: 'test'
+  ...
+# Subtest: resolver still rejects current-head evidence when the user-dirty scope contains a manual edit
+ok 15 - resolver still rejects current-head evidence when the user-dirty scope contains a manual edit
+  ---
+  duration_ms: 222.289
+  type: 'test'
+  ...
+# Subtest: resolver does not satisfy contract evidence with unrelated generic unit pass
+ok 16 - resolver does not satisfy contract evidence with unrelated generic unit pass
+  ---
+  duration_ms: 197.149458
+  type: 'test'
+  ...
+# Subtest: resolver accepts generic current unit evidence for read-only audit reporting responsibilities
+ok 17 - resolver accepts generic current unit evidence for read-only audit reporting responsibilities
+  ---
+  duration_ms: 208.21725
+  type: 'test'
+  ...
+# Subtest: resolver emits no_registered_authority for unregistered high-risk state surfaces
+ok 18 - resolver emits no_registered_authority for unregistered high-risk state surfaces
+  ---
+  duration_ms: 203.426875
+  type: 'test'
+  ...
+# Subtest: resolver uses the accepted Run-lineage Architecture registry contract
+ok 19 - resolver uses the accepted Run-lineage Architecture registry contract
+  ---
+  duration_ms: 3.372458
+  type: 'test'
+  ...
+# Subtest: resolver does not classify derive-only workspace status as an unregistered state responsibility
+ok 20 - resolver does not classify derive-only workspace status as an unregistered state responsibility
+  ---
+  duration_ms: 284.036667
+  type: 'test'
+  ...
+# Subtest: resolver fails closed when workspace status contains a state mutation
+ok 21 - resolver fails closed when workspace status contains a state mutation
+  ---
+  duration_ms: 221.506125
+  type: 'test'
+  ...
+# Subtest: resolver applies workspace status exemption without hiding unregistered CLI wiring
+ok 22 - resolver applies workspace status exemption without hiding unregistered CLI wiring
+  ---
+  duration_ms: 210.717959
+  type: 'test'
+  ...
+# Subtest: resolver retains a mixed worker candidate beside read-only workspace status
+ok 23 - resolver retains a mixed worker candidate beside read-only workspace status
+  ---
+  duration_ms: 196.583209
+  type: 'test'
+  ...
+# Subtest: resolver fails closed when reviewed workspace status gains an indirect git side effect
+ok 24 - resolver fails closed when reviewed workspace status gains an indirect git side effect
+  ---
+  duration_ms: 194.668292
+  type: 'test'
+  ...
+# Subtest: resolver keeps no_registered_authority for mixed matched and unregistered high-risk paths
+ok 25 - resolver keeps no_registered_authority for mixed matched and unregistered high-risk paths
+  ---
+  duration_ms: 210.176333
+  type: 'test'
+  ...
+# Subtest: resolver fails closed when matched registry entry is missing required fields
+ok 26 - resolver fails closed when matched registry entry is missing required fields
+  ---
+  duration_ms: 201.185625
+  type: 'test'
+  ...
+# Subtest: resolver fails closed on malformed responsibility registry JSON
+ok 27 - resolver fails closed on malformed responsibility registry JSON
+  ---
+  duration_ms: 217.483167
+  type: 'test'
+  ...
+# Subtest: root registry resolves VibePro core responsibility authorities with contract-bound evidence
+ok 28 - root registry resolves VibePro core responsibility authorities with contract-bound evidence
+  ---
+  duration_ms: 13.999125
+  type: 'test'
+  ...
+# Subtest: resolver prefers contract-bound evidence over an earlier unqualified scenario match
+ok 29 - resolver prefers contract-bound evidence over an earlier unqualified scenario match
+  ---
+  duration_ms: 1.151291
+  type: 'test'
+  ...
+# Subtest: resolver does not fan out a shared risk surface across path-anchored responsibilities
+ok 30 - resolver does not fan out a shared risk surface across path-anchored responsibilities
+  ---
+  duration_ms: 195.60525
+  type: 'test'
+  ...
+# Subtest: resolver preserves standalone risk matching for an explicitly risk-only responsibility
+ok 31 - resolver preserves standalone risk matching for an explicitly risk-only responsibility
+  ---
+  duration_ms: 211.684
+  type: 'test'
+  ...
+# Subtest: resolver lets a contract clause path supplement a non-matching registry path
+ok 32 - resolver lets a contract clause path supplement a non-matching registry path
+  ---
+  duration_ms: 198.81275
+  type: 'test'
+  ...
+# Subtest: resolver matches symbols only in changed production lines
+ok 33 - resolver matches symbols only in changed production lines
+  ---
+  duration_ms: 374.989792
+  type: 'test'
+  ...
+# Subtest: resolver matches a symbol added on a changed production line
+ok 34 - resolver matches a symbol added on a changed production line
+  ---
+  duration_ms: 400.251959
+  type: 'test'
+  ...
+# Subtest: resolver fails closed for symbol matching when the production diff cannot be read
+ok 35 - resolver fails closed for symbol matching when the production diff cannot be read
+  ---
+  duration_ms: 235.64625
+  type: 'test'
+  ...
+# Subtest: resolver fails closed for symbol matching when no diff base is provided
+ok 36 - resolver fails closed for symbol matching when no diff base is provided
+  ---
+  duration_ms: 209.127417
+  type: 'test'
+  ...
+# Subtest: resolver compares an explicit head even when another branch is checked out
+ok 37 - resolver compares an explicit head even when another branch is checked out
+  ---
+  duration_ms: 599.838916
+  type: 'test'
+  ...
+# Subtest: resolver matches a symbol in an untracked production file
+ok 38 - resolver matches a symbol in an untracked production file
+  ---
+  duration_ms: 432.66525
+  type: 'test'
+  ...
+# Subtest: resolver ignores registered symbols that appear only in test files or story text
+ok 39 - resolver ignores registered symbols that appear only in test files or story text
+  ---
+  duration_ms: 198.950208
+  type: 'test'
+  ...
+# Subtest: resolver does not match a contract from responsibility reference alone
+ok 40 - resolver does not match a contract from responsibility reference alone
+  ---
+  duration_ms: 202.5535
+  type: 'test'
+  ...
+# Subtest: pr prepare keeps shared-risk authority matching precise through Gate DAG and Requirement synthesis
+ok 41 - pr prepare keeps shared-risk authority matching precise through Gate DAG and Requirement synthesis
+  ---
+  duration_ms: 1573.182916
+  type: 'test'
+  ...
+# Subtest: TAR-INV-001 fail-closed malformed and incomplete Task graphs
+ok 42 - TAR-INV-001 fail-closed malformed and incomplete Task graphs
+  ---
+  duration_ms: 0.627584
+  type: 'test'
+  ...
+# Subtest: uncovered extra changed repo-control path remains unsafe
+ok 43 - uncovered extra changed repo-control path remains unsafe
+  ---
+  duration_ms: 0.229084
+  type: 'test'
+  ...
+# Subtest: an extra declared and connected repo-control target may remain unchanged
+ok 44 - an extra declared and connected repo-control target may remain unchanged
+  ---
+  duration_ms: 0.084459
+  type: 'test'
+  ...
+# Subtest: dependency graph connectivity supports indirect and reverse declared edges
+ok 45 - dependency graph connectivity supports indirect and reverse declared edges
+  ---
+  duration_ms: 5.132042
+  type: 'test'
+  ...
+# Subtest: TAR-INV-002 exact repository-relative coverage only
+ok 46 - TAR-INV-002 exact repository-relative coverage only
+  ---
+  duration_ms: 0.133
+  type: 'test'
+  ...
+# Subtest: eligible Task proof records exact coverage and dependency evidence
+ok 47 - eligible Task proof records exact coverage and dependency evidence
+  ---
+  duration_ms: 0.342125
+  type: 'test'
+  ...
+1..47
+# tests 47
+# suites 0
+# pass 47
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8526.452834

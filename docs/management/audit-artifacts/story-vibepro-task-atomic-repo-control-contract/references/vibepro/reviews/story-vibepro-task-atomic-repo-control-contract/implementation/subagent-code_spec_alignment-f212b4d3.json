@@ -1,0 +1,24 @@
+{
+  "status": "pass",
+  "summary": "HEAD f212b4d3 aligns the Task-bound repo-control implementation with Accepted Spec C-001/C-002 and INV-001 through INV-004, including fail-closed validation, compatibility paths, atomic-authority non-bypass, evidence persistence, and generated-artifact cleanup.",
+  "findings": [],
+  "inspection_summary": "Compared the Accepted Spec and drift result with Task schema/evaluation, pr prepare scope and authority paths, regression tests, current-HEAD verification, and the final commit.",
+  "inspection_evidence": "Spec drift is clean; unit 313, integration 10, E2E wrapper 1, typecheck, and build passed; the final stale-summary fixture fails against the pre-fix implementation and passes at f212b4d3.",
+  "inspection_inputs": [
+    "src/task-bound-repo-control.js",
+    "src/pr-manager.js",
+    "test/task-bound-repo-control.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+    "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+    "test/pr-artifact-size-budget.test.js",
+    "docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/specs/story-vibepro-task-atomic-repo-control-contract.md",
+    ".vibepro/spec/story-vibepro-task-atomic-repo-control-contract/spec.json",
+    ".vibepro/spec/story-vibepro-task-atomic-repo-control-contract/drift.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json",
+    "git show f212b4d3da8d3509ca0aa46b589518a03c5cbaed"
+  ],
+  "judgment_delta": "The stale evidence after the final risk-surface change raised a possible code/spec mismatch; inspection showed the delta is limited to obsolete-summary cleanup with a pre-fix-failing regression, while every Accepted Spec contract remains mapped to source and current-HEAD tests."
+}

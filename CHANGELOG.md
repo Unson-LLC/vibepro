@@ -1237,3 +1237,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-process-reco
 なし
 
 <!-- vibepro-release-pr:403:end -->
+
+<!-- vibepro-release-pr:404:start -->
+## [#404](https://github.com/Unson-LLC/vibepro/pull/404) story-vibepro-task-atomic-repo-control-contract - Taskが同一HEADを要求するworkflowとruntimeを現行split policyが強制分離する矛盾を解消する
+
+- Author: @sintariran
+- Merged: 2026-07-30T19:56:24Z
+- Commit: `a6ab8b0e0891d89b928e34c072684f2beb74c5b9`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:404:end -->

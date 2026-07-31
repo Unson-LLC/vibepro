@@ -1,0 +1,710 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "updated_at": "2026-07-30T19:13:45.550Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+      "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+      "expected_root": null,
+      "expected_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "current_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785438825550-c6fcf242",
+      "story_id": "story-vibepro-task-atomic-repo-control-contract",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Current-HEAD scope is one coherent review unit.",
+      "reason": "Independent current-HEAD adjudication found the Story, Architecture, Spec, evaluator, integration, tests, and stale-summary lifecycle fix form one fail-closed PR preparation contract with no unrelated product or operational change.",
+      "reviewer": null,
+      "artifact": "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "expected_root": null,
+          "expected_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+          "current_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+        "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T19:13:45.547Z"
+      },
+      "recorded_at": "2026-07-30T19:13:45.550Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785420192895-14b66e51",
+      "story_id": "story-vibepro-task-atomic-repo-control-contract",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": "Commit only repository policy and Story registration artifacts; keep generated review and PR diagnostics ignored",
+      "reason": "The tracked .vibepro/config.json is product control-plane input; generated .vibepro/pr, reviews, adjudication and transcripts remain local diagnostics and are disclosed through concise PR narrative rather than committed evidence dumps",
+      "reviewer": "codex-coordinator",
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "expected_root": null,
+          "expected_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "current_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+        "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T14:03:12.889Z"
+      },
+      "recorded_at": "2026-07-30T14:03:12.895Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785420191730-2b7b0a1b",
+      "story_id": "story-vibepro-task-atomic-repo-control-contract",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "No split: the repository-control contract must land atomically with its enforcement and proof",
+      "reason": "The declared facets form one dependency-bound contract; a split would temporarily allow configuration without enforcement or enforcement without auditable registration",
+      "reviewer": "codex-coordinator",
+      "artifact": "docs/management/architecture/task-bound-repo-control-contract.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "expected_root": null,
+          "expected_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "current_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+        "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T14:03:11.726Z"
+      },
+      "recorded_at": "2026-07-30T14:03:11.730Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785420190795-d3a89291",
+      "story_id": "story-vibepro-task-atomic-repo-control-contract",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Keep Story registration, task-bound evaluator, PR manager integration, tests, and public docs in one atomic contract PR",
+      "reason": "Splitting repository-control registration from fail-closed runtime enforcement would create an unsafe and unverifiable intermediate state; all changed paths share one Story lineage and no foreign work item is bundled",
+      "reviewer": "codex-coordinator",
+      "artifact": "docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "expected_root": null,
+          "expected_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "current_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+        "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T14:03:10.791Z"
+      },
+      "recorded_at": "2026-07-30T14:03:10.796Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785420189585-a9587bc6",
+      "story_id": "story-vibepro-task-atomic-repo-control-contract",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:review_surface_integrity:rsv-4d205ce8c7aba4a0",
+      "source_status": null,
+      "summary": "Reviewer inspected the then-current runtime_contract surface at lifecycle start",
+      "reason": "The review surface changed after a later repair commit; the prior review is not reused as final evidence and a fresh strict-head gate review is required",
+      "reviewer": "codex-coordinator",
+      "artifact": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/surface-violations.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "expected_root": null,
+          "expected_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "current_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+        "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T14:03:09.582Z"
+      },
+      "recorded_at": "2026-07-30T14:03:09.585Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785420188766-7cc12422",
+      "story_id": "story-vibepro-task-atomic-repo-control-contract",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:review_surface_integrity:rsv-aa5e83d8eaf29237",
+      "source_status": null,
+      "summary": "Reviewer inspected the then-current ux_completion surface at lifecycle start",
+      "reason": "Generated review/request artifacts changed before close during sequential repair; this result is not reused as final evidence and a fresh strict-head gate review is required",
+      "reviewer": "codex-coordinator",
+      "artifact": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/surface-violations.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "expected_root": null,
+          "expected_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "current_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+        "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T14:03:08.762Z"
+      },
+      "recorded_at": "2026-07-30T14:03:08.766Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785420187990-c6685e4b",
+      "story_id": "story-vibepro-task-atomic-repo-control-contract",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:review_surface_integrity:rsv-d07ba9ad2d811854",
+      "source_status": null,
+      "summary": "Reviewer inspected the then-current code_spec_alignment surface at lifecycle start",
+      "reason": "Generated review/request artifacts changed before close during sequential repair; this result is not reused as final evidence and a fresh strict-head gate review is required",
+      "reviewer": "codex-coordinator",
+      "artifact": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/surface-violations.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "expected_root": null,
+          "expected_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "current_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+        "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T14:03:07.987Z"
+      },
+      "recorded_at": "2026-07-30T14:03:07.991Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785420187163-c96afcb1",
+      "story_id": "story-vibepro-task-atomic-repo-control-contract",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:review_surface_integrity:rsv-c640cc5847c2fb0f",
+      "source_status": null,
+      "summary": "Reviewer inspected the then-current runtime_contract surface at lifecycle start",
+      "reason": "Generated review/request artifacts changed before close during sequential repair; this result is not reused as final evidence and a fresh strict-head gate review is required",
+      "reviewer": "codex-coordinator",
+      "artifact": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/surface-violations.json",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "expected_root": null,
+          "expected_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "current_head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "0c4b1ac20351d18539e5bef2f6b5378a4c8ea839",
+        "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T14:03:07.160Z"
+      },
+      "recorded_at": "2026-07-30T14:03:07.163Z"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "open": 0,
+    "by_type": {
+      "needs_review": 8
+    },
+    "by_status": {
+      "accepted": 8
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+        "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+        "expected_root": null,
+        "expected_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+        "current_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785438825550-c6fcf242",
+      "story_id": "story-vibepro-task-atomic-repo-control-contract",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Current-HEAD scope is one coherent review unit.",
+      "reason": "Independent current-HEAD adjudication found the Story, Architecture, Spec, evaluator, integration, tests, and stale-summary lifecycle fix form one fail-closed PR preparation contract with no unrelated product or operational change.",
+      "reviewer": null,
+      "artifact": "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+      "verification_evidence_summary": {
+        "count": 5,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/build.json",
+            "type": "build",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+          "expected_root": null,
+          "expected_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+          "current_head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+        "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-07-30T19:13:45.547Z"
+      },
+      "recorded_at": "2026-07-30T19:13:45.550Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/decision-records.json"
+}

@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "summary": "HEAD f212b4d3でStory、Architecture、Accepted Spec、code invariant、テストは整合している。",
+  "findings": [],
+  "inspection_summary": "Accepted Spec fingerprintは現行digestと一致しdriftは全カテゴリ0。unit 313/313、integration 10/10、E2E、typecheck、buildとfocused 10/10を確認した。",
+  "inspection_evidence": "spec fingerprint一致、drift 0、current-HEAD verification-evidence、focused artifact-size-budget 10/10 pass。",
+  "inspection_inputs": ["docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md", "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md", "docs/specs/story-vibepro-task-atomic-repo-control-contract.md", ".vibepro/spec/story-vibepro-task-atomic-repo-control-contract/spec.json", "src/pr-manager.js", "src/task-bound-repo-control.js", "test/pr-artifact-size-budget.test.js"],
+  "judgment_delta": "未記述behaviorの懸念 -> Accepted Spec digest一致、drift 0、実CLI回帰とcurrent-HEAD全証拠を確認したためpass。"
+}

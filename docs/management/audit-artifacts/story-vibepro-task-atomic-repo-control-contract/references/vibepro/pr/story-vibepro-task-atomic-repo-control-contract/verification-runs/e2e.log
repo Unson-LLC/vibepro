@@ -1,0 +1,16 @@
+TAP version 13
+# Subtest: TAR-INV-003 Task proof cannot bypass atomic authority in pr prepare
+ok 1 - TAR-INV-003 Task proof cannot bypass atomic authority in pr prepare
+  ---
+  duration_ms: 58977.302292
+  type: 'test'
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 59036.034041

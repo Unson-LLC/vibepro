@@ -1,0 +1,29 @@
+{
+  "status": "pass",
+  "summary": "At exact HEAD f212b4d3da8d3509ca0aa46b589518a03c5cbaed, the correction remains within preparePullRequest's existing artifact-cleanup boundary. It removes only an obsolete PR-local Gate summary while preserving canonical routing, generated summaries, Gate verdicts, and Task atomic authority. No ADR is required.",
+  "findings": [],
+  "inspection_summary": "Inspected the planning review request, commit and parent source, Story/Architecture/Spec, artifact-policy and cleanup paths, summary module, references, and regression/evidence-depth tests. Covered dump enabled/disabled, within/over budget, generated/not-generated, and canonical-versus-PR-local paths.",
+  "inspection_evidence": "Combined focused suites passed 16/16. The regression creates gate-dag.summary.json, executes real pr prepare, and asserts deletion; parent source proves this assertion fails pre-fix because an omitted Gate dump was absent from scannedArtifactFilenames. Existing tests preserve Gate verdicts. git diff --check passed and the worktree was clean at the requested HEAD.",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/planning_spec/review-request-architecture_boundary.md",
+    ".vibepro/config.json",
+    "docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/specs/story-vibepro-task-atomic-repo-control-contract.md",
+    "src/pr-manager.js",
+    "src/pr-artifact-budget.js",
+    "test/pr-artifact-size-budget.test.js",
+    "test/evidence-depth-pr-prepare.test.js",
+    "git show HEAD",
+    "git show HEAD^:src/pr-manager.js",
+    "node --test test/pr-artifact-size-budget.test.js test/evidence-depth-pr-prepare.test.js",
+    "git diff --check",
+    "git status --short --branch",
+    "git rev-parse HEAD"
+  ],
+  "judgment_delta": [
+    "Concern that cleanup could cross canonical routing or delete a valid summary -> Pass because generated summaries are protected and deletion is confined to the obsolete PR-local sibling.",
+    "Concern that the regression might pass pre-fix or test only internals -> Pass because it creates the concrete reviewer-facing artifact and parent source proves the real CLI assertion fails before the fix.",
+    "Concern that the repair requires an ADR -> No ADR because ownership and dependency direction remain unchanged."
+  ]
+}

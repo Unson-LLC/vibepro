@@ -1,0 +1,145 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "stage": "planning_spec",
+  "role": "architecture_boundary",
+  "status": "needs_changes",
+  "summary": "Fail-closed boundary is conceptually sound, but Task source ownership and RED integration boundaries are incomplete.",
+  "findings": [
+    {
+      "severity": "high",
+      "id": "architecture-task-target-boundary-mismatch",
+      "detail": "Add the planned evaluator module to the runtime Task target group."
+    },
+    {
+      "severity": "high",
+      "id": "architecture-overconstrained-path-coverage",
+      "detail": "Fix fixture to reject changed uncovered repo-control paths, not unchanged declared targets."
+    },
+    {
+      "severity": "high",
+      "id": "architecture-integration-output-surfaces-unverified",
+      "detail": "Exercise pr prepare, scope proof, split plan, and atomic rejection end to end."
+    },
+    {
+      "severity": "medium",
+      "id": "architecture-malformed-schema-matrix-incomplete",
+      "detail": "Expand typed graph schema negative matrix."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed Story, Architecture, Task target groups, strict target validation, scope and atomic synthesis, and RED tests.",
+    "evidence": "New evaluator module is absent from Task targets; CLI/split-plan/atomic surfaces are not exercised.",
+    "inputs": [
+      "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md"
+    ]
+  },
+  "judgment_delta": [
+    "Concern about authority bypass was resolved conceptually, but implementation-start remains blocked by Task boundary and RED surface gaps."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+    "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+    "expected_root": null,
+    "expected_head_sha": "320018cf926aa7e7902afdb8471ea87081f75e5b",
+    "current_head_sha": "320018cf926aa7e7902afdb8471ea87081f75e5b",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+      "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+      "expected_root": null,
+      "expected_head_sha": "320018cf926aa7e7902afdb8471ea87081f75e5b",
+      "current_head_sha": "320018cf926aa7e7902afdb8471ea87081f75e5b",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-30T10:20:17.505Z",
+  "git_context": {
+    "head_sha": "320018cf926aa7e7902afdb8471ea87081f75e5b",
+    "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "04dec5af2f346e9b72ff6557ae67728611bfd87186bbae0ec9437f1d6b525bfd",
+    "user_status_fingerprint_hash": "04dec5af2f346e9b72ff6557ae67728611bfd87186bbae0ec9437f1d6b525bfd",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-30T10:20:17.493Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 1 file(s)",
+    "recorded_head_sha": "320018cf926aa7e7902afdb8471ea87081f75e5b",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+        "sha256": "5e02c033e8b54e6a37a33431888af3a08827c39b810decc37d0c24b71beab542",
+        "size": 4227
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "57ad8b18b8d260c32f7d822b589fca0a5e2404439deb21f2501c45c67339ef51"
+  },
+  "source_fingerprint": "d891828c6522f814f4ba7cbfccfa89cb0a16ce4246ca2d4813c62ea87991a4f2",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/tar_planning_architecture",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "/root/tar_planning_architecture",
+    "session_id": "/root/tar_planning_architecture",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/planning_spec/review-request-architecture_boundary.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "collaboration:/root/tar_planning_architecture:final",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "/root/tar_planning_architecture",
+      "implementation_session_id": "019f9e95-3829-71d0-b47f-e057fff8d171",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}
