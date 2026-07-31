@@ -59,11 +59,16 @@ const REMOVED_VACUOUS_FILES = [
   'test/e2e/story-vibepro-usage-report-main.spec.ts'
 ];
 
-// VET-S-2 is a per-file claim: each removed file's Story acceptance criteria
-// must still be executed by a behavioural test elsewhere. Asserting that the
-// replacement suites merely CONTAIN the string "../src/" would be the same
-// defect this Story removes, so each removed path is mapped to a named test
-// case and that case is required to actually run and pass.
+// VET-S-2 is a per-file claim at REPRESENTATIVE-CASE granularity: each removed
+// file must map to a named behavioural test case that exists elsewhere and
+// actually runs and passes. It is deliberately NOT a claim that every
+// acceptance criterion the removed file asserted has an equivalent elsewhere —
+// several removed files asserted whole AC sets against one mapped case, and
+// seven Story slugs lose their test/e2e coverage outright (listed in the Story
+// and in CHANGELOG.md). Asserting that the replacement suites merely CONTAIN
+// the string "../src/" would be the same defect this Story removes, so each
+// removed path is mapped to a named test case and that case is required to
+// actually run and pass.
 const REPLACEMENT_COVERAGE: { removed: string[]; suite: string; testName: string }[] = [
   {
     removed: [
