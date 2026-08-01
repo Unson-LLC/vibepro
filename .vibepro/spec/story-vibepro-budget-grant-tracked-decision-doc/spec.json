@@ -164,7 +164,133 @@
         ]
       },
       "first_seen_at": "2026-07-30T10:52:49.040Z",
-      "last_revised_at": "2026-07-30T10:56:55.041Z"
+      "last_revised_at": "2026-07-30T10:56:55.041Z",
+      "inherited_behavior": {
+        "condition": "!supplied && !runAuthority",
+        "classification": "unchanged",
+        "files": [
+          "src/agent-review.js"
+        ]
+      }
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "The budget-grant recording workflow is a three-state flow whose transitions are all observable: from the no_grant state a decision record naming a budget source transitions to granted by writing the tracked document and setting budget_approval.decision_doc; the same workflow transitions to refused, leaving the story in the no_grant state with no workspace record, when the document path is gitignored or its ignore status cannot be determined; and re-recording an unchanged override is an idempotent granted-to-granted transition that reuses the existing document path rather than minting a second one.",
+      "rationale": "Making the transitions explicit is what lets a reviewer tell a refused grant apart from a silently downgraded one, which is the reviewability failure this Story exists to close.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "gitignore"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/decision-records.js",
+            "anchor": "writeBudgetApprovalDoc"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/e2e/story-vibepro-budget-grant-tracked-decision-doc-acceptance.spec.js",
+            "case": "BGT-S-3 a gitignored document path fails the grant without a workspace record"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/e2e/story-vibepro-budget-grant-tracked-decision-doc-acceptance.spec.js",
+            "must_cover": "fails the grant without a workspace record"
+          }
+        ]
+      }
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "Budget override resolution is a status state machine consumed by the delivery-efficiency workflow: an override resolves to authorized when an accepted grant matches its computed digest, to grandfathered when its digest is pinned, and otherwise to an unauthorized state in which the override is inert and the effective policy transitions back to the tighter base budget rather than staying effective, so the failure direction of the state machine is always toward the smaller budget.",
+      "rationale": "An unauthorized override that stayed effective would defeat the authority gate; falling back to base keeps the workflow fail-closed.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "budget_override_approval"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/delivery-efficiency-guardrail.js",
+            "anchor": "resolveEfficiencyPolicyDecision"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/delivery-efficiency-guardrail.test.js",
+            "case": "story budget override without an accepted approval stays inert"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/delivery-efficiency-guardrail.test.js",
+            "must_cover": "stays inert"
+          }
+        ]
+      },
+      "inherited_behavior": {
+        "condition": "authority.status !== 'authorized' && authority.status !== 'grandfathered'",
+        "classification": "inherited",
+        "files": [
+          "src/delivery-efficiency-guardrail.js"
+        ]
+      }
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "This Story does not change how an Agent Review dispatch authorization is resolved. The branch that treats a started review entry without a dispatch_authorization_id as unauthorized predates this change and is carried through unmodified; the diff touches src/agent-review.js only to surface budget override authority status in the dispatch stop message.",
+      "rationale": "Declaring the untouched authorization branch explicitly keeps the reviewability contract honest: the file is in the diff, but this particular decision point is inherited, not introduced.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "boundary",
+            "index": 0,
+            "text_snippet": "範囲外"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/agent-review.js",
+            "anchor": "dispatch_authorization_id"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/delivery-efficiency-guardrail.test.js",
+            "case": "story budget override without an accepted approval stays inert"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/delivery-efficiency-guardrail.test.js",
+            "must_cover": "stays inert"
+          }
+        ]
+      },
+      "inherited_behavior": {
+        "condition": "!startedEntry?.dispatch_authorization_id",
+        "classification": "unchanged",
+        "files": [
+          "src/agent-review.js"
+        ]
+      }
     }
   ],
   "diagrams": [
