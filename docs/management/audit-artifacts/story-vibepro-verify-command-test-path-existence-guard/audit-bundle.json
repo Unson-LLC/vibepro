@@ -1,0 +1,879 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+  "source": "execute_merge",
+  "promoted_at": "2026-08-01T01:53:52.618Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:18abba4ada9ae6046c5dc95bc4b27d533ebfed09e7b5f7d0d9412cdd8e0054a5",
+    "compressed_hash": "sha256:02f994cc7981b2f91687335661f884614194772597bd37bb9febc5b625e6ee99",
+    "expanded_bytes": 21821,
+    "compressed_bytes": 4722,
+    "expanded_line_count": 519,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "decision_outcome_ledger",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-verify-command-test-path-existence-guard",
+    "cost": {
+      "compressed_bytes": 4722,
+      "expanded_bytes": 21821,
+      "expanded_line_count": 519,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "base": "main",
+    "delivery": {
+      "status": "merged",
+      "source": "github_pr",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/401",
+      "merge_commit_sha": "344b7a3aed391b0c320c021e8b524ec58615cee4",
+      "merged_at": "2026-08-01T01:53:50Z"
+    },
+    "reconciliation": {
+      "status": "reconciliation_required",
+      "reasons": [
+        "decision_outcome_binding_failed"
+      ],
+      "evaluated_at": "2026-08-01T01:53:52.604Z",
+      "head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003"
+    },
+    "reconciliation_action": {
+      "status": "required",
+      "reason": "decision_outcome_binding_failed",
+      "commands": [
+        "vibepro pr prepare . --story-id story-vibepro-verify-command-test-path-existence-guard --base main",
+        "vibepro execute merge . --story-id story-vibepro-verify-command-test-path-existence-guard --base main --pr https://github.com/Unson-LLC/vibepro/pull/401"
+      ]
+    },
+    "decision_outcome_binding": {
+      "status": "failed",
+      "reason": "central_ledger_parse_failed",
+      "expected_entry_count": 29,
+      "promoted_count": 0,
+      "duplicate_count": 0,
+      "persistence_status": null
+    },
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/401",
+    "merge_commit_sha": "344b7a3aed391b0c320c021e8b524ec58615cee4",
+    "merged_at": "2026-08-01T01:53:50Z",
+    "current_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...5a0e056a7bd6c5175d801bdc7072055feecc2003"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 56,
+    "copied_reference_count": 44,
+    "unresolved_reference_count": 8,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-verify-command-test-path-existence-guard"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:18abba4ada9ae6046c5dc95bc4b27d533ebfed09e7b5f7d0d9412cdd8e0054a5"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:081fe4a832bb0c01cddabe03f3feff5bdfc79be18ccf3047a28f7c4882231503",
+      "audit_digest": "sha256:081fe4a832bb0c01cddabe03f3feff5bdfc79be18ccf3047a28f7c4882231503",
+      "line_count": 1219,
+      "raw_line_count": 1219,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_outcome_ledger",
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-outcome-ledger.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:26807636179c7f71ace807df6d66dcd7541636fd93cb54b5538ceae64ae7b3fd",
+      "audit_digest": "sha256:26807636179c7f71ace807df6d66dcd7541636fd93cb54b5538ceae64ae7b3fd",
+      "line_count": 1494,
+      "raw_line_count": 1494,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:adfe8377485fa04a6dfbbbf5251ffe598e7c1451b4d73d46cd2bef7ebaffe0ac",
+      "audit_digest": "sha256:0d449ac04e5571469ef67978fc942e7e4f3a8696697b2c6c68adb742a86a8c42",
+      "line_count": 6643,
+      "raw_line_count": 44622,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:4e5d833122b2583df05d2aa946a529ceaced46ed9d46c7c026ca6195aacc49bd",
+      "audit_digest": "sha256:b30b044f313ad1a18f74e811a983bc3ea8b8c936f66db016395120b78d1d1391",
+      "line_count": 2984,
+      "raw_line_count": 5334,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:e2c21cca87a35a38d2d85f4b9e89a20b82c71b4f976116c4009b48ea32c0b795",
+      "audit_digest": "sha256:28c580924deddc072fd9991927e43c3c30ddafadc41ab7615ccf6c2dfb877525",
+      "line_count": 105,
+      "raw_line_count": 1158,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:a3bc44f68b31c7a767b8e66f0e6891288aba2db36299048cccf5d44cd1979399",
+      "audit_digest": "sha256:cd08f376d009ad4fa2e203ea1d1550b2d53b48b8ac9158ed5f690ca81ec562cd",
+      "line_count": 3092,
+      "raw_line_count": 5870,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:f49781e561720d26cc4913886238161eb07544b60d34416d95cbd8c2384bcc46",
+      "audit_digest": "sha256:f49781e561720d26cc4913886238161eb07544b60d34416d95cbd8c2384bcc46",
+      "line_count": 276,
+      "raw_line_count": 276,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:1f85df52e7e5edae2f576e9e6937a5fec70eab829ccc5c0fc72f9cdea2b650de",
+      "audit_digest": "sha256:c8bd00f2a8f097baa74b1c004256808752a64e8a33a97bde539e6a575537ff0d",
+      "line_count": 86,
+      "raw_line_count": 1079,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:915c78c23b739e7cae57218e90ea1c5f124cb0b9ad51741f0854d3f53b04a657",
+      "audit_digest": "sha256:915c78c23b739e7cae57218e90ea1c5f124cb0b9ad51741f0854d3f53b04a657",
+      "line_count": 1284,
+      "raw_line_count": 1284,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:1ea6e9784a8e939ce87bafef3a21f99b80cd15c193d328b572025e818b2d019c",
+      "audit_digest": "sha256:1ea6e9784a8e939ce87bafef3a21f99b80cd15c193d328b572025e818b2d019c",
+      "line_count": 1340,
+      "raw_line_count": 1340,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:a6e7e967f5f7608d99cea53fd56fdbafd2862059e14d9f6c59e38dc0bb807864",
+      "audit_digest": "sha256:a6e7e967f5f7608d99cea53fd56fdbafd2862059e14d9f6c59e38dc0bb807864",
+      "line_count": 400,
+      "raw_line_count": 400,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:9256d4f8ce11269774799cef3fb8885622c1e65c56f1248c1eba1240635cb5f6",
+      "audit_digest": "sha256:9256d4f8ce11269774799cef3fb8885622c1e65c56f1248c1eba1240635cb5f6",
+      "line_count": 138,
+      "raw_line_count": 138,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:99b60906ff91cc7e80f4e892c885f15603a417fc7b537973cf324259b92f6162",
+      "audit_digest": "sha256:99b60906ff91cc7e80f4e892c885f15603a417fc7b537973cf324259b92f6162",
+      "line_count": 199,
+      "raw_line_count": 199,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:d8d7325d8e551937d79aafcd51b18951e44abba2ea14c82c088b4e82a0dcbff5",
+      "audit_digest": "sha256:d8d7325d8e551937d79aafcd51b18951e44abba2ea14c82c088b4e82a0dcbff5",
+      "line_count": 808,
+      "raw_line_count": 808,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-verify-command-test-path-existence-guard/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/adjudication/story-vibepro-verify-command-test-path-existence-guard/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-verify-command-test-path-existence-guard/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/adjudication/story-vibepro-verify-command-test-path-existence-guard/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-outcome-ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/pr/decision-outcome-ledger.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/split-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/split-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/pr/traceability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/history/review-result-gate_evidence-2026-07-30T10-26-28.146Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/history/review-result-gate_evidence-2026-07-30T10-26-28.146Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-verify-command-test-path-existence-guard/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/stories/story-vibepro-verify-command-test-path-existence-guard/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-verify-command-test-path-existence-guard/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/stories/story-vibepro-verify-command-test-path-existence-guard/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-verify-command-test-path-existence-guard/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/adjudication/story-vibepro-verify-command-test-path-existence-guard/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-verify-command-test-path-existence-guard/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/adjudication/story-vibepro-verify-command-test-path-existence-guard/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/diagnostics/2026-07-30T055031Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/split-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/split-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/history/review-result-gate_evidence-2026-07-30T10-26-28.146Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/history/review-result-gate_evidence-2026-07-30T10-26-28.146Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-verify-command-test-path-existence-guard/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/stories/story-vibepro-verify-command-test-path-existence-guard/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-verify-command-test-path-existence-guard/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-verify-command-test-path-existence-guard/references/vibepro/stories/story-vibepro-verify-command-test-path-existence-guard/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 7253862
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T055031Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 985828
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 7292166
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 597342
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/surface-violations.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-verify-command-test-path-existence-guard/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-verify-command-test-path-existence-guard/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-verify-command-test-path-existence-guard/state.json",
+      "reason": "source_missing"
+    }
+  ]
+}

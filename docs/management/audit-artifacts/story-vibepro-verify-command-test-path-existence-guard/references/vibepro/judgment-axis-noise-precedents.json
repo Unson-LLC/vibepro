@@ -1,0 +1,89 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "release_ops|changed_path:release_ops",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "decision_id": "decision-1785407376963-03ed5f0c",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "release_note: this is an internal CLI gate tightening — verify record/run now rejects passing evidence naming nonexistent test paths, with the operator action fully self-describing (the error lists the exact missing paths and the fix is to name real test files or rerun); rollback_instruction: remove the single [REDACTED:a2b5ade6379a] call in src/verification-evidence.js and the pre-flight call in src/verification-runner.js as documented in the story reason block; observability_evidence: rejections surface as CLI errors, no persisted state or deployment change.",
+      "artifact": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+      "activation_candidates": [
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-30T10:29:42.632Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:19|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "decision_id": "decision-1785407375660-2b613ccc",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: the gate_evidence reviewer (lifecycle 54b1cda1, separate session) read the full 19-file diff as one judgment and passed it; review_owner_map: single owner — implementing session f7977f8c with independent reviewer af8bf5f7628aba642 and adjudicator ace59617b8c0845fd; decision_record: bundled-scope justification already accepted under gate:pr_scope_judgment (guard and its fixture fallout cannot land separately without a red intermediate state).",
+      "artifact": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:19",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-30T10:29:42.633Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|pr_route:runtime_change|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "decision_id": "decision-1785407374385-436b76b1",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "contract_doc: the public contract change (passing verification records naming nonexistent test paths are rejected) is specified in .vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json clauses INV-001/INV-002 with code_refs and test_refs; compatibility for previously valid inputs (globs, --test-name-pattern values, pathless commands, failing records, existing paths) is regression-tested by INV-002 tests and re-verified runner_direct at head e416d297. No CLI flag, output schema, or config surface changed.",
+      "artifact": ".vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json",
+      "activation_candidates": [
+        "pr_route:runtime_change",
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-30T10:29:42.633Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:20|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "decision_id": "decision-1785407375660-2b613ccc",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: the gate_evidence reviewer (lifecycle 54b1cda1, separate session) read the full 19-file diff as one judgment and passed it; review_owner_map: single owner — implementing session f7977f8c with independent reviewer af8bf5f7628aba642 and adjudicator ace59617b8c0845fd; decision_record: bundled-scope justification already accepted under gate:pr_scope_judgment (guard and its fixture fallout cannot land separately without a red intermediate state).",
+      "artifact": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:20",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-30T10:33:22.910Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:21|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+      "decision_id": "decision-1785407375660-2b613ccc",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: the gate_evidence reviewer (lifecycle 54b1cda1, separate session) read the full 19-file diff as one judgment and passed it; review_owner_map: single owner — implementing session f7977f8c with independent reviewer af8bf5f7628aba642 and adjudicator ace59617b8c0845fd; decision_record: bundled-scope justification already accepted under gate:pr_scope_judgment (guard and its fixture fallout cannot land separately without a red intermediate state).",
+      "artifact": "docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:21",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-30T10:46:07.660Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}
