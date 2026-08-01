@@ -146,6 +146,7 @@ async function ensureGitIgnore(repoRoot) {
   const required = [
     '.vibepro/*',
     '!.vibepro/config.json',
+    '.vibepro-store/',
     '.worktrees/vibepro/'
   ];
 

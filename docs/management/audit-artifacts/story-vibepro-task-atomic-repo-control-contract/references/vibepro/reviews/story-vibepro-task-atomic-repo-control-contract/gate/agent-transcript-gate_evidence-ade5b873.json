@@ -1,0 +1,18 @@
+{
+  "status": "pass",
+  "reviewer": "/root/tar_planning_spec",
+  "reviewed_head": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+  "summary": "凍結HEADを対象に実装、Story、Architecture、Spec、テスト、設定、実行ログを直接確認した。changed_path_inventory、review_surface、parse_failure、schema_failure はcurrent-HEADの実行可能証拠でカバーされている。旧HEADのneeds_changesは解消済みで、残るstale表示はstrict-HEADレビュー記録の更新事項である。",
+  "findings": [],
+  "inspection_summary": "legacy untyped、no-Task、config-only、strict validation、未被覆パス、切断グループ、既存atomic authority維持を単体・CLI・E2Eで確認。origin/mainとの差分11ファイルはStoryの5 facetとsplit-plan laneに収容され、入力・出力・失敗時stderr・repair action・atomic gate rejectionまで検証済み。",
+  "inspection_inputs": [
+    "src/task-bound-repo-control.js",
+    "src/pr-manager.js",
+    "test/task-bound-repo-control.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/split-plan.json"
+  ],
+  "judgment_delta": "旧HEADのstructured scenario evidence不足は、凍結HEADでchanged_path_inventory、review_surface、parse_failure、schema_failure、evidence_lifecycle_regression、workflow_state_regressionを明示した実行証拠により解消した。spec_prの6件は差分存在のmedium分類であり、spec_code、spec_test、code_test driftは0である。"
+}

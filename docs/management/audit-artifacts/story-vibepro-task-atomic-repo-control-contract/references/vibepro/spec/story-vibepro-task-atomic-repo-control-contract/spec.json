@@ -1,0 +1,281 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "inputs_digest": {
+    "story_sha": "sha256:f66ea02e40819f76bc15882d9bb9cab73846ba5f8324814145efc4e3a20b3578",
+    "code_sha": "sha256:7a8dec718898c17d30bd09badc591c09f759435d17fbaa2cc8a3065bfaec2765",
+    "test_sha": "sha256:33e6dbc2c509a8a780b6ce941d27ffa0aec3f5722ed100ef50a4688d4ae26e1c",
+    "architecture_sha": "sha256:123163112169bf89cf84e4db30fc10f7a77a4a3a6b8b9c5bf92ce05ddf36127a"
+  },
+  "clauses": [
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "TaskBoundRepoControlDecision may clear the independent repo-control unsafe signal only for an explicitly selected Task whose classification repo_control groups exactly cover every changed independent repo-control path and every declared repo_control group is dependency-graph connected to at least one declared non-repo-control group.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+            "section": "Decision"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "assessScope"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_contain": "TAR-CLI-001 pr prepare persists Task-bound repo-control proof"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:07:23.437Z",
+      "last_revised_at": "2026-07-30T14:54:05.716Z"
+    },
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "Missing Task context, duplicate groups, unknown dependency IDs, partial exact coverage, extra changed repo-control paths, and any disconnected declared repo-control group retain unsafe_for_atomic_override true. Legacy Task groups with no classification remain loadable but cannot authorize repo-control scope. Once any target group declares classification, every group must satisfy the typed schema; malformed or partially typed canonical Task groups are rejected by pr prepare --task with the configured state path and repair guidance before scope assessment.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+            "section": "Security boundary"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "mixed_repo_control_surface"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/task-bound-repo-control.test.js",
+            "must_contain": "TAR-INV-001 fail-closed malformed and incomplete Task graphs"
+          },
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_contain": "TAR-CLI-002 malformed typed Task state is rejected with repair guidance"
+          },
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_contain": "TAR-CLI-003 disconnected declared repo-control group remains unsafe"
+          },
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_contain": "TAR-CLI-004 legacy untyped Task groups remain loadable"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:36:56.486Z",
+      "last_revised_at": "2026-07-30T14:54:05.716Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "Task path coverage uses exact repository-relative target_files strings and never infers coverage from globs, basenames, prose, or acceptance text.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+            "section": "Decision"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "assertStrictTargetFiles"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/task-bound-repo-control.test.js",
+            "must_contain": "TAR-INV-002 exact repository-relative coverage only"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:07:23.437Z",
+      "last_revised_at": "2026-07-30T14:54:05.716Z"
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "An eligible Task proof persists Task ID, canonical Task state path, covered repo-control paths, covering repo-control group IDs, and dependency edges in machine-readable scope evidence and the split plan.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+            "section": "Evidence contract"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "assessScope"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_contain": "TAR-CLI-001 pr prepare persists Task-bound repo-control proof"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:07:23.437Z",
+      "last_revised_at": "2026-07-30T14:54:05.716Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "Task eligibility does not bypass Story atomic metadata, generated-lane coverage, current-HEAD reviewer ownership, verification evidence, Gate status, strict target validation, or VibePro PR creation.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+            "section": "Security boundary"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "evaluateAtomicScopeDeclaration"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+            "must_contain": "TAR-INV-003 Task proof cannot bypass atomic authority"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:07:23.437Z",
+      "last_revised_at": "2026-07-30T14:54:05.716Z"
+    },
+    {
+      "id": "INV-004",
+      "type": "invariant",
+      "statement": "Story-scoped preparation without a Task, the existing config-only registration exception, ordinary unsafe repo-control splitting, and strict target validation retain their prior behavior.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+            "section": "Compatibility and rollback"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "hasIndependentRepoControlSurface"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_contain": "TAR-INV-004 no-Task independent repo-control remains unsafe"
+          },
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_contain": "pr prepare keeps every required verification command after current-head reviewers accept an atomic scope"
+          },
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_contain": "TAR-CLI-005 strict target validation still rejects non-test files"
+          },
+          {
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_contain": "TAR-CLI-006 config-only registration exception remains compatible through task-scoped pr prepare"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:07:23.437Z",
+      "last_revised_at": "2026-07-30T14:54:05.716Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "state",
+      "entities": [
+        "TaskBoundRepoControlDecision"
+      ],
+      "mermaid": "stateDiagram-v2\n  [*] --> unsafe\n  unsafe --> task_bound_reviewable: exact coverage and connected typed Task graph\n  task_bound_reviewable --> atomic_blocked: Story or evidence incomplete\n  task_bound_reviewable --> atomic_accepted: existing atomic contract passes\n  atomic_blocked --> [*]\n  atomic_accepted --> [*]",
+      "rationale": "TaskBoundRepoControlDecision changes only the repo-control signal; existing atomic authority remains a separate transition."
+    },
+    {
+      "kind": "flow",
+      "entities": [
+        "TaskBoundRepoControlDecision",
+        "AtomicScopeDecision"
+      ],
+      "mermaid": "flowchart LR\n  Changed[\"changed repo-control paths\"] --> Task[\"selected typed Task groups\"]\n  Task --> Exact{\"exact path coverage?\"}\n  Exact -->|no| Unsafe[\"unsafe_for_atomic_override=true\"]\n  Exact -->|yes| Connected{\"every repo-control group connected to a non-repo-control group?\"}\n  Connected -->|no| Unsafe\n  Connected -->|yes| Reviewable[\"task-bound repo-control reviewable\"]\n  Reviewable --> Authority{\"Story metadata + lane coverage + current-HEAD owners + verification + Gate?\"}\n  Authority -->|no| Rejected[\"atomic scope rejected\"]\n  Authority -->|yes| Accepted[\"atomic single PR accepted\"]",
+      "rationale": "Task-bound repo-control analysis establishes only a reviewable candidate. Existing atomic authority independently decides whether the candidate may remain in one PR."
+    },
+    {
+      "kind": "threat_model",
+      "entities": [
+        "TaskBoundRepoControlDecision",
+        "AtomicScopeDecision"
+      ],
+      "mermaid": "flowchart LR\n  Malformed[\"malformed or incomplete Task state\"] --> Parser[\"strict typed Task parser\"]\n  Extra[\"uncovered changed repo-control path\"] --> Coverage[\"exact coverage check\"]\n  Disconnected[\"disconnected repo-control group\"] --> Graph[\"dependency connectivity check\"]\n  Stale[\"stale review or verification\"] --> Authority[\"current-HEAD authority check\"]\n  Parser -->|reject| Block[\"fail-closed / split recommended\"]\n  Coverage -->|reject| Block\n  Graph -->|reject| Block\n  Authority -->|reject| Block\n  Parser -->|valid| Candidate[\"reviewable candidate only\"]\n  Coverage -->|complete| Candidate\n  Graph -->|connected| Candidate\n  Candidate --> Authority\n  Authority -->|all current| Accept[\"atomic scope accepted\"]",
+      "rationale": "Malformed, incomplete, disconnected, or stale evidence cannot elevate repository-control changes into atomic authority; every failure path remains fail-closed."
+    }
+  ],
+  "open_questions": null,
+  "generated_at": "2026-07-30T13:38:51.975Z",
+  "previous_spec_id": "2026-07-30T13:38:51.975Z"
+}

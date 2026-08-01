@@ -106,6 +106,8 @@ test('DRES-SCENARIO-003 accepted decision with no verification-evidence.json yet
 test('DRES-SCENARIO-004 CLI end-to-end: vibepro decision record exposes verification_evidence_summary via --json', async () => {
   const root = await makeWorkspaceRepo();
   const storyId = 'STR-DRES-4';
+  await mkdir(path.join(root, 'test'), { recursive: true });
+  await writeFile(path.join(root, 'test', 'decision-records.test.js'), "import test from 'node:test';\ntest('DRES-SCENARIO-004', () => {});\n");
 
   await execFileAsync('node', [
     CLI_BIN, 'verify', 'record', root,

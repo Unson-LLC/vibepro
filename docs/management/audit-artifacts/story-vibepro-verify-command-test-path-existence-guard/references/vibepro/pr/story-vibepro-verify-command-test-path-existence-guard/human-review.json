@@ -1,0 +1,164 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+  "created_at": "2026-08-01T01:53:40.640Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is needs_verification with 2 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 9 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADR不要: |"
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-verify-command-test-path-existence-guard.md)"
+    },
+    "decision_records": {
+      "total": 13,
+      "open": 0,
+      "by_type": {
+        "needs_review": 13
+      },
+      "by_status": {
+        "accepted": 13
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+          "expected_root": null,
+          "expected_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+          "current_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1785549158063-0b0fd461",
+        "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_dag_adjudication:axis:release_ops",
+        "source_status": null,
+        "summary": "Accepted: no operator release note required for this internal-tooling guard",
+        "reason": "Owner sato_keigo approved on 2026-07-31 (Claude Code session 70ea817c-ee56-48c0-ab7c-612da8629872; transcript ~/.claude/projects/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872.jsonl) that the process-improvement PRs #400/#401/#402 may apply owner waivers to close gates, on the explicit condition that CI must be green. This record is written by the closure agent as a RELAYED receipt of that approval; the closure agent did not observe the owner prompt first-hand. CI is green on the current HEAD 5a0e056a (CodeQL, analyze, test (20), test (22) all pass) and is not waived. Item content: the independent judge flagged that nothing in the diff tells operators that previously-working recording commands may now be rejected -- no release note, no opt-out flag -- and that the Story's rollback is developer-side. Accepted: VibePro's verify record/run are internal agent-facing tooling in this repository, the rejection message names the exact missing paths and is self-explanatory at the point of failure, and rollback is a single guard-call removal. Operator-facing release communication is deferred to the repository's normal release-notes step rather than treated as a merge blocker.",
+        "reviewer": "sato_keigo",
+        "artifact": ".vibepro/adjudication/story-vibepro-verify-command-test-path-existence-guard/judgment-adjudication.json",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/unit.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/typecheck.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/verification-runs/e2e.json",
+              "type": "e2e",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+            "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6",
+            "expected_root": null,
+            "expected_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+            "current_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+          "current_branch": null,
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-08-01T01:52:38.056Z"
+        },
+        "recorded_at": "2026-08-01T01:52:38.064Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-01T01:53:37.803Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/agitated-borg-94e2f6/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+      "branch": "claude/agitated-borg-94e2f6",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "ea5e90fc767ac48d0528b7e4116e6a45e3d6e536",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

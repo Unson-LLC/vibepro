@@ -230,3 +230,19 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:399:start -->
 - [PR #399](https://github.com/Unson-LLC/vibepro/pull/399) — [2026-07](/releases/2026-07): fix: keep session-cost available on corrupt process metadata
 <!-- vibepro-release-index-pr:399:end -->
+
+<!-- vibepro-release-index-pr:403:start -->
+- [PR #403](https://github.com/Unson-LLC/vibepro/pull/403) — [2026-07](/releases/2026-07): story-vibepro-process-record-worktree-durability - プロセス記録をworktreeライフサイクルから切り離して永続化する
+<!-- vibepro-release-index-pr:403:end -->
+
+<!-- vibepro-release-index-pr:404:start -->
+- [PR #404](https://github.com/Unson-LLC/vibepro/pull/404) — [2026-07](/releases/2026-07): story-vibepro-task-atomic-repo-control-contract - Taskが同一HEADを要求するworkflowとruntimeを現行split policyが強制分離する矛盾を解消する
+<!-- vibepro-release-index-pr:404:end -->
+
+<!-- vibepro-release-index-pr:405:start -->
+- [PR #405](https://github.com/Unson-LLC/vibepro/pull/405) — [2026-07](/releases/2026-07): fix: recover terminal review replacement lifecycle
+<!-- vibepro-release-index-pr:405:end -->
+
+<!-- vibepro-release-index-pr:401:start -->
+- [PR #401](https://github.com/Unson-LLC/vibepro/pull/401) — [2026-08](/releases/2026-08): story-vibepro-verify-command-test-path-existence-guard - verify record/runのコマンドが名指しするtest fileパスの実在を検証する
+<!-- vibepro-release-index-pr:401:end -->

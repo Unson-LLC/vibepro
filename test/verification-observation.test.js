@@ -22,6 +22,16 @@ async function readJson(filePath) {
 async function setupRepo() {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-verify-obs-'));
   await writeFile(path.join(root, 'index.html'), '<!doctype html><title>Test</title>');
+  // The named test files must exist: passing evidence naming nonexistent test paths is rejected.
+  for (const testFile of [
+    'test/widgets.test.js',
+    'test/integration/widgets.test.js',
+    'test/integration/usage-report.test.js',
+    'test/e2e/run-check.spec.js'
+  ]) {
+    await mkdir(path.join(root, path.dirname(testFile)), { recursive: true });
+    await writeFile(path.join(root, testFile), "import test from 'node:test';\ntest('x', () => {});\n");
+  }
   await git(root, ['init', '-b', 'main']);
   await git(root, ['config', 'user.email', 'vibepro@example.com']);
   await git(root, ['config', 'user.name', 'VibePro Test']);

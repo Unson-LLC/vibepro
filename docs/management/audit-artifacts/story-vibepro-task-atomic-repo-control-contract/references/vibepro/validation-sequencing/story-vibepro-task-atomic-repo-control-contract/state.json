@@ -1,0 +1,186 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "created_at": "2026-07-30T19:25:31.851Z",
+  "updated_at": "2026-07-30T19:28:06.033Z",
+  "plan": {
+    "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+    "story_id": "story-vibepro-task-atomic-repo-control-contract",
+    "required": true,
+    "risk_profile": "light",
+    "risk_surfaces": [
+      "gate_orchestration",
+      "regression_blast_radius",
+      "test_coverage"
+    ],
+    "preflight_roles": [
+      "architecture_boundary"
+    ],
+    "preflight_reviews": [
+      {
+        "stage": "architecture_spec",
+        "role": "architecture_boundary",
+        "surfaces": [
+          "gate_orchestration"
+        ]
+      }
+    ],
+    "preflight_surfaces": [
+      "gate_orchestration"
+    ],
+    "preflight_required_inspection_inputs": [
+      ".vibepro/config.json",
+      "design-ssot.json",
+      "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+      "docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md",
+      "docs/specs/story-vibepro-task-atomic-repo-control-contract.md",
+      "src/pr-manager.js",
+      "src/task-bound-repo-control.js",
+      "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+      "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+      "test/pr-artifact-size-budget.test.js",
+      "test/task-bound-repo-control.test.js",
+      "test/vibepro-cli.test.js"
+    ],
+    "phases": [
+      "targeted_validation",
+      "preflight_review",
+      "code_frozen",
+      "expensive_verification",
+      "final_review"
+    ]
+  },
+  "frozen_binding": {
+    "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+    "test_fingerprint": "80688676cf655f411f0ba836ad1ff80db3ffb5bae42352b39edb167bdd85882b",
+    "verification_command": "node --test test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts"
+  },
+  "phases": {
+    "targeted_validation": {
+      "status": "passed",
+      "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-30T19:26:49.470Z",
+      "binding": {
+        "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+        "test_fingerprint": "80688676cf655f411f0ba836ad1ff80db3ffb5bae42352b39edb167bdd85882b",
+        "verification_command": "node --test test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts"
+      }
+    },
+    "preflight_review": {
+      "status": "passed",
+      "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/architecture_spec/review-result-architecture_boundary.json"
+      ],
+      "record_type": "advisory_preflight",
+      "findings": [],
+      "dispositions": [],
+      "satisfies_final_review": false,
+      "recorded_at": "2026-07-30T19:26:49.895Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "architecture_boundary",
+        "stage": "architecture_spec",
+        "inspection_summary": "reviewed gate_orchestration; risk_surfaces=gate_orchestration",
+        "inspection_inputs": [
+          ".vibepro/config.json",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+          "docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md",
+          "docs/specs/story-vibepro-task-atomic-repo-control-contract.md",
+          "src/pr-manager.js",
+          "src/task-bound-repo-control.js",
+          "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+          "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+          "test/pr-artifact-size-budget.test.js",
+          "test/task-bound-repo-control.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      },
+      "binding": {
+        "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+        "test_fingerprint": "80688676cf655f411f0ba836ad1ff80db3ffb5bae42352b39edb167bdd85882b",
+        "verification_command": "node --test test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts"
+      }
+    },
+    "code_frozen": {
+      "status": "passed",
+      "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "reason": null,
+      "evidence": [],
+      "recorded_at": "2026-07-30T19:26:50.024Z",
+      "binding": {
+        "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+        "test_fingerprint": "80688676cf655f411f0ba836ad1ff80db3ffb5bae42352b39edb167bdd85882b",
+        "verification_command": "node --test test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts"
+      }
+    },
+    "expensive_verification": {
+      "status": "passed",
+      "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-07-30T19:28:05.524Z",
+      "binding": {
+        "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+        "test_fingerprint": "80688676cf655f411f0ba836ad1ff80db3ffb5bae42352b39edb167bdd85882b",
+        "verification_command": "node --test test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts"
+      }
+    },
+    "final_review": {
+      "status": "passed",
+      "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/implementation/review-result-runtime_contract.json"
+      ],
+      "source": "agent_review",
+      "recorded_at": "2026-07-30T19:28:06.033Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+        "system": "codex",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "runtime_contract",
+        "stage": "implementation",
+        "inspection_summary": "Inspected current HEAD implementation, Accepted Spec, verification artifacts, and stale-summary regression path.",
+        "inspection_inputs": [
+          "src/pr-manager.js",
+          "src/task-bound-repo-control.js",
+          "test/pr-artifact-size-budget.test.js",
+          ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json"
+        ]
+      },
+      "binding": {
+        "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+        "test_fingerprint": "80688676cf655f411f0ba836ad1ff80db3ffb5bae42352b39edb167bdd85882b",
+        "verification_command": "node --test test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts"
+      }
+    }
+  },
+  "proposed_binding": {
+    "head_sha": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+    "test_fingerprint": "80688676cf655f411f0ba836ad1ff80db3ffb5bae42352b39edb167bdd85882b",
+    "verification_command": "node --test test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts"
+  },
+  "invalidations": []
+}

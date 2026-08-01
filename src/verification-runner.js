@@ -9,6 +9,7 @@ import { toWorkspaceRelative } from './workspace.js';
 import {
   RUNNER_EVIDENCE_RECEIPT,
   assertCommandMatchesVerificationKind,
+  assertCommandNamedTestPathsExist,
   classifyRunnerArtifactProbe,
   recordVerificationEvidence,
   runnerArtifactDerivedObservationKeys
@@ -142,6 +143,10 @@ export async function runVerificationCommand(repoRoot, options = {}) {
   // for this kind are overwritten by the run, so a post-execution rejection would destroy
   // the previous record's artifact while leaving that record pointing at it.
   assertRunnableKindCommand(options.kind, renderCommand(argv));
+  // Reject nonexistent named test paths before executing: `node --test <missing-file>`
+  // exits 0, so without this the run would produce a passing record crediting coverage
+  // that never executed.
+  assertCommandNamedTestPathsExist(root, renderCommand(argv), 'pass');
 
   // "The tree" is the checked-out commit plus the working tree: a suite that rewrites a
   // source file mid-run moves the tree without moving HEAD, so both are sampled.

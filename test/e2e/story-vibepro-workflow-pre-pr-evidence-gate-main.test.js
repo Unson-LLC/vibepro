@@ -78,6 +78,8 @@ test('workflow pre-PR replay exercises the state transition', async () => {
   expect('workflow state scenario clause').toContain('scenario');
 });
 `);
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'risk-adaptive-gate.test.js'), "import test from 'node:test';\ntest('x', () => {});\n");
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'init workflow story']);
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'workflowService.ts'), [

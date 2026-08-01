@@ -1,0 +1,121 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-review-surface-violations-v1",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "append_only": true,
+  "updated_at": "2026-07-30T12:55:35.128Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "violation_id": "rsv-c640cc5847c2fb0f",
+      "story_id": "story-vibepro-task-atomic-repo-control-contract",
+      "kind": "review_surface_mutated_during_review",
+      "evidence_class": "violation",
+      "changed_fields": [
+        "surface_digest"
+      ],
+      "started": {
+        "head_sha": "b5a77310822dbcbe460bdd48cc3c883470c9caae",
+        "surface_digest": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574"
+      },
+      "closed": {
+        "head_sha": "b5a77310822dbcbe460bdd48cc3c883470c9caae",
+        "surface_digest": "00a4327b08020078593c1987de3f5f2f784a20fc92af7b48abd1fda425776b2b"
+      },
+      "stage": "implementation",
+      "role": "runtime_contract",
+      "lifecycle_id": "b2d80acb-547a-4d5f-9068-5bba4e902461",
+      "agent_system": "codex",
+      "agent_id": "/root/tar_planning_architecture_v2",
+      "started_at": "2026-07-30T12:35:02.752Z",
+      "close_reason": "completed",
+      "close_evidence": "completed pass before subsequent repair",
+      "detected_by": "review close",
+      "recorded_at": "2026-07-30T12:44:09.003Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "violation_id": "rsv-d07ba9ad2d811854",
+      "story_id": "story-vibepro-task-atomic-repo-control-contract",
+      "kind": "review_surface_mutated_during_review",
+      "evidence_class": "violation",
+      "changed_fields": [
+        "surface_digest"
+      ],
+      "started": {
+        "head_sha": "b5a77310822dbcbe460bdd48cc3c883470c9caae",
+        "surface_digest": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574"
+      },
+      "closed": {
+        "head_sha": "b5a77310822dbcbe460bdd48cc3c883470c9caae",
+        "surface_digest": "00a4327b08020078593c1987de3f5f2f784a20fc92af7b48abd1fda425776b2b"
+      },
+      "stage": "implementation",
+      "role": "code_spec_alignment",
+      "lifecycle_id": "f8176654-cf96-44bc-a28a-4d3000eebf77",
+      "agent_system": "codex",
+      "agent_id": "/root/tar_planning_spec_v2",
+      "started_at": "2026-07-30T12:35:02.752Z",
+      "close_reason": "completed",
+      "close_evidence": "completed with needs_changes finding before repair",
+      "detected_by": "review close",
+      "recorded_at": "2026-07-30T12:44:09.012Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "violation_id": "rsv-aa5e83d8eaf29237",
+      "story_id": "story-vibepro-task-atomic-repo-control-contract",
+      "kind": "review_surface_mutated_during_review",
+      "evidence_class": "violation",
+      "changed_fields": [
+        "surface_digest"
+      ],
+      "started": {
+        "head_sha": "b5a77310822dbcbe460bdd48cc3c883470c9caae",
+        "surface_digest": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574"
+      },
+      "closed": {
+        "head_sha": "b5a77310822dbcbe460bdd48cc3c883470c9caae",
+        "surface_digest": "00a4327b08020078593c1987de3f5f2f784a20fc92af7b48abd1fda425776b2b"
+      },
+      "stage": "implementation",
+      "role": "ux_completion",
+      "lifecycle_id": "006f1759-557c-4701-919c-210d295462ce",
+      "agent_system": "codex",
+      "agent_id": "/root/tar_planning_product_v2",
+      "started_at": "2026-07-30T12:35:02.741Z",
+      "close_reason": "completed",
+      "close_evidence": "completed with needs_changes finding before repair",
+      "detected_by": "review close",
+      "recorded_at": "2026-07-30T12:44:09.015Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "violation_id": "rsv-4d205ce8c7aba4a0",
+      "story_id": "story-vibepro-task-atomic-repo-control-contract",
+      "kind": "review_surface_mutated_during_review",
+      "evidence_class": "violation",
+      "changed_fields": [
+        "surface_digest"
+      ],
+      "started": {
+        "head_sha": "a4983c39aaf5dbfbb1fd90182edd6602f3765b7a",
+        "surface_digest": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574"
+      },
+      "closed": {
+        "head_sha": "a4983c39aaf5dbfbb1fd90182edd6602f3765b7a",
+        "surface_digest": "4b10cbcdf4d48192ca2479c733a15e4d5ad79db5e66cf84f686419ee19c80413"
+      },
+      "stage": "implementation",
+      "role": "runtime_contract",
+      "lifecycle_id": "44d821e2-d3f7-4865-868a-9a1ce8efd1f6",
+      "agent_system": "codex",
+      "agent_id": "tar_planning_architecture_v2",
+      "started_at": "2026-07-30T12:48:31.302Z",
+      "close_reason": "completed",
+      "close_evidence": "collaboration:tar_planning_architecture_v2 final review at a4983c39",
+      "detected_by": "review close",
+      "recorded_at": "2026-07-30T12:55:35.127Z"
+    }
+  ]
+}

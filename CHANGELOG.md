@@ -1174,3 +1174,87 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-session-cost
 なし
 
 <!-- vibepro-release-pr:399:end -->
+
+<!-- vibepro-release-pr:403:start -->
+## [#403](https://github.com/Unson-LLC/vibepro/pull/403) story-vibepro-process-record-worktree-durability - プロセス記録をworktreeライフサイクルから切り離して永続化する
+
+- Author: @sintariran
+- Merged: 2026-07-30T13:18:00Z
+- Commit: `0d89fd8819654684ddecc61738a8ae31224be6b3`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-process-record-worktree-durability.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-process-record-worktree-durability.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:403:end -->
+
+<!-- vibepro-release-pr:404:start -->
+## [#404](https://github.com/Unson-LLC/vibepro/pull/404) story-vibepro-task-atomic-repo-control-contract - Taskが同一HEADを要求するworkflowとruntimeを現行split policyが強制分離する矛盾を解消する
+
+- Author: @sintariran
+- Merged: 2026-07-30T19:56:24Z
+- Commit: `a6ab8b0e0891d89b928e34c072684f2beb74c5b9`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:404:end -->
+
+<!-- vibepro-release-pr:405:start -->
+## [#405](https://github.com/Unson-LLC/vibepro/pull/405) fix: recover terminal review replacement lifecycle
+
+- Author: @sintariran
+- Merged: 2026-07-31T10:15:29Z
+- Commit: `31d84833cd2059843593169cc6d7aa3d804a3f07`
+
+### Change Summary
+
+なし
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:405:end -->
+
+<!-- vibepro-release-pr:401:start -->
+## [#401](https://github.com/Unson-LLC/vibepro/pull/401) story-vibepro-verify-command-test-path-existence-guard - verify record/runのコマンドが名指しするtest fileパスの実在を検証する
+
+- Author: @sintariran
+- Merged: 2026-08-01T01:53:50Z
+- Commit: `344b7a3aed391b0c320c021e8b524ec58615cee4`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:401:end -->

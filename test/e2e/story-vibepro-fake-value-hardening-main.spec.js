@@ -109,7 +109,9 @@ Failure mode: fake green artifact, missing evidence hidden as passed, weak prove
 `);
   await writeFile(path.join(repo, 'src', 'fake-value-workflow.js'), 'export const fakeValueWorkflow = "agent workflow gate-dag pr-prepare review provenance accepted_followup";\n');
   await writeFile(path.join(repo, 'test', 'fake-value-workflow.test.js'), 'export const fakeValueRegression = "flow_replay scenario_clause_e2e gate-dag review artifact";\n');
-  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture/fake-value-hardening.md', 'docs/specs/fake-value-hardening.md', 'src/fake-value-workflow.js', 'test/fake-value-workflow.test.js']);
+  await mkdir(path.join(repo, 'test', 'e2e'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'e2e', 'story-vibepro-fake-value-hardening-main.spec.js'), "import test from 'node:test';\ntest('x', () => {});\n");
+  await git(repo, ['add', 'docs/management/stories/active', 'docs/architecture/fake-value-hardening.md', 'docs/specs/fake-value-hardening.md', 'src/fake-value-workflow.js', 'test/fake-value-workflow.test.js', 'test/e2e/story-vibepro-fake-value-hardening-main.spec.js']);
   await git(repo, ['commit', '-m', 'feat: add fake-value workflow fixture']);
   return repo;
 }

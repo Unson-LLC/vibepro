@@ -235,6 +235,12 @@ title: Docs Only Update Spec
 
 - \`INV-CGC-1\`: Docs-only change stays documentation only.
 `);
+  // The named test file must exist: passing evidence naming nonexistent test paths is rejected.
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(
+    path.join(repo, 'test', 'vibepro-gate-check.test.js'),
+    "import test from 'node:test';\ntest('x', () => {});\n"
+  );
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'docs: add story doc and spec']);
 

@@ -1,0 +1,35 @@
+{
+  "status": "pass",
+  "summary": "現HEAD 0c4b1ac20351d18539e5bef2f6b5378a4c8ea839 で、Task-bound repo-control proof は exact path coverage と typed dependency connectivity に限定され、Story atomic metadata・全lane reviewer ownership・current-HEAD verification authorityを迂回できない。legacy/no-Task/config-only/strict-target経路もfail-closedまたは既存互換として実装・focused test・E2Eで確認でき、architecture_boundary、regression_guard、path_surface_coverageを満たす。ADR追加は不要。",
+  "findings": [],
+  "inspection_summary": "risk_surfaces=Story/Architecture/Spec authority; typed Task schema and exact repository-relative path coverage; directed authored dependency data and undirected release-boundary connectivity; scope signal and split-plan serialization; atomic reviewer/verification authority; Gate DAG split-resolution; no-Task/config-only/legacy/strict-target compatibility; current-HEAD verification provenance. 指定11入力、review request、verification evidence、実装call path、focused unit/CLI/E2E、origin/main差分とclean HEADをread-onlyで確認した。",
+  "inspection_evidence": [
+    ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/architecture_spec/review-request-architecture_boundary.md",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json (updated_at=2026-07-30T14:03:51.765Z; unit/build/typecheck/e2e/integration all pass; each git_context.head_sha=0c4b1ac20351d18539e5bef2f6b5378a4c8ea839; content_binding.status=strict_head)",
+    "node --test test/task-bound-repo-control.test.js => 6 pass, 0 fail",
+    "node --test --test-name-pattern='TAR-CLI-00[1-6]|TAR-INV-004' test/vibepro-cli.test.js => 7 pass, 0 fail",
+    "node --test test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts => 1 pass, 0 fail; outer E2E invokes and asserts inner TAR CLI contract markers",
+    "node --test test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts => 1 pass, 0 fail",
+    "git diff --check origin/main...HEAD; git status --short --branch; git rev-parse HEAD => clean branch, diff check pass, exact strict HEAD"
+  ],
+  "inspection_inputs": [
+    ".vibepro/config.json",
+    "design-ssot.json",
+    "docs/architecture/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/management/stories/active/story-vibepro-task-atomic-repo-control-contract.md",
+    "docs/specs/story-vibepro-task-atomic-repo-control-contract.md",
+    "src/pr-manager.js",
+    "src/task-bound-repo-control.js",
+    "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+    "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+    "test/task-bound-repo-control.test.js",
+    "test/vibepro-cli.test.js"
+  ],
+  "judgment_delta": [
+    "Prior concern: Task-bound atomic scope could omit verification authority -> Final: resolved. buildPrSplitPlan passes reviewer ownership and verification evidence into evaluateAtomicScopeDeclaration; current verification is filtered by dynamically resolved command.binding.status=current, and Gate DAG routes through split_resolution before pr_body_contract. Existing atomic-scope E2E passes on strict HEAD.",
+    "Initial concern: the new Story E2E exposes only one outer test and could be shallow -> Final: not shallow. The outer E2E runs the six public CLI acceptance paths and asserts the TAR contract markers/pass count; focused CLI rerun passed 7 relevant positive/negative/compatibility cases.",
+    "Initial concern: typed Task activation could regress legacy/no-Task/config-only/strict-target behavior -> Final: preserved. Legacy untyped Tasks load but remain ineligible, malformed/partial typed Tasks fail with repair guidance, no-Task independent repo-control remains unsafe, config-only exception remains compatible, and strict target rejection remains active.",
+    "Initial concern: dependency-direction or path normalization could silently broaden authority -> Final: bounded. Authored directed edges are preserved as proof while only release-boundary membership uses undirected reachability; exact repository-relative paths reject basenames, traversal, backslashes, globs, and uncovered changed paths.",
+    "Initial concern: architecture change may require ADR -> Final: no ADR required because the change is a bounded, local, reversible PR adjudication policy with explicit compatibility/rollback and no new external irreversible protocol, cloud authority, merge/deploy authority, or secret boundary."
+  ]
+}

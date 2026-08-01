@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1.0",
+  "kind": "artifact_summary",
+  "source_artifact": "split-plan.json",
+  "source_bytes": 22517,
+  "source_content_hash": "sha256:9b8703e4d7dda301438591c56cdf642750e5373288a14a76a1f06cfa45b074c0",
+  "conclusion": {
+    "status_fields": {
+      "model": "story-pr-split-plan-v1",
+      "status": "split_recommended",
+      "recommended_strategy": "split_by_lane_then_prepare"
+    },
+    "top_level_counts": {
+      "accepted_current_story_lineage_count": 0,
+      "rationale_count": 5,
+      "lanes_count": 5,
+      "merge_order_count": 5,
+      "next_actions_count": 5
+    }
+  },
+  "highlights": [
+    "model=story-pr-split-plan-v1",
+    "status=split_recommended",
+    "recommended_strategy=split_by_lane_then_prepare"
+  ],
+  "over_budget_reason": "source_bytes exceeds budget 16384",
+  "full_artifact_path": "split-plan.json"
+}

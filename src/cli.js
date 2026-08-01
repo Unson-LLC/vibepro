@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { getWorkspaceDir, initWorkspace } from './workspace.js';
+import { hydrateProcessRecords, processRecordStoreStatus, snapshotProcessRecords, snapshotProcessRecordsFailSoft } from './process-record-store.js';
 import {
   buildValidationSequencePlan,
   createValidationSequenceState,
@@ -452,6 +453,9 @@ Usage:
   vibepro doctor [repo] [--fix] [--json]
   vibepro status [repo] [--json]
   vibepro workspace status [repo] [--json]
+  vibepro store snapshot [repo] --story-id <id> [--json]
+  vibepro store hydrate [repo] --story-id <id> [--json]
+  vibepro store status [repo] --story-id <id> [--json]
   vibepro usage report [repo] [--since <date>] [--log <path>] [--codex-log <path>] [--claude-log <path>] [--subagent-roi] [--gate-roi] [--language ja|en] [--json]
   vibepro audit replay [repo] --story-id <id> [--json]
   vibepro audit memory preflight [repo] --memory <path> [--fallback-last-run <iso>|--fallback-hours <n>] [--now <iso>] [--json]
@@ -854,10 +858,45 @@ export const TOP_LEVEL_COMMANDS = [
   'playbook', 'journey', 'execute',
   'decision', 'outcome', 'verify', 'review', 'adjudicate', 'guard', 'checkpoint', 'gate', 'spec', 'report',
   'audit', 'design-modernize', 'design-system', 'design-ssot', 'uiux', 'explore', 'performance',
-  'workspace'
+  'workspace', 'store'
 ];
 
+// Commands whose success produces durable process records (reviews, verify
+// evidence, adjudications, spec, decisions, gate outcomes). After each one,
+// records are mirrored to the worktree-independent store so a worktree
+// deletion/regeneration can no longer erase them (2026-07-30 incidents).
+const AUTO_SNAPSHOT_SUBCOMMANDS = {
+  verify: ['run', 'record', 'import-ci'],
+  review: ['start', 'close', 'record'],
+  adjudicate: ['record'],
+  spec: ['write'],
+  pr: ['prepare'],
+  decision: ['record']
+};
+
+async function maybeAutoSnapshotProcessRecords(argv, result, io) {
+  const [command, ...rest] = argv;
+  const prefixes = AUTO_SNAPSHOT_SUBCOMMANDS[command];
+  if (!prefixes || result?.exitCode !== 0) return;
+  const subcommand = typeof result.subcommand === 'string' ? result.subcommand : rest[0];
+  if (!prefixes.some((prefix) => subcommand === prefix || String(subcommand ?? '').startsWith(`${prefix}-`))) return;
+  const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+  const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+  if (!storyId) return;
+  await snapshotProcessRecordsFailSoft({
+    repoRoot,
+    storyId,
+    logger: { warn: (message) => write(io.stderr ?? null, `${message}\n`) }
+  });
+}
+
 export async function runCli(argv, io = {}) {
+  const result = await dispatchCli(argv, io);
+  await maybeAutoSnapshotProcessRecords(argv, result, io);
+  return result;
+}
+
+async function dispatchCli(argv, io = {}) {
   const stdout = io.stdout ?? null;
   const stderr = io.stderr ?? null;
   const [command, ...rest] = argv;
@@ -1090,6 +1129,31 @@ export async function runCli(argv, io = {}) {
       }
       write(stderr, `Unknown workspace command: ${subcommand ?? ''}\n\n${renderHelp()}`);
       return { exitCode: 1, command, subcommand };
+    }
+
+    if (command === 'store') {
+      const subcommand = rest[0];
+      const repoRoot = rest[1] && !rest[1].startsWith('--') ? rest[1] : process.cwd();
+      if (!subcommand || subcommand === '--help' || subcommand === '-h' || hasFlag(rest, '--help') || hasFlag(rest, '-h')) {
+        write(stdout, renderHelp(getOption(rest, '--language')));
+        return { exitCode: 0, command, subcommand: subcommand ?? 'help' };
+      }
+      const storyId = getOption(rest, '--id') ?? getOption(rest, '--story-id');
+      const handlers = {
+        snapshot: snapshotProcessRecords,
+        hydrate: hydrateProcessRecords,
+        status: processRecordStoreStatus
+      };
+      const handler = handlers[subcommand];
+      if (!handler) {
+        write(stderr, `Unknown store command: ${subcommand}\n\n${renderHelp()}`);
+        return { exitCode: 1, command, subcommand };
+      }
+      const result = await handler({ repoRoot, storyId });
+      write(stdout, hasFlag(rest, '--json')
+        ? `${JSON.stringify(result, null, 2)}\n`
+        : renderProcessRecordStoreResult(subcommand, result));
+      return { exitCode: result.status === 'failed' ? 1 : 0, command, subcommand, result };
     }
 
     if (command === 'usage') {
@@ -4223,6 +4287,26 @@ function renderAuditMemoryResult(result) {
     result.artifact ? `artifact: ${result.artifact}` : null,
     result.required_action ? `required_action: ${result.required_action}` : null
   ].filter(Boolean).join('\n') + '\n';
+}
+
+function renderProcessRecordStoreResult(subcommand, result) {
+  if (result.status === 'failed') {
+    return `store ${subcommand} failed: ${result.reason}\n`;
+  }
+  const lines = [`store ${subcommand}: ${result.status}`, `store root: ${result.store_root}`];
+  if (subcommand === 'status') {
+    lines.push(
+      `in sync: ${result.in_sync}`,
+      `missing in store: ${result.missing_in_store}`,
+      `missing in local: ${result.missing_in_local}`,
+      `stale in store: ${result.stale_in_store}`,
+      `stale in local: ${result.stale_in_local}`,
+      `conflicts: ${result.conflicts}`
+    );
+  } else {
+    lines.push(`copied: ${result.copied.length}`, `merged: ${result.merged.length}`, `conflicts: ${result.conflicts.length}`, `skipped (newer destination): ${result.skipped_newer_destination.length}`);
+  }
+  return `${lines.join('\n')}\n`;
 }
 
 function renderHelp(language = null) {

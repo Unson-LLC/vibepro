@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-process-record-worktree-durability",
+  "ledger_path": ".vibepro/pr/story-vibepro-process-record-worktree-durability/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_0ceec8841860ddabf4e5ebea8411a3deb8c6d9fb910713b4cf91a13fad00412e"
+  },
+  "parent_revision_fingerprint": "8dcd49b0f77f0f10db8f094f16b315560b44d263be7471478fcb5c9c6298c61e",
+  "revision_fingerprint": "8b2446c4d833505969cefa2f752fdf3bb49bb7d69035d15370ebe136214cfc14",
+  "trace": {
+    "decision_trace_id": "dt_0ceec8841860ddabf4e5ebea8411a3deb8c6d9fb910713b4cf91a13fad00412e",
+    "collision_group": null,
+    "trace_source_ref": "tsr_a2bb80c8bc2d36739473d28eeb4faa0ae40d36c2326273468b564ba762317005",
+    "normalized_subject_key": "gate:pr_scope_judgment",
+    "source_identity": {
+      "source_kind": "linked_sources",
+      "source_ref": ".vibepro/pr/story-vibepro-process-record-worktree-durability/decision-records.json,.vibepro/pr/story-vibepro-process-record-worktree-durability/decision-records.json,.vibepro/pr/story-vibepro-process-record-worktree-durability/decision-records.json",
+      "native_id": "decision-1785414639891-4d2990f9,decision-1785414648546-047c9d13,decision-1785414661942-12be020c",
+      "digest": "b7cf02478ef924d7aa5fe5dcfd2c063df102a5579ea731f49342c81f28db645d",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+    "parent_revision_fingerprint": "8dcd49b0f77f0f10db8f094f16b315560b44d263be7471478fcb5c9c6298c61e",
+    "revision_fingerprint": "8b2446c4d833505969cefa2f752fdf3bb49bb7d69035d15370ebe136214cfc14",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_0ceec8841860ddabf4e5ebea8411a3deb8c6d9fb910713b4cf91a13fad00412e"
+        },
+        "parent_revision_fingerprint": "437113f5143302d3bb192e8ba87c6b5c038560bc278727758d1f81e2b8ce0e9a"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 403,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/403",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "0d89fd8819654684ddecc61738a8ae31224be6b3",
+        "status": "merged",
+        "merged_at": "2026-07-30T13:18:00Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}
