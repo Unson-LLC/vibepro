@@ -1,0 +1,145 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "The prior BLOCK is genuinely closed at 1f6c38a9: kind=unit evidence is now recorded (188/188, TAP artifact verified), integration and e2e are recorded and verified, gate:unit/gate:integration/gate:e2e/gate:failure_mode_coverage are all passed, and evidence_lifecycle_regression is now covered by real pre-fix-failing tests re-run green at head. One evidence-binding defect remains: gate:responsibility_authority is still needs_evidence because the generic unit_regression token is not clause-bound for three matched responsibilities, so recorded-but-unbound evidence reads as missing.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Re-derived the prior blocker status from source rather than from the claim: read the full verification-evidence.json command set (unit/typecheck/integration/e2e, content_binding at 1f6c38a9, git_context dirty=false), tailed all three TAP artifacts under .vibepro/evidence (188/188, 2/2, 7/7, fail=0), confirmed gate-dag.json shows gate:unit/integration/e2e/failure_mode_coverage passed with evidence_lifecycle_regression covered, read the implementation (src/decision-records.js findExistingBudgetApprovalDoc and isPathGitIgnored) and the two decisive tests, and re-ran node --test test/decision-records.test.js at HEAD on a clean tree (14/14 pass). For the remaining unresolved responsibility gate, traced the matcher in src/responsibility-authority.js to determine exactly why recorded evidence reads as missing.",
+    "evidence": ".vibepro/evidence/unit-all-1f6c38a9.tap",
+    "inputs": [
+      "src/responsibility-authority.js",
+      "src/decision-records.js",
+      "test/decision-records.test.js",
+      "docs/contracts/vibepro-core-responsibilities.json",
+      "docs/contracts/vibepro-responsibility-authority.json"
+    ]
+  },
+  "judgment_delta": [
+    "Initial judgment: assume the prior BLOCK likely stands, since re-recorded evidence often reproduces the same structural hole -> Final judgment: the prior blocker is closed on its own terms (unit/integration/e2e recorded, TAP-verified, content-bound to 1f6c38a9; failure_mode_coverage evidence_lifecycle_regression now covered by tests that fail pre-fix, re-run green at HEAD on a clean tree), so the BLOCK was not carried forward; but tracing src/responsibility-authority.js showed three responsibility contracts still read unit_regression as missing purely for lack of a clause-id binding in the recorded observation, which keeps required gate:responsibility_authority unresolved -- an actionable evidence-recording fix, hence needs_changes rather than pass or block."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+    "expected_root": null,
+    "expected_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+    "current_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+      "expected_root": null,
+      "expected_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "current_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-01T06:38:28.718Z",
+  "git_context": {
+    "head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+    "current_branch": "claude/zen-feynman-69d82a",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ]
+    },
+    "recorded_at": "2026-08-01T06:38:28.702Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "strict_head",
+    "effective_mode": "strict_head",
+    "source": "built_in_exception",
+    "reason": "gate evidence reviews inspect head-bound canonical artifacts whose content surface is not yet independently hashed"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+    "surface_files": [
+      {
+        "path": "docs/contracts/vibepro-core-responsibilities.json",
+        "sha256": "bb2c5c63d42966c11c1d587fda451e1ed188eddbf6bd756c5ff8143ff87239e1",
+        "size": 6841
+      },
+      {
+        "path": "docs/contracts/vibepro-responsibility-authority.json",
+        "sha256": "20db8f3fe82a20268ff1f2bb49352dea6774e6c0cfd75d37cb29e93451c234fd",
+        "size": 2484
+      },
+      {
+        "path": "src/decision-records.js",
+        "sha256": "5a98d365ff8f16404a486f47f6706f77c0cc33211db95307d16be29adaaff667",
+        "size": 19212
+      },
+      {
+        "path": "src/responsibility-authority.js",
+        "sha256": "bbef3d2fdcabf5f04beaa33bc6fbfba606c0d1df5aaecd9693d716fd2ad0374f",
+        "size": 38238
+      },
+      {
+        "path": "test/decision-records.test.js",
+        "sha256": "0f3d2a97fcf98fa53e18d8571c8f0222ef9b05a77c670c0dc324671fd07f671d",
+        "size": 18767
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "5d46de83d288aa0df81f2ae8cc4bf4845f5f65ac6a494332054956ab5d28a46d"
+  },
+  "source_fingerprint": "fe465cd43b5dbc76528dda54d4572787a46c7cac9ab4f4e5c54972bce068d1a8",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a81563b66cc792a37",
+    "agent_role": null,
+    "model": "claude-opus-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

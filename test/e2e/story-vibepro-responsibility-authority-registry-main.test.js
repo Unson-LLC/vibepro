@@ -217,6 +217,8 @@ async function makeWorkflowRepo() {
     '});',
     ''
   ].join('\n'));
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'responsibility-authority.test.js'), "import test from 'node:test';\ntest('x', () => {});\n");
   await writeFile(path.join(repo, 'artifacts', 'responsibility-authority-workflow.json'), JSON.stringify({
     status: 'pass',
     replay: 'flow_replay',

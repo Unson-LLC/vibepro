@@ -1,6 +1,18 @@
 import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
+import { readDecisionRecordsIfExists } from '../src/decision-records.js';
+
+import {
+  GRANDFATHERED_OVERRIDE_DIGESTS,
+  budgetApprovalSource,
+  buildBudgetApproval,
+  computeBudgetOverrideDigest,
+  resolveBudgetOverrideAuthority
+} from '../src/budget-override-authority.js';
 import {
   aggregateDeliveryMetrics,
   buildReviewDispatchDecision,
@@ -9,11 +21,16 @@ import {
   planCompatibleFindingBatches,
   planLifecycleTerminalization,
   resolveEfficiencyPolicy,
+  resolveEfficiencyPolicyDecision,
   selectRiskAdaptiveReviewCoverage,
   summarizeEfficiencyDebt
 } from '../src/delivery-efficiency-guardrail.js';
 
-test('story budget override preserves global defaults and merges role limits', () => {
+// OGB-S-1. Before CEA-S-4 this test asserted that `amendment_reason` alone made
+// an override effective. That contract is what let the implementing agent raise
+// its own budget twice, so the assertion is inverted here on purpose: the same
+// config now resolves to the base policy until a grant exists.
+test('story budget override without an accepted approval stays inert', () => {
   const config = { budgets: {
     delivery_efficiency: {
       max_subagent_count: 6,
@@ -28,11 +45,13 @@ test('story budget override preserves global defaults and merges role limits', (
     }
   } };
 
-  assert.deepEqual(resolveEfficiencyPolicy(config, 'story-a'), {
-    max_subagent_count: 9,
-    amendment_reason: 'historical review migration',
-    max_review_dispatches_by_role: { architecture: 1, runtime: 2 }
-  });
+  const resolved = resolveEfficiencyPolicyDecision(config, 'story-a');
+  assert.equal(resolved.policy.max_subagent_count, 6);
+  assert.deepEqual(resolved.policy.max_review_dispatches_by_role, { architecture: 1, runtime: 1 });
+  assert.equal(resolved.override.status, 'unauthorized');
+  assert.deepEqual(resolved.override.reasons, ['missing_approval']);
+  assert.equal(resolved.override.applied, false);
+
   assert.equal(resolveEfficiencyPolicy(config, 'story-b').max_subagent_count, 6);
   assert.throws(
     () => resolveEfficiencyPolicy({ budgets: {
@@ -41,6 +60,231 @@ test('story budget override preserves global defaults and merges role limits', (
     } }, 'story-a'),
     /requires amendment_reason/
   );
+});
+
+// OGB-S-2.
+test('story budget override applies only with a digest-bound human grant', () => {
+  const override = {
+    max_subagent_count: 9,
+    amendment_reason: 'historical review migration',
+    max_review_dispatches_by_role: { runtime: 2 }
+  };
+  const config = { budgets: {
+    delivery_efficiency: { max_subagent_count: 6, max_review_dispatches_by_role: { architecture: 1, runtime: 1 } },
+    delivery_efficiency_by_story: { 'story-a': override }
+  } };
+  const approval = {
+    decision_id: 'decision-1',
+    story_id: 'story-a',
+    status: 'accepted',
+    source: budgetApprovalSource('story-a'),
+    reason: 'owner approved the raise in the 2026-07-27 review',
+    budget_approval: {
+      story_id: 'story-a',
+      override_digest: computeBudgetOverrideDigest('story-a', override),
+      grantor_kind: 'human',
+      grantor: 'sato-keigo',
+      recorded_by: { agent_system: 'claude_code', agent_id: 'agent-77' }
+    }
+  };
+
+  const granted = resolveEfficiencyPolicyDecision(config, 'story-a', { decisions: [approval] });
+  assert.equal(granted.policy.max_subagent_count, 9);
+  assert.deepEqual(granted.policy.max_review_dispatches_by_role, { architecture: 1, runtime: 2 });
+  assert.equal(granted.override.status, 'authorized');
+  assert.equal(granted.override.approval.grantor, 'sato-keigo');
+});
+
+// OGB-S-3. Raising the number after approval must not ride the old grant.
+test('editing an approved override invalidates the grant by digest', () => {
+  const override = { max_subagent_count: 9, amendment_reason: 'approved raise' };
+  const approvedDigest = computeBudgetOverrideDigest('story-a', override);
+  const config = { budgets: {
+    delivery_efficiency: { max_subagent_count: 6 },
+    delivery_efficiency_by_story: { 'story-a': { ...override, max_subagent_count: 40 } }
+  } };
+  const approval = {
+    decision_id: 'decision-1', story_id: 'story-a', status: 'accepted',
+    source: budgetApprovalSource('story-a'), reason: 'owner approved 9',
+    budget_approval: {
+      story_id: 'story-a', override_digest: approvedDigest, grantor_kind: 'human',
+      grantor: 'sato-keigo', recorded_by: { agent_system: 'claude_code', agent_id: 'agent-77' }
+    }
+  };
+
+  const resolved = resolveEfficiencyPolicyDecision(config, 'story-a', { decisions: [approval] });
+  assert.equal(resolved.policy.max_subagent_count, 6);
+  assert.equal(resolved.override.status, 'unauthorized');
+  assert.deepEqual(resolved.override.reasons, ['approval_digest_mismatch']);
+});
+
+// OGB-S-4. Reworded prose is not a new approval and must not break an old one.
+test('override digest ignores amendment_reason prose but is scoped to the story', () => {
+  const digest = computeBudgetOverrideDigest('story-a', { max_subagent_count: 9, amendment_reason: 'first wording' });
+  assert.equal(digest, computeBudgetOverrideDigest('story-a', { max_subagent_count: 9, amendment_reason: 'rewritten wording' }));
+  assert.notEqual(digest, computeBudgetOverrideDigest('story-a', { max_subagent_count: 10, amendment_reason: 'first wording' }));
+  // Identical limits under a different Story must not produce a transplantable digest.
+  assert.notEqual(digest, computeBudgetOverrideDigest('story-b', { max_subagent_count: 9, amendment_reason: 'first wording' }));
+});
+
+// OGB-S-5. The receiver of the budget may not be its grantor.
+test('self-granted and non-human approvals never authorize an override', () => {
+  const override = { max_subagent_count: 9, amendment_reason: 'raise' };
+  const digest = computeBudgetOverrideDigest('story-a', override);
+  const base = {
+    decision_id: 'decision-1', story_id: 'story-a', status: 'accepted',
+    source: budgetApprovalSource('story-a'), reason: 'raise needed'
+  };
+  const grant = (extra) => ({
+    story_id: 'story-a', override_digest: digest, grantor_kind: 'human',
+    grantor: 'sato-keigo', recorded_by: { agent_system: 'claude_code', agent_id: 'agent-77' }, ...extra
+  });
+
+  const cases = [
+    [{ grantor: 'agent-77' }, 'self_approved'],
+    [{ grantor: 'claude_code:agent-77' }, 'self_approved'],
+    [{ grantor_kind: 'agent' }, 'grantor_not_human'],
+    [{ recorded_by: { agent_system: 'claude_code', agent_id: '' } }, 'recording_agent_unidentified']
+  ];
+  for (const [extra, expected] of cases) {
+    const resolved = resolveBudgetOverrideAuthority({
+      storyId: 'story-a', override, decisions: [{ ...base, budget_approval: grant(extra) }]
+    });
+    assert.equal(resolved.status, 'unauthorized', JSON.stringify(extra));
+    assert.ok(resolved.reasons.includes(expected), `${JSON.stringify(extra)} -> ${resolved.reasons}`);
+  }
+
+  const openGrant = resolveBudgetOverrideAuthority({
+    storyId: 'story-a', override, decisions: [{ ...base, status: 'open', budget_approval: grant({}) }]
+  });
+  assert.equal(openGrant.status, 'unauthorized');
+  assert.ok(openGrant.reasons.includes('approval_not_accepted'));
+});
+
+// OGB-S-6. buildBudgetApproval refuses to mint a self-grant at write time too,
+// so the honest path fails loudly instead of producing a silently inert record.
+test('buildBudgetApproval rejects a grantor equal to the recording agent', () => {
+  assert.throws(() => buildBudgetApproval({
+    storyId: 'story-a', overrideDigest: 'abc', grantorKind: 'human',
+    grantor: 'agent-77', agentSystem: 'claude_code', agentId: 'agent-77'
+  }), /grantor must differ from the recording agent/);
+  assert.throws(() => buildBudgetApproval({
+    storyId: 'story-a', overrideDigest: 'abc', grantorKind: 'human',
+    grantor: 'sato-keigo', agentSystem: 'claude_code'
+  }), /--agent-id/);
+  assert.throws(() => buildBudgetApproval({
+    storyId: 'story-a', overrideDigest: 'abc', grantorKind: 'owner',
+    grantor: 'sato-keigo', agentSystem: 'claude_code', agentId: 'agent-77'
+  }), /grantor kind must be one of/);
+});
+
+// OGB-S-7. Overrides that predate this gate keep working as merged, pinned to the
+// digest of their exact content -- a snapshot, not a per-story licence.
+test('grandfathered overrides are pinned by story-scoped content digest', () => {
+  // The literal count used to be pinned here at 13. Merging origin/main brought
+  // two more already-merged Stories with overrides, which had to be pinned so the
+  // gate would not retroactively invalidate them -- and the literal turned this
+  // red for a change that was correct. Assert the invariant instead: every pin
+  // must name a configured override and resolve grandfathered against it.
+  const config = JSON.parse(readFileSync(new URL('../.vibepro/config.json', import.meta.url), 'utf8'));
+  const configured = config.budgets.delivery_efficiency_by_story ?? {};
+  assert.ok(Object.keys(GRANDFATHERED_OVERRIDE_DIGESTS).length > 0);
+  for (const [pinnedId, pinnedDigest] of Object.entries(GRANDFATHERED_OVERRIDE_DIGESTS)) {
+    const pinnedOverride = configured[pinnedId];
+    assert.ok(pinnedOverride, `${pinnedId} is pinned but no longer configured; remove the pin in the same commit`);
+    assert.equal(computeBudgetOverrideDigest(pinnedId, pinnedOverride), pinnedDigest,
+      `${pinnedId} content changed without updating its pin`);
+    assert.equal(resolveBudgetOverrideAuthority({ storyId: pinnedId, override: pinnedOverride, decisions: [] }).status,
+      'grandfathered');
+  }
+
+  const [storyId, digest] = Object.entries(GRANDFATHERED_OVERRIDE_DIGESTS)[0];
+  const override = configured[storyId];
+  assert.equal(computeBudgetOverrideDigest(storyId, override), digest);
+
+  const edited = resolveBudgetOverrideAuthority({
+    storyId, override: { ...override, max_subagent_count: 9999 }, decisions: []
+  });
+  assert.equal(edited.status, 'unauthorized');
+  assert.deepEqual(edited.reasons, ['missing_approval']);
+});
+
+// OGB-S-8. No configured override is silently effective. The earlier form of
+// this test passed `decisions: []`, which asserted the invariant only in a world
+// where no grant exists -- precisely the world this Story exists to leave. The
+// architecture_boundary preflight caught that: once this repository's own
+// override became authorized by a real grant, the stubbed form kept reporting
+// `unauthorized` and would have stayed green while production resolved
+// `authorized`. It now reads the real decision store, so an override that is
+// effective without a matching accepted grant reddens the suite.
+test('every configured story override resolves to a known authority status', async () => {
+  const repoRoot = fileURLToPath(new URL('..', import.meta.url));
+  const config = JSON.parse(readFileSync(new URL('../.vibepro/config.json', import.meta.url), 'utf8'));
+  const entries = Object.entries(config.budgets.delivery_efficiency_by_story ?? {});
+  assert.ok(entries.length > 0);
+  for (const [storyId, override] of entries) {
+    // Decision records are stored per Story, so a single repo-wide read returns
+    // nothing and would silently reduce this back to the stubbed form.
+    const storePath = path.join(repoRoot, '.vibepro', 'pr', storyId, 'decision-records.json');
+    const storeExists = existsSync(storePath);
+    const records = await readDecisionRecordsIfExists(repoRoot, storyId).catch(() => null);
+    const decisions = records?.decisions ?? [];
+    // The anti-decay guard. `.gitignore` keeps `.vibepro/*` untracked except
+    // config.json, so a fresh clone or CI has no decision stores at all and every
+    // override correctly resolves grandfathered|unauthorized -- asserting that
+    // some override is `authorized` would fail there for a non-defect reason.
+    // What must hold everywhere is consistency: wherever a store does exist on
+    // disk, this test has to have actually read it. Reverting to `decisions: []`
+    // trips this on any checkout that has the artifacts.
+    if (storeExists) {
+      assert.ok(decisions.length > 0,
+        `${storyId} has a decision store on disk but none of its decisions were read; this test is not consulting the real store`);
+    }
+    const resolved = resolveBudgetOverrideAuthority({ storyId, override, decisions });
+    // Bind the read to the resolver's own output. Checking only that decisions
+    // were loaded is not enough: passing them to the reader but not to the
+    // resolver would still look green. If an accepted grant exists on disk whose
+    // digest matches the configured content, the resolver must actually say
+    // `authorized`, so stubbing the resolver's input reddens this.
+    const matchingGrant = decisions.some((decision) => (
+      decision?.status === 'accepted'
+      && decision?.budget_approval?.override_digest === computeBudgetOverrideDigest(storyId, override)
+    ));
+    if (matchingGrant) {
+      assert.equal(resolved.status, 'authorized',
+        `${storyId} has an accepted grant matching its configured content on disk, so the resolver must report authorized; a stubbed decision list would report ${resolved.status}`);
+    }
+    assert.ok(['grandfathered', 'unauthorized', 'authorized'].includes(resolved.status),
+      `${storyId}: ${resolved.status}`);
+    // The load-bearing half: an override may only be effective by a pin or by a
+    // named accepted grant. `authorized` without an approval object, or with a
+    // non-human grantor, would mean something made an override effective that
+    // this gate cannot name.
+    if (resolved.status === 'authorized') {
+      assert.ok(resolved.approval, `${storyId} resolved authorized with no approval record to name`);
+      assert.equal(resolved.approval.grantor_kind, 'human',
+        `${storyId} may only be authorized by a human grantor`);
+      assert.ok(String(resolved.approval.grantor ?? '').trim(),
+        `${storyId} must name the human who granted it`);
+      assert.equal(resolved.approval.override_digest, computeBudgetOverrideDigest(storyId, override),
+        `${storyId} grant must be bound to the override content actually configured`);
+    }
+    assert.deepEqual(resolved.status === 'grandfathered' ? resolved.reasons : [], [],
+      `${storyId} grandfathered entries must carry no disqualifying reason`);
+  }
+});
+
+// OGB-S-9. An inert override is reported as debt rather than passing unnoticed.
+test('unauthorized override surfaces as efficiency debt', () => {
+  const debt = summarizeEfficiencyDebt({
+    correctness_ready: true,
+    budget_override: { status: 'unauthorized', reasons: ['self_approved'] }
+  });
+  assert.equal(debt.has_efficiency_debt, true);
+  assert.deepEqual(debt.debt, [{ kind: 'budget_override_unauthorized', reasons: ['self_approved'] }]);
+  assert.equal(summarizeEfficiencyDebt({
+    correctness_ready: true, budget_override: { status: 'grandfathered', reasons: [] }
+  }).has_efficiency_debt, false);
 });
 import { buildAgentReviewEfficiencySummary } from '../src/pr-manager.js';
 

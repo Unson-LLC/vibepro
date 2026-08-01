@@ -290,22 +290,6 @@
       "require_known_attribution": false
     },
     "delivery_efficiency_by_story": {
-      "story-vibepro-review-replacement-recovery": {
-        "max_subagent_count": 70,
-        "max_agent_consumption_ms": 24000000,
-        "max_repair_batches": 4,
-        "max_review_dispatches_by_role": {
-          "product_requirement": 9,
-          "architecture_boundary": 18,
-          "spec_consistency": 18,
-          "regression_risk": 9,
-          "runtime_contract": 7,
-          "gate_evidence": 7,
-          "release_risk": 5,
-          "pr_split_scope": 5
-        },
-        "amendment_reason": "The first two planning_spec rounds consumed the shared six-subagent default while independently finding and then confirming repairs for incomplete replacement-recovery command surfaces. The updated accepted design adds the generated English and Japanese parallel-dispatch coordinator surfaces, which makes those reviews stale and leaves the required architecture_spec, implementation, and gate stages undispatchable under the shared cap. The owner explicitly instructed continuation on 2026-07-30. Reserve a bounded total of twenty-four lifecycles for the six historical reviews, one current planning round, the required architecture, implementation, and final gate roles, plus at most one focused repair round. The first final architecture round then found that current_story_id was still bound to this review Story contrary to the preserved-session contract. Restoring the configured current Story correctly changes the strict review fingerprint after all twenty-four reserved lifecycles were consumed. The owner instructed continuation. Reserve exactly twelve additional lifecycles and bounded measured-consumption headroom for one corrected architecture round, the required implementation and final Gate roles, and at most one focused repair review. Per-role increases are limited to those expected current-candidate reviews. Normalizing the accepted Story's Task bullets then correctly invalidated all three planning_spec judgments after the parser had previously dropped wrapped continuation lines. The ledger contains thirty-three historical lifecycles and the product_requirement, architecture_boundary, and spec_consistency role caps are exhausted for the required current-candidate planning round. The owner instructed continuation. Reserve exactly three aggregate lifecycles and one current planning review for each exhausted role. The resulting current-candidate Story fingerprint correctly invalidated architecture_spec, and the owner instructed continuation again. Reserve exactly three additional aggregate lifecycles and one architecture_boundary, spec_consistency, and regression_risk review for that mandatory pre-Code architecture_spec round. That tracked review-governance amendment itself then correctly invalidated planning_spec while the just-completed architecture_spec remained bound to the pre-amendment surface. The owner instructed continued completion. The next frozen-surface planning review found semantic origin.story_refs drift that the automated Spec drift check did not detect. Correcting that Accepted Spec metadata necessarily invalidates the review surface, and the previously reserved aggregate cap would end immediately after architecture_spec with no room for mandatory implementation and Gate reviews. The owner instructed completion. Reserve a bounded final lifecycle ceiling of fifty-eight: one corrected planning round, one architecture_spec round, the configured implementation and Gate roles, and a small focused-repair reserve. Per-role increases are limited to the roles those stages can require. The first final gate authorization then correctly consumed the fifty-eighth slot before the other two mandatory gate roles could start. The owner instructed continued completion on 2026-07-30. Because this tracked governance amendment intentionally invalidates strict evidence, reserve exactly twelve fresh lifecycles for the configured planning_spec, architecture_spec, implementation, and gate roles on the amended final HEAD; add only the exhausted product_requirement, architecture_boundary, and spec_consistency role slots and bounded measured-consumption headroom. This Story-local override is review execution governance, not a product-contract or default-policy change: authorization still applies the configured aggregate and per-role limits and fails closed when either is exceeded. It adds no waiver, merge authority, AWS apply, state migration, live negative-test, unrelated dispatch authority, or open-ended repair loop."
-      },
       "story-vibepro-task-scoped-pr-acceptance": {
         "max_subagent_count": 109,
         "max_agent_consumption_ms": 52000000,
@@ -468,6 +452,30 @@
         "approver": "sato_keigo",
         "approved_at": "2026-07-30"
       },
+      "story-vibepro-owner-gated-budget-override": {
+        "max_agent_consumption_ms": 7200000,
+        "max_review_dispatches_by_role": {
+          "architecture": 4
+        },
+        "amendment_reason": "Owner-approved raise scoped to this Story. Approved by sato_keigo on 2026-07-30 via AskUserQuestion in Claude Code session 70ea817c-ee56-48c0-ab7c-612da8629872, relayed to the closure agent by the orchestrating session; the closure agent did not observe that prompt directly, so this record names the approval channel rather than claiming first-hand observation. Why it was needed: the base policy allows 1 architecture review dispatch and 1800000 ms of agent consumption, and the gate stage (gate_evidence and release_risk, three rounds) plus two adjudication rounds consumed the base allowance before the risk-adaptive validation sequence reached its preflight_review phase, which requires an architecture_spec/architecture_boundary dispatch that the guardrail then refused with budget_exceeded. Scope of the raise: max_review_dispatches_by_role.architecture 1 -> 2 (one preflight dispatch plus one spare for a replacement if the first times out) and max_agent_consumption_ms 1800000 -> 3600000. Purpose is bounded to the final closure sequence only: preflight_review, code_frozen, expensive_verification, final_review, PR creation, CI import and merge. The shared defaults in budgets.delivery_efficiency are untouched at 6 subagents / 1800000 ms, so no other Story inherits this raise. This is the first override in this repository written after the authority resolver shipped, so unlike the sixteen grandfathered entries it is authorized by an accepted decision record rather than by a digest pin. UPDATE (2026-07-30, second grant): max_subagent_count 6 -> 10, approved by sato_keigo via AskUserQuestion in Claude Code session 70ea817c-ee56-48c0-ab7c-612da8629872 (question: raise subagent cap for the closure sequence; answer: approve up to 10; the session transcript under ~/.claude/projects/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872.jsonl is the inspectable primary record per the owner-selected provenance standard). Why: six review lifecycles (3x gate_evidence, 3x release_risk) already exist and authorize counts the prospective dispatch, so the preflight architecture dispatch was refused on subagent_count while both granted dimensions had headroom. 10 = 6 used + preflight + spare + headroom for a post-freeze re-dispatch, closure sequence only. UPDATE (2026-07-30, third grant): max_subagent_count 10 -> 14, max_review_dispatches_by_role.architecture 2 -> 4, max_agent_consumption_ms 3600000 -> 7200000, approved by sato_keigo via AskUserQuestion in Claude Code session 70ea817c-ee56-48c0-ab7c-612da8629872 (question: third grant for the final closure cycle after adjudication found AC-8 not_demonstrated; answer: approve final cycle; transcript at ~/.claude/projects/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872.jsonl is the inspectable primary record). Scope: one fixture-store repair commit for AC-8, the re-anchor cycle it forces (preflight + final review re-dispatch), the evidence-recording gates, PR, CI and merge. If this cycle does not close, the Story freezes rather than receiving a fourth grant.",
+        "max_subagent_count": 14
+      },
+      "story-vibepro-review-replacement-recovery": {
+        "max_subagent_count": 70,
+        "max_agent_consumption_ms": 24000000,
+        "max_repair_batches": 4,
+        "max_review_dispatches_by_role": {
+          "product_requirement": 9,
+          "architecture_boundary": 18,
+          "spec_consistency": 18,
+          "regression_risk": 9,
+          "runtime_contract": 7,
+          "gate_evidence": 7,
+          "release_risk": 5,
+          "pr_split_scope": 5
+        },
+        "amendment_reason": "The first two planning_spec rounds consumed the shared six-subagent default while independently finding and then confirming repairs for incomplete replacement-recovery command surfaces. The updated accepted design adds the generated English and Japanese parallel-dispatch coordinator surfaces, which makes those reviews stale and leaves the required architecture_spec, implementation, and gate stages undispatchable under the shared cap. The owner explicitly instructed continuation on 2026-07-30. Reserve a bounded total of twenty-four lifecycles for the six historical reviews, one current planning round, the required architecture, implementation, and final gate roles, plus at most one focused repair round. The first final architecture round then found that current_story_id was still bound to this review Story contrary to the preserved-session contract. Restoring the configured current Story correctly changes the strict review fingerprint after all twenty-four reserved lifecycles were consumed. The owner instructed continuation. Reserve exactly twelve additional lifecycles and bounded measured-consumption headroom for one corrected architecture round, the required implementation and final Gate roles, and at most one focused repair review. Per-role increases are limited to those expected current-candidate reviews. Normalizing the accepted Story's Task bullets then correctly invalidated all three planning_spec judgments after the parser had previously dropped wrapped continuation lines. The ledger contains thirty-three historical lifecycles and the product_requirement, architecture_boundary, and spec_consistency role caps are exhausted for the required current-candidate planning round. The owner instructed continuation. Reserve exactly three aggregate lifecycles and one current planning review for each exhausted role. The resulting current-candidate Story fingerprint correctly invalidated architecture_spec, and the owner instructed continuation again. Reserve exactly three additional aggregate lifecycles and one architecture_boundary, spec_consistency, and regression_risk review for that mandatory pre-Code architecture_spec round. That tracked review-governance amendment itself then correctly invalidated planning_spec while the just-completed architecture_spec remained bound to the pre-amendment surface. The owner instructed continued completion. The next frozen-surface planning review found semantic origin.story_refs drift that the automated Spec drift check did not detect. Correcting that Accepted Spec metadata necessarily invalidates the review surface, and the previously reserved aggregate cap would end immediately after architecture_spec with no room for mandatory implementation and Gate reviews. The owner instructed completion. Reserve a bounded final lifecycle ceiling of fifty-eight: one corrected planning round, one architecture_spec round, the configured implementation and Gate roles, and a small focused-repair reserve. Per-role increases are limited to the roles those stages can require. The first final gate authorization then correctly consumed the fifty-eighth slot before the other two mandatory gate roles could start. The owner instructed continued completion on 2026-07-30. Because this tracked governance amendment intentionally invalidates strict evidence, reserve exactly twelve fresh lifecycles for the configured planning_spec, architecture_spec, implementation, and gate roles on the amended final HEAD; add only the exhausted product_requirement, architecture_boundary, and spec_consistency role slots and bounded measured-consumption headroom. This Story-local override is review execution governance, not a product-contract or default-policy change: authorization still applies the configured aggregate and per-role limits and fails closed when either is exceeded. It adds no waiver, merge authority, AWS apply, state migration, live negative-test, unrelated dispatch authority, or open-ended repair loop."
+      },
       "story-vibepro-task-atomic-repo-control-contract": {
         "max_subagent_count": 64,
         "max_agent_consumption_ms": 20000000,
@@ -488,6 +496,30 @@
   },
   "brainbase": {
     "stories": [
+      {
+        "story_id": "story-vibepro-budget-override-residual-findings",
+        "title": "owner-gated budget override の残余 low finding 2件（fallback 方向性の文書精度 / design root の空登録）を解消する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-30",
+        "due_at": null,
+        "category": "architecture"
+      },
+      {
+        "story_id": "story-vibepro-owner-gated-budget-override",
+        "title": "予算 override を「エージェントが書けば効く」から「人間の承認記録が無ければ効かない」へ変える",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-27",
+        "due_at": null,
+        "category": "architecture"
+      },
       {
         "story_id": "story-vibepro-session-cost-source-health-fail-soft",
         "title": "Session Cost入力障害を局所化して監査を継続する",
@@ -1152,6 +1184,30 @@
         "started_at": "2026-07-30",
         "due_at": null,
         "category": "bugfix"
+      },
+      {
+        "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+        "title": "verify record/runのコマンドが名指しするtest fileパスの実在を検証する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-30",
+        "due_at": null,
+        "category": "bugfix"
+      },
+      {
+        "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+        "title": "budget grantをdiffでレビュー可能にする: decision recordがtracked decision documentを必ず書く",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-07",
+        "started_at": "2026-07-30",
+        "due_at": null,
+        "category": "governance"
       }
     ],
     "current_story_id": "story-vibepro-vacuous-e2e-test-elimination"

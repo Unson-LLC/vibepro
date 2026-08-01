@@ -1,5 +1,7 @@
 import { createHash } from 'node:crypto';
 
+import { resolveBudgetOverrideAuthority } from './budget-override-authority.js';
+
 const LIMITS = {
   max_elapsed_ms: 'trusted_pr_ready_ms',
   max_observed_work_ms: 'observed_work_ms',
@@ -60,21 +62,46 @@ export function normalizeEfficiencyPolicy(input = {}) {
   return policy;
 }
 
-export function resolveEfficiencyPolicy(config = {}, storyId = null) {
+export function resolveEfficiencyPolicy(config = {}, storyId = null, context = {}) {
+  return resolveEfficiencyPolicyDecision(config, storyId, context).policy;
+}
+
+// A Story override only takes effect when an accepted decision record grants it
+// (CEA-S-4). An unauthorized override is inert rather than fatal: the base
+// policy applies as written — no direction is enforced, so a tightening
+// override also reverts to the base — and `override` carries the reason
+// so `pr prepare` and `review authorize` can show the human why the raise did
+// not land instead of silently honouring an agent's self-approval.
+export function resolveEfficiencyPolicyDecision(config = {}, storyId = null, context = {}) {
   const base = config?.budgets?.delivery_efficiency;
-  if (!base || typeof base !== 'object' || Array.isArray(base)) return null;
+  if (!base || typeof base !== 'object' || Array.isArray(base)) {
+    return { policy: null, override: { status: 'absent', story_id: storyId ?? null, digest: null, reasons: [], approval: null } };
+  }
   const override = storyId ? config?.budgets?.delivery_efficiency_by_story?.[storyId] : null;
-  if (!override || typeof override !== 'object' || Array.isArray(override)) return base;
+  if (!override || typeof override !== 'object' || Array.isArray(override)) {
+    return { policy: base, override: { status: 'absent', story_id: storyId ?? null, digest: null, reasons: [], approval: null } };
+  }
   if (typeof override.amendment_reason !== 'string' || !override.amendment_reason.trim()) {
     throw new Error(`delivery efficiency Story override ${storyId} requires amendment_reason`);
   }
+  const authority = resolveBudgetOverrideAuthority({
+    storyId,
+    override,
+    decisions: context.decisions ?? []
+  });
+  if (authority.status !== 'authorized' && authority.status !== 'grandfathered') {
+    return { policy: base, override: { ...authority, applied: false } };
+  }
   return {
-    ...base,
-    ...override,
-    max_review_dispatches_by_role: {
-      ...(base.max_review_dispatches_by_role ?? {}),
-      ...(override.max_review_dispatches_by_role ?? {})
-    }
+    policy: {
+      ...base,
+      ...override,
+      max_review_dispatches_by_role: {
+        ...(base.max_review_dispatches_by_role ?? {}),
+        ...(override.max_review_dispatches_by_role ?? {})
+      }
+    },
+    override: { ...authority, applied: true }
   };
 }
 
@@ -256,6 +283,11 @@ export function summarizeEfficiencyDebt(input = {}) {
   if ((input.duplicate_dispatch_count ?? 0) > 0) debt.push({ kind: 'duplicate_dispatch', count: input.duplicate_dispatch_count });
   if (input.budget?.status === 'exceeded' || input.budget?.stop?.reason === 'budget_exceeded') {
     debt.push({ kind: 'budget_exceeded', dimensions: input.budget.exceeded ?? input.budget.stop?.dimensions ?? [] });
+  }
+  // An override that was written but never granted is debt, not a silent no-op:
+  // the raise the agent configured is not in force and the human should see why.
+  if (input.budget_override?.status === 'unauthorized') {
+    debt.push({ kind: 'budget_override_unauthorized', reasons: input.budget_override.reasons ?? [] });
   }
   return {
     correctness_ready: input.correctness_ready === true,

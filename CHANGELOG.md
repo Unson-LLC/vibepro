@@ -79,6 +79,39 @@ All notable changes to VibePro will be documented in this file.
   `.github/workflows/ci.yml`; the deletions in this change stand on their own
   and do not depend on the lint.
 
+- **Breaking (behavior)**: a Story-local delivery-efficiency budget override
+  (`budgets.delivery_efficiency_by_story.<story-id>` in `.vibepro/config.json`) is
+  now inert unless an accepted decision record grants it. Writing
+  `amendment_reason` is no longer sufficient: the grant must name a human grantor,
+  identify the recording agent, and carry the `override_digest` VibePro computes
+  from the override itself, so approving a budget approves specific numbers and a
+  grant cannot be transplanted to another Story. An ungranted override falls back
+  to the base budget — regardless of direction — and reports why, as
+  `budget_override` on `review authorize` / dispatch stops and as
+  `budget_override_unauthorized` efficiency debt in `pr prepare`. Note that the
+  fallback is to the base policy as written, not to the stricter of the two: if
+  you used a Story override to *tighten* a limit below the base budget, the
+  ungranted override reverts to the looser base until you record the grant.
+
+  **Upgrade action**: if your repository configures `delivery_efficiency_by_story`,
+  the override stops applying on upgrade. Either record an approval with
+  `vibepro decision record --id <story-id> --type waiver --status accepted
+  --summary <text> --reason <what the human approved> --source
+  budget:delivery_efficiency:<story-id> --budget-grantor <human>
+  --budget-grantor-kind human --agent-system <system> --agent-id <id>`
+  (`--reason` and all four budget flags are required, and the recording agent
+  identity must differ from the grantor), or
+  accept the base budget. Overrides that predate this gate *inside this repository*
+  are grandfathered by content digest and keep working exactly as merged; editing
+  one changes its digest and drops it to `unauthorized`. Grandfathering does not
+  extend to consumer repositories.
+
+- Add `--budget-grantor`, `--budget-grantor-kind`, `--agent-system` and `--agent-id`
+  to `vibepro decision record` for recording a budget-override approval. All four are
+  required when the decision source is a `budget:delivery_efficiency:` grant, and a
+  grantor equal to the recording agent identity is rejected at write time: the
+  session that consumes a raised budget cannot also grant it.
+
 ## 0.2.0-beta.2 - 2026-07-29
 
 - Add `vibepro verify run`: VibePro executes the verification command itself (argv,
@@ -1279,3 +1312,45 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-task-atomic-
 なし
 
 <!-- vibepro-release-pr:405:end -->
+
+<!-- vibepro-release-pr:401:start -->
+## [#401](https://github.com/Unson-LLC/vibepro/pull/401) story-vibepro-verify-command-test-path-existence-guard - verify record/runのコマンドが名指しするtest fileパスの実在を検証する
+
+- Author: @sintariran
+- Merged: 2026-08-01T01:53:50Z
+- Commit: `344b7a3aed391b0c320c021e8b524ec58615cee4`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-verify-command-test-path-existence-guard.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:401:end -->
+
+<!-- vibepro-release-pr:406:start -->
+## [#406](https://github.com/Unson-LLC/vibepro/pull/406) story-vibepro-budget-grant-tracked-decision-doc - budget grant を diff でレビュー可能にする: decision record --source budget:delivery_efficiency:* が tracked decision document を必ず書く
+
+- Author: @sintariran
+- Merged: 2026-08-01T11:44:15Z
+- Commit: `4b4b35a8eb28c962b99161d544d67031edab6e69`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-budget-grant-tracked-decision-doc.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-budget-grant-tracked-decision-doc.md), [docs/management/stories/active/story-vibepro-budget-override-residual-findings.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-budget-override-residual-findings.md), [docs/management/stories/active/story-vibepro-owner-gated-budget-override.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-owner-gated-budget-override.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:406:end -->

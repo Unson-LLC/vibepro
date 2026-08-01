@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+  "ledger_path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_6088ea42c0b4c77cb6678eb5d74c083f1d1924353e1b956c0827cf6eba91549d"
+  },
+  "parent_revision_fingerprint": "c20fbed35f50d42081fa9edf77ceecfeda3e4f2635a34cc93831de5c0ab6b202",
+  "revision_fingerprint": "d417145e4feef480800681d9fc562bfc1ffd7a72bc450357a2e220464f6b4064",
+  "trace": {
+    "decision_trace_id": "dt_6088ea42c0b4c77cb6678eb5d74c083f1d1924353e1b956c0827cf6eba91549d",
+    "collision_group": null,
+    "trace_source_ref": "tsr_ea4f463a8fac5ad3dbe02929419783b5bdfb4f558d5789f47254a74748da5f6d",
+    "normalized_subject_key": "gate:judgment_dag_adjudication:axis:release_ops",
+    "source_identity": {
+      "source_kind": "linked_sources",
+      "source_ref": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-records.json,.vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-records.json",
+      "native_id": "decision-1785549124325-ff3331a7,decision-1785549158063-0b0fd461",
+      "digest": "2f59bea993111c8a91611bc1815758e16d7d02975add4e5d15f560c9c6734813",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+    "parent_revision_fingerprint": "c20fbed35f50d42081fa9edf77ceecfeda3e4f2635a34cc93831de5c0ab6b202",
+    "revision_fingerprint": "d417145e4feef480800681d9fc562bfc1ffd7a72bc450357a2e220464f6b4064",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_6088ea42c0b4c77cb6678eb5d74c083f1d1924353e1b956c0827cf6eba91549d"
+        },
+        "parent_revision_fingerprint": "7e550160da8edf1a771336657074d275f97421b4c8796652a3b8f8b745c440b3"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 401,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/401",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "344b7a3aed391b0c320c021e8b524ec58615cee4",
+        "status": "merged",
+        "merged_at": "2026-08-01T01:53:50Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

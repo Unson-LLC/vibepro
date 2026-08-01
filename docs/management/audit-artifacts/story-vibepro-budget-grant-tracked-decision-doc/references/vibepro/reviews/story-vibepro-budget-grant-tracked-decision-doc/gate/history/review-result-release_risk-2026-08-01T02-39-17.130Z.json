@@ -1,0 +1,124 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "block",
+  "summary": "BLOCK: merging voids the delivery-efficiency overrides of two Stories active on main today. GRANDFATHERED_OVERRIDE_DIGESTS pins 16 digests but .vibepro/config.json carries 19 overrides; story-vibepro-review-replacement-recovery (fc82d48c9bda, 70 subagents/24000000ms) and story-vibepro-task-atomic-repo-control-contract (cfe725f00020, 64/20000000ms) are unpinned, present on origin/main, status: active, and have no grant, so after merge both collapse to the base 6/1800000ms and in-flight sessions hard-stop at budget_exceeded.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read the full src diff (decision-records.js, budget-override-authority.js, delivery-efficiency-guardrail.js, agent-review.js, pr-manager.js, cli.js); computed every delivery_efficiency_by_story digest in .vibepro/config.json against GRANDFATHERED_OVERRIDE_DIGESTS; diffed config against origin/main; checked decision-record grants and Story status for each unpinned override; ran node --test test/delivery-efficiency-guardrail.test.js (21 pass). The orchestrator independently reproduced the digest computation and confirmed 3 unpinned of 19, of which the two named Stories are on main, active, and grantless.",
+    "evidence": null,
+    "inputs": [
+      "src/budget-override-authority.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern that an absent grant might fail open was disproved: resolveEfficiencyPolicyDecision returns the base policy plus status unauthorized, surfaced in the dispatch stop message and as budget_override_unauthorized debt -- not a blocker. Second concern that bundling three Stories blocks rollback was disproved: a whole-PR revert is coherent and non-destructive -- not a blocker. Final concern changed the verdict: the grandfather snapshot is incomplete relative to main, retroactively voiding overrides for active work, which is the exact outcome the grandfather policy exists to prevent."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+    "expected_root": null,
+    "expected_head_sha": "e327cc75f9391e222f4d2746cfbd570240786db3",
+    "current_head_sha": "e327cc75f9391e222f4d2746cfbd570240786db3",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+      "expected_root": null,
+      "expected_head_sha": "e327cc75f9391e222f4d2746cfbd570240786db3",
+      "current_head_sha": "e327cc75f9391e222f4d2746cfbd570240786db3",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-01T02:39:17.130Z",
+  "git_context": {
+    "head_sha": "e327cc75f9391e222f4d2746cfbd570240786db3",
+    "current_branch": "claude/zen-feynman-69d82a",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-01T02:39:17.118Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 1 file(s)",
+    "recorded_head_sha": "e327cc75f9391e222f4d2746cfbd570240786db3",
+    "surface_files": [
+      {
+        "path": "src/budget-override-authority.js",
+        "sha256": "303c757ea96bfdba46e6e332cf75c744811be0af25d632f6fe73bf1aaa598c11",
+        "size": 11162
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "33baf183af04fb4adefed11e9ead33bbea5daf7e9baf816592d26a6f004bafcb"
+  },
+  "source_fingerprint": "6cd686cc18d423ade717c44fc55484aa59a07b672e88133e579d693b17583ff1",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a4906c3d0645488b1",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

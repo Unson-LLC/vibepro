@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-verify-command-test-path-existence-guard",
+  "ledger_path": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_7b696f77a8fe1906d81aa3123828f9515fc8ee87dcfe71112848ad8d5deaac46"
+  },
+  "parent_revision_fingerprint": "01c031d547c074c24fdc183131b4dbed056f20681b252af4140e9ff4f8afbd80",
+  "revision_fingerprint": "91a8627a9bdbe79d0d25ad78fec06f44be6fb72f0e2dfb3862bc4828f5cf48d4",
+  "trace": {
+    "decision_trace_id": "dt_7b696f77a8fe1906d81aa3123828f9515fc8ee87dcfe71112848ad8d5deaac46",
+    "collision_group": null,
+    "trace_source_ref": "tsr_109acd4cccf1903b433e8ebe76a2798fa974c32f8da09f957a5e38e5cde218f1",
+    "normalized_subject_key": "finding:out-of-repo-paths-silently-skipped",
+    "source_identity": {
+      "source_kind": "linked_sources",
+      "source_ref": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/review-result-gate_evidence.json,.vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/review-result-gate_evidence.json",
+      "native_id": "out-of-repo-paths-silently-skipped,out-of-repo-paths-silently-skipped",
+      "digest": "e7a462ef570d2f6ebc86bb557e3dcf77d1601787d4fe907f30860fdeedfc8a21",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "5a0e056a7bd6c5175d801bdc7072055feecc2003",
+    "parent_revision_fingerprint": "01c031d547c074c24fdc183131b4dbed056f20681b252af4140e9ff4f8afbd80",
+    "revision_fingerprint": "91a8627a9bdbe79d0d25ad78fec06f44be6fb72f0e2dfb3862bc4828f5cf48d4",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_7b696f77a8fe1906d81aa3123828f9515fc8ee87dcfe71112848ad8d5deaac46"
+        },
+        "parent_revision_fingerprint": "cae1b2339a5b708c6d83e1ed0ef28b2d413e8329776ba648c432089b9f027cac"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "observed",
+      "value": {
+        "severity": "low",
+        "id": "out-of-repo-paths-silently-skipped",
+        "detail": "missingNamedTestPaths continues silently for absolute or ..-escaping paths; scoped out by INV-002/story boundary but the skip is silent rather than a recorded warning"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/review-result-gate_evidence.json",
+          "source_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+          "source_digest": "bd435f47f2fba2e793beee8ad3b450a866ba2504bd110f477a1c58c70b824096",
+          "native_id": "out-of-repo-paths-silently-skipped"
+        }
+      ]
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "observed",
+      "value": {
+        "detected_by": "gate_evidence",
+        "stage": "gate",
+        "detected_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/review-result-gate_evidence.json",
+          "source_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+          "source_digest": "bd435f47f2fba2e793beee8ad3b450a866ba2504bd110f477a1c58c70b824096",
+          "native_id": "out-of-repo-paths-silently-skipped"
+        }
+      ]
+    },
+    "disposition": {
+      "status": "observed",
+      "value": {
+        "finding_id": "out-of-repo-paths-silently-skipped",
+        "disposition": "accepted",
+        "resolved_by": [],
+        "reason": "documented repo-relative boundary in Story reason; follow-up candidate",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/review-result-gate_evidence.json",
+          "source_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+          "source_digest": "8af1032a9c2902125ef959edfd48cbae2ad8c35f369716b3d2671fe9bacb4712",
+          "native_id": "out-of-repo-paths-silently-skipped"
+        }
+      ]
+    },
+    "decision": {
+      "status": "observed",
+      "value": {
+        "finding_id": "out-of-repo-paths-silently-skipped",
+        "disposition": "accepted",
+        "resolved_by": [],
+        "reason": "documented repo-relative boundary in Story reason; follow-up candidate",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-verify-command-test-path-existence-guard/gate/review-result-gate_evidence.json",
+          "source_head_sha": "e416d297ad8942ba82f990795f4d4278b5325602",
+          "source_digest": "8af1032a9c2902125ef959edfd48cbae2ad8c35f369716b3d2671fe9bacb4712",
+          "native_id": "out-of-repo-paths-silently-skipped"
+        }
+      ]
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 401,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/401",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "344b7a3aed391b0c320c021e8b524ec58615cee4",
+        "status": "merged",
+        "merged_at": "2026-08-01T01:53:50Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-verify-command-test-path-existence-guard/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

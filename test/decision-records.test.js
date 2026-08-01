@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -106,6 +106,8 @@ test('DRES-SCENARIO-003 accepted decision with no verification-evidence.json yet
 test('DRES-SCENARIO-004 CLI end-to-end: vibepro decision record exposes verification_evidence_summary via --json', async () => {
   const root = await makeWorkspaceRepo();
   const storyId = 'STR-DRES-4';
+  await mkdir(path.join(root, 'test'), { recursive: true });
+  await writeFile(path.join(root, 'test', 'decision-records.test.js'), "import test from 'node:test';\ntest('DRES-SCENARIO-004', () => {});\n");
 
   await execFileAsync('node', [
     CLI_BIN, 'verify', 'record', root,
@@ -180,4 +182,264 @@ test('DRES-SCENARIO-005 recording a decision refreshes the single active Run Con
   const capsule = JSON.parse(await readFile(path.join(runDir, 'context-capsule.json'), 'utf8'));
   assert.ok(capsule.open_decisions.some((decision) => decision.prompt === 'Choose the handoff owner.'));
   assert.ok(capsule.source_fingerprints.some((source) => source.kind === 'decisions'));
+});
+
+// OGB-S-10 ... OGB-S-12: the write side of the budget-approval grant. The digest
+// is read out of .vibepro/config.json here rather than accepted from the caller,
+// so an approval always binds to the limits that are actually configured.
+async function makeBudgetWorkspaceRepo(storyId, override) {
+  const root = await makeWorkspaceRepo();
+  await writeFile(
+    path.join(root, '.vibepro', 'config.json'),
+    JSON.stringify({
+      schema_version: '0.1.0',
+      budgets: {
+        delivery_efficiency: { max_subagent_count: 6 },
+        delivery_efficiency_by_story: { [storyId]: override }
+      }
+    }, null, 2)
+  );
+  return root;
+}
+
+test('OGB-S-10 budget approval computes the override digest from config, not from caller input', async () => {
+  const storyId = 'story-ogb-write';
+  const override = { max_subagent_count: 9, amendment_reason: 'one extra repair round' };
+  const root = await makeBudgetWorkspaceRepo(storyId, override);
+
+  const { decision } = await recordDecision(root, {
+    storyId,
+    type: 'waiver',
+    status: 'accepted',
+    source: `budget:delivery_efficiency:${storyId}`,
+    summary: 'owner approved raising the Story subagent cap to 9',
+    reason: 'owner approved the raise on 2026-07-27',
+    budgetGrantor: 'sato-keigo',
+    budgetGrantorKind: 'human',
+    agentSystem: 'claude_code',
+    agentId: 'agent-ogb-1',
+    overrideDigest: 'attacker-supplied-digest'
+  });
+
+  const { computeBudgetOverrideDigest, resolveBudgetOverrideAuthority } =
+    await import('../src/budget-override-authority.js');
+  assert.equal(decision.budget_approval.override_digest, computeBudgetOverrideDigest(storyId, override));
+  assert.notEqual(decision.budget_approval.override_digest, 'attacker-supplied-digest');
+  assert.equal(decision.budget_approval.grantor, 'sato-keigo');
+  assert.deepEqual(decision.budget_approval.recorded_by, { agent_system: 'claude_code', agent_id: 'agent-ogb-1' });
+
+  assert.equal(resolveBudgetOverrideAuthority({ storyId, override, decisions: [decision] }).status, 'authorized');
+});
+
+test('OGB-S-11 budget approval refuses a self-grant and an unidentified recorder', async () => {
+  const storyId = 'story-ogb-self';
+  const root = await makeBudgetWorkspaceRepo(storyId, { max_subagent_count: 9, amendment_reason: 'raise' });
+  const base = {
+    storyId,
+    type: 'waiver',
+    status: 'accepted',
+    source: `budget:delivery_efficiency:${storyId}`,
+    summary: 'raise the cap',
+    reason: 'the run needs more lifecycles',
+    budgetGrantorKind: 'human',
+    agentSystem: 'claude_code',
+    agentId: 'agent-ogb-2'
+  };
+
+  await assert.rejects(
+    recordDecision(root, { ...base, budgetGrantor: 'agent-ogb-2' }),
+    /grantor must differ from the recording agent/
+  );
+  await assert.rejects(
+    recordDecision(root, { ...base, budgetGrantor: 'sato-keigo', agentId: undefined }),
+    /--agent-id/
+  );
+  await assert.rejects(
+    recordDecision(root, { ...base, budgetGrantor: 'sato-keigo', reason: undefined }),
+    /requires --reason/
+  );
+});
+
+test('OGB-S-12 budget approval requires a configured override and a matching story id', async () => {
+  const storyId = 'story-ogb-missing';
+  const root = await makeWorkspaceRepo();
+  await writeFile(
+    path.join(root, '.vibepro', 'config.json'),
+    JSON.stringify({ schema_version: '0.1.0', budgets: { delivery_efficiency: { max_subagent_count: 6 } } }, null, 2)
+  );
+  const base = {
+    storyId,
+    type: 'waiver',
+    status: 'accepted',
+    summary: 'raise the cap',
+    reason: 'the run needs more lifecycles',
+    budgetGrantor: 'sato-keigo',
+    budgetGrantorKind: 'human',
+    agentSystem: 'claude_code',
+    agentId: 'agent-ogb-3'
+  };
+
+  await assert.rejects(
+    recordDecision(root, { ...base, source: `budget:delivery_efficiency:${storyId}` }),
+    /found no delivery_efficiency_by_story override/
+  );
+  await assert.rejects(
+    recordDecision(root, { ...base, source: 'budget:delivery_efficiency:story-other' }),
+    /does not match --id/
+  );
+  await assert.rejects(
+    recordDecision(root, { ...base, source: 'gate:agent_review' }),
+    /budget approval flags require --source/
+  );
+});
+
+// BGT-S-1 ... BGT-S-5: the tracked mirror of a budget grant. The workspace
+// decision store is gitignored, so the grant must also land in
+// docs/management/decisions/ where a PR reviewer sees it in the diff.
+function budgetGrantOptions(storyId, overrides = {}) {
+  return {
+    storyId,
+    type: 'waiver',
+    status: 'accepted',
+    source: `budget:delivery_efficiency:${storyId}`,
+    summary: 'owner approved raising the Story subagent cap',
+    reason: 'owner approved the raise for the closure sequence',
+    budgetGrantor: 'sato-keigo',
+    budgetGrantorKind: 'human',
+    agentSystem: 'claude_code',
+    agentId: 'agent-bgt-1',
+    ...overrides
+  };
+}
+
+test('BGT-S-1/S-2 a budget grant writes a tracked decision document cross-referenced from budget_approval', async () => {
+  const storyId = 'story-bgt-doc';
+  const override = { max_subagent_count: 9, amendment_reason: 'one extra round' };
+  const root = await makeBudgetWorkspaceRepo(storyId, override);
+
+  const { decision } = await recordDecision(root, budgetGrantOptions(storyId));
+
+  const docPath = decision.budget_approval.decision_doc;
+  assert.ok(docPath, 'expected budget_approval.decision_doc to be set');
+  assert.match(docPath, /^docs\/management\/decisions\/\d{4}-\d{2}-\d{2}-budget-override-story-bgt-doc-[0-9a-f]{8}\.md$/);
+  const doc = await readFile(path.join(root, docPath), 'utf8');
+  assert.match(doc, /type: budget_override_approval/);
+  assert.match(doc, new RegExp(`decision_id: ${decision.decision_id}`));
+  assert.match(doc, /approver: sato-keigo/);
+  assert.match(doc, /approver_kind: human/);
+  assert.match(doc, new RegExp(`override_digest: ${decision.budget_approval.override_digest}`));
+  assert.match(doc, new RegExp(`approved_at: ${decision.recorded_at}`));
+  assert.match(doc, /agent_id: agent-bgt-1/);
+  assert.match(doc, /owner approved the raise for the closure sequence/);
+});
+
+test('BGT-S-3 a budget grant fails when the tracked document path is gitignored', async () => {
+  const storyId = 'story-bgt-ignored';
+  const root = await makeBudgetWorkspaceRepo(storyId, { max_subagent_count: 9, amendment_reason: 'raise' });
+  await execFileAsync('git', ['init'], { cwd: root });
+  await writeFile(path.join(root, '.gitignore'), 'docs/\n');
+
+  await assert.rejects(
+    recordDecision(root, budgetGrantOptions(storyId)),
+    /gitignored.*reviewable in the PR diff/s
+  );
+  const records = await readFile(path.join(root, '.vibepro', 'pr', storyId, 'decision-records.json'), 'utf8')
+    .then((text) => JSON.parse(text))
+    .catch(() => null);
+  assert.equal(records, null, 'expected no workspace record when the tracked mirror cannot be written');
+});
+
+test('BGT-S-4 a decision without a budget grant writes no tracked document', async () => {
+  const root = await makeWorkspaceRepo();
+  const { decision } = await recordDecision(root, {
+    storyId: 'story-bgt-plain',
+    type: 'needs_review',
+    summary: 'plain decision',
+    status: 'accepted'
+  });
+  assert.equal(decision.budget_approval, null);
+  const docsDirError = await readFile(path.join(root, 'docs')).catch((error) => error.code);
+  assert.equal(docsDirError, 'ENOENT', 'expected no docs/ directory to be created');
+});
+
+test('BGT-S-5 same digest overwrites the same document; a changed budget produces a new file', async () => {
+  const storyId = 'story-bgt-digest';
+  const override = { max_subagent_count: 9, amendment_reason: 'first raise' };
+  const root = await makeBudgetWorkspaceRepo(storyId, override);
+
+  const first = await recordDecision(root, budgetGrantOptions(storyId));
+  const second = await recordDecision(root, budgetGrantOptions(storyId));
+  assert.equal(first.decision.budget_approval.decision_doc, second.decision.budget_approval.decision_doc);
+
+  await writeFile(
+    path.join(root, '.vibepro', 'config.json'),
+    JSON.stringify({
+      schema_version: '0.1.0',
+      budgets: {
+        delivery_efficiency: { max_subagent_count: 6 },
+        delivery_efficiency_by_story: { [storyId]: { max_subagent_count: 12, amendment_reason: 'second raise' } }
+      }
+    }, null, 2)
+  );
+  const third = await recordDecision(root, budgetGrantOptions(storyId));
+  assert.notEqual(third.decision.budget_approval.decision_doc, first.decision.budget_approval.decision_doc);
+  assert.ok(await readFile(path.join(root, first.decision.budget_approval.decision_doc), 'utf8'));
+  assert.ok(await readFile(path.join(root, third.decision.budget_approval.decision_doc), 'utf8'));
+});
+
+test('BGT-S-5 a same-digest re-record on a later date reuses the existing document instead of minting a second one', async () => {
+  const storyId = 'story-bgt-datereuse';
+  const override = { max_subagent_count: 9, amendment_reason: 'only raise' };
+  const root = await makeBudgetWorkspaceRepo(storyId, override);
+
+  const first = await recordDecision(root, budgetGrantOptions(storyId));
+  const firstDoc = first.decision.budget_approval.decision_doc;
+
+  // Simulate the same grant being re-recorded on a later day. The identity of a
+  // grant is (story_id, override_digest); the date prefix is presentation only.
+  // Before the fix this minted a second file with an identical override_digest,
+  // so a reviewer saw two documents that looked like two separate grants.
+  const renamed = firstDoc.replace(/\d{4}-\d{2}-\d{2}/, '2020-01-01');
+  await rename(path.join(root, firstDoc), path.join(root, renamed));
+
+  const second = await recordDecision(root, budgetGrantOptions(storyId));
+  assert.equal(second.decision.budget_approval.decision_doc, renamed,
+    'a later-dated re-record of an unchanged budget must reuse the existing document path');
+
+  const docs = (await readdir(path.join(root, 'docs', 'management', 'decisions')))
+    .filter((name) => name.endsWith('.md'));
+  assert.deepEqual(docs, [path.basename(renamed)],
+    'exactly one approval document may exist for one (story_id, override_digest)');
+});
+
+test('BGT-S-3 an undeterminable gitignore status fails the grant instead of falling back to the untracked channel', async () => {
+  const storyId = 'story-bgt-gitbroken';
+  const override = { max_subagent_count: 9, amendment_reason: 'only raise' };
+  const root = await makeBudgetWorkspaceRepo(storyId, override);
+
+  // Put a `git` on PATH that fails with an error other than "not a git
+  // repository", i.e. an answer we genuinely cannot interpret. A guard that
+  // swallows every git failure would read this as "not ignored" and record the
+  // grant into a possibly-untracked path anyway.
+  const binDir = path.join(root, 'fake-bin');
+  await mkdir(binDir, { recursive: true });
+  const fakeGit = path.join(binDir, 'git');
+  await writeFile(fakeGit, '#!/bin/sh\necho "fatal: index file corrupt" >&2\nexit 3\n');
+  await chmod(fakeGit, 0o755);
+  const originalPath = process.env.PATH;
+  process.env.PATH = `${binDir}:${originalPath}`;
+  try {
+    await assert.rejects(
+      recordDecision(root, budgetGrantOptions(storyId)),
+      /could not determine whether .* is gitignored/,
+      'an undeterminable gitignore status must fail closed'
+    );
+  } finally {
+    process.env.PATH = originalPath;
+  }
+
+  const recordsPath = path.join(root, '.vibepro', 'pr', storyId, 'decision-records.json');
+  const recordsError = await readFile(recordsPath).catch((error) => error.code);
+  assert.equal(recordsError, 'ENOENT',
+    'no workspace record may be written when the grant is refused');
 });

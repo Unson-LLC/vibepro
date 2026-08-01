@@ -46,6 +46,8 @@ async function makeGitRepoWithStory() {
   await mkdir(path.join(repo, 'docs'), { recursive: true });
   await writeFile(path.join(repo, 'src', 'content-binding-target.js'), 'export const value = 1;\n');
   await writeFile(path.join(repo, 'docs', 'notes.md'), '# Notes\n');
+  await mkdir(path.join(repo, 'test'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'content-binding.test.js'), "import test from 'node:test';\ntest('content binding', () => {});\n");
   await git(repo, ['add', '.']);
   await git(repo, ['commit', '-m', 'chore: init content binding fixture']);
   await git(repo, ['switch', '-c', 'feature/content-binding']);

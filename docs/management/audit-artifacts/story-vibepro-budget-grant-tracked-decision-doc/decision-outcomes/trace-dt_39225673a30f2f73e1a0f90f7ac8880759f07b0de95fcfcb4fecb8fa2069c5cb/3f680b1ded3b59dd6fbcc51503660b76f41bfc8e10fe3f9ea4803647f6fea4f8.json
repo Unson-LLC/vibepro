@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+  "ledger_path": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_39225673a30f2f73e1a0f90f7ac8880759f07b0de95fcfcb4fecb8fa2069c5cb"
+  },
+  "parent_revision_fingerprint": "668d4c6811c4cad10802f3b73b8436a9cdeb26d27cc0e4ac990f344508f11ed8",
+  "revision_fingerprint": "3f680b1ded3b59dd6fbcc51503660b76f41bfc8e10fe3f9ea4803647f6fea4f8",
+  "trace": {
+    "decision_trace_id": "dt_39225673a30f2f73e1a0f90f7ac8880759f07b0de95fcfcb4fecb8fa2069c5cb",
+    "collision_group": null,
+    "trace_source_ref": "tsr_ba44863267d98f64ed8cf5ee8af194f37e3439819fd9e5cbc38855a0aad106bb",
+    "normalized_subject_key": "gate:pr_scope_judgment",
+    "source_identity": {
+      "source_kind": "decision_record",
+      "source_ref": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-records.json",
+      "native_id": "decision-1785550782949-15e2416a",
+      "digest": "b82829d22cdadbfa126fd4196f484cf0b575c7cf5e1df96e55f9df223914b5c7",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+    "parent_revision_fingerprint": "668d4c6811c4cad10802f3b73b8436a9cdeb26d27cc0e4ac990f344508f11ed8",
+    "revision_fingerprint": "3f680b1ded3b59dd6fbcc51503660b76f41bfc8e10fe3f9ea4803647f6fea4f8",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_39225673a30f2f73e1a0f90f7ac8880759f07b0de95fcfcb4fecb8fa2069c5cb"
+        },
+        "parent_revision_fingerprint": "6c17fae7e5bc8caf6d82d438acf237e1a6c854257fd66841b3501ad8f0a396ae"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 406,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/406",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "4b4b35a8eb28c962b99161d544d67031edab6e69",
+        "status": "merged",
+        "merged_at": "2026-08-01T11:44:15Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

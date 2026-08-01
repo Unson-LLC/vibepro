@@ -9,7 +9,7 @@ import { formatCounts } from './refactoring-delta-reporter.js';
 import {
   aggregateDeliveryMetrics,
   evaluateDeliveryBudget,
-  resolveEfficiencyPolicy,
+  resolveEfficiencyPolicyDecision,
   summarizeEfficiencyDebt
 } from './delivery-efficiency-guardrail.js';
 import {
@@ -11918,12 +11918,16 @@ export function buildAgentReviewEfficiencySummary(agentReviews, correctnessReady
     correctness_ready: correctnessReady,
     lifecycles,
     duplicate_dispatch_count: duplicateDispatchCount,
-    budget
+    budget,
+    budget_override: delivery.budget_override
   });
   return {
     ...summary,
     metrics,
     budget,
+    budget_override: delivery.budget_override ?? {
+      status: 'absent', story_id: null, digest: null, reasons: [], approval: null
+    },
     attribution: {
       status: metrics.attribution_status ?? 'unknown',
       reason: delivery.attribution_reason ?? 'no session-cost attribution was connected to this PR preparation'
@@ -11939,11 +11943,22 @@ export function buildAgentReviewEfficiencySummary(agentReviews, correctnessReady
   };
 }
 
-async function buildDeliveryEfficiencyContext(repoRoot, storyId, agentReviews) {
+// Exported for test binding: this is the only link that carries the resolver's
+// override authority status into the pr prepare delivery context, and a review
+// found it was unasserted while a consumer-level test gave the false impression
+// that it was covered.
+export async function buildDeliveryEfficiencyContext(repoRoot, storyId, agentReviews) {
   let policy = {};
+  // A Story budget override only applies when an accepted decision record grants
+  // it (CEA-S-4); `budgetOverride` carries the status so an inert self-approved
+  // raise is visible in pr prepare instead of silently taking effect.
+  let budgetOverride = { status: 'absent', story_id: storyId ?? null, digest: null, reasons: [], approval: null };
   try {
     const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
-    policy = resolveEfficiencyPolicy(config, storyId) ?? {};
+    const records = await readDecisionRecordsIfExists(repoRoot, storyId).catch(() => null);
+    const resolved = resolveEfficiencyPolicyDecision(config, storyId, { decisions: records?.decisions ?? [] });
+    policy = resolved.policy ?? {};
+    budgetOverride = resolved.override;
   } catch (error) {
     if (error.code !== 'ENOENT') throw error;
   }
@@ -11976,6 +11991,7 @@ async function buildDeliveryEfficiencyContext(repoRoot, storyId, agentReviews) {
   const knownRepairCounts = repairStates.map((state) => state.repair_batch_count).filter(Number.isFinite);
   return {
     policy,
+    budget_override: budgetOverride,
     reviews,
     measurements: {
       repair_batch_count: knownRepairCounts.length > 0 ? knownRepairCounts.reduce((sum, count) => sum + count, 0) : null,
