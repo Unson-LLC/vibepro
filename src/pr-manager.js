@@ -15465,7 +15465,7 @@ function buildDecisionRecordGate(decisionRecords) {
   };
 }
 
-function collectUnresolvedRequiredGates(gateDag) {
+export function collectUnresolvedRequiredGates(gateDag) {
   return (gateDag?.nodes ?? [])
     .filter((node) => [
       'story',

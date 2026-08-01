@@ -337,11 +337,43 @@ test('MGD-AC-12 gate_not_ready is never reported without naming a gate', () => {
     ['gate:verification']
   );
 
-  // Every blocked diagnosis that claims gate evidence must name at least one.
-  for (const context of [noPrepare, stalePrepare, emptySurfaceMismatch, namedSurfaceMismatch]) {
+  // (e) a gate status that is explicitly not ready but enumerates nothing.
+  // The authority function returns current_gate_status_not_ready here, which
+  // reads like a gate verdict but names no gate.
+  const notReadyNamingNothing = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({
+      gateStatus: {
+        overall_status: 'ready_for_review',
+        ready_for_pr_create: false,
+        unresolved_gates: [],
+        critical_unresolved_gates: []
+      },
+      gateDag: readyDag
+    }),
+    prCreate: prCreateFixture({ gateOverride: NONCRITICAL_WAIVER }),
+    currentHeadSha: HEAD
+  });
+  assert.equal(notReadyNamingNothing.gateAuthorization.reason, 'current_gate_status_not_ready');
+  assert.equal(notReadyNamingNothing.diagnosis.stop_reason, 'gate_status_unresolved');
+
+  // The invariant itself, asserted over every case above rather than left as an
+  // incidental property of the ones that happen to be listed.
+  for (const context of [
+    noPrepare,
+    stalePrepare,
+    emptySurfaceMismatch,
+    namedSurfaceMismatch,
+    notReadyNamingNothing
+  ]) {
     if (context.diagnosis.stop_reason === 'gate_not_ready') {
-      assert.notEqual(context.diagnosis.blocking_gates.length, 0);
+      assert.notEqual(
+        context.diagnosis.blocking_gates.length,
+        0,
+        'gate_not_ready must always name at least one blocking gate'
+      );
     }
+    assert.doesNotMatch(context.diagnosis.explanation, /none enumerated by the current gate status/);
   }
 });
 
@@ -382,6 +414,71 @@ test('MGD-AC-13 a waiver naming a since-resolved critical gate is stale, not a c
   });
   assert.equal(reallyCritical.diagnosis.cause, 'critical_gates_unresolved');
   assert.equal(reallyCritical.diagnosis.stop_reason, 'gate_not_ready');
+});
+
+// Every other fixture in this file is a toy DAG carrying only `gate:*` nodes.
+// A real Gate DAG is mostly scaffolding -- `story`, `code`, `pr`, `ac:N` nodes
+// whose statuses are "present"/"pending" and which are not gates at all. Three
+// review rounds missed a predicate that counted them as gate evidence because
+// no fixture had that shape.
+function producerShapedGateDag({ gateStatus = 'passed', overallStatus = 'needs_verification' } = {}) {
+  return {
+    overall_status: overallStatus,
+    nodes: [
+      { id: 'story', type: 'story', required: true, status: 'present' },
+      { id: 'code', type: 'code', required: true, status: 'present' },
+      { id: 'pr', type: 'pr', required: true, status: 'pending' },
+      ...Array.from({ length: 9 }, (_, index) => ({
+        id: `ac:${index + 1}`,
+        type: 'acceptance_criterion',
+        required: true,
+        status: 'present'
+      })),
+      { id: 'spec', type: 'spec_gate', required: true, status: 'inferred' },
+      { id: 'gate:unit', type: 'verification_gate', required: true, status: gateStatus }
+    ]
+  };
+}
+
+test('MGD-AC-14 scaffolding nodes in a real Gate DAG are never reported as gate evidence', () => {
+  const prCreate = prCreateFixture();
+
+  // Every actual gate passes; only scaffolding and non-gate nodes remain.
+  const scaffoldingOnly = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({
+      gateStatus: { ...READY_GATE_STATUS, unresolved_gates: [], critical_unresolved_gates: [] },
+      gateDag: producerShapedGateDag()
+    }),
+    prCreate,
+    gateDagArtifact: { overall_status: 'ready_for_review', nodes: [] },
+    currentHeadSha: HEAD
+  });
+  assert.notEqual(
+    scaffoldingOnly.diagnosis.stop_reason,
+    'gate_not_ready',
+    'story/code/pr/ac:N nodes are not gate evidence'
+  );
+  assert.deepEqual(scaffoldingOnly.diagnosis.blocking_gates, []);
+  assert.equal(scaffoldingOnly.diagnosis.stop_reason, 'gate_status_unresolved');
+
+  // The same DAG with one genuinely unresolved gate must name that gate, and
+  // only that gate.
+  const oneRealGate = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({
+      gateStatus: { ...READY_GATE_STATUS, unresolved_gates: [], critical_unresolved_gates: [] },
+      gateDag: producerShapedGateDag({ gateStatus: 'needs_evidence' })
+    }),
+    prCreate,
+    gateDagArtifact: { overall_status: 'ready_for_review', nodes: [] },
+    currentHeadSha: HEAD
+  });
+  assert.equal(oneRealGate.diagnosis.stop_reason, 'gate_not_ready');
+  assert.deepEqual(
+    oneRealGate.diagnosis.blocking_gates.map((gate) => gate.id),
+    ['gate:unit']
+  );
 });
 
 test('MGD-AC-11 an unreadable artifact outranks a valid waiver instead of reporting authorized', () => {

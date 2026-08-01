@@ -380,9 +380,10 @@ export function renderPrMergeHtml(merge, options = {}) {
             .map((binding) => `${binding.artifact}=${binding.status}`)
             .join(', ') || '-'],
           // Head shas make a binding claim checkable on the review surface.
-          // Recovery commands deliberately stay off this surface: the public
-          // projection strips them, so next_actions are read from pr-merge.json
-          // or the text summary instead.
+          // next_actions deliberately stay off the pr-merge surfaces: DRS-SCENARIO-008
+          // requires one ordered recovery action there, and a second command
+          // series would mix prepare/merge guidance into it. Read next_actions
+          // from pr-merge.json or `execute merge --explain`.
           ['Artifact binding heads', (merge.gate_authorization_diagnosis?.artifact_bindings ?? [])
             .map((binding) => `${binding.artifact}: artifact_head=${binding.artifact_head_sha ?? '-'} current_head=${binding.current_head_sha ?? '-'}`)
             .join('; ') || '-']

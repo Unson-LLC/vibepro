@@ -2,6 +2,7 @@ import {
   buildMergeGateAuthorization,
   resolveCurrentMergeGateStatus
 } from './merge-gate-authorization.js';
+import { collectUnresolvedRequiredGates, isUnresolvedGateStatus } from './pr-manager.js';
 
 // `buildMergeGateAuthorization` distinguishes twelve denial reasons, but
 // `executeMerge` used to collapse every one of them into `gate_not_ready`.
@@ -10,15 +11,6 @@ import {
 // which reports "gate not ready" while every gate is in fact resolved. This
 // module classifies the denial so `stop_reason` names the real failure class,
 // and `gate_not_ready` is reserved for unresolved or critical gate evidence.
-
-const GATE_STATUSES_TREATED_AS_RESOLVED = new Set([
-  'passed',
-  'ready_for_review',
-  'not_applicable',
-  'waived',
-  'satisfied',
-  'skipped'
-]);
 
 const AUTHORIZED_AUTHORIZATION_REASONS = new Set([
   'gate_dag_ready_for_review',
@@ -261,7 +253,11 @@ function resolveDenialCause({
       ? 'critical_gates_unresolved'
       : 'gate_waiver_stale';
   }
-  if (authorizationReason === 'current_gate_status_not_ready') return 'gates_unresolved';
+  if (authorizationReason === 'current_gate_status_not_ready') {
+    return hasUnresolvedGates(currentGateStatus) || hasUnresolvedGateDagNodes(gateDag)
+      ? 'gates_unresolved'
+      : 'gate_status_unresolvable';
+  }
   if (WAIVER_INCOMPLETE_AUTHORIZATION_REASONS.has(authorizationReason)) return 'gate_waiver_incomplete';
   if (WAIVER_STALE_AUTHORIZATION_REASONS.has(authorizationReason)) return 'gate_waiver_stale';
   if (authorizationReason === 'current_gate_status_unknown') {
@@ -372,10 +368,32 @@ function hasCriticalUnresolvedGates(currentGateStatus) {
     && currentGateStatus.critical_unresolved_gates.length > 0;
 }
 
+// Must use VibePro's own definition of an unresolved required gate. A local
+// predicate diverges: a real Gate DAG carries scaffolding nodes (story, code,
+// pr, ac:N) whose statuses are "present"/"pending", and counting those as gate
+// evidence reports non-gates as gate failures -- the exact defect this module
+// exists to remove.
+//
+// The canonical collector additionally requires `type` and `required`, which a
+// DAG written by another tool (or an older artifact) may omit. A node whose id
+// is namespaced `gate:`/`review:` is unambiguously a gate, so it is recognised
+// even without those fields -- scaffolding ids never carry that namespace.
+const NAMESPACED_GATE_ID = /^(?:gate|review):/;
+
+function collectUnresolvedDagGates(gateDag) {
+  const canonical = collectUnresolvedRequiredGates(gateDag);
+  const canonicalIds = new Set(canonical.map((node) => node.id));
+  const namespaced = (Array.isArray(gateDag?.nodes) ? gateDag.nodes : [])
+    .filter((node) => typeof node?.id === 'string'
+      && NAMESPACED_GATE_ID.test(node.id)
+      && !canonicalIds.has(node.id)
+      && node.required !== false
+      && isUnresolvedGateStatus(node.status));
+  return [...canonical, ...namespaced];
+}
+
 function hasUnresolvedGateDagNodes(gateDag) {
-  const nodes = Array.isArray(gateDag?.nodes) ? gateDag.nodes : [];
-  return nodes.some((node) => node?.required !== false
-    && !GATE_STATUSES_TREATED_AS_RESOLVED.has(node?.status));
+  return collectUnresolvedDagGates(gateDag).length > 0;
 }
 
 function hasUnresolvedGates(currentGateStatus) {
@@ -436,10 +454,7 @@ function collectBlockingGates({ currentGateStatus, gateOverride, gateDag }) {
     ...normalizeBlockingGates(gateOverride?.unresolved_gates, 'gate_override', null)
   ];
   if (fromOverride.length > 0) return dedupeBlockingGates(fromOverride);
-  const nodes = Array.isArray(gateDag?.nodes) ? gateDag.nodes : [];
-  return dedupeBlockingGates(nodes
-    .filter((node) => node?.required !== false
-      && !GATE_STATUSES_TREATED_AS_RESOLVED.has(node?.status))
+  return dedupeBlockingGates(collectUnresolvedDagGates(gateDag)
     .map((node) => ({
       id: typeof node?.id === 'string' ? node.id : 'unknown',
       severity: node?.critical === true ? 'critical' : (node?.severity ?? 'unknown'),
@@ -553,7 +568,7 @@ function buildNextActions({ cause, storyId }) {
   }
 }
 
-export function renderMergeGateDiagnosisLines(diagnosis) {
+export function renderMergeGateDiagnosisLines(diagnosis, { includeNextActions = true } = {}) {
   if (!diagnosis) return ['- gate_diagnosis: unavailable'];
   return [
     `- gate_diagnosis_status: ${diagnosis.status}`,
@@ -566,6 +581,10 @@ export function renderMergeGateDiagnosisLines(diagnosis) {
     `- gate_diagnosis_artifact_bindings: ${(diagnosis.artifact_bindings ?? [])
       .map((binding) => `${binding.artifact}=${binding.status}`)
       .join('|') || 'none'}`,
-    ...(diagnosis.next_actions ?? []).map((action, index) => `- gate_diagnosis_next_action_${index + 1}: ${action}`)
+    // The pr-merge text summary must expose exactly one authoritative recovery
+    // action, so callers rendering that surface suppress these.
+    ...(includeNextActions
+      ? (diagnosis.next_actions ?? []).map((action, index) => `- gate_diagnosis_next_action_${index + 1}: ${action}`)
+      : [])
   ];
 }

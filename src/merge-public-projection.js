@@ -119,8 +119,10 @@ const PUBLIC_MERGE_KEYS_BY_PATH = new Map([
     'gate_dag_overall_status',
     'artifact_bindings',
     'blocking_gates',
-    'explanation',
-    'next_actions'
+    'explanation'
+    // next_actions is deliberately absent: every command on the public surface
+    // must pass PUBLIC_RECOVERY_COMMAND, and these are read from the persisted
+    // artifact or from `execute merge --explain` instead.
   ])],
   ['gate_authorization_diagnosis.artifact_bindings', new Set([
     'artifact',

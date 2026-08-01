@@ -30,6 +30,26 @@ function mergeFixture() {
       open_pull_request: { status: 'blocked' }
     },
     artifact_freshness: null,
+    // Real merges always populate this; without it the single-recovery-action
+    // guard below would pass for the wrong reason.
+    gate_authorization_diagnosis: {
+      schema_version: '0.1.0',
+      status: 'blocked',
+      cause: 'pr_create_artifact_stale',
+      stop_reason: 'pr_create_artifact_stale',
+      authorization_reason: 'gate_override_not_allowed',
+      authorization_source: 'none',
+      gate_dag_overall_status: 'needs_verification',
+      artifact_bindings: [
+        { artifact: 'pr_create', status: 'stale', artifact_head_sha: 'old', current_head_sha: 'new' }
+      ],
+      blocking_gates: [],
+      explanation: 'pr-create.json is bound to an older commit.',
+      next_actions: [
+        'vibepro pr prepare . --story-id story-delivery',
+        'vibepro execute merge . --story-id story-delivery --explain'
+      ]
+    },
     commands: [],
     results: [],
     warnings: []
@@ -221,7 +241,13 @@ test('public projection allows only bounded recovery commands and execution-stat
   assert.equal(projected.execution_state_sync.reason, 'Execution-state synchronization failed after merge processing.');
   assert.equal(Object.hasOwn(projected.execution_state_sync, 'message'), false);
   assert.equal(Object.hasOwn(projected.execution_state_sync, 'details'), false);
-  assert.doesNotMatch(JSON.stringify(projected), /operator|secret|git push|provider_token|curl|cat/);
+  // Word-bounded: the diagnosis legitimately projects gate statuses such as
+  // "needs_verification", and a bare /cat/ substring match cannot tell that
+  // apart from a leaked `cat` command.
+  assert.doesNotMatch(
+    JSON.stringify(projected),
+    /\boperator\b|\bsecret\b|git push|provider_token|\bcurl\b|\bcat\b/
+  );
 });
 
 test('public projection does not unwrap or publish an unknown domain merge field', () => {

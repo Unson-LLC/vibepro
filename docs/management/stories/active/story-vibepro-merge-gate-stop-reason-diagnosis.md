@@ -97,11 +97,18 @@ current HEAD に束縛してから `buildMergeGateAuthorization` へ渡すため
 - [ ] AC-5: `merge.gate_authorization_diagnosis` に cause / stop_reason /
       artifact 束縛状況 (pr_prepare / pr_create / gate_dag の current|stale|missing|unreadable と head sha) /
       blocking gate の id・severity・status / next_actions が構造化で記録される。
-      pr-merge.json と text summary はこの全項目を読める。pr-merge.html は
+      pr-merge.json と `execute merge --explain` はこの全項目を読める。
+      text summary と pr-merge.html は
       cause / stop_reason / explanation / blocking gate / artifact 束縛 (head sha 込み) を読めるが、
-      next_actions は載せない — 公開 projection が復旧コマンドを HTML 面から除去する契約
-      (既存テストが `vibepro pr prepare` の非出現を固定している) に従うため、
-      next_actions は pr-merge.json と text summary から読む
+      next_actions は載せない。pr-merge 面 (text summary / HTML / 公開 JSON) は
+      復旧アクションを 1 本だけ示す契約であり
+      (docs/specs/vibepro-delivery-reconciliation-state.json DRS-SCENARIO-008:
+      execute reconcile 系の単一 action に prepare/merge 系を混ぜない)、
+      next_actions を並べると 2 本目のコマンド系列になるため。
+      公開 projection (`--json`) からも落とす — 公開面のコマンドは
+      `PUBLIC_RECOVERY_COMMAND` allowlist を通ったものだけという既存契約があり、
+      next_actions はそれを通らない。next_actions は pr-merge.json と
+      `execute merge --explain` から読む
 - [ ] AC-6: `vibepro execute merge <repo> --story-id <id> --explain` が read-only で診断を出力し、
       `git fetch` / `gh` を一切実行せず pr-merge.json を書き換えない
 - [ ] AC-7: 公開 projection (`--json`) で新しい stop_reason と

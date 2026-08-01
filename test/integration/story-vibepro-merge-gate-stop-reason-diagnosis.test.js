@@ -173,7 +173,13 @@ test('MGD-INT-1 a stale pr-create waiver reaches every merge output surface as a
       .find((binding) => binding.artifact === 'pr_prepare').status,
     'current'
   );
-  assert.ok(publicMerge.gate_authorization_diagnosis.next_actions.some((action) => action.includes('pr create')));
+  // next_actions is deliberately absent from the public surface: DRS-SCENARIO-008
+  // requires one ordered recovery action there, and PUBLIC_RECOVERY_COMMAND
+  // governs every command it carries. It is read from the persisted artifact.
+  assert.equal(
+    Object.hasOwn(publicMerge.gate_authorization_diagnosis, 'next_actions'),
+    false
+  );
 
   // Persisted execution artifact.
   const artifact = JSON.parse(await readFile(path.join(prDir, 'pr-merge.json'), 'utf8'));
@@ -181,6 +187,10 @@ test('MGD-INT-1 a stale pr-create waiver reaches every merge output surface as a
   assert.equal(artifact.gate_authorization_diagnosis.stop_reason, 'pr_create_artifact_stale');
   assert.equal(artifact.gate_authorization_diagnosis.artifact_bindings
     .find((binding) => binding.artifact === 'pr_create').artifact_head_sha, staleSha);
+  assert.ok(artifact.gate_authorization_diagnosis.next_actions.some((action) => action.includes('pr create')));
+
+  // The pr-merge surfaces must still show exactly one recovery action series.
+  assert.doesNotMatch(result.stdout, /next_action/);
 
   // Review surface: the human-facing report names the cause and the binding.
   const html = await readFile(path.join(prDir, 'pr-merge.html'), 'utf8');
