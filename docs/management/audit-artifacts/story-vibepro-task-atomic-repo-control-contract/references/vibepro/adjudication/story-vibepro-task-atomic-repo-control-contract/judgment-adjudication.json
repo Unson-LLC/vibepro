@@ -1,0 +1,968 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "updated_at": "2026-07-30T18:58:24.227Z",
+  "events": [
+    {
+      "event_id": "cb4d47ca-f01b-4775-9d80-0f4fa112df93",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The intent is narrowly bounded to exact Task path coverage and typed dependency connectivity.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "tar_planning_spec",
+        "session_ref": "/root/tar_planning_spec:judgment:88ee82e5"
+      },
+      "head_commit": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+      "recorded_at": "2026-07-30T14:59:55.011Z"
+    },
+    {
+      "event_id": "be42f733-adbf-4ee0-a896-2aaee5978460",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The current unconditional unsafe behavior and new public CLI evaluation path are accurately represented.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "tar_planning_spec",
+        "session_ref": "/root/tar_planning_spec:judgment:88ee82e5"
+      },
+      "head_commit": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+      "recorded_at": "2026-07-30T14:59:55.233Z"
+    },
+    {
+      "event_id": "1d49edd1-752a-4c4c-b250-f7a592c3fee4",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Task proof removes only one unsafe reason and cannot bypass Story, lane, owner, verification, or Gate authority.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "tar_planning_spec",
+        "session_ref": "/root/tar_planning_spec:judgment:88ee82e5"
+      },
+      "head_commit": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+      "recorded_at": "2026-07-30T14:59:55.431Z"
+    },
+    {
+      "event_id": "629edeeb-2875-4257-af3d-5b7c58c95de7",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Repository-relative exact paths, typed graph edges, and local PR adjudication boundaries are coherent.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "tar_planning_spec",
+        "session_ref": "/root/tar_planning_spec:judgment:88ee82e5"
+      },
+      "head_commit": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+      "recorded_at": "2026-07-30T14:59:55.745Z"
+    },
+    {
+      "event_id": "331a2448-0557-4017-8a71-e3f45c0c1b34",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Missing, malformed, partial, unknown, uncovered, disconnected, and legacy cases fail closed as specified.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "tar_planning_spec",
+        "session_ref": "/root/tar_planning_spec:judgment:88ee82e5"
+      },
+      "head_commit": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+      "recorded_at": "2026-07-30T14:59:55.972Z"
+    },
+    {
+      "event_id": "8702f749-1e05-4318-89d5-f9dac25e0720",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current-HEAD unit, integration, E2E, typecheck, and docs build evidence establishes completion.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "tar_planning_spec",
+        "session_ref": "/root/tar_planning_spec:judgment:88ee82e5"
+      },
+      "head_commit": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+      "recorded_at": "2026-07-30T14:59:56.234Z"
+    },
+    {
+      "event_id": "21bb90dc-2a21-4d48-9ecd-761ea32bccf3",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Public pr prepare task parsing and schema failures expose actionable canonical state diagnostics.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "tar_planning_spec",
+        "session_ref": "/root/tar_planning_spec:judgment:88ee82e5"
+      },
+      "head_commit": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+      "recorded_at": "2026-07-30T14:59:56.451Z"
+    },
+    {
+      "event_id": "3488d34a-ac87-49dd-8098-10f0bfaf40f8",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "All five generated lanes now have explicit facets and dependencies as one reviewable fail-closed contract.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "tar_planning_spec",
+        "session_ref": "/root/tar_planning_spec:judgment:88ee82e5"
+      },
+      "head_commit": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+      "recorded_at": "2026-07-30T14:59:56.658Z"
+    },
+    {
+      "event_id": "53dca0ca-536c-4021-acc1-f9096fbc23ec",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed JSON exits with state path, repair guidance, and original parse error.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "tar_planning_spec",
+        "session_ref": "/root/tar_planning_spec:judgment:88ee82e5"
+      },
+      "head_commit": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+      "recorded_at": "2026-07-30T14:59:56.873Z"
+    },
+    {
+      "event_id": "a535b878-dec9-48e5-8827-289174c585aa",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed typed groups are rejected before scope evaluation with repair guidance.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "tar_planning_spec",
+        "session_ref": "/root/tar_planning_spec:judgment:88ee82e5"
+      },
+      "head_commit": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+      "recorded_at": "2026-07-30T14:59:57.238Z"
+    },
+    {
+      "event_id": "58e1fff3-84f0-4e01-9f81-247e6631b71f",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current CLI integration evidence preserves the evidence lifecycle and contains no false success.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "tar_planning_spec",
+        "session_ref": "/root/tar_planning_spec:judgment:88ee82e5"
+      },
+      "head_commit": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+      "recorded_at": "2026-07-30T14:59:57.690Z"
+    },
+    {
+      "event_id": "e4283bb6-552b-4244-b08d-28d38919a418",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current atomic workflow replay prevents stale, pending, or Task-only evidence from authorizing acceptance.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "tar_planning_spec",
+        "session_ref": "/root/tar_planning_spec:judgment:88ee82e5"
+      },
+      "head_commit": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+      "recorded_at": "2026-07-30T14:59:57.955Z"
+    },
+    {
+      "event_id": "1a8b294d-343b-490b-aac5-44de583851c4",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story, Architecture, Spec, implementation, and tests consistently define a fail-closed exception limited to exact Task path coverage and a typed dependency graph.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+      "recorded_at": "2026-07-30T15:33:11.199Z"
+    },
+    {
+      "event_id": "275cdf12-dd17-41f3-938a-feefbcfd6390",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Current public pr prepare tests observe Task loading, scope assessment, the pure evaluator, split planning, atomic authority, generated signals, and CLI exit behavior.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+      "recorded_at": "2026-07-30T15:33:11.392Z"
+    },
+    {
+      "event_id": "3dd40471-b316-4eae-ad79-1ec4b9658710",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Exact repository-relative paths, connected repo-control groups, complete typed schema, and a single narrowly removable unsafe reason are consistent across design, code, and tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+      "recorded_at": "2026-07-30T15:33:11.605Z"
+    },
+    {
+      "event_id": "c188a647-9ede-4745-86c0-c6fc90be3c67",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Task metadata does not itself approve atomic scope; Story metadata, lane coverage, current-HEAD review ownership, verification, and Gate remain independently required.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+      "recorded_at": "2026-07-30T15:33:11.804Z"
+    },
+    {
+      "event_id": "0f77b790-730e-48de-b8b9-cae313aea0a1",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed input, missing Task, partial coverage, extra workflow paths, disconnected graphs, legacy groups, strict-target violations, and missing review evidence fail closed.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+      "recorded_at": "2026-07-30T15:33:11.996Z"
+    },
+    {
+      "event_id": "61ca9141-9aa6-49dc-b12c-58f71d41d5cc",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The contract is grounded in pure evaluator tests, public CLI TAR-CLI-001 through 006, machine-readable artifact assertions, and the atomic-scope E2E wrapper.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+      "recorded_at": "2026-07-30T15:33:12.214Z"
+    },
+    {
+      "event_id": "0cf26517-a4ba-4e96-9742-23bbae845336",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The new behavior is limited to explicit --task usage while no-Task, legacy Task, config-only, strict target, and successful machine-readable output compatibility are tested.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+      "recorded_at": "2026-07-30T15:33:12.406Z"
+    },
+    {
+      "event_id": "a10c0ebb-adbb-4b67-aa63-60c4bb269207",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The focused diff forms one reviewable contract spanning design, a pure policy module, pr-manager integration, and corresponding unit, CLI, and E2E tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+      "recorded_at": "2026-07-30T15:33:12.602Z"
+    },
+    {
+      "event_id": "4a02ca8f-c938-4c4f-8044-9c23518eb0f1",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Malformed canonical Task JSON exits nonzero through public pr prepare and returns the state path plus repair and rerun guidance, with integration assertions.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+      "recorded_at": "2026-07-30T15:33:12.815Z"
+    },
+    {
+      "event_id": "32c11219-31ec-49d3-b038-25f98ee5c053",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Partial typed declarations, non-array fields, duplicate ids, and unknown dependencies are rejected by typed Task inspection and direct unit and CLI tests.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+      "recorded_at": "2026-07-30T15:33:13.034Z"
+    },
+    {
+      "event_id": "13c07e87-6513-49a6-ad89-1b991c821a5f",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Task proof alone cannot green atomic acceptance; current review ownership and passing verification remain required and proof is preserved in both signal and split plan.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+      "recorded_at": "2026-07-30T15:33:13.232Z"
+    },
+    {
+      "event_id": "58c3e50b-e33f-4278-8cfc-63a816ff789a",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Missing or stale review ownership, absent verification, and remaining unsafe signals keep split resolution unresolved or rejected until all independent evidence is current.",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "f0a63589dd8542237c34a56c00ccbbb3fa9a459d",
+      "recorded_at": "2026-07-30T15:33:13.444Z"
+    },
+    {
+      "event_id": "3dd04042-c5b3-432a-b678-30bb688a6a5a",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Storyの意図は無条件例外ではなくtyped Task graphに束縛した限定的なatomic判定であり、実装とテストがその境界へ直接対応している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "recorded_at": "2026-07-30T16:58:05.226Z"
+    },
+    {
+      "event_id": "495b43cf-452a-4eab-aef2-60079097d7fb",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "既存のpr prepare --task読込経路からassessScopeへTask contextを渡す実装とpublic CLI再生により、変更後の実際のworkflow pathが確認されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "recorded_at": "2026-07-30T16:58:06.375Z"
+    },
+    {
+      "event_id": "4e1a1dc1-8d7f-4a7b-8302-f8aea77c9058",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "exact repository-relative coverage、typed graph connectivity、fail-closed、Story/review/verification authority非迂回という不変条件がArchitecture・Spec・実装・negative testsで一致している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "recorded_at": "2026-07-30T16:58:07.137Z"
+    },
+    {
+      "event_id": "397a95ed-648c-4d89-abd3-dcfd8e8e205d",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Task proofが解除するのはmixed_repo_control_surfaceの一理由だけで、atomic Story metadata、lane coverage、review ownership、verification、Gate、PR作成権限は既存境界のまま残る。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "recorded_at": "2026-07-30T16:58:08.003Z"
+    },
+    {
+      "event_id": "1821b474-33d0-4948-974e-2f9301de5912",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed JSON、malformed schema、missing/legacy Task、extra path、disconnected graph、authority不足を実際のpr prepare --task経路で再生している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "recorded_at": "2026-07-30T16:58:08.855Z"
+    },
+    {
+      "event_id": "2496c8bb-0fec-4b9e-9d00-5b0ac4d82568",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current HEAD固定かつworktree不変のunit 303件、integration 10件、E2E、typecheck、docs buildがすべてexit 0で記録され、主要契約には具体的な実行証跡がある。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "recorded_at": "2026-07-30T16:58:09.609Z"
+    },
+    {
+      "event_id": "e36c9e34-ecec-4df2-9c12-cc9777066f5e",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "public CLIのpositive・negative・legacy・config-only・strict-target経路が検証され、成功時の新規Task bindingと失敗時の修復可能なエラー契約が明示されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "recorded_at": "2026-07-30T16:58:10.214Z"
+    },
+    {
+      "event_id": "deca4b10-c1c7-4ba1-b96c-13494d55089b",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "11ファイルの差分はStory、Architecture、Spec、pure evaluator、PR統合、契約テストから成る一つのfail-closed変更で、分割すると中間契約が不完全になるため単一レビュー単位として妥当である。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "recorded_at": "2026-07-30T16:58:10.823Z"
+    },
+    {
+      "event_id": "4c0495ca-2bbf-4c7c-a174-67907c5dd9ae",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "実テストpr prepare writes PR artifacts for the selected storyがcanonical Task JSONを壊し、exit 1、configured path、repair guidance、Unexpected end of JSON inputを検証し、current-HEAD E2Eがこのテストを含む6件のpassを要求して成功している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "recorded_at": "2026-07-30T16:58:11.358Z"
+    },
+    {
+      "event_id": "3471e8bb-70e3-4396-8f08-52260bca1cd5",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "実テストTAR-CLI-002がinvalid typed target_groupsを投入し、exit 1、typed schema error、canonical path、repair guidance、正確なrerun commandを検証し、current-HEAD integrationとE2Eで成功している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "recorded_at": "2026-07-30T16:58:11.903Z"
+    },
+    {
+      "event_id": "03c10329-30d6-46ac-9b56-ff909f2de271",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Task bindingはscope signalとsplit planへ同値で残り、成功証拠からローカルrerun pathを除外しつつcurrent-HEAD reviewer・verification・atomic authority不足をgreenへ昇格させないことが検証されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "recorded_at": "2026-07-30T16:58:12.393Z"
+    },
+    {
+      "event_id": "19b0bb68-26a7-46fe-beae-fcc0f056a2b3",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "missing・legacy・malformed・uncovered・disconnected各状態はunsafeまたは拒否を維持し、eligible状態でもStory metadataやreview不足時のatomic scopeはrejectedのままである。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "recorded_at": "2026-07-30T16:58:12.932Z"
+    },
+    {
+      "event_id": "8b240ee7-c4af-4245-b408-2f9fecbac33a",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Storyから実装まで、Task単位のrepo-control証明をPR判定へ安全に追加する目的が一貫している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "recorded_at": "2026-07-30T17:33:04.069Z"
+    },
+    {
+      "event_id": "dcde16f3-4322-48e7-bccf-0591032cddc5",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "従来のStory authorityを維持しつつTask証拠だけを追加する現状認識が、既存pr-manager経路と一致する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "recorded_at": "2026-07-30T17:33:04.268Z"
+    },
+    {
+      "event_id": "8bb93083-7c98-4593-9039-07cd8fd1fe6a",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story権限、review、verificationをTask証拠が迂回できない不変条件がコードと回帰テストで保持されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "recorded_at": "2026-07-30T17:33:04.515Z"
+    },
+    {
+      "event_id": "b0d0f7f4-e20e-4b33-82ee-5f823f8da81b",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "対象はTask stateの読込・評価・PR証拠化に限定され、AWS applyやstate migrationなどへ権限を拡張していない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "recorded_at": "2026-07-30T17:33:04.774Z"
+    },
+    {
+      "event_id": "53d32879-6468-480e-b87a-bf5ebc6069e1",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "parse、schema、未網羅、切断、legacy、stale evidenceの主要失敗経路が明示され、fail-closedで検証されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "recorded_at": "2026-07-30T17:33:05.034Z"
+    },
+    {
+      "event_id": "7b9de30a-f943-4083-9e17-a34611f20a25",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "build、typecheck、303 unit、10 integration、6 public CLI E2Eがすべて正確なcurrent HEADに結び付いている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "recorded_at": "2026-07-30T17:33:05.245Z"
+    },
+    {
+      "event_id": "224eb028-abab-49dc-b2ba-9be6e7384ae7",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "公開CLIの成功・失敗出力、修復案内、scopeとsplit-planのTask bindingまで契約テストで固定されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "recorded_at": "2026-07-30T17:33:05.451Z"
+    },
+    {
+      "event_id": "ffb14af6-3be3-49f3-add1-b08f6d19506e",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "変更は一つのfail-closed契約としてまとまり、途中分割すると不完全なCLI状態になるため現在の単位はレビュー可能で妥当である。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "recorded_at": "2026-07-30T17:33:05.648Z"
+    },
+    {
+      "event_id": "9ecad84f-b822-460e-bbaf-b5f0579946a2",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "壊れたcanonical Task JSONが終了コード1、対象パス、parse原因、修復案内を返すことをcurrent-HEAD E2Eまで確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "recorded_at": "2026-07-30T17:33:05.851Z"
+    },
+    {
+      "event_id": "f6cbc1f0-0215-473e-93b1-85cf5dd827ac",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "不正なtyped target_groupsがTypeErrorへ崩れず、schemaエラーと具体的な再実行手順を返すことを確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "recorded_at": "2026-07-30T17:33:06.056Z"
+    },
+    {
+      "event_id": "4fa6469f-69ab-4d24-a87b-7d02271fd51c",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "成功証拠への誤ったrerun混入を防ぎ、review・verificationの欠落またはstale HEADでacceptedへ遷移しない回帰テストが通っている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "recorded_at": "2026-07-30T17:33:06.292Z"
+    },
+    {
+      "event_id": "924405e7-454c-4460-bc92-534d0253cf77",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "missing、legacy、malformed、uncovered、disconnectedの各Task状態がunsafeまたはrejectedを維持することをcurrent HEADで確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "recorded_at": "2026-07-30T17:33:06.545Z"
+    },
+    {
+      "event_id": "4999634b-5d76-4f5b-9ac0-a1272c089fa8",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Storyの6基準は、独立repo-control pathのexact coverageとtyped依存接続だけでunsafe signalを限定解除し、Story・review・verification・Gate権限は維持するという実装差分に直接対応している。pure evaluator、pr-manager統合、negative testsまで同じ意図を保持しており推論の飛躍はない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_architecture_v2",
+        "session_ref": "judgment-f212b4d3-1"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "recorded_at": "2026-07-30T18:58:21.796Z"
+    },
+    {
+      "event_id": "7545f35f-ae90-4762-be19-f9e7db993765",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "current HEAD f212b4d3でpure evaluator 6/6、公開CLI TAR経路7/7、実CLIを内包するStory E2E 1/1がpassした。E2Eは内部でpositive、malformed、legacy、disconnected等6件を実行しており、単なるトークン一致や空テストではない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_architecture_v2",
+        "session_ref": "judgment-f212b4d3-2"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "recorded_at": "2026-07-30T18:58:22.005Z"
+    },
+    {
+      "event_id": "b07bc42a-9a11-4b5f-851b-7a20a1e6ccf2",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "no-Task、legacy untyped、malformed/duplicate/unknown dependency、partial coverage、disconnected group、strict target validation、config-only既存例外をfail-closedまたは互換として固定している。Task proofだけではatomicをacceptせず、current-HEAD review・verificationを要求する分岐も実装とCLIテストで確認できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_architecture_v2",
+        "session_ref": "judgment-f212b4d3-3"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "recorded_at": "2026-07-30T18:58:22.200Z"
+    },
+    {
+      "event_id": "dcaa9956-be8e-49bc-96b5-393cc788d5ca",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Task metadataの効力はmixed_repo_control_surfaceの1 unsafe reasonだけに限定され、atomic scope判定は既存Story metadata、lane coverage、review owner map、verificationへ委譲される。成功artifactからローカルrerun_commandを除外し、merge・deployment・cloud権限を追加していないためauthority boundaryが明確である。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_architecture_v2",
+        "session_ref": "judgment-f212b4d3-4"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "recorded_at": "2026-07-30T18:58:22.471Z"
+    },
+    {
+      "event_id": "b29b679c-0b2d-4ecf-9fed-26f3feaf7abc",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "malformed canonical JSON、typed schema不正、未知依存、未接続group、未coverage path、Task未指定、review/verification不足を実際のpr prepare経路またはpure evaluatorで再現し、拒否理由と修復案まで検証している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_architecture_v2",
+        "session_ref": "judgment-f212b4d3-5"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "recorded_at": "2026-07-30T18:58:22.690Z"
+    },
+    {
+      "event_id": "cee67bc9-755d-4b84-a354-c65c237993e3",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "実装完了の証拠はcurrent HEADに束縛されたunit/integration/E2E/typecheck/docs buildと今回の再実行結果で成立する。一方、current pr-prepareはjudgment adjudication等の未解決Gateを残しており、実装検証完了をPR-readyやdelivery完了へ過剰拡張していない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_architecture_v2",
+        "session_ref": "judgment-f212b4d3-6"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "recorded_at": "2026-07-30T18:58:22.888Z"
+    },
+    {
+      "event_id": "6923b32d-2da5-409e-ba77-d5bf417db958",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "公開CLIの変更は--task既存経路への加算的なscope/split-plan proofで、成功出力にはTask ID・state path・coverage・edgesを追加するだけである。no-Task、legacy Task、config-only例外、strict validationの互換テストがpassし、malformed入力はTypeErrorではなく既存形式の修復ガイダンス付き拒否になる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_architecture_v2",
+        "session_ref": "judgment-f212b4d3-7"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "recorded_at": "2026-07-30T18:58:23.086Z"
+    },
+    {
+      "event_id": "3029f3fe-f03b-428a-b4b1-6b094d043983",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "12 filesの差分はStory/Architecture/Spec、pure evaluator、pr-manager接続、contract/CLI/E2E証明という単一のfail-closed PR準備契約として追える。design-ssot/configはその登録・review lifecycle面であり、stale gate-summary除去も同じ変更のevidence lifecycleを誤ってgreen表示しないための限定修正で、別製品機能や独立運用変更は含まれない。ただしPR-ready判定は別途current-HEAD owner coverageと残存Gate解消を要する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_architecture_v2",
+        "session_ref": "judgment-f212b4d3-8"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "recorded_at": "2026-07-30T18:58:23.291Z"
+    },
+    {
+      "event_id": "adf7c2cb-a130-40a9-af8f-81fadc2cf9ac",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "canonical routed Task JSONを途中で切った実ファイルをpr prepare --taskで読み、exit 1、正確なstate path、Unexpected end of JSON input、修復・再実行案を確認する公開CLIテストがStory E2Eから実行されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_architecture_v2",
+        "session_ref": "judgment-f212b4d3-9"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "recorded_at": "2026-07-30T18:58:23.527Z"
+    },
+    {
+      "event_id": "c34e816b-c05c-498c-a344-6fb0a7183f08",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "target_filesが配列でないpartial typed groupを公開CLIへ渡し、scope評価前にexit 1とrepair guidanceを確認している。pure evaluator側もduplicate ID、unknown dependency、欠落classification/arraysを個別reason_codeでfail-closedにする。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_architecture_v2",
+        "session_ref": "judgment-f212b4d3-10"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "recorded_at": "2026-07-30T18:58:23.807Z"
+    },
+    {
+      "event_id": "bdbcd963-7882-4b6b-980f-9909aa98ae7d",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Task proofはscope signalとsplit plan双方へ同一machine-readable proofとして保存され、成功artifactには絶対ローカルpathを含むrerun_commandを残さない。さらにcanonical Gate DAGが別経路へrouteされた際の古いgate-dag.summary.jsonを除去する実pr-prepare回帰テストがpassし、current artifactにも古いsummaryは存在しない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_architecture_v2",
+        "session_ref": "judgment-f212b4d3-11"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "recorded_at": "2026-07-30T18:58:24.033Z"
+    },
+    {
+      "event_id": "771858f4-00f9-4611-b6e8-35cea9632edc",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "eligible Task proofがあってもatomic_single_pr、全lane宣言、current-HEAD owner map、verificationの不足時はatomic scopeをrejectする。現current artifactもowner coverage不足とjudgment関連Gateを未解決のまま保持しており、pending状態を過剰green化していない。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_architecture_v2",
+        "session_ref": "judgment-f212b4d3-12"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "recorded_at": "2026-07-30T18:58:24.225Z"
+    }
+  ]
+}

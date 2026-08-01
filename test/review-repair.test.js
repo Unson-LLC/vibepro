@@ -61,6 +61,11 @@ async function setupRepairRepo() {
   await git(root, ['config', 'user.email', 'vibepro@example.com']);
   await git(root, ['config', 'user.name', 'VibePro Test']);
   await runCli(['init', root]);
+  await git(root, ['add', 'index.html']);
+  await git(root, ['commit', '-m', 'init']);
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    budgets: { delivery_efficiency: { max_subagent_count: 20 } }
+  }));
   await writeReviewSummary(root, 'story-repair-broken', 'gate', [
     role('gate_evidence'),
     role('pr_split_scope', {
@@ -100,6 +105,22 @@ async function setupRepairRepo() {
         }
       }
     }),
+    ...['timeout', 'replaced', 'manual_shutdown'].map((closeReason) => role(`terminal_${closeReason}`, {
+      status: 'missing',
+      effective_status: 'missing',
+      lifecycle: {
+        effective_status: 'closed',
+        latest: {
+          lifecycle_id: `lifecycle-terminal-${closeReason}`,
+          status: closeReason === 'replaced' ? 'replaced' : 'closed',
+          effective_status: closeReason === 'replaced' ? 'replaced' : 'closed',
+          close_reason: closeReason,
+          close_evidence: `${closeReason} fixture`,
+          agent_system: 'codex',
+          agent_id: `agent-terminal-${closeReason}`
+        }
+      }
+    })),
     role('security_boundary', { status: 'pass', effective_status: 'pass' }),
     role('architecture_fit', {
       status: 'pass',
@@ -186,7 +207,9 @@ test('missing role becomes a run_review candidate with full command chain', asyn
   assert.equal(candidate.stage, 'gate');
   const joined = candidate.next_commands.join('\n');
   assert.match(joined, /review prepare .*--stage gate --role gate_evidence/);
+  assert.match(joined, /review authorize .*--stage gate --role gate_evidence/);
   assert.match(joined, /review start /);
+  assert.match(joined, /review start .*--dispatch-authorization "<dispatch-authorization-id>"/);
   assert.match(joined, /review start .*--agent-thread-id "<replacement-agent-thread-id>".*--agent-session-id "<replacement-agent-session-id>"/);
   assert.match(joined, /review record .*--agent-closed/);
   assert.match(joined, /review record .*--inspection-input "<inspection-input>"/);
@@ -239,6 +262,9 @@ test('emitted repair chain executes with one replacement lifecycle identity', as
     for (const [placeholder, value] of replacements) executable = executable.replaceAll(placeholder, value);
     const executed = await runCli(parseEmittedReviewCommand(executable, root));
     assert.equal(executed.exitCode, 0, `emitted command must execute: ${executable}\n${JSON.stringify(executed)}`);
+    if (executable.includes('review authorize')) {
+      replacements.set('<dispatch-authorization-id>', executed.result.authorization.authorization_id);
+    }
   }
   const summary = JSON.parse(await readFile(path.join(root, '.vibepro', 'reviews', 'story-repair-broken', 'gate', 'review-summary.json'), 'utf8'));
   const recorded = summary.roles.find((item) => item.role === 'gate_evidence');
@@ -258,12 +284,27 @@ test('stale role becomes rerun_stale_review and timed_out becomes replace_timed_
   assert.equal(timedOut.effective_status, 'missing');
   assert.match(timedOut.reason, /lifecycle timed out/);
   assert.match(timedOut.next_commands.join('\n'), /review close .*--agent-id "agent-release-risk".*--close-reason timeout.*--close-evidence "<close-evidence>"/);
-  assert.match(timedOut.next_commands.join('\n'), /review start .*--agent-system codex.*--replacement-for lifecycle-release-risk/);
+  assert.match(timedOut.next_commands.join('\n'), /review authorize .*--stage gate --role release_risk/);
+  assert.match(timedOut.next_commands.join('\n'), /review start .*--agent-system codex.*--dispatch-authorization "<dispatch-authorization-id>".*--replacement-for lifecycle-release-risk/);
   const recovery = timedOut.next_commands.join('\n');
   assert.match(recovery, /review start .*--agent-thread-id "<replacement-agent-thread-id>".*--agent-session-id "<replacement-agent-session-id>"/);
   assert.match(recovery, /review start[\s\S]*review close .*--agent-id "<replacement-agent-id>".*--close-reason completed[\s\S]*review record/);
   assert.match(recovery, /review record .*--agent-id "<replacement-agent-id>".*--agent-thread-id "<replacement-agent-thread-id>".*--agent-session-id "<replacement-agent-session-id>"/);
   assert.match(recovery, /review record .*--agent-transcript "<replacement-agent-transcript>".*--agent-close-evidence "<replacement-agent-close-evidence>"/, 'one replacement lifecycle identity and its evidence must survive the full emitted chain');
+});
+
+test('review repair replaces every already-closed terminal lifecycle without closing it again', async () => {
+  const root = await setupRepairRepo();
+  const { result } = await runCli(['review', 'repair', root, '--json']);
+  for (const closeReason of ['timeout', 'replaced', 'manual_shutdown']) {
+    const candidate = findCandidate(result, 'story-repair-broken', `terminal_${closeReason}`);
+    assert.equal(candidate.action, 'replace_terminal_review');
+    const commands = candidate.next_commands.join('\n');
+    assert.doesNotMatch(commands, /review close .*agent-terminal-/);
+    assert.match(commands, /review authorize/);
+    assert.match(commands, /review start .*--dispatch-authorization/);
+    assert.match(commands, new RegExp(`--replacement-for lifecycle-terminal-${closeReason}`));
+  }
 });
 
 test('stale result with a latest running lifecycle closes and replaces that lifecycle', async () => {
@@ -292,10 +333,13 @@ test('running lifecycle recovery starts and closes a replacement with the origin
   assert.deepEqual(commands.map((command) => command.match(/review (prepare|start|close|record)/)?.[1]), [
     'close',
     'prepare',
+    undefined,
     'start',
     'close',
     'record'
   ]);
+  assert.match(commands[2], /review authorize/);
+  assert.match(commands[3], /--dispatch-authorization '<dispatch-authorization-id>'/);
   assert.match(commands.at(-1), /--agent-system claude_code/);
 });
 

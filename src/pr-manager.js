@@ -108,6 +108,7 @@ import { buildCodeTopologyContext } from './code-topology-provider.js';
 import { evaluateContentBinding } from './content-binding.js';
 import { recordResolvedGateOutcomes } from './gate-outcome-ledger.js';
 import { assertArtifactWritePath, collectCurrentGeneratedProjectionPaths, projectArtifact, resolveArtifactRoute, resolveGraphifyArtifactFile, resolvePrArtifactFile } from './artifact-routing.js';
+import { evaluateTaskBoundRepoControl, inspectTypedTaskGroups } from './task-bound-repo-control.js';
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_MAX_REVIEWABLE_FILES = 30;
@@ -287,6 +288,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     dirtyFilesAffectScope: reviewGit.includes_dirty_in_changed_files,
     commits: reviewGit.commits,
     storyId: story.story_id,
+    taskContext,
     maxReviewableFiles: options.maxReviewableFiles ?? DEFAULT_MAX_REVIEWABLE_FILES
   });
   const latestStoryRun = findLatestStoryRun(manifest, story.story_id);
@@ -663,7 +665,15 @@ export async function preparePullRequest(repoRoot, options = {}) {
       summary_status: entry.summary_status
     }))
   };
-  const scannedArtifactFilenames = artifactBudgetInputs.map((input) => input.filename);
+  // The canonical Gate DAG can be routed outside the PR artifact directory.
+  // Still scan its PR-local summary sibling so a summary from an earlier route
+  // cannot survive and misrepresent the current canonical Gate DAG.
+  const scannedArtifactFilenames = [
+    ...artifactBudgetInputs.map((input) => input.filename),
+    ...(!artifactBudgetInputs.some((input) => input.filename === 'gate-dag.json')
+      ? ['gate-dag.json']
+      : [])
+  ];
   const prBodyNarrative = await progress.stage('read_pr_body_narrative', () => readNarrative(root, story.story_id, 'pr-body'));
   const prBody = await progress.stage('render_pr_body', () => renderPrBody({
     story,
@@ -710,7 +720,7 @@ export async function preparePullRequest(repoRoot, options = {}) {
     split_plan: splitPlan,
     pr_context: prContext,
     toolchain,
-    task_context: taskContext,
+    task_context: sanitizeTaskContextForOutput(taskContext),
     latest_story_run: latestStoryRun,
     gate_outcome_ledger: gateOutcomeLedger,
     suggested_branch: suggestedBranch,
@@ -2357,6 +2367,7 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
         stage,
         roles,
         prepare_command: gate.command,
+        authorize_command_template: buildReviewAuthorizeCommandTemplate(storyId, stage, roleArg),
         start_command_template: buildReviewStartCommandTemplate(storyId, stage, roleArg),
         close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id ${shellQuote('<agent-id>')} --close-reason completed --close-evidence ${shellQuote('<artifact>')}`,
         record_command_template: buildReviewRecordCommandTemplate(storyId, stage, roleArg),
@@ -2372,6 +2383,7 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
       stage,
       roles,
       prepare_command: buildReviewPrepareCommand(storyId, stage, roles),
+      authorize_command_template: buildReviewAuthorizeCommandTemplate(storyId, stage, roleArg),
       start_command_template: buildReviewStartCommandTemplate(storyId, stage, roleArg),
       close_command_template: `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-id ${shellQuote('<agent-id>')} --close-reason completed --close-evidence ${shellQuote('<artifact>')}`,
       record_command_template: buildReviewRecordCommandTemplate(storyId, stage, roleArg),
@@ -2382,7 +2394,11 @@ function buildAgentReviewShipActions(gateStatus, storyId = '<story-id>') {
 }
 
 function buildReviewStartCommandTemplate(storyId, stage, roleArg, { identity = 'agent' } = {}) {
-  return `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id ${shellQuote(`<${identity}-id>`)} --agent-thread-id ${shellQuote(`<${identity}-thread-id>`)} --agent-session-id ${shellQuote(`<${identity}-session-id>`)}`;
+  return `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --agent-system codex --agent-id ${shellQuote(`<${identity}-id>`)} --agent-thread-id ${shellQuote(`<${identity}-thread-id>`)} --agent-session-id ${shellQuote(`<${identity}-session-id>`)} --dispatch-authorization ${shellQuote('<dispatch-authorization-id>')}`;
+}
+
+function buildReviewAuthorizeCommandTemplate(storyId, stage, roleArg) {
+  return `vibepro review authorize . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --review-kind preflight --closes-risk ${shellQuote(`complete ${stage}:${roleArg} independent review`)} --expected-judgment-delta ${shellQuote(`resolve ${stage}:${roleArg} review state from current evidence`)} --json`;
 }
 
 export function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { contentBinding = null, identity = 'agent', agentSystem = 'codex' } = {}) {
@@ -3557,6 +3573,12 @@ function sanitizeFileGroupsForOutput(fileGroups) {
   }]));
 }
 
+function sanitizeTaskContextForOutput(taskContext) {
+  if (!taskContext || typeof taskContext !== 'object') return taskContext;
+  const { rerun_command: _rerunCommand, ...safeTaskContext } = taskContext;
+  return safeTaskContext;
+}
+
 function isSourcePath(filePath) {
   return isRootSourcePath(stripMonorepoPackagePrefix(filePath));
 }
@@ -3629,7 +3651,7 @@ function isContractMetadataPath(filePath) {
     || filePath.startsWith('docs/management/contracts/');
 }
 
-function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectScope = true, commits, storyId = null, maxReviewableFiles }) {
+function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectScope = true, commits, storyId = null, taskContext = null, maxReviewableFiles }) {
   const reasons = [];
   const signals = [];
   if (changedFiles.length > maxReviewableFiles) {
@@ -3639,14 +3661,26 @@ function assessScope({ changedFiles, fileGroups, dirtyFiles, dirtyFilesAffectSco
   if (hasMixedRepoControlChanges(fileGroups)) {
     reasons.push('repo制御ファイルやagent設定が差分に含まれている');
     const repoControlFiles = fileGroups.repo_control.files ?? [];
-    const hasIndependentRepoControlSurface = repoControlFiles.some((file) => file !== '.vibepro/config.json');
+    const independentRepoControlFiles = repoControlFiles.filter((file) => file !== '.vibepro/config.json');
+    const hasIndependentRepoControlSurface = independentRepoControlFiles.length > 0;
+    const taskBinding = hasIndependentRepoControlSurface
+      ? evaluateTaskBoundRepoControl({
+        taskContext,
+        repoControlFiles: independentRepoControlFiles
+      })
+      : null;
     signals.push({
       id: 'mixed_repo_control_surface',
-      unsafe_for_atomic_override: hasIndependentRepoControlSurface,
+      unsafe_for_atomic_override: hasIndependentRepoControlSurface
+        ? taskBinding.unsafe_for_atomic_override
+        : false,
       repo_control_files: repoControlFiles,
-      reason: hasIndependentRepoControlSurface
+      ...(taskBinding ? { task_binding: taskBinding } : {}),
+      reason: hasIndependentRepoControlSurface && taskBinding.unsafe_for_atomic_override
         ? 'repository execution or agent-control changes remain independently releasable and cannot be absorbed by an atomic Story declaration'
-        : '.vibepro/config.json is the Story registration/control-plane half of the same declared release contract and may proceed only through typed atomic review'
+        : (hasIndependentRepoControlSurface
+          ? 'repository-control changes are exactly covered by a connected typed Task graph and remain subject to typed atomic review authority'
+          : '.vibepro/config.json is the Story registration/control-plane half of the same declared release contract and may proceed only through typed atomic review')
     });
   }
   const nonWorkspaceDirty = dirtyFiles.filter((file) => !file.path.startsWith('.vibepro/'));
@@ -5200,7 +5234,12 @@ async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prCon
     scope,
     lanes,
     automaticSplitRequired,
-    agentReviews: prContext.agent_reviews
+    agentReviews: prContext.agent_reviews,
+    verificationEvidence: prContext.verification_evidence,
+    flowVerification: prContext.flow_verification,
+    taskBoundRepoControl: (scope?.signals ?? [])
+      .find((signal) => signal.id === 'mixed_repo_control_surface')
+      ?.task_binding ?? null
   });
   const splitRequired = automaticSplitRequired && atomicScope.status !== 'accepted';
   const mergeOrder = lanes
@@ -5221,6 +5260,9 @@ async function buildPrSplitPlan(repoRoot, { story, git, fileGroups, scope, prCon
       recommended_strategy: automaticSplitRequired ? 'split_by_lane_then_prepare' : 'keep_current_pr'
     },
     accepted_current_story_lineage: collectAcceptedCurrentStoryLineage(scope),
+    task_bound_repo_control: (scope?.signals ?? [])
+      .find((signal) => signal.id === 'mixed_repo_control_surface')
+      ?.task_binding ?? null,
     atomic_scope: atomicScope,
     rationale: buildSplitRationale({ scope, lanes, graphContext, atomicScope }),
     graph_context: graphContext,
@@ -5247,13 +5289,22 @@ function collectAcceptedCurrentStoryLineage(scope) {
     }));
 }
 
-function evaluateAtomicScopeDeclaration({ storySource, scope, lanes, automaticSplitRequired, agentReviews = null }) {
+function evaluateAtomicScopeDeclaration({
+  storySource,
+  scope,
+  lanes,
+  automaticSplitRequired,
+  agentReviews = null,
+  verificationEvidence = null,
+  flowVerification = null,
+  taskBoundRepoControl = null
+}) {
   const strategy = storySource?.pr_scope_strategy ?? null;
   const reason = storySource?.pr_scope_reason ?? null;
   const reviewFacets = storySource?.pr_scope_review_facets ?? [];
   const dependencyBoundaryDeclarations = storySource?.pr_scope_dependency_boundaries ?? [];
   const laneIds = lanes.map((lane) => lane.id);
-  if (strategy !== 'atomic_single_pr') {
+  if (strategy !== 'atomic_single_pr' && !taskBoundRepoControl) {
     return {
       status: 'not_requested',
       strategy,
@@ -5280,7 +5331,13 @@ function evaluateAtomicScopeDeclaration({ storySource, scope, lanes, automaticSp
   });
   const reviewOwnerMap = buildAgentReviewOwnerMapEvidence(agentReviews, lanes);
   const reviewOwnerMapVerified = reviewOwnerMap.verified;
+  const currentPassingVerification = collectCurrentPassingVerificationEvidence(verificationEvidence);
+  const currentPassingFlow = getCurrentPassingFlowEvidence(flowVerification);
+  const verificationReady = currentPassingVerification.length > 0 || Boolean(currentPassingFlow);
   const rejectionReasons = [];
+  if (strategy !== 'atomic_single_pr') {
+    rejectionReasons.push('pr_scope_strategy must be atomic_single_pr before Task-bound proof can authorize one atomic PR');
+  }
   if (!reason || reason.trim().length < 80) rejectionReasons.push('pr_scope_reason must explain the atomic release boundary in at least 80 characters');
   if (dependencyBoundaryDeclarations.length === 0 && laneIds.length > 1) rejectionReasons.push('pr_scope_dependency_boundaries must declare typed lane dependencies');
   if (dependencyBoundaryResult.invalid.length > 0) rejectionReasons.push(`invalid typed dependency boundaries: ${dependencyBoundaryResult.invalid.join(', ')}`);
@@ -5290,6 +5347,9 @@ function evaluateAtomicScopeDeclaration({ storySource, scope, lanes, automaticSp
   if (unsafeScopeSignals.length > 0) rejectionReasons.push('unsafe scope signals cannot be overridden by Story metadata');
   if (!reviewOwnerMapVerified) {
     rejectionReasons.push('atomic scope requires a current-head reviewer owner map with every configured role passing');
+  }
+  if (!verificationReady) {
+    rejectionReasons.push('atomic scope requires current-head passing verification evidence');
   }
   const nextActions = buildAtomicScopeNextActions({
     storyId: storySource?.story_id ?? null,
@@ -5312,6 +5372,12 @@ function evaluateAtomicScopeDeclaration({ storySource, scope, lanes, automaticSp
     unsafe_scope_signals: unsafeScopeSignals,
     unsafe_scope_reasons: unsafeScopeReasons,
     review_owner_map_verified: reviewOwnerMapVerified,
+    verification_ready: verificationReady,
+    current_passing_verification_count: currentPassingVerification.length + (currentPassingFlow ? 1 : 0),
+    verification_evidence_refs: [
+      ...currentPassingVerification.map((command) => command.artifact ?? command.command ?? command.kind),
+      ...(currentPassingFlow ? [currentPassingFlow.artifact] : [])
+    ].filter(Boolean),
     next_actions: nextActions,
     review_owner_map: reviewOwnerMap.facets,
     unowned_review_facets: reviewOwnerMap.unowned_facets,
@@ -5353,6 +5419,13 @@ function buildAtomicScopeNextActions({ storyId, rejectionReasons = [], reviewOwn
       follow_up_command: `vibepro review status . --id ${quotedStoryId}`,
       command: prepareCommands[0] ?? `vibepro review status . --id ${quotedStoryId}`,
       follow_up: `vibepro review status . --id ${quotedStoryId}`
+    });
+  }
+  if (rejectionReasons.some((reason) => reason.includes('current-head passing verification evidence'))) {
+    actions.push({
+      type: 'record_current_head_verification',
+      command: `vibepro verify record . --id ${quotedStoryId} --kind unit --status pass --command "<focused command>" --strict-head-binding`,
+      follow_up: `vibepro pr prepare . --story-id ${quotedStoryId}`
     });
   }
   if (rejectionReasons.some((reason) => /pr_scope_|typed dependency|generated review facets/.test(reason))) {
@@ -12072,13 +12145,13 @@ function buildAgentReviewDispatchPreflight(stage, role) {
       reason: `A ${stage}:${role.role} review lifecycle timed out; close it and record replacement evidence before starting a new dispatch batch`
     };
   }
-  if (lifecycle.effective_status === 'manual_shutdown' || latestCloseReason === 'manual_shutdown') {
+  if (['timeout', 'replaced', 'manual_shutdown'].includes(latestCloseReason)) {
     return {
       id: preflightId,
       role: role.role,
       status: 'needs_review',
       kind: 'lifecycle_recovery',
-      reason: `A ${stage}:${role.role} review lifecycle ended with manual_shutdown; record closure/replacement intent before re-dispatching`
+      reason: `A ${stage}:${role.role} review lifecycle ended with ${latestCloseReason}; preserve replacement lineage and authorize before re-dispatching`
     };
   }
   if (role.effective_status === 'pass') {
@@ -13959,8 +14032,9 @@ function mergeAgentReviewRecoveryDetails(primary, secondary) {
 
 function buildAgentReviewRecoveryItem(item, role, storyId) {
   const lifecycle = role?.lifecycle ?? null;
-  const lifecycleStatus = lifecycle?.latest?.close_reason === 'manual_shutdown'
-    ? 'manual_shutdown'
+  const latestCloseReason = lifecycle?.latest?.close_reason ?? null;
+  const lifecycleStatus = ['timeout', 'replaced', 'manual_shutdown'].includes(latestCloseReason)
+    ? (latestCloseReason === 'timeout' ? 'timed_out' : latestCloseReason)
     : lifecycle?.effective_status ?? lifecycle?.latest?.effective_status ?? null;
   const recoveryKind = classifyAgentReviewRecoveryKind(item, role, lifecycleStatus);
   const lifecycleRecovery = buildAgentReviewLifecycleRecovery({
@@ -13991,6 +14065,7 @@ function buildAgentReviewRecoveryItem(item, role, storyId) {
 
 function classifyAgentReviewRecoveryKind(item, role, lifecycleStatus) {
   if (lifecycleStatus === 'timed_out' || item.status === 'timed_out') return 'timed_out';
+  if (lifecycleStatus === 'replaced' || item.status === 'replaced') return 'replaced';
   if (lifecycleStatus === 'manual_shutdown' || item.status === 'manual_shutdown') return 'manual_shutdown';
   if (lifecycleStatus === 'running' || item.status === 'running') return 'running';
   if (role?.stale || item.status === 'stale' || role?.effective_status === 'stale') return 'stale';
@@ -14002,6 +14077,7 @@ function classifyAgentReviewRecoveryKind(item, role, lifecycleStatus) {
 function recoveryPriority(kind) {
   return {
     timed_out: 60,
+    replaced: 58,
     manual_shutdown: 55,
     running: 50,
     stale: 40,
@@ -14012,7 +14088,8 @@ function recoveryPriority(kind) {
 
 function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, recoveryKind }) {
   const latest = lifecycle?.latest ?? null;
-  if (!latest && !['timed_out', 'manual_shutdown', 'running'].includes(recoveryKind)) return null;
+  const replacementKinds = ['timed_out', 'replaced', 'manual_shutdown', 'running'];
+  if (!latest && !replacementKinds.includes(recoveryKind)) return null;
   const agentId = latest?.agent_id ?? null;
   const lifecycleId = latest?.lifecycle_id ?? null;
   const selector = agentId
@@ -14020,14 +14097,18 @@ function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, re
     : `--lifecycle-id ${shellQuote(lifecycleId ?? '<lifecycle-id>')}`;
   const closeReason = recoveryKind === 'timed_out'
     ? 'timeout'
+    : recoveryKind === 'replaced'
+      ? 'replaced'
     : recoveryKind === 'manual_shutdown'
       ? 'manual_shutdown'
       : 'completed';
-  const closeCommand = ['timed_out', 'manual_shutdown', 'running'].includes(recoveryKind)
+  const alreadyTerminallyClosed = ['closed', 'replaced'].includes(latest?.status)
+    && ['timeout', 'replaced', 'manual_shutdown'].includes(latest?.close_reason);
+  const closeCommand = replacementKinds.includes(recoveryKind) && !alreadyTerminallyClosed
     ? `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} ${selector} --close-reason ${shellQuote(closeReason)} --close-evidence ${shellQuote('<close-evidence>')}`
     : null;
-  const replacementCommand = ['timed_out', 'manual_shutdown', 'running'].includes(recoveryKind)
-    ? `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-system ${shellQuote(latest?.agent_system ?? '<codex|claude_code>')} --agent-id ${shellQuote('<replacement-agent-id>')} --agent-thread-id ${shellQuote('<replacement-agent-thread-id>')} --agent-session-id ${shellQuote('<replacement-agent-session-id>')} --timeout-ms 600000 --replacement-for ${shellQuote(lifecycleId ?? '<previous-lifecycle-id>')}`
+  const replacementCommand = replacementKinds.includes(recoveryKind)
+    ? `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-system ${shellQuote(latest?.agent_system ?? '<codex|claude_code>')} --agent-id ${shellQuote('<replacement-agent-id>')} --agent-thread-id ${shellQuote('<replacement-agent-thread-id>')} --agent-session-id ${shellQuote('<replacement-agent-session-id>')} --dispatch-authorization ${shellQuote('<dispatch-authorization-id>')} --timeout-ms 600000 --replacement-for ${shellQuote(lifecycleId ?? '<previous-lifecycle-id>')}`
     : null;
   return {
     status: lifecycle?.effective_status ?? latest?.effective_status ?? null,
@@ -14041,18 +14122,23 @@ function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, re
 
 export function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery, contentBinding = null }) {
   const prepareCommand = `vibepro review prepare . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)}`;
-  const startCommand = lifecycleRecovery?.replacement_command
+  const authorizeCommand = buildReviewAuthorizeCommandTemplate(storyId, stage, role);
+  const rawStartCommand = lifecycleRecovery?.replacement_command
     ?? `vibepro review start . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-system ${shellQuote('<codex|claude_code>')} --agent-id ${shellQuote('<replacement-agent-id>')} --agent-thread-id ${shellQuote('<replacement-agent-thread-id>')} --agent-session-id ${shellQuote('<replacement-agent-session-id>')} --timeout-ms 600000`;
+  const startCommand = rawStartCommand.includes('--dispatch-authorization')
+    ? rawStartCommand
+    : `${rawStartCommand} --dispatch-authorization ${shellQuote('<dispatch-authorization-id>')}`;
   const closeNewCommand = `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-id ${shellQuote('<replacement-agent-id>')} --close-reason completed --close-evidence ${shellQuote('<replacement-agent-close-evidence>')}`;
   const recordCommand = buildReviewRecordCommandTemplate(storyId, stage, role, {
     contentBinding,
     identity: 'replacement-agent',
     agentSystem: lifecycleRecovery?.agent_system ?? '<codex|claude_code>'
   });
-  if (['timed_out', 'manual_shutdown', 'running'].includes(recoveryKind)) {
+  if (['timed_out', 'replaced', 'manual_shutdown', 'running'].includes(recoveryKind)) {
     return [
       lifecycleRecovery?.close_command,
       prepareCommand,
+      authorizeCommand,
       startCommand,
       closeNewCommand,
       recordCommand
@@ -14060,6 +14146,7 @@ export function buildAgentReviewRecoveryCommands({ storyId, stage, role, recover
   }
   return [
     prepareCommand,
+    authorizeCommand,
     startCommand,
     closeNewCommand,
     recordCommand
@@ -15656,26 +15743,45 @@ function assertStrictTargetFiles(taskContext, changedFiles, options) {
 }
 
 async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
-  const { state: taskState, relativePath: taskStatePath } = await readTaskState(repoRoot, storyId);
+  const rerunCommand = [
+    'vibepro pr prepare',
+    shellQuote(repoRoot),
+    '--story-id',
+    shellQuote(storyId),
+    '--task',
+    shellQuote(taskId),
+    ...(groupId ? ['--group', shellQuote(groupId)] : [])
+  ].join(' ');
+  const { state: taskState, relativePath: taskStatePath } = await readTaskState(
+    repoRoot,
+    storyId,
+    rerunCommand
+  );
   const taskStateStoryId = typeof taskState?.story?.story_id === 'string'
     ? taskState.story.story_id.trim()
     : '';
   if (!taskStateStoryId) {
     throw taskPlanRepairError(
       `Task state story_id is required for PR prepare: ${storyId}`,
-      taskStatePath
+      taskStatePath,
+      null,
+      rerunCommand
     );
   }
   if (taskStateStoryId !== storyId) {
     throw taskPlanRepairError(
       `Task state story mismatch for PR prepare: expected ${storyId}, received ${taskStateStoryId}`,
-      taskStatePath
+      taskStatePath,
+      null,
+      rerunCommand
     );
   }
   if (!Array.isArray(taskState.tasks)) {
     throw taskPlanRepairError(
       'Invalid Task state schema for PR prepare: tasks must be an array',
-      taskStatePath
+      taskStatePath,
+      null,
+      rerunCommand
     );
   }
   if (taskState.tasks.some((item) => (
@@ -15687,18 +15793,22 @@ async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
   ))) {
     throw taskPlanRepairError(
       'Invalid Task state schema for PR prepare: tasks must contain objects with non-empty id values',
-      taskStatePath
+      taskStatePath,
+      null,
+      rerunCommand
     );
   }
   const task = taskState.tasks.find((item) => item.id === taskId);
   if (!task) {
-    throw taskPlanRepairError(`Task not found for PR prepare: ${taskId}`, taskStatePath);
+    throw taskPlanRepairError(`Task not found for PR prepare: ${taskId}`, taskStatePath, null, rerunCommand);
   }
   const targetGroups = task.target_groups ?? [];
   if (!Array.isArray(targetGroups)) {
     throw taskPlanRepairError(
       'Invalid Task state schema for PR prepare: target_groups must be an array',
-      taskStatePath
+      taskStatePath,
+      null,
+      rerunCommand
     );
   }
   if (targetGroups.some((item) => (
@@ -15710,12 +15820,23 @@ async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
   ))) {
     throw taskPlanRepairError(
       'Invalid Task state schema for PR prepare: target_groups must contain objects with non-empty id values',
-      taskStatePath
+      taskStatePath,
+      null,
+      rerunCommand
+    );
+  }
+  const typedGroupInspection = inspectTypedTaskGroups(targetGroups);
+  if (typedGroupInspection.mode === 'invalid') {
+    throw taskPlanRepairError(
+      `Invalid typed Task target_groups schema for PR prepare: ${typedGroupInspection.reason_code}`,
+      taskStatePath,
+      null,
+      rerunCommand
     );
   }
   const group = groupId ? targetGroups.find((item) => item.id === groupId) : null;
   if (groupId && !group) {
-    throw taskPlanRepairError(`Target group not found for PR prepare: ${groupId}`, taskStatePath);
+    throw taskPlanRepairError(`Target group not found for PR prepare: ${groupId}`, taskStatePath, null, rerunCommand);
   }
   const artifacts = resolveTaskArtifacts(repoRoot, storyId, taskId, groupId);
   return {
@@ -15723,12 +15844,13 @@ async function loadPrTaskContext(repoRoot, storyId, taskId, groupId = null) {
     task,
     group,
     task_state_path: taskStatePath,
+    rerun_command: rerunCommand,
     source_run: taskState.source_run ?? null,
     artifacts: await filterExistingArtifacts(repoRoot, artifacts)
   };
 }
 
-async function readTaskState(repoRoot, storyId) {
+async function readTaskState(repoRoot, storyId, rerunCommand = null) {
   const taskPath = await resolvePrTaskStatePath(repoRoot, storyId);
   const relativePath = toWorkspaceRelative(repoRoot, taskPath);
   try {
@@ -15738,20 +15860,23 @@ async function readTaskState(repoRoot, storyId) {
     };
   } catch (error) {
     if (error.code === 'ENOENT') {
-      throw taskPlanRepairError('Task state not found for PR prepare', relativePath);
+      throw taskPlanRepairError('Task state not found for PR prepare', relativePath, null, rerunCommand);
     }
     throw taskPlanRepairError(
       'Invalid Task state JSON for PR prepare',
       relativePath,
-      error.message
+      error.message,
+      rerunCommand
     );
   }
 }
 
-function taskPlanRepairError(detail, relativePath, cause = null) {
+function taskPlanRepairError(detail, relativePath, cause = null, rerunCommand = null) {
   return new Error(
     `${detail}: ${relativePath}. `
-    + `Repair the configured canonical Task plan and rerun vibepro pr prepare.`
+    + `Repair the configured canonical Task plan and rerun vibepro pr prepare`
+    + (rerunCommand ? ` with \`${rerunCommand}\`` : '')
+    + '.'
     + (cause ? ` Cause: ${cause}` : '')
   );
 }
@@ -15781,7 +15906,9 @@ function buildAcceptanceScope(story, storySource, taskContext) {
   if (acceptanceCriteria.length === 0) {
     throw taskPlanRepairError(
       `Task acceptance criteria are required for PR prepare: ${taskContext.task?.id ?? 'unknown task'}`,
-      taskContext.task_state_path
+      taskContext.task_state_path,
+      null,
+      taskContext.rerun_command
     );
   }
   return {

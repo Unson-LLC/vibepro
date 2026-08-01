@@ -1,0 +1,145 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Current frozen HEAD ade5b873 satisfies TAR-TASK-01 gate evidence with executable strict-head scenarios and no worktree mutation.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewed task-bound repo control, PR manager integration, CLI and E2E coverage. Changed-path inventory, review surface, malformed JSON parse failure, typed schema failure, runtime path and negative path are executable and fail closed.",
+    "evidence": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json",
+    "inputs": [
+      "src/task-bound-repo-control.js",
+      "src/pr-manager.js",
+      "test/task-bound-repo-control.test.js",
+      "test/vibepro-cli.test.js",
+      "test/e2e/story-vibepro-task-atomic-repo-control-contract.spec.ts"
+    ]
+  },
+  "judgment_delta": [
+    "Old-head structured evidence gap -> current-head executable scenarios prove changed path inventory, review surface, parse and schema fail-closed; only lifecycle refresh remained."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+    "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+    "expected_root": null,
+    "expected_head_sha": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+    "current_head_sha": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+      "actual_root": "/Users/ksato/.codex/worktrees/4184/vibepro-beta2-main",
+      "expected_root": null,
+      "expected_head_sha": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "current_head_sha": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-30T17:35:44.046Z",
+  "git_context": {
+    "head_sha": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+    "current_branch": "codex/story-vibepro-task-atomic-repo-control-contract",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-30T17:35:44.031Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "strict_head",
+    "source": "cli_override",
+    "reason": "final gate role requires current frozen HEAD"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "strict_head",
+    "status": "strict_head",
+    "reason": "strict HEAD binding was requested for this evidence",
+    "recorded_head_sha": "ade5b873cd5cb3c42ffedf58bff2bdd959b52e73",
+    "surface_files": [
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "fd5ee0ada1b6ae0069a834ea30054e6496002cda41160068395e0fa791e850a9",
+        "size": 726472
+      },
+      {
+        "path": "src/task-bound-repo-control.js",
+        "sha256": "b867d5f4da6e1c837d2be958e4985880fc6dcde506b11d60b0e5876e40b33ff4",
+        "size": 5044
+      },
+      {
+        "path": "test/task-bound-repo-control.test.js",
+        "sha256": "6d8a7821f33afde220f2d3d2c220b54649309317fbe56f65cb1a3c5c9479ac62",
+        "size": 7515
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "04dc4844a2f91bb0bdac3ca7aa28b0088d29936f4b6d12963d3849585fd82ff7",
+        "size": 1279169
+      }
+    ],
+    "missing_files": [
+      "test/e2e/story-vibepro-task-atomic-repo-control-contract.spec.ts"
+    ],
+    "surface_hash": "89b5d30371c1ff2e446b13c1521d4627ff4c7df7d23be3ec928cd3d36c6ba1a0"
+  },
+  "source_fingerprint": "b8fcac1ab75f197b0dfa7db75e458aeffe786662a27982a891554ef4b6071844",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "codex",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "/root/tar_planning_spec",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "/root/tar_planning_spec",
+    "session_id": "/root/tar_planning_spec",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/gate/agent-transcript-gate_evidence-ade5b873.json",
+    "request_artifact": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/gate/agent-transcript-gate_evidence-ade5b873.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "/root/tar_planning_spec",
+      "implementation_session_id": "/root",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

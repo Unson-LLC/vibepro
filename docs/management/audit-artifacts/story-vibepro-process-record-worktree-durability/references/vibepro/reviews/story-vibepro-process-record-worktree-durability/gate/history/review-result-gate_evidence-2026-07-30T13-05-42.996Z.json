@@ -1,0 +1,178 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-process-record-worktree-durability",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Round-3 differential pass: git diff 86101569..929a3cc1 is provably docs-only (design-ssot.json registration + parent_design frontmatter line); every code path, test, and verification artifact verified in round 2 is byte-identical, so round-2 pass carries over",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "verification-runs-head-behind-current-docs-head",
+      "detail": " runs recorded at 86101569 while HEAD is 929a3cc1; delta docs-only so evidence describes current code exactly"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Reviewer ran git rev-parse HEAD and git diff 86101569..HEAD --stat confirming docs-only delta; round-2 inspection (full read of process-record-store.js, cli.js hook, writer-path cross-checks, 11/11 targeted tests, verification-run head_sha checks) carries over unchanged",
+    "evidence": null,
+    "inputs": [
+      "src/process-record-store.js",
+      "src/cli.js",
+      "src/adjudication.js",
+      "src/artifact-routing.js",
+      "test/process-record-store.test.js",
+      "test/process-record-store.integration.test.js",
+      "test/e2e/process-record-store-worktree-loss.e2e.test.js",
+      "docs/management/stories/active/story-vibepro-process-record-worktree-durability.md",
+      "design-ssot.json"
+    ]
+  },
+  "judgment_delta": [
+    "concern that staleness indicated substantive change -> pass because the commit range is provably docs/metadata-only, leaving the verified behavior surface identical"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a",
+    "expected_root": null,
+    "expected_head_sha": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+    "current_head_sha": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a",
+      "expected_root": null,
+      "expected_head_sha": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "current_head_sha": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-30T13:05:42.996Z",
+  "git_context": {
+    "head_sha": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+    "current_branch": "claude/practical-khayyam-9a9d9a",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-30T13:05:42.971Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 9 file(s)",
+    "recorded_head_sha": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "ab7c6ffd207e4690d746f7fcdba0a3f0d6a2acec04e011ea83fe7529e350b424",
+        "size": 242280
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-process-record-worktree-durability.md",
+        "sha256": "82b14ee1d84d502c0e5839aa3fd0a4fcbfd6f8b4d21228a779f8e90220e4466c",
+        "size": 4744
+      },
+      {
+        "path": "src/adjudication.js",
+        "sha256": "2c73f237a725b28f44c2481db1409beacd3b38a68e2fd551fb6d60710ea563ae",
+        "size": 70742
+      },
+      {
+        "path": "src/artifact-routing.js",
+        "sha256": "20f3f125253bdd71bce5533a6361df8f637edee8339ccb5b203235caa2f30cd2",
+        "size": 49523
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "03a8066eb66728f9db3ff621bfef3817ab1ad88a7ad3243ec527ffca2d89a72c",
+        "size": 256506
+      },
+      {
+        "path": "src/process-record-store.js",
+        "sha256": "9fe37ba24f0508ce4715c6a3425b444c4bbb3ddbe2fa0255fc11d034b7bc794b",
+        "size": 11205
+      },
+      {
+        "path": "test/e2e/process-record-store-worktree-loss.e2e.test.js",
+        "sha256": "97bf0a77304df9f4c2205cda885d70a824a14ec50caef6fbc4e946ba845cab37",
+        "size": 3289
+      },
+      {
+        "path": "test/process-record-store.integration.test.js",
+        "sha256": "6cb8fdc280ac20a2a5e99ed43645df5e73fdb97e108268ee4c94a4dff2dbd6bf",
+        "size": 3696
+      },
+      {
+        "path": "test/process-record-store.test.js",
+        "sha256": "3e9a6d87a4c6eb1c4bcb17158e851bec4dc9fafc105cf6c440e692c789da0808",
+        "size": 9666
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "55f2a926bf67df1a454c26428ca125847d4e492ee387f4d93dc3ab9110b04d17"
+  },
+  "source_fingerprint": "ab57b7fa5ca350773735a6f8a5a9d3039c08be144ba463b03ee70b0fda5f8467",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a69e284486fd98d90",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "c60c34da-f25a-4f19-9af6-98f69b1d2d06",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/subagent-results/round3-gate_evidence-verdict.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "c60c34da-f25a-4f19-9af6-98f69b1d2d06",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

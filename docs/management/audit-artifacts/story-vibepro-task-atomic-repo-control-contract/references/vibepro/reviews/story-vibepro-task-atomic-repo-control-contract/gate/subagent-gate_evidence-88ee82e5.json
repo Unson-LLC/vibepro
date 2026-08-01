@@ -1,0 +1,38 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "head_sha": "88ee82e547be027358652c2c0a8b3f1926dc4dab",
+  "agent_system": "codex",
+  "agent_id": "/root/tar_planning_architecture_v2",
+  "agent_thread_id": "/root/tar_planning_architecture_v2",
+  "agent_session_id": "/root/tar_planning_architecture_v2",
+  "execution_mode": "parallel_subagent",
+  "status": "pass",
+  "summary": "固定HEAD 88ee82e547be027358652c2c0a8b3f1926dc4dab（clean）に対するGate evidenceは、11 changed pathsのpath-surface inventory、parse/schemaを含むfailure-mode observations、unit/integration/E2E/typecheck/buildのcurrent-HEAD strict evidenceが揃い、旧Gate reviewの実質的な3指摘のうちpath-surface/failure-mode不足は解消済みです。role verdictはpassです。ただし現時点のauthoritative pr-prepareはready_for_pr_create=falseのままです。このreviewを含む全current-HEAD role結果をrecordし、vibepro pr prepareを再実行してgate:agent_review・gate:artifact_consistency・gate:definition_of_doneがpassになるまでPR createしてはいけません。",
+  "findings": [],
+  "inspection_summary": "review request、authoritative pr-prepare/Gate DAG/split-plan、current-HEAD verification evidenceと各run log、Story/Architecture/Spec、repo-control実装、unit/CLI/E2Eテスト、全11 changed pathsを確認。unit 6/6、targeted integration 8/8、Story E2Eはouter 1/1かつsource上inner TAR-CLI 5件を実行してpass 5をassert、typecheck/buildもpass。mandatory regression/path lensesはcurrent HEADに拘束されています。split-planのowner未設定とstale review artifactsはreview record前のライフサイクル状態であり、このroleの実装/evidence欠落ではありません。",
+  "inspection_evidence": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json; .vibepro/pr/story-vibepro-task-atomic-repo-control-contract/gate-dag.json; .vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/{unit,integration,e2e}.log",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/gate/review-request-gate_evidence.md",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/gate-dag.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/split-plan.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/",
+    "docs/20_new_platform/50_features/story-vibepro-task-atomic-repo-control-contract/",
+    "src/task-bound-repo-control.js",
+    "src/pr-manager.js",
+    "test/task-bound-repo-control.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+    "git diff/status at 88ee82e547be027358652c2c0a8b3f1926dc4dab"
+  ],
+  "judgment_delta": [
+    "旧reviewのchanged_path_inventory不足は全11 changed pathsを列挙したcurrent-HEAD evidenceで解消。",
+    "旧reviewのparse/schema failure不足はintegration/E2E observationsと実ログで解消。",
+    "E2E outer test count=1警告は、sourceが5つのTAR-CLI casesを内包しpass 5をassertしているため空テストではなくnon-blocking。",
+    "current PR readinessは未達のまま。全role record後のprepare再実行でartifact consistency/agent review/DoDがpassした場合にのみPR create可。"
+  ]
+}

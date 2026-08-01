@@ -225,6 +225,18 @@ test('PAB-S-3/S-5/S-7 pr prepare enforces the budget, keeps full artifacts, and 
   assert.equal(await exists(path.join(prDir, 'decision-index.summary.json')), false);
   const baselineVerdicts = gateVerdicts(baseline.result.preparation);
 
+  // A gate dump can be routed outside the PR artifact directory. When that
+  // happens, an older PR-local bounded summary must not survive as if it still
+  // described the current canonical Gate DAG.
+  const staleGateSummaryPath = path.join(prDir, 'gate-dag.summary.json');
+  await writeFile(staleGateSummaryPath, `${JSON.stringify({
+    source_artifact: 'gate-dag.json',
+    source_content_hash: 'sha256:stale'
+  }, null, 2)}\n`);
+  const staleSummaryCleanup = await runCli(['pr', 'prepare', repo, '--story-id', storyId, '--base', 'main', '--json']);
+  assert.equal(staleSummaryCleanup.exitCode, 0, staleSummaryCleanup.stderr);
+  assert.equal(await exists(staleGateSummaryPath), false, 'stale routed gate summary should be removed');
+
   // Tighten the budget via config so ordinary artifacts exceed it (PAB-S-5).
   await setBudget(repo, 300);
   const tightened = await runCli(['pr', 'prepare', repo, '--story-id', storyId, '--base', 'main', '--json']);

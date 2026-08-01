@@ -1,0 +1,386 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-process-record-worktree-durability",
+  "updated_at": "2026-07-30T13:04:12.044Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "unwritable store leaves producing command at exit 0 with local record and warning only; durability.enabled=false disables the hook; missing store is a no-op; adjacent regression suites pass (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（実writerのディレクトリに一致する `reviews/` `adjudication/` `verification/` `spec/` `evidence/` `executions/` `pr/`（verification-evidence・verification-runs・decision-records・decision-outcome-ledger を含む）と `gate-outcomes/ledger.json`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。schema/model 不一致や破損で union できない ledger は silent skip せず conflict として表面化する。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "eb0a567a891d5dbe43f2d1bd2be0c2a719ab180a799cf634e5882b31963fc032",
+      "recorded_at": "2026-07-30T13:04:12.041Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "AUTO_SNAPSHOT_SUBCOMMANDS covers all listed mutating commands through the single runCli dispatch wrapper; integration exercises spec write and decision record end-to-end; hook fires only on exit 0 and never throws (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（実writerのディレクトリに一致する `reviews/` `adjudication/` `verification/` `spec/` `evidence/` `executions/` `pr/`（verification-evidence・verification-runs・decision-records・decision-outcome-ledger を含む）と `gate-outcomes/ledger.json`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。schema/model 不一致や破損で union できない ledger は silent skip せず conflict として表面化する。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "eb0a567a891d5dbe43f2d1bd2be0c2a719ab180a799cf634e5882b31963fc032",
+      "recorded_at": "2026-07-30T13:04:11.125Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "status reports missing/stale both directions/conflicts/in_sync; each count asserted with engineered mtimes; conflicts=1 asserted; e2e asserts missing_in_local>=2 (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（実writerのディレクトリに一致する `reviews/` `adjudication/` `verification/` `spec/` `evidence/` `executions/` `pr/`（verification-evidence・verification-runs・decision-records・decision-outcome-ledger を含む）と `gate-outcomes/ledger.json`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。schema/model 不一致や破損で union できない ledger は silent skip せず conflict として表面化する。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "eb0a567a891d5dbe43f2d1bd2be0c2a719ab180a799cf634e5882b31963fc032",
+      "recorded_at": "2026-07-30T13:04:10.280Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "unmergeable ledgers surface as conflicts in hydrate, status, and fail-soft warning; fail-closed union proven by entry_key unit test and e2e clear->block restoration via real CLI (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（実writerのディレクトリに一致する `reviews/` `adjudication/` `verification/` `spec/` `evidence/` `executions/` `pr/`（verification-evidence・verification-runs・decision-records・decision-outcome-ledger を含む）と `gate-outcomes/ledger.json`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。schema/model 不一致や破損で union できない ledger は silent skip せず conflict として表面化する。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "eb0a567a891d5dbe43f2d1bd2be0c2a719ab180a799cf634e5882b31963fc032",
+      "recorded_at": "2026-07-30T13:04:09.383Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "store hydrate restores into wiped re-inited worktree (e2e); unit test asserts skipped_newer_destination, byte-identical preserved content, survival of local-only file; never deletes (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（実writerのディレクトリに一致する `reviews/` `adjudication/` `verification/` `spec/` `evidence/` `executions/` `pr/`（verification-evidence・verification-runs・decision-records・decision-outcome-ledger を含む）と `gate-outcomes/ledger.json`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。schema/model 不一致や破損で union できない ledger は silent skip せず conflict として表面化する。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "eb0a567a891d5dbe43f2d1bd2be0c2a719ab180a799cf634e5882b31963fc032",
+      "recorded_at": "2026-07-30T13:04:08.485Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "clause names exactly the classes in STORY_SCOPED_RECORD_CLASSES plus gate-outcomes/ledger.json; unit test snapshots 7 real-writer-path files; integration mirrors decision-records via real CLI; collectFiles recurses all subtrees uniformly (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（実writerのディレクトリに一致する `reviews/` `adjudication/` `verification/` `spec/` `evidence/` `executions/` `pr/`（verification-evidence・verification-runs・decision-records・decision-outcome-ledger を含む）と `gate-outcomes/ledger.json`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。schema/model 不一致や破損で union できない ledger は silent skip せず conflict として表面化する。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "eb0a567a891d5dbe43f2d1bd2be0c2a719ab180a799cf634e5882b31963fc032",
+      "recorded_at": "2026-07-30T13:04:07.439Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "resolveDurableStoreRoot derives the main-checkout root from the linked worktree gitdir pointer with primary-checkout fallback; unit test asserts both branches against a real git worktree; e2e confirms durable copy under main/.vibepro-store (re-recorded at current head 929a3cc1 after docs-only commits: design-ssot registration + story frontmatter parent_design; no source/test change since judged head 8610156)",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（実writerのディレクトリに一致する `reviews/` `adjudication/` `verification/` `spec/` `evidence/` `executions/` `pr/`（verification-evidence・verification-runs・decision-records・decision-outcome-ledger を含む）と `gate-outcomes/ledger.json`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。schema/model 不一致や破損で union できない ledger は silent skip せず conflict として表面化する。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "eb0a567a891d5dbe43f2d1bd2be0c2a719ab180a799cf634e5882b31963fc032",
+      "recorded_at": "2026-07-30T13:04:06.558Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "unwritable store leaves producing command at exit 0 with local record and warning only; durability.enabled=false disables the hook; missing store is a no-op; adjacent regression suites incl. cli-smoke with new store command pass at current head",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（`reviews/` `adjudications/` `verification/` `spec/` `gate-outcomes/` `evidence/` `executions/<id>/**/decisions/`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "458f32f833626e072b4a4fb76903d43677945b453dc7db9c133e1c056903c387",
+      "recorded_at": "2026-07-30T12:57:59.397Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "AUTO_SNAPSHOT_SUBCOMMANDS covers all listed mutating commands through the single runCli dispatch wrapper; integration exercises spec write and decision record with mirrored artifacts asserted; hook fires only on exit 0 and never throws",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（`reviews/` `adjudications/` `verification/` `spec/` `gate-outcomes/` `evidence/` `executions/<id>/**/decisions/`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "458f32f833626e072b4a4fb76903d43677945b453dc7db9c133e1c056903c387",
+      "recorded_at": "2026-07-30T12:57:58.701Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "status reports missing/stale(both directions)/conflicts/in_sync; unit test asserts each count with engineered mtimes, unmergeable test asserts conflicts=1, e2e asserts missing_in_local>=2 via store status --json",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（`reviews/` `adjudications/` `verification/` `spec/` `gate-outcomes/` `evidence/` `executions/<id>/**/decisions/`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "458f32f833626e072b4a4fb76903d43677945b453dc7db9c133e1c056903c387",
+      "recorded_at": "2026-07-30T12:57:57.974Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "entry_key union proven: clear local ledger cannot erase recorded trip (unit) and clear->block trip restoration through real CLI after worktree wipe (e2e); unmergeable ledgers surface as conflicts with fail-soft warning, closing the prior fail-open hole",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（`reviews/` `adjudications/` `verification/` `spec/` `gate-outcomes/` `evidence/` `executions/<id>/**/decisions/`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "458f32f833626e072b4a4fb76903d43677945b453dc7db9c133e1c056903c387",
+      "recorded_at": "2026-07-30T12:57:57.293Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "e2e store hydrate restores into a wiped re-inited worktree; unit test asserts skipped_newer_destination for newer local file, unchanged content, and survival of local-only file; implementation never deletes",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（`reviews/` `adjudications/` `verification/` `spec/` `gate-outcomes/` `evidence/` `executions/<id>/**/decisions/`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "458f32f833626e072b4a4fb76903d43677945b453dc7db9c133e1c056903c387",
+      "recorded_at": "2026-07-30T12:57:56.498Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "STORY_SCOPED_RECORD_CLASSES matches real writer dirs (reviews, adjudication, verification, spec, evidence, executions, pr) plus gate-outcomes ledger; unit test snapshots 7 real-path files incl. pr/verification-evidence.json and decision-outcome-ledger.json; integration mirrors decision-records via real CLI; e2e mirrors the ledger",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（`reviews/` `adjudications/` `verification/` `spec/` `gate-outcomes/` `evidence/` `executions/<id>/**/decisions/`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "458f32f833626e072b4a4fb76903d43677945b453dc7db9c133e1c056903c387",
+      "recorded_at": "2026-07-30T12:57:55.567Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "resolveDurableStoreRoot derives the main-checkout root from the linked worktree gitdir pointer with primary-checkout fallback; unit test asserts both branches against a real git worktree and e2e confirms the durable copy under main/.vibepro-store; evidence head-bound to current HEAD 8610156",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac30ad0f99928280a",
+        "session_ref": null
+      },
+      "head_commit": "86101569031d0f4f227afd8a816fcc923ad45b6c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "task_id": null,
+        "acceptance_criteria": [
+          "worktree から `git rev-parse --git-common-dir` 由来で main repo 側の安定ストアルート（`<main-repo>/.vibepro-store/<story-id>/`）を解決できる。worktree でない場合は repo 直下を用いる。",
+          "`vibepro store snapshot <repo> --story-id <id>` が耐久記録クラス（`reviews/` `adjudications/` `verification/` `spec/` `gate-outcomes/` `evidence/` `executions/<id>/**/decisions/`）を安定ストアへミラーできる。",
+          "`vibepro store hydrate <repo> --story-id <id>` が新worktreeへ記録を復元できる。復元は非破壊（削除なし・ローカルの新しいファイルを上書きしない）である。",
+          "block/trip 系記録は union 復元され、store 側に trip が存在すればローカルが clear でも trip として復元される（fail-closed）。",
+          "`vibepro store status <repo> --story-id <id>` が local/store の差分（missing / stale / conflict 件数）を表示できる。",
+          "mutating コマンド（`review record` `review start` `review close` `adjudicate` `verify record` `spec write` `pr prepare`）の完了時に自動 snapshot が走る。失敗してもコマンド本体は失敗させず、警告として報告する（fail-soft）。",
+          "store が存在しない・書き込み不能な環境では従来動作へフォールバックし、既存テストを壊さない。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "458f32f833626e072b4a4fb76903d43677945b453dc7db9c133e1c056903c387",
+      "recorded_at": "2026-07-30T12:57:54.819Z"
+    }
+  ]
+}

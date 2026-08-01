@@ -1,0 +1,71 @@
+TAP version 13
+1..0
+# Subtest: test/integration/verification-runner-evidence-consumers.test.js
+ok 1 - test/integration/verification-runner-evidence-consumers.test.js
+  ---
+  duration_ms: 106.568083
+  type: 'test'
+  ...
+# Subtest: TAR-INV-001 fail-closed malformed and incomplete Task graphs
+ok 2 - TAR-INV-001 fail-closed malformed and incomplete Task graphs
+  ---
+  duration_ms: 0.634125
+  type: 'test'
+  ...
+# Subtest: TAR-INV-002 exact repository-relative coverage only
+ok 3 - TAR-INV-002 exact repository-relative coverage only
+  ---
+  duration_ms: 1.063709
+  type: 'test'
+  ...
+# Subtest: TAR-CLI-001 pr prepare persists Task-bound repo-control proof and still blocks missing atomic authority
+ok 4 - TAR-CLI-001 pr prepare persists Task-bound repo-control proof and still blocks missing atomic authority
+  ---
+  duration_ms: 4207.522583
+  type: 'test'
+  ...
+# Subtest: TAR-CLI-002 malformed typed Task state is rejected with repair guidance
+ok 5 - TAR-CLI-002 malformed typed Task state is rejected with repair guidance
+  ---
+  duration_ms: 1545.480542
+  type: 'test'
+  ...
+# Subtest: TAR-CLI-003 disconnected declared repo-control group remains unsafe through the public CLI
+ok 6 - TAR-CLI-003 disconnected declared repo-control group remains unsafe through the public CLI
+  ---
+  duration_ms: 2404.235333
+  type: 'test'
+  ...
+# Subtest: TAR-CLI-004 legacy untyped Task groups remain loadable but cannot authorize repo-control scope
+ok 7 - TAR-CLI-004 legacy untyped Task groups remain loadable but cannot authorize repo-control scope
+  ---
+  duration_ms: 2387.699875
+  type: 'test'
+  ...
+# Subtest: TAR-CLI-005 strict target validation still rejects non-test files outside the selected Task
+ok 8 - TAR-CLI-005 strict target validation still rejects non-test files outside the selected Task
+  ---
+  duration_ms: 1656.871375
+  type: 'test'
+  ...
+# Subtest: TAR-CLI-006 config-only registration exception remains compatible through task-scoped pr prepare
+ok 9 - TAR-CLI-006 config-only registration exception remains compatible through task-scoped pr prepare
+  ---
+  duration_ms: 2307.501667
+  type: 'test'
+  ...
+# Subtest: TAR-INV-004 no-Task independent repo-control remains unsafe for atomic scope
+ok 10 - TAR-INV-004 no-Task independent repo-control remains unsafe for atomic scope
+  ---
+  duration_ms: 2386.797709
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 17029.90275

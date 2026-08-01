@@ -1,0 +1,927 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-process-record-worktree-durability",
+  "source": "execute_merge",
+  "promoted_at": "2026-07-30T13:18:12.590Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:870e2caf3c63d650c2f016f86d614b2bb130bff0edf47b0655412e16f023ad28",
+    "compressed_hash": "sha256:fc547e5f9f8d1e7b2c2db8afdd7c154d90ee37309b3890eab133ce9e39fff07d",
+    "expanded_bytes": 16088,
+    "compressed_bytes": 3530,
+    "expanded_line_count": 429,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "decision_outcome_ledger",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-process-record-worktree-durability",
+    "cost": {
+      "compressed_bytes": 3530,
+      "expanded_bytes": 16088,
+      "expanded_line_count": 429,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "base": "main",
+    "delivery": {
+      "status": "merged",
+      "source": "github_pr",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/403",
+      "merge_commit_sha": "0d89fd8819654684ddecc61738a8ae31224be6b3",
+      "merged_at": "2026-07-30T13:18:00Z"
+    },
+    "reconciliation": {
+      "status": "reconciled",
+      "reasons": [],
+      "evaluated_at": "2026-07-30T13:18:12.521Z",
+      "head_sha": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d"
+    },
+    "decision_outcome_binding": {
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
+      "expected_entry_count": 30,
+      "promoted_count": 30,
+      "duplicate_count": 0,
+      "persistence_status": null
+    },
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/403",
+    "merge_commit_sha": "0d89fd8819654684ddecc61738a8ae31224be6b3",
+    "merged_at": "2026-07-30T13:18:00Z",
+    "current_head_sha": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 59,
+    "copied_reference_count": 47,
+    "unresolved_reference_count": 15,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-process-record-worktree-durability"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:870e2caf3c63d650c2f016f86d614b2bb130bff0edf47b0655412e16f023ad28"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:275209325eaaa8b201c6b415a1fd172d8fc2ec86ca88c81efaf0b3b5c7a47759",
+      "audit_digest": "sha256:275209325eaaa8b201c6b415a1fd172d8fc2ec86ca88c81efaf0b3b5c7a47759",
+      "line_count": 546,
+      "raw_line_count": 546,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_outcome_ledger",
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/decision-outcome-ledger.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:2f2f095b21dd34881da4294db8ae7f2ec5ef5b93e5916321ea7429657d5deef6",
+      "audit_digest": "sha256:2f2f095b21dd34881da4294db8ae7f2ec5ef5b93e5916321ea7429657d5deef6",
+      "line_count": 491,
+      "raw_line_count": 491,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:2f1fe256ff3bffae993690dd1da29a080f2c8b5f1593c5e2823cc1dd96e15d7d",
+      "audit_digest": "sha256:5da62029942981bc3915b1fbbfaec6f8044562ae8e13309ab33a57ace2bec688",
+      "line_count": 4960,
+      "raw_line_count": 39454,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:042368c43997cb48932da5a94c5b7187a93b0a653dde8922bfbeba44d39a2498",
+      "audit_digest": "sha256:e3255c03e0ff414c860ab68dddaa932a60ba7da92d4dce906be43118efb1c8f1",
+      "line_count": 2154,
+      "raw_line_count": 4525,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:37a0538fde8369136323927158188e8b69bdf197da235207d9bd368c4aefec13",
+      "audit_digest": "sha256:34a87353f761990bc59fde6b943e5b0b42e4ddf17c6396e76c9cae91973f5b5d",
+      "line_count": 52,
+      "raw_line_count": 691,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:713e38c3bc62483b8fb71964d979ce2494b2478ba1e519563d9fcb74ecf3d48c",
+      "audit_digest": "sha256:f9a13f2e053e7d107716a0cb557f11dcfe5b739c71985f14fd544eec8cc0488c",
+      "line_count": 2197,
+      "raw_line_count": 4727,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:6036d24c7558f262d425697b90b2b8f9f136a62a35e033b621c3ef8b558bf69f",
+      "audit_digest": "sha256:6036d24c7558f262d425697b90b2b8f9f136a62a35e033b621c3ef8b558bf69f",
+      "line_count": 465,
+      "raw_line_count": 465,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:cf4b122149ea818f9e0b49d70c29d95989977e040a63caaf6c5a8d34b5226c9d",
+      "audit_digest": "sha256:fbf5850b43645b57159eb849c772f9c51cb451ec25d9924dce224ba051600b45",
+      "line_count": 66,
+      "raw_line_count": 1287,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:f5448e1ffb728bbffef4711311c1660c4e9c9e5704c04f97aa363439690b4780",
+      "audit_digest": "sha256:f5448e1ffb728bbffef4711311c1660c4e9c9e5704c04f97aa363439690b4780",
+      "line_count": 608,
+      "raw_line_count": 608,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:5d8beebf081b20a48ea288791badd9f01972b63a18501a6b61e61d04341b0af9",
+      "audit_digest": "sha256:5d8beebf081b20a48ea288791badd9f01972b63a18501a6b61e61d04341b0af9",
+      "line_count": 631,
+      "raw_line_count": 631,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:3ae417b2746719277f7a681947678bde0f6e9a7ed99df1366ee48fe8883522d9",
+      "audit_digest": "sha256:3ae417b2746719277f7a681947678bde0f6e9a7ed99df1366ee48fe8883522d9",
+      "line_count": 599,
+      "raw_line_count": 599,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:ea3a3b679ee1f56175a58b5364cf508e6ddf6d7b29e10b32eb89ada32c73a0c0",
+      "audit_digest": "sha256:ea3a3b679ee1f56175a58b5364cf508e6ddf6d7b29e10b32eb89ada32c73a0c0",
+      "line_count": 153,
+      "raw_line_count": 153,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:979674ff881f66058ca4e4fbccca7413802e2568136b2b7bd38769c478095b32",
+      "audit_digest": "sha256:979674ff881f66058ca4e4fbccca7413802e2568136b2b7bd38769c478095b32",
+      "line_count": 179,
+      "raw_line_count": 179,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/audit-replay-bundle.json.gz",
+      "digest": "sha256:95671fb9a2d5526046ecc497489923982ff406571573e6ef0c8a73c828d84158",
+      "audit_digest": "sha256:95671fb9a2d5526046ecc497489923982ff406571573e6ef0c8a73c828d84158",
+      "line_count": 976,
+      "raw_line_count": 976,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-process-record-worktree-durability/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/adjudication/story-vibepro-process-record-worktree-durability/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-process-record-worktree-durability/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/adjudication/story-vibepro-process-record-worktree-durability/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/decision-outcome-ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/pr/decision-outcome-ledger.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/pr/traceability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/history/review-result-gate_evidence-2026-07-30T12-46-23.656Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/history/review-result-gate_evidence-2026-07-30T12-46-23.656Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/history/review-result-gate_evidence-2026-07-30T12-57-33.231Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/history/review-result-gate_evidence-2026-07-30T12-57-33.231Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/history/review-result-gate_evidence-2026-07-30T13-05-42.996Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/history/review-result-gate_evidence-2026-07-30T13-05-42.996Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/subagent-results/round2-gate_evidence-verdict.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/subagent-results/round2-gate_evidence-verdict.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/subagent-results/round3-gate_evidence-verdict.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/subagent-results/round3-gate_evidence-verdict.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-process-record-worktree-durability/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/stories/story-vibepro-process-record-worktree-durability/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-process-record-worktree-durability/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/stories/story-vibepro-process-record-worktree-durability/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-process-record-worktree-durability/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/adjudication/story-vibepro-process-record-worktree-durability/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-process-record-worktree-durability/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/adjudication/story-vibepro-process-record-worktree-durability/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/diagnostics/2026-07-30T125918Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/history/review-result-gate_evidence-2026-07-30T12-46-23.656Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/history/review-result-gate_evidence-2026-07-30T12-46-23.656Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/history/review-result-gate_evidence-2026-07-30T12-57-33.231Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/history/review-result-gate_evidence-2026-07-30T12-57-33.231Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/history/review-result-gate_evidence-2026-07-30T13-05-42.996Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/history/review-result-gate_evidence-2026-07-30T13-05-42.996Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/subagent-results/round2-gate_evidence-verdict.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/subagent-results/round2-gate_evidence-verdict.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/subagent-results/round3-gate_evidence-verdict.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/reviews/story-vibepro-process-record-worktree-durability/gate/subagent-results/round3-gate_evidence-verdict.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-process-record-worktree-durability/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/stories/story-vibepro-process-record-worktree-durability/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-process-record-worktree-durability/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-process-record-worktree-durability/references/vibepro/stories/story-vibepro-process-record-worktree-durability/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 7307448
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-07-30T125918Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 985828
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 7324391
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-process-record-worktree-durability/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 585803
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-process-record-worktree-durability/surface-violations.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-process-record-worktree-durability/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-process-record-worktree-durability/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-process-record-worktree-durability/state.json",
+      "reason": "source_missing"
+    }
+  ]
+}

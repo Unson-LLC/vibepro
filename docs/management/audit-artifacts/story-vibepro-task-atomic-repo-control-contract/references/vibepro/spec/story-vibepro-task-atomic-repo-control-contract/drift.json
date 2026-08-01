@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "spec_id": "2026-07-30T13:38:51.975Z",
+  "evaluated_at": "2026-07-30T18:13:13.641Z",
+  "status": "clean",
+  "summary": {
+    "spec_code_drift": 0,
+    "spec_test_drift": 0,
+    "code_test_drift": 0,
+    "spec_pr_drift": 0
+  },
+  "items": []
+}

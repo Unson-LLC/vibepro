@@ -1,0 +1,169 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-process-record-worktree-durability",
+  "created_at": "2026-07-30T13:17:49.218Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: repo制御ファイルやagent設定が差分に含まれている; baseからのcommitが 9 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-process-record-worktree-durability/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-process-record-worktree-durability/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-process-record-worktree-durability/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-process-record-worktree-durability/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADR不要: >"
+    },
+    "spec": {
+      "status": "inferred",
+      "required": true,
+      "reason": "5 clauses inferred from Story+Code+Test"
+    },
+    "decision_records": {
+      "total": 6,
+      "open": 0,
+      "by_type": {
+        "needs_review": 6
+      },
+      "by_status": {
+        "accepted": 6
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a",
+          "expected_root": null,
+          "expected_head_sha": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+          "current_head_sha": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1785416542418-3debb92e",
+        "story_id": "story-vibepro-process-record-worktree-durability",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": null,
+        "summary": "scope_reviewability: single-reviewer scope with explicit review_owner_map and decision_record",
+        "reason": "review_owner_map: one reviewer owns the whole change (new module src/process-record-store.js, its cli.js wiring, tests, docs regen, story/design registration) — no cross-team ownership split. scope_reviewed as one intent; split_plan evaluated and not needed; related_file_blast_radius limited to additive paths. This decision_record documents the bundled-scope judgment.",
+        "reviewer": null,
+        "artifact": ".vibepro/pr/story-vibepro-process-record-worktree-durability/split-plan.json",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/typecheck.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/integration.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/unit.json",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-process-record-worktree-durability/verification-runs/e2e.json",
+              "type": "e2e",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a",
+            "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a",
+            "expected_root": null,
+            "expected_head_sha": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+            "current_head_sha": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "93fe646ce28779c3325db87e6d607a19b5c7c23e",
+          "current_branch": "claude/practical-khayyam-9a9d9a",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-07-30T13:02:22.406Z"
+        },
+        "recorded_at": "2026-07-30T13:02:22.420Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-07-30T13:17:44.913Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/infallible-benz-02325a/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "929a3cc10ac3baf3c8e7f11740d0d8f6535c3f4d",
+      "branch": "claude/practical-khayyam-9a9d9a",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "28420edf62f07139ff45aedbbd1fef70d50f5f23",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

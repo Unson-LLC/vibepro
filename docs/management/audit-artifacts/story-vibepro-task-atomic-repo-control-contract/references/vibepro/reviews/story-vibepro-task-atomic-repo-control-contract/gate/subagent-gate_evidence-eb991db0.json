@@ -1,0 +1,40 @@
+{
+  "status": "needs_changes",
+  "summary": "現HEADの実行証拠と回帰・経路カバレッジは信頼できます。ただし、最新E2Eより前に生成されたGate/PR成果物が、現在参照している証拠と矛盾しています。最終Gateを現HEADへ再同期する必要があります。",
+  "findings": [
+    {
+      "id": "gate-evidence-final-synthesis-stale",
+      "severity": "high",
+      "detail": "gate-dag.json と pr-prepare.json は 17:54:32 頃の生成ですが、verification-evidence.json と参照先 verification-runs/e2e.json は 17:57:10 頃に更新されています。Gate DAGには旧E2Eコマンド、57.1秒、parse_failure/schema_failure未充足が残る一方、現在のe2e.jsonは別コマンド、142.3秒で両failure modeを明示しています。さらにgate-dag.summary.jsonはより古い状態です。現レビュー群を記録した後、current HEADで vibepro pr prepare を再実行し、Gate DAG・summary・PR成果物を再生成して、failure-mode coverageとartifact consistencyを再判定してください。"
+    }
+  ],
+  "inspection_summary": "HEAD eb991db0cf5b76f918ee4d3503b2d97c4e988639、clean worktreeを確認しました。レビュー依頼、parallel dispatch、Story、Architecture、Spec、設定、実装、unit/CLI/E2Eテスト、verification evidence、実行ログ、Gate DAG、PR prepare成果物を直接照合しました。Task bindingはexact path、typed group、非repo groupとの接続をfail-closedで検証し、Story権限・current-HEAD owner map・verificationを迂回できません。正負・legacy・no-Task経路もテストされています。",
+  "inspection_evidence": [
+    "verification-evidence.json: current HEADにstrict-head bindingされたunit 303/303、integration 10/10、typecheck、docs build、E2E pass",
+    "verification-runs/e2e.json: HEAD前後一致、clean、exit 0、parse_failure/schema_failure観測",
+    "story-vibepro-atomic-scope-review-contract-main.spec.ts: 32件以上のnested test名・件数・fail=0を検証する実体のあるラッパー",
+    "story-vibepro-task-atomic-repo-control-contract-main.spec.ts: TAR-CLIの正負・schema/parse経路を実行",
+    "gate-dag.json / gate-dag.summary.json / pr-prepare.json: 最新E2Eとの生成時刻・コマンド・所要時間・failure-mode判定の不一致"
+  ],
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/gate/review-request-gate_evidence.md",
+    ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/gate/parallel-dispatch.md",
+    "Story / Architecture / Spec",
+    ".vibepro/config.json",
+    "src/pr-manager.js",
+    "src/task-bound-repo-control.js",
+    "test/task-bound-repo-control.test.js",
+    "test/vibepro-cli.test.js",
+    "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+    "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+    "verification-evidence.json",
+    "gate-dag.json",
+    "gate-dag.summary.json",
+    "pr-prepare.json"
+  ],
+  "judgment_delta": [
+    "Evidence reuseがstaleなのは不正再利用を拒否した正常動作であり、current-head実行証拠まで無効にはしません。",
+    "E2E外側表示は1/1ですが、ラッパーがnested testの名称・件数・全成功を検証しており、空の成功ではありません。",
+    "コードやテスト契約の不足ではなく、最新証拠を最終Gate consumerへ再合成していないことがneeds_changesの理由です。"
+  ]
+}

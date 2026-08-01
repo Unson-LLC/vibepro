@@ -1,0 +1,48 @@
+{
+  "status": "needs_changes",
+  "summary": "現行HEADのテスト実行自体は信頼できるが、current-HEAD Gateはpath surface、failure mode、artifact freshnessの必須証跡が未充足でPR-readyではない。",
+  "inspection_summary": "risk_surfaces=evidence freshness, command reliability, current-HEAD binding, regression guards, changed-path inventory, parse/schema failure modes, legacy/config-only compatibility, generated Gate artifacts; HEAD 0c4b1ac20351d18539e5bef2f6b5378a4c8ea839、clean worktree、verification run JSON/log、Gate DAG、PR prepare、traceability、split plan、E2E source/diffを確認し、focused E2Eを再実行した。",
+  "inspection_evidence": ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/pr-prepare.json; .vibepro/pr/story-vibepro-task-atomic-repo-control-contract/gate-dag.json; .vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/",
+  "inspection_inputs": [
+    ".vibepro/reviews/story-vibepro-task-atomic-repo-control-contract/gate/review-request-gate_evidence.md",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/pr-prepare.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/gate-dag.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-evidence.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/evidence-reuse.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/evidence-plan.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/split-plan.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/traceability.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/unit.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/integration.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/e2e.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/typecheck.json",
+    ".vibepro/pr/story-vibepro-task-atomic-repo-control-contract/verification-runs/build.json",
+    "test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+    "git diff origin/main...HEAD --name-status",
+    "node --test test/e2e/story-vibepro-task-atomic-repo-control-contract-main.spec.ts",
+    "git status --short --branch",
+    "git rev-parse HEAD"
+  ],
+  "judgment_delta": [
+    "E2E artifactのtests=1警告から空または弱いwrapperを懸念した -> sourceと再実行により、内部でTAR-CLI-001〜005を実行し各markerとpass 5を検証する実経路wrapperと確認したため、command reliability上のblockではない。",
+    "evidence-reuse status=staleから現行verification自体が古い可能性を懸念した -> unit/integration/e2e/typecheck/buildはすべてHEAD before/afterが0c4b1ac、exit 0、tree mutationなしであり、staleはevidence key更新による旧summary再利用禁止だった。",
+    "fresh verificationが揃えばGate pass可能と見込んだ -> current pr-prepareがchanged_path_inventory、parse_failure、schema_failure、および6件の旧review bindingをcritical unresolvedとしているためneeds_changesとした。"
+  ],
+  "findings": [
+    {
+      "severity": "high",
+      "id": "gate-evidence-path-surface-unbound",
+      "detail": "gate:path_surface_matrixはpartial_surfaceのままで、11 changed pathsを束ねるchanged_path_inventory行にcurrent evidenceがない。現行HEADに束縛した構造化verification evidenceを記録してpr prepareを再実行する必要がある。"
+    },
+    {
+      "severity": "high",
+      "id": "gate-evidence-failure-modes-unbound",
+      "detail": "gate:failure_mode_coverageはparse_failureとschema_failureの2高リスク候補をmissing_coverageとしている。各failure modeをverification observationへ明示して再記録する必要がある。"
+    },
+    {
+      "severity": "high",
+      "id": "gate-evidence-current-head-artifact-consistency",
+      "detail": "current pr-prepareのgate:artifact_consistencyは6 review artifactsをstale_evidenceとしてblocking扱いしている。current-HEAD review/adjudicationを記録後にpr prepareを再実行する必要がある。"
+    }
+  ]
+}

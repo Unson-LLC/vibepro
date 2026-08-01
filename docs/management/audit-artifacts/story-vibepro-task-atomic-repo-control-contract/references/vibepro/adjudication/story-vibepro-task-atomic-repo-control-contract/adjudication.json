@@ -1,0 +1,311 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-task-atomic-repo-control-contract",
+  "updated_at": "2026-07-30T19:34:23.855Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "unitとpublic CLI integrationとE2Eを合わせ、positive、missing Task、legacy、malformed、extra workflow、disconnected、config-only、strict、Story authority不足を実経路で再生した。outer E2Eのpass 1単独ではなく内部6 CLI testsとintegration補完を根拠とした。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_evidence_adjudication",
+        "session_ref": "fresh-context-adjudication-f212b4d3"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`TAR-S-1`: `pr prepare --task`で、changed repo-control pathがすべて選択Taskの`classification: repo_control` target groupにexactに含まれ、宣言された全repo-control groupがtyped `depends_on` graphで少なくとも一つのnon-repo-control groupへ接続される場合だけ、`mixed_repo_control_surface`をatomic review可能として分類する。",
+          "`TAR-S-2`: Task未指定、repo-control group欠落、未接続group、changed pathの部分coverage、余分なchanged repo-control pathでは従来の`unsafe_for_atomic_override: true`を維持する。canonical Task stateの`target_groups`がmalformedなら、scope判定へ進まず修復手順付きで`pr prepare --task`をfail-closedに拒否する。",
+          "`TAR-S-3`: task-bound分類後もStoryの`atomic_single_pr`宣言、全generated laneのreview facet/dependency coverage、current-HEAD reviewer owner map、verification evidenceを省略せず、いずれか不足時はatomic scopeをrejectする。",
+          "`TAR-S-4`: 判定根拠としてTask ID、task state path、covered repo-control paths、repo-control group IDs、dependency edgesをmachine-readableなscope signalとsplit planへ残す。",
+          "`TAR-S-5`: `--task`なしの既存Story、`.vibepro/config.json`だけの既存例外、通常のunsafe repo-control split、strict target validationの挙動を変えない。`classification`を一つも持たないlegacy Task groupは従来どおりload可能だがtyped proofとは扱わずunsafeを維持する。一つでも`classification`を宣言してtyped proofを開始したTaskは、全groupに完全なtyped schemaを要求する。",
+          "`TAR-S-6`: unit/CLI integration/E2Eでpositive、missing Task、legacy untyped Task、malformed groupsのCLI拒否、uncovered extra changed workflow、disconnected declared repo-control group、config-only例外、strict target validation、Story atomic metadataまたはreview不足を実際の`pr prepare --task`経路で再現し、fail-closedを確認する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "2c26e270708a0b72e408e9fdc612a44a111b5fc2086dac33e04438aaf3f14c0d",
+      "recorded_at": "2026-07-30T19:34:23.853Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "legacy untyped Taskはload可能だがproofにならず、typed proof開始後は全groupの完全schemaを要求する。config-only、no-Task unsafe split、strict validationの互換挙動もpublic CLIで確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_evidence_adjudication",
+        "session_ref": "fresh-context-adjudication-f212b4d3"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`TAR-S-1`: `pr prepare --task`で、changed repo-control pathがすべて選択Taskの`classification: repo_control` target groupにexactに含まれ、宣言された全repo-control groupがtyped `depends_on` graphで少なくとも一つのnon-repo-control groupへ接続される場合だけ、`mixed_repo_control_surface`をatomic review可能として分類する。",
+          "`TAR-S-2`: Task未指定、repo-control group欠落、未接続group、changed pathの部分coverage、余分なchanged repo-control pathでは従来の`unsafe_for_atomic_override: true`を維持する。canonical Task stateの`target_groups`がmalformedなら、scope判定へ進まず修復手順付きで`pr prepare --task`をfail-closedに拒否する。",
+          "`TAR-S-3`: task-bound分類後もStoryの`atomic_single_pr`宣言、全generated laneのreview facet/dependency coverage、current-HEAD reviewer owner map、verification evidenceを省略せず、いずれか不足時はatomic scopeをrejectする。",
+          "`TAR-S-4`: 判定根拠としてTask ID、task state path、covered repo-control paths、repo-control group IDs、dependency edgesをmachine-readableなscope signalとsplit planへ残す。",
+          "`TAR-S-5`: `--task`なしの既存Story、`.vibepro/config.json`だけの既存例外、通常のunsafe repo-control split、strict target validationの挙動を変えない。`classification`を一つも持たないlegacy Task groupは従来どおりload可能だがtyped proofとは扱わずunsafeを維持する。一つでも`classification`を宣言してtyped proofを開始したTaskは、全groupに完全なtyped schemaを要求する。",
+          "`TAR-S-6`: unit/CLI integration/E2Eでpositive、missing Task、legacy untyped Task、malformed groupsのCLI拒否、uncovered extra changed workflow、disconnected declared repo-control group、config-only例外、strict target validation、Story atomic metadataまたはreview不足を実際の`pr prepare --task`経路で再現し、fail-closedを確認する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "2c26e270708a0b72e408e9fdc612a44a111b5fc2086dac33e04438aaf3f14c0d",
+      "recorded_at": "2026-07-30T19:34:23.615Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "Task ID、canonical state path、covered paths、repo group IDs、dependency edgesがproofに生成され、scope signalとsplit planへ同一構造で保存されることを実生成JSONのdeepEqualで確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_evidence_adjudication",
+        "session_ref": "fresh-context-adjudication-f212b4d3"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`TAR-S-1`: `pr prepare --task`で、changed repo-control pathがすべて選択Taskの`classification: repo_control` target groupにexactに含まれ、宣言された全repo-control groupがtyped `depends_on` graphで少なくとも一つのnon-repo-control groupへ接続される場合だけ、`mixed_repo_control_surface`をatomic review可能として分類する。",
+          "`TAR-S-2`: Task未指定、repo-control group欠落、未接続group、changed pathの部分coverage、余分なchanged repo-control pathでは従来の`unsafe_for_atomic_override: true`を維持する。canonical Task stateの`target_groups`がmalformedなら、scope判定へ進まず修復手順付きで`pr prepare --task`をfail-closedに拒否する。",
+          "`TAR-S-3`: task-bound分類後もStoryの`atomic_single_pr`宣言、全generated laneのreview facet/dependency coverage、current-HEAD reviewer owner map、verification evidenceを省略せず、いずれか不足時はatomic scopeをrejectする。",
+          "`TAR-S-4`: 判定根拠としてTask ID、task state path、covered repo-control paths、repo-control group IDs、dependency edgesをmachine-readableなscope signalとsplit planへ残す。",
+          "`TAR-S-5`: `--task`なしの既存Story、`.vibepro/config.json`だけの既存例外、通常のunsafe repo-control split、strict target validationの挙動を変えない。`classification`を一つも持たないlegacy Task groupは従来どおりload可能だがtyped proofとは扱わずunsafeを維持する。一つでも`classification`を宣言してtyped proofを開始したTaskは、全groupに完全なtyped schemaを要求する。",
+          "`TAR-S-6`: unit/CLI integration/E2Eでpositive、missing Task、legacy untyped Task、malformed groupsのCLI拒否、uncovered extra changed workflow、disconnected declared repo-control group、config-only例外、strict target validation、Story atomic metadataまたはreview不足を実際の`pr prepare --task`経路で再現し、fail-closedを確認する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "2c26e270708a0b72e408e9fdc612a44a111b5fc2086dac33e04438aaf3f14c0d",
+      "recorded_at": "2026-07-30T19:34:23.381Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Task proofとは独立にatomic_single_pr、全generated laneのfacet/dependency、current-HEAD owner map、verificationが必須で、不足時のrejectを実装・CLI・current artifactで確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_evidence_adjudication",
+        "session_ref": "fresh-context-adjudication-f212b4d3"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`TAR-S-1`: `pr prepare --task`で、changed repo-control pathがすべて選択Taskの`classification: repo_control` target groupにexactに含まれ、宣言された全repo-control groupがtyped `depends_on` graphで少なくとも一つのnon-repo-control groupへ接続される場合だけ、`mixed_repo_control_surface`をatomic review可能として分類する。",
+          "`TAR-S-2`: Task未指定、repo-control group欠落、未接続group、changed pathの部分coverage、余分なchanged repo-control pathでは従来の`unsafe_for_atomic_override: true`を維持する。canonical Task stateの`target_groups`がmalformedなら、scope判定へ進まず修復手順付きで`pr prepare --task`をfail-closedに拒否する。",
+          "`TAR-S-3`: task-bound分類後もStoryの`atomic_single_pr`宣言、全generated laneのreview facet/dependency coverage、current-HEAD reviewer owner map、verification evidenceを省略せず、いずれか不足時はatomic scopeをrejectする。",
+          "`TAR-S-4`: 判定根拠としてTask ID、task state path、covered repo-control paths、repo-control group IDs、dependency edgesをmachine-readableなscope signalとsplit planへ残す。",
+          "`TAR-S-5`: `--task`なしの既存Story、`.vibepro/config.json`だけの既存例外、通常のunsafe repo-control split、strict target validationの挙動を変えない。`classification`を一つも持たないlegacy Task groupは従来どおりload可能だがtyped proofとは扱わずunsafeを維持する。一つでも`classification`を宣言してtyped proofを開始したTaskは、全groupに完全なtyped schemaを要求する。",
+          "`TAR-S-6`: unit/CLI integration/E2Eでpositive、missing Task、legacy untyped Task、malformed groupsのCLI拒否、uncovered extra changed workflow、disconnected declared repo-control group、config-only例外、strict target validation、Story atomic metadataまたはreview不足を実際の`pr prepare --task`経路で再現し、fail-closedを確認する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "2c26e270708a0b72e408e9fdc612a44a111b5fc2086dac33e04438aaf3f14c0d",
+      "recorded_at": "2026-07-30T19:34:23.143Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "missing Task、group欠落、coverage不足、extra path、disconnected groupはunsafeを維持し、typed schema不正はscope判定前にcanonical pathとrepair guidance付きでpublic CLIがfail-closed拒否する。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_evidence_adjudication",
+        "session_ref": "fresh-context-adjudication-f212b4d3"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`TAR-S-1`: `pr prepare --task`で、changed repo-control pathがすべて選択Taskの`classification: repo_control` target groupにexactに含まれ、宣言された全repo-control groupがtyped `depends_on` graphで少なくとも一つのnon-repo-control groupへ接続される場合だけ、`mixed_repo_control_surface`をatomic review可能として分類する。",
+          "`TAR-S-2`: Task未指定、repo-control group欠落、未接続group、changed pathの部分coverage、余分なchanged repo-control pathでは従来の`unsafe_for_atomic_override: true`を維持する。canonical Task stateの`target_groups`がmalformedなら、scope判定へ進まず修復手順付きで`pr prepare --task`をfail-closedに拒否する。",
+          "`TAR-S-3`: task-bound分類後もStoryの`atomic_single_pr`宣言、全generated laneのreview facet/dependency coverage、current-HEAD reviewer owner map、verification evidenceを省略せず、いずれか不足時はatomic scopeをrejectする。",
+          "`TAR-S-4`: 判定根拠としてTask ID、task state path、covered repo-control paths、repo-control group IDs、dependency edgesをmachine-readableなscope signalとsplit planへ残す。",
+          "`TAR-S-5`: `--task`なしの既存Story、`.vibepro/config.json`だけの既存例外、通常のunsafe repo-control split、strict target validationの挙動を変えない。`classification`を一つも持たないlegacy Task groupは従来どおりload可能だがtyped proofとは扱わずunsafeを維持する。一つでも`classification`を宣言してtyped proofを開始したTaskは、全groupに完全なtyped schemaを要求する。",
+          "`TAR-S-6`: unit/CLI integration/E2Eでpositive、missing Task、legacy untyped Task、malformed groupsのCLI拒否、uncovered extra changed workflow、disconnected declared repo-control group、config-only例外、strict target validation、Story atomic metadataまたはreview不足を実際の`pr prepare --task`経路で再現し、fail-closedを確認する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "2c26e270708a0b72e408e9fdc612a44a111b5fc2086dac33e04438aaf3f14c0d",
+      "recorded_at": "2026-07-30T19:34:22.901Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "exact path coverageと全repo-control groupからnon-repo groupへのtyped dependency接続を満たす場合だけunsafe overrideが解除されることを実装とpublic CLI positiveおよびextra-path negative artifactで直接確認した。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_evidence_adjudication",
+        "session_ref": "fresh-context-adjudication-f212b4d3"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`TAR-S-1`: `pr prepare --task`で、changed repo-control pathがすべて選択Taskの`classification: repo_control` target groupにexactに含まれ、宣言された全repo-control groupがtyped `depends_on` graphで少なくとも一つのnon-repo-control groupへ接続される場合だけ、`mixed_repo_control_surface`をatomic review可能として分類する。",
+          "`TAR-S-2`: Task未指定、repo-control group欠落、未接続group、changed pathの部分coverage、余分なchanged repo-control pathでは従来の`unsafe_for_atomic_override: true`を維持する。canonical Task stateの`target_groups`がmalformedなら、scope判定へ進まず修復手順付きで`pr prepare --task`をfail-closedに拒否する。",
+          "`TAR-S-3`: task-bound分類後もStoryの`atomic_single_pr`宣言、全generated laneのreview facet/dependency coverage、current-HEAD reviewer owner map、verification evidenceを省略せず、いずれか不足時はatomic scopeをrejectする。",
+          "`TAR-S-4`: 判定根拠としてTask ID、task state path、covered repo-control paths、repo-control group IDs、dependency edgesをmachine-readableなscope signalとsplit planへ残す。",
+          "`TAR-S-5`: `--task`なしの既存Story、`.vibepro/config.json`だけの既存例外、通常のunsafe repo-control split、strict target validationの挙動を変えない。`classification`を一つも持たないlegacy Task groupは従来どおりload可能だがtyped proofとは扱わずunsafeを維持する。一つでも`classification`を宣言してtyped proofを開始したTaskは、全groupに完全なtyped schemaを要求する。",
+          "`TAR-S-6`: unit/CLI integration/E2Eでpositive、missing Task、legacy untyped Task、malformed groupsのCLI拒否、uncovered extra changed workflow、disconnected declared repo-control group、config-only例外、strict target validation、Story atomic metadataまたはreview不足を実際の`pr prepare --task`経路で再現し、fail-closedを確認する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "2c26e270708a0b72e408e9fdc612a44a111b5fc2086dac33e04438aaf3f14c0d",
+      "recorded_at": "2026-07-30T19:34:22.655Z"
+    },
+    {
+      "clause_id": "ac:3",
+      "verdict": "demonstrated",
+      "reason": "TAR-CLI-001がpublic pr prepare --taskの生成結果を読み、scope.signals内task_binding.proofにtask_id、task_state_path、covered_repo_control_paths、repo_control_group_ids、dependency_edgesが期待値どおり存在すること、さらにsplit_plan.task_bound_repo_controlがそのtask_bindingと構造的に完全一致することをdeepEqualで検証している。これは単なるフィールド名検索ではなく、実CLIが生成したmachine-readable JSONの値と二つの保存先を直接検査した証拠である。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "evidence-f212b4d3-ac3"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "acceptance_scope": {
+        "source": "task",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "task_id": "TAR-TASK-01",
+        "acceptance_criteria": [
+          "TAR-S-1からTAR-S-6を満たす",
+          "Taskなし・不正Taskはfail-closedを維持する",
+          "machine-readable evidenceにTask bindingを残す"
+        ]
+      },
+      "acceptance_scope_fingerprint": "5f76b77057f08c807b177a8ac71f3cfc8ce5b1b448d1aeb95bf9ceb81d7835bc",
+      "recorded_at": "2026-07-30T18:54:33.053Z"
+    },
+    {
+      "clause_id": "ac:2",
+      "verdict": "demonstrated",
+      "reason": "no-Taskの独立repo-control差分はTAR-INV-004でunsafe_for_atomic_override=true、atomic_scope=rejected、split_recommendedをpublic pr prepare出力から直接確認している。不正Taskは、partial typed schemaを含むmalformed canonical stateがTAR-CLI-002でscope判定前にexit 1となり、canonical state pathと修復・再実行コマンドを返す。加えてuncovered changed path、disconnected group、legacy untyped group、exactでないpath、duplicate ID、unknown dependencyもunsafeまたはCLI拒否となるため、Taskなし・不正Taskのfail-closedは推測なく観測できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "evidence-f212b4d3-ac2"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "acceptance_scope": {
+        "source": "task",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "task_id": "TAR-TASK-01",
+        "acceptance_criteria": [
+          "TAR-S-1からTAR-S-6を満たす",
+          "Taskなし・不正Taskはfail-closedを維持する",
+          "machine-readable evidenceにTask bindingを残す"
+        ]
+      },
+      "acceptance_scope_fingerprint": "5f76b77057f08c807b177a8ac71f3cfc8ce5b1b448d1aeb95bf9ceb81d7835bc",
+      "recorded_at": "2026-07-30T18:54:32.705Z"
+    },
+    {
+      "clause_id": "ac:1",
+      "verdict": "demonstrated",
+      "reason": "current HEAD f212b4d3 の実装と実CLI証拠を原文TAR-S-1〜6へ照合した。TAR-CLI-001はexact coverageかつtyped dependency接続時だけmixed_repo_control_surfaceをreviewable化し、Task ID・state path・covered paths・group IDs・edgesをscope signalとsplit planへ同値保存する一方、Storyのatomic_single_pr・review facet/dependency・owner map不足ではatomic acceptanceを拒否する。追加workflow、disconnected group、malformed typed Task、legacy untyped Task、strict外ファイル、config-only、no-TaskはTAR-CLI-002〜006/TAR-INV-004のpublic pr prepare経路でそれぞれ拒否または互換挙動を直接観測している。さらにE-2はcurrent-HEAD owner map、generated lane、verification evidenceの不足・充足とHEAD変更後の再拒否をpublic CLIで再生しており、Task proofが既存atomic authorityを迂回しないことまで実証している。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "evidence-f212b4d3-ac1"
+      },
+      "head_commit": "f212b4d3da8d3509ca0aa46b589518a03c5cbaed",
+      "acceptance_scope": {
+        "source": "task",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "task_id": "TAR-TASK-01",
+        "acceptance_criteria": [
+          "TAR-S-1からTAR-S-6を満たす",
+          "Taskなし・不正Taskはfail-closedを維持する",
+          "machine-readable evidenceにTask bindingを残す"
+        ]
+      },
+      "acceptance_scope_fingerprint": "5f76b77057f08c807b177a8ac71f3cfc8ce5b1b448d1aeb95bf9ceb81d7835bc",
+      "recorded_at": "2026-07-30T18:54:32.350Z"
+    },
+    {
+      "clause_id": "ac:3",
+      "verdict": "demonstrated",
+      "reason": "eligible経路でTask ID、canonical state path、covered paths、group IDs、dependency edgesがscope signalのtask_binding.proofとsplit planのtask_bound_repo_controlへ同値で保存される。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`TAR-S-1`: `pr prepare --task`で、changed repo-control pathがすべて選択Taskの`classification: repo_control` target groupにexactに含まれ、宣言された全repo-control groupがtyped `depends_on` graphで少なくとも一つのnon-repo-control groupへ接続される場合だけ、`mixed_repo_control_surface`をatomic review可能として分類する。",
+          "`TAR-S-2`: Task未指定、repo-control group欠落、未接続group、changed pathの部分coverage、余分なchanged repo-control pathでは従来の`unsafe_for_atomic_override: true`を維持する。canonical Task stateの`target_groups`がmalformedなら、scope判定へ進まず修復手順付きで`pr prepare --task`をfail-closedに拒否する。",
+          "`TAR-S-3`: task-bound分類後もStoryの`atomic_single_pr`宣言、全generated laneのreview facet/dependency coverage、current-HEAD reviewer owner map、verification evidenceを省略せず、いずれか不足時はatomic scopeをrejectする。",
+          "`TAR-S-4`: 判定根拠としてTask ID、task state path、covered repo-control paths、repo-control group IDs、dependency edgesをmachine-readableなscope signalとsplit planへ残す。",
+          "`TAR-S-5`: `--task`なしの既存Story、`.vibepro/config.json`だけの既存例外、通常のunsafe repo-control split、strict target validationの挙動を変えない。`classification`を一つも持たないlegacy Task groupは従来どおりload可能だがtyped proofとは扱わずunsafeを維持する。一つでも`classification`を宣言してtyped proofを開始したTaskは、全groupに完全なtyped schemaを要求する。",
+          "`TAR-S-6`: unit/CLI integration/E2Eでpositive、missing Task、legacy untyped Task、malformed groupsのCLI拒否、uncovered extra changed workflow、disconnected declared repo-control group、config-only例外、strict target validation、Story atomic metadataまたはreview不足を実際の`pr prepare --task`経路で再現し、fail-closedを確認する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "2c26e270708a0b72e408e9fdc612a44a111b5fc2086dac33e04438aaf3f14c0d",
+      "recorded_at": "2026-07-30T16:58:04.380Z"
+    },
+    {
+      "clause_id": "ac:2",
+      "verdict": "demonstrated",
+      "reason": "Task未指定、malformed typed schema、unknown dependency、partial/extra path、disconnected group、legacy untyped groupがunsafeまたは修復手順付き拒否となることをunitと実CLIで確認できる。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`TAR-S-1`: `pr prepare --task`で、changed repo-control pathがすべて選択Taskの`classification: repo_control` target groupにexactに含まれ、宣言された全repo-control groupがtyped `depends_on` graphで少なくとも一つのnon-repo-control groupへ接続される場合だけ、`mixed_repo_control_surface`をatomic review可能として分類する。",
+          "`TAR-S-2`: Task未指定、repo-control group欠落、未接続group、changed pathの部分coverage、余分なchanged repo-control pathでは従来の`unsafe_for_atomic_override: true`を維持する。canonical Task stateの`target_groups`がmalformedなら、scope判定へ進まず修復手順付きで`pr prepare --task`をfail-closedに拒否する。",
+          "`TAR-S-3`: task-bound分類後もStoryの`atomic_single_pr`宣言、全generated laneのreview facet/dependency coverage、current-HEAD reviewer owner map、verification evidenceを省略せず、いずれか不足時はatomic scopeをrejectする。",
+          "`TAR-S-4`: 判定根拠としてTask ID、task state path、covered repo-control paths、repo-control group IDs、dependency edgesをmachine-readableなscope signalとsplit planへ残す。",
+          "`TAR-S-5`: `--task`なしの既存Story、`.vibepro/config.json`だけの既存例外、通常のunsafe repo-control split、strict target validationの挙動を変えない。`classification`を一つも持たないlegacy Task groupは従来どおりload可能だがtyped proofとは扱わずunsafeを維持する。一つでも`classification`を宣言してtyped proofを開始したTaskは、全groupに完全なtyped schemaを要求する。",
+          "`TAR-S-6`: unit/CLI integration/E2Eでpositive、missing Task、legacy untyped Task、malformed groupsのCLI拒否、uncovered extra changed workflow、disconnected declared repo-control group、config-only例外、strict target validation、Story atomic metadataまたはreview不足を実際の`pr prepare --task`経路で再現し、fail-closedを確認する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "2c26e270708a0b72e408e9fdc612a44a111b5fc2086dac33e04438aaf3f14c0d",
+      "recorded_at": "2026-07-30T16:58:02.494Z"
+    },
+    {
+      "clause_id": "ac:1",
+      "verdict": "demonstrated",
+      "reason": "TAR-S-1〜S-6はpure evaluator、public pr prepare --task CLI、同一経路を再生するE2Eで、positive・fail-closed・互換性・atomic authority非迂回・machine-readable proofまでcurrent HEAD上で実証されている。",
+      "provenance": {
+        "agent_system": "codex",
+        "agent_id": "/root/tar_planning_spec_v2",
+        "session_ref": "/root/tar_planning_spec_v2"
+      },
+      "head_commit": "8263dfcfa512b56bc275a883ab5024617f24bde7",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-task-atomic-repo-control-contract",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`TAR-S-1`: `pr prepare --task`で、changed repo-control pathがすべて選択Taskの`classification: repo_control` target groupにexactに含まれ、宣言された全repo-control groupがtyped `depends_on` graphで少なくとも一つのnon-repo-control groupへ接続される場合だけ、`mixed_repo_control_surface`をatomic review可能として分類する。",
+          "`TAR-S-2`: Task未指定、repo-control group欠落、未接続group、changed pathの部分coverage、余分なchanged repo-control pathでは従来の`unsafe_for_atomic_override: true`を維持する。canonical Task stateの`target_groups`がmalformedなら、scope判定へ進まず修復手順付きで`pr prepare --task`をfail-closedに拒否する。",
+          "`TAR-S-3`: task-bound分類後もStoryの`atomic_single_pr`宣言、全generated laneのreview facet/dependency coverage、current-HEAD reviewer owner map、verification evidenceを省略せず、いずれか不足時はatomic scopeをrejectする。",
+          "`TAR-S-4`: 判定根拠としてTask ID、task state path、covered repo-control paths、repo-control group IDs、dependency edgesをmachine-readableなscope signalとsplit planへ残す。",
+          "`TAR-S-5`: `--task`なしの既存Story、`.vibepro/config.json`だけの既存例外、通常のunsafe repo-control split、strict target validationの挙動を変えない。`classification`を一つも持たないlegacy Task groupは従来どおりload可能だがtyped proofとは扱わずunsafeを維持する。一つでも`classification`を宣言してtyped proofを開始したTaskは、全groupに完全なtyped schemaを要求する。",
+          "`TAR-S-6`: unit/CLI integration/E2Eでpositive、missing Task、legacy untyped Task、malformed groupsのCLI拒否、uncovered extra changed workflow、disconnected declared repo-control group、config-only例外、strict target validation、Story atomic metadataまたはreview不足を実際の`pr prepare --task`経路で再現し、fail-closedを確認する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "2c26e270708a0b72e408e9fdc612a44a111b5fc2086dac33e04438aaf3f14c0d",
+      "recorded_at": "2026-07-30T16:58:00.951Z"
+    }
+  ]
+}
