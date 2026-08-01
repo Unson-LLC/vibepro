@@ -216,6 +216,7 @@ function resolveDenialCause({
       gateDag,
       gateDagArtifact,
       prPrepare,
+      currentPrPrepare,
       prCreate,
       currentPrCreate,
       gateOverride
@@ -250,15 +251,21 @@ function resolveOverrideNotAllowedCause({
   gateDag,
   gateDagArtifact,
   prPrepare,
+  currentPrPrepare,
   prCreate,
   currentPrCreate,
   gateOverride
 }) {
-  if (!prCreate) {
-    if (!prPrepare && !gateDagArtifact && !gateDag) return 'gate_evidence_missing';
-    return 'pr_create_artifact_missing';
+  if (!prCreate && !prPrepare && !gateDagArtifact && !gateDag) return 'gate_evidence_missing';
+  if (!currentPrCreate) {
+    // Report the pr-prepare binding first when both artifacts have lapsed.
+    // Without a head-bound pr-prepare the current gate status cannot be
+    // resolved at all, so re-creating the PR alone would fail again on the
+    // next attempt; `pr prepare` is the repair that has to run first.
+    if (!prPrepare) return 'pr_prepare_artifact_missing';
+    if (!currentPrPrepare) return 'pr_prepare_artifact_stale';
+    return prCreate ? 'pr_create_artifact_stale' : 'pr_create_artifact_missing';
   }
-  if (!currentPrCreate) return 'pr_create_artifact_stale';
   // A current pr-create with no waiver at all is not a waiver defect: the gate
   // DAG simply is not ready and nothing was waived.
   if (!gateOverride) return 'gates_unresolved';
