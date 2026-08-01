@@ -436,6 +436,12 @@ function producerShapedGateDag({ gateStatus = 'passed', overallStatus = 'needs_v
         status: 'present'
       })),
       { id: 'spec', type: 'spec_gate', required: true, status: 'inferred' },
+      // Unresolved scaffolding: without these the status predicate alone
+      // filters every scaffolding node and the canonical type allow-list is
+      // never exercised, so this fixture could not fail against a naive
+      // predicate that omits the allow-list.
+      { id: 'code', type: 'code', required: true, status: 'stale' },
+      { id: 'ac:3', type: 'acceptance_criterion', required: true, status: 'missing' },
       { id: 'gate:unit', type: 'verification_gate', required: true, status: gateStatus }
     ]
   };
@@ -480,6 +486,44 @@ test('MGD-AC-14 scaffolding nodes in a real Gate DAG are never reported as gate 
     oneRealGate.diagnosis.blocking_gates.map((gate) => gate.id),
     ['gate:unit']
   );
+});
+
+test('MGD-AC-16 a waiver-borrowed gate cannot satisfy the reservation', () => {
+  // collectBlockingGates ranks the waiver document above the gate DAG, so a
+  // gate named only by pr-create.json could satisfy the structural guard while
+  // current evidence named nothing -- reproduced through the real CLI in
+  // adjudication. Only current_gate_status and gate_dag are current evidence.
+  const context = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({
+      gateStatus: { overall_status: 'ready_for_review', ready_for_pr_create: false, unresolved_gates: [], critical_unresolved_gates: [] },
+      gateDag: { overall_status: 'ready_for_review', nodes: [{ type: 'verification_gate', required: true, status: 'needs_evidence' }] }
+    }),
+    prCreate: prCreateFixture({
+      gateOverride: { ...NONCRITICAL_WAIVER, unresolved_gates: [{ id: 'gate:from_waiver_only' }] }
+    }),
+    currentHeadSha: HEAD
+  });
+  assert.equal(context.gateAuthorization.reason, 'current_gate_status_not_ready');
+  assert.equal(context.diagnosis.cause, 'gate_status_unresolvable');
+  assert.equal(context.diagnosis.stop_reason, 'gate_status_unresolved');
+  assert.deepEqual(context.diagnosis.blocking_gates, []);
+});
+
+test('MGD-AC-17 a binding with no head sha is unknown, not stale', () => {
+  // "stale" means bound to an older commit. An artifact carrying no head
+  // binding at all is a different repair, and nothing previously guarded this.
+  const context = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({ gateStatus: READY_GATE_STATUS, gateDag: notReadyGateDag() }),
+    prCreate: prCreateFixture(),
+    gateDagArtifact: { overall_status: 'needs_verification', nodes: [] },
+    currentHeadSha: HEAD
+  });
+  const binding = context.diagnosis.artifact_bindings.find((entry) => entry.artifact === 'gate_dag');
+  assert.equal(binding.artifact_head_sha, null);
+  assert.equal(binding.status, 'unknown');
+  assert.notEqual(binding.status, 'stale');
 });
 
 test('MGD-AC-11 an unreadable artifact outranks a valid waiver instead of reporting authorized', () => {
@@ -699,6 +743,7 @@ test('MGD-AC-15 the reservation invariant holds across a swept artifact space, n
     null,
     { overall_status: 'ready_for_review', ready_for_pr_create: true, unresolved_gates: [], critical_unresolved_gates: [] },
     { overall_status: 'ready_for_review', ready_for_pr_create: false, unresolved_gates: [], critical_unresolved_gates: [] },
+    { overall_status: 'ready_for_review', ready_for_pr_create: false, unresolved_gates: [{ id: 'gate:unit' }], critical_unresolved_gates: [] },
     { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [], critical_unresolved_gates: [] },
     { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [{ id: 'gate:unit' }], critical_unresolved_gates: [] },
     { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [{ id: 'gate:e2e' }], critical_unresolved_gates: [{ id: 'gate:e2e' }] },
@@ -718,6 +763,11 @@ test('MGD-AC-15 the reservation invariant holds across a swept artifact space, n
     producerShapedGateDag({ gateStatus: 'needs_evidence' }),
     // story is a real gate node, not scaffolding: transient is critical
     { overall_status: 'needs_verification', nodes: [{ id: 'story', type: 'story', required: true, status: 'transient' }] },
+    // a ready DAG carrying an unresolved required node: the only route into
+    // resolveDenialCause's current_gate_status_not_ready branch
+    { overall_status: 'ready_for_review', nodes: [{ id: 'gate:unit', type: 'verification_gate', required: true, status: 'needs_evidence' }] },
+    // unresolved scaffolding must never become gate evidence
+    { overall_status: 'ready_for_review', nodes: [{ id: 'code', type: 'code', required: true, status: 'stale' }, { id: 'ac:3', type: 'acceptance_criterion', required: true, status: 'missing' }] },
     // unnameable node ids: the dimension the invented-'unknown' guard covers
     { overall_status: 'needs_verification', nodes: [{ type: 'verification_gate', required: true, status: 'needs_evidence' }] },
     { overall_status: 'needs_verification', nodes: [{ id: '   ', type: 'verification_gate', required: true, status: 'needs_evidence' }] },
@@ -773,6 +823,18 @@ test('MGD-AC-15 the reservation invariant holds across a swept artifact space, n
                   for (const gate of named) {
                     assert.ok(gate.id && gate.id !== 'unknown', `blocking gate had no usable id (cause=${diagnosis.cause})`);
                     assert.ok(gate.source, 'a blocking gate must record where it came from');
+                    assert.doesNotMatch(
+                      gate.id,
+                      /^(?:code|pr|ac:\d+)$/,
+                      `scaffolding node reported as gate evidence (cause=${diagnosis.cause})`
+                    );
+                  }
+                  // A gate-evidence verdict must rest on current evidence.
+                  if (diagnosis.stop_reason === 'gate_not_ready') {
+                    assert.ok(
+                      named.some((gate) => gate.source !== 'gate_override'),
+                      'gate_not_ready rested only on waiver-document gates'
+                    );
                   }
                   // A cause asserting nothing could be named must not carry gates.
                   if (diagnosis.cause === 'gate_status_unresolvable') {

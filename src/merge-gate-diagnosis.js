@@ -214,7 +214,10 @@ function buildBlockedDiagnosis({
   // remembering to check. A gate-evidence cause that cannot name a gate is not
   // a gate verdict, and a cause that says nothing could be named must not carry
   // gates borrowed from a waiver document.
-  const namesGates = requestedBlockingGates.length > 0;
+  // A waiver document records what someone once waived, not what current
+  // evidence says blocks. Letting it satisfy the reservation lets a
+  // gate-evidence verdict name a gate no current evidence names.
+  const namesGates = requestedBlockingGates.some((gate) => gate.source !== 'gate_override');
   const cause = GATE_EVIDENCE_CAUSES.has(requestedCause) && !namesGates
     ? 'gate_status_unresolvable'
     : requestedCause;
@@ -408,7 +411,11 @@ function collectUnresolvedDagGates(gateDag) {
 }
 
 function hasUnresolvedGateDagNodes(gateDag) {
-  return collectUnresolvedDagGates(gateDag).length > 0;
+  // Applies the same id filter collectBlockingGates uses, so the cause selector
+  // and the gate collector agree about the DAG source too rather than relying
+  // on buildBlockedDiagnosis to reconcile them after the fact.
+  return collectUnresolvedDagGates(gateDag)
+    .some((node) => typeof node?.id === 'string' && node.id.trim().length > 0);
 }
 
 function hasUnresolvedGates(currentGateStatus) {
