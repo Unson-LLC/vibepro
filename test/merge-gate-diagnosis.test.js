@@ -267,6 +267,122 @@ test('MGD-AC-10 an unreadable artifact is reported as unreadable and outranks ev
   assert.match(diagnosis.explanation, /pr_create could not be parsed as JSON/);
 });
 
+test('MGD-AC-12 gate_not_ready is never reported without naming a gate', () => {
+  // The reservation in INV-001 is an "only" claim, so it needs the negative
+  // cases pinned, not just positive ones. Each state below denies authority
+  // while no unresolved gate can be named; reporting gate_not_ready here would
+  // assert a gate failure that was never evaluated.
+  const notReady = notReadyGateDag();
+  const readyDag = { overall_status: 'ready_for_review', nodes: [] };
+
+  // (a) no pr-prepare at all, but a current pr-create with no waiver.
+  const noPrepare = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: null,
+    prCreate: prCreateFixture(),
+    gateDagArtifact: notReady,
+    currentHeadSha: HEAD
+  });
+  assert.equal(noPrepare.diagnosis.stop_reason, 'pr_prepare_artifact_missing');
+
+  // (b) a stale pr-prepare that was itself ready, with a current waiver-less
+  // pr-create. A head-bound pr-prepare would have authorized the merge.
+  const stalePrepare = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({
+      headSha: OLD_HEAD,
+      gateStatus: {
+        overall_status: 'ready_for_review',
+        ready_for_pr_create: true,
+        unresolved_gates: [],
+        critical_unresolved_gates: []
+      },
+      gateDag: readyDag
+    }),
+    prCreate: prCreateFixture(),
+    currentHeadSha: HEAD
+  });
+  assert.equal(stalePrepare.diagnosis.stop_reason, 'pr_prepare_artifact_stale');
+
+  // Every blocked diagnosis that claims gate evidence must name at least one.
+  for (const context of [noPrepare, stalePrepare]) {
+    if (context.diagnosis.stop_reason === 'gate_not_ready') {
+      assert.notEqual(context.diagnosis.blocking_gates.length, 0);
+    }
+  }
+});
+
+test('MGD-AC-13 a waiver naming a since-resolved critical gate is stale, not a current critical failure', () => {
+  // validateMergeGateOverride reads the waiver document alone. Re-running
+  // pr prepare after closing a critical gate does not move HEAD, so both
+  // artifacts stay head-bound while the waiver document goes stale. Claiming
+  // "critical gate evidence is unresolved" there is factually false.
+  const gateDag = notReadyGateDag();
+  const context = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({ gateStatus: READY_GATE_STATUS, gateDag }),
+    prCreate: prCreateFixture({
+      gateOverride: { ...NONCRITICAL_WAIVER, critical_unresolved_gates: [{ id: 'gate:e2e' }] }
+    }),
+    currentHeadSha: HEAD
+  });
+  assert.equal(context.gateAuthorization.reason, 'gate_override_contains_critical_gates');
+  assert.equal(context.diagnosis.cause, 'gate_waiver_stale');
+  assert.equal(context.diagnosis.stop_reason, 'gate_waiver_stale');
+  assert.doesNotMatch(context.diagnosis.explanation, /Critical gate evidence is unresolved/);
+
+  // When the current status really does list a critical gate, it stays critical.
+  const reallyCritical = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({
+      gateStatus: {
+        ...READY_GATE_STATUS,
+        unresolved_gates: [{ id: 'gate:validation_sequencing' }, { id: 'gate:e2e' }],
+        critical_unresolved_gates: [{ id: 'gate:e2e' }]
+      },
+      gateDag: notReadyGateDag(['gate:validation_sequencing', 'gate:e2e'])
+    }),
+    prCreate: prCreateFixture({
+      gateOverride: { ...NONCRITICAL_WAIVER, critical_unresolved_gates: [{ id: 'gate:e2e' }] }
+    }),
+    currentHeadSha: HEAD
+  });
+  assert.equal(reallyCritical.diagnosis.cause, 'critical_gates_unresolved');
+  assert.equal(reallyCritical.diagnosis.stop_reason, 'gate_not_ready');
+});
+
+test('MGD-AC-11 an unreadable artifact outranks a valid waiver instead of reporting authorized', () => {
+  // buildMergeGateAuthorization treats an unparseable artifact as absent, so a
+  // valid waiver can make authorization "allowed" over input nobody could read.
+  // executeMerge throws on that state, so the diagnosis must not call it
+  // authorized or --explain would contradict the command it explains.
+  const gateDag = notReadyGateDag();
+  const diagnosis = diagnoseMergeGateAuthorization({
+    storyId: STORY_ID,
+    gateAuthorization: {
+      allowed: true,
+      source: 'pr_create_gate_override',
+      reason: 'auditable_noncritical_gate_override',
+      gate_override: NONCRITICAL_WAIVER
+    },
+    gateDag,
+    currentGateStatus: READY_GATE_STATUS,
+    prPrepare: prPrepareFixture({ gateStatus: READY_GATE_STATUS, gateDag }),
+    currentPrPrepare: prPrepareFixture({ gateStatus: READY_GATE_STATUS, gateDag }),
+    prCreate: prCreateFixture({ gateOverride: NONCRITICAL_WAIVER }),
+    currentPrCreate: prCreateFixture({ gateOverride: NONCRITICAL_WAIVER }),
+    currentHeadSha: HEAD,
+    unreadableArtifacts: { gate_dag: true }
+  });
+  assert.equal(diagnosis.status, 'blocked');
+  assert.equal(diagnosis.cause, 'artifact_unreadable');
+  assert.equal(diagnosis.stop_reason, 'artifact_unreadable');
+  assert.equal(
+    diagnosis.artifact_bindings.find((binding) => binding.artifact === 'gate_dag').status,
+    'unreadable'
+  );
+});
+
 test('MGD-AC-5 an authorized merge records an authorized diagnosis with no stop reason', () => {
   const gateDag = { overall_status: 'ready_for_review', nodes: [] };
   const authorized = resolveMergeGateAuthorizationContext({

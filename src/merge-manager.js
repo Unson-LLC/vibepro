@@ -97,7 +97,10 @@ export async function explainMergeGateAuthorization(repoRoot, options = {}) {
     mode: 'execute_merge_explain',
     story: { story_id: storyId },
     current_head_sha: currentHeadSha ?? null,
-    gate_ready: gateAuthorization.allowed,
+    // Follows the diagnosis, not the raw authority verdict: an unparseable
+    // artifact is treated as absent by the authority function, but the merge
+    // command itself fails closed on it, so --explain must too.
+    gate_ready: diagnosis.status === 'authorized',
     gate_authorization: gateAuthorization,
     gate_authorization_diagnosis: diagnosis,
     sources: {

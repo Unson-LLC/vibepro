@@ -43,6 +43,7 @@ const STOP_REASON_BY_CAUSE = new Map([
   ['gates_unresolved', 'gate_not_ready'],
   ['critical_gates_unresolved', 'gate_not_ready'],
   ['gate_status_missing', 'gate_status_unresolved'],
+  ['gate_status_unresolvable', 'gate_status_unresolved'],
   ['gate_status_malformed', 'gate_status_unresolved'],
   ['gate_dag_surface_mismatch', 'gate_status_unresolved'],
   ['pr_prepare_artifact_missing', 'pr_prepare_artifact_missing'],
@@ -139,6 +140,25 @@ export function diagnoseMergeGateAuthorization({
   ];
   const unreadableBindings = artifactBindings.filter((binding) => binding.status === 'unreadable');
 
+  // Precedence must be checked before the authorized branch. An unparseable
+  // artifact is treated as absent by the authority function, so a valid waiver
+  // can make authorization "allowed" over input nobody could read -- while
+  // `executeMerge` throws on that same state. Reporting authorized here would
+  // make `--explain` contradict the command it explains.
+  if (unreadableBindings.length > 0) {
+    return buildBlockedDiagnosis({
+      cause: 'artifact_unreadable',
+      gateAuthorization,
+      authorizationReason,
+      gateDag,
+      artifactBindings,
+      unreadableBindings,
+      blockingGates: [],
+      currentHeadSha,
+      storyId
+    });
+  }
+
   if (gateAuthorization?.allowed === true) {
     return {
       schema_version: '0.1.0',
@@ -160,9 +180,7 @@ export function diagnoseMergeGateAuthorization({
   }
 
   const gateOverride = resolveGateOverride(currentPrCreate) ?? resolveGateOverride(prCreate);
-  // An unreadable lifecycle artifact outranks every other classification: no
-  // downstream cause can be trusted while one of the inputs could not be parsed.
-  const cause = unreadableBindings.length > 0 ? 'artifact_unreadable' : resolveDenialCause({
+  const cause = resolveDenialCause({
     authorizationReason,
     gateDag,
     gateDagArtifact,
@@ -174,6 +192,30 @@ export function diagnoseMergeGateAuthorization({
     gateOverride
   });
   const blockingGates = collectBlockingGates({ currentGateStatus, gateOverride, gateDag });
+  return buildBlockedDiagnosis({
+    cause,
+    gateAuthorization,
+    authorizationReason,
+    gateDag,
+    artifactBindings,
+    unreadableBindings,
+    blockingGates,
+    currentHeadSha,
+    storyId
+  });
+}
+
+function buildBlockedDiagnosis({
+  cause,
+  gateAuthorization,
+  authorizationReason,
+  gateDag,
+  artifactBindings,
+  unreadableBindings,
+  blockingGates,
+  currentHeadSha,
+  storyId
+}) {
   return {
     schema_version: '0.1.0',
     status: 'blocked',
@@ -207,11 +249,17 @@ function resolveDenialCause({
   currentPrCreate,
   gateOverride
 }) {
-  if (
-    authorizationReason === 'current_gate_status_contains_critical_gates'
-    || authorizationReason === 'gate_override_contains_critical_gates'
-  ) {
+  if (authorizationReason === 'current_gate_status_contains_critical_gates') {
     return 'critical_gates_unresolved';
+  }
+  // The waiver document naming critical gates does not prove the gates are
+  // still critical now: validateMergeGateOverride reads the document alone.
+  // Claiming "critical gate evidence is unresolved" when the current status
+  // lists none would be a false statement about current evidence.
+  if (authorizationReason === 'gate_override_contains_critical_gates') {
+    return hasCriticalUnresolvedGates(currentGateStatus)
+      ? 'critical_gates_unresolved'
+      : 'gate_waiver_stale';
   }
   if (authorizationReason === 'current_gate_status_not_ready') return 'gates_unresolved';
   if (WAIVER_INCOMPLETE_AUTHORIZATION_REASONS.has(authorizationReason)) return 'gate_waiver_incomplete';
@@ -288,10 +336,31 @@ function resolveOverrideNotAllowedCause({
     if (!gateOverride && hasUnresolvedGates(currentGateStatus)) return 'gates_unresolved';
     return prCreate ? 'pr_create_artifact_stale' : 'pr_create_artifact_missing';
   }
-  // A current pr-create with no waiver at all is not a waiver defect: the gate
-  // DAG simply is not ready and nothing was waived.
-  if (!gateOverride) return 'gates_unresolved';
+  // A current pr-create with no waiver at all is not a waiver defect -- but it
+  // is only a gate failure if the gates were actually evaluated. Without a
+  // head-bound pr-prepare nothing evaluated them, and reporting gate_not_ready
+  // with an empty blocking_gates list is the exact misdirection this module
+  // exists to remove.
+  if (!gateOverride) {
+    if (!prPrepare) return 'pr_prepare_artifact_missing';
+    if (!currentPrPrepare) return 'pr_prepare_artifact_stale';
+    if (!hasUnresolvedGates(currentGateStatus) && !hasUnresolvedGateDagNodes(gateDag)) {
+      return 'gate_status_unresolvable';
+    }
+    return 'gates_unresolved';
+  }
   return 'gate_waiver_incomplete';
+}
+
+function hasCriticalUnresolvedGates(currentGateStatus) {
+  return Array.isArray(currentGateStatus?.critical_unresolved_gates)
+    && currentGateStatus.critical_unresolved_gates.length > 0;
+}
+
+function hasUnresolvedGateDagNodes(gateDag) {
+  const nodes = Array.isArray(gateDag?.nodes) ? gateDag.nodes : [];
+  return nodes.some((node) => node?.required !== false
+    && !GATE_STATUSES_TREATED_AS_RESOLVED.has(node?.status));
 }
 
 function hasUnresolvedGates(currentGateStatus) {
@@ -397,9 +466,13 @@ function buildExplanation({
 }) {
   const head = typeof currentHeadSha === 'string' ? currentHeadSha.slice(0, 12) : 'unknown';
   const binding = (kind) => artifactBindings.find((entry) => entry.artifact === kind) ?? null;
+  // An explanation that asserts unresolved gates while naming none is exactly
+  // the self-contradiction this module removes, so the caller must not reach a
+  // gate-evidence cause with an empty list; assert that here rather than
+  // printing "none recorded".
   const gateList = blockingGates.length > 0
     ? blockingGates.map((gate) => `${gate.id}=${gate.status}(${gate.severity})`).join(', ')
-    : 'none recorded';
+    : 'none enumerated by the current gate status';
   switch (cause) {
     case 'gates_unresolved':
       return `Gate evidence is unresolved at HEAD ${head}: ${gateList}.`;
@@ -415,6 +488,8 @@ function buildExplanation({
       return `Gates were not evaluated as blocked. No pr-prepare.json exists for this story, so the current gate status could not be resolved.`;
     case 'gate_status_missing':
       return `Gates were not evaluated as blocked. pr-prepare.json is bound to HEAD ${head} but carries no gate_status.`;
+    case 'gate_status_unresolvable':
+      return `Merge authority was denied at HEAD ${head} but no unresolved gate could be named from the current gate status or gate DAG, so the gate surface itself cannot be trusted to explain the denial.`;
     case 'gate_dag_surface_mismatch':
       return `Gates were not evaluated as blocked. The routed gate-dag.json describes a different gate surface than the one embedded in pr-prepare.json (overall_status=${gateDag?.overall_status ?? 'unknown'}), so merge authority failed closed.`;
     case 'gate_status_malformed':
@@ -447,6 +522,7 @@ function buildNextActions({ cause, storyId }) {
     case 'pr_prepare_artifact_stale':
     case 'pr_prepare_artifact_missing':
     case 'gate_status_missing':
+    case 'gate_status_unresolvable':
     case 'gate_dag_surface_mismatch':
     case 'gate_status_malformed':
       return [prepare, create, explain];

@@ -11,6 +11,7 @@ import {
   MERGE_GATE_DIAGNOSIS_STOP_REASONS,
   diagnoseMergeGateAuthorization
 } from '../../src/merge-gate-diagnosis.js';
+import { PUBLIC_RECONCILIATION_REASONS } from '../../src/merge-public-projection.js';
 
 const execFileAsync = promisify(execFile);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -374,14 +375,35 @@ test('MGD-E2E-2 --explain is read-only, and the stop reason taxonomy is pinned b
     'test/integration/story-vibepro-merge-gate-stop-reason-diagnosis.test.js',
     'test/e2e/story-vibepro-merge-gate-stop-reason-diagnosis-main.spec.js'
   ].map((relative) => readFile(path.join(root, relative), 'utf8')));
-  // Require the reason inside an assert call, not merely somewhere in the file:
-  // a comment or a fixture literal is not a regression pin.
-  const assertions = suiteSources
+  // A comment or a fixture literal is not a regression pin: strip comments,
+  // then require the reason on a line that is part of an assert call.
+  const assertionLines = suiteSources
     .join('\n')
-    .split(/\bassert\b/)
-    .slice(1)
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n')
+    .map((line) => line.replace(/\/\/.*$/, ''))
+    .reduce((lines, line, index, all) => {
+      const opensAssert = /(^|[^\w.])assert\b/.test(line);
+      const continuesAssert = all
+        .slice(Math.max(0, index - 4), index)
+        .some((previous) => /(^|[^\w.])assert\b/.test(previous))
+        && !/^\s*$/.test(line);
+      if (opensAssert || continuesAssert) lines.push(line);
+      return lines;
+    }, [])
     .join('\n');
   const unpinned = [...MERGE_GATE_DIAGNOSIS_STOP_REASONS]
-    .filter((reason) => !assertions.includes(`'${reason}'`));
+    .filter((reason) => !assertionLines.includes(`'${reason}'`));
   assert.deepEqual(unpinned, [], 'ac-8: every merge gate stop reason is pinned by a regression assertion');
+
+  // Nothing otherwise binds the taxonomy to the public projection allow-list, so
+  // a new cause would be silently collapsed to merge_reconciliation_required on
+  // the public JSON surface while stop_reason itself passed through.
+  const unprojectable = [...MERGE_GATE_DIAGNOSIS_STOP_REASONS]
+    .filter((reason) => !PUBLIC_RECONCILIATION_REASONS.has(reason));
+  assert.deepEqual(
+    unprojectable,
+    [],
+    'ac-7: every merge gate stop reason survives the public reconciliation projection'
+  );
 });

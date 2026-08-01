@@ -94,6 +94,30 @@ async function writeResolvedGatesWithStaleWaiver(repo, headSha, staleSha) {
   return prDir;
 }
 
+const NOT_READY_GATE_DAG = {
+  overall_status: 'needs_verification',
+  nodes: [{ id: 'gate:validation_sequencing', required: true, status: 'needs_evidence' }]
+};
+
+const NONCRITICAL_WAIVER = {
+  allowed: true,
+  waiver_policy: 'cli_reason',
+  reason: 'noncritical waiver recorded when the PR was created',
+  unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+  critical_unresolved_gates: []
+};
+
+const UNRESOLVED_GATE_STATUS = {
+  overall_status: 'needs_verification',
+  ready_for_pr_create: false,
+  unresolved_gates: [{ id: 'gate:validation_sequencing' }],
+  critical_unresolved_gates: []
+};
+
+function currentFreshness(kind, headSha) {
+  return { kind, status: 'current', artifact_head_sha: headSha, current_head_sha: headSha };
+}
+
 async function makeRecordingGhBin() {
   const binDir = await mkdtemp(path.join(os.tmpdir(), 'vibepro-mgd-integration-bin-'));
   const ghCallLog = path.join(binDir, 'gh-called.log');
@@ -206,5 +230,54 @@ test('MGD-INT-2 execute merge --explain reports the same verdict read-only, and 
     emptyExplained.gate_authorization_diagnosis.artifact_bindings.map((binding) => binding.status),
     ['missing', 'missing', 'missing']
   );
+  await assert.rejects(() => readFile(ghCallLog, 'utf8'), { code: 'ENOENT' });
+});
+
+test('MGD-INT-3 --explain and execute merge agree on an unparseable artifact: neither reports it authorized', async () => {
+  const { repo, headSha } = await makeMergeRepo();
+  const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
+  await mkdir(prDir, { recursive: true });
+  // A state whose waiver WOULD authorize the merge, spoiled by a routed gate-dag
+  // that cannot be parsed. buildMergeGateAuthorization treats it as absent.
+  await writeFile(path.join(prDir, 'pr-prepare.json'), `${JSON.stringify({
+    story: { story_id: STORY_ID },
+    gate_status: UNRESOLVED_GATE_STATUS,
+    pr_context: { gate_dag: NOT_READY_GATE_DAG },
+    git: { base_ref: 'main', head_sha: headSha },
+    artifact_freshness: currentFreshness('pr_prepare', headSha)
+  }, null, 2)}\n`);
+  await writeFile(path.join(prDir, 'pr-create.json'), `${JSON.stringify({
+    story: { story_id: STORY_ID },
+    gate_override: NONCRITICAL_WAIVER,
+    pr_url: 'https://github.example.test/unson/vibepro/pull/1',
+    current_head_sha: headSha,
+    artifact_freshness: currentFreshness('pr_create', headSha)
+  }, null, 2)}\n`);
+  await writeFile(path.join(prDir, 'gate-dag.json'), '{ this is not json\n');
+
+  const { binDir, ghCallLog } = await makeRecordingGhBin();
+  const env = { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` };
+
+  const explained = await runCli(
+    ['execute', 'merge', repo, '--story-id', STORY_ID, '--explain', '--json'],
+    { env }
+  );
+  assert.equal(explained.exitCode, 2);
+  const explain = JSON.parse(explained.stdout);
+  assert.equal(explain.gate_ready, false);
+  assert.equal(explain.gate_authorization_diagnosis.status, 'blocked');
+  assert.equal(explain.gate_authorization_diagnosis.stop_reason, 'artifact_unreadable');
+  assert.equal(
+    explain.gate_authorization_diagnosis.artifact_bindings
+      .find((binding) => binding.artifact === 'gate_dag').status,
+    'unreadable'
+  );
+
+  // The real command fails closed on the same state rather than merging.
+  const merged = await runCli(
+    ['execute', 'merge', repo, '--story-id', STORY_ID, '--base', 'main', '--pr', '1', '--json'],
+    { env }
+  );
+  assert.notEqual(merged.exitCode, 0);
   await assert.rejects(() => readFile(ghCallLog, 'utf8'), { code: 'ENOENT' });
 });

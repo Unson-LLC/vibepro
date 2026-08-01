@@ -68,7 +68,7 @@ updated_at: 2026-08-01
 
 ## Background
 
-`src/merge-manager.js` の `executeMerge` は 4 箇所で `'gate_not_ready'` を
+`src/merge-manager.js` の `executeMerge` は 5 箇所で `'gate_not_ready'` を
 literal として stop_reason / reconciliation reason に積む
 (`merge-manager.js:285`, `:301`, `:334`, `:413`, `:821`)。
 一方 `buildMergeGateAuthorization` は拒否理由を 12 種類に区別している
@@ -95,14 +95,22 @@ current HEAD に束縛してから `buildMergeGateAuthorization` へ渡すため
 - [ ] AC-4: waiver の不備・陳腐化が原因の場合、`stop_reason` は
       `gate_waiver_incomplete` / `gate_waiver_stale` を返す
 - [ ] AC-5: `merge.gate_authorization_diagnosis` に cause / stop_reason /
-      artifact 束縛状況 (pr_prepare / pr_create / gate_dag の current|stale|missing と head sha) /
-      blocking gate の id・severity・status / next_actions が構造化で記録され、
-      pr-merge.json・pr-merge.html・text summary から読める
+      artifact 束縛状況 (pr_prepare / pr_create / gate_dag の current|stale|missing|unreadable と head sha) /
+      blocking gate の id・severity・status / next_actions が構造化で記録される。
+      pr-merge.json と text summary はこの全項目を読める。pr-merge.html は
+      cause / stop_reason / explanation / blocking gate / artifact 束縛 (head sha 込み) を読めるが、
+      next_actions は載せない — 公開 projection が復旧コマンドを HTML 面から除去する契約
+      (既存テストが `vibepro pr prepare` の非出現を固定している) に従うため、
+      next_actions は pr-merge.json と text summary から読む
 - [ ] AC-6: `vibepro execute merge <repo> --story-id <id> --explain` が read-only で診断を出力し、
       `git fetch` / `gh` を一切実行せず pr-merge.json を書き換えない
 - [ ] AC-7: 公開 projection (`--json`) で新しい stop_reason と
       `gate_authorization_diagnosis` が定型文へ潰されない
 - [ ] AC-8: 上記を固定する回帰テストがある
+- [ ] AC-9: gate 証跡を 1 件も名指しできない状態で `gate_not_ready` を報告しない。
+      unresolved gate を列挙できないまま authority が拒否された場合は
+      `gate_status_unresolved` を返し、waiver 文書が critical gate を名乗っていても
+      current gate status が critical を挙げていなければ `gate_waiver_stale` を返す
 
 ## Implementation Notes
 

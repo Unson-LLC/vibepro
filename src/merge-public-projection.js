@@ -1,7 +1,7 @@
 const PUBLIC_MERGE_WARNING = 'Merge processing produced a warning. Inspect stop_reason and reconciliation state.';
 const PUBLIC_RECONCILIATION_REASON = 'merge_reconciliation_required';
 const PUBLIC_EXECUTION_STATE_SYNC_REASON = 'Execution-state synchronization failed after merge processing.';
-const PUBLIC_RECONCILIATION_REASONS = new Set([
+export const PUBLIC_RECONCILIATION_REASONS = new Set([
   'base_fetch_failed',
   'checks_not_ready',
   'decision_outcome_binding_failed',
