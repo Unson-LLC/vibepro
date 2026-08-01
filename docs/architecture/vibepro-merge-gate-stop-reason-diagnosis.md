@@ -36,7 +36,7 @@ resolution failures and waiver-quality failures get their own stop reasons.
   where it is; the diagnosis layer never widens authority.
 - `src/merge-manager.js` reads artifacts, calls the resolver, records
   `merge.gate_authorization_diagnosis`, and substitutes `diagnosis.stop_reason`
-  for the four literal `'gate_not_ready'` sites. It also exposes
+  for the five literal `'gate_not_ready'` sites. It also exposes
   `explainMergeGateAuthorization` — a read-only entry point that performs no
   `git fetch`, no `gh` invocation and no artifact write.
 - `src/merge-public-projection.js` allow-lists the diagnosis keys and the new

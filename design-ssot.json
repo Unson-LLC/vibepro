@@ -7688,13 +7688,6 @@
           "last_reviewed_root_hash": null
         },
         {
-          "kind": "architecture",
-          "path": "docs/architecture/vibepro-budget-grant-tracked-decision-doc.md",
-          "required": false,
-          "relationship": "implements",
-          "last_reviewed_root_hash": null
-        },
-        {
           "kind": "story",
           "path": "docs/management/stories/active/story-vibepro-budget-override-residual-findings.md",
           "required": true,
@@ -7704,6 +7697,13 @@
         {
           "kind": "story",
           "path": "docs/management/stories/active/story-vibepro-budget-grant-tracked-decision-doc.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-budget-grant-tracked-decision-doc.md",
           "required": false,
           "relationship": "implements",
           "last_reviewed_root_hash": null

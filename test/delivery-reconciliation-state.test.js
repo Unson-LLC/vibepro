@@ -246,7 +246,7 @@ test('public projection allows only bounded recovery commands and execution-stat
   // apart from a leaked `cat` command.
   assert.doesNotMatch(
     JSON.stringify(projected),
-    /\boperator\b|\bsecret\b|git push|provider_token|\bcurl\b|\bcat\b/
+    /operator|secret|git push|provider_token|curl|\bcat\b/
   );
 });
 

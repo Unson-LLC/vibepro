@@ -608,7 +608,10 @@ test('MGD-AC-7 the public projection and human summary keep the diagnosis readab
   assert.match(summary, /gate_diagnosis_cause: pr_create_artifact_stale/);
   assert.match(summary, /gate_diagnosis_stop_reason: pr_create_artifact_stale/);
   assert.match(summary, /gate_diagnosis_artifact_bindings: .*pr_create=stale/);
-  assert.match(summary, /gate_diagnosis_blocking_gates: gate:validation_sequencing=needs_evidence/);
+  // AC-5 claims head shas are readable from the summary; assert it.
+  assert.match(summary, new RegExp(`gate_diagnosis_artifact_binding_heads: .*pr_create=${OLD_HEAD}`));
+  assert.match(summary, new RegExp(`gate_diagnosis_current_head: ${HEAD}`));
+  assert.match(summary, /gate_diagnosis_blocking_gates: gate:validation_sequencing=needs_evidence.*via gate_dag/);
 });
 
 test('MGD-AC-8 execute merge --explain diagnoses a blocked merge without running gh or writing artifacts', async () => {
@@ -672,9 +675,11 @@ process.exit(0);
 });
 
 test('MGD-AC-15 the reservation invariant holds across a swept artifact space, not just enumerated cases', () => {
-  // MGD-AC-12 asserts hand-picked contexts, so it can only fail for states its
-  // author thought of -- which is how the invariant kept breaking. Sweep the
-  // artifact space instead and assert the invariant as a property.
+  // Round four measured the previous version of this sweep and found it reached
+  // only 12 of 15 causes, with one dead assertion and one tautology. The input
+  // space below varies the four dimensions that actually produced defects:
+  // malformed gate-list entries, unreadable artifacts, routed-vs-prepared DAG
+  // divergence, and artifact head binding.
   const gateStatuses = [
     null,
     { overall_status: 'ready_for_review', ready_for_pr_create: true, unresolved_gates: [], critical_unresolved_gates: [] },
@@ -682,15 +687,29 @@ test('MGD-AC-15 the reservation invariant holds across a swept artifact space, n
     { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [], critical_unresolved_gates: [] },
     { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [{ id: 'gate:unit' }], critical_unresolved_gates: [] },
     { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [{ id: 'gate:e2e' }], critical_unresolved_gates: [{ id: 'gate:e2e' }] },
-    { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [{ id: '' }], critical_unresolved_gates: [] }
+    // malformed shapes: the class that broke the invariant in round four
+    { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [{ id: '' }], critical_unresolved_gates: [] },
+    { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: ['gate:unit'], critical_unresolved_gates: [] },
+    { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [], critical_unresolved_gates: ['gate:e2e'] },
+    { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [null], critical_unresolved_gates: [] },
+    { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: 'gate:unit', critical_unresolved_gates: [] }
   ];
-  const gateDags = [
+  const preparedDags = [
     null,
     { overall_status: 'ready_for_review', nodes: [] },
     { overall_status: 'needs_verification', nodes: [] },
     { overall_status: 'needs_verification', nodes: [{ id: 'gate:unit', type: 'verification_gate', required: true, status: 'needs_evidence' }] },
     producerShapedGateDag(),
-    producerShapedGateDag({ gateStatus: 'needs_evidence' })
+    producerShapedGateDag({ gateStatus: 'needs_evidence' }),
+    // story is a real gate node, not scaffolding: transient is critical
+    { overall_status: 'needs_verification', nodes: [{ id: 'story', type: 'story', required: true, status: 'transient' }] }
+  ];
+  // Routed DAGs vary INDEPENDENTLY of the prepared one, so a surface
+  // disagreement is reachable. The previous version passed the same object.
+  const routedDags = [
+    null,
+    { overall_status: 'ready_for_review', nodes: [] },
+    { overall_status: 'needs_verification', nodes: [{ id: 'gate:e2e', type: 'verification_gate', required: true, critical: true, status: 'needs_evidence' }] }
   ];
   const waivers = [
     null,
@@ -699,47 +718,53 @@ test('MGD-AC-15 the reservation invariant holds across a swept artifact space, n
     { allowed: true, waiver_policy: 'cli_reason', reason: 'targets omitted', critical_unresolved_gates: [] },
     { allowed: false }
   ];
+  const unreadableCombos = [null, { pr_create: true }, { gate_dag: true }, { pr_prepare: true }];
   const heads = [HEAD, OLD_HEAD];
 
+  const seenCauses = new Set();
   let swept = 0;
   for (const gateStatus of gateStatuses) {
-    for (const gateDag of gateDags) {
-      for (const gateOverride of waivers) {
-        for (const prepareHead of heads) {
-          for (const createHead of heads) {
-            for (const prPrepare of [null, prPrepareFixture({ headSha: prepareHead, gateStatus, gateDag })]) {
-              for (const prCreate of [null, prCreateFixture({ headSha: createHead, gateOverride })]) {
-                const { diagnosis } = resolveMergeGateAuthorizationContext({
-                  storyId: STORY_ID,
-                  prPrepare,
-                  prCreate,
-                  gateDagArtifact: gateDag,
-                  currentHeadSha: HEAD
-                });
-                swept += 1;
-                if (diagnosis.status !== 'blocked') continue;
+    for (const preparedDag of preparedDags) {
+      for (const routedDag of routedDags) {
+        for (const gateOverride of waivers) {
+          for (const unreadableArtifacts of unreadableCombos) {
+            for (const createHead of heads) {
+              for (const prepareHead of heads) {
+              for (const prPrepare of [null, prPrepareFixture({ headSha: prepareHead, gateStatus, gateDag: preparedDag })]) {
+                for (const prCreate of [null, prCreateFixture({ headSha: createHead, gateOverride })]) {
+                  const { diagnosis } = resolveMergeGateAuthorizationContext({
+                    storyId: STORY_ID,
+                    prPrepare,
+                    prCreate,
+                    gateDagArtifact: routedDag,
+                    currentHeadSha: HEAD,
+                    unreadableArtifacts
+                  });
+                  swept += 1;
+                  seenCauses.add(diagnosis.cause);
+                  if (diagnosis.status !== 'blocked') continue;
 
-                // The reservation: a gate verdict must name a gate.
-                if (diagnosis.stop_reason === 'gate_not_ready') {
-                  assert.notEqual(
-                    diagnosis.blocking_gates.length,
-                    0,
-                    `gate_not_ready named no gate for cause=${diagnosis.cause}`
-                  );
+                  const named = diagnosis.blocking_gates;
+                  // The reservation: a gate verdict must name a gate.
+                  if (diagnosis.stop_reason === 'gate_not_ready') {
+                    assert.notEqual(named.length, 0, `gate_not_ready named no gate (cause=${diagnosis.cause})`);
+                  }
+                  // Every named gate is really named: no invented placeholder.
+                  for (const gate of named) {
+                    assert.ok(gate.id && gate.id !== 'unknown', `blocking gate had no usable id (cause=${diagnosis.cause})`);
+                    assert.ok(gate.source, 'a blocking gate must record where it came from');
+                  }
+                  // A cause asserting nothing could be named must not carry gates.
+                  if (diagnosis.cause === 'gate_status_unresolvable') {
+                    assert.equal(named.length, 0, 'gate_status_unresolvable carried blocking gates');
+                  }
+                  // No explanation claims gates it cannot enumerate.
+                  if (named.length === 0) {
+                    assert.doesNotMatch(diagnosis.explanation, /Gate evidence is unresolved/);
+                    assert.doesNotMatch(diagnosis.explanation, /Critical gate evidence is unresolved/);
+                  }
                 }
-                // The converse: an explanation must never deny gate evaluation
-                // while its own blocking_gates list a critical gate.
-                if (diagnosis.blocking_gates.some((gate) => gate.severity === 'critical')) {
-                  assert.doesNotMatch(
-                    diagnosis.explanation,
-                    /Gates were not evaluated as blocked/,
-                    `cause=${diagnosis.cause} denied gate evaluation while naming a critical gate`
-                  );
-                }
-                // No explanation may claim unresolved gates it cannot name.
-                assert.doesNotMatch(diagnosis.explanation, /none enumerated by the current gate status/);
-                // Every blocked verdict carries a stop reason in the taxonomy.
-                assert.ok(MERGE_GATE_DIAGNOSIS_STOP_REASONS.has(diagnosis.stop_reason));
+              }
               }
             }
           }
@@ -747,5 +772,23 @@ test('MGD-AC-15 the reservation invariant holds across a swept artifact space, n
       }
     }
   }
-  assert.ok(swept > 1000, `sweep covered ${swept} states`);
+
+  // The sweep must prove what it covers, or a future blind spot passes silently.
+  const requiredCauses = [
+    'gates_unresolved',
+    'critical_gates_unresolved',
+    'gate_status_unresolvable',
+    'gate_dag_surface_mismatch',
+    'pr_prepare_artifact_missing',
+    'pr_prepare_artifact_stale',
+    'pr_create_artifact_missing',
+    'pr_create_artifact_stale',
+    'gate_waiver_incomplete',
+    'gate_waiver_stale',
+    'gate_evidence_missing',
+    'artifact_unreadable'
+  ];
+  const unreached = requiredCauses.filter((cause) => !seenCauses.has(cause));
+  assert.deepEqual(unreached, [], `sweep never reached: ${unreached.join(', ')}`);
+  assert.ok(swept > 5000, `sweep covered ${swept} states`);
 });

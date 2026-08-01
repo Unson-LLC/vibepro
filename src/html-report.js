@@ -374,7 +374,7 @@ export function renderPrMergeHtml(merge, options = {}) {
           ['Diagnosis stop reason', merge.gate_authorization_diagnosis?.stop_reason ?? '-'],
           ['Diagnosis explanation', merge.gate_authorization_diagnosis?.explanation ?? '-'],
           ['Blocking gates', (merge.gate_authorization_diagnosis?.blocking_gates ?? [])
-            .map((gate) => `${gate.id}=${gate.status}(${gate.severity})`)
+            .map((gate) => `${gate.id}=${gate.status}(${gate.severity}) via ${gate.source ?? 'unknown'}`)
             .join(', ') || '-'],
           ['Artifact bindings', (merge.gate_authorization_diagnosis?.artifact_bindings ?? [])
             .map((binding) => `${binding.artifact}=${binding.status}`)

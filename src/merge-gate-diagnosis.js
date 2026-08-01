@@ -197,17 +197,28 @@ export function diagnoseMergeGateAuthorization({
   });
 }
 
+const GATE_EVIDENCE_CAUSES = new Set(['gates_unresolved', 'critical_gates_unresolved']);
+
 function buildBlockedDiagnosis({
-  cause,
+  cause: requestedCause,
   gateAuthorization,
   authorizationReason,
   gateDag,
   artifactBindings,
   unreadableBindings,
-  blockingGates,
+  blockingGates: requestedBlockingGates,
   currentHeadSha,
   storyId
 }) {
+  // The reservation is enforced here, structurally, rather than by each branch
+  // remembering to check. A gate-evidence cause that cannot name a gate is not
+  // a gate verdict, and a cause that says nothing could be named must not carry
+  // gates borrowed from a waiver document.
+  const namesGates = requestedBlockingGates.length > 0;
+  const cause = GATE_EVIDENCE_CAUSES.has(requestedCause) && !namesGates
+    ? 'gate_status_unresolvable'
+    : requestedCause;
+  const blockingGates = cause === 'gate_status_unresolvable' ? [] : requestedBlockingGates;
   return {
     schema_version: '0.1.0',
     status: 'blocked',
@@ -367,15 +378,16 @@ function resolveOverrideNotAllowedCause({
 }
 
 function hasCriticalUnresolvedGates(currentGateStatus) {
-  return Array.isArray(currentGateStatus?.critical_unresolved_gates)
-    && currentGateStatus.critical_unresolved_gates.length > 0;
+  return normalizeBlockingGates(currentGateStatus?.critical_unresolved_gates, 'current_gate_status', null).length > 0;
 }
 
 // Must use VibePro's own definition of an unresolved required gate. A local
-// predicate diverges: a real Gate DAG carries scaffolding nodes (story, code,
-// pr, ac:N) whose statuses are "present"/"pending", and counting those as gate
+// predicate diverges: a real Gate DAG carries scaffolding nodes (code, pr,
+// ac:N) whose statuses are "present"/"pending", and counting those as gate
 // evidence reports non-gates as gate failures -- the exact defect this module
-// exists to remove.
+// exists to remove. `story` is NOT scaffolding: the canonical collector treats
+// it as a gate, and isCriticalUnresolvedGate treats story=transient as
+// critical, so it is correctly reportable as gate evidence.
 //
 // The canonical collector additionally requires `type` and `required`, which a
 // DAG written by another tool (or an older artifact) may omit. A node whose id
@@ -402,7 +414,7 @@ function hasUnresolvedGateDagNodes(gateDag) {
 function hasUnresolvedGates(currentGateStatus) {
   if (!currentGateStatus) return false;
   return [currentGateStatus.critical_unresolved_gates, currentGateStatus.unresolved_gates]
-    .some((gates) => Array.isArray(gates) && gates.length > 0);
+    .some((gates) => normalizeBlockingGates(gates, 'current_gate_status', null).length > 0);
 }
 
 function resolveGateOverride(prCreate) {
@@ -471,9 +483,12 @@ function collectBlockingGates({ currentGateStatus, gateOverride, gateDag }) {
 function normalizeBlockingGates(gates, source, forcedSeverity) {
   if (!Array.isArray(gates)) return [];
   return gates
-    .filter((gate) => gate && typeof gate === 'object')
+    .filter((gate) => gate
+      && typeof gate === 'object'
+      && typeof gate.id === 'string'
+      && gate.id.trim().length > 0)
     .map((gate) => ({
-      id: typeof gate.id === 'string' && gate.id.trim().length > 0 ? gate.id.trim() : 'unknown',
+      id: gate.id.trim(),
       severity: forcedSeverity ?? gate.severity ?? 'unknown',
       status: gate.status ?? 'unresolved',
       source
@@ -581,7 +596,7 @@ export function renderMergeGateDiagnosisLines(diagnosis, { includeNextActions = 
     `- gate_diagnosis_stop_reason: ${diagnosis.stop_reason ?? 'none'}`,
     `- gate_diagnosis_explanation: ${diagnosis.explanation}`,
     `- gate_diagnosis_blocking_gates: ${(diagnosis.blocking_gates ?? [])
-      .map((gate) => `${gate.id}=${gate.status}(${gate.severity})`)
+      .map((gate) => `${gate.id}=${gate.status}(${gate.severity}) via ${gate.source ?? 'unknown'}`)
       .join('|') || 'none'}`,
     `- gate_diagnosis_artifact_bindings: ${(diagnosis.artifact_bindings ?? [])
       .map((binding) => `${binding.artifact}=${binding.status}`)

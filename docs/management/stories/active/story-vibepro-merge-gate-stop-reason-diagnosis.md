@@ -100,15 +100,17 @@ current HEAD に束縛してから `buildMergeGateAuthorization` へ渡すため
       pr-merge.json と `execute merge --explain` はこの全項目を読める。
       text summary と pr-merge.html は
       cause / stop_reason / explanation / blocking gate / artifact 束縛 (head sha 込み) を読めるが、
-      next_actions は載せない。pr-merge 面 (text summary / HTML / 公開 JSON) は
-      復旧アクションを 1 本だけ示す契約であり
-      (docs/specs/vibepro-delivery-reconciliation-state.json DRS-SCENARIO-008:
-      execute reconcile 系の単一 action に prepare/merge 系を混ぜない)、
-      next_actions を並べると 2 本目のコマンド系列になるため。
-      公開 projection (`--json`) からも落とす — 公開面のコマンドは
-      `PUBLIC_RECOVERY_COMMAND` allowlist を通ったものだけという既存契約があり、
-      next_actions はそれを通らない。next_actions は pr-merge.json と
-      `execute merge --explain` から読む
+      next_actions は公開 projection (`--json`) と pr-merge.html には載せない。
+      公開面については既存契約が明確で、公開されるコマンドは
+      `PUBLIC_RECOVERY_COMMAND` allowlist を通ったものだけであり、
+      next_actions の 3 種はいずれも通らない。
+      text summary では reconciliation action が存在する時だけ抑止する
+      (DRS-SCENARIO-008 は execute reconcile 単一 action に prepare/merge 系を
+      混ぜないことを要求するが、その適用範囲は execution-state sync 失敗経路であり、
+      gate block 経路では reconciliation action 自体が存在しない)。
+      よって gate block 時の text summary は next_actions を出す —
+      出さなければ原因だけがあってコマンドが 1 つも無い面になる。
+      pr-merge.json と `execute merge --explain` は常に全項目を持つ
 - [ ] AC-6: `vibepro execute merge <repo> --story-id <id> --explain` が read-only で診断を出力し、
       `git fetch` / `gh` を一切実行せず pr-merge.json を書き換えない
 - [ ] AC-7: 公開 projection (`--json`) で新しい stop_reason と
