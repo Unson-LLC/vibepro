@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
   "source": "execute_merge",
-  "promoted_at": "2026-08-01T11:44:17.994Z",
+  "promoted_at": "2026-08-01T11:44:25.051Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-index.json",
@@ -38,11 +38,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:6aa1a2ee1dc3042468f1347154130b34646cea4d6375199e64fed8561c482afe",
-    "compressed_hash": "sha256:49e1fcc2c4090cadd5ec90beb1abc378b8e0cdba08925c4afd977fac860b2052",
-    "expanded_bytes": 21828,
-    "compressed_bytes": 4967,
-    "expanded_line_count": 512,
+    "content_hash": "sha256:ab73249bdc3bbb8e88dca18f82fe23152ca06fd01f212a1ef720c5a28b15c6d8",
+    "compressed_hash": "sha256:6adedbc8af8ce062d2f98d985b9014bc1968d94679ed609ba6322ae0a22f4c85",
+    "expanded_bytes": 20908,
+    "compressed_bytes": 4865,
+    "expanded_line_count": 492,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "decision_index",
@@ -62,9 +62,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-budget-grant-tracked-decision-doc",
     "cost": {
-      "compressed_bytes": 4967,
-      "expanded_bytes": 21828,
-      "expanded_line_count": 512,
+      "compressed_bytes": 4865,
+      "expanded_bytes": 20908,
+      "expanded_line_count": 492,
       "persisted_line_count": 1
     }
   },
@@ -79,26 +79,16 @@
       "merged_at": "2026-08-01T11:44:15Z"
     },
     "reconciliation": {
-      "status": "reconciliation_required",
-      "reasons": [
-        "decision_outcome_binding_failed"
-      ],
-      "evaluated_at": "2026-08-01T11:44:17.982Z",
+      "status": "reconciled",
+      "reasons": [],
+      "evaluated_at": "2026-08-01T11:44:25.005Z",
       "head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc"
     },
-    "reconciliation_action": {
-      "status": "required",
-      "reason": "decision_outcome_binding_failed",
-      "commands": [
-        "vibepro pr prepare . --story-id story-vibepro-budget-grant-tracked-decision-doc --base main",
-        "vibepro execute merge . --story-id story-vibepro-budget-grant-tracked-decision-doc --base main --pr https://github.com/Unson-LLC/vibepro/pull/406"
-      ]
-    },
     "decision_outcome_binding": {
-      "status": "failed",
-      "reason": "central_ledger_parse_failed",
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
       "expected_entry_count": 33,
-      "promoted_count": 0,
+      "promoted_count": 33,
       "duplicate_count": 0,
       "persistence_status": null
     },
@@ -114,7 +104,7 @@
     "status": "blocked",
     "resolved_reference_count": 44,
     "copied_reference_count": 31,
-    "unresolved_reference_count": 5,
+    "unresolved_reference_count": 12,
     "replay_bundle": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
     "replay_command": "vibepro audit replay . --story-id story-vibepro-budget-grant-tracked-decision-doc"
   },
@@ -131,7 +121,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:6aa1a2ee1dc3042468f1347154130b34646cea4d6375199e64fed8561c482afe"
+      "content_hash": "sha256:ab73249bdc3bbb8e88dca18f82fe23152ca06fd01f212a1ef720c5a28b15c6d8"
     }
   ],
   "raw_artifact_manifest": [
@@ -221,10 +211,10 @@
       "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
-      "digest": "sha256:ba1dd5c904b6dba4d47b8e046c30553caa583bfee6c592853214aa80b5cc3535",
-      "audit_digest": "sha256:32d0ef0b020a73de41c825cfd243a7ec0fb301ca5fe78a959c52af6f85dcafab",
-      "line_count": 1821,
-      "raw_line_count": 4383,
+      "digest": "sha256:0cb73167f15e349d4ece78a06a1ea5a662c893e56d51b208bc7f72bafae159d4",
+      "audit_digest": "sha256:b96040ba63c089c17b8692c9197f10c37116228fb7f5e0855104a9a0ea0a25ae",
+      "line_count": 1810,
+      "raw_line_count": 4381,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -739,6 +729,10 @@
   ],
   "unresolved_references": [
     {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/graphify/graph.json",
       "reason": "source_missing"
     },
@@ -750,6 +744,30 @@
       "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/design-ssot-reconciliation.json",
       "reason": "source_too_large",
       "size_bytes": 606534
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
     },
     {
       "source": ".vibepro/uiux/story-vibepro-budget-grant-tracked-decision-doc/ia-flow-map.json",
