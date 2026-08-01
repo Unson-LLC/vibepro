@@ -53,7 +53,15 @@ export const GRANDFATHERED_OVERRIDE_DIGESTS = Object.freeze({
   // Same reason, second delta merge: this Story merged to main while this gate
   // was still in review, so its override predates the gate from main's point of
   // view and must stay effective rather than be retroactively voided.
-  'story-vibepro-review-surface-violation-ledger': '34a18c23a5dc18aafdb66e998ea8566185800e329fedb058ade726801de1b5f4'
+  'story-vibepro-review-surface-violation-ledger': '34a18c23a5dc18aafdb66e998ea8566185800e329fedb058ade726801de1b5f4',
+  // Same reason, third delta merge. Found by the release_risk Gate review: the
+  // config carried 19 overrides while only 16 were pinned, and these two arrived
+  // from main during this branch's delta merges. Both Stories are `status:
+  // active` on main and neither has a grant, so shipping unpinned would drop
+  // them from 70/24,000,000 and 64/20,000,000 to the base 6/1,800,000 and hard
+  // stop their in-flight sessions at budget_exceeded on the next dispatch.
+  'story-vibepro-review-replacement-recovery': 'fc82d48c9bda3de1f0eff5778de82466e0a867f37d3132b3bae980f45eb99663',
+  'story-vibepro-task-atomic-repo-control-contract': 'cfe725f00020d4ce3adc4d091008a925369a42ce332b36307ba5852f92691d21'
 });
 
 export function budgetApprovalSource(storyId) {
