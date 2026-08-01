@@ -6929,6 +6929,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-merge-gate-stop-reason-diagnosis.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "spec": [
@@ -6937,6 +6944,15 @@
             "path": "docs/specs/story-vibepro-merge-waiver-propagation.spec.md",
             "required": true,
             "relationship": "specifies",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-merge-gate-stop-reason-diagnosis.md",
+            "required": true,
+            "relationship": "implements",
             "last_reviewed_root_hash": null
           }
         ]
@@ -6950,10 +6966,24 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-merge-gate-stop-reason-diagnosis.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "spec",
           "path": "docs/specs/story-vibepro-merge-waiver-propagation.spec.md",
           "required": true,
           "relationship": "specifies",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-merge-gate-stop-reason-diagnosis.md",
+          "required": true,
+          "relationship": "implements",
           "last_reviewed_root_hash": null
         }
       ],
@@ -7581,7 +7611,7 @@
       "child_links": [
         {
           "kind": "spec",
-          "path": ".vibepro/spec/story-vibepro-verify-command-test-path-existence-guard/spec.json",
+          "path": "docs/specs/story-vibepro-verify-command-test-path-existence-guard.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": "8c355eb60560c59f204a7a36e2440e845d62983356aab2d76ef086455eed6813"
@@ -7658,6 +7688,13 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-budget-grant-tracked-decision-doc.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "story",
           "path": "docs/management/stories/active/story-vibepro-budget-override-residual-findings.md",
           "required": true,
@@ -7670,17 +7707,10 @@
           "required": false,
           "relationship": "implements",
           "last_reviewed_root_hash": null
-        },
-        {
-          "kind": "architecture",
-          "path": "docs/architecture/vibepro-budget-grant-tracked-decision-doc.md",
-          "required": false,
-          "relationship": "implements",
-          "last_reviewed_root_hash": null
         }
       ],
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-30T13:01:39.398Z"
+  "updated_at": "2026-08-01T13:56:06.009Z"
 }

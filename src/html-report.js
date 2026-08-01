@@ -369,7 +369,16 @@ export function renderPrMergeHtml(merge, options = {}) {
           ['Source', merge.gate_authorization?.source ?? 'none'],
           ['Reason', merge.gate_authorization?.reason ?? '-'],
           ['Waiver policy', merge.gate_authorization?.gate_override?.waiver_policy ?? '-'],
-          ['Critical unresolved gates', merge.gate_authorization?.gate_override?.critical_unresolved_gates?.length ?? '-']
+          ['Critical unresolved gates', merge.gate_authorization?.gate_override?.critical_unresolved_gates?.length ?? '-'],
+          ['Diagnosis cause', merge.gate_authorization_diagnosis?.cause ?? '-'],
+          ['Diagnosis stop reason', merge.gate_authorization_diagnosis?.stop_reason ?? '-'],
+          ['Diagnosis explanation', merge.gate_authorization_diagnosis?.explanation ?? '-'],
+          ['Blocking gates', (merge.gate_authorization_diagnosis?.blocking_gates ?? [])
+            .map((gate) => `${gate.id}=${gate.status}(${gate.severity})`)
+            .join(', ') || '-'],
+          ['Artifact bindings', (merge.gate_authorization_diagnosis?.artifact_bindings ?? [])
+            .map((binding) => `${binding.artifact}=${binding.status}`)
+            .join(', ') || '-']
         ])}
       </section>
       <section class="grid-2">

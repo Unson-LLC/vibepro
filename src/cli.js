@@ -168,9 +168,11 @@ import {
 } from './story-run-portfolio.js';
 import {
   executeMerge,
+  explainMergeGateAuthorization,
   persistMergeFollowupState,
   persistMergeRecoveryState,
   projectPublicPrMergeResult,
+  renderMergeGateExplainSummary,
   renderPrMergeSummary
 } from './merge-manager.js';
 import {
@@ -342,6 +344,7 @@ Typical PR-safety flow:
   vibepro pr ship <repo> --base <base-branch> --head <branch> --story-id <id> --dry-run
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
   vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase] [--cost-accounting <json>] [--session-id <id>|auto] [--infer-session] [--automation-memory <path>]
+  vibepro execute merge <repo> --story-id <id> --explain [--json]
 
 Review record migration:
   A pass result now requires --inspection-summary, at least one existing non-.vibepro
@@ -620,7 +623,10 @@ risk-adaptive Gate DAGにまとめ、必須Gateが通るまでPR作成を止め�
   vibepro pr create <repo> --base <base-branch> --head <branch> --story-id <id>
       Gate DAGがreadyになった後、VibePro経由でPRを作成します。
   vibepro execute merge <repo> --story-id <id> [--strategy merge|squash|rebase] [--cost-accounting <json>] [--session-id <id>|auto] [--infer-session] [--automation-memory <path>]
+  vibepro execute merge <repo> --story-id <id> --explain [--json]
       PR作成後のmerge可否を監査し、GitHub merge結果をVibePro artifactへ記録します。
+      --explain はread-onlyで、gate authorizationの拒否原因（gate証跡そのものか、
+      pr-prepare/pr-create artifactのHEAD束縛切れか、waiver不備か）とnext actionだけを出力します。
 
 Guarded Runセッション:
   vibepro execute run <repo> --story-id <id> [--until pr-ready] [--autonomy guarded] [--action-profile legacy|autonomous] [--disable-autonomous-actions] [--max-attempts <n>] [--max-iterations <n>] [--max-duration-ms <ms>] [--max-tokens <n>] [--max-cost-usd <usd>] [--retry-backoff-ms <ms>] [--retryable-stop-codes <csv>] [--provider-fallbacks <csv>] [--dry-run]
@@ -2896,6 +2902,23 @@ async function dispatchCli(argv, io = {}) {
       }
       if (subcommand === 'merge') {
         const storyId = executionOptions.storyId ?? await resolveSelectedStoryId(repoRoot, 'execute merge');
+        // `--explain` is read-only: it resolves the same gate-authorization
+        // context `execute merge` uses, but runs no git fetch, no gh command
+        // and writes no artifact. It exists so a blocked merge can be diagnosed
+        // without mutating state or hand-calling internal functions.
+        if (hasFlag(rest, '--explain')) {
+          const explainResult = (io.explainMergeGateAuthorization ?? explainMergeGateAuthorization);
+          const explain = await explainResult(repoRoot, { storyId });
+          write(stdout, hasFlag(rest, '--json')
+            ? `${JSON.stringify(explain, null, 2)}\n`
+            : renderMergeGateExplainSummary(explain));
+          return {
+            exitCode: explain.gate_ready ? 0 : 2,
+            command,
+            subcommand,
+            result: explain
+          };
+        }
         await assertManagedWorktreeCommandAllowed(repoRoot, {
           storyId,
           commandName: 'execute merge'

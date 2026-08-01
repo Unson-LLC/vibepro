@@ -22,9 +22,10 @@ export { projectPublicPrMergeResult } from './merge-public-projection.js';
 import { executeManagedCommand } from './managed-command-executor.js';
 import { resolveReconciliationAction } from './reconciliation-action.js';
 import {
-  buildMergeGateAuthorization,
-  resolveCurrentMergeGateStatus
-} from './merge-gate-authorization.js';
+  isCurrentPrLifecycleArtifact,
+  renderMergeGateDiagnosisLines,
+  resolveMergeGateAuthorizationContext
+} from './merge-gate-diagnosis.js';
 import { collectSessionEfficiencyAudit } from './session-efficiency-audit.js';
 import {
   buildDecisionOutcomeDelivery,
@@ -54,6 +55,78 @@ export async function executeMerge(repoRoot, options = {}) {
   );
 }
 
+// Read-only counterpart of the gate-authorization stage of `executeMerge`.
+// Before this existed, the only way to learn why a merge reported a gate
+// failure was to call `buildMergeGateAuthorization` from a node one-liner with
+// hand-assembled inputs, which silently skips the current-HEAD artifact binding
+// that causes most denials.
+export async function explainMergeGateAuthorization(repoRoot, options = {}) {
+  const root = path.resolve(repoRoot);
+  const storyId = options.storyId;
+  if (!storyId) throw new Error('execute merge --explain requires --story-id <id>');
+  assertSafeStoryId(storyId, 'execute merge --explain requires a safe story-* id');
+
+  const prPreparePath = await resolvePrArtifactFile(root, storyId);
+  const gateDagPath = await resolveGateArtifactFile(root, storyId);
+  const prCreatePath = await resolvePrArtifactFile(root, storyId, 'pr-create.json');
+  const [prPrepare, prCreate, gateDagArtifact] = await Promise.all([
+    readJsonIfExists(prPreparePath),
+    readJsonIfExists(prCreatePath),
+    readJsonIfExists(gateDagPath)
+  ]);
+  const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
+  const { gateAuthorization, diagnosis } = resolveMergeGateAuthorizationContext({
+    storyId,
+    prPrepare,
+    prCreate,
+    gateDagArtifact,
+    currentHeadSha
+  });
+  return {
+    schema_version: '0.1.0',
+    mode: 'execute_merge_explain',
+    story: { story_id: storyId },
+    current_head_sha: currentHeadSha ?? null,
+    gate_ready: gateAuthorization.allowed,
+    gate_authorization: gateAuthorization,
+    gate_authorization_diagnosis: diagnosis,
+    sources: {
+      pr_prepare: toRepoRelative(root, prPreparePath),
+      pr_create: toRepoRelative(root, prCreatePath),
+      gate_dag: toRepoRelative(root, gateDagPath)
+    }
+  };
+}
+
+export function renderMergeGateExplainSummary(explain) {
+  const diagnosis = explain?.gate_authorization_diagnosis ?? null;
+  return `# Execute Merge Gate Explain
+
+- story: ${explain?.story?.story_id ?? '-'}
+- current_head_sha: ${explain?.current_head_sha ?? '-'}
+- gate_ready: ${explain?.gate_ready ? 'passed' : 'blocked'}
+- gate_authorization_source: ${explain?.gate_authorization?.source ?? 'none'}
+- gate_authorization_reason: ${explain?.gate_authorization?.reason ?? '-'}
+${renderMergeGateDiagnosisLines(diagnosis).join('\n')}
+
+## Artifact Bindings
+
+${(diagnosis?.artifact_bindings ?? [])
+  .map((binding) => `- ${binding.artifact}: ${binding.status} (artifact_head=${binding.artifact_head_sha ?? '-'}, current_head=${binding.current_head_sha ?? '-'})`)
+  .join('\n') || '- none'}
+
+## Sources
+
+- pr_prepare: ${explain?.sources?.pr_prepare ?? '-'}
+- pr_create: ${explain?.sources?.pr_create ?? '-'}
+- gate_dag: ${explain?.sources?.gate_dag ?? '-'}
+`;
+}
+
+function toRepoRelative(root, filePath) {
+  return path.relative(root, filePath).split(path.sep).join('/');
+}
+
 async function executeMergeLocked(root, options = {}) {
   const storyId = options.storyId;
 
@@ -73,33 +146,32 @@ async function executeMergeLocked(root, options = {}) {
   const deleteBranch = options.deleteBranch === true;
   const dryRun = options.dryRun === true;
   const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
-  const currentPrPrepare = isCurrentPrLifecycleArtifact(prPrepare, currentHeadSha) ? prPrepare : null;
-  const currentPrCreate = isCurrentPrLifecycleArtifact(prCreate, currentHeadSha) ? prCreate : null;
-  const story = currentPrCreate?.story ?? prPrepare?.story ?? executionState?.story ?? { story_id: storyId };
-  const currentBranch = await gitOptional(root, ['branch', '--show-current']);
-  const nonWorkspaceDirtyFiles = await collectNonWorkspaceDirtyFiles(root, { storyId });
   // A standalone gate DAG has no authority unless it is explicitly bound to
   // the current HEAD. Prefer the current pr-prepare embedded DAG because that
   // artifact carries the source git commit. This prevents an older
   // ready_for_review DAG from reconciling a delivery whose current evidence is
-  // blocked or missing.
-  const currentGateDagArtifact = isCurrentPrLifecycleArtifact(gateDagArtifact, currentHeadSha)
-    ? gateDagArtifact
-    : null;
-  const gateDag = currentPrPrepare?.pr_context?.gate_dag
-    ?? currentPrCreate?.gate_dag
-    ?? currentGateDagArtifact
-    ?? null;
-  // A separately routed DAG cannot grant authority without current-head
-  // binding, but it can reveal that the embedded PR status no longer
-  // represents the routed gate surface. Reconcile against it conservatively
-  // so a critical routed gate cannot be hidden by a ready embedded snapshot.
-  const currentGateStatus = resolveCurrentMergeGateStatus(
+  // blocked or missing. A separately routed DAG cannot grant authority without
+  // current-head binding, but it can reveal that the embedded PR status no
+  // longer represents the routed gate surface, so authority reconciles against
+  // it conservatively. `resolveMergeGateAuthorizationContext` owns that binding
+  // so `execute merge` and `execute merge --explain` cannot drift apart.
+  const {
     currentPrPrepare,
-    currentHeadSha,
-    gateDagArtifact ?? gateDag
-  );
-  const gateAuthorization = buildMergeGateAuthorization(gateDag, currentPrCreate, currentGateStatus);
+    currentPrCreate,
+    gateDag,
+    gateAuthorization,
+    diagnosis: gateAuthorizationDiagnosis
+  } = resolveMergeGateAuthorizationContext({
+    storyId,
+    prPrepare,
+    prCreate,
+    gateDagArtifact,
+    currentHeadSha
+  });
+  const gateStopReason = gateAuthorizationDiagnosis.stop_reason ?? 'gate_not_ready';
+  const story = currentPrCreate?.story ?? prPrepare?.story ?? executionState?.story ?? { story_id: storyId };
+  const currentBranch = await gitOptional(root, ['branch', '--show-current']);
+  const nonWorkspaceDirtyFiles = await collectNonWorkspaceDirtyFiles(root, { storyId });
   const baseBranch = stripRemote(options.baseRef ?? currentPrCreate?.base ?? prPrepare?.git?.base_ref ?? 'main');
   const prSelector = options.pr ?? currentPrCreate?.pr_url ?? null;
   const priorObservedMerge = resolvePriorObservedMerge([localPrMerge, canonicalPrMerge], {
@@ -165,6 +237,7 @@ async function executeMergeLocked(root, options = {}) {
     },
     gate_dag: gateDag,
     gate_authorization: gateAuthorization,
+    gate_authorization_diagnosis: gateAuthorizationDiagnosis,
     preconditions: {
       pr_selector_resolved: Boolean(prSelector),
       gate_ready: gateAuthorization.allowed,
@@ -239,6 +312,14 @@ async function executeMergeLocked(root, options = {}) {
     merge.warnings.push(
       `Merge gate authorization rejected (${gateAuthorization.reason}). Run \`vibepro pr prepare\` and \`vibepro pr create\` again for the current HEAD, then retry the merge after resolving critical gates or supplying a complete noncritical waiver.`
     );
+    // The public projection collapses every warning into one fixed sentence, so
+    // the actionable detail has to live in the artifact and the local summary.
+    merge.warnings.push(
+      `stop_reason=${gateStopReason} cause=${gateAuthorizationDiagnosis.cause}: ${gateAuthorizationDiagnosis.explanation}`
+    );
+    for (const action of gateAuthorizationDiagnosis.next_actions) {
+      merge.warnings.push(`Next action: ${action}`);
+    }
   }
 
   if (!prSelector) {
@@ -282,7 +363,7 @@ async function executeMergeLocked(root, options = {}) {
     merge.warnings.push('Dry-run skipped external commands; git fetch, gh pr view, and gh pr merge were not executed.');
 
     const localBlockingReasons = [];
-    if (merge.preconditions.gate_ready !== true) localBlockingReasons.push('gate_not_ready');
+    if (merge.preconditions.gate_ready !== true) localBlockingReasons.push(gateStopReason);
     if (!merge.preconditions.clean_worktree) localBlockingReasons.push('dirty_worktree');
     if (localBlockingReasons.length > 0) {
       merge.status = 'blocked';
@@ -298,7 +379,7 @@ async function executeMergeLocked(root, options = {}) {
   const originUrl = await gitOptional(root, ['remote', 'get-url', 'origin']);
   if (merge.preconditions.gate_ready !== true && !originUrl) {
     merge.status = 'blocked';
-    merge.stop_reason = 'gate_not_ready';
+    merge.stop_reason = gateStopReason;
     merge.preconditions.base_freshness.status = 'not_run';
     merge.preconditions.remote_head_match.status = 'not_run';
     merge.preconditions.checks_ready.status = 'not_run';
@@ -331,7 +412,7 @@ async function executeMergeLocked(root, options = {}) {
   const locallyDeliveredTree = await gitTreesEqual(root, currentHeadSha, `origin/${baseBranch}`);
   if (merge.preconditions.gate_ready !== true && !locallyDeliveredHead && !locallyDeliveredTree) {
     merge.status = 'blocked';
-    merge.stop_reason = 'gate_not_ready';
+    merge.stop_reason = gateStopReason;
     merge.preconditions.base_freshness.status = 'not_run';
     merge.preconditions.remote_head_match.status = 'not_run';
     merge.preconditions.checks_ready.status = 'not_run';
@@ -410,7 +491,7 @@ async function executeMergeLocked(root, options = {}) {
 
   if (!externallyMerged) {
     const blockingReasons = [];
-    if (merge.preconditions.gate_ready !== true) blockingReasons.push('gate_not_ready');
+    if (merge.preconditions.gate_ready !== true) blockingReasons.push(gateStopReason);
     if (!merge.preconditions.clean_worktree) blockingReasons.push('dirty_worktree');
     if (merge.preconditions.base_freshness.status !== 'passed') blockingReasons.push('base_not_fresh');
     if (merge.preconditions.remote_head_match.status !== 'passed') blockingReasons.push('remote_head_mismatch');
@@ -818,7 +899,9 @@ function applyPostMergeObservationFailure(merge, priorObservedMerge, reason, {
 
 function collectDeliveryReconciliationReasons(merge) {
   const reasons = [];
-  if (merge.preconditions.gate_ready !== true) reasons.push('gate_not_ready');
+  if (merge.preconditions.gate_ready !== true) {
+    reasons.push(merge.gate_authorization_diagnosis?.stop_reason ?? 'gate_not_ready');
+  }
   if (!merge.preconditions.clean_worktree) reasons.push('dirty_worktree');
   if (merge.preconditions.remote_head_match.status !== 'passed') reasons.push('remote_head_mismatch');
   if (merge.preconditions.checks_ready.status !== 'passed') reasons.push('checks_not_ready');
@@ -1553,6 +1636,7 @@ ${synchronizationDiagnostics}
 - gate_authorization_reason: ${merge.gate_authorization?.reason ?? '-'}
 - gate_override_policy: ${merge.gate_authorization?.gate_override?.waiver_policy ?? '-'}
 - gate_override_critical_unresolved: ${merge.gate_authorization?.gate_override?.critical_unresolved_gates?.length ?? '-'}
+${renderMergeGateDiagnosisLines(merge.gate_authorization_diagnosis).join('\n')}
 - clean_worktree: ${merge.preconditions.clean_worktree ? 'passed' : 'blocked'}
 - base_freshness: ${merge.preconditions.base_freshness.status}
 - remote_head_match: ${merge.preconditions.remote_head_match.status}
@@ -1802,20 +1886,6 @@ async function readJsonIfExists(filePath) {
     if (error.code === 'ENOENT') return null;
     throw error;
   }
-}
-
-function isCurrentPrLifecycleArtifact(artifact, currentHeadSha) {
-  if (!artifact || !currentHeadSha) return false;
-  const artifactHeadSha = artifact.artifact_freshness?.artifact_head_sha
-    ?? artifact.current_head_sha
-    ?? artifact.git?.head_sha
-    ?? artifact.toolchain?.source_git?.commit
-    ?? artifact.git_context?.head_sha
-    ?? null;
-  if (artifact.artifact_freshness) {
-    return artifact.artifact_freshness.status === 'current' && artifactHeadSha === currentHeadSha;
-  }
-  return artifactHeadSha === currentHeadSha;
 }
 
 function buildCurrentPrLifecycleArtifactFreshness(kind, headSha, checkedAt) {

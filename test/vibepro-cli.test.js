@@ -14535,9 +14535,15 @@ process.exit(99);
   assert.equal(result.exitCode, 2);
   assert.equal(await pathExists(ghCallLog), false);
   assert.equal(result.result.merge.status, 'blocked');
-  assert.equal(result.result.merge.stop_reason, 'gate_not_ready');
+  assert.equal(result.result.merge.stop_reason, 'pr_create_artifact_stale');
   assert.equal(result.result.merge.gate_authorization.allowed, false);
   assert.equal(result.result.merge.gate_authorization.reason, 'gate_override_not_allowed');
+  assert.equal(result.result.merge.gate_authorization_diagnosis.cause, 'pr_create_artifact_stale');
+  assert.equal(
+    result.result.merge.gate_authorization_diagnosis.artifact_bindings
+      .find((binding) => binding.artifact === 'pr_create').status,
+    'stale'
+  );
   assert.equal(result.result.merge.commands.some((command) => command.includes('gh pr merge')), true);
   assert.equal(result.result.merge.warnings.some((warning) => warning.includes('Merge gate authorization rejected')), true);
   assert.equal(result.result.merge.warnings.some((warning) => warning.includes('vibepro pr prepare')), true);
@@ -14569,7 +14575,8 @@ test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted
         reason: 'target audit is required',
         critical_unresolved_gates: []
       },
-      expectedReason: 'gate_override_targets_missing'
+      expectedReason: 'gate_override_targets_missing',
+      expectedStopReason: 'gate_waiver_incomplete'
     },
     {
       name: 'conflicting current critical gate',
@@ -14587,7 +14594,8 @@ test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted
         unresolved_gates: [{ id: 'gate:validation_sequencing' }],
         critical_unresolved_gates: []
       },
-      expectedReason: 'current_gate_status_contains_critical_gates'
+      expectedReason: 'current_gate_status_contains_critical_gates',
+      expectedStopReason: 'gate_not_ready'
     },
     {
       name: 'stale pr-prepare status',
@@ -14603,7 +14611,8 @@ test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted
         critical_unresolved_gates: []
       },
       prPrepareHeadSha: '0'.repeat(40),
-      expectedReason: 'current_gate_status_unknown'
+      expectedReason: 'current_gate_status_unknown',
+      expectedStopReason: "pr_prepare_artifact_stale"
     },
     {
       name: 'same status but differently routed critical gate',
@@ -14628,7 +14637,8 @@ test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted
           status: 'needs_evidence'
         }]
       },
-      expectedReason: 'current_gate_status_unknown'
+      expectedReason: 'current_gate_status_unknown',
+      expectedStopReason: "gate_status_unresolved"
     },
     {
       name: 'routed critical gate with missing embedded gate dag',
@@ -14654,7 +14664,8 @@ test('story-vibepro-merge-waiver-propagation ac:3 ac:8 S-001 auth_denied omitted
         }]
       },
       omitEmbeddedGateDag: true,
-      expectedReason: 'current_gate_status_unknown'
+      expectedReason: 'current_gate_status_unknown',
+      expectedStopReason: "gate_status_unresolved"
     }
   ];
 
@@ -14739,7 +14750,12 @@ process.exit(99);
 
     assert.equal(result.exitCode, 2, fixture.name);
     assert.equal(result.result.merge.dry_run, false, fixture.name);
-    assert.equal(result.result.merge.stop_reason, 'gate_not_ready', fixture.name);
+    assert.equal(result.result.merge.stop_reason, fixture.expectedStopReason, fixture.name);
+    assert.equal(
+      result.result.merge.gate_authorization_diagnosis.stop_reason,
+      fixture.expectedStopReason,
+      fixture.name
+    );
     assert.equal(
       result.result.merge.results.every((entry) => entry.label !== 'merge'),
       true,

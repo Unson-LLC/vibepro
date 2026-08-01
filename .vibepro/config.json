@@ -1184,8 +1184,20 @@
         "started_at": "2026-07-30",
         "due_at": null,
         "category": "governance"
+      },
+      {
+        "story_id": "story-vibepro-merge-gate-stop-reason-diagnosis",
+        "title": "execute merge が gate_not_ready と言う時、実際の原因を stop_reason で名指しする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-01",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-budget-grant-tracked-decision-doc"
+    "current_story_id": "story-vibepro-merge-gate-stop-reason-diagnosis"
   }
 }
