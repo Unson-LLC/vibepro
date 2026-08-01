@@ -304,8 +304,41 @@ test('MGD-AC-12 gate_not_ready is never reported without naming a gate', () => {
   });
   assert.equal(stalePrepare.diagnosis.stop_reason, 'pr_prepare_artifact_stale');
 
+  // (c) a routed gate DAG disagreeing with a head-bound prepared DAG that names
+  // nothing: no gate can be named, so the surface is the reason.
+  const emptySurfaceMismatch = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({
+      gateStatus: { ...READY_GATE_STATUS, unresolved_gates: [], critical_unresolved_gates: [] },
+      gateDag: { overall_status: 'needs_verification', nodes: [] }
+    }),
+    prCreate: prCreateFixture(),
+    gateDagArtifact: readyDag,
+    currentHeadSha: HEAD
+  });
+  assert.equal(emptySurfaceMismatch.diagnosis.cause, 'gate_dag_surface_mismatch');
+  assert.equal(emptySurfaceMismatch.diagnosis.stop_reason, 'gate_status_unresolved');
+
+  // (d) the same disagreement, but the head-bound prepared DAG does name an
+  // unresolved required gate. That is current blocked evidence: name the gate.
+  const namedSurfaceMismatch = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({
+      gateStatus: { ...READY_GATE_STATUS, unresolved_gates: [], critical_unresolved_gates: [] },
+      gateDag: { overall_status: 'blocked', nodes: [{ id: 'gate:verification', status: 'needs_evidence' }] }
+    }),
+    prCreate: prCreateFixture(),
+    gateDagArtifact: readyDag,
+    currentHeadSha: HEAD
+  });
+  assert.equal(namedSurfaceMismatch.diagnosis.stop_reason, 'gate_not_ready');
+  assert.deepEqual(
+    namedSurfaceMismatch.diagnosis.blocking_gates.map((gate) => gate.id),
+    ['gate:verification']
+  );
+
   // Every blocked diagnosis that claims gate evidence must name at least one.
-  for (const context of [noPrepare, stalePrepare]) {
+  for (const context of [noPrepare, stalePrepare, emptySurfaceMismatch, namedSurfaceMismatch]) {
     if (context.diagnosis.stop_reason === 'gate_not_ready') {
       assert.notEqual(context.diagnosis.blocking_gates.length, 0);
     }

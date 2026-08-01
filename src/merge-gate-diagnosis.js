@@ -345,8 +345,12 @@ function resolveOverrideNotAllowedCause({
     if (!prPrepare) return 'pr_prepare_artifact_missing';
     if (!currentPrPrepare) return 'pr_prepare_artifact_stale';
     // No waiver means the gate status was never consulted by the authority
-    // function, so it can still be unresolvable for the usual reasons.
+    // function, so it can still be unresolvable for the usual reasons. But a
+    // head-bound prepared DAG that names unresolved required gates is current
+    // blocked evidence even when a routed DAG disagrees with it: the gates can
+    // be named, so naming them beats reporting the surface as unreadable.
     if (!currentGateStatus) {
+      if (hasUnresolvedGateDagNodes(gateDag)) return 'gates_unresolved';
       return resolveGateStatusUnknownCause({
         gateDag,
         gateDagArtifact,
