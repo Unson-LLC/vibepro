@@ -246,3 +246,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:401:start -->
 - [PR #401](https://github.com/Unson-LLC/vibepro/pull/401) — [2026-08](/ja/releases/2026-08): story-vibepro-verify-command-test-path-existence-guard - verify record/runのコマンドが名指しするtest fileパスの実在を検証する
 <!-- vibepro-release-index-pr:401:end -->
+
+<!-- vibepro-release-index-pr:406:start -->
+- [PR #406](https://github.com/Unson-LLC/vibepro/pull/406) — [2026-08](/ja/releases/2026-08): story-vibepro-budget-grant-tracked-decision-doc - budget grant を diff でレビュー可能にする: decision record --source budget:delivery_efficiency:* が tracked decision document を必ず書く
+<!-- vibepro-release-index-pr:406:end -->
