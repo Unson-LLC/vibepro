@@ -15559,7 +15559,16 @@ test('DRS-SCENARIO-002 externally merged ancestor refreshes stale origin/base be
   assert.equal(result.result.merge.delivery.status, 'merged_externally');
   assert.equal(result.result.merge.delivery.merge_commit_sha, mergeCommit);
   assert.equal(result.result.merge.reconciliation.status, 'reconciliation_required');
-  assert.deepEqual(result.result.merge.reconciliation.reasons, ['gate_not_ready']);
+  // The fixture leaves the routed gate-dag.json ready_for_review while
+  // rewriting the prepared DAG to needs_verification, so merge authority cannot
+  // resolve a current gate status at all. Reporting gate_not_ready here would
+  // name a gate failure nothing evaluated: the honest reason is that the gate
+  // surface itself is inconsistent.
+  assert.deepEqual(result.result.merge.reconciliation.reasons, ['gate_status_unresolved']);
+  assert.equal(
+    result.result.merge.gate_authorization_diagnosis.cause,
+    'gate_dag_surface_mismatch'
+  );
   assert.equal(result.result.merge.results.some((entry) => entry.command.includes('gh pr view')), true);
   assert.equal(await gitIsAncestorForTest(repo, headSha, 'origin/main'), true);
 });

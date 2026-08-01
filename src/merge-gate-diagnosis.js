@@ -344,6 +344,17 @@ function resolveOverrideNotAllowedCause({
   if (!gateOverride) {
     if (!prPrepare) return 'pr_prepare_artifact_missing';
     if (!currentPrPrepare) return 'pr_prepare_artifact_stale';
+    // No waiver means the gate status was never consulted by the authority
+    // function, so it can still be unresolvable for the usual reasons.
+    if (!currentGateStatus) {
+      return resolveGateStatusUnknownCause({
+        gateDag,
+        gateDagArtifact,
+        currentGateStatus,
+        prPrepare,
+        currentPrPrepare
+      });
+    }
     if (!hasUnresolvedGates(currentGateStatus) && !hasUnresolvedGateDagNodes(gateDag)) {
       return 'gate_status_unresolvable';
     }
