@@ -1,0 +1,15 @@
+✔ BGT-S-1 budget grant generates the tracked budget_override_approval document (974.511167ms)
+✔ BGT-S-2 the document path is cross-referenced as budget_approval.decision_doc (994.933625ms)
+✔ BGT-S-3 a gitignored document path fails the grant without a workspace record (695.052625ms)
+✔ BGT-S-4 a decision without a budget grant writes no document (142.256542ms)
+✔ BGT-S-5 same digest overwrites deterministically; a changed budget becomes a new file (377.033125ms)
+✔ BGT-S-6 the backfill document for the parent story grants exists in the tracked channel (0.618333ms)
+✔ BGT-S-7 the CLI reference documents the tracked document generation (1.012208ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3364.644625

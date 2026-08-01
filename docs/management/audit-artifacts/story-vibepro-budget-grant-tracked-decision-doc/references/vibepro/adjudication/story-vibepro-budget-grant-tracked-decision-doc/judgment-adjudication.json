@@ -1,0 +1,344 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+  "updated_at": "2026-08-01T06:38:03.814Z",
+  "events": [
+    {
+      "event_id": "aa02445f-b29d-413e-89f4-1bba45d1bc73",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudicator on e327cc75: the Story states a falsifiable problem (grantor/digest/timestamp absent from the diff) with 7 numbered ACs, and the adjudicator re-verified both halves of the premise directly via git check-ignore (.vibepro/pr/<id>/decision-records.json exits 0 = ignored per .gitignore:5; docs/management/decisions/ exits 1 = not ignored). Every AC maps to an executing assertion in the acceptance spec.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9949ed5d332d3614",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "e327cc75f9391e222f4d2746cfbd570240786db3",
+      "recorded_at": "2026-08-01T02:38:27.330Z"
+    },
+    {
+      "event_id": "64a22e56-db1c-48a3-9f46-e607d26e43c0",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudicator: current reality is demonstrated rather than asserted. Pre-change, writeBudgetApprovalDoc did not exist and the only grant channel was resolvePrArtifactFile(root, storyId, 'decision-records.json') under the ignored .vibepro/pr/. test/e2e/...acceptance.spec.js:24 builds a fixture repo with the real .gitignore shape (.vibepro/* plus !.vibepro/config.json) and drives bin/vibepro.js, so the path evidence is runtime, not classification.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9949ed5d332d3614",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "e327cc75f9391e222f4d2746cfbd570240786db3",
+      "recorded_at": "2026-08-01T02:38:27.772Z"
+    },
+    {
+      "event_id": "236f9ccb-5f77-447b-8f05-7c9eb1a4d7a5",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudicator: the load-bearing invariant (approval binds to the numbers actually configured) is enforced in code, not prose. buildBudgetApprovalForSource (src/decision-records.js:234-266) reads the override from .vibepro/config.json and computes the digest itself rather than accepting it from the caller, and computeBudgetOverrideDigest folds story_id into the hash so a grant is untransplantable (src/budget-override-authority.js:78-89). Covered by OGB-S-10/S-11/S-12.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9949ed5d332d3614",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "e327cc75f9391e222f4d2746cfbd570240786db3",
+      "recorded_at": "2026-08-01T02:38:28.219Z"
+    },
+    {
+      "event_id": "3c5dcc1f-03d8-41ff-a361-94fe70908d14",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudicator: the Story's boundary block excludes in-band forgery and excludes adding an fs existence check to resolveBudgetOverrideAuthority, and the code honors both. src/budget-override-authority.js imports only node:crypto, and decision_doc is never read by disqualifyApproval, so enforcement remains workspace-record plus digest as claimed. The compatibility claim also holds.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9949ed5d332d3614",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "e327cc75f9391e222f4d2746cfbd570240786db3",
+      "recorded_at": "2026-08-01T02:38:28.648Z"
+    },
+    {
+      "event_id": "f17d8a22-550a-41c8-946e-696c7c0e667e",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudicator: two failure modes have executable negative paths rather than narrative. BGT-E2E-2 drives a gitignored target through the CLI and asserts failure with no workspace record, and the new fake-git-on-PATH test at test/decision-records.test.js:414-445 exercises exit 3 and asserts refusal. Both ran green, and the fake-git test genuinely exercises the new branch because the old gitOptional would have returned '' and proceeded.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9949ed5d332d3614",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "e327cc75f9391e222f4d2746cfbd570240786db3",
+      "recorded_at": "2026-08-01T02:38:29.098Z"
+    },
+    {
+      "event_id": "b569bca4-fb13-4d83-91c6-1ca4bcaa630c",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudicator: the acceptance spec replays each AC through bin/vibepro.js against a real temporary git repository with no mocked decision store. The adjudicator ran it directly: 9/9 pass, including BGT-S-6's assertion against the committed backfill document and BGT-S-7 against both cli.md files.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9949ed5d332d3614",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "e327cc75f9391e222f4d2746cfbd570240786db3",
+      "recorded_at": "2026-08-01T02:38:29.528Z"
+    },
+    {
+      "event_id": "1455a729-9a58-4c78-96c1-547f3dff505b",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudicator: gate/artifact ordering is fail-closed in the direction that matters -- writeBudgetApprovalDoc is awaited (src/decision-records.js:96-99) before the store is persisted, so a refused grant leaves no workspace record, asserted twice. Consumers were rewired coherently: resolveEfficiencyPolicyDecision returns {policy, override} and the status reaches pr prepare (src/pr-manager.js:11946+), the authorize artifact, the text summary, and throwReviewDispatchStop (src/agent-review.js:3890+). Noted residual: a write failure after the document is written leaves an orphan tracked doc, but enforcement still refuses the override, so the diff over-claims rather than under-enforces.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9949ed5d332d3614",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "e327cc75f9391e222f4d2746cfbd570240786db3",
+      "recorded_at": "2026-08-01T02:38:29.972Z"
+    },
+    {
+      "event_id": "9730d761-d61c-4386-80ce-76ca924da136",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudicator re-judged both previously-unsound defects as genuinely fixed on their merits. (1) isPathGitIgnored (src/decision-records.js:479-499) distinguishes exit 0 / exit 1 / 'not a git repository' / everything-else-throws, and critically the BGT-S-3 fixture now runs git init (test/decision-records.test.js:335) so the guard actually executes instead of being dead under test. (2) findExistingBudgetApprovalDoc (src/decision-records.js:283-292) keys reuse on the (story_id, digest8) suffix, and the new date-reuse test renames the document to a 2020 prefix and asserts exactly one file survives a re-record. Minor residual: the hand-written backfill document lacks decision_id and uses a date-only approved_at, so the tracked channel holds two frontmatter shapes with no validator -- cosmetic today, brittle if anything ever parses it.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9949ed5d332d3614",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "e327cc75f9391e222f4d2746cfbd570240786db3",
+      "recorded_at": "2026-08-01T02:38:30.392Z"
+    },
+    {
+      "event_id": "6e52c4f0-890d-4319-a8ac-fd5a30525d34",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independent adjudicator: an unauthorized override is inert rather than fatal and falls back to the tighter base policy (src/delivery-efficiency-guardrail.js:87-90), so no state can go over-green; the inert status surfaces as budget_override_unauthorized debt in summarizeEfficiencyDebt and inline in the dispatch-stop message, closing the 'stop says budget_exceeded while config says otherwise' misdiagnosis. Failure to read decision records degrades to no-decisions, hence inert, hence base budget: fail-closed. The growing GRANDFATHERED_OVERRIDE_DIGESTS map re-authorizes by content digest only and requires a visible code diff, which is the designed constraint.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a9949ed5d332d3614",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "e327cc75f9391e222f4d2746cfbd570240786db3",
+      "recorded_at": "2026-08-01T02:38:30.824Z"
+    },
+    {
+      "event_id": "182005a5-434c-474f-b085-cf95d8137807",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story doc states 7 concrete acceptance criteria BGT-S-1..S-7 with an evidenced problem statement; each criterion maps to a named passing test in the acceptance spec, which the adjudicator ran (7/7 pass at 1f6c38a9).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad01c994165692376",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:36:58.340Z"
+    },
+    {
+      "event_id": "92890309-0f44-4dc1-8851-8fbcbbbcfde8",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Independently confirmed the stated reality: git check-ignore shows .vibepro/pr/** ignored and docs/management/decisions/** tracked, and the flow_replay spec executes end-to-end through the real CLI (BGT-E2E-1/E2E-2 in test/decision-records.test.js, 16/16 pass). Nit: in this worktree the ignore rule matched .git/info/exclude:23 rather than .gitignore:5 as the Story text says.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad01c994165692376",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:37:01.625Z"
+    },
+    {
+      "event_id": "e82e9d61-2b69-410d-8625-8e478fe79a88",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The invariants in the spec (fail-before-write; digest identity; no-grant path unchanged) each have executable counterparts. resolveBudgetOverrideAuthority in src/budget-override-authority.js:187 reads approval with optional chaining, so the added budget_approval: null field cannot change existing resolution.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad01c994165692376",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:37:08.063Z"
+    },
+    {
+      "event_id": "e0fd6064-d5d3-4902-afc1-523d3f7eb7bf",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The Story boundary explicitly excludes in-band forgery and fs-existence checks in the resolver, and the resolver was confirmed to have no fs dependency: src/budget-override-authority.js imports only node:crypto.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad01c994165692376",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:37:10.976Z"
+    },
+    {
+      "event_id": "dab890ee-759d-490c-8777-0a74b70998e0",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Both negative paths are genuinely exercised, not merely asserted: BGT-S-3 gitignored path, and the undeterminable-gitignore-status case that fails the grant instead of falling back. Both passed and correspond to the real branches at src/decision-records.js:307 and :484-500.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad01c994165692376",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:37:21.607Z"
+    },
+    {
+      "event_id": "74435d72-b591-496f-9e63-9406c4d098fc",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The adjudicator re-ran the cited replay command rather than trusting the recorded token; 7/7 acceptance cases pass at this head, and BGT-S-6/S-7 assert against real repo files rather than fixtures. The backfill digest was independently recomputed and matches the document override_digest.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad01c994165692376",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:37:24.307Z"
+    },
+    {
+      "event_id": "5a8b6dd5-6f03-4112-99c5-5b68c8d6edbf",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The only output-shape change is budget_approval: null, which BGT-S-4 concedes explicitly rather than claiming bit-identity. No CLI flags were added, and the en/ja CLI reference lines are generated from a single source (scripts/generate-cli-reference.mjs:74-75) so they cannot drift.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad01c994165692376",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:37:39.913Z"
+    },
+    {
+      "event_id": "f582856e-5712-4b25-9c9d-17761f318805",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Doc-write precedes store-write, so the only crash-window residue is an orphan tracked document with no effective grant, which is the fail-safe direction. Re-recording is idempotent via findExistingBudgetApprovalDoc suffix lookup (src/decision-records.js:283-306), and there are no locks or workers that could deadlock.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad01c994165692376",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:37:42.781Z"
+    },
+    {
+      "event_id": "3b0eec1f-e89e-4798-bdb9-620e5788cde9",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "git diff --stat origin/main...HEAD is 27 files / 3148 insertions across 48 commits spanning three story docs; whether that stack is one reviewable judgment is a human reviewer-capacity call. Additionally the Story verification section claims the parent Story doc is not edited in this PR, yet commit e327cc75 edits docs/management/stories/active/story-vibepro-owner-gated-budget-override.md, so the Story text is inaccurate on this point and a human should decide whether to correct it or split.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad01c994165692376",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:37:49.989Z"
+    },
+    {
+      "event_id": "bed588f9-aa69-4e64-a599-45bcf5cc235b",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "grep -rn management/decisions over src/ and scripts/ shows no production code parses these documents, so a not_required classification is justified. Noted latent gap: the frontmatter is built by unescaped interpolation of free-text grantor, so a grantor containing a newline or colon would emit malformed YAML for any future or external parser.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad01c994165692376",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:37:52.973Z"
+    },
+    {
+      "event_id": "a493d3be-35a4-4516-9dba-dc831dc9d843",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This change moves evidence toward the tracked surface and cannot produce a misleading green: the failure path refuses to write the workspace record at all, verified by the BGT-S-3 and undeterminable-status tests, rather than recording a grant whose mirror is missing.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad01c994165692376",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:38:01.292Z"
+    },
+    {
+      "event_id": "3ef5dc90-7b0e-47e1-bd3c-9c47705441ba",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The three-state flow declared in the spec (no_grant / granted / refused) is each covered by a passing acceptance case, including the idempotent granted-to-granted re-record that reuses the existing path instead of minting a stale duplicate document.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad01c994165692376",
+        "session_ref": "70ea817c-ee56-48c0-ab7c-612da8629872"
+      },
+      "head_commit": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+      "recorded_at": "2026-08-01T06:38:03.810Z"
+    }
+  ]
+}

@@ -1,0 +1,124 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "block",
+  "summary": "BLOCK: implementation and tests are sound on e327cc75 (e2e 7/7, related unit 51/51, docs:cli:check exit 0), but Gate evidence is structurally incomplete. At review time only one kind=e2e verification was recorded; gate:unit was still candidate, gate:integration needs_evidence, and gate:failure_mode_coverage listed evidence_lifecycle_regression as missing_coverage -- the very failure mode the adjudicator had ruled implementation_unsound and that e327cc75 claims to close. Passing tests and current-head-bound recorded evidence are different things, and the latter was absent.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read review-plan.json and the role review request, pr-prepare.json gate_status (31 unresolved), the gate:unit/integration/path_surface_matrix/failure_mode_coverage nodes of gate-dag.json, verification-evidence.json, adjudication.json, executions/state.json and traceability.json; inspected the e327cc75 diff; then actually re-ran the e2e spec, four related test files and npm run docs:cli:check.",
+    "evidence": null,
+    "inputs": [
+      "src/decision-records.js"
+    ]
+  },
+  "judgment_delta": [
+    "Initial hypothesis that head binding was broken because gate:evidence_adjudication showed 7 clauses unadjudicated was DISPROVED: adjudication.json records AC-1..AC-7 all demonstrated at head_commit e327cc75, and the discrepancy was pr-prepare.json artifact staleness (generated 02:34, before adjudication at 02:36 and verification at 02:37). The verdict then moved to a different hole: the regression tests for the two defects e327cc75 claims to close live on the unit surface, but no unit evidence had ever been recorded, so the role's risk was not closed."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+    "expected_root": null,
+    "expected_head_sha": "e327cc75f9391e222f4d2746cfbd570240786db3",
+    "current_head_sha": "e327cc75f9391e222f4d2746cfbd570240786db3",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+      "expected_root": null,
+      "expected_head_sha": "e327cc75f9391e222f4d2746cfbd570240786db3",
+      "current_head_sha": "e327cc75f9391e222f4d2746cfbd570240786db3",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-01T02:40:08.323Z",
+  "git_context": {
+    "head_sha": "e327cc75f9391e222f4d2746cfbd570240786db3",
+    "current_branch": "claude/zen-feynman-69d82a",
+    "dirty": true,
+    "raw_dirty": true,
+    "status_fingerprint_hash": "4b681f791734c02ed9e8ac79541e76b3c050a3cc03d5a9d241730bd0e194b887",
+    "user_status_fingerprint_hash": "4b681f791734c02ed9e8ac79541e76b3c050a3cc03d5a9d241730bd0e194b887",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-01T02:40:08.310Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 1 file(s)",
+    "recorded_head_sha": "e327cc75f9391e222f4d2746cfbd570240786db3",
+    "surface_files": [
+      {
+        "path": "src/decision-records.js",
+        "sha256": "5a98d365ff8f16404a486f47f6706f77c0cc33211db95307d16be29adaaff667",
+        "size": 19212
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "c2da7da79461219d0d6855ced6ccc34229eb8c0e7865fa6f5c70dbe9d1583c2e"
+  },
+  "source_fingerprint": "8affbebf18e56affe0e003d954ea61deaed725e1b17fbf309af484d41f2680f6",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "ad0aab5d050397578",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": null,
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "declared",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": null,
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

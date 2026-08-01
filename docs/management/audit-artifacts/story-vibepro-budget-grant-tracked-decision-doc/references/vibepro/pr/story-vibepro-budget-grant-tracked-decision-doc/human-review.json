@@ -1,0 +1,173 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+  "created_at": "2026-08-01T11:35:40.391Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is needs_verification with 1 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr.",
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADRあり (docs/architecture/vibepro-budget-grant-tracked-decision-doc.md, docs/architecture/vibepro-owner-gated-budget-override.md)"
+    },
+    "spec": {
+      "status": "inferred",
+      "required": true,
+      "reason": "7 clauses inferred from Story+Code+Test"
+    },
+    "decision_records": {
+      "total": 9,
+      "open": 0,
+      "by_type": {
+        "waiver": 4,
+        "needs_review": 5
+      },
+      "by_status": {
+        "accepted": 9
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+          "expected_root": null,
+          "expected_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+          "current_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1785584051979-8ca08822",
+        "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+        "type": "waiver",
+        "status": "accepted",
+        "source": "gate:validation_sequencing",
+        "source_status": "needs_evidence",
+        "summary": "Owner sato_keigo waived gate:validation_sequencing to allow PR #406 to merge, accepting that the five-phase validation sequence was never walked for this change.",
+        "reason": "HUMAN JUDGMENT, RELAYED -- NOT A FIRST-HAND OBSERVATION BY THE RECORDING AGENT. Provenance: owner sato_keigo answered an AskUserQuestion on 2026-08-01 in session 70ea817c-ee56-48c0-ab7c-612da8629872; transcript ~/.claude/projects/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872.jsonl. The recording agent is the coordinator for that session, received the answer relayed through its orchestrator, and did not observe the owner's input directly; this is a relay receipt, not primary evidence. QUESTION PUT TO THE OWNER: with one gate left, choose between (1) recording a waiver and merging, (2) walking the validation sequence properly, or (3) freezing. OWNER'S ANSWER: record the waiver and merge. This is the branch VibePro itself sanctions -- record an explicit waiver reason. Widening the API merge fallback was explicitly NOT approved; execute merge remains the only merge path. WAIVED GATE: gate:validation_sequencing (needs_evidence). Its five phases -- targeted_validation, preflight_review, code_frozen, expensive_verification, final_review -- are all blocking, and sequence status reports no persisted plan at all, invalidated because the current change-risk classification differs from the persisted validation plan. PRE-EXISTING, NOT CAUSED BY THIS WORK: this gate was already unresolved before the repair session began, among the original 15 non-critical unresolved gates; no action in this session broke it. WHY THE OWNER CHOSE THE WAIVER -- COST OF THE PROPER PATH: preflight_review is mandatory (preflight_is_advisory=false) and demands a closed, passing canonical Agent Review whose inspection inputs cover every one of the 27 changed paths, whereas the gate_evidence review actually performed inspected 7 files; final_review then demands a second canonical current-head review; and targeted_validation plus expensive_verification each need evidence re-recorded with test_fingerprint and validation_phase observations under --strict-head-binding. That is several further broad review cycles, well beyond the scale of the repair round the owner had approved. MEASURED PRECONDITIONS THAT DID PASS: CI reports 8 checks with failing_or_pending 0 -- test (20) pass 6m28s, test (22) pass 10m47s, analyze pass, CodeQL pass, release skipping; critical unresolved gates 0 with no blocking gates; execute merge preconditions clean_worktree, base_freshness, remote_head_match, checks_ready, review_policy and open_pull_request all passed; gate:pr_freshness passed, so no delta merge was required. ADJUDICATION RESULTS: independent evidence adjudication returned 7/7 acceptance clauses demonstrated; independent judgment adjudication returned 11/12 items judged_sound, with the twelfth, axis:scope_reviewability, resolved by a separate owner decision. HONEST LIMIT OF THIS WAIVER: the validation sequence was not executed. Independent verification of this change is limited to the 8 CI checks plus the adjudications and the single gate_evidence Agent Review described above. No phase-ordered freeze, no post-freeze expensive verification, and no full-surface preflight or final review were performed for these 27 changed files.",
+        "reviewer": "sato_keigo",
+        "artifact": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-prepare.json",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/ci-evidence/test_22_.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/unit-all-1f6c38a9.tap",
+              "type": "unit",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/verification-evidence.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/evidence/e2e-1f6c38a9.tap",
+              "type": "e2e",
+              "result": "pass"
+            }
+          ]
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+            "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/pr402-zen-feynman",
+            "expected_root": null,
+            "expected_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+            "current_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+          "current_branch": "claude/zen-feynman-69d82a",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-08-01T11:34:11.975Z"
+        },
+        "recorded_at": "2026-08-01T11:34:11.980Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "needs_quality_closure",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 1
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-01T11:35:37.994Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.1",
+      "root": "/Users/ksato/workspace/repos/vibepro"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "2306cc5858d0613c51517bfbeb5088593816d1e1",
+      "branch": "codex/autonomous-implementation-closure-roadmap",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "e4773ad27f0d2ad5859d04bfbca4925c802f3375",
+      "origin_main_relation": "diverged",
+      "dirty": true,
+      "dirty_summary": [
+        "M .vibepro/config.json",
+        "?? .vibepro-store/",
+        "?? .worktrees/"
+      ]
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

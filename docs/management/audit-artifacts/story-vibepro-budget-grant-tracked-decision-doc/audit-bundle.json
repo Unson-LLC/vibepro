@@ -1,0 +1,763 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+  "source": "execute_merge",
+  "promoted_at": "2026-08-01T11:44:17.994Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:6aa1a2ee1dc3042468f1347154130b34646cea4d6375199e64fed8561c482afe",
+    "compressed_hash": "sha256:49e1fcc2c4090cadd5ec90beb1abc378b8e0cdba08925c4afd977fac860b2052",
+    "expanded_bytes": 21828,
+    "compressed_bytes": 4967,
+    "expanded_line_count": 512,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "decision_outcome_ledger",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-budget-grant-tracked-decision-doc",
+    "cost": {
+      "compressed_bytes": 4967,
+      "expanded_bytes": 21828,
+      "expanded_line_count": 512,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "base": "main",
+    "delivery": {
+      "status": "merged",
+      "source": "github_pr",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/406",
+      "merge_commit_sha": "4b4b35a8eb28c962b99161d544d67031edab6e69",
+      "merged_at": "2026-08-01T11:44:15Z"
+    },
+    "reconciliation": {
+      "status": "reconciliation_required",
+      "reasons": [
+        "decision_outcome_binding_failed"
+      ],
+      "evaluated_at": "2026-08-01T11:44:17.982Z",
+      "head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc"
+    },
+    "reconciliation_action": {
+      "status": "required",
+      "reason": "decision_outcome_binding_failed",
+      "commands": [
+        "vibepro pr prepare . --story-id story-vibepro-budget-grant-tracked-decision-doc --base main",
+        "vibepro execute merge . --story-id story-vibepro-budget-grant-tracked-decision-doc --base main --pr https://github.com/Unson-LLC/vibepro/pull/406"
+      ]
+    },
+    "decision_outcome_binding": {
+      "status": "failed",
+      "reason": "central_ledger_parse_failed",
+      "expected_entry_count": 33,
+      "promoted_count": 0,
+      "duplicate_count": 0,
+      "persistence_status": null
+    },
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/406",
+    "merge_commit_sha": "4b4b35a8eb28c962b99161d544d67031edab6e69",
+    "merged_at": "2026-08-01T11:44:15Z",
+    "current_head_sha": "1f6c38a999f3b133074e2e50ea8d690627e09cbc",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...1f6c38a999f3b133074e2e50ea8d690627e09cbc"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 44,
+    "copied_reference_count": 31,
+    "unresolved_reference_count": 5,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-budget-grant-tracked-decision-doc"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:6aa1a2ee1dc3042468f1347154130b34646cea4d6375199e64fed8561c482afe"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:683de831bbb7c058376fd50f196ddee751f8cfa041b9c58addf129a0760dfe09",
+      "audit_digest": "sha256:683de831bbb7c058376fd50f196ddee751f8cfa041b9c58addf129a0760dfe09",
+      "line_count": 200,
+      "raw_line_count": 200,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_outcome_ledger",
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-outcome-ledger.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:7a9299d3543ebd7ce0e650284b3b36e777009a8e6b6cad175f49ef459981f987",
+      "audit_digest": "sha256:7a9299d3543ebd7ce0e650284b3b36e777009a8e6b6cad175f49ef459981f987",
+      "line_count": 467,
+      "raw_line_count": 467,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:91fc7ac53c5114a144d1c72231b2aff7d4386e6d3b6580ec7019f72a1e1c244a",
+      "audit_digest": "sha256:48bd3d2ece3810a94092d3d8930305c8f9be27af933bc8870bb7288afd15aaa8",
+      "line_count": 4895,
+      "raw_line_count": 36649,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:304ee519ada321987acaccf9c19896d68704d17fb25b8cc7408f53c972f1fd8f",
+      "audit_digest": "sha256:648f70b5abd26a1f76d3776821f93b2406266b0408a9f82d1ca6687e7dc38fc4",
+      "line_count": 1822,
+      "raw_line_count": 4108,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:55ba74b33ff3be9b5d4f801859644137598420a9d7ec64faa7ad83c7fcd5472a",
+      "audit_digest": "sha256:c47f91bc410db461b26732881968d6cb0e134e45313725dfa81434b6d41de7a1",
+      "line_count": 59,
+      "raw_line_count": 761,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:ba1dd5c904b6dba4d47b8e046c30553caa583bfee6c592853214aa80b5cc3535",
+      "audit_digest": "sha256:32d0ef0b020a73de41c825cfd243a7ec0fb301ca5fe78a959c52af6f85dcafab",
+      "line_count": 1821,
+      "raw_line_count": 4383,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:7623abc416f53b21a6209ff2a69650245966c1c89c71b4b53084c9fc3b65a7a5",
+      "audit_digest": "sha256:7623abc416f53b21a6209ff2a69650245966c1c89c71b4b53084c9fc3b65a7a5",
+      "line_count": 630,
+      "raw_line_count": 630,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:e9d01b91099af24b03e5f586cf719a49b60ac54ac1f8a5535ee8a0e266cc4848",
+      "audit_digest": "sha256:ef00aef6017423a5a225b08cf2dd432056dc130fd516f5751a62591a66b69958",
+      "line_count": 75,
+      "raw_line_count": 550,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:6f2be80765e6806a0e271061ddd2e8f13e3f5eb048169102774fc63478f13e47",
+      "audit_digest": "sha256:6f2be80765e6806a0e271061ddd2e8f13e3f5eb048169102774fc63478f13e47",
+      "line_count": 290,
+      "raw_line_count": 290,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:83731eb4e4b7fcf03016aa4bd69f3a78f1b39dd02e0db16412072bb95c169ad7",
+      "audit_digest": "sha256:83731eb4e4b7fcf03016aa4bd69f3a78f1b39dd02e0db16412072bb95c169ad7",
+      "line_count": 305,
+      "raw_line_count": 305,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:c1fba7ea99db722a65d12f0883a958abfafadce7253308cf5818af83080cba92",
+      "audit_digest": "sha256:c1fba7ea99db722a65d12f0883a958abfafadce7253308cf5818af83080cba92",
+      "line_count": 480,
+      "raw_line_count": 480,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:fe097d0ac7bd06c66e42de4517c8f8258899b8d21e91f41b05f8f7038af00a92",
+      "audit_digest": "sha256:fe097d0ac7bd06c66e42de4517c8f8258899b8d21e91f41b05f8f7038af00a92",
+      "line_count": 131,
+      "raw_line_count": 131,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:609676890faf21ea778ec6d2848bafba6a31099e488a2cc70a2504bad03e17c4",
+      "audit_digest": "sha256:609676890faf21ea778ec6d2848bafba6a31099e488a2cc70a2504bad03e17c4",
+      "line_count": 140,
+      "raw_line_count": 140,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:acbeed1f0e42e2b27e05a84b186e1ab87e44be023d0e13d05e04ba26d0e45ce2",
+      "audit_digest": "sha256:acbeed1f0e42e2b27e05a84b186e1ab87e44be023d0e13d05e04ba26d0e45ce2",
+      "line_count": 158,
+      "raw_line_count": 158,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-result-release_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:1d507cea98351bd06e5568508112ba427372938b258e074f7e7df58db81803c3",
+      "audit_digest": "sha256:1d507cea98351bd06e5568508112ba427372938b258e074f7e7df58db81803c3",
+      "line_count": 125,
+      "raw_line_count": 125,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/audit-replay-bundle.json.gz",
+      "digest": "sha256:6af6a44236dce98db411809c2aec7a27c316eb2f0687760c8d9b12b54d26663d",
+      "audit_digest": "sha256:6af6a44236dce98db411809c2aec7a27c316eb2f0687760c8d9b12b54d26663d",
+      "line_count": 975,
+      "raw_line_count": 975,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-budget-grant-tracked-decision-doc/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/adjudication/story-vibepro-budget-grant-tracked-decision-doc/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-budget-grant-tracked-decision-doc/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/adjudication/story-vibepro-budget-grant-tracked-decision-doc/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/e2e-1f6c38a9.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/evidence/e2e-1f6c38a9.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/e2e-574ca9b3.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/evidence/e2e-574ca9b3.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/integration-1f6c38a9.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/evidence/integration-1f6c38a9.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/unit-574ca9b3.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/evidence/unit-574ca9b3.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/unit-all-1f6c38a9.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/evidence/unit-all-1f6c38a9.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-outcome-ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/pr/decision-outcome-ledger.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T02-40-08.323Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T02-40-08.323Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T06-38-28.718Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T06-38-28.718Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T11-04-34.821Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T11-04-34.821Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T11-06-48.491Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T11-06-48.491Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-release_risk-2026-08-01T02-39-17.130Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-release_risk-2026-08-01T02-39-17.130Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-request-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/reviews/gate/review-request-release_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/review-result-release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/reviews/gate/review-result-release_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-budget-grant-tracked-decision-doc/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/spec/story-vibepro-budget-grant-tracked-decision-doc/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-budget-grant-tracked-decision-doc/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/validation-sequencing/story-vibepro-budget-grant-tracked-decision-doc/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-budget-grant-tracked-decision-doc/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/adjudication/story-vibepro-budget-grant-tracked-decision-doc/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-budget-grant-tracked-decision-doc/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/adjudication/story-vibepro-budget-grant-tracked-decision-doc/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/e2e-1f6c38a9.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/evidence/e2e-1f6c38a9.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/e2e-574ca9b3.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/evidence/e2e-574ca9b3.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/integration-1f6c38a9.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/evidence/integration-1f6c38a9.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/unit-574ca9b3.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/evidence/unit-574ca9b3.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/evidence/unit-all-1f6c38a9.tap",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/evidence/unit-all-1f6c38a9.tap",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/ci-evidence/test_22_.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/ci-evidence/test_22_.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T02-40-08.323Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T02-40-08.323Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T06-38-28.718Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T06-38-28.718Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T11-04-34.821Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T11-04-34.821Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T11-06-48.491Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-gate_evidence-2026-08-01T11-06-48.491Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-release_risk-2026-08-01T02-39-17.130Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/history/review-result-release_risk-2026-08-01T02-39-17.130Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/reviews/story-vibepro-budget-grant-tracked-decision-doc/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-budget-grant-tracked-decision-doc/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/spec/story-vibepro-budget-grant-tracked-decision-doc/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-budget-grant-tracked-decision-doc/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-budget-grant-tracked-decision-doc/references/vibepro/validation-sequencing/story-vibepro-budget-grant-tracked-decision-doc/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-budget-grant-tracked-decision-doc/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 606534
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-budget-grant-tracked-decision-doc/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-budget-grant-tracked-decision-doc/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    }
+  ]
+}

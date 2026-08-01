@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: BGT-S-1 budget grant generates the tracked budget_override_approval document
+ok 1 - BGT-S-1 budget grant generates the tracked budget_override_approval document
+  ---
+  duration_ms: 941.804833
+  type: 'test'
+  ...
+# Subtest: BGT-S-2 the document path is cross-referenced as budget_approval.decision_doc
+ok 2 - BGT-S-2 the document path is cross-referenced as budget_approval.decision_doc
+  ---
+  duration_ms: 972.481792
+  type: 'test'
+  ...
+# Subtest: BGT-S-3 a gitignored document path fails the grant without a workspace record
+ok 3 - BGT-S-3 a gitignored document path fails the grant without a workspace record
+  ---
+  duration_ms: 647.743334
+  type: 'test'
+  ...
+# Subtest: BGT-S-4 a decision without a budget grant writes no document
+ok 4 - BGT-S-4 a decision without a budget grant writes no document
+  ---
+  duration_ms: 141.876583
+  type: 'test'
+  ...
+# Subtest: BGT-S-5 same digest overwrites deterministically; a changed budget becomes a new file
+ok 5 - BGT-S-5 same digest overwrites deterministically; a changed budget becomes a new file
+  ---
+  duration_ms: 366.639166
+  type: 'test'
+  ...
+# Subtest: BGT-S-6 the backfill document for the parent story grants exists in the tracked channel
+ok 6 - BGT-S-6 the backfill document for the parent story grants exists in the tracked channel
+  ---
+  duration_ms: 0.546792
+  type: 'test'
+  ...
+# Subtest: BGT-S-7 the CLI reference documents the tracked document generation
+ok 7 - BGT-S-7 the CLI reference documents the tracked document generation
+  ---
+  duration_ms: 1.598833
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3256.659375
