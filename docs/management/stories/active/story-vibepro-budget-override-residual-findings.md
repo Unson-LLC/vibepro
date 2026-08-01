@@ -14,6 +14,7 @@ parent_design:
 related_stories:
   - story-vibepro-owner-gated-budget-override
   - story-vibepro-session-cost-source-health-fail-soft
+  - story-vibepro-budget-grant-tracked-decision-doc
 reason: "alternatives considered: finding 1 は (a) 文書の書き換え（採用） と (b) non-effective override が base より広くならないことをコードで強制する床の追加、の2択。preflight 自身が『in-repo に tighten する override は存在しない（sweep で実証）ため live defect ではなく doc accuracy』と分類しており、(b) は着地したばかりの機能への挙動変更で grandfathered override 16件の digest 互換にも触れるため、最小変更の (a) を採る。将来 tighten 用途が実在した時点で floor 追加を別 Story とする。finding 2 は (a) owned_surfaces にこの Story が統治する src 6ファイルを登録（採用） と (b) architecture+spec 子文書の新規作成。子文書は現存せず、required_child_kinds を埋めるためだけの文書生成は形骸化するため、実在する統治対象 surface の登録のみ行う。compatibility impact: コード挙動の変更なし。design-ssot の reconciliation が当該 root の src 6ファイルの drift を検出できるようになる（従来は root_only_change: needs_review しか返せなかった）。rollback plan: CHANGELOG/コメントの文言 revert と design-ssot.json の root エントリの owned_surfaces を空配列へ戻すだけで単独 revert 可能。boundary and scope: 対象は CHANGELOG.md の Unreleased 段落、src/delivery-efficiency-guardrail.js の resolveEfficiencyPolicyDecision 直前コメント、design-ssot.json の vibepro-owner-gated-budget-override root のみ。override の実挙動・digest・grandfather 判定は変更しない。"
 created_at: 2026-07-30
 updated_at: 2026-07-30

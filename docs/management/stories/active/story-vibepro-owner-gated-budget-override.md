@@ -12,6 +12,7 @@ parent_design: story-vibepro-computed-evidence-architecture
 related_stories:
   - story-vibepro-computed-evidence-architecture
   - story-vibepro-trusted-delivery-efficiency-guardrail
+  - story-vibepro-budget-grant-tracked-decision-doc
 reason: "alternatives considered: (a) config への書き込み自体を禁止する — .vibepro/config.json は Edit/Write/エディタで直接書ける平文 JSON であり、CLI 経由の書き込みだけを塞いでも迂回される。防止は原理的に bypass 可能なので採らない。(b) amendment_reason の記述品質を gate で検査する — 自由文の検査であり、先行2 Story で6戦6敗が実測されている敗北路線。(c) 消費時点で無効化する（採用） — override は書けるが、accepted な decision record が無ければ効かない。config は1箇所（resolveEfficiencyPolicyDecision）でしか消費されないため、そこを塞げば迂回路が無い。承認は system が config から計算した digest に束縛されるので『9 を承認させて 40 を適用する』ができない。compatibility impact: 既存16件の override は digest pin による grandfather で挙動不変。resolveEfficiencyPolicy の公開シグネチャは維持（第3引数 context を追加、既定は承認なし）。破壊的変更は1点のみ、承認の無い override が base policy に落ちること（=予算が狭くなる方向）で、fail-closed。既存の証跡 artifact は無効化しない。rollback plan: src/budget-override-authority.js の削除と resolveEfficiencyPolicyDecision の override 分岐の revert で単独 revert 可能。decision record の budget_approval フィールドは残っても他の gate は読まないため無害。boundary and scope: budgets.delivery_efficiency_by_story のみ。global default budgets、evidence-cost-budget、pr_artifact_bytes は対象外。人間性の暗号学的証明は対象外（残余として明記）。"
 created_at: 2026-07-27
 updated_at: 2026-07-27

@@ -81,7 +81,9 @@ repository には既に tracked channel が存在する:
       は grant を記録せずに fail する（untracked channel への silent fallback
       をしない）。
 - [ ] BGT-S-4: budget grant を伴わない decision record は document を生成せず、
-      従来と同一の出力を返す。
+      挙動は従来と同一。record schema には `secret_exposure` と同じ
+      not-applicable 規約で `budget_approval: null` が追加される
+      （「出力が bit 単位で同一」ではない。この 1 フィールドが唯一の差分）。
 - [ ] BGT-S-5: 同一 story・同一 digest の再記録は同一パスへ決定論的に上書きされ、
       digest が変わる grant は別ファイルになる（数値の変更が diff 上
       新ファイルとして見える）。

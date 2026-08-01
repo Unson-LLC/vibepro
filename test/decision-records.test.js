@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -385,4 +385,61 @@ test('BGT-S-5 same digest overwrites the same document; a changed budget produce
   assert.notEqual(third.decision.budget_approval.decision_doc, first.decision.budget_approval.decision_doc);
   assert.ok(await readFile(path.join(root, first.decision.budget_approval.decision_doc), 'utf8'));
   assert.ok(await readFile(path.join(root, third.decision.budget_approval.decision_doc), 'utf8'));
+});
+
+test('BGT-S-5 a same-digest re-record on a later date reuses the existing document instead of minting a second one', async () => {
+  const storyId = 'story-bgt-datereuse';
+  const override = { max_subagent_count: 9, amendment_reason: 'only raise' };
+  const root = await makeBudgetWorkspaceRepo(storyId, override);
+
+  const first = await recordDecision(root, budgetGrantOptions(storyId));
+  const firstDoc = first.decision.budget_approval.decision_doc;
+
+  // Simulate the same grant being re-recorded on a later day. The identity of a
+  // grant is (story_id, override_digest); the date prefix is presentation only.
+  // Before the fix this minted a second file with an identical override_digest,
+  // so a reviewer saw two documents that looked like two separate grants.
+  const renamed = firstDoc.replace(/\d{4}-\d{2}-\d{2}/, '2020-01-01');
+  await rename(path.join(root, firstDoc), path.join(root, renamed));
+
+  const second = await recordDecision(root, budgetGrantOptions(storyId));
+  assert.equal(second.decision.budget_approval.decision_doc, renamed,
+    'a later-dated re-record of an unchanged budget must reuse the existing document path');
+
+  const docs = (await readdir(path.join(root, 'docs', 'management', 'decisions')))
+    .filter((name) => name.endsWith('.md'));
+  assert.deepEqual(docs, [path.basename(renamed)],
+    'exactly one approval document may exist for one (story_id, override_digest)');
+});
+
+test('BGT-S-3 an undeterminable gitignore status fails the grant instead of falling back to the untracked channel', async () => {
+  const storyId = 'story-bgt-gitbroken';
+  const override = { max_subagent_count: 9, amendment_reason: 'only raise' };
+  const root = await makeBudgetWorkspaceRepo(storyId, override);
+
+  // Put a `git` on PATH that fails with an error other than "not a git
+  // repository", i.e. an answer we genuinely cannot interpret. A guard that
+  // swallows every git failure would read this as "not ignored" and record the
+  // grant into a possibly-untracked path anyway.
+  const binDir = path.join(root, 'fake-bin');
+  await mkdir(binDir, { recursive: true });
+  const fakeGit = path.join(binDir, 'git');
+  await writeFile(fakeGit, '#!/bin/sh\necho "fatal: index file corrupt" >&2\nexit 3\n');
+  await chmod(fakeGit, 0o755);
+  const originalPath = process.env.PATH;
+  process.env.PATH = `${binDir}:${originalPath}`;
+  try {
+    await assert.rejects(
+      recordDecision(root, budgetGrantOptions(storyId)),
+      /could not determine whether .* is gitignored/,
+      'an undeterminable gitignore status must fail closed'
+    );
+  } finally {
+    process.env.PATH = originalPath;
+  }
+
+  const recordsPath = path.join(root, '.vibepro', 'pr', storyId, 'decision-records.json');
+  const recordsError = await readFile(recordsPath).catch((error) => error.code);
+  assert.equal(recordsError, 'ENOENT',
+    'no workspace record may be written when the grant is refused');
 });

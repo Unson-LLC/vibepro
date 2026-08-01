@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import crypto from 'node:crypto';
-import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -278,13 +278,33 @@ async function buildBudgetApprovalForSource(repoRoot, storyId, options) {
 // file rather than an edit that could be missed.
 const BUDGET_DECISION_DOC_DIR = path.join('docs', 'management', 'decisions');
 
+// Returns the repo-relative path of an already-written approval document whose
+// (story_id, digest) suffix matches, regardless of its date prefix.
+async function findExistingBudgetApprovalDoc(repoRoot, suffix) {
+  let entries;
+  try {
+    entries = await readdir(path.join(repoRoot, BUDGET_DECISION_DOC_DIR));
+  } catch {
+    return null;
+  }
+  const match = entries.filter((name) => name.endsWith(suffix)).sort()[0];
+  return match ? path.join(BUDGET_DECISION_DOC_DIR, match) : null;
+}
+
 async function writeBudgetApprovalDoc(repoRoot, decision) {
   const approval = decision.budget_approval;
   const approvedDate = decision.recorded_at.slice(0, 10);
-  const fileName = `${approvedDate}-budget-override-${decision.story_id}-${approval.override_digest.slice(0, 8)}.md`;
-  const relPath = path.join(BUDGET_DECISION_DOC_DIR, fileName);
-  const ignored = await gitOptional(repoRoot, ['check-ignore', relPath]);
-  if (ignored) {
+  const digest8 = approval.override_digest.slice(0, 8);
+  const suffix = `-budget-override-${decision.story_id}-${digest8}.md`;
+  // The filename carries the approval date, but the identity of a grant is
+  // (story_id, override_digest) -- not the day it was re-recorded. Without this
+  // lookup, re-recording an unchanged budget on a later date would mint a second
+  // document with an identical digest, so a reviewer would see two files that
+  // look like two separate grants. Reuse the existing document instead, which is
+  // what BGT-S-5 means by "same digest -> same path".
+  const existing = await findExistingBudgetApprovalDoc(repoRoot, suffix);
+  const relPath = existing ?? path.join(BUDGET_DECISION_DOC_DIR, `${approvedDate}${suffix}`);
+  if (await isPathGitIgnored(repoRoot, relPath)) {
     throw new Error(`budget approval decision document path ${relPath} is gitignored; `
       + 'the grant must be recorded in a tracked file so it is reviewable in the PR diff');
   }
@@ -453,5 +473,28 @@ async function gitOptional(repoRoot, args) {
     return stdout.trim();
   } catch {
     return '';
+  }
+}
+
+// `git check-ignore` exits 0 when a path is ignored and 1 when it is not; any
+// other exit is an error whose meaning we cannot infer. Swallowing that error
+// (as gitOptional does) would make "git is broken" indistinguishable from "the
+// path is tracked" and let the grant fall back to the untracked channel --
+// exactly the silent fallback BGT-S-3 exists to prevent. So fail closed.
+async function isPathGitIgnored(repoRoot, relPath) {
+  try {
+    await execFileAsync('git', ['check-ignore', relPath], { cwd: repoRoot, encoding: 'utf8' });
+    return true;
+  } catch (error) {
+    // Exit 1 is check-ignore's "no path matched" answer, not a failure.
+    if (error?.code === 1) return false;
+    // Outside a git repository there are no ignore rules at all, so nothing can
+    // be ignored. This is a definite answer, not an undeterminable one.
+    if (/not a git repository/i.test(String(error?.stderr ?? error?.message ?? ''))) return false;
+    throw new Error(
+      `could not determine whether ${relPath} is gitignored (git check-ignore failed: `
+      + `${error?.shortMessage ?? error?.message ?? 'unknown error'}); refusing to record the budget grant `
+      + 'rather than risk writing it to an untracked path'
+    );
   }
 }
