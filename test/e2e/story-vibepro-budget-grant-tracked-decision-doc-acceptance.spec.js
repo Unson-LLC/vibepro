@@ -168,8 +168,8 @@ test('BGT-S-7 the CLI reference documents the tracked document generation', () =
   for (const ref of ['docs/reference/cli.md', 'docs/ja/reference/cli.md']) {
     const text = readFileSync(path.join(root, ref), 'utf8');
     assert.match(text, /budget_approval\.decision_doc/,
-      `${ref} が tracked document 生成（budget_approval.decision_doc）を明記する`);
+      `BGT-S-7: docs/reference/cli.md / docs/ja/reference/cli.md が tracked document 生成を明記する (${ref}: budget_approval.decision_doc)`);
     assert.match(text, /budget_override_approval/,
-      `${ref} が budget_override_approval type を明記する`);
+      `BGT-S-7: docs/reference/cli.md / docs/ja/reference/cli.md が tracked document 生成を明記する (${ref}: budget_override_approval type)`);
   }
 });
