@@ -441,10 +441,15 @@ function buildArtifactBinding(kind, artifact, currentArtifact, currentHeadSha, u
       current_head_sha: currentHeadSha ?? null
     };
   }
+  // "stale" means bound to an older commit. An artifact carrying no head
+  // binding at all is a different repair, so it must not borrow that label.
+  const artifactHeadSha = resolveArtifactHeadSha(artifact);
   return {
     artifact: kind,
-    status: currentArtifact ? 'current' : currentHeadSha ? 'stale' : 'unknown',
-    artifact_head_sha: resolveArtifactHeadSha(artifact),
+    status: currentArtifact
+      ? 'current'
+      : !currentHeadSha || !artifactHeadSha ? 'unknown' : 'stale',
+    artifact_head_sha: artifactHeadSha,
     current_head_sha: currentHeadSha ?? null
   };
 }
@@ -471,9 +476,13 @@ function collectBlockingGates({ currentGateStatus, gateOverride, gateDag }) {
     ...normalizeBlockingGates(gateOverride?.unresolved_gates, 'gate_override', null)
   ];
   if (fromOverride.length > 0) return dedupeBlockingGates(fromOverride);
+  // A node whose id cannot be read is not a nameable gate. Inventing one here
+  // produced a gate literally called "unknown" and satisfied the structural
+  // guard's length check, which is how the reservation was bypassed.
   return dedupeBlockingGates(collectUnresolvedDagGates(gateDag)
+    .filter((node) => typeof node?.id === 'string' && node.id.trim().length > 0)
     .map((node) => ({
-      id: typeof node?.id === 'string' ? node.id : 'unknown',
+      id: node.id.trim(),
       severity: node?.critical === true ? 'critical' : (node?.severity ?? 'unknown'),
       status: node?.status ?? 'unknown',
       source: 'gate_dag'
@@ -588,7 +597,7 @@ function buildNextActions({ cause, storyId }) {
   }
 }
 
-export function renderMergeGateDiagnosisLines(diagnosis, { includeNextActions = true } = {}) {
+export function renderMergeGateDiagnosisLines(diagnosis, { nextActions = null } = {}) {
   if (!diagnosis) return ['- gate_diagnosis: unavailable'];
   return [
     `- gate_diagnosis_status: ${diagnosis.status}`,
@@ -605,10 +614,10 @@ export function renderMergeGateDiagnosisLines(diagnosis, { includeNextActions = 
       .map((binding) => `${binding.artifact}=${binding.artifact_head_sha ?? '-'}`)
       .join('|') || 'none'}`,
     `- gate_diagnosis_current_head: ${(diagnosis.artifact_bindings ?? [])[0]?.current_head_sha ?? '-'}`,
-    // The pr-merge text summary must expose exactly one authoritative recovery
-    // action, so callers rendering that surface suppress these.
-    ...(includeNextActions
-      ? (diagnosis.next_actions ?? []).map((action, index) => `- gate_diagnosis_next_action_${index + 1}: ${action}`)
-      : [])
+    // Callers rendering a projected merge must pass next actions explicitly:
+    // the public projection strips them, so reading diagnosis.next_actions there
+    // silently yields nothing.
+    ...(nextActions ?? diagnosis.next_actions ?? [])
+      .map((action, index) => `- gate_diagnosis_next_action_${index + 1}: ${action}`)
   ];
 }

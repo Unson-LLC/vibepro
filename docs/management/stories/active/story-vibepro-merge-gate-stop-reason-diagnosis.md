@@ -101,9 +101,11 @@ current HEAD に束縛してから `buildMergeGateAuthorization` へ渡すため
       text summary と pr-merge.html は
       cause / stop_reason / explanation / blocking gate / artifact 束縛 (head sha 込み) を読めるが、
       next_actions は公開 projection (`--json`) と pr-merge.html には載せない。
-      公開面については既存契約が明確で、公開されるコマンドは
-      `PUBLIC_RECOVERY_COMMAND` allowlist を通ったものだけであり、
-      next_actions の 3 種はいずれも通らない。
+      buildNextActions が出す 4 種のうち 3 種
+      (`pr prepare --view blocking-gates` / `pr create` / `execute merge --explain`) は
+      `PUBLIC_RECOVERY_COMMAND` allowlist を通らない。素の `pr prepare` だけは通るが、
+      一部だけを公開面へ出すと「復旧手順の全体」に見えて誤誘導になるため、
+      公開面では next_actions を丸ごと落とす方針を採る。
       text summary では reconciliation action が存在する時だけ抑止する
       (DRS-SCENARIO-008 は execute reconcile 単一 action に prepare/merge 系を
       混ぜないことを要求するが、その適用範囲は execution-state sync 失敗経路であり、

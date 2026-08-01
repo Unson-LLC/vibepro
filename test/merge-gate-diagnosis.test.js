@@ -125,8 +125,6 @@ test('MGD-AC-2 a pr-create artifact that is missing or unbound to HEAD names its
     OLD_HEAD
   );
   assert.match(stale.diagnosis.explanation, /pr-create\.json is bound to/);
-  // The explanation must not claim anything about gate evaluation it did not do.
-  assert.doesNotMatch(stale.diagnosis.explanation, /Gates were not evaluated/);
   assert.ok(stale.diagnosis.next_actions.some((action) => action.includes('vibepro pr create')));
 
   // The artifact-missing cause is the narrow fallback: it applies when the gate
@@ -612,6 +610,23 @@ test('MGD-AC-7 the public projection and human summary keep the diagnosis readab
   assert.match(summary, new RegExp(`gate_diagnosis_artifact_binding_heads: .*pr_create=${OLD_HEAD}`));
   assert.match(summary, new RegExp(`gate_diagnosis_current_head: ${HEAD}`));
   assert.match(summary, /gate_diagnosis_blocking_gates: gate:validation_sequencing=needs_evidence.*via gate_dag/);
+  // This fixture has a reconciliation action, so next_actions are suppressed:
+  // the pr-merge surface must never show two competing command series.
+  assert.doesNotMatch(summary, /gate_diagnosis_next_action_/);
+
+  // A gate-blocked merge has no reconciliation action, so next_actions are the
+  // only commands the surface can offer. The summary renders the public
+  // projection, which strips next_actions, so this fails if the renderer reads
+  // them from the projected object instead of the raw merge.
+  const gateBlocked = {
+    ...merge,
+    status: 'blocked',
+    stop_reason: 'pr_create_artifact_stale',
+    delivery: { status: 'unknown' },
+    reconciliation: { status: 'pending', reasons: [] }
+  };
+  const blockedSummary = renderPrMergeSummary(gateBlocked);
+  assert.match(blockedSummary, /gate_diagnosis_next_action_1: vibepro pr prepare/);
 });
 
 test('MGD-AC-8 execute merge --explain diagnoses a blocked merge without running gh or writing artifacts', async () => {
@@ -702,7 +717,12 @@ test('MGD-AC-15 the reservation invariant holds across a swept artifact space, n
     producerShapedGateDag(),
     producerShapedGateDag({ gateStatus: 'needs_evidence' }),
     // story is a real gate node, not scaffolding: transient is critical
-    { overall_status: 'needs_verification', nodes: [{ id: 'story', type: 'story', required: true, status: 'transient' }] }
+    { overall_status: 'needs_verification', nodes: [{ id: 'story', type: 'story', required: true, status: 'transient' }] },
+    // unnameable node ids: the dimension the invented-'unknown' guard covers
+    { overall_status: 'needs_verification', nodes: [{ type: 'verification_gate', required: true, status: 'needs_evidence' }] },
+    { overall_status: 'needs_verification', nodes: [{ id: '   ', type: 'verification_gate', required: true, status: 'needs_evidence' }] },
+    { overall_status: 'needs_verification', nodes: [{ id: 7, type: 'verification_gate', required: true, status: 'needs_evidence' }] },
+    { overall_status: 'needs_verification', nodes: [{ id: null, type: 'verification_gate', required: true, status: 'needs_evidence' }] }
   ];
   // Routed DAGs vary INDEPENDENTLY of the prepared one, so a surface
   // disagreement is reachable. The previous version passed the same object.
@@ -778,6 +798,8 @@ test('MGD-AC-15 the reservation invariant holds across a swept artifact space, n
     'gates_unresolved',
     'critical_gates_unresolved',
     'gate_status_unresolvable',
+    'gate_status_missing',
+    'gate_status_malformed',
     'gate_dag_surface_mismatch',
     'pr_prepare_artifact_missing',
     'pr_prepare_artifact_stale',

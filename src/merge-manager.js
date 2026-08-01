@@ -1649,7 +1649,11 @@ ${synchronizationDiagnostics}
 - gate_authorization_reason: ${merge.gate_authorization?.reason ?? '-'}
 - gate_override_policy: ${merge.gate_authorization?.gate_override?.waiver_policy ?? '-'}
 - gate_override_critical_unresolved: ${merge.gate_authorization?.gate_override?.critical_unresolved_gates?.length ?? '-'}
-${renderMergeGateDiagnosisLines(merge.gate_authorization_diagnosis, { includeNextActions: !reconciliationAction }).join('\n')}
+${renderMergeGateDiagnosisLines(merge.gate_authorization_diagnosis, {
+  // next_actions is stripped by the public projection, so it must come from the
+  // raw merge. Reading it from `merge` here silently rendered nothing.
+  nextActions: reconciliationAction ? [] : (rawMerge.gate_authorization_diagnosis?.next_actions ?? [])
+}).join('\n')}
 - clean_worktree: ${merge.preconditions.clean_worktree ? 'passed' : 'blocked'}
 - base_freshness: ${merge.preconditions.base_freshness.status}
 - remote_head_match: ${merge.preconditions.remote_head_match.status}
