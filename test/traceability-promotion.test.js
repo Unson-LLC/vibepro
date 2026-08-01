@@ -118,6 +118,10 @@ test('pr prepare sets story_doc_path and connects artifact evidence', async () =
 
 test('pr prepare links verification evidence when present and stays idempotent on rerun', async () => {
   const root = await setupPrepareRepo();
+  await mkdir(path.join(root, 'test'), { recursive: true });
+  await writeFile(path.join(root, 'test', 'readme.test.js'), "test('readme is present', () => {});\n");
+  await git(root, ['add', 'test/readme.test.js']);
+  await git(root, ['commit', '-m', 'test: cover readme']);
   await runCli([
     'verify', 'record', root, '--id', 'story-test-promo', '--kind', 'unit', '--status', 'pass',
     '--command', 'node --test test/readme.test.js', '--target', 'README.md', '--observed', 'exit_code=0'
@@ -218,11 +222,15 @@ test('pr prepare propagates scenario lineage and fails the actual gate for missi
 
 test('pr prepare refreshes stale verification evidence binding on rerun', async () => {
   const root = await setupPrepareRepo();
+  await mkdir(path.join(root, 'test'), { recursive: true });
+  await writeFile(path.join(root, 'test', 'readme.test.js'), "test('readme is present', () => {});\n");
+  await git(root, ['add', 'test/readme.test.js']);
+  await git(root, ['commit', '-m', 'test: cover readme']);
   await runCli([
     'verify', 'record', root, '--id', 'story-test-promo', '--kind', 'unit', '--status', 'pass',
     '--command', 'node --test test/readme.test.js', '--target', 'README.md', '--observed', 'exit_code=0'
   ]);
-  const oldHead = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
+  const oldHead =(await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
   await runCli(['pr', 'prepare', root, '--story-id', 'story-test-promo', '--base', 'main', '--json']);
   const first = await readJson(traceabilityPath(root, 'story-test-promo'));
   const firstVerification = first.evidence.find((item) => item.type === 'verification_evidence');
@@ -231,8 +239,9 @@ test('pr prepare refreshes stale verification evidence binding on rerun', async 
 
   await writeFile(path.join(root, 'index.html'), '<!doctype html><title>Changed</title>');
   await git(root, ['add', 'index.html']);
+  await git(root, ['rm', '-q', 'test/readme.test.js']);
   await git(root, ['commit', '-m', 'feat: change app shell']);
-  const newHead = (await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
+  const newHead =(await git(root, ['rev-parse', 'HEAD'])).stdout.trim();
   assert.notEqual(newHead, oldHead);
 
   await runCli(['pr', 'prepare', root, '--story-id', 'story-test-promo', '--base', 'main', '--json']);

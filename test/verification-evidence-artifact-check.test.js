@@ -13,6 +13,11 @@ async function makeWorkspaceRepo() {
     path.join(root, '.vibepro', 'vibepro-manifest.json'),
     JSON.stringify({ schema_version: '0.1.0', runs: [], latest_run_by_story: {} }, null, 2)
   );
+  // The named test files must exist: passing evidence naming nonexistent test paths is rejected.
+  for (const testFile of ['test/example.test.js', 'test/integration/runtime.test.js']) {
+    await mkdir(path.join(root, path.dirname(testFile)), { recursive: true });
+    await writeFile(path.join(root, testFile), "import test from 'node:test';\ntest('x', () => {});\n");
+  }
   return root;
 }
 

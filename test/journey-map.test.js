@@ -404,6 +404,8 @@ status: active
 - Users can complete the first useful workflow
 `);
   await writeFile(path.join(repo, 'src', 'components', 'Signup.tsx'), 'export function Signup() { return <button>Start</button>; }\n');
+  await mkdir(path.join(repo, 'test', 'e2e'), { recursive: true });
+  await writeFile(path.join(repo, 'test', 'e2e', 'signup-journey.spec.ts'), "import { test } from '@playwright/test';\ntest('signup journey', async () => {});\n");
   await git(repo, ['add', '-A']);
   await git(repo, ['commit', '-m', 'chore: bootstrap signup journey']);
 
