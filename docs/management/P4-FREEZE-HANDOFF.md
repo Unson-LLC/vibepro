@@ -1,14 +1,21 @@
 # P4 freeze handoff — story-vibepro-vacuous-e2e-test-elimination
 
 - date: 2026-08-01
-- final head: `2f200bf2` (branch `claude/vacuous-e2e-deletions`, worktree `.worktrees/p4-vacuous-e2e`)
-- state: **not pushed, no PR, nothing merged.** Working tree clean.
+- head at freeze: `2f200bf2` (branch `claude/vacuous-e2e-deletions`, worktree `.worktrees/p4-vacuous-e2e`)
+- state at freeze: **not pushed, no PR, nothing merged.** Working tree clean.
 - frozen by: owner sato_keigo, 2026-08-01, declining budget for one confirming review
   (understood at the time that without it a PR cannot be created, i.e. this is a freeze)
 
 > This document is written to be actionable by someone with no memory of the session.
-> It is **not committed**; HEAD must not move. Commit it only if you deliberately accept
-> re-staling the head-bound adjudication described below.
+> Sections 1-7 below describe the state **as of the freeze at `2f200bf2`** and are preserved
+> unedited as the record of that state. Section 8 records the unfreeze and what changed after it.
+> Where the two disagree, section 8 is current.
+
+## 0. Status: unfrozen, resumed 2026-08-01
+
+The freeze was lifted by the same owner on 2026-08-01 (see §8). The head has moved past
+`2f200bf2`, so the head-bound adjudication and reviews described in §2 were necessarily
+re-run rather than reused. Read §8 before acting on §5.
 
 ---
 
@@ -176,3 +183,54 @@ reason this Story took as many rounds as it did.
   in the round-3 record; neither is untrue, and neither is a coverage claim.
 - **CI has never run on this branch.** It is the only independent verification of the current
   head and it remains outstanding.
+
+---
+
+## 8. Unfreeze and resumption (2026-08-01)
+
+**Grant.** Owner `sato_keigo` lifted the freeze on 2026-08-01 and approved landing this Story
+using the sequence proven on PR #406. Recorded in `.vibepro/config.json` under
+`budgets.delivery_efficiency_by_story.story-vibepro-vacuous-e2e-test-elimination`
+(`max_subagent_count` 22 -> 30, each per-role cap +4, `max_agent_consumption_ms` -> 28800000)
+and in `docs/management/decisions/2026-07-30-vacuous-e2e-test-elimination-budget-approval.md`.
+The approval reached the implementing agent as a **relay through the orchestrating session**
+(`70ea817c-ee56-48c0-ab7c-612da8629872`); the transcript
+`~/.claude/projects/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872.jsonl`
+is the inspectable primary record. The implementing agent did not observe the owner prompt
+first-hand, so this names the approval channel rather than claiming direct observation.
+
+**Delta merge.** `origin/main` had advanced 65 commits (`ea5e90fc` -> `5626ddb5`). Merged with
+`git merge origin/main` (not rebase) at merge commit `1c6d37c5`. Two conflicts, both resolved
+as keep-both unions:
+
+- `CHANGELOG.md` — both sides appended to `## Unreleased`. This Story's block was kept **first**
+  so that the `**Operator action**` / `**Observability**` / `**Rollback**` anchors stay at
+  lines 62 / 67 / 75, the positions cited in this Story's gate evidence. `LINT-9` asserts on
+  the section rather than on line numbers, so it is order-independent either way.
+- `.vibepro/config.json` — four hunks, all ordering or additive. Resolved to the exact union:
+  20 budget-override keys (19 upstream + this Story's), 49 registered Stories (45 + 4 upstream),
+  `current_story_id` kept on this Story. Every override object was verified byte-equal to one
+  of the two source blobs, so no `override_digest` and no grandfathered pin changed. The merge
+  produced one duplicate `brainbase.stories[]` entry
+  (`story-vibepro-process-record-worktree-durability`, byte-identical, present at different
+  positions on the two sides); the second copy was removed.
+
+**Re-verified after the merge, at `1c6d37c5`:**
+
+| check | result |
+|---|---|
+| `npm run typecheck` | exit 0 |
+| `npm run lint:e2e-product-execution` | 70 files, all execute product behaviour (was 66; the delta added 4 real e2e files, none vacuous) |
+| `cmp -s CLAUDE.md AGENTS.md` | identical |
+| `git diff origin/main..HEAD -- src/ bin/` | **empty** — the branch still changes no product code |
+
+**Re-swept the delta for new references to the 17 deleted files.** The only additions are 42
+historical `gate_outcome` entries in `docs/management/roi-ledger/ledger.json` whose
+`git.changed_files` list `test/e2e/story-vibepro-cli-status-honesty-main.{spec.ts,test.js}` as
+files changed at head `220a8580` on 2026-07-10. Those are append-only records of what a past
+commit touched, not live path references; deleting the files today does not falsify them. No
+source, test, config, or CI path in the delta references any deleted file.
+
+**Correction to §7.** The third bullet of §7 said unit and e2e held no evidence bound to
+`2f200bf2`. That is superseded: the evidence chain was re-recorded against the merged head,
+so the head-binding gap described there no longer applies in the form stated.
