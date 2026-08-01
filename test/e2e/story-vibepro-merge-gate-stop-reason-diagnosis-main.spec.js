@@ -1,11 +1,16 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { chmod, mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+
+import {
+  MERGE_GATE_DIAGNOSIS_STOP_REASONS,
+  diagnoseMergeGateAuthorization
+} from '../../src/merge-gate-diagnosis.js';
 
 const execFileAsync = promisify(execFile);
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
@@ -138,20 +143,28 @@ test('MGD-E2E-1 the merge workflow reports a distinct cause for each state it ca
 
   // State 1: nothing prepared yet.
   const empty = await explain(repo, env);
-  assert.equal(empty.exitCode, 2);
-  assert.equal(empty.explained.gate_authorization_diagnosis.stop_reason, 'gate_evidence_missing');
+  assert.equal(empty.exitCode, 2, 'ac-1: a story with no gate evidence still exits blocked');
+  assert.equal(
+    empty.explained.gate_authorization_diagnosis.stop_reason,
+    'gate_evidence_missing',
+    'ac-1: absent evidence reports gate_evidence_missing, never gate_not_ready'
+  );
 
   // State 2: pr prepare exists, PR not created yet.
   const firstHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   await writePrPrepare(prDir, firstHead);
   const prepared = await explain(repo, env);
-  assert.equal(prepared.explained.gate_authorization_diagnosis.stop_reason, 'pr_create_artifact_missing');
+  assert.equal(
+    prepared.explained.gate_authorization_diagnosis.stop_reason,
+    'pr_create_artifact_missing',
+    'ac-2: a missing pr-create.json names itself, not the gates'
+  );
 
   // State 3: PR created with an auditable noncritical waiver at this HEAD.
   await writePrCreate(prDir, firstHead);
   const created = await explain(repo, env);
-  assert.equal(created.exitCode, 0);
-  assert.equal(created.explained.gate_ready, true);
+  assert.equal(created.exitCode, 0, 'ac-6: --explain exits 0 when the merge is authorized');
+  assert.equal(created.explained.gate_ready, true, 'ac-6: --explain reports the authorized verdict');
   assert.equal(created.explained.gate_authorization.source, 'pr_create_gate_override');
   assert.equal(created.explained.gate_authorization_diagnosis.status, 'authorized');
   assert.equal(created.explained.gate_authorization_diagnosis.stop_reason, null);
@@ -164,39 +177,96 @@ test('MGD-E2E-1 the merge workflow reports a distinct cause for each state it ca
   await git(repo, ['commit', '-m', 'fix: address review feedback']);
   const secondHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   const advanced = await explain(repo, env);
-  assert.equal(advanced.explained.gate_authorization_diagnosis.stop_reason, 'pr_prepare_artifact_stale');
+  assert.equal(
+    advanced.explained.gate_authorization_diagnosis.stop_reason,
+    'pr_prepare_artifact_stale',
+    'ac-3 S-006: when both lifecycle artifacts lapse, the repair that must run first is named'
+  );
   assert.equal(advanced.explained.current_head_sha, secondHead);
 
   // State 5: pr prepare is re-run for the new HEAD but the PR body was not
   // re-created, so only the waiver is stale. This is the PR #406 state.
   await writePrPrepare(prDir, secondHead);
   const stalePrCreate = await explain(repo, env);
-  assert.equal(stalePrCreate.explained.gate_authorization_diagnosis.stop_reason, 'pr_create_artifact_stale');
+  assert.equal(
+    stalePrCreate.explained.gate_authorization_diagnosis.stop_reason,
+    'pr_create_artifact_stale',
+    'ac-2 S-001: a stale pr-create waiver reports pr_create_artifact_stale'
+  );
   assert.equal(
     stalePrCreate.explained.gate_authorization_diagnosis.artifact_bindings
       .find((binding) => binding.artifact === 'pr_prepare').status,
-    'current'
+    'current',
+    'ac-5 S-001: the diagnosis states which artifact is current and which is stale'
+  );
+  assert.equal(
+    stalePrCreate.explained.gate_authorization_diagnosis.artifact_bindings
+      .find((binding) => binding.artifact === 'pr_create').artifact_head_sha,
+    firstHead,
+    'ac-5 S-001: the stale binding carries the older artifact_head_sha'
   );
 
-  // The same state through the real merge command persists the same cause.
+  // The same state through the real merge command persists the same cause, and
+  // the public JSON projection carries it instead of collapsing it.
   const merge = await cli(
     ['execute', 'merge', repo, '--story-id', STORY_ID, '--base', 'main', '--pr', '1', '--dry-run', '--json'],
     env
   );
   assert.equal(merge.exitCode, 2);
-  assert.equal(JSON.parse(merge.stdout).stop_reason, 'pr_create_artifact_stale');
+  const publicMerge = JSON.parse(merge.stdout);
+  assert.equal(
+    publicMerge.stop_reason,
+    'pr_create_artifact_stale',
+    'ac-7: the public JSON projection carries the new stop reason'
+  );
+  assert.equal(
+    publicMerge.gate_authorization_diagnosis.cause,
+    'pr_create_artifact_stale',
+    'ac-7 CON-001: the public JSON projection carries the whole diagnosis, not a collapsed placeholder'
+  );
   const persisted = JSON.parse(await readFile(path.join(prDir, 'pr-merge.json'), 'utf8'));
   assert.equal(persisted.gate_authorization_diagnosis.cause, 'pr_create_artifact_stale');
 
-  // State 6: the waiver is re-created at the new HEAD but no longer matches the
-  // gate surface it claims to waive.
+  // State 6a: a waiver that is present but incomplete.
   await writePrCreate(prDir, secondHead);
+  await writeFile(path.join(prDir, 'pr-create.json'), `${JSON.stringify({
+    ...JSON.parse(await readFile(path.join(prDir, 'pr-create.json'), 'utf8')),
+    gate_override: { allowed: true, waiver_policy: 'cli_reason', reason: 'targets omitted', critical_unresolved_gates: [] }
+  }, null, 2)}\n`);
+  const incompleteWaiver = await explain(repo, env);
+  assert.equal(
+    incompleteWaiver.explained.gate_authorization_diagnosis.stop_reason,
+    'gate_waiver_incomplete',
+    'ac-4 S-003: an incomplete waiver reports gate_waiver_incomplete'
+  );
+
+  // State 6b: the waiver is complete but no longer matches the gate surface it
+  // claims to waive.
   await writeFile(path.join(prDir, 'pr-create.json'), `${JSON.stringify({
     ...JSON.parse(await readFile(path.join(prDir, 'pr-create.json'), 'utf8')),
     gate_override: { ...WAIVER, unresolved_gates: [{ id: 'gate:some_other_gate' }] }
   }, null, 2)}\n`);
   const staleWaiver = await explain(repo, env);
-  assert.equal(staleWaiver.explained.gate_authorization_diagnosis.stop_reason, 'gate_waiver_stale');
+  assert.equal(
+    staleWaiver.explained.gate_authorization_diagnosis.stop_reason,
+    'gate_waiver_stale',
+    'ac-4 S-003: a waiver whose targets no longer match reports gate_waiver_stale'
+  );
+
+  // State 6c: a routed gate-dag.json describes a different authorization surface
+  // than the prepared one.
+  await writePrCreate(prDir, secondHead);
+  await writeFile(path.join(prDir, 'gate-dag.json'), `${JSON.stringify({
+    overall_status: 'needs_verification',
+    nodes: [{ id: 'gate:e2e', type: 'e2e', required: true, critical: true, status: 'needs_evidence' }]
+  }, null, 2)}\n`);
+  const routedMismatch = await explain(repo, env);
+  assert.equal(
+    routedMismatch.explained.gate_authorization_diagnosis.stop_reason,
+    'gate_status_unresolved',
+    'ac-3 S-002: a routed gate-dag surface mismatch reports gate_status_unresolved'
+  );
+  await rm(path.join(prDir, 'gate-dag.json'));
 
   // State 7: no waiver at all, with the gate DAG still not ready. This -- and
   // only this -- is gate_not_ready.
@@ -205,14 +275,83 @@ test('MGD-E2E-1 the merge workflow reports a distinct cause for each state it ca
     gate_override: undefined
   }, null, 2)}\n`);
   const noWaiver = await explain(repo, env);
-  assert.equal(noWaiver.explained.gate_authorization_diagnosis.cause, 'gates_unresolved');
-  assert.equal(noWaiver.explained.gate_authorization_diagnosis.stop_reason, 'gate_not_ready');
+  assert.equal(
+    noWaiver.explained.gate_authorization_diagnosis.cause,
+    'gates_unresolved',
+    'ac-1 INV-001: unresolved gate evidence is the only cause that keeps gate_not_ready'
+  );
+  assert.equal(
+    noWaiver.explained.gate_authorization_diagnosis.stop_reason,
+    'gate_not_ready',
+    'ac-1 INV-001: gate_not_ready is reserved for unresolved gate evidence'
+  );
   assert.deepEqual(
     noWaiver.explained.gate_authorization_diagnosis.blocking_gates.map((gate) => gate.id),
-    ['gate:validation_sequencing']
+    ['gate:validation_sequencing'],
+    'ac-5: a gate_not_ready verdict names the gate that blocks it'
   );
 
   // No state in this replay reached the provider.
   const ghCalls = await readFile(ghCallLog, 'utf8').catch(() => '');
   assert.equal(ghCalls.includes('pr merge'), false);
+});
+
+test('MGD-E2E-2 --explain is read-only, and the stop reason taxonomy is pinned by regression tests', async () => {
+  const repo = await makeWorkflowRepo();
+  const { binDir, ghCallLog } = await makeGhStub();
+  const env = { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH}` };
+  const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
+  await mkdir(prDir, { recursive: true });
+  const headSha = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
+  await writePrPrepare(prDir, headSha);
+  await writePrCreate(prDir, '0'.repeat(40));
+
+  const before = (await git(repo, ['status', '--porcelain'])).stdout;
+  const explained = await explain(repo, env);
+  assert.equal(explained.exitCode, 2, 'ac-6 S-004: --explain exits 2 on a blocked merge');
+  assert.ok(
+    explained.explained.gate_authorization_diagnosis.next_actions.length > 0,
+    'ac-6 S-004: --explain prints next actions'
+  );
+  await assert.rejects(
+    () => readFile(path.join(prDir, 'pr-merge.json'), 'utf8'),
+    { code: 'ENOENT' },
+    'ac-6 S-004: --explain writes no pr-merge.json'
+  );
+  await assert.rejects(
+    () => readFile(ghCallLog, 'utf8'),
+    { code: 'ENOENT' },
+    'ac-6 S-004: --explain invokes no gh command'
+  );
+  assert.equal(
+    (await git(repo, ['status', '--porcelain'])).stdout,
+    before,
+    'ac-6 S-004: --explain leaves the repository unchanged'
+  );
+
+  // The unrecognised-authorization-reason default is unreachable through
+  // artifacts by construction -- buildMergeGateAuthorization only emits reasons
+  // this classifier knows -- so it is pinned at the module boundary instead.
+  const degraded = diagnoseMergeGateAuthorization({
+    storyId: STORY_ID,
+    gateAuthorization: { allowed: false, source: 'none', reason: 'reason_added_after_this_story', gate_override: null },
+    currentHeadSha: headSha
+  });
+  assert.equal(
+    degraded.stop_reason,
+    'gate_authorization_denied',
+    'ac-1 S-005: an unrecognised authorization reason degrades without reacquiring gate_not_ready'
+  );
+
+  // Every stop reason in the taxonomy is asserted somewhere in the regression
+  // suite; a reason nobody pins can silently change meaning.
+  const suiteSources = await Promise.all([
+    'test/merge-gate-diagnosis.test.js',
+    'test/integration/story-vibepro-merge-gate-stop-reason-diagnosis.test.js',
+    'test/e2e/story-vibepro-merge-gate-stop-reason-diagnosis-main.spec.js'
+  ].map((relative) => readFile(path.join(root, relative), 'utf8')));
+  const pinned = suiteSources.join('\n');
+  const unpinned = [...MERGE_GATE_DIAGNOSIS_STOP_REASONS]
+    .filter((reason) => !pinned.includes(`'${reason}'`));
+  assert.deepEqual(unpinned, [], 'ac-8: every merge gate stop reason is pinned by a regression assertion');
 });
