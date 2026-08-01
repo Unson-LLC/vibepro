@@ -241,7 +241,10 @@ function resolveDenialCause({
   currentPrCreate,
   gateOverride
 }) {
-  if (authorizationReason === 'current_gate_status_contains_critical_gates') {
+  if (
+    authorizationReason === 'current_gate_status_contains_critical_gates'
+    || hasCriticalUnresolvedGates(currentGateStatus)
+  ) {
     return 'critical_gates_unresolved';
   }
   // The waiver document naming critical gates does not prove the gates are
@@ -450,7 +453,9 @@ function collectBlockingGates({ currentGateStatus, gateOverride, gateDag }) {
   ];
   if (fromStatus.length > 0) return dedupeBlockingGates(fromStatus);
   const fromOverride = [
-    ...normalizeBlockingGates(gateOverride?.critical_unresolved_gates, 'gate_override', 'critical'),
+    // Not forced to 'critical': the waiver document records what was critical
+    // when it was written, not what is critical now.
+    ...normalizeBlockingGates(gateOverride?.critical_unresolved_gates, 'gate_override', null),
     ...normalizeBlockingGates(gateOverride?.unresolved_gates, 'gate_override', null)
   ];
   if (fromOverride.length > 0) return dedupeBlockingGates(fromOverride);
@@ -509,25 +514,25 @@ function buildExplanation({
     case 'critical_gates_unresolved':
       return `Critical gate evidence is unresolved at HEAD ${head}: ${gateList}. A waiver cannot authorize these.`;
     case 'pr_create_artifact_stale':
-      return `Gates were not evaluated as blocked. pr-create.json is bound to ${binding('pr_create')?.artifact_head_sha ?? 'an unknown commit'} but HEAD is ${head}, so its merge authority (including any waiver) was discarded.`;
+      return `pr-create.json is bound to ${binding('pr_create')?.artifact_head_sha ?? 'an unknown commit'} but HEAD is ${head}, so its merge authority (including any waiver) was discarded.`;
     case 'pr_create_artifact_missing':
-      return `Gates were not evaluated as blocked. No pr-create.json exists for this story, so there is no merge authority to check.`;
+      return `No pr-create.json exists for this story, so there is no merge authority to check.`;
     case 'pr_prepare_artifact_stale':
-      return `Gates were not evaluated as blocked. pr-prepare.json is bound to ${binding('pr_prepare')?.artifact_head_sha ?? 'an unknown commit'} but HEAD is ${head}, so the current gate status could not be resolved.`;
+      return `pr-prepare.json is bound to ${binding('pr_prepare')?.artifact_head_sha ?? 'an unknown commit'} but HEAD is ${head}, so the current gate status could not be resolved.`;
     case 'pr_prepare_artifact_missing':
-      return `Gates were not evaluated as blocked. No pr-prepare.json exists for this story, so the current gate status could not be resolved.`;
+      return `No pr-prepare.json exists for this story, so the current gate status could not be resolved.`;
     case 'gate_status_missing':
-      return `Gates were not evaluated as blocked. pr-prepare.json is bound to HEAD ${head} but carries no gate_status.`;
+      return `pr-prepare.json is bound to HEAD ${head} but carries no gate_status.`;
     case 'gate_status_unresolvable':
       return `Merge authority was denied at HEAD ${head} but no unresolved gate could be named from the current gate status or gate DAG, so the gate surface itself cannot be trusted to explain the denial.`;
     case 'gate_dag_surface_mismatch':
-      return `Gates were not evaluated as blocked. The routed gate-dag.json describes a different gate surface than the one embedded in pr-prepare.json (overall_status=${gateDag?.overall_status ?? 'unknown'}), so merge authority failed closed.`;
+      return `The routed gate-dag.json describes a different gate surface than the one embedded in pr-prepare.json (overall_status=${gateDag?.overall_status ?? 'unknown'}), so merge authority failed closed.`;
     case 'gate_status_malformed':
-      return `Gates were not evaluated as blocked. The current gate status carries malformed or duplicate gate ids, so merge authority failed closed.`;
+      return `The current gate status carries malformed or duplicate gate ids, so merge authority failed closed.`;
     case 'gate_waiver_incomplete':
-      return `Gates were not evaluated as blocked. The waiver in pr-create.json is incomplete or not marked allowed, so it cannot authorize the merge.`;
+      return `The waiver in pr-create.json is incomplete or not marked allowed, so it cannot authorize the merge.`;
     case 'gate_waiver_stale':
-      return `Gates were not evaluated as blocked. The waiver in pr-create.json targets a different gate set (${gateList}) than the current gate status, so it cannot authorize the merge.`;
+      return `The waiver in pr-create.json targets a different gate set (${gateList}) than the current gate status, so it cannot authorize the merge.`;
     case 'gate_evidence_missing':
       return `No gate evidence exists for this story: pr-prepare.json, pr-create.json and gate-dag.json are all absent.`;
     case 'artifact_unreadable':
@@ -581,6 +586,10 @@ export function renderMergeGateDiagnosisLines(diagnosis, { includeNextActions = 
     `- gate_diagnosis_artifact_bindings: ${(diagnosis.artifact_bindings ?? [])
       .map((binding) => `${binding.artifact}=${binding.status}`)
       .join('|') || 'none'}`,
+    `- gate_diagnosis_artifact_binding_heads: ${(diagnosis.artifact_bindings ?? [])
+      .map((binding) => `${binding.artifact}=${binding.artifact_head_sha ?? '-'}`)
+      .join('|') || 'none'}`,
+    `- gate_diagnosis_current_head: ${(diagnosis.artifact_bindings ?? [])[0]?.current_head_sha ?? '-'}`,
     // The pr-merge text summary must expose exactly one authoritative recovery
     // action, so callers rendering that surface suppress these.
     ...(includeNextActions

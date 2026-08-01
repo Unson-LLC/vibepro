@@ -8,6 +8,7 @@ import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
 import {
+  MERGE_GATE_DIAGNOSIS_STOP_REASONS,
   diagnoseMergeGateAuthorization,
   resolveMergeGateAuthorizationContext
 } from '../src/merge-gate-diagnosis.js';
@@ -123,7 +124,9 @@ test('MGD-AC-2 a pr-create artifact that is missing or unbound to HEAD names its
     stale.diagnosis.artifact_bindings.find((binding) => binding.artifact === 'pr_create').artifact_head_sha,
     OLD_HEAD
   );
-  assert.match(stale.diagnosis.explanation, /Gates were not evaluated as blocked/);
+  assert.match(stale.diagnosis.explanation, /pr-create\.json is bound to/);
+  // The explanation must not claim anything about gate evaluation it did not do.
+  assert.doesNotMatch(stale.diagnosis.explanation, /Gates were not evaluated/);
   assert.ok(stale.diagnosis.next_actions.some((action) => action.includes('vibepro pr create')));
 
   // The artifact-missing cause is the narrow fallback: it applies when the gate
@@ -231,7 +234,7 @@ test('MGD-AC-9 a lapsed pr-create with no waiver over unresolved gates reports t
     context.diagnosis.blocking_gates.map((gate) => gate.id),
     ['gate:validation_sequencing']
   );
-  assert.doesNotMatch(context.diagnosis.explanation, /Gates were not evaluated as blocked/);
+  assert.doesNotMatch(context.diagnosis.explanation, /Gates were not evaluated/);
 
   // The same lapsed artifact WITH a waiver still reports the artifact, because
   // there the merge authority really was discarded by the binding.
@@ -666,4 +669,83 @@ process.exit(0);
   await assert.rejects(() => readFile(path.join(prDir, 'pr-merge.json'), 'utf8'), { code: 'ENOENT' });
   const status = await execFileAsync('git', ['status', '--porcelain'], { cwd: repo });
   assert.equal(status.stdout.includes('pr-merge'), false);
+});
+
+test('MGD-AC-15 the reservation invariant holds across a swept artifact space, not just enumerated cases', () => {
+  // MGD-AC-12 asserts hand-picked contexts, so it can only fail for states its
+  // author thought of -- which is how the invariant kept breaking. Sweep the
+  // artifact space instead and assert the invariant as a property.
+  const gateStatuses = [
+    null,
+    { overall_status: 'ready_for_review', ready_for_pr_create: true, unresolved_gates: [], critical_unresolved_gates: [] },
+    { overall_status: 'ready_for_review', ready_for_pr_create: false, unresolved_gates: [], critical_unresolved_gates: [] },
+    { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [], critical_unresolved_gates: [] },
+    { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [{ id: 'gate:unit' }], critical_unresolved_gates: [] },
+    { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [{ id: 'gate:e2e' }], critical_unresolved_gates: [{ id: 'gate:e2e' }] },
+    { overall_status: 'needs_verification', ready_for_pr_create: false, unresolved_gates: [{ id: '' }], critical_unresolved_gates: [] }
+  ];
+  const gateDags = [
+    null,
+    { overall_status: 'ready_for_review', nodes: [] },
+    { overall_status: 'needs_verification', nodes: [] },
+    { overall_status: 'needs_verification', nodes: [{ id: 'gate:unit', type: 'verification_gate', required: true, status: 'needs_evidence' }] },
+    producerShapedGateDag(),
+    producerShapedGateDag({ gateStatus: 'needs_evidence' })
+  ];
+  const waivers = [
+    null,
+    NONCRITICAL_WAIVER,
+    { ...NONCRITICAL_WAIVER, critical_unresolved_gates: [{ id: 'gate:e2e' }] },
+    { allowed: true, waiver_policy: 'cli_reason', reason: 'targets omitted', critical_unresolved_gates: [] },
+    { allowed: false }
+  ];
+  const heads = [HEAD, OLD_HEAD];
+
+  let swept = 0;
+  for (const gateStatus of gateStatuses) {
+    for (const gateDag of gateDags) {
+      for (const gateOverride of waivers) {
+        for (const prepareHead of heads) {
+          for (const createHead of heads) {
+            for (const prPrepare of [null, prPrepareFixture({ headSha: prepareHead, gateStatus, gateDag })]) {
+              for (const prCreate of [null, prCreateFixture({ headSha: createHead, gateOverride })]) {
+                const { diagnosis } = resolveMergeGateAuthorizationContext({
+                  storyId: STORY_ID,
+                  prPrepare,
+                  prCreate,
+                  gateDagArtifact: gateDag,
+                  currentHeadSha: HEAD
+                });
+                swept += 1;
+                if (diagnosis.status !== 'blocked') continue;
+
+                // The reservation: a gate verdict must name a gate.
+                if (diagnosis.stop_reason === 'gate_not_ready') {
+                  assert.notEqual(
+                    diagnosis.blocking_gates.length,
+                    0,
+                    `gate_not_ready named no gate for cause=${diagnosis.cause}`
+                  );
+                }
+                // The converse: an explanation must never deny gate evaluation
+                // while its own blocking_gates list a critical gate.
+                if (diagnosis.blocking_gates.some((gate) => gate.severity === 'critical')) {
+                  assert.doesNotMatch(
+                    diagnosis.explanation,
+                    /Gates were not evaluated as blocked/,
+                    `cause=${diagnosis.cause} denied gate evaluation while naming a critical gate`
+                  );
+                }
+                // No explanation may claim unresolved gates it cannot name.
+                assert.doesNotMatch(diagnosis.explanation, /none enumerated by the current gate status/);
+                // Every blocked verdict carries a stop reason in the taxonomy.
+                assert.ok(MERGE_GATE_DIAGNOSIS_STOP_REASONS.has(diagnosis.stop_reason));
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  assert.ok(swept > 1000, `sweep covered ${swept} states`);
 });
