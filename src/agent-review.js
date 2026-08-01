@@ -19,9 +19,10 @@ import {
   buildReviewDispatchDecision,
   evaluateDeliveryBudget,
   planLifecycleTerminalization,
-  resolveEfficiencyPolicy,
+  resolveEfficiencyPolicyDecision,
   selectRiskAdaptiveReviewCoverage
 } from './delivery-efficiency-guardrail.js';
+import { readDecisionRecordsIfExists } from './decision-records.js';
 import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js';
 import {
   REVIEW_SURFACE_INTEGRITY_GATE_ID,
@@ -752,7 +753,8 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
     stage,
     role
   });
-  const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root, storyId);
+  const efficiencyDecision = await readDeliveryEfficiencyPolicyDecision(root, storyId);
+  const efficiencyPolicy = efficiencyDecision.policy;
   if (!efficiencyPolicy) throw new Error('review authorize requires budgets.delivery_efficiency in .vibepro/config.json');
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   const storyReviewDir = path.dirname(reviewDir);
@@ -804,7 +806,7 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
         budget: evaluateDeliveryBudget(efficiencyPolicy, addProspectiveReviewDispatch(metrics, role))
       });
     }
-    if (dispatchDecision.action !== 'dispatch') throwReviewDispatchStop(dispatchDecision);
+    if (dispatchDecision.action !== 'dispatch') throwReviewDispatchStop(dispatchDecision, efficiencyDecision.override);
     const timeoutMs = normalizeTimeoutMs(options.timeoutMs ?? rolePolicy.timeout_ms ?? reviewPolicy.defaults.timeout_ms);
     authorization = {
       schema_version: '0.1.0',
@@ -825,6 +827,7 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
       agent_cost_tier: agentCostTier,
       model_policy_preflight: modelPolicyPreflight,
       dispatch_decision: dispatchDecision,
+      budget_override: efficiencyDecision.override,
       created_at: now.toISOString(),
       expires_at: new Date(now.getTime() + timeoutMs).toISOString(),
       consumed_at: null,
@@ -836,16 +839,25 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
   return {
     authorization,
     dispatch_decision: authorization.dispatch_decision,
+    budget_override: efficiencyDecision.override,
     artifact: toWorkspaceRelative(root, getDispatchAuthorizationsPath(storyReviewDir))
   };
 }
 
 async function readDeliveryEfficiencyPolicy(repoRoot, storyId) {
+  return (await readDeliveryEfficiencyPolicyDecision(repoRoot, storyId)).policy;
+}
+
+// Story overrides are inert without an accepted budget approval (CEA-S-4), so
+// the decision records have to be loaded before the policy is resolved.
+async function readDeliveryEfficiencyPolicyDecision(repoRoot, storyId) {
+  const inert = { policy: null, override: { status: 'absent', story_id: storyId ?? null, digest: null, reasons: [], approval: null } };
   try {
     const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
-    return resolveEfficiencyPolicy(config, storyId);
+    const records = await readDecisionRecordsIfExists(repoRoot, storyId).catch(() => null);
+    return resolveEfficiencyPolicyDecision(config, storyId, { decisions: records?.decisions ?? [] });
   } catch (error) {
-    if (error.code === 'ENOENT') return null;
+    if (error.code === 'ENOENT') return inert;
     throw error;
   }
 }
@@ -1690,8 +1702,19 @@ export function renderAgentReviewDispatchAuthorizationSummary(result) {
 - model: ${result.authorization.agent_model ?? '-'}
 - reasoning_effort: ${result.authorization.agent_reasoning_effort ?? '-'}
 - expires_at: ${result.authorization.expires_at}
+- budget_override: ${renderBudgetOverrideLine(result.budget_override)}
 - artifact: ${result.artifact}
 `;
+}
+
+// The override status was previously JSON-only, so the default text output never
+// told the operator that a configured override had been ignored.
+function renderBudgetOverrideLine(budgetOverride) {
+  if (!budgetOverride || budgetOverride.status === 'absent') return 'none configured';
+  if (budgetOverride.status === 'unauthorized') {
+    return `INERT (${(budgetOverride.reasons ?? []).join(', ') || 'unauthorized'}) - base budget applied`;
+  }
+  return budgetOverride.status;
 }
 
 export function renderAgentReviewLifecycleCloseSummary(result) {
@@ -3864,10 +3887,20 @@ function assertConsumableDispatchAuthorization(authorization, expected) {
   }
 }
 
-function throwReviewDispatchStop(dispatchDecision) {
-  const error = new Error(`review dispatch ${dispatchDecision.action}: ${dispatchDecision.stop_reason ?? dispatchDecision.duplicate_status ?? 'existing lifecycle must be reused'}`);
+function throwReviewDispatchStop(dispatchDecision, budgetOverride = null) {
+  // A stop that reads only `budget_exceeded` is misdiagnosable when the Story
+  // configured a higher override that never took effect: the operator sees the
+  // base limit while config plainly says otherwise. Name the inert override in
+  // the stop itself so the reason reaches the human at the point of the stop,
+  // not only in a separate pr prepare run.
+  const reason = dispatchDecision.stop_reason ?? dispatchDecision.duplicate_status ?? 'existing lifecycle must be reused';
+  const inertOverride = budgetOverride?.status === 'unauthorized'
+    ? ` (a Story budget override is configured but inert: ${(budgetOverride.reasons ?? []).join(', ') || 'unauthorized'}; the base budget applied)`
+    : '';
+  const error = new Error(`review dispatch ${dispatchDecision.action}: ${reason}${inertOverride}`);
   error.code = 'VIBEPRO_REVIEW_DISPATCH_STOP';
   error.dispatch_decision = dispatchDecision;
+  error.budget_override = budgetOverride ?? null;
   throw error;
 }
 

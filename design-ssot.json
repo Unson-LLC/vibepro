@@ -7588,6 +7588,98 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-owner-gated-budget-override",
+      "title": "Owner-gated delivery efficiency budget override authority",
+      "root_doc": "docs/management/stories/active/story-vibepro-owner-gated-budget-override.md",
+      "owner": "sato_keigo",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [
+        "src/budget-override-authority.js",
+        "src/delivery-efficiency-guardrail.js",
+        "src/decision-records.js budget grant fields",
+        "src/agent-review.js budget override stops",
+        "src/pr-manager.js budget_override_unauthorized efficiency debt",
+        "src/cli.js decision record budget flags"
+      ],
+      "required_child_kinds": [
+        "architecture"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-owner-gated-budget-override.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/vibepro-budget-grant-tracked-decision-doc.md",
+            "required": false,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-budget-override-residual-findings.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-budget-grant-tracked-decision-doc.md",
+            "required": false,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-owner-gated-budget-override.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-budget-override-residual-findings.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-budget-grant-tracked-decision-doc.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/vibepro-budget-grant-tracked-decision-doc.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
   "updated_at": "2026-07-30T13:01:39.398Z"

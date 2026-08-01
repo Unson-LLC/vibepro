@@ -1,9 +1,14 @@
 import { execFile } from 'node:child_process';
 import crypto from 'node:crypto';
-import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
+import {
+  buildBudgetApproval,
+  computeBudgetOverrideDigest,
+  parseBudgetApprovalSource
+} from './budget-override-authority.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
@@ -46,6 +51,7 @@ export async function recordDecision(repoRoot, options = {}) {
 
   const root = path.resolve(repoRoot);
   await assertInitializedWorkspace(root);
+  const budgetApproval = await buildBudgetApprovalForSource(root, storyId, options);
   const evidencePath = await resolvePrArtifactFile(root, storyId, 'decision-records.json');
   await mkdir(path.dirname(evidencePath), { recursive: true });
   const existing = await readDecisionRecords(root, storyId);
@@ -71,6 +77,7 @@ export async function recordDecision(repoRoot, options = {}) {
     reviewer: normalizeNullable(options.reviewer),
     artifact: options.artifact ? normalizeArtifact(root, options.artifact) : null,
     verification_evidence_summary: verificationEvidenceSummary,
+    budget_approval: budgetApproval,
     secret_exposure: type === 'secret_exposure' ? {
       location: options.secretLocation,
       action: options.secretAction,
@@ -86,6 +93,12 @@ export async function recordDecision(repoRoot, options = {}) {
     git_context: gitContext,
     recorded_at: new Date().toISOString()
   };
+  if (budgetApproval) {
+    decision.budget_approval = {
+      ...budgetApproval,
+      decision_doc: await writeBudgetApprovalDoc(root, decision)
+    };
+  }
   const next = {
     schema_version: '0.1.0',
     model: 'vibepro-decision-records-v1',
@@ -214,6 +227,128 @@ async function buildVerificationEvidenceSummary(repoRoot, storyId) {
   return { count: entries.length, entries };
 }
 
+// Mints the grant that makes a delivery-efficiency Story override effective
+// (CEA-S-4). The digest is read out of `.vibepro/config.json` here rather than
+// accepted from the caller, so the record approves the numbers that are actually
+// configured; an agent cannot approve one budget and then apply another.
+async function buildBudgetApprovalForSource(repoRoot, storyId, options) {
+  const sourceStoryId = parseBudgetApprovalSource(options.source);
+  if (sourceStoryId === null) {
+    if (options.budgetGrantor || options.budgetGrantorKind) {
+      throw new Error('budget approval flags require --source budget:delivery_efficiency:<story-id>');
+    }
+    return null;
+  }
+  if (sourceStoryId !== storyId) {
+    throw new Error(`budget approval --source story ${sourceStoryId} does not match --id ${storyId}`);
+  }
+  if (!options.reason) {
+    throw new Error('budget approval requires --reason <text> stating what the human approved');
+  }
+  let config;
+  try {
+    config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') throw new Error('budget approval requires an initialized .vibepro/config.json');
+    throw error;
+  }
+  const override = config?.budgets?.delivery_efficiency_by_story?.[storyId];
+  if (!override || typeof override !== 'object' || Array.isArray(override)) {
+    throw new Error(`budget approval found no delivery_efficiency_by_story override for ${storyId}; `
+      + 'configure the override first so the approval binds to concrete limits');
+  }
+  return buildBudgetApproval({
+    storyId,
+    overrideDigest: computeBudgetOverrideDigest(storyId, override),
+    grantorKind: options.budgetGrantorKind,
+    grantor: options.budgetGrantor,
+    agentSystem: options.agentSystem,
+    agentId: options.agentId
+  });
+}
+
+// The workspace decision store lives under `.vibepro/pr/`, which `.gitignore`
+// excludes: an owner grant recorded only there never reaches the PR diff, so a
+// reviewer sees the raised numbers in `.vibepro/config.json` but not the
+// grantor, digest, or timestamp the grant rests on. This mirrors every budget
+// grant into the repository's tracked decision channel
+// (`docs/management/decisions/*.md`, `type: budget_override_approval`) so the
+// structured record the residual-forgery argument depends on is reviewable in
+// the diff. The digest prefix in the filename makes a changed budget a new
+// file rather than an edit that could be missed.
+const BUDGET_DECISION_DOC_DIR = path.join('docs', 'management', 'decisions');
+
+// Returns the repo-relative path of an already-written approval document whose
+// (story_id, digest) suffix matches, regardless of its date prefix.
+async function findExistingBudgetApprovalDoc(repoRoot, suffix) {
+  let entries;
+  try {
+    entries = await readdir(path.join(repoRoot, BUDGET_DECISION_DOC_DIR));
+  } catch {
+    return null;
+  }
+  const match = entries.filter((name) => name.endsWith(suffix)).sort()[0];
+  return match ? path.join(BUDGET_DECISION_DOC_DIR, match) : null;
+}
+
+async function writeBudgetApprovalDoc(repoRoot, decision) {
+  const approval = decision.budget_approval;
+  const approvedDate = decision.recorded_at.slice(0, 10);
+  const digest8 = approval.override_digest.slice(0, 8);
+  const suffix = `-budget-override-${decision.story_id}-${digest8}.md`;
+  // The filename carries the approval date, but the identity of a grant is
+  // (story_id, override_digest) -- not the day it was re-recorded. Without this
+  // lookup, re-recording an unchanged budget on a later date would mint a second
+  // document with an identical digest, so a reviewer would see two files that
+  // look like two separate grants. Reuse the existing document instead, which is
+  // what BGT-S-5 means by "same digest -> same path".
+  const existing = await findExistingBudgetApprovalDoc(repoRoot, suffix);
+  const relPath = existing ?? path.join(BUDGET_DECISION_DOC_DIR, `${approvedDate}${suffix}`);
+  if (await isPathGitIgnored(repoRoot, relPath)) {
+    throw new Error(`budget approval decision document path ${relPath} is gitignored; `
+      + 'the grant must be recorded in a tracked file so it is reviewable in the PR diff');
+  }
+  const content = `---
+decision_id: ${decision.decision_id}
+story_id: ${decision.story_id}
+type: budget_override_approval
+status: ${decision.status}
+approver: ${approval.grantor}
+approver_kind: ${approval.grantor_kind}
+approved_at: ${decision.recorded_at}
+override_digest: ${approval.override_digest}
+recorded_by:
+  agent_system: ${approval.recorded_by.agent_system}
+  agent_id: ${approval.recorded_by.agent_id}
+config_ref: ${approval.config_ref}
+---
+
+# Budget override approval: ${decision.story_id}
+
+Generated by \`vibepro decision record --source ${budgetApprovalSourceForDoc(decision)}\`.
+The enforced grant lives in the workspace decision store; this tracked mirror
+exists so the grantor, digest, and timestamp are reviewable in the PR diff.
+The digest binds this approval to the override content in \`${approval.config_ref}\`
+at recording time; any change to those numbers produces a different digest and
+therefore a new document.
+
+## Reason
+
+${decision.reason ?? '-'}
+
+## Summary
+
+${decision.summary}
+`;
+  await mkdir(path.join(repoRoot, BUDGET_DECISION_DOC_DIR), { recursive: true });
+  await writeFile(path.join(repoRoot, relPath), content);
+  return relPath.split(path.sep).join('/');
+}
+
+function budgetApprovalSourceForDoc(decision) {
+  return decision.source ?? `budget:delivery_efficiency:${decision.story_id}`;
+}
+
 async function readDecisionRecords(repoRoot, storyId) {
   try {
     const recordsPath = await resolvePrArtifactFile(repoRoot, storyId, 'decision-records.json');
@@ -338,5 +473,28 @@ async function gitOptional(repoRoot, args) {
     return stdout.trim();
   } catch {
     return '';
+  }
+}
+
+// `git check-ignore` exits 0 when a path is ignored and 1 when it is not; any
+// other exit is an error whose meaning we cannot infer. Swallowing that error
+// (as gitOptional does) would make "git is broken" indistinguishable from "the
+// path is tracked" and let the grant fall back to the untracked channel --
+// exactly the silent fallback BGT-S-3 exists to prevent. So fail closed.
+async function isPathGitIgnored(repoRoot, relPath) {
+  try {
+    await execFileAsync('git', ['check-ignore', relPath], { cwd: repoRoot, encoding: 'utf8' });
+    return true;
+  } catch (error) {
+    // Exit 1 is check-ignore's "no path matched" answer, not a failure.
+    if (error?.code === 1) return false;
+    // Outside a git repository there are no ignore rules at all, so nothing can
+    // be ignored. This is a definite answer, not an undeterminable one.
+    if (/not a git repository/i.test(String(error?.stderr ?? error?.message ?? ''))) return false;
+    throw new Error(
+      `could not determine whether ${relPath} is gitignored (git check-ignore failed: `
+      + `${error?.shortMessage ?? error?.message ?? 'unknown error'}); refusing to record the budget grant `
+      + 'rather than risk writing it to an untracked path'
+    );
   }
 }

@@ -6,6 +6,8 @@ The running binary is authoritative. Check its package version with `vibepro ver
 
 Run `story diagnose --phase design-input --run-graphify` before finalizing Architecture/Spec. Before implementation or PR readiness, run `story diagnose --phase pre-implementation --run-graphify`. The normal shipping path is `story diagnose` → Architecture / Spec → implementation → `verify record` → `review prepare/start/close/record` → `adjudicate` → `guard check` → `pr prepare` → `pr create` → `verify import-ci` → `execute merge`. A `review record --status pass` now requires `--inspection-summary`, an existing non-`.vibepro` `--inspection-input`, and `--judgment-delta`. Legacy assertion-only pass records intentionally fail closed, so existing automation must migrate. Use the generated Usage below for the complete argument contract.
 
+A budget grant via `decision record --source budget:delivery_efficiency:<story-id>` also writes a tracked decision document under `docs/management/decisions/` (`type: budget_override_approval`) and records its path as `budget_approval.decision_doc`. The workspace decision store is gitignored, so this document is what makes the grantor, digest, and timestamp reviewable in the PR diff; the command fails if that path is gitignored.
+
 ## Current Usage
 
 ```text
@@ -71,7 +73,7 @@ Run `story diagnose --phase design-input --run-graphify` before finalizing Archi
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
-  vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
+  vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--source budget:delivery_efficiency:<story-id> --budget-grantor <human-identity> --budget-grantor-kind <human|agent> --agent-system <system> --agent-id <id>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro outcome record [repo] --id <story-id> (--trace <id>|--collision-group <id> --trace-source-ref <ref>) --parent-revision <fingerprint> --status <observed|not_applicable> --producer <identity> [--source <managed-ref>] [--value-json <json>|--reason <text>] [--json]
   vibepro outcome refresh [repo] --id <story-id> [--base <ref>] [--json]

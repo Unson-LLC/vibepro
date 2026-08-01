@@ -1,0 +1,311 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-budget-grant-tracked-decision-doc",
+  "generated_by": {
+    "caller": "unknown",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "Every decision record that mints a budget_approval must also write a tracked decision document under docs/management/decisions/ with frontmatter type budget_override_approval, and record that document's repo-relative path as budget_approval.decision_doc, so the grantor, override digest, and timestamp of an owner grant are reviewable in the PR diff.",
+      "rationale": "The workspace decision store (.vibepro/pr/) is gitignored; a grant recorded only there never reaches the reviewer, silently superseding the repository's tracked budget_override_approval channel.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "tracked decision document"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/decision-records.js",
+            "anchor": "writeBudgetApprovalDoc"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/decision-records.test.js",
+            "case": "BGT-S-1/S-2 a budget grant writes a tracked decision document cross-referenced from budget_approval"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/decision-records.js",
+            "must_contain": "decision_doc"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/decision-records.test.js",
+            "must_cover": "tracked decision document cross-referenced from budget_approval"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:52:49.040Z",
+      "last_revised_at": "2026-07-30T10:56:55.041Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "When the tracked decision document path is gitignored, recording the budget grant must fail before the workspace decision store is written; a budget grant must never fall back silently to the untracked channel alone.",
+      "rationale": "Fail-closed on the reviewability channel: an environment whose .gitignore swallows docs/management/decisions/ would otherwise reproduce the original finding invisibly.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "gitignore"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/decision-records.js",
+            "anchor": "check-ignore"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/decision-records.test.js",
+            "case": "BGT-S-3 a budget grant fails when the tracked document path is gitignored"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/decision-records.js",
+            "must_contain": "check-ignore"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/decision-records.test.js",
+            "must_cover": "fails when the tracked document path is gitignored"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:52:49.040Z",
+      "last_revised_at": "2026-07-30T10:56:55.041Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Re-recording a grant for the same story and unchanged override content overwrites the same document path deterministically, while a grant over changed override content produces a new file whose name embeds the new digest prefix, so a changed budget appears in the diff as a new file rather than an easily-missed edit.",
+      "rationale": "The filename digest makes budget changes structurally visible in review.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "digest"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/decision-records.js",
+            "anchor": "override_digest.slice(0, 8)"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/decision-records.test.js",
+            "case": "BGT-S-5 same digest overwrites the same document; a changed budget produces a new file"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/decision-records.test.js",
+            "must_cover": "a changed budget produces a new file"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:52:49.040Z",
+      "last_revised_at": "2026-07-30T10:56:55.041Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "A decision record without a budget grant writes no document and its output shape is unchanged; resolveBudgetOverrideAuthority does not inspect decision_doc, so existing grants and grandfathered overrides resolve exactly as before.",
+      "rationale": "The change adds a reviewability channel without touching enforcement semantics.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "従来と同一"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/decision-records.js",
+            "anchor": "if (budgetApproval)"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/decision-records.test.js",
+            "case": "BGT-S-4 a decision without a budget grant writes no tracked document"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/decision-records.test.js",
+            "must_cover": "writes no tracked document"
+          }
+        ]
+      },
+      "first_seen_at": "2026-07-30T10:52:49.040Z",
+      "last_revised_at": "2026-07-30T10:56:55.041Z",
+      "inherited_behavior": {
+        "condition": "!supplied && !runAuthority",
+        "classification": "unchanged",
+        "files": [
+          "src/agent-review.js"
+        ]
+      }
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "The budget-grant recording workflow is a three-state flow whose transitions are all observable: from the no_grant state a decision record naming a budget source transitions to granted by writing the tracked document and setting budget_approval.decision_doc; the same workflow transitions to refused, leaving the story in the no_grant state with no workspace record, when the document path is gitignored or its ignore status cannot be determined; and re-recording an unchanged override is an idempotent granted-to-granted transition that reuses the existing document path rather than minting a second one.",
+      "rationale": "Making the transitions explicit is what lets a reviewer tell a refused grant apart from a silently downgraded one, which is the reviewability failure this Story exists to close.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "gitignore"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/decision-records.js",
+            "anchor": "writeBudgetApprovalDoc"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/e2e/story-vibepro-budget-grant-tracked-decision-doc-acceptance.spec.js",
+            "case": "BGT-S-3 a gitignored document path fails the grant without a workspace record"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/e2e/story-vibepro-budget-grant-tracked-decision-doc-acceptance.spec.js",
+            "must_cover": "fails the grant without a workspace record"
+          }
+        ]
+      }
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "Budget override resolution is a status state machine consumed by the delivery-efficiency workflow: an override resolves to authorized when an accepted grant matches its computed digest, to grandfathered when its digest is pinned, and otherwise to an unauthorized state in which the override is inert and the effective policy transitions back to the tighter base budget rather than staying effective, so the failure direction of the state machine is always toward the smaller budget.",
+      "rationale": "An unauthorized override that stayed effective would defeat the authority gate; falling back to base keeps the workflow fail-closed.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "budget_override_approval"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/delivery-efficiency-guardrail.js",
+            "anchor": "resolveEfficiencyPolicyDecision"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/delivery-efficiency-guardrail.test.js",
+            "case": "story budget override without an accepted approval stays inert"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/delivery-efficiency-guardrail.test.js",
+            "must_cover": "stays inert"
+          }
+        ]
+      },
+      "inherited_behavior": {
+        "condition": "authority.status !== 'authorized' && authority.status !== 'grandfathered'",
+        "classification": "inherited",
+        "files": [
+          "src/delivery-efficiency-guardrail.js"
+        ]
+      }
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "This Story does not change how an Agent Review dispatch authorization is resolved. The branch that treats a started review entry without a dispatch_authorization_id as unauthorized predates this change and is carried through unmodified; the diff touches src/agent-review.js only to surface budget override authority status in the dispatch stop message.",
+      "rationale": "Declaring the untouched authorization branch explicitly keeps the reviewability contract honest: the file is in the diff, but this particular decision point is inherited, not introduced.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "boundary",
+            "index": 0,
+            "text_snippet": "範囲外"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/agent-review.js",
+            "anchor": "dispatch_authorization_id"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/delivery-efficiency-guardrail.test.js",
+            "case": "story budget override without an accepted approval stays inert"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/delivery-efficiency-guardrail.test.js",
+            "must_cover": "stays inert"
+          }
+        ]
+      },
+      "inherited_behavior": {
+        "condition": "!startedEntry?.dispatch_authorization_id",
+        "classification": "unchanged",
+        "files": [
+          "src/agent-review.js"
+        ]
+      }
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart TD\n    A[agent records budget grant via decision record --source budget:delivery_efficiency] --> B[buildBudgetApprovalForSource: digest computed from config]\n    B --> C[writeBudgetApprovalDoc: tracked doc under docs/management/decisions/]\n    C -->|path gitignored| F[fail closed: no workspace record written]\n    C -->|tracked| D[workspace decision store .vibepro/pr gitignored]\n    C --> E[PR diff shows grantor, digest, timestamp to human reviewer]\n    D -.->|threat closed: grant no longer invisible to review| E\n    E -->|threat residual: agent can still write a forged human name; detection is human, materials now in-diff| A",
+      "entities": [
+        "decision record CLI",
+        "tracked decision document",
+        "workspace decision store",
+        "PR reviewer"
+      ],
+      "rationale": "The enforcement path (digest-bound workspace record) is unchanged; the threat addressed is the reviewability gap where the grant's grantor/digest/timestamp never reached the PR diff. Fail-closed on a gitignored document path prevents silent regression to the untracked-only channel."
+    }
+  ],
+  "generated_at": "2026-07-30T10:56:55.031Z",
+  "previous_spec_id": "2026-07-30T10:52:49.038Z"
+}
