@@ -52,6 +52,7 @@ const STOP_REASON_BY_CAUSE = new Map([
   ['gate_waiver_incomplete', 'gate_waiver_incomplete'],
   ['gate_waiver_stale', 'gate_waiver_stale'],
   ['gate_evidence_missing', 'gate_evidence_missing'],
+  ['artifact_unreadable', 'artifact_unreadable'],
   ['gate_authorization_denied', 'gate_authorization_denied']
 ]);
 
@@ -71,7 +72,8 @@ export function resolveMergeGateAuthorizationContext({
   prPrepare = null,
   prCreate = null,
   gateDagArtifact = null,
-  currentHeadSha = null
+  currentHeadSha = null,
+  unreadableArtifacts = null
 } = {}) {
   const currentPrPrepare = isCurrentPrLifecycleArtifact(prPrepare, currentHeadSha) ? prPrepare : null;
   const currentPrCreate = isCurrentPrLifecycleArtifact(prCreate, currentHeadSha) ? prCreate : null;
@@ -99,7 +101,8 @@ export function resolveMergeGateAuthorizationContext({
     currentPrCreate,
     gateDagArtifact,
     currentGateDagArtifact,
-    currentHeadSha
+    currentHeadSha,
+    unreadableArtifacts
   });
   return {
     currentPrPrepare,
@@ -123,16 +126,18 @@ export function diagnoseMergeGateAuthorization({
   currentPrCreate = null,
   gateDagArtifact = null,
   currentGateDagArtifact = null,
-  currentHeadSha = null
+  currentHeadSha = null,
+  unreadableArtifacts = null
 } = {}) {
   const authorizationReason = typeof gateAuthorization?.reason === 'string'
     ? gateAuthorization.reason
     : 'unknown';
   const artifactBindings = [
-    buildArtifactBinding('pr_prepare', prPrepare, currentPrPrepare, currentHeadSha),
-    buildArtifactBinding('pr_create', prCreate, currentPrCreate, currentHeadSha),
-    buildArtifactBinding('gate_dag', gateDagArtifact, currentGateDagArtifact, currentHeadSha)
+    buildArtifactBinding('pr_prepare', prPrepare, currentPrPrepare, currentHeadSha, unreadableArtifacts),
+    buildArtifactBinding('pr_create', prCreate, currentPrCreate, currentHeadSha, unreadableArtifacts),
+    buildArtifactBinding('gate_dag', gateDagArtifact, currentGateDagArtifact, currentHeadSha, unreadableArtifacts)
   ];
+  const unreadableBindings = artifactBindings.filter((binding) => binding.status === 'unreadable');
 
   if (gateAuthorization?.allowed === true) {
     return {
@@ -155,7 +160,9 @@ export function diagnoseMergeGateAuthorization({
   }
 
   const gateOverride = resolveGateOverride(currentPrCreate) ?? resolveGateOverride(prCreate);
-  const cause = resolveDenialCause({
+  // An unreadable lifecycle artifact outranks every other classification: no
+  // downstream cause can be trusted while one of the inputs could not be parsed.
+  const cause = unreadableBindings.length > 0 ? 'artifact_unreadable' : resolveDenialCause({
     authorizationReason,
     gateDag,
     gateDagArtifact,
@@ -177,7 +184,14 @@ export function diagnoseMergeGateAuthorization({
     gate_dag_overall_status: gateDag?.overall_status ?? null,
     artifact_bindings: artifactBindings,
     blocking_gates: blockingGates,
-    explanation: buildExplanation({ cause, blockingGates, artifactBindings, currentHeadSha, gateDag }),
+    explanation: buildExplanation({
+      cause,
+      blockingGates,
+      artifactBindings,
+      unreadableBindings,
+      currentHeadSha,
+      gateDag
+    }),
     next_actions: buildNextActions({ cause, storyId })
   };
 }
@@ -215,6 +229,7 @@ function resolveDenialCause({
     return resolveOverrideNotAllowedCause({
       gateDag,
       gateDagArtifact,
+      currentGateStatus,
       prPrepare,
       currentPrPrepare,
       prCreate,
@@ -250,6 +265,7 @@ function resolveGateStatusUnknownCause({
 function resolveOverrideNotAllowedCause({
   gateDag,
   gateDagArtifact,
+  currentGateStatus,
   prPrepare,
   currentPrPrepare,
   prCreate,
@@ -264,6 +280,12 @@ function resolveOverrideNotAllowedCause({
     // next attempt; `pr prepare` is the repair that has to run first.
     if (!prPrepare) return 'pr_prepare_artifact_missing';
     if (!currentPrPrepare) return 'pr_prepare_artifact_stale';
+    // A lapsed pr-create only withholds merge authority if it ever carried a
+    // waiver. With no waiver and a resolvable gate status that shows unresolved
+    // gates, the gate evidence is what blocks: re-creating the PR cannot
+    // authorize something nothing ever waived, so naming the artifact here
+    // would send the operator at a repair that cannot succeed.
+    if (!gateOverride && hasUnresolvedGates(currentGateStatus)) return 'gates_unresolved';
     return prCreate ? 'pr_create_artifact_stale' : 'pr_create_artifact_missing';
   }
   // A current pr-create with no waiver at all is not a waiver defect: the gate
@@ -272,11 +294,28 @@ function resolveOverrideNotAllowedCause({
   return 'gate_waiver_incomplete';
 }
 
+function hasUnresolvedGates(currentGateStatus) {
+  if (!currentGateStatus) return false;
+  return [currentGateStatus.critical_unresolved_gates, currentGateStatus.unresolved_gates]
+    .some((gates) => Array.isArray(gates) && gates.length > 0);
+}
+
 function resolveGateOverride(prCreate) {
   return prCreate?.gate_override ?? prCreate?.execution?.gate_override ?? null;
 }
 
-function buildArtifactBinding(kind, artifact, currentArtifact, currentHeadSha) {
+function buildArtifactBinding(kind, artifact, currentArtifact, currentHeadSha, unreadableArtifacts) {
+  // A malformed artifact is neither present nor absent: reporting it as
+  // "missing" would send the operator at the wrong repair, so it gets its own
+  // status and never contributes authority.
+  if (unreadableArtifacts?.[kind]) {
+    return {
+      artifact: kind,
+      status: 'unreadable',
+      artifact_head_sha: null,
+      current_head_sha: currentHeadSha ?? null
+    };
+  }
   if (!artifact) {
     return {
       artifact: kind,
@@ -348,7 +387,14 @@ function dedupeBlockingGates(gates) {
   return deduped;
 }
 
-function buildExplanation({ cause, blockingGates, artifactBindings, currentHeadSha, gateDag }) {
+function buildExplanation({
+  cause,
+  blockingGates,
+  artifactBindings,
+  unreadableBindings = [],
+  currentHeadSha,
+  gateDag
+}) {
   const head = typeof currentHeadSha === 'string' ? currentHeadSha.slice(0, 12) : 'unknown';
   const binding = (kind) => artifactBindings.find((entry) => entry.artifact === kind) ?? null;
   const gateList = blockingGates.length > 0
@@ -379,6 +425,8 @@ function buildExplanation({ cause, blockingGates, artifactBindings, currentHeadS
       return `Gates were not evaluated as blocked. The waiver in pr-create.json targets a different gate set (${gateList}) than the current gate status, so it cannot authorize the merge.`;
     case 'gate_evidence_missing':
       return `No gate evidence exists for this story: pr-prepare.json, pr-create.json and gate-dag.json are all absent.`;
+    case 'artifact_unreadable':
+      return `Gates could not be evaluated at all: ${unreadableBindings.map((binding) => binding.artifact).join(', ')} could not be parsed as JSON, so merge authority failed closed on unreadable input rather than on a gate verdict.`;
     default:
       return `Merge gate authorization was denied at HEAD ${head}; see authorization_reason for the raw authority verdict.`;
   }
@@ -407,6 +455,8 @@ function buildNextActions({ cause, storyId }) {
       return [`${prepare} --view blocking-gates`, create, explain];
     case 'gate_evidence_missing':
       return [prepare, create, explain];
+    case 'artifact_unreadable':
+      return [explain, prepare, create];
     default:
       return [prepare, explain];
   }

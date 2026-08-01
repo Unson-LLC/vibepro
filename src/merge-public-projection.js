@@ -13,6 +13,7 @@ const PUBLIC_RECONCILIATION_REASONS = new Set([
   'gate_waiver_incomplete',
   'gate_waiver_stale',
   'gate_evidence_missing',
+  'artifact_unreadable',
   'gate_authorization_denied',
   'pr_prepare_artifact_missing',
   'pr_prepare_artifact_stale',

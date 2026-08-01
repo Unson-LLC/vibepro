@@ -69,18 +69,28 @@ export async function explainMergeGateAuthorization(repoRoot, options = {}) {
   const prPreparePath = await resolvePrArtifactFile(root, storyId);
   const gateDagPath = await resolveGateArtifactFile(root, storyId);
   const prCreatePath = await resolvePrArtifactFile(root, storyId, 'pr-create.json');
+  // `executeMerge` deliberately throws on a malformed lifecycle artifact: a
+  // merge must never proceed on input it could not parse. A read-only
+  // diagnosis has the opposite obligation — a raw parse error is exactly the
+  // misdirection this command exists to remove — so it reads tolerantly and
+  // reports the unreadable artifact by name.
   const [prPrepare, prCreate, gateDagArtifact] = await Promise.all([
-    readJsonIfExists(prPreparePath),
-    readJsonIfExists(prCreatePath),
-    readJsonIfExists(gateDagPath)
+    readJsonForDiagnosis(prPreparePath),
+    readJsonForDiagnosis(prCreatePath),
+    readJsonForDiagnosis(gateDagPath)
   ]);
   const currentHeadSha = await gitOptional(root, ['rev-parse', 'HEAD']);
   const { gateAuthorization, diagnosis } = resolveMergeGateAuthorizationContext({
     storyId,
-    prPrepare,
-    prCreate,
-    gateDagArtifact,
-    currentHeadSha
+    prPrepare: prPrepare.value,
+    prCreate: prCreate.value,
+    gateDagArtifact: gateDagArtifact.value,
+    currentHeadSha,
+    unreadableArtifacts: {
+      pr_prepare: prPrepare.unreadable,
+      pr_create: prCreate.unreadable,
+      gate_dag: gateDagArtifact.unreadable
+    }
   });
   return {
     schema_version: '0.1.0',
@@ -1884,6 +1894,19 @@ async function readJsonIfExists(filePath) {
     return JSON.parse(await readFile(filePath, 'utf8'));
   } catch (error) {
     if (error.code === 'ENOENT') return null;
+    throw error;
+  }
+}
+
+// Read-only diagnosis variant: a malformed artifact becomes an observable
+// `unreadable` fact instead of an exception, so the operator learns which file
+// failed to parse rather than seeing a bare JSON position error.
+async function readJsonForDiagnosis(filePath) {
+  try {
+    return { value: JSON.parse(await readFile(filePath, 'utf8')), unreadable: false };
+  } catch (error) {
+    if (error.code === 'ENOENT') return { value: null, unreadable: false };
+    if (error instanceof SyntaxError) return { value: null, unreadable: true };
     throw error;
   }
 }

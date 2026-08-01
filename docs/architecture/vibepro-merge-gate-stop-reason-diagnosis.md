@@ -58,7 +58,11 @@ so warning text cannot be the diagnostic channel.
   `gate_authorization_denied` with stop reason `gate_authorization_denied`
   rather than silently reverting to `gate_not_ready`; the raw authorization
   reason is always carried in the diagnosis.
-- A malformed or unreadable artifact is reported as binding status `unreadable`
-  and never upgrades authority.
+- A malformed artifact is reported as binding status `unreadable` with cause and
+  stop reason `artifact_unreadable`, which outranks every other classification:
+  no downstream cause is trustworthy while an input could not be parsed. This
+  applies to `--explain` only. `executeMerge` still throws on a malformed
+  lifecycle artifact, because a merge must never proceed on input it could not
+  parse, and that fail-closed behaviour is separately tested.
 - `--explain` reports the diagnosis for the current on-disk state only. It never
   mutates state, so it is safe to run while a merge is blocked.

@@ -150,14 +150,22 @@ test('MGD-E2E-1 the merge workflow reports a distinct cause for each state it ca
     'ac-1: absent evidence reports gate_evidence_missing, never gate_not_ready'
   );
 
-  // State 2: pr prepare exists, PR not created yet.
+  // State 2: pr prepare exists, PR not created yet. The gate DAG is not ready
+  // and nothing is waived, so the gates -- not the absent artifact -- are the
+  // repair; the absent artifact is still visible in artifact_bindings.
   const firstHead = (await git(repo, ['rev-parse', 'HEAD'])).stdout.trim();
   await writePrPrepare(prDir, firstHead);
   const prepared = await explain(repo, env);
   assert.equal(
     prepared.explained.gate_authorization_diagnosis.stop_reason,
-    'pr_create_artifact_missing',
-    'ac-2: a missing pr-create.json names itself, not the gates'
+    'gate_not_ready',
+    'ac-1 ac-2: with no waiver and unresolved gates, the gates are named, not the absent pr-create'
+  );
+  assert.equal(
+    prepared.explained.gate_authorization_diagnosis.artifact_bindings
+      .find((binding) => binding.artifact === 'pr_create').status,
+    'missing',
+    'ac-5: the absent pr-create is still reported in artifact_bindings'
   );
 
   // State 3: PR created with an auditable noncritical waiver at this HEAD.
@@ -185,7 +193,8 @@ test('MGD-E2E-1 the merge workflow reports a distinct cause for each state it ca
   assert.equal(advanced.explained.current_head_sha, secondHead);
 
   // State 5: pr prepare is re-run for the new HEAD but the PR body was not
-  // re-created, so only the waiver is stale. This is the PR #406 state.
+  // re-created, so only the waiver is stale. This is the PR #406 state: the
+  // artifact really did carry the merge authority, so the artifact is named.
   await writePrPrepare(prDir, secondHead);
   const stalePrCreate = await explain(repo, env);
   assert.equal(
@@ -291,6 +300,21 @@ test('MGD-E2E-1 the merge workflow reports a distinct cause for each state it ca
     'ac-5: a gate_not_ready verdict names the gate that blocks it'
   );
 
+  // State 8: a lifecycle artifact that cannot be parsed at all.
+  await writeFile(path.join(prDir, 'pr-create.json'), '{ this is not json\n');
+  const unreadable = await explain(repo, env);
+  assert.equal(
+    unreadable.explained.gate_authorization_diagnosis.stop_reason,
+    'artifact_unreadable',
+    'ac-1 ac-6: a malformed artifact is diagnosed by name, not surfaced as a raw parse error'
+  );
+  assert.equal(
+    unreadable.explained.gate_authorization_diagnosis.artifact_bindings
+      .find((binding) => binding.artifact === 'pr_create').status,
+    'unreadable',
+    'ac-5: the unparseable artifact is reported as unreadable, not as missing'
+  );
+
   // No state in this replay reached the provider.
   const ghCalls = await readFile(ghCallLog, 'utf8').catch(() => '');
   assert.equal(ghCalls.includes('pr merge'), false);
@@ -350,8 +374,14 @@ test('MGD-E2E-2 --explain is read-only, and the stop reason taxonomy is pinned b
     'test/integration/story-vibepro-merge-gate-stop-reason-diagnosis.test.js',
     'test/e2e/story-vibepro-merge-gate-stop-reason-diagnosis-main.spec.js'
   ].map((relative) => readFile(path.join(root, relative), 'utf8')));
-  const pinned = suiteSources.join('\n');
+  // Require the reason inside an assert call, not merely somewhere in the file:
+  // a comment or a fixture literal is not a regression pin.
+  const assertions = suiteSources
+    .join('\n')
+    .split(/\bassert\b/)
+    .slice(1)
+    .join('\n');
   const unpinned = [...MERGE_GATE_DIAGNOSIS_STOP_REASONS]
-    .filter((reason) => !pinned.includes(`'${reason}'`));
+    .filter((reason) => !assertions.includes(`'${reason}'`));
   assert.deepEqual(unpinned, [], 'ac-8: every merge gate stop reason is pinned by a regression assertion');
 });

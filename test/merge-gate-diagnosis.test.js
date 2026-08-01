@@ -126,14 +126,25 @@ test('MGD-AC-2 a pr-create artifact that is missing or unbound to HEAD names its
   assert.match(stale.diagnosis.explanation, /Gates were not evaluated as blocked/);
   assert.ok(stale.diagnosis.next_actions.some((action) => action.includes('vibepro pr create')));
 
+  // The artifact-missing cause is the narrow fallback: it applies when the gate
+  // status enumerates nothing to fix, so the absent artifact really is the only
+  // thing standing between this state and an authority verdict. When the gate
+  // status does enumerate unresolved gates, MGD-AC-9 pins that those win.
   const missing = resolveMergeGateAuthorizationContext({
     storyId: STORY_ID,
-    prPrepare: prPrepareFixture({ gateStatus: READY_GATE_STATUS, gateDag }),
+    prPrepare: prPrepareFixture({
+      gateStatus: { ...READY_GATE_STATUS, unresolved_gates: [], critical_unresolved_gates: [] },
+      gateDag: { overall_status: 'needs_verification', nodes: [] }
+    }),
     prCreate: null,
     currentHeadSha: HEAD
   });
   assert.equal(missing.diagnosis.cause, 'pr_create_artifact_missing');
   assert.equal(missing.diagnosis.stop_reason, 'pr_create_artifact_missing');
+  assert.equal(
+    missing.diagnosis.artifact_bindings.find((binding) => binding.artifact === 'pr_create').status,
+    'missing'
+  );
 });
 
 test('MGD-AC-3 unresolvable gate status distinguishes stale pr-prepare from a routed surface mismatch', () => {
@@ -199,6 +210,61 @@ test('MGD-AC-4 waiver defects are reported as waiver defects', () => {
   });
   assert.equal(stale.gateAuthorization.reason, 'gate_override_targets_mismatch');
   assert.equal(stale.diagnosis.stop_reason, 'gate_waiver_stale');
+});
+
+test('MGD-AC-9 a lapsed pr-create with no waiver over unresolved gates reports the gates, not the artifact', () => {
+  // Realistic path: the PR was created while gates were ready, a follow-up
+  // commit broke a gate, and pr prepare was re-run. Naming the stale artifact
+  // here would point at `pr create`, which cannot authorize anything that was
+  // never waived -- the gate evidence is what blocks.
+  const gateDag = notReadyGateDag();
+  const context = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({ gateStatus: READY_GATE_STATUS, gateDag }),
+    prCreate: prCreateFixture({ headSha: OLD_HEAD }),
+    currentHeadSha: HEAD
+  });
+  assert.equal(context.gateAuthorization.reason, 'gate_override_not_allowed');
+  assert.equal(context.diagnosis.cause, 'gates_unresolved');
+  assert.equal(context.diagnosis.stop_reason, 'gate_not_ready');
+  assert.deepEqual(
+    context.diagnosis.blocking_gates.map((gate) => gate.id),
+    ['gate:validation_sequencing']
+  );
+  assert.doesNotMatch(context.diagnosis.explanation, /Gates were not evaluated as blocked/);
+
+  // The same lapsed artifact WITH a waiver still reports the artifact, because
+  // there the merge authority really was discarded by the binding.
+  const withWaiver = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({ gateStatus: READY_GATE_STATUS, gateDag }),
+    prCreate: prCreateFixture({ headSha: OLD_HEAD, gateOverride: NONCRITICAL_WAIVER }),
+    currentHeadSha: HEAD
+  });
+  assert.equal(withWaiver.diagnosis.stop_reason, 'pr_create_artifact_stale');
+});
+
+test('MGD-AC-10 an unreadable artifact is reported as unreadable and outranks every other cause', () => {
+  const gateDag = notReadyGateDag();
+  const diagnosis = diagnoseMergeGateAuthorization({
+    storyId: STORY_ID,
+    gateAuthorization: { allowed: false, source: 'none', reason: 'gate_override_not_allowed', gate_override: null },
+    gateDag,
+    currentGateStatus: READY_GATE_STATUS,
+    prPrepare: prPrepareFixture({ gateStatus: READY_GATE_STATUS, gateDag }),
+    currentPrPrepare: prPrepareFixture({ gateStatus: READY_GATE_STATUS, gateDag }),
+    prCreate: null,
+    currentPrCreate: null,
+    currentHeadSha: HEAD,
+    unreadableArtifacts: { pr_create: true }
+  });
+  assert.equal(diagnosis.cause, 'artifact_unreadable');
+  assert.equal(diagnosis.stop_reason, 'artifact_unreadable');
+  assert.equal(
+    diagnosis.artifact_bindings.find((binding) => binding.artifact === 'pr_create').status,
+    'unreadable'
+  );
+  assert.match(diagnosis.explanation, /pr_create could not be parsed as JSON/);
 });
 
 test('MGD-AC-5 an authorized merge records an authorized diagnosis with no stop reason', () => {
