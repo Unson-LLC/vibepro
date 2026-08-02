@@ -382,6 +382,19 @@ test('verify run records a timeout kill as a failing run and names the timeout a
   assert.equal(artifact.run.timeout_ms, 700);
 });
 
+test('verify run defaults to a timeout with headroom over the measured loaded-host full-suite run', async () => {
+  const root = await setupRepo();
+  await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  const artifact = await readJson(runArtifactPath(root, 'unit'));
+  // The full suite has been measured at 28 minutes under load average ~100; a default
+  // at or below that turns slow-host runs into timeout fails that are not test failures.
+  assert.equal(artifact.run.timeout_ms, 3600000);
+});
+
 test('verify run keeps its computed summary sentence when the agent supplies one', async () => {
   const root = await setupRepo();
   await cli([
