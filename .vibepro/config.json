@@ -1280,8 +1280,20 @@
         "title": "Cross-system adjudication requires a different model family than the implementer",
         "ssot": "local",
         "status": "active"
+      },
+      {
+        "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+        "title": "テストスイートが$TMPDIRに残すmkdtemp fixtureのクリーンアップ機構",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-02",
+        "due_at": null,
+        "category": "bugfix"
       }
     ],
-    "current_story_id": "story-vibepro-cross-system-adjudication"
+    "current_story_id": "story-vibepro-test-tmpdir-fixture-cleanup"
   }
 }
