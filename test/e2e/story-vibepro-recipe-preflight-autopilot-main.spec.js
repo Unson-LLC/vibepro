@@ -1,3 +1,4 @@
+import '../support/scratch-tmpdir.js';
 // Story acceptance replay for story-vibepro-recipe-preflight-autopilot.
 // Covers AC:1-AC:6 (RPA-S-1..RPA-S-6) and spec scenario clauses S-001/S-002
 // against the real recipe registry and the real `pr autopilot` entry function.

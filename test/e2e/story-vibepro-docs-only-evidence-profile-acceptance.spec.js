@@ -1,3 +1,4 @@
+import '../support/scratch-tmpdir.js';
 // Acceptance replay for story-vibepro-docs-only-evidence-profile.
 //
 // Replays the executable scenario for each acceptance criterion (DOE-S-1..4)

@@ -1,3 +1,4 @@
+import './support/scratch-tmpdir.js';
 // Integration coverage for RML-CONTRACT-001 ("promotion rides the existing
 // persistence commit") and RML-CONTRACT-002/003 (dedupe + deterministic
 // serialization) at the real-git level. The unit tests in

@@ -1,3 +1,4 @@
+import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, stat, utimes, writeFile } from 'node:fs/promises';
 import os from 'node:os';
