@@ -488,18 +488,13 @@ test('MGD-AC-14 scaffolding nodes in a real Gate DAG are never reported as gate 
   );
 });
 
-test('MGD-AC-16 a waiver-borrowed gate cannot satisfy the reservation', () => {
-  // collectBlockingGates ranks the waiver document above the gate DAG, so a
-  // gate named only by pr-create.json could satisfy the structural guard while
-  // current evidence named nothing -- reproduced through the real CLI in
-  // adjudication. Only current_gate_status and gate_dag are current evidence.
-  const context = resolveMergeGateAuthorizationContext({
+test('MGD-AC-16 the waiver document never shadows or substitutes for current evidence', () => {
+  // Two related properties. First: current evidence is ranked above the waiver,
+  // so a gate the DAG can name is reported instead of a waiver-document gate.
+  const shadowed = resolveMergeGateAuthorizationContext({
     storyId: STORY_ID,
     prPrepare: prPrepareFixture({
       gateStatus: { overall_status: 'ready_for_review', ready_for_pr_create: false, unresolved_gates: [], critical_unresolved_gates: [] },
-      // The node carries a real id, so hasUnresolvedGateDagNodes is true and the
-      // cause reaches the guard. With a nameless node the id filter would return
-      // gate_status_unresolvable first and this test would prove nothing.
       gateDag: { overall_status: 'ready_for_review', nodes: [{ id: 'gate:named_in_dag', type: 'verification_gate', required: true, status: 'needs_evidence' }] }
     }),
     prCreate: prCreateFixture({
@@ -507,37 +502,92 @@ test('MGD-AC-16 a waiver-borrowed gate cannot satisfy the reservation', () => {
     }),
     currentHeadSha: HEAD
   });
-  assert.equal(context.gateAuthorization.reason, 'current_gate_status_not_ready');
-  assert.equal(context.diagnosis.cause, 'gate_status_unresolvable');
-  assert.equal(context.diagnosis.stop_reason, 'gate_status_unresolved');
-  assert.deepEqual(context.diagnosis.blocking_gates, []);
+  assert.equal(shadowed.diagnosis.stop_reason, 'gate_not_ready');
+  assert.deepEqual(
+    shadowed.diagnosis.blocking_gates.map((gate) => `${gate.id}@${gate.source}`),
+    ['gate:named_in_dag@gate_dag'],
+    'the waiver document must not shadow a gate current evidence can name'
+  );
+
+  // Second: when only the waiver names anything, no gate-evidence verdict is
+  // reported. buildBlockedDiagnosis keeps a namesGates guard as defence in
+  // depth for this, but the source ordering above already makes it unreachable
+  // through the resolver, which is why this asserts the outcome rather than
+  // which mechanism produced it.
+  const waiverOnly = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({
+      gateStatus: { overall_status: 'ready_for_review', ready_for_pr_create: false, unresolved_gates: [], critical_unresolved_gates: [] },
+      gateDag: { overall_status: 'ready_for_review', nodes: [] }
+    }),
+    prCreate: prCreateFixture({
+      gateOverride: { ...NONCRITICAL_WAIVER, unresolved_gates: [{ id: 'gate:from_waiver_only' }] }
+    }),
+    currentHeadSha: HEAD
+  });
+  assert.notEqual(waiverOnly.diagnosis.stop_reason, 'gate_not_ready');
+  assert.equal(waiverOnly.diagnosis.stop_reason, 'gate_status_unresolved');
+  assert.deepEqual(waiverOnly.diagnosis.blocking_gates, []);
 });
 
-test('MGD-AC-18 a DAG whose unresolved nodes are all unnameable keeps the specific cause', () => {
-  // hasUnresolvedGateDagNodes applies the same id filter collectBlockingGates
-  // uses. Without it this state reports the generic gate_status_unresolvable
-  // instead of naming what is actually wrong with the artifact.
+test('MGD-AC-19 the story node is a gate, not scaffolding', () => {
+  // INV-003 says so in its own words, and it is behaviour-carrying: filtering
+  // story out of the DAG collector turns this verdict into a nameless
+  // gate_status_unresolved. MGD-AC-14 pins only the negative half.
   const context = resolveMergeGateAuthorizationContext({
     storyId: STORY_ID,
-    prPrepare: {
-      story: { story_id: STORY_ID },
-      // head-bound, but carries no gate_status at all
-      pr_context: {
-        gate_dag: {
-          overall_status: 'needs_verification',
-          nodes: [{ type: 'verification_gate', required: true, status: 'needs_evidence' }]
-        }
-      },
-      git: { base_ref: 'main', head_sha: HEAD },
-      artifact_freshness: freshness('pr_prepare', HEAD)
-    },
+    prPrepare: prPrepareFixture({
+      gateStatus: { ...READY_GATE_STATUS, unresolved_gates: [], critical_unresolved_gates: [] },
+      gateDag: { overall_status: 'needs_verification', nodes: [{ id: 'story', type: 'story', required: true, status: 'transient' }] }
+    }),
     prCreate: prCreateFixture(),
     currentHeadSha: HEAD
   });
-  assert.equal(context.diagnosis.cause, 'gate_status_missing');
-  assert.equal(context.diagnosis.stop_reason, 'gate_status_unresolved');
-  assert.match(context.diagnosis.explanation, /carries no gate_status/);
-  assert.deepEqual(context.diagnosis.blocking_gates, []);
+  assert.equal(context.diagnosis.cause, 'gates_unresolved');
+  assert.equal(context.diagnosis.stop_reason, 'gate_not_ready');
+  assert.deepEqual(context.diagnosis.blocking_gates.map((gate) => gate.id), ['story']);
+});
+
+test('MGD-AC-20 a not-ready gate status still names a gate the DAG can name', () => {
+  // resolveDenialCause's current_gate_status_not_ready branch falls back to the
+  // DAG. Without that disjunct a correctly-named gate is silently dropped and
+  // the verdict degrades to a nameless gate_status_unresolved.
+  const context = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({
+      gateStatus: { overall_status: 'ready_for_review', ready_for_pr_create: false, unresolved_gates: [], critical_unresolved_gates: [] },
+      gateDag: { overall_status: 'ready_for_review', nodes: [{ id: 'gate:unit', type: 'verification_gate', required: true, status: 'needs_evidence' }] }
+    }),
+    prCreate: prCreateFixture({ gateOverride: NONCRITICAL_WAIVER }),
+    currentHeadSha: HEAD
+  });
+  assert.equal(context.gateAuthorization.reason, 'current_gate_status_not_ready');
+  assert.equal(context.diagnosis.cause, 'gates_unresolved');
+  assert.equal(context.diagnosis.stop_reason, 'gate_not_ready');
+  assert.deepEqual(context.diagnosis.blocking_gates.map((gate) => gate.id), ['gate:unit']);
+});
+
+test('MGD-AC-21 a current critical gate outranks the authority reason', () => {
+  // The hasCriticalUnresolvedGates disjunct keeps the operator-facing
+  // "A waiver cannot authorize these." sentence on states whose authority
+  // reason is not itself the critical one.
+  const context = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: prPrepareFixture({
+      gateStatus: {
+        overall_status: 'needs_verification',
+        ready_for_pr_create: false,
+        unresolved_gates: [{ id: 'gate:e2e' }],
+        critical_unresolved_gates: [{ id: 'gate:e2e' }]
+      },
+      gateDag: notReadyGateDag(['gate:e2e'])
+    }),
+    prCreate: prCreateFixture({ headSha: OLD_HEAD, gateOverride: NONCRITICAL_WAIVER }),
+    currentHeadSha: HEAD
+  });
+  assert.equal(context.gateAuthorization.reason, 'gate_override_not_allowed');
+  assert.equal(context.diagnosis.cause, 'critical_gates_unresolved');
+  assert.match(context.diagnosis.explanation, /A waiver cannot authorize these/);
 });
 
 test('MGD-AC-17 a binding with no head sha is unknown, not stale', () => {
@@ -671,13 +721,21 @@ test('MGD-AC-7 the public projection and human summary keep the diagnosis readab
   assert.equal(projected.stop_reason, 'pr_create_artifact_stale');
   assert.deepEqual(projected.reconciliation.reasons, ['pr_create_artifact_stale']);
   assert.equal(projected.gate_authorization_diagnosis.cause, 'pr_create_artifact_stale');
+  // The explanation is the field that tells the operator what to do; dropping
+  // it from the allow-list left every test green.
+  assert.equal(
+    projected.gate_authorization_diagnosis.explanation,
+    'Gates were not evaluated as blocked. pr-create.json is bound to an older commit.'
+  );
   assert.equal(
     Object.hasOwn(projected.gate_authorization_diagnosis, 'internal_command'),
     false
   );
 
   const summary = renderPrMergeSummary(merge);
+  assert.match(summary, /gate_diagnosis_status: blocked/);
   assert.match(summary, /gate_diagnosis_cause: pr_create_artifact_stale/);
+  assert.match(summary, /gate_diagnosis_explanation: .*pr-create\.json is bound to an older commit/);
   assert.match(summary, /gate_diagnosis_stop_reason: pr_create_artifact_stale/);
   assert.match(summary, /gate_diagnosis_artifact_bindings: .*pr_create=stale/);
   // AC-5 claims head shas are readable from the summary; assert it.
@@ -822,6 +880,7 @@ test('MGD-AC-15 the reservation invariant holds across a swept artifact space, n
   const heads = [HEAD, OLD_HEAD];
 
   const seenCauses = new Set();
+  const seenStopReasons = new Set();
   let swept = 0;
   for (const gateStatus of gateStatuses) {
     for (const preparedDag of preparedDags) {
@@ -842,6 +901,7 @@ test('MGD-AC-15 the reservation invariant holds across a swept artifact space, n
                   });
                   swept += 1;
                   seenCauses.add(diagnosis.cause);
+                  if (diagnosis.stop_reason) seenStopReasons.add(diagnosis.stop_reason);
                   if (diagnosis.status !== 'blocked') continue;
 
                   const named = diagnosis.blocking_gates;
@@ -904,5 +964,10 @@ test('MGD-AC-15 the reservation invariant holds across a swept artifact space, n
   ];
   const unreached = requiredCauses.filter((cause) => !seenCauses.has(cause));
   assert.deepEqual(unreached, [], `sweep never reached: ${unreached.join(', ')}`);
+  // Every stop reason the sweep produced must be a declared taxonomy member.
+  assert.deepEqual(
+    [...seenStopReasons].filter((reason) => !MERGE_GATE_DIAGNOSIS_STOP_REASONS.has(reason)),
+    []
+  );
   assert.ok(swept > 5000, `sweep covered ${swept} states`);
 });

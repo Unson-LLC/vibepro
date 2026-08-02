@@ -476,17 +476,21 @@ function collectBlockingGates({ currentGateStatus, gateOverride, gateDag }) {
     ...normalizeBlockingGates(currentGateStatus?.unresolved_gates, 'current_gate_status', null)
   ];
   if (fromStatus.length > 0) return dedupeBlockingGates(fromStatus);
-  const fromOverride = [
+  // Current evidence outranks the waiver document. Consulting the waiver first
+  // let it shadow a gate the DAG could name, and because a waiver-sourced gate
+  // cannot satisfy the reservation the verdict then degraded to a nameless
+  // gate_status_unresolvable -- losing a gate that was there all along.
+  const fromOverride = () => dedupeBlockingGates([
     // Not forced to 'critical': the waiver document records what was critical
     // when it was written, not what is critical now.
     ...normalizeBlockingGates(gateOverride?.critical_unresolved_gates, 'gate_override', null),
     ...normalizeBlockingGates(gateOverride?.unresolved_gates, 'gate_override', null)
-  ];
-  if (fromOverride.length > 0) return dedupeBlockingGates(fromOverride);
+  ]);
+
   // A node whose id cannot be read is not a nameable gate. Inventing one here
   // produced a gate literally called "unknown" and satisfied the structural
   // guard's length check, which is how the reservation was bypassed.
-  return dedupeBlockingGates(collectUnresolvedDagGates(gateDag)
+  const fromDag = dedupeBlockingGates(collectUnresolvedDagGates(gateDag)
     .filter((node) => typeof node?.id === 'string' && node.id.trim().length > 0)
     .map((node) => ({
       id: node.id.trim(),
@@ -494,6 +498,8 @@ function collectBlockingGates({ currentGateStatus, gateOverride, gateDag }) {
       status: node?.status ?? 'unknown',
       source: 'gate_dag'
     })));
+  if (fromDag.length > 0) return fromDag;
+  return fromOverride();
 }
 
 function normalizeBlockingGates(gates, source, forcedSeverity) {

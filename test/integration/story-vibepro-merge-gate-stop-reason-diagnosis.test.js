@@ -200,6 +200,12 @@ test('MGD-INT-1 a stale pr-create waiver reaches every merge output surface as a
   // The review surface must distinguish a current gate from a waiver-document
   // one; without the source suffix a stale waiver reads as current evidence.
   assert.match(html, /gate:validation_sequencing=.*via current_gate_status/);
+  // Every row AC-5 names must be pinned individually: a bare /Diagnosis cause/
+  // regex is satisfied by one neighbouring row while the rest are gutted.
+  assert.match(html, /Diagnosis stop reason[\s\S]{0,200}pr_create_artifact_stale/);
+  assert.match(html, /Diagnosis explanation[\s\S]{0,300}pr-create\.json is bound to/);
+  assert.match(html, new RegExp(`Artifact binding heads[\\s\\S]{0,300}pr_create: artifact_head=${staleSha}`));
+  assert.match(html, new RegExp(`Artifact binding heads[\\s\\S]{0,400}current_head=${headSha}`));
 });
 
 test('MGD-INT-2 execute merge --explain reports the same verdict read-only, and reports missing evidence as missing evidence', async () => {
