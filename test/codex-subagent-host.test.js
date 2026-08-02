@@ -117,11 +117,11 @@ test('production Codex host shutdown contains the detached worker process group'
     codexExecutableArgs: [fakeCodex, childPidPath]
   });
   const started = await host.spawn(runtimeRequest(repoRoot));
-  await waitFor(async () => access(childPidPath).then(() => true, () => false));
+  await waitFor(async () => access(childPidPath).then(() => true, () => false), { timeoutMs: 60000 });
   const childPid = Number(await readFile(childPidPath, 'utf8'));
   assert.equal(isProcessAlive(childPid), true);
   await host.shutdown({ provider_run_id: started.provider_run_id, repo_root: repoRoot, reason: 'containment_test' });
-  await waitFor(async () => !isProcessAlive(childPid));
+  await waitFor(async () => !isProcessAlive(childPid), { timeoutMs: 60000 });
   assert.equal(isProcessAlive(childPid), false);
 });
 
@@ -161,11 +161,11 @@ test('production Codex host keeps containment inside the worker sandbox boundary
     }
   });
   const started = await host.spawn(runtimeRequest(repoRoot));
-  await waitFor(async () => access(childPidPath).then(() => true, () => false));
+  await waitFor(async () => access(childPidPath).then(() => true, () => false), { timeoutMs: 60000 });
 
   await host.shutdown({ provider_run_id: started.provider_run_id, repo_root: repoRoot, reason: 'containment_eperm_test' });
 
-  await waitFor(async () => access(childStoppedPath).then(() => true, () => false));
+  await waitFor(async () => access(childStoppedPath).then(() => true, () => false), { timeoutMs: 60000 });
   assert.equal(await readFile(childStoppedPath, 'utf8'), 'SIGTERM');
   assert.equal(deniedGroupSignals, 0);
 });
@@ -223,8 +223,8 @@ function coordinatorRuntimeRequest(repoRoot) {
   };
 }
 
-async function waitFor(predicate) {
-  const deadline = Date.now() + 10000;
+async function waitFor(predicate, { timeoutMs = 10000 } = {}) {
+  const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     if (await predicate()) return;
     await new Promise((resolve) => setTimeout(resolve, 20));

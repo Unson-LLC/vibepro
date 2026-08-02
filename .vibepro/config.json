@@ -511,6 +511,18 @@
   "brainbase": {
     "stories": [
       {
+        "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+        "title": "Codex host containment テストの waitFor を高負荷ホストでフレークしない待機設計にする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-02",
+        "due_at": null,
+        "category": "platform"
+      },
+      {
         "story_id": "story-vibepro-budget-override-residual-findings",
         "title": "owner-gated budget override の残余 low finding 2件（fallback 方向性の文書精度 / design root の空登録）を解消する",
         "ssot": "local",
@@ -1248,6 +1260,6 @@
         "category": "delivery-efficiency"
       }
     ],
-    "current_story_id": "story-vibepro-profiler-file-walk-stack-overflow"
+    "current_story_id": "story-vibepro-codex-host-containment-test-load-tolerance"
   }
 }
