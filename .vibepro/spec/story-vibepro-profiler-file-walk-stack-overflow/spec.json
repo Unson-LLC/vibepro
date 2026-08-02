@@ -75,7 +75,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T07:52:33.359Z",
-      "last_revised_at": "2026-08-02T07:52:33.359Z"
+      "last_revised_at": "2026-08-02T10:49:32.931Z"
     },
     {
       "id": "S-001",
@@ -112,7 +112,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T07:52:33.359Z",
-      "last_revised_at": "2026-08-02T07:52:33.359Z"
+      "last_revised_at": "2026-08-02T10:49:32.931Z"
     },
     {
       "id": "S-002",
@@ -149,13 +149,25 @@
         ]
       },
       "first_seen_at": "2026-08-02T07:52:33.359Z",
-      "last_revised_at": "2026-08-02T07:52:33.359Z"
+      "last_revised_at": "2026-08-02T10:49:32.931Z"
     }
   ],
-  "generated_at": "2026-08-02T07:52:33.357Z",
+  "diagrams": [
+    {
+      "kind": "flow",
+      "mermaid": "flowchart LR\n  CLI[story diagnose --run-graphify] --> Import[importGraphifyArtifacts]\n  Import --> Diag[runDiagnosis]\n  Diag --> Evidence[buildEvidence]\n  Evidence --> Walkers[8 scanner walkers: iterative pending queue]\n  Walkers --> Files[file lists per scanner]\n  Files --> Artifacts[diagnostics run artifacts]\n  Walkers -. no spread-argument accumulation .-> Files",
+      "rationale": "Show the diagnosis evidence pipeline where every scanner walker now uses an explicit iterative queue, so subtree size never enters a call's argument list."
+    },
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart LR\n  Attacker[Hostile or oversized repo tree] --> Walk[Iterative directory walk]\n  Walk --> T1[Threat: resource exhaustion via huge subtree]\n  T1 --> M1[Mitigation: single accumulator, no spread args; 1MB per-file cap; IGNORED_DIRS pruning]\n  Attacker --> T2[Threat: symlink cycle traversal]\n  T2 --> M2[Mitigation: dirent isDirectory excludes symlinks, so cycles are not followed]\n  Walk --> T3[Threat: diagnose crash hides scan coverage]\n  T3 --> M3[Mitigation: walk completes on 134k-file tree; regression test pins reduced-stack behavior]",
+      "rationale": "The walker rewrite is the security-relevant surface: it must stay robust on adversarially large trees without crashing the diagnosis pipeline that other gates depend on."
+    }
+  ],
+  "generated_at": "2026-08-02T10:49:32.928Z",
   "generated_by": {
     "caller": "unknown",
     "stage": "ai_synthesis"
   },
-  "previous_spec_id": null
+  "previous_spec_id": "2026-08-02T07:52:33.357Z"
 }

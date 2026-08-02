@@ -46,6 +46,11 @@ reason: >-
 - AC3: 実障害環境（vibepro本体checkout, 134k files）で `story diagnose --id <id> --run-graphify` が
   `--stack-size` なしで完走する。 <!-- ac:AC3 -->
 
+## Inherited Behavior
+
+- The `dependencies.has('next-auth')` auth-detection branch in src/architecture-profiler.js (detectAuth consuming the collected dependency set) is unchanged/existing; this Story only rewrites how the file list feeding that detection is collected, not what is detected.
+- The `!signature` guard branch in src/code-quality-scanner.js (skipping unnamed function signatures during quality scanning) is unchanged/existing; the walker rewrite does not alter which files or signatures the scanner evaluates.
+
 ## スコープ外
 
 - `.claude/worktrees` / `.vibepro-store` を profiler の除外対象へ追加する意味論変更（別Storyで扱う）。
