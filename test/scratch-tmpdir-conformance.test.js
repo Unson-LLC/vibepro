@@ -20,14 +20,14 @@ function walkTestFiles(dir) {
     const entryPath = path.join(dir, entry.name);
     if (entry.isDirectory()) {
       results.push(...walkTestFiles(entryPath));
-    } else if (entry.isFile() && entry.name.endsWith('.test.js')) {
+    } else if (entry.isFile() && /\.(test|spec)\.[cm]?[jt]sx?$/.test(entry.name)) {
       results.push(entryPath);
     }
   }
   return results;
 }
 
-test('GATE conformance: every test/**/*.test.js file that uses mkdtemp/os.tmpdir imports the scratch-tmpdir helper', () => {
+test('GATE conformance: every test/**/*.{test,spec}.{js,ts,jsx,tsx,cjs,mjs} file that uses mkdtemp/os.tmpdir imports the scratch-tmpdir helper', () => {
   const offenders = [];
   for (const filePath of walkTestFiles(testDir)) {
     if (filePath === path.join(repoRoot, 'test/support/scratch-tmpdir.js')) {
