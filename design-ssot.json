@@ -7783,6 +7783,50 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-unit-suite-concurrency-default",
+      "title": "VibePro Unit Suite Concurrency and Verify Run Timeout Defaults",
+      "root_doc": "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "npm test full-suite concurrency pin and verify run default timeout",
+      "owned_surfaces": [
+        "package.json scripts.test concurrency pin",
+        "src/verification-runner.js DEFAULT_TIMEOUT_MS"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      }
     }
   ],
   "updated_at": "2026-08-02T12:03:19.043967Z"

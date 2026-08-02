@@ -495,6 +495,16 @@
       "story-vibepro-profiler-file-walk-stack-overflow": {
         "max_subagent_count": 8,
         "amendment_reason": "Six review subagents were consumed by the required architecture_spec stage (architecture_boundary, spec_consistency, regression_risk) and gate stage (gate_evidence, pr_split_scope, release_risk), all passing with dispositioned findings. The validation-sequencing final_review phase hard-requires one implementation:runtime_contract Agent Review, whose authorization correctly failed closed at the aggregate 6/6 subagent cap. The user (Keigo Sato) explicitly authorized continuation on 2026-08-02. Raise only this Story's aggregate subagent capacity from 6 to 8: one runtime_contract dispatch plus one bounded replacement slot. Role-level and consumption caps remain unchanged. This is a review budget amendment only, not a Gate waiver, and grants no additional authority."
+      },
+      "story-vibepro-unit-suite-concurrency-default": {
+        "max_subagent_count": 10,
+        "max_agent_consumption_ms": 3600000,
+        "max_review_dispatches_by_role": {
+          "gate_evidence": 3,
+          "release_risk": 3,
+          "pr_split_scope": 4
+        },
+        "amendment_reason": "The base budget of six subagents was consumed by two full gate-stage review rounds: round 1 (gate_evidence, pr_split_scope, release_risk all pass at head 583f69fc) and round 2 at head 7db9956d after a docs-only lineage commit invalidated the content surface (gate_evidence pass, release_risk pass, pr_split_scope needs_changes citing the advisory split-plan recommendation). The owner approved on 2026-08-03 via AskUserQuestion in Claude Code session b72589e7-17b5-460f-8581-06932845d285 a bounded extension of four additional subagents and a 60-minute consumption ceiling for exactly one round-3 pr_split_scope replacement review plus adjudication redispatch headroom; the session transcript is the inspectable primary record."
       }
     }
   },
@@ -1224,6 +1234,18 @@
         "started_at": "2026-08-02",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-unit-suite-concurrency-default",
+        "title": "unit証跡の全体スイート実行を実測最適並列度に正本化し、verify runのタイムアウト余裕を確保する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-02",
+        "due_at": null,
+        "category": "delivery-efficiency"
       }
     ],
     "current_story_id": "story-vibepro-profiler-file-walk-stack-overflow"
