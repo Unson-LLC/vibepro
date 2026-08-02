@@ -53,7 +53,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T11:30:50.131Z",
-      "last_revised_at": "2026-08-02T11:38:26.519Z"
+      "last_revised_at": "2026-08-02T11:48:25.233Z"
     },
     {
       "id": "INV-002",
@@ -104,7 +104,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T11:30:50.131Z",
-      "last_revised_at": "2026-08-02T11:38:26.519Z"
+      "last_revised_at": "2026-08-02T11:48:25.233Z"
     },
     {
       "id": "C-001",
@@ -162,7 +162,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T11:30:50.131Z",
-      "last_revised_at": "2026-08-02T11:38:26.519Z"
+      "last_revised_at": "2026-08-02T11:48:25.233Z"
     },
     {
       "id": "S-001",
@@ -221,11 +221,18 @@
         ]
       },
       "first_seen_at": "2026-08-02T11:30:50.131Z",
-      "last_revised_at": "2026-08-02T11:38:26.519Z"
+      "last_revised_at": "2026-08-02T11:48:25.233Z"
     },
     {
       "id": "S-002",
       "type": "scenario",
+      "inherited_behavior": {
+        "condition": "!supplied && !runAuthority",
+        "classification": "unchanged",
+        "files": [
+          "src/verification-evidence.js"
+        ]
+      },
       "statement": "The verification runner streams command output, feeds the parsed completed-test count into the kernel as the monotonic progress value so a suite stays alive while tests keep completing and is killed when progress stalls (independently of the wall-clock cap), and an execution killed by a signal the runner did not send is recorded with timed_out=false plus an external_kill_signal attribution instead of the previous false timed_out=true.",
       "rationale": "The previous execFile-based runner could not observe in-flight progress and its `error.killed && signal` heuristic recorded external SIGTERMs as timeouts, which caused a real misdiagnosis incident in evidence records.",
       "origin": {
@@ -280,13 +287,13 @@
         ]
       },
       "first_seen_at": "2026-08-02T11:30:50.131Z",
-      "last_revised_at": "2026-08-02T11:38:26.519Z"
+      "last_revised_at": "2026-08-02T11:48:25.233Z"
     }
   ],
-  "generated_at": "2026-08-02T11:38:26.516Z",
+  "generated_at": "2026-08-02T11:48:25.231Z",
   "generated_by": {
     "caller": "unknown",
     "stage": "ai_synthesis"
   },
-  "previous_spec_id": "2026-08-02T11:30:50.129Z"
+  "previous_spec_id": "2026-08-02T11:38:26.516Z"
 }
