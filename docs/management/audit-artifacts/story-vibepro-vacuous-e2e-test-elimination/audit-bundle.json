@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-vacuous-e2e-test-elimination",
   "source": "execute_merge",
-  "promoted_at": "2026-08-02T01:44:26.817Z",
+  "promoted_at": "2026-08-02T01:44:35.950Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-vacuous-e2e-test-elimination",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-vacuous-e2e-test-elimination/audit-index.json",
@@ -38,11 +38,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-vacuous-e2e-test-elimination/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:c635957ae99b2c8ffd9fb310b8526016d46558100ae08a80d12d4f696370a79e",
-    "compressed_hash": "sha256:29d8593404f134cddb044f948f2a81ee8ba7a3fadcc5de8dac2fb2af6135f9f6",
-    "expanded_bytes": 23778,
-    "compressed_bytes": 5474,
-    "expanded_line_count": 544,
+    "content_hash": "sha256:e8f580a5412d4c653a49b4233ed64463b7716f0f7556bb5c1f59855cf26b912e",
+    "compressed_hash": "sha256:5bd6d51a087753bbef98ff15df25ff2d567a896c7002a2014a9edf8ea436d236",
+    "expanded_bytes": 22878,
+    "compressed_bytes": 5367,
+    "expanded_line_count": 524,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "decision_index",
@@ -62,9 +62,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-vacuous-e2e-test-elimination",
     "cost": {
-      "compressed_bytes": 5474,
-      "expanded_bytes": 23778,
-      "expanded_line_count": 544,
+      "compressed_bytes": 5367,
+      "expanded_bytes": 22878,
+      "expanded_line_count": 524,
       "persisted_line_count": 1
     }
   },
@@ -79,26 +79,16 @@
       "merged_at": "2026-08-02T01:44:24Z"
     },
     "reconciliation": {
-      "status": "reconciliation_required",
-      "reasons": [
-        "decision_outcome_binding_failed"
-      ],
-      "evaluated_at": "2026-08-02T01:44:26.776Z",
+      "status": "reconciled",
+      "reasons": [],
+      "evaluated_at": "2026-08-02T01:44:35.841Z",
       "head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19"
     },
-    "reconciliation_action": {
-      "status": "required",
-      "reason": "decision_outcome_binding_failed",
-      "commands": [
-        "vibepro pr prepare . --story-id story-vibepro-vacuous-e2e-test-elimination --base main",
-        "vibepro execute merge . --story-id story-vibepro-vacuous-e2e-test-elimination --base main --pr https://github.com/Unson-LLC/vibepro/pull/407"
-      ]
-    },
     "decision_outcome_binding": {
-      "status": "failed",
-      "reason": "central_ledger_parse_failed",
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
       "expected_entry_count": 40,
-      "promoted_count": 0,
+      "promoted_count": 40,
       "duplicate_count": 0,
       "persistence_status": null
     },
@@ -114,7 +104,7 @@
     "status": "blocked",
     "resolved_reference_count": 77,
     "copied_reference_count": 61,
-    "unresolved_reference_count": 10,
+    "unresolved_reference_count": 17,
     "replay_bundle": "docs/management/audit-artifacts/story-vibepro-vacuous-e2e-test-elimination/audit-replay-bundle.json.gz",
     "replay_command": "vibepro audit replay . --story-id story-vibepro-vacuous-e2e-test-elimination"
   },
@@ -131,7 +121,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-vacuous-e2e-test-elimination/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:c635957ae99b2c8ffd9fb310b8526016d46558100ae08a80d12d4f696370a79e"
+      "content_hash": "sha256:e8f580a5412d4c653a49b4233ed64463b7716f0f7556bb5c1f59855cf26b912e"
     }
   ],
   "raw_artifact_manifest": [
@@ -221,10 +211,10 @@
       "source": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-vacuous-e2e-test-elimination/audit-replay-bundle.json.gz",
-      "digest": "sha256:119fa29b7884e1b24786f88f05277a95fda06ddbcfff82aecc9f593cc1b73589",
-      "audit_digest": "sha256:ece272aad65657a55a54f3a07bc98b1e161d60789e9968cc1ab8abe9f36c7d36",
-      "line_count": 4109,
-      "raw_line_count": 7590,
+      "digest": "sha256:67a529ba7e1a46dda4214135f94ee53eb5b36a29688c70bd2e49b0ca3a8e9ba9",
+      "audit_digest": "sha256:178be9c940e2771b035609cdf1f31a204c39cff74df27a8126738a35229ebe53",
+      "line_count": 4098,
+      "raw_line_count": 7588,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -1092,6 +1082,10 @@
       "size_bytes": 985059
     },
     {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/graphify/graph.json",
       "reason": "source_too_large",
       "size_bytes": 7305084
@@ -1101,9 +1095,33 @@
       "reason": "source_missing"
     },
     {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/design-ssot-reconciliation.json",
       "reason": "source_too_large",
       "size_bytes": 613525
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
     },
     {
       "source": ".vibepro/spec",
