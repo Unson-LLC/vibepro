@@ -1246,8 +1246,20 @@
         "started_at": "2026-08-02",
         "due_at": null,
         "category": "delivery-efficiency"
+      },
+      {
+        "story_id": "story-vibepro-uiux-intake-judgment-gate",
+        "title": "uiux intakeのSkill発火 + 判断記録gate",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-03",
+        "due_at": null,
+        "category": "governance"
       }
     ],
-    "current_story_id": "story-vibepro-profiler-file-walk-stack-overflow"
+    "current_story_id": "story-vibepro-uiux-intake-judgment-gate"
   }
 }
