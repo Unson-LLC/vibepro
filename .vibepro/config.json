@@ -1258,8 +1258,20 @@
         "started_at": "2026-08-02",
         "due_at": null,
         "category": "delivery-efficiency"
+      },
+      {
+        "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+        "title": "gate:uiux_intake_judgment を人間向けPRサマリー表面に表示する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-03",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-codex-host-containment-test-load-tolerance"
+    "current_story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces"
   }
 }
