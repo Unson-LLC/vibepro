@@ -75,7 +75,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T07:52:33.359Z",
-      "last_revised_at": "2026-08-02T10:49:32.931Z"
+      "last_revised_at": "2026-08-02T12:03:37.426Z"
     },
     {
       "id": "S-001",
@@ -112,7 +112,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T07:52:33.359Z",
-      "last_revised_at": "2026-08-02T10:49:32.931Z"
+      "last_revised_at": "2026-08-02T12:03:37.426Z"
     },
     {
       "id": "S-002",
@@ -149,7 +149,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T07:52:33.359Z",
-      "last_revised_at": "2026-08-02T10:49:32.931Z"
+      "last_revised_at": "2026-08-02T12:03:37.426Z"
     }
   ],
   "diagrams": [
@@ -164,10 +164,13 @@
       "rationale": "The walker rewrite is the security-relevant surface: it must stay robust on adversarially large trees without crashing the diagnosis pipeline that other gates depend on."
     }
   ],
-  "generated_at": "2026-08-02T10:49:32.928Z",
+  "parent_design": [
+    "story-vibepro-profiler-file-walk-stack-overflow"
+  ],
+  "generated_at": "2026-08-02T12:03:37.424Z",
   "generated_by": {
     "caller": "unknown",
     "stage": "ai_synthesis"
   },
-  "previous_spec_id": "2026-08-02T07:52:33.357Z"
+  "previous_spec_id": "2026-08-02T10:49:32.928Z"
 }

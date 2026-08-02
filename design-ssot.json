@@ -7766,24 +7766,24 @@
         "spec": [
           {
             "kind": "spec",
-            "path": ".vibepro/spec/story-vibepro-profiler-file-walk-stack-overflow/spec.json",
+            "path": "docs/specs/story-vibepro-profiler-file-walk-stack-overflow.md",
             "required": true,
             "relationship": "implements",
-            "last_reviewed_root_hash": null
+            "last_reviewed_root_hash": "bd8ab55a93bddc236303c6d081ed4eee4beb31080787c9c5220180ab347f0617"
           }
         ]
       },
       "child_links": [
         {
           "kind": "spec",
-          "path": ".vibepro/spec/story-vibepro-profiler-file-walk-stack-overflow/spec.json",
+          "path": "docs/specs/story-vibepro-profiler-file-walk-stack-overflow.md",
           "required": true,
           "relationship": "implements",
-          "last_reviewed_root_hash": null
+          "last_reviewed_root_hash": "bd8ab55a93bddc236303c6d081ed4eee4beb31080787c9c5220180ab347f0617"
         }
       ],
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-08-02T11:00:15.055098Z"
+  "updated_at": "2026-08-02T12:03:19.043967Z"
 }
