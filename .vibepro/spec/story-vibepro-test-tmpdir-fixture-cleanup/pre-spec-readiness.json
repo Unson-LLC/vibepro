@@ -1,10 +1,10 @@
 {
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
-  "created_at": "2026-08-02T19:06:35.311Z",
+  "created_at": "2026-08-02T20:04:20.587Z",
   "status": "ready",
   "git": {
-    "head_sha": "7e45805cdb2a83345ac83b2e4a27d845b981ab07"
+    "head_sha": "0740ad568d843bd1e9f0a9491160574c65e190a6"
   },
   "checks": [
     {
@@ -69,7 +69,7 @@
     "active_axis_count": 6
   },
   "pr_prepare": {
-    "created_at": "2026-08-02T19:06:34.451Z",
+    "created_at": "2026-08-02T20:04:20.399Z",
     "artifact": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/pr-prepare.json",
     "gate_dag_status": "needs_verification"
   },

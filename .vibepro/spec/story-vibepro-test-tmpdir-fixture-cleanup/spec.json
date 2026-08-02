@@ -40,7 +40,7 @@
         "test_refs": [
           {
             "file": "test/scratch-tmpdir-conformance.test.js",
-            "case": "GATE conformance: every test/**/*.test.js file that uses mkdtemp/os.tmpdir imports the scratch-tmpdir helper"
+            "case": "GATE conformance: every test/**/*.{test,spec}.{js,ts,jsx,tsx,cjs,mjs} file that uses mkdtemp/os.tmpdir imports the scratch-tmpdir helper"
           }
         ]
       },
@@ -59,7 +59,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T14:50:30.000Z",
-      "last_revised_at": "2026-08-02T19:06:47.607Z"
+      "last_revised_at": "2026-08-02T20:04:22.381Z"
     },
     {
       "id": "S-001",
@@ -118,7 +118,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T14:50:30.000Z",
-      "last_revised_at": "2026-08-02T19:06:47.607Z"
+      "last_revised_at": "2026-08-02T20:04:22.381Z"
     },
     {
       "id": "S-002",
@@ -172,7 +172,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T14:50:30.000Z",
-      "last_revised_at": "2026-08-02T19:06:47.607Z"
+      "last_revised_at": "2026-08-02T20:04:22.381Z"
     }
   ],
   "generated_at": "2026-08-02T14:52:49.930Z",
