@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+  "ledger_path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_562e55de138f964db22ba15d6dc03173a380c2e0414e43c852c2ba2c9cbb5f95"
+  },
+  "parent_revision_fingerprint": "16bfd2d0aff69a6e0676244bec11111be29f1aecf0da0b8106c71358c99a6274",
+  "revision_fingerprint": "bd49422b39a60e849172a2da844718cd25512cbf0ef7b2f2ab2f4d3202b3b34e",
+  "trace": {
+    "decision_trace_id": "dt_562e55de138f964db22ba15d6dc03173a380c2e0414e43c852c2ba2c9cbb5f95",
+    "collision_group": null,
+    "trace_source_ref": "tsr_6ec0b3ef22e3fb6dfab7133e27939e37050af5689f0fa39ea65182db687d88a1",
+    "normalized_subject_key": "finding:managed-worktree-locality-unresolved",
+    "source_identity": {
+      "source_kind": "linked_sources",
+      "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json,.vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json",
+      "native_id": "managed-worktree-locality-unresolved,managed-worktree-locality-unresolved",
+      "digest": "6f2ec35af65c1596dfcf39b40ca14e24f9ae6303e7f00a46d5bb0e3b6ad538f3",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+    "parent_revision_fingerprint": "16bfd2d0aff69a6e0676244bec11111be29f1aecf0da0b8106c71358c99a6274",
+    "revision_fingerprint": "bd49422b39a60e849172a2da844718cd25512cbf0ef7b2f2ab2f4d3202b3b34e",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_562e55de138f964db22ba15d6dc03173a380c2e0414e43c852c2ba2c9cbb5f95"
+        },
+        "parent_revision_fingerprint": "5dc44cbbbe07d156ab7a08c0d9773726e31fca38fc80cd5a40536da7fe0f4e1d"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "observed",
+      "value": {
+        "severity": "low",
+        "id": "managed-worktree-locality-unresolved",
+        "detail": "records carry the managed_worktree_locality advisory (mode=preferred, required=false)"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json",
+          "source_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "source_digest": "6d10553c0e8e9321c3a9952984c6c30289952b0564255f293962549bf5354294",
+          "native_id": "managed-worktree-locality-unresolved"
+        }
+      ]
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "observed",
+      "value": {
+        "detected_by": "gate_evidence",
+        "stage": "gate",
+        "detected_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json",
+          "source_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "source_digest": "6d10553c0e8e9321c3a9952984c6c30289952b0564255f293962549bf5354294",
+          "native_id": "managed-worktree-locality-unresolved"
+        }
+      ]
+    },
+    "disposition": {
+      "status": "observed",
+      "value": {
+        "finding_id": "managed-worktree-locality-unresolved",
+        "disposition": "accepted",
+        "resolved_by": [],
+        "reason": "advisory-only; session worktree is the intended self-dogfood execution site",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json",
+          "source_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "source_digest": "7d98ac3c3184d3e8c9b884fbb5762361d8a9187a867390f7d4c3592178853109",
+          "native_id": "managed-worktree-locality-unresolved"
+        }
+      ]
+    },
+    "decision": {
+      "status": "observed",
+      "value": {
+        "finding_id": "managed-worktree-locality-unresolved",
+        "disposition": "accepted",
+        "resolved_by": [],
+        "reason": "advisory-only; session worktree is the intended self-dogfood execution site",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json",
+          "source_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "source_digest": "7d98ac3c3184d3e8c9b884fbb5762361d8a9187a867390f7d4c3592178853109",
+          "native_id": "managed-worktree-locality-unresolved"
+        }
+      ]
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 409,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/409",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "8c52f7c65a377399b7a0514673865025fdef9712",
+        "status": "merged",
+        "merged_at": "2026-08-02T15:52:39Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

@@ -241,37 +241,42 @@ async function collectUiFiles(root, flowConfig) {
   const files = [];
   for (const candidate of roots) {
     const absoluteRoot = path.isAbsolute(candidate) ? candidate : path.join(root, candidate);
-    files.push(...await listUiFiles(root, absoluteRoot));
+    for (const file of await listUiFiles(root, absoluteRoot)) files.push(file);
   }
   return uniqueBy(files, (file) => file.absolutePath)
     .filter((file) => !isApiRoute(file.relativePath))
     .slice(0, 160);
 }
 
-async function listUiFiles(repoRoot, current) {
-  let entries = [];
-  try {
-    entries = await readdir(current, { withFileTypes: true });
-  } catch (error) {
-    if (error.code === 'ENOENT' || error.code === 'ENOTDIR') return [];
-    throw error;
-  }
+async function listUiFiles(repoRoot, startDir) {
+  // Iterative walk with a single accumulator: recursion + spread-push overflows
+  // the call stack once a subtree holds more entries than V8 accepts as arguments.
   const files = [];
-  for (const entry of entries) {
-    if (entry.isDirectory() && IGNORED_DIRS.has(entry.name)) continue;
-    const absolutePath = path.join(current, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...await listUiFiles(repoRoot, absolutePath));
-      continue;
+  const pending = [startDir];
+  for (let index = 0; index < pending.length; index += 1) {
+    let entries;
+    try {
+      entries = await readdir(pending[index], { withFileTypes: true });
+    } catch (error) {
+      if (error.code === 'ENOENT' || error.code === 'ENOTDIR') continue;
+      throw error;
     }
-    if (!entry.isFile()) continue;
-    if (!UI_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) continue;
-    const fileStat = await stat(absolutePath);
-    if (fileStat.size > 1024 * 1024) continue;
-    files.push({
-      absolutePath,
-      relativePath: path.relative(repoRoot, absolutePath).split(path.sep).join('/')
-    });
+    for (const entry of entries) {
+      if (entry.isDirectory() && IGNORED_DIRS.has(entry.name)) continue;
+      const absolutePath = path.join(pending[index], entry.name);
+      if (entry.isDirectory()) {
+        pending.push(absolutePath);
+        continue;
+      }
+      if (!entry.isFile()) continue;
+      if (!UI_EXTENSIONS.has(path.extname(entry.name).toLowerCase())) continue;
+      const fileStat = await stat(absolutePath);
+      if (fileStat.size > 1024 * 1024) continue;
+      files.push({
+        absolutePath,
+        relativePath: path.relative(repoRoot, absolutePath).split(path.sep).join('/')
+      });
+    }
   }
   return files;
 }

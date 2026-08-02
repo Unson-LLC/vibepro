@@ -1,0 +1,67 @@
+Story selected: story-vibepro-artifact-output-routing
+graphify artifacts imported: /Users/ksato/workspace/repos/vibepro/.vibepro/graphify
+diagnosis created: /Users/ksato/workspace/repos/vibepro/.vibepro/diagnostics/2026-08-02T064608Z
+Story report created: /Users/ksato/workspace/repos/vibepro/.vibepro/stories/story-vibepro-artifact-output-routing/story-report.md
+# Story Status
+
+| 項目 | 内容 |
+|------|------|
+| Story ID | story-vibepro-artifact-output-routing |
+| Story | 成果物の正本出力先をリポジトリ設定で一意に制御する |
+| Status | active |
+| View | dev |
+| Period | 2026-07 |
+| Latest run | 2026-08-02T064608Z |
+| Gate | needs_review |
+| Findings | 1 |
+| Runs | 2 |
+
+## Artifacts
+
+- summary: .vibepro/diagnostics/2026-08-02T064608Z/summary.md
+- risk_register: .vibepro/diagnostics/2026-08-02T064608Z/risk-register.md
+- evidence: .vibepro/diagnostics/2026-08-02T064608Z/evidence.json
+- static_site_check: .vibepro/diagnostics/2026-08-02T064608Z/static-site-check-result.md
+- component_style_check: .vibepro/diagnostics/2026-08-02T064608Z/component-style-check-result.md
+- flow_design_check: .vibepro/diagnostics/2026-08-02T064608Z/flow-design-check-result.md
+- gesture_interaction_check: .vibepro/diagnostics/2026-08-02T064608Z/gesture-interaction-check-result.md
+- terminal_link_check: .vibepro/diagnostics/2026-08-02T064608Z/terminal-link-check-result.md
+- architecture_profile: .vibepro/diagnostics/2026-08-02T064608Z/architecture-profile.md
+- finding_review: .vibepro/diagnostics/2026-08-02T064608Z/finding-review.md
+- refactoring_delta: .vibepro/diagnostics/2026-08-02T064608Z/refactoring-delta.md
+- requirement_consistency: .vibepro/diagnostics/2026-08-02T064608Z/requirement-consistency.md
+- spec_drift: .vibepro/diagnostics/2026-08-02T064608Z/spec-drift.md
+- story_tasks_json: .vibepro/stories/story-vibepro-artifact-output-routing/tasks/tasks.json
+- story_tasks_markdown: .vibepro/stories/story-vibepro-artifact-output-routing/tasks/tasks.md
+
+## Artifact Authority
+
+- story: ownership=legacy; canonical=docs/management/stories/active/story-vibepro-artifact-output-routing.md; canonical-writer=owner; read-authority=docs/management/stories/active/story-vibepro-artifact-output-routing.md
+- architecture: ownership=legacy; canonical=docs/architecture/story-vibepro-artifact-output-routing.md; canonical-writer=owner; read-authority=docs/architecture/story-vibepro-artifact-output-routing.md
+- accepted_spec: ownership=legacy; canonical=.vibepro/spec/story-vibepro-artifact-output-routing/spec.json; canonical-writer=owner; read-authority=.vibepro/spec/story-vibepro-artifact-output-routing/spec.json
+- task_plan: ownership=legacy; canonical=.vibepro/stories/story-vibepro-artifact-output-routing/tasks/tasks.md; canonical-writer=owner; read-authority=.vibepro/stories/story-vibepro-artifact-output-routing/tasks/tasks.md
+- graphify: ownership=legacy; canonical=.vibepro/graphify; canonical-writer=owner; read-authority=.vibepro/graphify
+- evidence: ownership=legacy; canonical=.vibepro/evidence/story-vibepro-artifact-output-routing; canonical-writer=owner; read-authority=.vibepro/evidence/story-vibepro-artifact-output-routing
+- test_plan: ownership=legacy; canonical=.vibepro/test-plans/story-vibepro-artifact-output-routing.json; canonical-writer=owner; read-authority=.vibepro/test-plans/story-vibepro-artifact-output-routing.json
+- review: ownership=legacy; canonical=.vibepro/reviews/story-vibepro-artifact-output-routing; canonical-writer=owner; read-authority=.vibepro/reviews/story-vibepro-artifact-output-routing
+- gate: ownership=legacy; canonical=.vibepro/pr/story-vibepro-artifact-output-routing/gate-dag.json; canonical-writer=owner; read-authority=.vibepro/pr/story-vibepro-artifact-output-routing/gate-dag.json
+- pr: ownership=legacy; canonical=.vibepro/pr/story-vibepro-artifact-output-routing/pr-prepare.json; canonical-writer=owner; read-authority=.vibepro/pr/story-vibepro-artifact-output-routing/pr-prepare.json
+
+## Journey Context
+
+| 項目 | 内容 |
+|------|------|
+| Required | no |
+| Status | not_required |
+| Artifact kind | - |
+| Curated | no |
+| Curation status | not_required |
+| Handoff | no |
+| Journey ID | default-product-journey |
+| Detection | - |
+| Source docs | docs/management/stories/active/story-vibepro-artifact-output-routing.md |
+| Reason | No UI/Journey signals were found in the Story metadata or tracked Story docs. |
+
+### Journey Next Actions
+
+- なし

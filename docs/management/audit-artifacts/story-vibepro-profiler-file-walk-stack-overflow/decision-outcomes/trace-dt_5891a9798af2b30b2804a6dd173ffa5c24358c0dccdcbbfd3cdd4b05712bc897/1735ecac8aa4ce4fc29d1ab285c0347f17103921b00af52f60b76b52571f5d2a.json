@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+  "ledger_path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_5891a9798af2b30b2804a6dd173ffa5c24358c0dccdcbbfd3cdd4b05712bc897"
+  },
+  "parent_revision_fingerprint": "823478588b7333c0fc8d738d7e42438f381b9ea1bd61be86e793b7d98a218f40",
+  "revision_fingerprint": "1735ecac8aa4ce4fc29d1ab285c0347f17103921b00af52f60b76b52571f5d2a",
+  "trace": {
+    "decision_trace_id": "dt_5891a9798af2b30b2804a6dd173ffa5c24358c0dccdcbbfd3cdd4b05712bc897",
+    "collision_group": null,
+    "trace_source_ref": "tsr_2aead4969bb9d622389e90c31e4d93ccb5bbfe86d76ee33e159835256d0a880b",
+    "normalized_subject_key": "finding:deep-tree-recursion-variant-untested",
+    "source_identity": {
+      "source_kind": "linked_sources",
+      "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-regression_risk.json,.vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-regression_risk.json",
+      "native_id": "deep-tree-recursion-variant-untested,deep-tree-recursion-variant-untested",
+      "digest": "b1478190a727d00ca282ce107382e714251e912f1f5ddd48435c153f054010b0",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+    "parent_revision_fingerprint": "823478588b7333c0fc8d738d7e42438f381b9ea1bd61be86e793b7d98a218f40",
+    "revision_fingerprint": "1735ecac8aa4ce4fc29d1ab285c0347f17103921b00af52f60b76b52571f5d2a",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_5891a9798af2b30b2804a6dd173ffa5c24358c0dccdcbbfd3cdd4b05712bc897"
+        },
+        "parent_revision_fingerprint": "f09e28156296362a87e4a28d6c403a106c7aa801d6f61eb213cff40a03748c6e"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "observed",
+      "value": {
+        "severity": "low",
+        "id": "deep-tree-recursion-variant-untested",
+        "detail": "wide 30k-file fixture catches spread reintroduction but a spread-free deep recursion would pass; acceptable since the iterative rewrite removes both failure modes"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-regression_risk.json",
+          "source_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "source_digest": "4ce609ad80faf24d85003a40d6ba6d7722c3825eb64957d0bad681501d454147",
+          "native_id": "deep-tree-recursion-variant-untested"
+        }
+      ]
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "observed",
+      "value": {
+        "detected_by": "regression_risk",
+        "stage": "architecture_spec",
+        "detected_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-regression_risk.json",
+          "source_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "source_digest": "4ce609ad80faf24d85003a40d6ba6d7722c3825eb64957d0bad681501d454147",
+          "native_id": "deep-tree-recursion-variant-untested"
+        }
+      ]
+    },
+    "disposition": {
+      "status": "observed",
+      "value": {
+        "finding_id": "deep-tree-recursion-variant-untested",
+        "disposition": "accepted",
+        "resolved_by": [],
+        "reason": "guard boundary documented in the review record; deep-tree fixtures are impractical due to PATH_MAX",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-regression_risk.json",
+          "source_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "source_digest": "6c718c3685c83d51638aede1e2d07d8c8b7415c9408effbc086766511d222aec",
+          "native_id": "deep-tree-recursion-variant-untested"
+        }
+      ]
+    },
+    "decision": {
+      "status": "observed",
+      "value": {
+        "finding_id": "deep-tree-recursion-variant-untested",
+        "disposition": "accepted",
+        "resolved_by": [],
+        "reason": "guard boundary documented in the review record; deep-tree fixtures are impractical due to PATH_MAX",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-regression_risk.json",
+          "source_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "source_digest": "6c718c3685c83d51638aede1e2d07d8c8b7415c9408effbc086766511d222aec",
+          "native_id": "deep-tree-recursion-variant-untested"
+        }
+      ]
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 409,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/409",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "8c52f7c65a377399b7a0514673865025fdef9712",
+        "status": "merged",
+        "merged_at": "2026-08-02T15:52:39Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

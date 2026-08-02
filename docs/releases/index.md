@@ -254,3 +254,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:407:start -->
 - [PR #407](https://github.com/Unson-LLC/vibepro/pull/407) — [2026-08](/releases/2026-08): story-vibepro-vacuous-e2e-test-elimination - test/e2e配下に、テスト内で定義した文字列リテラルを同じ文字列由来の正規表現でassert.matchするだけの、構造上失敗しないテストが19ファイル存在する
 <!-- vibepro-release-index-pr:407:end -->
+
+<!-- vibepro-release-index-pr:409:start -->
+- [PR #409](https://github.com/Unson-LLC/vibepro/pull/409) — [2026-08](/releases/2026-08): story-vibepro-profiler-file-walk-stack-overflow - architecture-profiler のファイル走査を反復処理化し、大規模treeでの "Maximum call stack size exceeded" を解消する
+<!-- vibepro-release-index-pr:409:end -->
