@@ -1208,8 +1208,20 @@
         "started_at": "2026-07-30",
         "due_at": null,
         "category": "governance"
+      },
+      {
+        "story_id": "story-vibepro-unit-suite-concurrency-default",
+        "title": "unit証跡の全体スイート実行を実測最適並列度に正本化し、verify runのタイムアウト余裕を確保する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-02",
+        "due_at": null,
+        "category": "delivery-efficiency"
       }
     ],
-    "current_story_id": "story-vibepro-vacuous-e2e-test-elimination"
+    "current_story_id": "story-vibepro-unit-suite-concurrency-default"
   }
 }
