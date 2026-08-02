@@ -1,6 +1,12 @@
 {
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart LR\n  ExternalKiller[External signal sender] --> Runner[verification runner / graphify subprocess]\n  Policy[progress-deadline policy kernel] --> Runner\n  Runner --> Evidence[verification evidence record]\n  Evidence --> Gate[Gate DAG trust decision]\n  ExternalKiller -. threat: external SIGTERM forged as timeout .-> Evidence\n  Policy -- mitigation: classifyTermination separates policy_kill from external_signal --> Evidence\n  Runner -- mitigation: external_kill_signal field + verification_run_killed_by_external_signal warning --> Evidence\n  Policy -- mitigation: timed_out only for max_wall_clock_exceeded / no_progress_deadline_exceeded --> Gate"
+    }
+  ],
   "clauses": [
     {
       "id": "INV-001",
@@ -47,7 +53,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T11:30:50.131Z",
-      "last_revised_at": "2026-08-02T11:30:50.131Z"
+      "last_revised_at": "2026-08-02T11:38:26.519Z"
     },
     {
       "id": "INV-002",
@@ -98,11 +104,18 @@
         ]
       },
       "first_seen_at": "2026-08-02T11:30:50.131Z",
-      "last_revised_at": "2026-08-02T11:30:50.131Z"
+      "last_revised_at": "2026-08-02T11:38:26.519Z"
     },
     {
       "id": "C-001",
       "type": "contract",
+      "inherited_behavior": {
+        "condition": "!['progress', 'partial_result', 'completed', 'failed', 'cancelled'].includes(kind",
+        "classification": "unchanged",
+        "files": [
+          "src/codex-subagent-runtime-adapter.js"
+        ]
+      },
       "statement": "evaluateProgressBounds in the codex subagent runtime adapter delegates to the shared kernel while preserving its external return contract ({status:'stalled', message, stop_reason:{code,message,details}} or null), and the pre-existing CDI-S-5 test suites pass without semantic changes.",
       "rationale": "The kernel extraction must leave one semantic source of truth without breaking the only site that already implemented the full ideal-form semantics.",
       "origin": {
@@ -149,7 +162,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T11:30:50.131Z",
-      "last_revised_at": "2026-08-02T11:30:50.131Z"
+      "last_revised_at": "2026-08-02T11:38:26.519Z"
     },
     {
       "id": "S-001",
@@ -208,7 +221,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T11:30:50.131Z",
-      "last_revised_at": "2026-08-02T11:30:50.131Z"
+      "last_revised_at": "2026-08-02T11:38:26.519Z"
     },
     {
       "id": "S-002",
@@ -267,13 +280,13 @@
         ]
       },
       "first_seen_at": "2026-08-02T11:30:50.131Z",
-      "last_revised_at": "2026-08-02T11:30:50.131Z"
+      "last_revised_at": "2026-08-02T11:38:26.519Z"
     }
   ],
-  "generated_at": "2026-08-02T11:30:50.129Z",
+  "generated_at": "2026-08-02T11:38:26.516Z",
   "generated_by": {
     "caller": "unknown",
     "stage": "ai_synthesis"
   },
-  "previous_spec_id": null
+  "previous_spec_id": "2026-08-02T11:30:50.129Z"
 }

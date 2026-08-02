@@ -1,5 +1,7 @@
 ---
 story_id: story-vibepro-progress-heartbeat-policy-kernel
+parent_design: vibepro-progress-heartbeat-policy-kernel
+last_reviewed_root_hash: 4bae50e8f8f01c556137ebd18d0358700152c816509ea7c84007df9e7fdee99a
 title: 進捗ハートビートpolicy kernelの抽出とgraphify/verification-runnerへの採用
 status: active
 view: dev
