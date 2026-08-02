@@ -257,6 +257,17 @@ title: Docs Only Update Spec
   ]);
   assert.equal(decision.exitCode, 0);
 
+  const intakeJudgment = await runCli([
+    'decision', 'record', repo,
+    '--id', 'story-gate-check',
+    '--type', 'intake_not_applicable',
+    '--summary', 'docs-only fixture story has no UI/UX surface',
+    '--reason', 'docs-only change; no screen, route, or visual behavior to intake',
+    '--status', 'accepted',
+    '--json'
+  ]);
+  assert.equal(intakeJudgment.exitCode, 0);
+
   const adjudication = await runCli([
     'adjudicate', 'record', repo,
     '--id', 'story-gate-check',
