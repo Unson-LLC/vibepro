@@ -368,14 +368,19 @@ async function listRepoFiles(root) {
   return filesystemFiles;
 }
 
-async function listFilesRecursive(root, dir = root) {
-  const entries = await readdir(dir, { withFileTypes: true });
+async function listFilesRecursive(root) {
+  // Iterative walk with a single accumulator: recursion + spread-push overflows
+  // the call stack once a subtree holds more entries than V8 accepts as arguments.
   const files = [];
-  for (const entry of entries) {
-    if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === '.vibepro') continue;
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) files.push(...await listFilesRecursive(root, fullPath));
-    else files.push(normalizePath(path.relative(root, fullPath)));
+  const pending = [root];
+  for (let index = 0; index < pending.length; index += 1) {
+    const entries = await readdir(pending[index], { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.name === 'node_modules' || entry.name === '.git' || entry.name === '.vibepro') continue;
+      const fullPath = path.join(pending[index], entry.name);
+      if (entry.isDirectory()) pending.push(fullPath);
+      else files.push(normalizePath(path.relative(root, fullPath)));
+    }
   }
   return files;
 }

@@ -7742,7 +7742,48 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "title": "diagnosis-path directory walkers iterative rewrite",
+      "root_doc": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
+      "owner": "VibePro diagnostics maintainer",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-profiler-file-walk-stack-overflow.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": "2c0991ec929bcca1b6e12da190eac0a816a863fe52d04816b03fbb2fe43d1549"
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-profiler-file-walk-stack-overflow.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": "2c0991ec929bcca1b6e12da190eac0a816a863fe52d04816b03fbb2fe43d1549"
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-07-30T13:01:39.398Z"
+  "updated_at": "2026-08-02T12:03:19.043967Z"
 }
