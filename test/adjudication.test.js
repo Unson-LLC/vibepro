@@ -12,7 +12,9 @@ import {
   buildEvidenceAdjudicationGate,
   prepareAdjudication,
   readAdjudicationIfExists,
+  readImplementationProvenanceIfExists,
   recordAdjudication,
+  recordImplementationProvenance,
   summarizeAdjudicationForPr
 } from '../src/adjudication.js';
 import { preparePullRequest } from '../src/pr-manager.js';
@@ -851,4 +853,64 @@ test('the adjudication request states how each record was produced, not only wha
       `U+${codePoint.toString(16).padStart(4, '0')} must not reach the adjudication request`
     );
   }
+});
+
+test('CSA-S-001 adjudicate provenance validates story id and agent system before any write, then binds HEAD', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: baseline']);
+  await assert.rejects(() => recordImplementationProvenance(repo, { storyId: '', agentSystem: 'codex' }), /--id/);
+  await assert.rejects(
+    () => recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'gpt5' }),
+    /--agent-system must be one of/
+  );
+  assert.equal(await readImplementationProvenanceIfExists(repo, STORY_ID), null, 'a rejected call must not write the provenance artifact');
+  const result = await recordImplementationProvenance(repo, {
+    storyId: STORY_ID,
+    agentSystem: 'claude_code',
+    agentId: 'impl-agent-1'
+  });
+  const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo });
+  assert.equal(result.record.head_commit, stdout.trim());
+  assert.equal(result.record.provenance.agent_system, 'claude_code');
+  const stored = await readImplementationProvenanceIfExists(repo, STORY_ID);
+  assert.equal(stored.provenance.agent_system, 'claude_code');
+  assert.ok(stored.recorded_at);
+});
+
+test('CSA-S-002 evidence-path adjudicate record attaches a non-blocking same_system warning naming both systems', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: baseline']);
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-agent-1' });
+  const result = await recordAdjudication(repo, {
+    storyId: STORY_ID,
+    clauseId: 'AC-1',
+    verdict: 'demonstrated',
+    reason: 'Evidence observation shows the outcome directly.',
+    agentSystem: 'claude_code',
+    agentId: 'adjudicator-1'
+  });
+  assert.equal(result.warnings.length, 1);
+  assert.equal(result.warnings[0].id, 'same_system');
+  assert.match(result.warnings[0].reason, /claude_code/);
+  assert.equal(result.entry.warnings[0].id, 'same_system');
+  const stored = await readAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(stored.verdicts[0].warnings[0].id, 'same_system', 'the warning must be persisted on the verdict entry, not just returned');
+});
+
+test('CSA-S-003 evidence-path adjudicate record from a cross-system adjudicator carries no warning', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: baseline']);
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-agent-1' });
+  const result = await recordAdjudication(repo, {
+    storyId: STORY_ID,
+    clauseId: 'AC-1',
+    verdict: 'demonstrated',
+    reason: 'Evidence observation shows the outcome directly.',
+    agentSystem: 'codex',
+    agentId: 'adjudicator-1'
+  });
+  assert.deepEqual(result.warnings, []);
 });

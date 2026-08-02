@@ -12,9 +12,11 @@ import {
   collectJudgmentItems,
   prepareJudgmentAdjudication,
   readJudgmentAdjudicationIfExists,
+  recordImplementationProvenance,
   recordJudgmentAdjudication,
   recordPremiseCorrection,
   resolveCurrentJudgmentState,
+  sameSystemLogPath,
   summarizeJudgmentAdjudicationForPr
 } from '../src/adjudication.js';
 import { preparePullRequest } from '../src/pr-manager.js';
@@ -958,3 +960,150 @@ async function gitHead(repo) {
   const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo });
   return stdout.trim();
 }
+
+test('CSA-S-004 judgment-DAG record rejects a same-system adjudicator before persistence and leaves the artifact untouched', async () => {
+  const repo = await makeRepo();
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-1' });
+  const before = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(before, null);
+  await assert.rejects(() => recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1'
+  }), /requires a cross-system adjudicator/);
+  const after = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(after, null, 'a rejected same-system record must not write the judgment-adjudication.json artifact');
+});
+
+test('CSA-S-005 --allow-same-system appends the append-only log and stores the override on the persisted event', async () => {
+  const repo = await makeRepo();
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-1' });
+  const result = await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1',
+    allowSameSystemReason: 'single-system environment for this repo'
+  });
+  assert.equal(result.entry.provenance.same_system_override.reason, 'single-system environment for this repo');
+  const logRaw = await readFile(sameSystemLogPath(repo, STORY_ID), 'utf8');
+  const lines = logRaw.trim().split('\n');
+  assert.equal(lines.length, 1);
+  const logEntry = JSON.parse(lines[0]);
+  assert.equal(logEntry.reason, 'single-system environment for this repo');
+  assert.equal(logEntry.agent_system, 'claude_code');
+  assert.equal(logEntry.story_id, STORY_ID);
+});
+
+test('CSA-S-006 an accepted decision record with the environment source downgrades same-system rejection to a warning', async () => {
+  const repo = await makeRepo();
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-1' });
+  const decisionRecordsPath = path.join(repo, '.vibepro', 'pr', STORY_ID, 'decision-records.json');
+  await mkdir(path.dirname(decisionRecordsPath), { recursive: true });
+  await writeFile(decisionRecordsPath, `${JSON.stringify({
+    schema_version: '0.1.0',
+    model: 'vibepro-decision-records-v1',
+    story_id: STORY_ID,
+    decisions: [{
+      decision_id: 'decision-env-1',
+      story_id: STORY_ID,
+      type: 'waiver',
+      status: 'accepted',
+      source: 'gate:judgment_dag_adjudication:same_system_environment',
+      reason: 'single-system agent environment for this repository',
+      artifact: 'docs/decisions/single-system.md'
+    }]
+  }, null, 2)}\n`, 'utf8');
+  const result = await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1'
+  });
+  assert.equal(result.warnings.length, 1);
+  assert.equal(result.warnings[0].id, 'same_system');
+  assert.match(result.warnings[0].reason, /decision-env-1/);
+});
+
+test('CSA-S-007 missing implementation provenance emits a provenance_missing warning only and behaves as before', async () => {
+  const repo = await makeRepo();
+  const result = await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1'
+  });
+  assert.equal(result.warnings.length, 1);
+  assert.equal(result.warnings[0].id, 'provenance_missing');
+  const stored = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(stored.events.length, 1);
+  assert.equal(stored.events[0].verdict, 'judged_sound');
+});
+
+test('CSA-S-008 a cross-system adjudicator with recorded provenance produces no warning and needs no override', async () => {
+  const repo = await makeRepo();
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'codex', agentId: 'impl-1' });
+  const result = await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1'
+  });
+  assert.deepEqual(result.warnings, []);
+  assert.equal(result.entry.provenance.same_system_override, undefined);
+});
+
+test('CSA-S-009 adjudicate correct also enforces cross-system adjudication before persisting the premise correction', async () => {
+  const repo = await makeRepo();
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-1' });
+  const evidencePath = path.join(repo, 'docs', 'premise-proof-csa.md');
+  await mkdir(path.dirname(evidencePath), { recursive: true });
+  await writeFile(evidencePath, '# Replacement evidence\n', 'utf8');
+  const original = await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_unsound',
+    unsoundCause: 'classifier_premise_unsound',
+    reason: 'classifier assumed a public output change',
+    agentSystem: 'codex',
+    agentId: 'judge-original'
+  });
+  await assert.rejects(() => recordPremiseCorrection(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    originalVerdictId: original.entry.event_id,
+    incorrectPremise: 'public output changed',
+    correctedPremise: 'public output is unchanged',
+    reason: 'diff proves the corrected premise',
+    replacementEvidence: ['docs/premise-proof-csa.md'],
+    agentSystem: 'claude_code',
+    agentId: 'operator-1'
+  }), /requires a cross-system adjudicator/);
+  const stored = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(stored.events.length, 1, 'a rejected correction must not be appended to the artifact');
+
+  const correction = await recordPremiseCorrection(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    originalVerdictId: original.entry.event_id,
+    incorrectPremise: 'public output changed',
+    correctedPremise: 'public output is unchanged',
+    reason: 'diff proves the corrected premise',
+    replacementEvidence: ['docs/premise-proof-csa.md'],
+    agentSystem: 'claude_code',
+    agentId: 'operator-1',
+    allowSameSystemReason: 'single agent-system CI runner'
+  });
+  assert.equal(correction.entry.provenance.same_system_override.reason, 'single agent-system CI runner');
+});
