@@ -1489,6 +1489,42 @@ export async function recordPremiseCorrection(repoRoot, options = {}) {
   return { entry, records: next, warnings: crossSystemResult.warnings, artifact: toWorkspaceRelative(root, artifactPath) };
 }
 
+// A verdict passing (judged_sound, or needs_human_judgment closed by decision) says nothing
+// about whether weight independence was ever established for it. This walks the resolved
+// current_verdict per item and counts the three states a reviewer needs visible on the gate
+// node and PR summary: no provenance recorded to check against, a same-system adjudicator
+// (warning, not blocked, evidence path only reaches this via the analogous judgment verdict
+// path), and a same-system rejection that was explicitly overridden with --allow-same-system.
+function summarizeJudgmentWarningStates(items) {
+  let provenanceMissingCount = 0;
+  let sameSystemWarningCount = 0;
+  let sameSystemOverrideCount = 0;
+  for (const item of items) {
+    const verdict = item?.current_verdict;
+    if (!verdict) continue;
+    const warnings = Array.isArray(verdict.warnings) ? verdict.warnings : [];
+    if (warnings.some((warning) => warning?.id === 'provenance_missing')) provenanceMissingCount += 1;
+    if (warnings.some((warning) => warning?.id === 'same_system')) sameSystemWarningCount += 1;
+    if (verdict.provenance?.same_system_override) sameSystemOverrideCount += 1;
+  }
+  return {
+    provenance_missing_count: provenanceMissingCount,
+    same_system_warning_count: sameSystemWarningCount,
+    same_system_override_count: sameSystemOverrideCount
+  };
+}
+
+function describeJudgmentWarningStates(warningStates) {
+  if (!warningStates) return null;
+  const { provenance_missing_count: missing, same_system_warning_count: warned, same_system_override_count: overridden } = warningStates;
+  if (missing === 0 && warned === 0 && overridden === 0) return null;
+  const parts = [];
+  if (missing > 0) parts.push(`${missing} item(s) have no recorded implementation provenance to verify weight independence against`);
+  if (warned > 0) parts.push(`${warned} item(s) were judged by a same-agent_system adjudicator (weight-correlated verdict)`);
+  if (overridden > 0) parts.push(`${overridden} item(s) used a recorded --allow-same-system override`);
+  return `Weight-independence note (does not affect gate status): ${parts.join('; ')}.`;
+}
+
 export function buildJudgmentDagAdjudicationGate({
   storyId,
   items = [],
@@ -1526,6 +1562,8 @@ export function buildJudgmentDagAdjudicationGate({
       reason: `Judgment adjudication history is invalid and cannot be resolved safely: ${state.invalid_reasons.join('; ')}.`
     };
   }
+  const warningStates = summarizeJudgmentWarningStates(state.items);
+  const warningNote = describeJudgmentWarningStates(warningStates);
   const missing = [];
   const unsound = [];
   const needsHuman = [];
@@ -1554,10 +1592,12 @@ export function buildJudgmentDagAdjudicationGate({
       ...base,
       status: 'failed',
       judged_unsound_items: unsound,
+      ...warningStates,
       reason: `Judge ruled ${unsound.length} judgment item(s) unsound (tokens present but the judgment does not hold): `
         + unsound.map((item) => `${item.item_id} [${item.unsound_cause}] (${item.reason})`).join('; ')
         + '. implementation_unsound requires an implementation/evidence change and a new-HEAD adjudication. '
         + (classifierRecovery.length > 0 ? classifierRecovery.join(' ') : '')
+        + (warningNote ? ` ${warningNote}` : '')
     };
   }
   if (missing.length > 0 || needsHuman.length > 0 || pendingCorrections.length > 0) {
@@ -1581,13 +1621,16 @@ export function buildJudgmentDagAdjudicationGate({
       missing_items: missing,
       human_judgment_items: needsHuman,
       pending_correction_items: pendingCorrections,
-      reason: reasons.join(' ')
+      ...warningStates,
+      reason: reasons.join(' ') + (warningNote ? ` ${warningNote}` : '')
     };
   }
   return {
     ...base,
     status: 'passed',
+    ...warningStates,
     reason: `All ${items.length} judgment item(s) hold under current-head adjudication (judged_sound, or needs_human_judgment closed by an accepted human decision record).`
+      + (warningNote ? ` ${warningNote}` : '')
   };
 }
 
@@ -1599,7 +1642,8 @@ export function summarizeJudgmentAdjudicationForPr({ storyId = null, items = [],
     headSha,
     decisions
   });
-  const current = (state.status === 'invalid_history' ? [] : state.items)
+  const resolvedItems = state.status === 'invalid_history' ? [] : state.items;
+  const current = resolvedItems
     .map((item) => item.current_verdict)
     .filter(Boolean);
   return {
@@ -1611,6 +1655,7 @@ export function summarizeJudgmentAdjudicationForPr({ storyId = null, items = [],
     pending_correction_count: state.status === 'invalid_history'
       ? 0
       : state.items.filter((item) => item.status === 'awaiting_re_adjudication').length,
-    invalid_history_count: state.invalid_reasons.length
+    invalid_history_count: state.invalid_reasons.length,
+    ...summarizeJudgmentWarningStates(resolvedItems)
   };
 }

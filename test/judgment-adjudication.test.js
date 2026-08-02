@@ -1107,3 +1107,83 @@ test('CSA-S-009 adjudicate correct also enforces cross-system adjudication befor
   });
   assert.equal(correction.entry.provenance.same_system_override.reason, 'single agent-system CI runner');
 });
+
+test('CSA-S-010 the gate surfaces a provenance_missing_count and mentions it in reason without changing pass/fail status', () => {
+  const items = fixtureItems();
+  // The legacy `verdicts` fixture shape (used elsewhere in this file) is converted into events
+  // via named-field mapping only and does not carry `warnings` (that field postdates the legacy
+  // format), so these fixtures use the v2 `events` array directly, as the real recorders do.
+  const eventsMissingProvenance = items.map((item, index) => ({
+    event_id: `evt-missing-${index}`,
+    type: 'verdict',
+    item_id: item.id,
+    verdict: 'judged_sound',
+    unsound_cause: null,
+    responds_to_correction_id: null,
+    reason: 'ok',
+    head_commit: 'head-1',
+    provenance: { agent_system: 'claude_code', agent_id: 'judge-1' },
+    warnings: [{ id: 'provenance_missing', reason: 'no implementation provenance is recorded' }]
+  }));
+  const gateWithWarnings = buildJudgmentDagAdjudicationGate({
+    storyId: STORY_ID, items, adjudication: { events: eventsMissingProvenance }, headSha: 'head-1', decisions: []
+  });
+  assert.equal(gateWithWarnings.provenance_missing_count, items.length);
+  assert.match(gateWithWarnings.reason, /no recorded implementation provenance/);
+
+  const eventsClean = items.map((item, index) => ({
+    event_id: `evt-clean-${index}`,
+    type: 'verdict',
+    item_id: item.id,
+    verdict: 'judged_sound',
+    unsound_cause: null,
+    responds_to_correction_id: null,
+    reason: 'ok',
+    head_commit: 'head-1',
+    provenance: { agent_system: 'claude_code', agent_id: 'judge-1' },
+    warnings: []
+  }));
+  const gateClean = buildJudgmentDagAdjudicationGate({
+    storyId: STORY_ID, items, adjudication: { events: eventsClean }, headSha: 'head-1', decisions: []
+  });
+  assert.equal(gateClean.provenance_missing_count, 0);
+  // CSA-S-010(c): warning presence must not flip pass/fail status
+  assert.equal(gateWithWarnings.status, 'passed');
+  assert.equal(gateClean.status, 'passed');
+  assert.equal(gateWithWarnings.status, gateClean.status);
+});
+
+test('CSA-S-011 --allow-same-system produces a same_system_override_count in both the gate node and the PR summary', async () => {
+  const repo = await makeRepo();
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-1' });
+  const items = fixtureItems();
+  await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: items[0].id,
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1',
+    allowSameSystemReason: 'single agent-system CI runner'
+  });
+  for (const item of items.slice(1)) {
+    await recordJudgmentAdjudication(repo, {
+      storyId: STORY_ID,
+      itemId: item.id,
+      verdict: 'judged_sound',
+      reason: '互換テストが検証している',
+      agentSystem: 'codex',
+      agentId: 'judge-2'
+    });
+  }
+  const artifact = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  const headSha = await gitHead(repo);
+  const gate = buildJudgmentDagAdjudicationGate({ storyId: STORY_ID, items, adjudication: artifact, headSha, decisions: [] });
+  assert.equal(gate.status, 'passed', 'CSA-S-011(c): an override must not flip the gate to failed');
+  assert.equal(gate.same_system_override_count, 1);
+  assert.equal(gate.same_system_warning_count, 0, 'an accepted override clears the same_system warning, it does not add one');
+  assert.match(gate.reason, /--allow-same-system override/);
+
+  const summary = summarizeJudgmentAdjudicationForPr({ storyId: STORY_ID, items, adjudication: artifact, headSha, decisions: [] });
+  assert.equal(summary.same_system_override_count, 1);
+});
