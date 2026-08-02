@@ -15562,6 +15562,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'agent_evidence_lifecycle_gate',
       'safety_surface_gate',
       'deploy_verification_gate',
+      'uiux_intake_judgment_gate',
       'bug_physics_triage_gate',
       'bug_physics_profile_gate',
       'bug_physics_feedback_gate',
@@ -15775,6 +15776,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:ci_status_or_waiver' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:vibepro_artifact_policy' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:split_resolution' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:uiux_intake_judgment' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:managed_worktree' && gate.required && !['passed', 'bypassed', 'not_applicable', 'satisfied'].includes(gate.status)) return true;
   if (gate.type === 'workflow_heavy_gate' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:agent_review' && gate.status !== 'passed') return true;

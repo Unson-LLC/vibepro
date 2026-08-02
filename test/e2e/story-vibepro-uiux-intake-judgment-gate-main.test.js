@@ -53,6 +53,9 @@ test('story-vibepro-uiux-intake-judgment-gate ac:1 gate always present and block
   assert.ok(gate, 'gate:uiux_intake_judgment must always be present in the pr prepare gate DAG');
   assert.equal(gate.status, 'needs_evidence', 'gate:uiux_intake_judgment blocks with needs_evidence when no intake judgment is recorded for the story');
   assert.equal(gate.required, true, 'gate:uiux_intake_judgment is a required gate');
+  const blockingIds = (prepare.pr_context.execution_gate?.blocking_gates ?? []).map((entry) => entry.id);
+  assert.ok(blockingIds.includes('gate:uiux_intake_judgment'),
+    'the unrecorded judgment must block on the enforcement surface (execution_gate.blocking_gates), not only on the node status');
 });
 
 test('story-vibepro-uiux-intake-judgment-gate ac:2 intake coverage artifact resolves the gate', async () => {

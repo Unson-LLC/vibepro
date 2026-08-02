@@ -68,6 +68,32 @@ test('UIJ-SCENARIO-001 gate:uiux_intake_judgment blocks with needs_evidence when
   assert.ok(edges.some((edge) => edge.from === 'gate:uiux_intake_judgment'), 'gate must have an outgoing edge');
 });
 
+test('UIJ-SCENARIO-008 unrecorded judgment reaches the enforcement surface: execution gate blocks on gate:uiux_intake_judgment', async () => {
+  const repo = await makeGitRepoWithStory();
+  const prepare = await prPrepare(repo);
+  const blockingIds = (prepare.pr_context.execution_gate?.blocking_gates ?? []).map((gate) => gate.id);
+  assert.ok(blockingIds.includes('gate:uiux_intake_judgment'),
+    `execution_gate.blocking_gates must contain gate:uiux_intake_judgment, got: ${blockingIds.join(', ')}`);
+  assert.equal(prepare.pr_context.execution_gate?.pr_create_allowed, false, 'pr create must not be allowed while the intake judgment is unrecorded');
+});
+
+test('UIJ-SCENARIO-009 recorded judgment releases the enforcement surface for this gate', async () => {
+  const repo = await makeGitRepoWithStory();
+  const decision = await runCli([
+    'decision', 'record', repo,
+    '--id', STORY,
+    '--type', 'intake_not_applicable',
+    '--summary', 'CLI-only story',
+    '--reason', 'No UI/UX surface in this story',
+    '--json'
+  ]);
+  assert.equal(decision.exitCode, 0, JSON.stringify(decision.result ?? decision.error, null, 2));
+  const prepare = await prPrepare(repo);
+  const blockingIds = (prepare.pr_context.execution_gate?.blocking_gates ?? []).map((gate) => gate.id);
+  assert.ok(!blockingIds.includes('gate:uiux_intake_judgment'),
+    'gate:uiux_intake_judgment must leave blocking_gates once the judgment is recorded');
+});
+
 test('UIJ-SCENARIO-002 intake coverage artifact under .vibepro/uiux satisfies the gate', async () => {
   const repo = await makeGitRepoWithStory();
   const template = await runCli(['uiux', 'intake', 'template', repo, '--id', STORY, '--json']);
