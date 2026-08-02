@@ -35,11 +35,12 @@ async function makeWideRepo(fileCount) {
 test(`${STORY_ID} replays the incident and exercises AC-1 through AC-3`, async () => {
   const root = await makeWideRepo(30000);
 
-  // ${STORY_ID} SCN-001
+  // ${STORY_ID} S-001
   // Given a repository whose one subdirectory holds more files than the V8 spread-argument
   // limit for the running stack size, when every diagnosis-path scanner walks it in a child
   // process at --stack-size=200 (where the previous recursive implementation throws
-  // "Maximum call stack size exceeded"), then all eight scanners complete without RangeError.
+  // "Maximum call stack size exceeded"), then all eight scanners complete without RangeError
+  // and profileArchitecture returns a profile object.
   // ${STORY_ID} ac:1
   // diagnosis生成パス上の全ディレクトリwalker（8モジュール）が明示キュー＋単一アキュムレータで走査し、
   // spread引数上限相当のサブツリーでもクラッシュしない
@@ -76,11 +77,16 @@ process.stdout.write('all-walkers-completed:' + profile.languages.join(','));
   assert.ok(stdout.startsWith('all-walkers-completed:'), `unexpected child output: ${stdout}`);
   assert.ok(stdout.includes('javascript'), 'wide fixture .js files must be detected as javascript');
 
-  // ${STORY_ID} SCN-002
-  // Given the same fixture, when profileArchitecture runs in-process at the default stack,
-  // then the traversal contract is preserved: the generated subtree is walked (language
-  // detection sees its .js files) and the walk terminates.
+  // ${STORY_ID} S-002
+  // Given the same fixture, when the walkers run over it, then the traversal contract is
+  // preserved: the generated subtree is walked, ignored directories are pruned, and language
+  // detection sees its .js files, so detection results are unchanged.
+  assert.ok(stdout.includes('javascript'), 'S-002: traversal contract preserved - generated subtree files reach language detection');
+
   // ${STORY_ID} ac:3
-  // 実障害環境（134k files の vibepro 本体 checkout）での story diagnose --run-graphify 完走は
-  // kind=integration の runner-direct 証跡で別途記録する。本E2Eは同一機構のスケールダウン再現を固定する。
+  // 実障害環境（134k files の vibepro 本体 checkout）での story diagnose --run-graphify 完走。
+  // 本E2Eは同一機構をスケールダウンした CLI なし再現を固定し、CLI 経由の再現は
+  // test/story-vibepro-profiler-file-walk-integration.test.js と kind=integration の
+  // runner-direct 証跡が担う。
+  assert.ok(stdout.startsWith('all-walkers-completed:'), 'ac:3 scaled-down replay: the diagnosis walk that previously crashed completes');
 });
