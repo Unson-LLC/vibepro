@@ -3,7 +3,7 @@ story_id: story-vibepro-profiler-file-walk-stack-overflow
 title: diagnosis-path directory walkers iterative rewrite Spec
 status: active
 parent_design: story-vibepro-profiler-file-walk-stack-overflow
-last_reviewed_root_hash: bd8ab55a93bddc236303c6d081ed4eee4beb31080787c9c5220180ab347f0617
+last_reviewed_root_hash: 2c0991ec929bcca1b6e12da190eac0a816a863fe52d04816b03fbb2fe43d1549
 ---
 
 # diagnosis-path directory walkers iterative rewrite Spec
