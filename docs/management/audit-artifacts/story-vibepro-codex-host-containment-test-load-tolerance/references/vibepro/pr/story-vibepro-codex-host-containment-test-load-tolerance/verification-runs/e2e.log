@@ -1,0 +1,10 @@
+✔ production Codex host replays spawn -> synchronous containment registration -> shutdown -> orphan reaped (1749.88675ms)
+✔ production Codex host containment wait succeeds well inside the widened 300000ms deadline (1749.481667ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6135.575416
