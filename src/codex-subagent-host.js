@@ -253,7 +253,14 @@ async function terminateWorkerTree(runDir, workerPid, workerProcess, codexPid, k
     waitForProcessExit(workerPid, 4000, workerProcess),
     waitForFile(path.join(runDir, 'shutdown-finished.json'), 4000)
   ]);
+  // codex-process.json is registered synchronously by the worker, but under
+  // host load the initial shutdown() sample can still race ahead of that
+  // write landing on disk. Re-resolve codexPid from disk before every
+  // escalation stage below so an unknown pid never causes containment to
+  // skip signaling the orphaned Codex process tree.
+  codexPid = await resolveCodexPid(runDir, codexPid);
   if (workerStopped && shutdownAcknowledged && await waitForPidExit(codexPid, 500, killProcess)) return;
+  codexPid = await resolveCodexPid(runDir, codexPid);
   if (Number.isInteger(codexPid) && codexPid > 1) {
     const signaled = process.platform !== 'win32'
       ? signalProcess(-codexPid, 'SIGTERM', killProcess, ['EINVAL', 'EPERM'])
@@ -267,14 +274,24 @@ async function terminateWorkerTree(runDir, workerPid, workerProcess, codexPid, k
     }
   }
   if (process.platform !== 'win32') signalProcess(-workerPid, 'SIGTERM', killProcess);
+  codexPid = await resolveCodexPid(runDir, codexPid);
   if (await waitForProcessExit(workerPid, 1000, workerProcess)
       && await waitForPidExit(codexPid, 500, killProcess)) return;
+  codexPid = await resolveCodexPid(runDir, codexPid);
   if (Number.isInteger(codexPid) && codexPid > 1) {
     if (process.platform !== 'win32') signalProcess(-codexPid, 'SIGKILL', killProcess, ['EINVAL', 'EPERM']);
     else signalProcess(codexPid, 'SIGKILL', killProcess);
   }
   if (process.platform !== 'win32') signalProcess(-workerPid, 'SIGKILL', killProcess);
   else signalProcess(workerPid, 'SIGKILL', killProcess);
+  const lateResolvedCodexPid = await resolveCodexPid(runDir, codexPid);
+  if (lateResolvedCodexPid !== codexPid && Number.isInteger(lateResolvedCodexPid) && lateResolvedCodexPid > 1) {
+    // A pid that only became resolvable after the SIGKILL stage was never
+    // signaled by the stages above; kill it before the final confirmation.
+    if (process.platform !== 'win32') signalProcess(-lateResolvedCodexPid, 'SIGKILL', killProcess, ['EINVAL', 'EPERM']);
+    else signalProcess(lateResolvedCodexPid, 'SIGKILL', killProcess);
+  }
+  codexPid = lateResolvedCodexPid;
   const [ownerStopped, codexStopped] = await Promise.all([
     waitForProcessExit(workerPid, 1000, workerProcess),
     waitForPidExit(codexPid, 1000, killProcess)
@@ -282,6 +299,12 @@ async function terminateWorkerTree(runDir, workerPid, workerProcess, codexPid, k
   if (!ownerStopped || !codexStopped) {
     throw new Error(`Codex containment could not confirm terminal processes: worker=${workerPid} codex=${codexPid ?? 'unknown'}`);
   }
+}
+
+async function resolveCodexPid(runDir, codexPid) {
+  if (Number.isInteger(codexPid) && codexPid > 1) return codexPid;
+  const codexProcess = await readJson(path.join(runDir, 'codex-process.json'));
+  return Number.isInteger(codexProcess?.pid) ? codexProcess.pid : codexPid;
 }
 
 async function waitForFile(file, timeoutMs) {
