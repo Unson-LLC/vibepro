@@ -1208,8 +1208,20 @@
         "started_at": "2026-07-30",
         "due_at": null,
         "category": "governance"
+      },
+      {
+        "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+        "title": "architecture-profiler のファイル走査を反復処理化し、大規模treeでの Maximum call stack size exceeded を解消する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-02",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-vacuous-e2e-test-elimination"
+    "current_story_id": "story-vibepro-profiler-file-walk-stack-overflow"
   }
 }
