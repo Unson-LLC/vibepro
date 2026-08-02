@@ -562,10 +562,6 @@
         ],
         "test_refs": [
           {
-            "file": "test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts",
-            "case": "story-vibepro-evidence-user-fingerprint evidence binding replay"
-          },
-          {
             "file": "test/vibepro-cli.test.js",
             "case": "pr prepare keeps legacy full-fingerprint evidence stale when tracked VibePro manifest changes"
           }
@@ -574,8 +570,8 @@
       "verifiable_by": {
         "test_pattern": [
           {
-            "file_glob": "test/e2e/story-vibepro-evidence-user-fingerprint-main.spec.ts",
-            "must_cover": "Legacy evidence that lacks the user fingerprint still uses the existing full dirty fingerprint comparison"
+            "file_glob": "test/vibepro-cli.test.js",
+            "must_cover": "pr prepare keeps legacy full-fingerprint evidence stale when tracked VibePro manifest changes"
           }
         ]
       },

@@ -4,6 +4,81 @@ All notable changes to VibePro will be documented in this file.
 
 ## Unreleased
 
+- Remove 17 files under `test/e2e` that imported no product code, started no
+  process, and touched no filesystem. Each asserted a locally-defined string
+  against a regex built from that same string, so no product regression could
+  fail them, yet `node --test` counted them as passing e2e tests. No product
+  coverage is lost, because they covered no product branch to begin with.
+  Where an equivalent behavioural test already exists it is named in the commit
+  (`test/cli-status-honesty.test.js`,
+  `test/engineering-judgment-activation-precision.test.js`,
+  `test/managed-worktree-policy-resync.test.js`,
+  `test/traceability-usage-report.test.js`, `test/vibepro-cli.test.js`, and the
+  real `-main.test.js` siblings); for the remainder there is nothing to
+  replace. Two files did cover branches nothing else executed, and those were
+  rewritten into behavioural tests instead of deleted.
+
+- Add `npm run lint:e2e-product-execution`
+  (`scripts/lint-e2e-product-execution.mjs`), which fails when a `test/e2e`
+  file executes no product behaviour. A file clears the lint by doing any one
+  of: `product_import` (resolving a module inside this repository — a relative
+  path, a `#subpath` import, or an `@/` alias, so reaching product code through
+  a shared test helper counts), `process_start` (starting a child process or
+  running the CLI), `filesystem_access` (reading or writing the filesystem), or
+  `browser_automation` (driving Playwright, Cypress, or Puppeteer). It scans
+  `test/e2e` recursively, so nested directories are not a blind spot. It runs
+  in CI after `npm run test:e2e:ts`.
+
+  **What it is not**: a structural tripwire, not a proof of behavioural
+  coverage. It reads module specifiers and call names, so a single unused
+  import clears it, and a file that imports product code and then still
+  asserts only its own literals will pass. It catches the accidental
+  reintroduction of the shape removed here; it does not certify that a test
+  verifies anything.
+
+- `npm run typecheck` now also parses `scripts/*.mjs`, not only `bin/vibepro.js`
+  and `src/*.js`. All eight existing scripts already parse, so no result
+  changes, but a syntax error in a `scripts/*.mjs` file is now caught in CI.
+
+- Six `test/e2e/*-acceptance.spec.ts` files asserted their nested runner's
+  output as TAP (`/# pass N/`). Node emits the spec reporter (`ℹ`) from v23, so
+  those specs failed locally on newer Node for a reason unrelated to product
+  behaviour. They now accept either format. One exact `pass 14` pin became a
+  floor, so adding a test to that contract suite is no longer an unrelated red.
+
+- **Cross-story effect** of the removals: seven Story slugs — `cli-status-honesty`,
+  `evidence-user-fingerprint`, `keyword-gate-structured-migration`,
+  `pr-ship-command`, `execute-merge-command`,
+  `engineering-judgment-activation-precision`, and `merge-delta-review-reuse` —
+  no longer have any `test/e2e/<slug>-*` file, so a replayed audit of those
+  Stories will now report uncovered acceptance criteria. (`isStoryE2eCandidate()`
+  also matches on content mentioning a Story id, so those slugs still resolve one
+  candidate file — this acceptance spec, which names them — but it carries no
+  `ac:N` marker for them, so the reported outcome is the same.) That outcome is
+  by design: the deleted files never executed product code, so the coverage they
+  reported was not real. None of the seven is registered in
+  `.vibepro/config.json`, so no active Story's gate changes.
+
+  **Operator action**: none for existing consumers; this is a repository-internal
+  test-quality gate and changes no published CLI surface, artifact schema, or
+  runtime behaviour. Contributors adding a `test/e2e` file must assert on real
+  behaviour rather than on a literal the test wrote itself.
+
+  **Observability**: the lint reports through its exit code and prints either
+  `e2e-product-execution: <n> e2e test file(s) all execute product behaviour`
+  or a `::error::` annotation naming every offending file. The reported count
+  is the directory it actually inspected, so a moved or emptied directory is
+  visible rather than silently clean. It is fail-closed on every path where it
+  cannot see its subject: an unscannable directory, an unreadable file, and an
+  empty file set are all exit 1.
+
+  **Rollback**: revert the commit. The lint is a standalone script plus one CI
+  step and one npm script; nothing reads its output as data, there is no
+  persisted state, no schema, and no migration. To disable it without a revert,
+  remove the `npm run lint:e2e-product-execution` step from
+  `.github/workflows/ci.yml`; the deletions in this change stand on their own
+  and do not depend on the lint.
+
 - **Breaking (behavior)**: a Story-local delivery-efficiency budget override
   (`budgets.delivery_efficiency_by_story.<story-id>` in `.vibepro/config.json`) is
   now inert unless an accepted decision record grants it. Writing

@@ -1,44 +1,115 @@
-import test from 'node:test';
 import assert from 'node:assert/strict';
+import { execFile } from 'node:child_process';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import test from 'node:test';
+import { promisify } from 'node:util';
 
-test('story-vibepro-execution-judgment-status-integrity acceptance and scenario coverage', () => {
-  // story-vibepro-execution-judgment-status-integrity ac:1
-  // vibepro execute status/next/reconcile が merge 済み artifact を読むと、execution_dag の agent_review_recorded と pr_created は pending のまま残らない。
-  assert.equal('agent_review_recorded'.includes('agent_review'), true);
+import { getExecutionStatus } from '../../src/execution-state.js';
 
-  // story-vibepro-execution-judgment-status-integrity ac:2
-  // execution state は review-summary.json と pr-create.json / pr-merge.json を読んで、merge 後の phase/completion/node status を一貫して再計算する。
-  assert.equal('pr-merge.json'.includes('merge'), true);
+// story-vibepro-execution-judgment-status-integrity ac:1 ac:2
+// `vibepro execute status` が merge 済み artifact を読むと、execution_dag の
+// agent_review_recorded と pr_created が pending のまま残らないこと、および
+// その導出が explicit delivery のある artifact には適用されないことを、
+// 実際に src/execution-state.js を実行して固定する。
+//
+// 対象分岐: src/execution-state.js deriveCompletedPhases()
+//   if (agentReviewSatisfied || (merged && !hasExplicitDelivery)) phases.push('agent_review');
+// この分岐の `merged && !hasExplicitDelivery` 側は他のテストで実行されていない。
 
-  // story-vibepro-execution-judgment-status-integrity ac:3
-  // review record --agent-closed 時、明示 lifecycle entry が無くても review-summary.json に agent_provenance と整合する closed lifecycle を反映できる。
-  assert.equal('agent-closed'.includes('closed'), true);
+const execFileAsync = promisify(execFile);
 
-  // story-vibepro-execution-judgment-status-integrity ac:4
-  // review-summary.json の lifecycle は、result artifact 側の agent_provenance.lifecycle と矛盾しない。
-  assert.equal('agent_provenance.lifecycle'.includes('lifecycle'), true);
+async function makeMergedStoryRepo(buildPrMerge, { storyId = 'story-execution-judgment' } = {}) {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-ejsi-e2e-'));
+  await execFileAsync('git', ['init'], { cwd: root });
+  await execFileAsync('git', ['config', 'user.email', 'test@example.test'], { cwd: root });
+  await execFileAsync('git', ['config', 'user.name', 'VibePro Test'], { cwd: root });
+  await writeFile(path.join(root, 'README.md'), '# fixture\n');
+  await execFileAsync('git', ['add', 'README.md'], { cwd: root });
+  await execFileAsync('git', ['commit', '-m', 'test: initialize fixture'], { cwd: root });
+  const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: root });
+  const headSha = stdout.trim();
 
-  // story-vibepro-execution-judgment-status-integrity ac:5
-  // judgment_axes[] は missing_evidence が1件でも残る限り active_passed にならない。
-  assert.equal('active_needs_evidence'.includes('needs_evidence'), true);
+  const prDir = path.join(root, '.vibepro', 'pr', storyId);
+  await mkdir(prDir, { recursive: true });
+  await writeFile(
+    path.join(prDir, 'pr-merge.json'),
+    JSON.stringify({
+      schema_version: '0.1.0',
+      story: { story_id: storyId },
+      current_head_sha: headSha,
+      ...buildPrMerge(headSha)
+    })
+  );
+  return { root, storyId, headSha };
+}
 
-  // story-vibepro-execution-judgment-status-integrity ac:6
-  // judgment_axes[] の active_accepted_followup は、accepted decision/waiver 等により「現時点で安全に defer できる」根拠がある場合だけに限定される。
-  assert.equal('active_accepted_followup'.includes('accepted_followup'), true);
+function findNode(state, id) {
+  return state.execution_dag.nodes.find((node) => node.id === id);
+}
 
-  // story-vibepro-execution-judgment-status-integrity ac:7
-  // judgment axis gate / PR body / Gate DAG summary でも、上記の厳格化後 status が同じ意味で表示される。
-  assert.equal('gate dag summary'.includes('summary'), true);
+test('story-vibepro-execution-judgment-status-integrity ac:1 ac:2 S-001 a merged artifact without explicit delivery leaves neither agent_review_recorded nor pr_created pending', async () => {
+  const { root, storyId } = await makeMergedStoryRepo((headSha) => ({
+    status: 'merged',
+    merge_commit_sha: headSha,
+    merged_at: '2026-07-28T00:00:00.000Z'
+  }));
 
-  // story-vibepro-execution-judgment-status-integrity S-001
-  // Given a merged Story has pr-merge.json and a gate-stage review-summary.json with no unmet required reviews, when execute status rebuilds execution state, then the merged workflow state marks agent_review_recorded and pr_created as passed.
-  assert.match('merged workflow state marks agent_review_recorded and pr_created as passed', /passed/);
+  const result = await getExecutionStatus(root, { storyId, baseRef: 'main' });
 
-  // story-vibepro-execution-judgment-status-integrity S-002
-  // Given review record --agent-closed receives closed provenance without a lifecycle start artifact, when the result is recorded, then the lifecycle transitions to a synthesized closed entry bound to the same story/stage/role/git state.
-  assert.match('synthesized closed lifecycle entry', /closed/);
+  // The merged fact is reconstructed from the artifact, not from stored state.
+  assert.equal(result.state.completed_phases.includes('merge'), true);
 
-  // story-vibepro-execution-judgment-status-integrity S-003
-  // Given missing_evidence remains, when PR prepare renders judgment_axes and Gate DAG summary, then the workflow status transition keeps the axis at active_needs_evidence or active_accepted_followup instead of active_passed.
-  assert.match('active_needs_evidence active_accepted_followup', /active_/);
+  // ac:1 the two nodes that previously stayed pending are recomputed as passed.
+  assert.equal(findNode(result.state, 'agent_review_recorded').status, 'passed');
+  assert.equal(findNode(result.state, 'pr_created').status, 'passed');
+
+  // ac:2 the phase list backing those nodes is derived from the artifact.
+  assert.equal(result.state.completed_phases.includes('agent_review'), true);
+  assert.equal(
+    findNode(result.state, 'agent_review_recorded').reason,
+    'required agent review evidence is complete'
+  );
+});
+
+test('story-vibepro-execution-judgment-status-integrity ac:1 ac:2 S-003 an explicit delivery artifact does not infer agent review completion', async () => {
+  const { root, storyId } = await makeMergedStoryRepo((headSha) => ({
+    status: 'merged_externally',
+    delivery: { status: 'merged_externally', merge_commit_sha: headSha },
+    reconciliation: { status: 'reconciled', reasons: [] }
+  }));
+
+  const result = await getExecutionStatus(root, { storyId, baseRef: 'main' });
+
+  // Delivery is still recognised, so the PR itself is not pending.
+  assert.equal(result.state.completed_phases.includes('merge'), true);
+  assert.equal(findNode(result.state, 'pr_created').status, 'passed');
+
+  // But an explicitly delivered Story must not fabricate agent review evidence
+  // it never recorded; the node stays pending with the honest reason.
+  assert.equal(result.state.completed_phases.includes('agent_review'), false);
+  assert.equal(findNode(result.state, 'agent_review_recorded').status, 'pending');
+  assert.equal(
+    findNode(result.state, 'agent_review_recorded').reason,
+    'agent review is not complete yet'
+  );
+});
+
+test('story-vibepro-execution-judgment-status-integrity ac:1 an unverified delivery neither infers agent review nor reports the Story merged', async () => {
+  const { root, storyId } = await makeMergedStoryRepo(() => ({
+    status: 'merged',
+    stop_reason: 'delivery_not_verified',
+    merge_commit_sha: 'legacy-sha-must-not-win',
+    merged_at: '2026-07-28T00:00:00.000Z',
+    delivery: { status: 'unverified' },
+    reconciliation: { status: 'blocked', reasons: ['delivery_not_verified'] }
+  }));
+
+  const result = await getExecutionStatus(root, { storyId, baseRef: 'main' });
+
+  assert.equal(result.state.completion_status, 'blocked');
+  assert.equal(result.state.completed_phases.includes('merge'), false);
+  assert.equal(result.state.completed_phases.includes('agent_review'), false);
+  assert.equal(findNode(result.state, 'agent_review_recorded').status, 'pending');
 });

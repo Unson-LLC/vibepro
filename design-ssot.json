@@ -7386,6 +7386,68 @@
       "source": "design-ssot.json"
     },
     {
+      "id": "vibepro-vacuous-e2e-test-elimination",
+      "title": "Vacuous e2e Test Elimination",
+      "root_doc": "docs/architecture/story-vibepro-vacuous-e2e-test-elimination.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "Structural detection that a test/e2e file executes product behaviour, and the CI lint that keeps the e2e pass count honest",
+      "owned_surfaces": [
+        "test/e2e product-execution lint",
+        "e2e pass-count trustworthiness",
+        "scripts/lint-e2e-product-execution.mjs"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-vacuous-e2e-test-elimination.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-vacuous-e2e-test-elimination.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
       "id": "vibepro-process-record-worktree-durability",
       "title": "Process record worktree durability",
       "root_doc": "docs/management/stories/active/story-vibepro-process-record-worktree-durability.md",

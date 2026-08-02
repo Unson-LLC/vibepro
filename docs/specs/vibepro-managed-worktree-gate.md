@@ -39,4 +39,4 @@ Emergency bypassには理由が必要である。これは `decision record --ty
 ## 回帰テスト
 
 - Unit/CLI: `test/vibepro-cli.test.js` の管理worktree gateテストで、preferred、disabled、required block、passed、waiverを検証する。
-- Story E2E: `test/e2e/story-vibepro-managed-worktree-gate-main.test.js` と `.spec.ts` で受け入れ基準の文言カバレッジを持つ。
+- Story E2E: `test/e2e/story-vibepro-managed-worktree-gate-main.test.js` が `runCli` 経由で accepted waiver と、waiver無しでblockされる負例の両方を実際に実行する。かつて併存した `.spec.ts` は、製品コードを実行せず文言だけを照合していたため story-vibepro-vacuous-e2e-test-elimination で削除した。

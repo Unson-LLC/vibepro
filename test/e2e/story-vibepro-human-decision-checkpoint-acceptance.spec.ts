@@ -21,8 +21,8 @@ test('story-vibepro-human-decision-checkpoint AC-1 through AC-7 and S-001 accept
     maxBuffer: 8 * 1024 * 1024
   });
 
-  assert.match(result.stdout, /# pass [1-9]\d*\b/);
-  assert.match(result.stdout, /# fail 0\b/);
+  assert.match(result.stdout, /(?:ℹ|#) pass [1-9]\d*\b/);
+  assert.match(result.stdout, /(?:ℹ|#) fail 0\b/);
 
   const acceptanceBindings = [
     ['AC-1', /duplicate material questions reuse one typed pending artifact/],
