@@ -1433,3 +1433,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-unit-suite-c
 なし
 
 <!-- vibepro-release-pr:412:end -->
+
+<!-- vibepro-release-pr:415:start -->
+## [#415](https://github.com/Unson-LLC/vibepro/pull/415) story-vibepro-codex-host-containment-test-load-tolerance - test/codex-subagent-host.test.js の containment テストが load average 20-35 の full suite 実行時のみ condition timeout でフレークする
+
+- Author: @sintariran
+- Merged: 2026-08-02T21:31:46Z
+- Commit: `e3a0560f73d49b6ccdbea82bd355d8b6bf2e6bf5`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:415:end -->
