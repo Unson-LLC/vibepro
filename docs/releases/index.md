@@ -250,3 +250,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:406:start -->
 - [PR #406](https://github.com/Unson-LLC/vibepro/pull/406) — [2026-08](/releases/2026-08): story-vibepro-budget-grant-tracked-decision-doc - budget grant を diff でレビュー可能にする: decision record --source budget:delivery_efficiency:* が tracked decision document を必ず書く
 <!-- vibepro-release-index-pr:406:end -->
+
+<!-- vibepro-release-index-pr:407:start -->
+- [PR #407](https://github.com/Unson-LLC/vibepro/pull/407) — [2026-08](/releases/2026-08): story-vibepro-vacuous-e2e-test-elimination - test/e2e配下に、テスト内で定義した文字列リテラルを同じ文字列由来の正規表現でassert.matchするだけの、構造上失敗しないテストが19ファイル存在する
+<!-- vibepro-release-index-pr:407:end -->
