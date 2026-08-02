@@ -7855,6 +7855,26 @@
           }
         ]
       }
+    },
+    {
+      "id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "title": "gate:uiux_intake_judgment human PR summary surface labels",
+      "root_doc": "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+      "owner": "VibePro diagnostics maintainer",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "curated human PR summary label lists in src/pr-manager.js",
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {},
+      "child_links": []
     }
   ],
   "updated_at": "2026-08-02T14:46:08.017Z"
