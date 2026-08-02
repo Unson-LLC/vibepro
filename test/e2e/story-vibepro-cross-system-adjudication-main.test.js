@@ -50,7 +50,7 @@ async function headOf(repo) {
 }
 
 // story-vibepro-cross-system-adjudication ac:1 provenance records the implementer's agent system, rejecting unknown systems before any write
-test('CSA-E2E-001 story-vibepro-cross-system-adjudication ac:1 adjudicate provenance records implementation-provenance.json with recorded_at and head commit, rejecting unknown agent systems before any write', async () => {
+test('CSA-E2E-001 story-vibepro-cross-system-adjudication ac:1 [S-001] adjudicate provenance records implementation-provenance.json with recorded_at and head commit, rejecting unknown agent systems before any write', async () => {
   const repo = await makeRepo();
   await assert.rejects(
     () => execFileAsync('node', [CLI_PATH, 'adjudicate', 'provenance', repo, '--id', STORY_ID, '--agent-system', 'gpt5']),
@@ -75,7 +75,7 @@ test('CSA-E2E-001 story-vibepro-cross-system-adjudication ac:1 adjudicate proven
 });
 
 // story-vibepro-cross-system-adjudication ac:2 evidence-path record carries a same_system warning naming both systems and is never blocked
-test('CSA-E2E-002 story-vibepro-cross-system-adjudication ac:2 evidence-adjudication record with the same --agent-system as implementation provenance carries a same_system warning and is not blocked', async () => {
+test('CSA-E2E-002 story-vibepro-cross-system-adjudication ac:2 [S-002] evidence-adjudication record with the same --agent-system as implementation provenance carries a same_system warning and is not blocked', async () => {
   const repo = await makeRepo();
   await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-e2e' });
   const storiesDir = path.join(repo, 'docs', 'management', 'stories', 'active');
@@ -101,7 +101,7 @@ test('CSA-E2E-002 story-vibepro-cross-system-adjudication ac:2 evidence-adjudica
 });
 
 // story-vibepro-cross-system-adjudication ac:3 judgment-DAG path rejects same-system before persistence unless --allow-same-system is given; override reason lands in the append-only log and the persisted event
-test('CSA-E2E-003 story-vibepro-cross-system-adjudication ac:3 judgment-DAG record/correct reject a same-system agent-system before persistence unless --allow-same-system is provided, and the override reason is appended to the append-only log and stored on the event', async () => {
+test('CSA-E2E-003 story-vibepro-cross-system-adjudication ac:3 [S-003] judgment-DAG record/correct reject a same-system agent-system before persistence unless --allow-same-system is provided, and the override reason is appended to the append-only log and stored on the event', async () => {
   const repo = await makeRepo();
   await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-e2e' });
   const base = [
@@ -133,7 +133,7 @@ test('CSA-E2E-003 story-vibepro-cross-system-adjudication ac:3 judgment-DAG reco
 });
 
 // story-vibepro-cross-system-adjudication ac:4 accepted decision record with source gate:judgment_dag_adjudication:same_system_environment downgrades rejection to a warning
-test('CSA-E2E-004 story-vibepro-cross-system-adjudication ac:4 an accepted decision record with source gate:judgment_dag_adjudication:same_system_environment (non-empty reason and artifact) downgrades judgment-DAG same-system rejection to a warning', async () => {
+test('CSA-E2E-004 story-vibepro-cross-system-adjudication ac:4 [S-004] an accepted decision record with source gate:judgment_dag_adjudication:same_system_environment (non-empty reason and artifact) downgrades judgment-DAG same-system rejection to a warning', async () => {
   const repo = await makeRepo();
   await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-e2e' });
   const decisionRecordsPath = path.join(repo, '.vibepro', 'pr', STORY_ID, 'decision-records.json');
@@ -166,7 +166,7 @@ test('CSA-E2E-004 story-vibepro-cross-system-adjudication ac:4 an accepted decis
 });
 
 // story-vibepro-cross-system-adjudication ac:5 no provenance recorded emits provenance_missing warning and behaves exactly as before; cross-system with provenance produces no warning and no override requirement
-test('CSA-E2E-005 story-vibepro-cross-system-adjudication ac:5 no recorded implementation provenance emits a provenance_missing warning and otherwise behaves exactly as before this story; a cross-system adjudicator with provenance recorded produces no same-system warning and no override requirement', async () => {
+test('CSA-E2E-005 story-vibepro-cross-system-adjudication ac:5 [S-005] no recorded implementation provenance emits a provenance_missing warning and otherwise behaves exactly as before this story; a cross-system adjudicator with provenance recorded produces no same-system warning and no override requirement', async () => {
   const repoNoProvenance = await makeRepo();
   const noProvenanceResult = await recordJudgmentAdjudication(repoNoProvenance, {
     storyId: STORY_ID,
@@ -195,7 +195,7 @@ test('CSA-E2E-005 story-vibepro-cross-system-adjudication ac:5 no recorded imple
 });
 
 // story-vibepro-cross-system-adjudication ac:6 the existing same-judge-identity rejection for premise-correction re-adjudication is preserved unchanged
-test('CSA-E2E-006 story-vibepro-cross-system-adjudication ac:6 the existing same-judge-identity rejection for premise-correction re-adjudication is preserved unchanged alongside the new system-level check', async () => {
+test('CSA-E2E-006 story-vibepro-cross-system-adjudication ac:6 [S-006] the existing same-judge-identity rejection for premise-correction re-adjudication is preserved unchanged alongside the new system-level check', async () => {
   const repo = await makeRepo();
   await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'codex', agentId: 'impl-e2e' });
   const evidencePath = path.join(repo, 'docs', 'premise-proof-csa-e2e.md');
