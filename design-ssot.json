@@ -3403,6 +3403,15 @@
             "relationship": "implements",
             "last_reviewed_root_hash": null
           }
+        ],
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+            "required": false,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
         ]
       },
       "child_links": [
@@ -3430,6 +3439,13 @@
         {
           "kind": "spec",
           "path": "docs/specs/story-vibepro-uiux-intake-judgment-gate.md",
+          "required": false,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
           "required": false,
           "relationship": "implements",
           "last_reviewed_root_hash": null
@@ -7857,5 +7873,5 @@
       }
     }
   ],
-  "updated_at": "2026-08-02T17:37:10.654Z"
+  "updated_at": "2026-08-02T18:59:48.278Z"
 }

@@ -1,3 +1,10 @@
+---
+story_id: story-vibepro-uiux-intake-judgment-gate
+title: uiux intake applicability judgment gate architecture
+parent_design: vibepro-uiux-structured-intake
+status: active
+---
+
 # story-vibepro-uiux-intake-judgment-gate Architecture
 
 ## Shape
