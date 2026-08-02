@@ -10,6 +10,7 @@ import {
   JUDGMENT_ADJUDICATION_VERDICTS,
   buildJudgmentDagAdjudicationGate,
   collectJudgmentItems,
+  implementationProvenancePath,
   prepareJudgmentAdjudication,
   readJudgmentAdjudicationIfExists,
   recordImplementationProvenance,
@@ -1186,4 +1187,21 @@ test('CSA-S-011 --allow-same-system produces a same_system_override_count in bot
 
   const summary = summarizeJudgmentAdjudicationForPr({ storyId: STORY_ID, items, adjudication: artifact, headSha, decisions: [] });
   assert.equal(summary.same_system_override_count, 1);
+});
+
+test('CSA-S-012 judgment-DAG record fails closed on a corrupt implementation-provenance.json instead of falling through to provenance_missing', async () => {
+  const repo = await makeRepo();
+  const provenancePath = implementationProvenancePath(repo, STORY_ID);
+  await mkdir(path.dirname(provenancePath), { recursive: true });
+  await writeFile(provenancePath, '{ this is not json', 'utf8');
+  await assert.rejects(() => recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1'
+  }), /implementation-provenance\.json.*not valid JSON/s);
+  const after = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(after, null, 'a corrupt provenance record must reject before persistence, not write a provenance_missing-warning event');
 });

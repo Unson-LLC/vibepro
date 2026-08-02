@@ -62,10 +62,23 @@ export function sameSystemLogPath(repoRoot, storyId) {
 }
 
 export async function readImplementationProvenanceIfExists(repoRoot, storyId) {
+  const artifactPath = implementationProvenancePath(repoRoot, storyId);
+  let raw = null;
   try {
-    return JSON.parse(await readFile(implementationProvenancePath(repoRoot, storyId), 'utf8'));
+    raw = await readFile(artifactPath, 'utf8');
   } catch {
     return null;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    // Fail closed, mirroring readJudgmentAdjudicationIfExists: a corrupt provenance record must
+    // never be silently treated as "no provenance recorded", because that would silently
+    // downgrade judgment-DAG enforcement to the non-blocking provenance_missing warning path.
+    throw new Error(
+      `implementation-provenance.json for ${storyId} at ${artifactPath} exists but is not valid JSON (${error.message}). `
+      + 'A corrupt provenance record must not be silently ignored; re-record it with `vibepro adjudicate provenance`.'
+    );
   }
 }
 

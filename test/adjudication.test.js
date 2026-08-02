@@ -10,6 +10,7 @@ import { promisify } from 'node:util';
 import {
   ADJUDICATION_VERDICTS,
   buildEvidenceAdjudicationGate,
+  implementationProvenancePath,
   prepareAdjudication,
   readAdjudicationIfExists,
   readImplementationProvenanceIfExists,
@@ -913,4 +914,30 @@ test('CSA-S-003 evidence-path adjudicate record from a cross-system adjudicator 
     agentId: 'adjudicator-1'
   });
   assert.deepEqual(result.warnings, []);
+});
+
+test('CSA-S-004 evidence-path adjudicate record fails closed on a corrupt implementation-provenance.json instead of falling back to no-provenance', async () => {
+  const repo = await makeRepo();
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: baseline']);
+  const provenancePath = implementationProvenancePath(repo, STORY_ID);
+  await mkdir(path.dirname(provenancePath), { recursive: true });
+  await writeFile(provenancePath, 'not valid json {{{', 'utf8');
+  await assert.rejects(
+    () => readImplementationProvenanceIfExists(repo, STORY_ID),
+    /implementation-provenance\.json.*not valid JSON/s
+  );
+  await assert.rejects(
+    () => recordAdjudication(repo, {
+      storyId: STORY_ID,
+      clauseId: 'AC-1',
+      verdict: 'demonstrated',
+      reason: 'Evidence observation shows the outcome directly.',
+      agentSystem: 'claude_code',
+      agentId: 'adjudicator-1'
+    }),
+    /implementation-provenance\.json.*not valid JSON/s,
+    'a corrupt provenance record must fail closed, not be silently treated as no-provenance-recorded'
+  );
+  assert.equal(await readAdjudicationIfExists(repo, STORY_ID), null, 'a rejected record must not write the adjudication.json artifact');
 });
