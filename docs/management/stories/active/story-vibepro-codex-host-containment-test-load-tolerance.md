@@ -33,7 +33,7 @@ updated_at: 2026-08-02
 
 ## 影響範囲
 
-impact_scope_explained: 変更は test/codex-subagent-host.test.js の waitFor ヘルパーとその containment テスト 4 呼び出し箇所のみ。src/ 配下の production コード（codex-subagent-host.js の terminateWorkerTree エスカレーション）は不変で、waitFor のデフォルト deadline 10000ms も据え置きのため、他のテスト呼び出し箇所の挙動は変わらない。公開 CLI/API・設定スキーマ・出力形式への影響はない（.vibepro/config.json の変更は本 Story の brainbase.stories[] 登録エントリ追加のみ）。
+impact_scope_explained: 変更は test/codex-subagent-host.test.js の waitFor ヘルパーとその containment テスト 4 呼び出し箇所のみ。src/ 配下の production コード（codex-subagent-host.js の terminateWorkerTree エスカレーション）は不変で、waitFor のデフォルト deadline 10000ms も据え置きのため、他のテスト呼び出し箇所の挙動は変わらない。公開 CLI/API・設定スキーマ・出力形式への影響はない（.vibepro/config.json の変更は本 Story の brainbase.stories[] 登録エントリ追加のみ）。なお design-ssot.json には `vibepro design-ssot link` 実行時のツール由来正規化（他 Story の child_links 並び替え・spec pointer パス正規化）が含まれる。
 
 ## Acceptance Criteria
 
