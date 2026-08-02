@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1.0",
   "model": "vibepro-gate-outcome-ledger-v3",
-  "updated_at": "2026-08-02T14:05:07.564Z",
+  "updated_at": "2026-08-02T18:42:48.234Z",
   "entries": [
     {
       "schema_version": "0.1.0",
@@ -122570,6 +122570,981 @@
           "src/uiux-intake.js",
           "test/cli-smoke.test.js",
           "test/vibepro-cli.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:agent_review|needs_review|passed|2026-08-02T12:45:26.801Z|2026-08-02T12:51:29.006Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T12:45:26.801Z",
+      "resolved_at": "2026-08-02T12:51:29.006Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:agent_review|needs_review|passed|2026-08-02T16:09:39.928Z|2026-08-02T18:42:48.234Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T16:09:39.928Z",
+      "resolved_at": "2026-08-02T18:42:48.234Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+        "changed_files": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/management/decisions/2026-08-02-budget-override-story-vibepro-unit-suite-concurrency-default-b59cf744.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:artifact_consistency|stale_evidence|passed|2026-08-02T10:17:25.160Z|2026-08-02T11:44:49.784Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T10:17:25.160Z",
+      "resolved_at": "2026-08-02T11:44:49.784Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fbd72d874355d2969fcc2432e63bcaf0b287e8f2",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:artifact_consistency|stale_evidence|passed|2026-08-02T11:50:25.333Z|2026-08-02T12:36:46.163Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T11:50:25.333Z",
+      "resolved_at": "2026-08-02T12:36:46.163Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:artifact_consistency|stale_evidence|passed|2026-08-02T16:09:39.928Z|2026-08-02T18:42:48.234Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T16:09:39.928Z",
+      "resolved_at": "2026-08-02T18:42:48.234Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+        "changed_files": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/management/decisions/2026-08-02-budget-override-story-vibepro-unit-suite-concurrency-default-b59cf744.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:common_judgment_spine|needs_evidence|passed|2026-08-02T12:36:46.163Z|2026-08-02T12:45:26.801Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T12:36:46.163Z",
+      "resolved_at": "2026-08-02T12:45:26.801Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:common_judgment_spine|needs_evidence|passed|2026-08-02T14:30:18.261Z|2026-08-02T16:09:15.906Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T14:30:18.261Z",
+      "resolved_at": "2026-08-02T16:09:15.906Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:definition_of_done|needs_evidence|passed|2026-08-02T12:45:26.801Z|2026-08-02T12:51:29.006Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T12:45:26.801Z",
+      "resolved_at": "2026-08-02T12:51:29.006Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:definition_of_done|needs_evidence|passed|2026-08-02T16:09:39.928Z|2026-08-02T18:42:48.234Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T16:09:39.928Z",
+      "resolved_at": "2026-08-02T18:42:48.234Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+        "changed_files": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/management/decisions/2026-08-02-budget-override-story-vibepro-unit-suite-concurrency-default-b59cf744.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:design_diagrams|needs_evidence|satisfied|2026-08-02T11:50:25.333Z|2026-08-02T12:36:46.163Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:design_diagrams",
+      "gate_type": "design_diagrams_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "satisfied",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T11:50:25.333Z",
+      "resolved_at": "2026-08-02T12:36:46.163Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:design_ssot_reconciliation|needs_review|passed|2026-08-02T14:28:03.616Z|2026-08-02T14:30:18.261Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:design_ssot_reconciliation",
+      "gate_type": "design_ssot_reconciliation_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T14:28:03.616Z",
+      "resolved_at": "2026-08-02T14:30:18.261Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:evidence_adjudication|needs_evidence|passed|2026-08-02T12:45:26.801Z|2026-08-02T12:51:29.006Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T12:45:26.801Z",
+      "resolved_at": "2026-08-02T12:51:29.006Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:evidence_adjudication|needs_evidence|passed|2026-08-02T16:09:39.928Z|2026-08-02T18:42:48.234Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T16:09:39.928Z",
+      "resolved_at": "2026-08-02T18:42:48.234Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+        "changed_files": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/management/decisions/2026-08-02-budget-override-story-vibepro-unit-suite-concurrency-default-b59cf744.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:integration|needs_evidence|passed|2026-08-02T11:50:25.333Z|2026-08-02T12:36:46.163Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:integration",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "verification_command",
+          "command": "node --test test/integration/verification-runner-evidence-consumers.test.js",
+          "status": "pass",
+          "recorded_at": "2026-08-02T12:36:26.800Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T11:50:25.333Z",
+      "resolved_at": "2026-08-02T12:36:46.163Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:judgment_axis_public_contract|block|passed|2026-08-02T12:53:33.121Z|2026-08-02T14:28:03.616Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "block",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T12:53:33.121Z",
+      "resolved_at": "2026-08-02T14:28:03.616Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ca8f30775b7047ebcc3a0f2bdd3ddd4bf225fbf3",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:judgment_axis_scope_reviewability|needs_evidence|accepted_followup|2026-08-02T12:51:29.006Z|2026-08-02T12:53:33.121Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:judgment_axis_scope_reviewability",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "accepted_followup",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T12:51:29.006Z",
+      "resolved_at": "2026-08-02T12:53:33.121Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:responsibility_authority|needs_evidence|passed|2026-08-02T10:17:25.160Z|2026-08-02T11:44:49.784Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T10:17:25.160Z",
+      "resolved_at": "2026-08-02T11:44:49.784Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fbd72d874355d2969fcc2432e63bcaf0b287e8f2",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:senior_gap_judgment|block|passed|2026-08-02T16:09:39.928Z|2026-08-02T18:42:48.234Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "block",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T16:09:39.928Z",
+      "resolved_at": "2026-08-02T18:42:48.234Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+        "changed_files": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/management/decisions/2026-08-02-budget-override-story-vibepro-unit-suite-concurrency-default-b59cf744.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:split_resolution|needs_review|passed|2026-08-02T11:50:25.333Z|2026-08-02T12:36:46.163Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:split_resolution",
+      "gate_type": "split_resolution_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T11:50:25.333Z",
+      "resolved_at": "2026-08-02T12:36:46.163Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:traceability_clause_coverage|needs_evidence|passed|2026-08-02T11:45:25.359Z|2026-08-02T11:50:25.333Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T11:45:25.359Z",
+      "resolved_at": "2026-08-02T11:50:25.333Z",
+      "git": {
+        "base_ref": "main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:unit|needs_evidence|passed|2026-08-02T10:17:25.160Z|2026-08-02T11:44:49.784Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:unit",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T10:17:25.160Z",
+      "resolved_at": "2026-08-02T11:44:49.784Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "fbd72d874355d2969fcc2432e63bcaf0b287e8f2",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:unit|needs_evidence|passed|2026-08-02T11:50:25.333Z|2026-08-02T12:36:46.163Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:unit",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T11:50:25.333Z",
+      "resolved_at": "2026-08-02T12:36:46.163Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|gate:vibepro_artifact_policy|needs_review|passed|2026-08-02T11:50:25.333Z|2026-08-02T12:36:46.163Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "gate:vibepro_artifact_policy",
+      "gate_type": "vibepro_artifact_policy_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T11:50:25.333Z",
+      "resolved_at": "2026-08-02T12:36:46.163Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|review:dispatch_batch:gate|failed|passed|2026-08-02T16:09:39.928Z|2026-08-02T18:42:48.234Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T16:09:39.928Z",
+      "resolved_at": "2026-08-02T18:42:48.234Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+        "changed_files": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/management/decisions/2026-08-02-budget-override-story-vibepro-unit-suite-concurrency-default-b59cf744.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|review:dispatch_batch:gate|needs_review|passed|2026-08-02T12:45:26.801Z|2026-08-02T12:51:29.006Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T12:45:26.801Z",
+      "resolved_at": "2026-08-02T12:51:29.006Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|review:gate:gate_evidence|missing|passed|2026-08-02T12:45:26.801Z|2026-08-02T12:51:29.006Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "review:gate:gate_evidence",
+      "gate_type": "agent_review_role_gate",
+      "previous_status": "missing",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T12:45:26.801Z",
+      "resolved_at": "2026-08-02T12:51:29.006Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|review:join:gate|needs_review|passed|2026-08-02T12:45:26.801Z|2026-08-02T12:51:29.006Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T12:45:26.801Z",
+      "resolved_at": "2026-08-02T12:51:29.006Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|review:join:gate|needs_review|passed|2026-08-02T16:09:39.928Z|2026-08-02T18:42:48.234Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T16:09:39.928Z",
+      "resolved_at": "2026-08-02T18:42:48.234Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+        "changed_files": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/management/decisions/2026-08-02-budget-override-story-vibepro-unit-suite-concurrency-default-b59cf744.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|review:preflight:gate:gate_evidence|failed|passed|2026-08-02T16:09:39.928Z|2026-08-02T18:42:48.234Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "review:preflight:gate:gate_evidence",
+      "gate_type": "agent_review_dispatch_preflight_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T16:09:39.928Z",
+      "resolved_at": "2026-08-02T18:42:48.234Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+        "changed_files": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/management/decisions/2026-08-02-budget-override-story-vibepro-unit-suite-concurrency-default-b59cf744.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|review:prepare:gate|needs_review|passed|2026-08-02T12:45:26.801Z|2026-08-02T12:51:29.006Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "review:prepare:gate",
+      "gate_type": "agent_review_prepare_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T12:45:26.801Z",
+      "resolved_at": "2026-08-02T12:51:29.006Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|review:record:gate:gate_evidence|needs_review|passed|2026-08-02T12:45:26.801Z|2026-08-02T12:51:29.006Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T12:45:26.801Z",
+      "resolved_at": "2026-08-02T12:51:29.006Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "changed_files": [
+          "CHANGELOG.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-unit-suite-concurrency-default|review:record:gate:gate_evidence|needs_review|passed|2026-08-02T16:09:39.928Z|2026-08-02T18:42:48.234Z",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T16:09:39.928Z",
+      "resolved_at": "2026-08-02T18:42:48.234Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+        "changed_files": [
+          "CHANGELOG.md",
+          "design-ssot.json",
+          "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/management/decisions/2026-08-02-budget-override-story-vibepro-unit-suite-concurrency-default-b59cf744.md",
+          "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "package.json",
+          "src/verification-runner.js",
+          "test/full-suite-command-form.test.js",
+          "test/verification-runner.test.js"
         ]
       }
     },

@@ -1,0 +1,207 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-unit-suite-concurrency-default",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "11-file diff is one coherent intent (concurrency pin + timeout widening, each with its guarding regression test, plus docs/design-ssot/governance artifacts); the mixed_repo_control_surface flag is a mechanical heuristic whose gate authority is the accepted decision lineage per src/pr-manager.js:10326-10334, and package.json cannot be split from its guarding test; precedent verified against merged PR #407",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "pr-split-scope-precedent-pr-number-error",
+      "detail": " decisions cite PR #406 for the vacuous-e2e precedent but that story merged as PR #407 (merge commit 8dc2c3d6); substance of the precedent checks out against PR #407 file list; citation should be corrected"
+    },
+    {
+      "severity": "low",
+      "id": "pr-split-scope-stale-freshness-artifact",
+      "detail": " origin/main is 13 commits ahead and pr-prepare.json shows gate:pr_freshness needs_rebase; outside this role's mandate but coordinator must rerun pr prepare on a rebased HEAD before pr create"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read the full main...HEAD diff (11 files) at HEAD f12b4125; read split-plan.json atomic_scope rejection reasons and review_owner_map; read all decision records including both pr_scope_judgment rounds, split_resolution, scope_reviewability axis, and the budget grant; verified the DAG gate-resolution mechanism directly in src/pr-manager.js:10326-10334 (acceptedDecision lookup sets passed independent of frontmatter); verified skills/vibepro-workflow/SKILL.md:110 scope.status advisory statement; cross-checked the precedent PR number via gh pr view 406/407; confirmed the regression test fails pre-fix; confirmed clean working tree and 13-commit origin/main advance",
+    "evidence": "src/pr-manager.js:10326-10334; skills/vibepro-workflow/SKILL.md:110; gh pr view 407 (files include package.json + .github/workflows/ci.yml); git log --oneline HEAD..origin/main",
+    "inputs": [
+      "package.json",
+      "src/verification-runner.js",
+      "test/full-suite-command-form.test.js",
+      "test/verification-runner.test.js",
+      "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+      "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+      "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+      "CHANGELOG.md",
+      "design-ssot.json",
+      ".vibepro/config.json",
+      "docs/management/decisions/2026-08-02-budget-override-story-vibepro-unit-suite-concurrency-default-b59cf744.md",
+      "src/pr-manager.js",
+      "skills/vibepro-workflow/SKILL.md"
+    ]
+  },
+  "judgment_delta": [
+    "initial (per round-2 needs_changes): the automated split-plan split_recommended status should govern -> final pass: source code confirms the gate authority is the accepted decision lineage, not frontmatter; the decision reasoning (package.json inseparable from its guarding regression test, real same-repo precedent) holds up under independent inspection with only a minor PR-number misattribution"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+    "expected_root": null,
+    "expected_head_sha": "f12b41251ff66cbffcca214f57d9dcff49dc39b0",
+    "current_head_sha": "f12b41251ff66cbffcca214f57d9dcff49dc39b0",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+      "expected_root": null,
+      "expected_head_sha": "f12b41251ff66cbffcca214f57d9dcff49dc39b0",
+      "current_head_sha": "f12b41251ff66cbffcca214f57d9dcff49dc39b0",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T16:57:31.377Z",
+  "git_context": {
+    "head_sha": "f12b41251ff66cbffcca214f57d9dcff49dc39b0",
+    "current_branch": "claude/awesome-tereshkova-ee0e2d",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T16:57:31.348Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 13 file(s)",
+    "recorded_head_sha": "f12b41251ff66cbffcca214f57d9dcff49dc39b0",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "136e9871c0ee40c856687e10425e5f2f19f1e3eea4efbbe6904c9b24ba3a63d4",
+        "size": 91045
+      },
+      {
+        "path": "CHANGELOG.md",
+        "sha256": "c50ba2678acf1a275f0e3f084488ef660de650aa5031c9fe66afad9754754e2c",
+        "size": 58897
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "3d54ea578b32aeacfef62a442e1e8afacebb0af8eba3dd794d4287b68f146647",
+        "size": 254888
+      },
+      {
+        "path": "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+        "sha256": "1a36e9b8b79f3ec0aca98593400ccd6fb72c362b94c6bc8cbd7c1c83f0fb9918",
+        "size": 1938
+      },
+      {
+        "path": "docs/management/decisions/2026-08-02-budget-override-story-vibepro-unit-suite-concurrency-default-b59cf744.md",
+        "sha256": "d28e1ad7eddfb56cad88e4cf1570f52697fe5e37a368c574f6175cca568752f7",
+        "size": 2429
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+        "sha256": "c2c2d751ca74b245ed1aa77dcb60c3680d41c977f55650c7c2c2eeeae19cc5e0",
+        "size": 4326
+      },
+      {
+        "path": "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+        "sha256": "97c888a5b9744cf59f467635ce0634534c2155b5fe5049fbca126e4c39b2da5c",
+        "size": 2997
+      },
+      {
+        "path": "package.json",
+        "sha256": "cd3431b6cf01296462df08106683ba3cdbaeb8c5740e9bc4ad4af04996697d77",
+        "size": 1884
+      },
+      {
+        "path": "skills/vibepro-workflow/SKILL.md",
+        "sha256": "e381251ba670476fb6b0305f4b73c73f0adeb74f2181a168d90b1b49221e0952",
+        "size": 23761
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "65960f6c327e68b9d5496283081444b16fddde35548be3a037280478db4dc6a1",
+        "size": 729480
+      },
+      {
+        "path": "src/verification-runner.js",
+        "sha256": "edf9effce88c5fd10e2676ad03ef9c24f30be0e35aa7e39b681bf8e99c7c0556",
+        "size": 38529
+      },
+      {
+        "path": "test/full-suite-command-form.test.js",
+        "sha256": "af653604b8fe6b5425238449fe92f029e6fd8721e10f3fb8a30d99c55e3d42eb",
+        "size": 1337
+      },
+      {
+        "path": "test/verification-runner.test.js",
+        "sha256": "7678e173d86884f79bc6dccadeef69e0819c5e1f45ce40eee4b0b1bb59464d08",
+        "size": 61824
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "aff8c5c1429aa1198347a155e440ca8156b69fcc4e6871d1fb920af0aa6267b6"
+  },
+  "source_fingerprint": "1c61fa6cc49c78b8fa75b7d063726a4b7e146c73e018439e9991868e6ee9d8a8",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "aa5036a2043e61b62",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": "medium",
+    "cost_tier": null,
+    "thread_id": "aa5036a2043e61b62",
+    "session_id": "aa5036a2043e61b62",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-awesome-tereshkova-ee0e2d/b72589e7-17b5-460f-8581-06932845d285/tasks/aa5036a2043e61b62.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-unit-suite-concurrency-default/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent aa5036a2043e61b62 returned its verdict JSON and stopped",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "aa5036a2043e61b62",
+      "implementation_session_id": "b72589e7-17b5-460f-8581-06932845d285",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}
