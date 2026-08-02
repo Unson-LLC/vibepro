@@ -1,5 +1,6 @@
 ---
 story_id: story-vibepro-codex-host-containment-test-load-tolerance
+parent_design: vibepro-autonomy-roadmap-rebaseline
 title: Codex host containment テストの waitFor を高負荷ホストでフレークしない待機設計にする
 status: active
 view: dev
@@ -29,6 +30,10 @@ updated_at: 2026-08-02
 - full suite 実行（load average ~20-35）: 11.7 秒で `condition timeout`（`waitFor` の固定 10 秒 deadline 超過）により fail。
 - `terminateWorkerTree`（src/codex-subagent-host.js:247）は SIGTERM → 群 SIGTERM → SIGKILL のエスカレーションで内部待ちが最大約 7.5 秒あり、高負荷時はテスト側 10 秒 deadline のマージンがほぼ消える。
 - テスト自体は `host.shutdown()` を await 済みのため、production 側の終了保証は満たされている。不足しているのはテスト側の検知余裕のみ。
+
+## 影響範囲
+
+impact_scope_explained: 変更は test/codex-subagent-host.test.js の waitFor ヘルパーとその containment テスト 4 呼び出し箇所のみ。src/ 配下の production コード（codex-subagent-host.js の terminateWorkerTree エスカレーション）は不変で、waitFor のデフォルト deadline 10000ms も据え置きのため、他のテスト呼び出し箇所の挙動は変わらない。公開 CLI/API・設定スキーマ・出力形式への影響はない（.vibepro/config.json の変更は本 Story の brainbase.stories[] 登録エントリ追加のみ）。
 
 ## Acceptance Criteria
 
