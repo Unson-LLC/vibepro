@@ -508,7 +508,16 @@
       },
       "story-vibepro-uiux-intake-gate-pr-summary-surfaces": {
         "max_subagent_count": 10,
-        "amendment_reason": "Owner-approved raises scoped to this Story: 6->8 then 8->10 subagents. First raise for the final implementation:runtime_contract review; second raise after that review found a story accuracy defect (both summary surfaces dead in production), requiring gate_evidence and runtime_contract re-reviews of the corrected story text. Both approved by sato_keigo on 2026-08-03 via AskUserQuestion in Claude Code session c3213594-536c-47ba-89cf-d8613ecaff91, observed directly by the recording agent."
+        "amendment_reason": "Owner-approved raises scoped to this Story: 6->8 then 8->10 subagents. First raise for the final implementation:runtime_contract review; second raise after that review found a story accuracy defect (both summary surfaces dead in production), requiring gate_evidence and runtime_contract re-reviews of the corrected story text. Both approved by sato_keigo on 2026-08-03 via AskUserQuestion in Claude Code session c3213594-536c-47ba-89cf-d8613ecaff91, observed directly by the recording agent.",
+      "story-vibepro-test-tmpdir-fixture-cleanup": {
+        "max_subagent_count": 12,
+        "max_agent_consumption_ms": 3600000,
+        "max_review_dispatches_by_role": {
+          "code_spec_alignment": 4,
+          "runtime_contract": 3,
+          "ux_completion": 3
+        },
+        "amendment_reason": "The default 6-subagent cap was consumed exactly by two legitimate review rounds: round 1 (3 roles) found a real medium coverage gap (conformance guard scanned only .test.js while story AC1 covers all test files), and round 2 (3 roles) verified the fix and surfaced one residual low finding (spec INV-001 test_refs case string left unsynced with the renamed test title). That finding is fixed at HEAD a1327f75; exactly one more code_spec_alignment differential dispatch is required to confirm it, plus small headroom (runtime_contract/ux_completion 1 spare each) in case the confirmation surfaces another partial-edit artifact. No replacement loop is intended; if this headroom is exhausted, amend explicitly again rather than widening defaults."
       }
     }
   },
