@@ -8455,6 +8455,17 @@ Weighted semantic/layout residual: **34%**
   await git(repo, ['commit', '-m', 'feat: add pr prepare target']);
   await git(repo, ['remote', 'add', 'origin', 'https://github.com/Unson-LLC/vibepro.git']);
 
+  const intakeJudgment = await runCli([
+    'decision', 'record', repo,
+    '--id', 'story-pr-prepare',
+    '--type', 'intake_not_applicable',
+    '--summary', 'PR-body improvement fixture has no UI/UX surface',
+    '--reason', 'docs/runtime fixture; no screen, route, or visual behavior to intake',
+    '--status', 'accepted',
+    '--json'
+  ]);
+  assert.equal(intakeJudgment.exitCode, 0);
+
   let prepareSummaryOutput = '';
   const result = await runCli([
     'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001',
