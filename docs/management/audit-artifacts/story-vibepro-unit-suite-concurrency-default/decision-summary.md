@@ -3,9 +3,9 @@
 - story: story-vibepro-unit-suite-concurrency-default
 - evidence_depth: standard
 - budget_status: exceeded
-- artifact_lines: 1517
+- artifact_lines: 1521
 - product_changed_lines: 291
-- artifact_code_ratio: 5.213
+- artifact_code_ratio: 5.227
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
@@ -15,7 +15,7 @@
 - evidence_reuse: stale key=evk_d2ba5fb3c843a0924994a51159f2332e verification_updated_at=2026-08-02T18:40:44.551Z verification_fingerprint=sha256:59256daaff772f7742dba0373acd3b7729674226caab800e8500fe4ae2e77645
 - senior_gap_judgment: present gaps=3 blocking=0 residual=0
 - pr_create: https://github.com/Unson-LLC/vibepro/pull/412
-- pr_merge: merged delivery=merged reconciliation=reconciliation_required reasons=decision_outcome_binding_failed action=vibepro pr prepare . --story-id story-vibepro-unit-suite-concurrency-default --base main -> vibepro execute merge . --story-id story-vibepro-unit-suite-concurrency-default --base main --pr https://github.com/Unson-LLC/vibepro/pull/412
+- pr_merge: merged_externally delivery=merged_externally reconciliation=reconciliation_required reasons=checks_not_ready|decision_outcome_binding_failed action=vibepro pr prepare . --story-id story-vibepro-unit-suite-concurrency-default --base main -> vibepro execute merge . --story-id story-vibepro-unit-suite-concurrency-default --base main --pr https://github.com/Unson-LLC/vibepro/pull/412
 - verification: commands=3 pass=3 fail=0
 - review: summaries=1 results=3 pass=3 block=0
 - missing_artifacts: 0

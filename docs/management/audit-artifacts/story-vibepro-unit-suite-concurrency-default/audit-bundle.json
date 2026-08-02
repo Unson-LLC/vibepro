@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-unit-suite-concurrency-default",
   "source": "execute_merge",
-  "promoted_at": "2026-08-02T18:57:02.367Z",
+  "promoted_at": "2026-08-02T18:57:34.956Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-unit-suite-concurrency-default",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-unit-suite-concurrency-default/audit-index.json",
@@ -41,11 +41,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-unit-suite-concurrency-default/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:ca61e76fc80f3ca16dcc809fa44a2bec5ea4ce9e63ba4c03cbce5edc1b92bf8e",
-    "compressed_hash": "sha256:e75eae87bc5d4d25946d017ddb50262b9d490ae4d6eaab13f06f7e371b264e34",
-    "expanded_bytes": 20464,
-    "compressed_bytes": 4327,
-    "expanded_line_count": 519,
+    "content_hash": "sha256:05ce7ca70c7e0262a820c628e475b82b01887dcf38b004ddf1f32f96faf4f3e6",
+    "compressed_hash": "sha256:561d92c4ef89a226b8258b9aa02690d7e1aa2daab319f9ca87e09949491aed64",
+    "expanded_bytes": 20549,
+    "compressed_bytes": 4355,
+    "expanded_line_count": 521,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "decision_index",
@@ -65,17 +65,17 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-unit-suite-concurrency-default",
     "cost": {
-      "compressed_bytes": 4327,
-      "expanded_bytes": 20464,
-      "expanded_line_count": 519,
+      "compressed_bytes": 4355,
+      "expanded_bytes": 20549,
+      "expanded_line_count": 521,
       "persisted_line_count": 1
     }
   },
   "merge": {
-    "status": "merged",
+    "status": "merged_externally",
     "base": "main",
     "delivery": {
-      "status": "merged",
+      "status": "merged_externally",
       "source": "github_pr",
       "pr_url": "https://github.com/Unson-LLC/vibepro/pull/412",
       "merge_commit_sha": "0ac8c84e8c2cde3897fa8bd705b009473aa4d4e2",
@@ -84,14 +84,15 @@
     "reconciliation": {
       "status": "reconciliation_required",
       "reasons": [
+        "checks_not_ready",
         "decision_outcome_binding_failed"
       ],
-      "evaluated_at": "2026-08-02T18:57:02.339Z",
+      "evaluated_at": "2026-08-02T18:57:34.911Z",
       "head_sha": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44"
     },
     "reconciliation_action": {
       "status": "required",
-      "reason": "decision_outcome_binding_failed",
+      "reason": "checks_not_ready",
       "commands": [
         "vibepro pr prepare . --story-id story-vibepro-unit-suite-concurrency-default --base main",
         "vibepro execute merge . --story-id story-vibepro-unit-suite-concurrency-default --base main --pr https://github.com/Unson-LLC/vibepro/pull/412"
@@ -110,7 +111,7 @@
     "merged_at": "2026-08-02T18:56:59Z",
     "current_head_sha": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
     "diff_stats_status": "available",
-    "diff_stats_source": "git diff --numstat origin/main...56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44"
+    "diff_stats_source": "git diff --numstat '0ac8c84e8c2cde3897fa8bd705b009473aa4d4e2^1...56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44'"
   },
   "handoff_replay_status": "blocked",
   "handoff_replay": {
@@ -134,7 +135,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-unit-suite-concurrency-default/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:ca61e76fc80f3ca16dcc809fa44a2bec5ea4ce9e63ba4c03cbce5edc1b92bf8e"
+      "content_hash": "sha256:05ce7ca70c7e0262a820c628e475b82b01887dcf38b004ddf1f32f96faf4f3e6"
     }
   ],
   "raw_artifact_manifest": [
@@ -155,8 +156,8 @@
       "source": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/decision-outcome-ledger.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-unit-suite-concurrency-default/audit-replay-bundle.json.gz",
-      "digest": "sha256:b051f023607e2500d7006347ccaf19adfbda1c4edd800b45e83d7179ee5d4ef8",
-      "audit_digest": "sha256:b051f023607e2500d7006347ccaf19adfbda1c4edd800b45e83d7179ee5d4ef8",
+      "digest": "sha256:f6008f1a6d1a5b05ca61a3447fe51755a41310239020faa7f75d5bf382bb31c2",
+      "audit_digest": "sha256:f6008f1a6d1a5b05ca61a3447fe51755a41310239020faa7f75d5bf382bb31c2",
       "line_count": 856,
       "raw_line_count": 856,
       "audit_scope": "judgment_evidence_v1",
@@ -224,10 +225,10 @@
       "source": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-unit-suite-concurrency-default/audit-replay-bundle.json.gz",
-      "digest": "sha256:421aeb6c7f55f38010252206e68bc667ea3e972e95e4c61603a25b801b5ac5a1",
-      "audit_digest": "sha256:c6bde3e73cd16d58490a21ecc0eda5d96fabad8e9466060acff250fb705ae8f2",
-      "line_count": 2468,
-      "raw_line_count": 4627,
+      "digest": "sha256:78f6882f10e7671e5518681bb254adddadd36beb80c40c3a8e6703e791f265fe",
+      "audit_digest": "sha256:ec7c2ed15786dbc50a987a1d1ae8fb25a97fed024bcb2538cba5f5d33dc77d67",
+      "line_count": 2463,
+      "raw_line_count": 4595,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -242,8 +243,8 @@
       "source": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/traceability.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-unit-suite-concurrency-default/audit-replay-bundle.json.gz",
-      "digest": "sha256:6b2a88133dc6dc10c0b72e58546b3fb4e26962139503d81267744f99538c2a6b",
-      "audit_digest": "sha256:6b2a88133dc6dc10c0b72e58546b3fb4e26962139503d81267744f99538c2a6b",
+      "digest": "sha256:87b0b2ac0e507fe699fe82c649cc3b2cebca82c0a0b10545dc9ad64b0aa6c5de",
+      "audit_digest": "sha256:87b0b2ac0e507fe699fe82c649cc3b2cebca82c0a0b10545dc9ad64b0aa6c5de",
       "line_count": 247,
       "raw_line_count": 247,
       "audit_scope": "judgment_evidence_v1",
