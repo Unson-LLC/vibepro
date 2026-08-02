@@ -1,0 +1,912 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+  "updated_at": "2026-08-02T14:02:10.640Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+      "expected_root": null,
+      "expected_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "current_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785679330637-e9a3b5a9",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:evidence_adjudication:AC-3",
+      "source_status": null,
+      "summary": "Human-context closure for AC-3: the fixed CLI was executed against the real 134k-file checkout (/[REDACTED:f3fe9a05238c]) on 2026-08-02, completing story diagnose --run-graphify with exit 0 and no --stack-size flag",
+      "reason": "Keigo Sato originally reported and reproduced the crash on this exact checkout; during this session the coordinator ran the fixed binary against the same checkout and captured the full stdout showing graphify import, diagnosis created, and story report created with no Maximum call stack size exceeded (log attached). The environment is a personal 134k-file working checkout outside automated test reach, so the adjudicator correctly ruled it not_verifiable_by_automation",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/real-env-diagnose-run.log",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "expected_root": null,
+          "expected_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "current_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+        "current_branch": "claude/vigorous-sinoussi-3a7efb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T14:02:10.616Z"
+      },
+      "recorded_at": "2026-08-02T14:02:10.640Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785675538030-a04dab0f",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-profiler-file-walk-stack-overflow",
+      "source_status": null,
+      "summary": "Owner-approved budget amendment: aggregate subagent capacity 6 to 8 for the final_review runtime_contract dispatch",
+      "reason": "final_review hard-requires implementation:runtime_contract review; the 6/6 aggregate cap correctly stopped the dispatch; Keigo Sato approved continuation on 2026-08-02 via interactive confirmation",
+      "reviewer": null,
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+        "override_digest": "fb7646bc4493e4d4e3e4efc622421dc9050723a3ce7399b75d93e80b68756e9c",
+        "grantor_kind": "human",
+        "grantor": "佐藤圭吾",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "6614f9dd-cf15-4e1f-a561-b4ba99885f51"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-02-budget-override-story-vibepro-profiler-file-walk-stack-overflow-fb7646bc.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "expected_root": null,
+          "expected_head_sha": "7d6c15fc400f9a22be9df8514f6718dbcf8a74a6",
+          "current_head_sha": "7d6c15fc400f9a22be9df8514f6718dbcf8a74a6",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7d6c15fc400f9a22be9df8514f6718dbcf8a74a6",
+        "current_branch": "claude/vigorous-sinoussi-3a7efb",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-08-02T12:58:58.013Z"
+      },
+      "recorded_at": "2026-08-02T12:58:58.031Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785671766175-60c4bbf6",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": null,
+      "summary": "Supersedes the earlier public_contract decision's stale count: the frozen-binding full suite is 2377/2377 (2375 pre-existing plus the 2 new story tests); no CLI/API/config/output-format change",
+      "reason": "gate_evidence review found the earlier decision cited 2375/2375 recorded before the post-freeze run; the corrected tally is read from verification-runs/unit.json at head 15a6b013. All 8 walker rewrites remain module-internal with unchanged signatures and result shapes",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "expected_root": null,
+          "expected_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "current_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+        "current_branch": "claude/vigorous-sinoussi-3a7efb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:56:06.161Z"
+      },
+      "recorded_at": "2026-08-02T11:56:06.178Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785668513001-fca82a0b",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Single-reviewer readable: one mechanical transformation applied uniformly to 8 walkers plus its tests and Story/Spec docs",
+      "reason": "review_owner_map is not applicable to a single-owner repo change; the decision_record for bundled scope (gate:pr_scope_judgment) documents why the 8 modules land together; every hunk is the same recursive-to-iterative rewrite reviewable side by side",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "expected_root": null,
+          "expected_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "current_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+        "current_branch": "claude/vigorous-sinoussi-3a7efb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:01:52.968Z"
+      },
+      "recorded_at": "2026-08-02T11:01:53.002Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785668509550-80d4d9d5",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_ux_surface",
+      "source_status": null,
+      "summary": "No user-facing UI surface: this is CLI-internal scanning; the only UX change is that story diagnose completes instead of crashing",
+      "reason": "screenshot / visual_qa / accessibility_evidence / flow_replay are not applicable to a headless CLI scanner rewrite; the CLI output contract is unchanged and covered by the integration test asserting the same stdout lines",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "expected_root": null,
+          "expected_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "current_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+        "current_branch": "claude/vigorous-sinoussi-3a7efb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:01:49.484Z"
+      },
+      "recorded_at": "2026-08-02T11:01:49.552Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785668506586-19990d97",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_data_state",
+      "source_status": null,
+      "summary": "No persistent-state semantics change: walkers are read-only filesystem traversal; no migration, query, cache, or idempotency surface is touched",
+      "reason": "migration_plan and rollback_plan are not applicable: the scanners read directory entries and file contents and write nothing; diagnosis artifacts are written by unchanged downstream code; idempotency verified by the integration run re-executing diagnose repeatedly with identical outcomes",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "expected_root": null,
+          "expected_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "current_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+        "current_branch": "claude/vigorous-sinoussi-3a7efb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:01:46.578Z"
+      },
+      "recorded_at": "2026-08-02T11:01:46.587Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785668504445-9eccebf9",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": null,
+      "summary": "Rollback is a plain git revert: no stored objects, no migrations, no feature gates, no version skew",
+      "reason": "rollback_plan: revert the walker commits and the previous recursive implementations return with no data or config to unwind; feature_gate_disable is not applicable because no gate exists; the change is stateless in-process traversal only",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "expected_root": null,
+          "expected_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "current_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+        "current_branch": "claude/vigorous-sinoussi-3a7efb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:01:44.431Z"
+      },
+      "recorded_at": "2026-08-02T11:01:44.446Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785668502676-b4878907",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": null,
+      "summary": "No public contract change: CLI flags, output formats, config schema, and scanner result shapes are unchanged; the only observable difference is that story diagnose no longer crashes",
+      "reason": "All 8 walker rewrites are module-internal; each scan function keeps its signature and result shape (verified by the unchanged full unit suite 2375/2375 and the behavior-parity e2e S-002); no contract doc governs the internal walk order",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "expected_root": null,
+          "expected_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "current_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+        "current_branch": "claude/vigorous-sinoussi-3a7efb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:01:42.663Z"
+      },
+      "recorded_at": "2026-08-02T11:01:42.677Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785668500895-3a722dd5",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:responsibility_authority",
+      "source_status": null,
+      "summary": "no_registered_authority candidate resolved: the walker rewrite adds no cross-story state, worker, permission, billing, or side-effect responsibility",
+      "reason": "The flagged paths are pre-existing scanner modules whose only change is traversal mechanics (recursive spread-push to iterative queue); the database_state risk surface is inferred from database-access-scanner's filename, but its DB-access detection logic is untouched and declared inherited in the Story",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "expected_root": null,
+          "expected_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "current_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+        "current_branch": "claude/vigorous-sinoussi-3a7efb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:01:40.889Z"
+      },
+      "recorded_at": "2026-08-02T11:01:40.896Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785668470117-57df6d0b",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "No split: the 8-walker rewrite is atomic; partial landing leaves the incident reproducible",
+      "reason": "Fixing only a subset of walkers moves the Maximum call stack size exceeded crash to the next scanner on the diagnose path (empirically verified during implementation); tests and Story/Spec docs belong to the same intent",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "expected_root": null,
+          "expected_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "current_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+        "current_branch": "claude/vigorous-sinoussi-3a7efb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:01:10.109Z"
+      },
+      "recorded_at": "2026-08-02T11:01:10.118Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785668468889-2814e55b",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Bundled scope is one mechanical intent: the identical recursive spread-push walker replaced by the identical iterative queue in all 8 diagnosis-path scanners",
+      "reason": "Splitting per-scanner would ship the crash fix partially (story diagnose would still crash via the next walker, as reproduced when only architecture-profiler was fixed) and each commit in the branch is already single-intent",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "expected_root": null,
+          "expected_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "current_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+        "current_branch": "claude/vigorous-sinoussi-3a7efb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:01:08.883Z"
+      },
+      "recorded_at": "2026-08-02T11:01:08.890Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785668467497-3cc5b866",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": "Committed .vibepro files are the story registration (.vibepro/config.json) and the final Spec artifact (spec.json), both reviewable sources of truth; diagnostics run outputs are not committed",
+      "reason": "Story registration in brainbase.stories[] and the final Spec are required inputs of the gate DAG itself and follow the same pattern as prior merged stories (e.g. story-vibepro-verify-command-test-path-existence-guard); no diagnostic evidence artifacts are staged",
+      "reviewer": null,
+      "artifact": ".vibepro/spec/story-vibepro-profiler-file-walk-stack-overflow/spec.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "expected_root": null,
+          "expected_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "current_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+        "current_branch": "claude/vigorous-sinoussi-3a7efb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:01:07.489Z"
+      },
+      "recorded_at": "2026-08-02T11:01:07.498Z"
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "open": 0,
+    "by_type": {
+      "needs_review": 11,
+      "waiver": 1
+    },
+    "by_status": {
+      "accepted": 12
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+        "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+        "expected_root": null,
+        "expected_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+        "current_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785679330637-e9a3b5a9",
+      "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:evidence_adjudication:AC-3",
+      "source_status": null,
+      "summary": "Human-context closure for AC-3: the fixed CLI was executed against the real 134k-file checkout (/[REDACTED:f3fe9a05238c]) on 2026-08-02, completing story diagnose --run-graphify with exit 0 and no --stack-size flag",
+      "reason": "Keigo Sato originally reported and reproduced the crash on this exact checkout; during this session the coordinator ran the fixed binary against the same checkout and captured the full stdout showing graphify import, diagnosis created, and story report created with no Maximum call stack size exceeded (log attached). The environment is a personal 134k-file working checkout outside automated test reach, so the adjudicator correctly ruled it not_verifiable_by_automation",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/real-env-diagnose-run.log",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+          "expected_root": null,
+          "expected_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "current_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+        "current_branch": "claude/vigorous-sinoussi-3a7efb",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T14:02:10.616Z"
+      },
+      "recorded_at": "2026-08-02T14:02:10.640Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-records.json"
+}

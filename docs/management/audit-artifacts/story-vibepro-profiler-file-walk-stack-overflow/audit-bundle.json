@@ -1,0 +1,1411 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+  "source": "execute_merge",
+  "promoted_at": "2026-08-02T15:52:42.232Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:f6a79d2c984fec1f2983ca2b72908ec4978cf13c4b5cef913cf08a0a5fb6ec8d",
+    "compressed_hash": "sha256:1293eaa5c7a028c88beb59635942abf0a823f67561a23a93b5336f2648d8e0e2",
+    "expanded_bytes": 33176,
+    "compressed_bytes": 6187,
+    "expanded_line_count": 775,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "decision_outcome_ledger",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-profiler-file-walk-stack-overflow",
+    "cost": {
+      "compressed_bytes": 6187,
+      "expanded_bytes": 33176,
+      "expanded_line_count": 775,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "base": "main",
+    "delivery": {
+      "status": "merged",
+      "source": "github_pr",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/409",
+      "merge_commit_sha": "8c52f7c65a377399b7a0514673865025fdef9712",
+      "merged_at": "2026-08-02T15:52:39Z"
+    },
+    "reconciliation": {
+      "status": "reconciliation_required",
+      "reasons": [
+        "decision_outcome_binding_failed"
+      ],
+      "evaluated_at": "2026-08-02T15:52:42.184Z",
+      "head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293"
+    },
+    "reconciliation_action": {
+      "status": "required",
+      "reason": "decision_outcome_binding_failed",
+      "commands": [
+        "vibepro pr prepare . --story-id story-vibepro-profiler-file-walk-stack-overflow --base main",
+        "vibepro execute merge . --story-id story-vibepro-profiler-file-walk-stack-overflow --base main --pr https://github.com/Unson-LLC/vibepro/pull/409"
+      ]
+    },
+    "decision_outcome_binding": {
+      "status": "failed",
+      "reason": "central_ledger_parse_failed",
+      "expected_entry_count": 35,
+      "promoted_count": 0,
+      "duplicate_count": 0,
+      "persistence_status": null
+    },
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/409",
+    "merge_commit_sha": "8c52f7c65a377399b7a0514673865025fdef9712",
+    "merged_at": "2026-08-02T15:52:39Z",
+    "current_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...49c35bb5e3a56c06e0193f8b7f6c0648a7238293"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 94,
+    "copied_reference_count": 70,
+    "unresolved_reference_count": 7,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-profiler-file-walk-stack-overflow"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:f6a79d2c984fec1f2983ca2b72908ec4978cf13c4b5cef913cf08a0a5fb6ec8d"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:b917951e07ca86097a9b645b97fc5e214d10ef9d1e7672a8229de6f9d5231685",
+      "audit_digest": "sha256:b917951e07ca86097a9b645b97fc5e214d10ef9d1e7672a8229de6f9d5231685",
+      "line_count": 1462,
+      "raw_line_count": 1462,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_outcome_ledger",
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-outcome-ledger.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:fe79aabb172214c4151aa424a94c77eb7d38e9956ed1f3e18dc810c8e30f19bc",
+      "audit_digest": "sha256:fe79aabb172214c4151aa424a94c77eb7d38e9956ed1f3e18dc810c8e30f19bc",
+      "line_count": 2015,
+      "raw_line_count": 2015,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:20a4b53ac3ca2b266df7cc9bbe9a6c84dcd3c991a1b3c2bf45176292b2eeddac",
+      "audit_digest": "sha256:bf42940b8b90f1d747018ebb312fb5625a2f7eaa958018b12dea69bcc4515be9",
+      "line_count": 9613,
+      "raw_line_count": 49647,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:852caacc44ac81b8081c6084401db9b460c0b58846b9af99149cde9011a8e4bd",
+      "audit_digest": "sha256:b8a5e12862f452c1fa91e76483bdc0835682381cc6b003b0cf1aa1b3d743a276",
+      "line_count": 3389,
+      "raw_line_count": 6284,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:14f1fe9907eb6445d05a26606ae1ac2cde425319b8735d19a274a5bdd25a6da7",
+      "audit_digest": "sha256:36eff8dd0f1ccd02910e4ca839ccfdcc1db081ce941413ec64b29e2b01b884a9",
+      "line_count": 125,
+      "raw_line_count": 1105,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:c521a7fcb8a40ba5a5c543182586bec2f7083a5becff1acb75e586d224750023",
+      "audit_digest": "sha256:973fb74dc8660c8ecfa06e255a61c2ce41d5b0f2ca589a978bd0ee33a7e76519",
+      "line_count": 3460,
+      "raw_line_count": 6536,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:48fad50abf8fbceaff1f772e5f6e120cfc3e157b7516e37008504ea7ebf87065",
+      "audit_digest": "sha256:48fad50abf8fbceaff1f772e5f6e120cfc3e157b7516e37008504ea7ebf87065",
+      "line_count": 301,
+      "raw_line_count": 301,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:b82dcd584074adc89ac7369db44fc09fdeed1c5a343dcd872f687449d3511279",
+      "audit_digest": "sha256:db6b4001c57e3b815cd314edb0b634e481714db9dfce735ce8013ea006b861b8",
+      "line_count": 71,
+      "raw_line_count": 1246,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:250ecb13eaf4aca93a13cdc7a556132c8f896817efc341a6601b351958e7b70d",
+      "audit_digest": "sha256:250ecb13eaf4aca93a13cdc7a556132c8f896817efc341a6601b351958e7b70d",
+      "line_count": 1536,
+      "raw_line_count": 1536,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:f602e845bdd0c7bcc68549b3076546430af38e8b463f9f5b399bc5e0fac5c5e7",
+      "audit_digest": "sha256:f602e845bdd0c7bcc68549b3076546430af38e8b463f9f5b399bc5e0fac5c5e7",
+      "line_count": 1558,
+      "raw_line_count": 1558,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:effb3a8a9b9cb86deb9f677c6ddffb4af1bb6e81d965779774148c2741fbf532",
+      "audit_digest": "sha256:effb3a8a9b9cb86deb9f677c6ddffb4af1bb6e81d965779774148c2741fbf532",
+      "line_count": 597,
+      "raw_line_count": 597,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-request-architecture_boundary.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:60535682707f9426e0e7d46d968f4456e4309ec912a9cd3db008fc8e187061f9",
+      "audit_digest": "sha256:60535682707f9426e0e7d46d968f4456e4309ec912a9cd3db008fc8e187061f9",
+      "line_count": 138,
+      "raw_line_count": 138,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-request-regression_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:bf2383fe18af2625322a09d6291dfe67d078b762d9ca5bc0bef49ea36510aa00",
+      "audit_digest": "sha256:bf2383fe18af2625322a09d6291dfe67d078b762d9ca5bc0bef49ea36510aa00",
+      "line_count": 138,
+      "raw_line_count": 138,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-request-spec_consistency.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:c415ef6a493f0e5aed402af3c6b07165671ef85402500ebf05329f7be2b52aa9",
+      "audit_digest": "sha256:c415ef6a493f0e5aed402af3c6b07165671ef85402500ebf05329f7be2b52aa9",
+      "line_count": 138,
+      "raw_line_count": 138,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-architecture_boundary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:5de72a01b82fdd2047173308f6018004946a4ff07f229fd186587a78afdab5d2",
+      "audit_digest": "sha256:5de72a01b82fdd2047173308f6018004946a4ff07f229fd186587a78afdab5d2",
+      "line_count": 236,
+      "raw_line_count": 236,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-regression_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:39bfd288f7f17794191ca0dd4f34ba17cc0ef609271a85db4343200c5f00d5e7",
+      "audit_digest": "sha256:39bfd288f7f17794191ca0dd4f34ba17cc0ef609271a85db4343200c5f00d5e7",
+      "line_count": 223,
+      "raw_line_count": 223,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-spec_consistency.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:8803ca95b2966d46258d49e543dbc603628db99eaafbc729398d1d9918abef11",
+      "audit_digest": "sha256:8803ca95b2966d46258d49e543dbc603628db99eaafbc729398d1d9918abef11",
+      "line_count": 164,
+      "raw_line_count": 164,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:e781acc726cc546630c397b4bf6119ad5b06dc2cd7bddc465ed2f163156fdf3e",
+      "audit_digest": "sha256:e781acc726cc546630c397b4bf6119ad5b06dc2cd7bddc465ed2f163156fdf3e",
+      "line_count": 1685,
+      "raw_line_count": 1685,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:739b92bc8a693bca7110fe5bddb321752c310c152683d1f1861cff792739b294",
+      "audit_digest": "sha256:739b92bc8a693bca7110fe5bddb321752c310c152683d1f1861cff792739b294",
+      "line_count": 597,
+      "raw_line_count": 597,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:e38ac00d45e7473efe7ed69acccb12e990458b05b0949b407d1c55de198efe83",
+      "audit_digest": "sha256:e38ac00d45e7473efe7ed69acccb12e990458b05b0949b407d1c55de198efe83",
+      "line_count": 138,
+      "raw_line_count": 138,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-request-pr_split_scope.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:83418c4382f69d794e612395f95b884ac36de8079a65e2a475addf4e1b1876bc",
+      "audit_digest": "sha256:83418c4382f69d794e612395f95b884ac36de8079a65e2a475addf4e1b1876bc",
+      "line_count": 138,
+      "raw_line_count": 138,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:f9c8e9ac2483d5a03c628045e3f22b4ff283b3b6c76c059452e5246cadbe9736",
+      "audit_digest": "sha256:f9c8e9ac2483d5a03c628045e3f22b4ff283b3b6c76c059452e5246cadbe9736",
+      "line_count": 138,
+      "raw_line_count": 138,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:212fb732b7e946c09a0e15497e659265c2386832c71b27684f8d4fc5e266c15f",
+      "audit_digest": "sha256:212fb732b7e946c09a0e15497e659265c2386832c71b27684f8d4fc5e266c15f",
+      "line_count": 165,
+      "raw_line_count": 165,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-pr_split_scope.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:ee1975466fbdee245ab8e8cc4a63b2eb09a80dbd62837a25cb78650180a1e1f5",
+      "audit_digest": "sha256:ee1975466fbdee245ab8e8cc4a63b2eb09a80dbd62837a25cb78650180a1e1f5",
+      "line_count": 175,
+      "raw_line_count": 175,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-release_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:d54440de2bbc0a5a3161222c89ab4163b3b844924e168417f81edd731bb46702",
+      "audit_digest": "sha256:d54440de2bbc0a5a3161222c89ab4163b3b844924e168417f81edd731bb46702",
+      "line_count": 175,
+      "raw_line_count": 175,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:100ba3849e1bc946d788499d3d5d5d9a299ee8ce1e8ba3780295ecfc697f1de6",
+      "audit_digest": "sha256:100ba3849e1bc946d788499d3d5d5d9a299ee8ce1e8ba3780295ecfc697f1de6",
+      "line_count": 1646,
+      "raw_line_count": 1646,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:0fdef3bfc7e4c0f15680f2a28557f0765b30780521f9bb7153f802f3440527f5",
+      "audit_digest": "sha256:0fdef3bfc7e4c0f15680f2a28557f0765b30780521f9bb7153f802f3440527f5",
+      "line_count": 205,
+      "raw_line_count": 205,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/review-request-code_spec_alignment.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:cba1b907c2492e9f1e0e7999914032854c1ac58e9a70ff9a683d19ce9e5748ef",
+      "audit_digest": "sha256:cba1b907c2492e9f1e0e7999914032854c1ac58e9a70ff9a683d19ce9e5748ef",
+      "line_count": 167,
+      "raw_line_count": 167,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/review-request-runtime_contract.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:b699361a6c068eaa399a25c7a8430e0ab661d555e73d7e73319b9941b71db280",
+      "audit_digest": "sha256:b699361a6c068eaa399a25c7a8430e0ab661d555e73d7e73319b9941b71db280",
+      "line_count": 167,
+      "raw_line_count": 167,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/review-request-ux_completion.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:6cb5e4931fd9cf92627eeac4dd43d7774686fcf32c9ad3e5073b1cc65e9baf42",
+      "audit_digest": "sha256:6cb5e4931fd9cf92627eeac4dd43d7774686fcf32c9ad3e5073b1cc65e9baf42",
+      "line_count": 167,
+      "raw_line_count": 167,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/review-result-runtime_contract.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:0f3b6deae4f440df40a61d856aa9375323dd2e0c3d1c6a00a54b590d2a0d7fc7",
+      "audit_digest": "sha256:0f3b6deae4f440df40a61d856aa9375323dd2e0c3d1c6a00a54b590d2a0d7fc7",
+      "line_count": 179,
+      "raw_line_count": 179,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
+      "digest": "sha256:bcc645c32e5f0848d099937b0ef66f2780b15976dd2a760cdf6e92c9abea95a6",
+      "audit_digest": "sha256:bcc645c32e5f0848d099937b0ef66f2780b15976dd2a760cdf6e92c9abea95a6",
+      "line_count": 651,
+      "raw_line_count": 651,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-profiler-file-walk-stack-overflow/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/adjudication/story-vibepro-profiler-file-walk-stack-overflow/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-profiler-file-walk-stack-overflow/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/adjudication/story-vibepro-profiler-file-walk-stack-overflow/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-outcome-ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/pr/decision-outcome-ledger.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/real-env-diagnose-run.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/real-env-diagnose-run.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/pr/traceability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-08-38.417Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-08-38.417Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-11-19.375Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-11-19.375Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-11-55.917Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-11-55.917Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-12-27.315Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-12-27.315Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-13-51.587Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-13-51.587Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T12-07-52.710Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T12-07-52.710Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T13-02-53.235Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T13-02-53.235Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-regression_risk-2026-08-02T11-09-51.321Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-regression_risk-2026-08-02T11-09-51.321Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-spec_consistency-2026-08-02T11-09-47.095Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-spec_consistency-2026-08-02T11-09-47.095Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-spec_consistency-2026-08-02T13-56-07.752Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-spec_consistency-2026-08-02T13-56-07.752Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-request-architecture_boundary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/architecture_spec/review-request-architecture_boundary.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-request-regression_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/architecture_spec/review-request-regression_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-request-spec_consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/architecture_spec/review-request-spec_consistency.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-architecture_boundary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/architecture_spec/review-result-architecture_boundary.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-regression_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/architecture_spec/review-result-regression_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-spec_consistency.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/architecture_spec/review-result-spec_consistency.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/transcript-architecture_boundary.jsonl",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/transcript-architecture_boundary.jsonl",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-gate_evidence-2026-08-02T11-56-01.376Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-gate_evidence-2026-08-02T11-56-01.376Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-gate_evidence-2026-08-02T12-48-09.346Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-gate_evidence-2026-08-02T12-48-09.346Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-gate_evidence-2026-08-02T13-55-58.378Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-gate_evidence-2026-08-02T13-55-58.378Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-pr_split_scope-2026-08-02T11-55-08.147Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-pr_split_scope-2026-08-02T11-55-08.147Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-pr_split_scope-2026-08-02T12-48-10.967Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-pr_split_scope-2026-08-02T12-48-10.967Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-pr_split_scope-2026-08-02T13-56-03.348Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-pr_split_scope-2026-08-02T13-56-03.348Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-release_risk-2026-08-02T11-56-03.889Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-release_risk-2026-08-02T11-56-03.889Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-request-pr_split_scope.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/gate/review-request-pr_split_scope.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-request-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/gate/review-request-release_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-pr_split_scope.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/gate/review-result-pr_split_scope.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/gate/review-result-release_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-gate_evidence.jsonl",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-gate_evidence.jsonl",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-pr_split_scope.jsonl",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-pr_split_scope.jsonl",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-release_risk.jsonl",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-release_risk.jsonl",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/history/review-result-runtime_contract-2026-08-02T13-03-16.670Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/history/review-result-runtime_contract-2026-08-02T13-03-16.670Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/review-request-runtime_contract.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/implementation/review-request-runtime_contract.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/review-result-runtime_contract.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/reviews/implementation/review-result-runtime_contract.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/transcript-runtime_contract.jsonl",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/transcript-runtime_contract.jsonl",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-profiler-file-walk-stack-overflow/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/spec/story-vibepro-profiler-file-walk-stack-overflow/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-profiler-file-walk-stack-overflow/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/stories/story-vibepro-profiler-file-walk-stack-overflow/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-profiler-file-walk-stack-overflow/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/stories/story-vibepro-profiler-file-walk-stack-overflow/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-profiler-file-walk-stack-overflow/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/validation-sequencing/story-vibepro-profiler-file-walk-stack-overflow/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-profiler-file-walk-stack-overflow/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/adjudication/story-vibepro-profiler-file-walk-stack-overflow/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-profiler-file-walk-stack-overflow/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/adjudication/story-vibepro-profiler-file-walk-stack-overflow/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/diagnostics/2026-08-02T063716Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/real-env-diagnose-run.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/real-env-diagnose-run.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-08-38.417Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-08-38.417Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-11-19.375Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-11-19.375Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-11-55.917Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-11-55.917Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-12-27.315Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-12-27.315Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-13-51.587Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T11-13-51.587Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T12-07-52.710Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T12-07-52.710Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T13-02-53.235Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-architecture_boundary-2026-08-02T13-02-53.235Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-regression_risk-2026-08-02T11-09-51.321Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-regression_risk-2026-08-02T11-09-51.321Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-spec_consistency-2026-08-02T11-09-47.095Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-spec_consistency-2026-08-02T11-09-47.095Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-spec_consistency-2026-08-02T13-56-07.752Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/history/review-result-spec_consistency-2026-08-02T13-56-07.752Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/transcript-architecture_boundary.jsonl",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/transcript-architecture_boundary.jsonl",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-gate_evidence-2026-08-02T11-56-01.376Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-gate_evidence-2026-08-02T11-56-01.376Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-gate_evidence-2026-08-02T12-48-09.346Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-gate_evidence-2026-08-02T12-48-09.346Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-gate_evidence-2026-08-02T13-55-58.378Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-gate_evidence-2026-08-02T13-55-58.378Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-pr_split_scope-2026-08-02T11-55-08.147Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-pr_split_scope-2026-08-02T11-55-08.147Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-pr_split_scope-2026-08-02T12-48-10.967Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-pr_split_scope-2026-08-02T12-48-10.967Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-pr_split_scope-2026-08-02T13-56-03.348Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-pr_split_scope-2026-08-02T13-56-03.348Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-release_risk-2026-08-02T11-56-03.889Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/history/review-result-release_risk-2026-08-02T11-56-03.889Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-gate_evidence.jsonl",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-gate_evidence.jsonl",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-pr_split_scope.jsonl",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-pr_split_scope.jsonl",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-release_risk.jsonl",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-release_risk.jsonl",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/history/review-result-runtime_contract-2026-08-02T13-03-16.670Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/history/review-result-runtime_contract-2026-08-02T13-03-16.670Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/transcript-runtime_contract.jsonl",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/implementation/transcript-runtime_contract.jsonl",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-profiler-file-walk-stack-overflow/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/spec/story-vibepro-profiler-file-walk-stack-overflow/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-profiler-file-walk-stack-overflow/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/stories/story-vibepro-profiler-file-walk-stack-overflow/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-profiler-file-walk-stack-overflow/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/stories/story-vibepro-profiler-file-walk-stack-overflow/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-profiler-file-walk-stack-overflow/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/references/vibepro/validation-sequencing/story-vibepro-profiler-file-walk-stack-overflow/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 7383677
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T063716Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 989500
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 7428747
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 609259
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/surface-violations.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-profiler-file-walk-stack-overflow/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-profiler-file-walk-stack-overflow/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    }
+  ]
+}

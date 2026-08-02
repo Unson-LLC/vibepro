@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+  "ledger_path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_e751640ed013200790b71e306161748342b47c0b64f5243f2021b6325d3451bb"
+  },
+  "parent_revision_fingerprint": "6d176b337f9ac1e3489de5bf9992d666174bc241a31a36e9601bce8d0769132c",
+  "revision_fingerprint": "798c94e147932d910fb44cd110823e299e0f1ec9cc8f20e4686361851127dbf3",
+  "trace": {
+    "decision_trace_id": "dt_e751640ed013200790b71e306161748342b47c0b64f5243f2021b6325d3451bb",
+    "collision_group": null,
+    "trace_source_ref": "tsr_c8637add65db9d399240cc4afb9cb6c3427710df30655bbf9af2cb06e145cd7b",
+    "normalized_subject_key": "finding:traversal-order-dfs-to-bfs-under-caps",
+    "source_identity": {
+      "source_kind": "linked_sources",
+      "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-architecture_boundary.json,.vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-architecture_boundary.json",
+      "native_id": "traversal-order-dfs-to-bfs-under-caps,traversal-order-dfs-to-bfs-under-caps",
+      "digest": "0421623efb6f2e60b932020e58d8f9b5db668a475f1f125026cdb1387bdcafd1",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+    "parent_revision_fingerprint": "6d176b337f9ac1e3489de5bf9992d666174bc241a31a36e9601bce8d0769132c",
+    "revision_fingerprint": "798c94e147932d910fb44cd110823e299e0f1ec9cc8f20e4686361851127dbf3",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_e751640ed013200790b71e306161748342b47c0b64f5243f2021b6325d3451bb"
+        },
+        "parent_revision_fingerprint": "9add23d3f804415a7a252e550dc475414b4448defdb34258a128f8a3b8eb03b5"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "observed",
+      "value": {
+        "severity": "low",
+        "id": "traversal-order-dfs-to-bfs-under-caps",
+        "detail": "DFS-to-BFS reorders the files array; can change which files survive ordering-sensitive caps, notably flow-design slice(0,160) on repos with >160 UI files. Contract shapes unchanged"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-architecture_boundary.json",
+          "source_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "source_digest": "926979da0bbe9c5cd174bec1b1c192772c64e67188811ee752b912da31c1150d",
+          "native_id": "traversal-order-dfs-to-bfs-under-caps"
+        }
+      ]
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "observed",
+      "value": {
+        "detected_by": "architecture_boundary",
+        "stage": "architecture_spec",
+        "detected_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-architecture_boundary.json",
+          "source_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "source_digest": "926979da0bbe9c5cd174bec1b1c192772c64e67188811ee752b912da31c1150d",
+          "native_id": "traversal-order-dfs-to-bfs-under-caps"
+        }
+      ]
+    },
+    "disposition": {
+      "status": "observed",
+      "value": {
+        "finding_id": "traversal-order-dfs-to-bfs-under-caps",
+        "disposition": "deferred",
+        "resolved_by": [],
+        "reason": "ordering was never a declared contract; documenting in the followup walker-consolidation story",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-architecture_boundary.json",
+          "source_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "source_digest": "bb6a7f2c362eb44af5b4490040c54b7e5f37023f0046eef36239ad580a98b381",
+          "native_id": "traversal-order-dfs-to-bfs-under-caps"
+        }
+      ]
+    },
+    "decision": {
+      "status": "observed",
+      "value": {
+        "finding_id": "traversal-order-dfs-to-bfs-under-caps",
+        "disposition": "deferred",
+        "resolved_by": [],
+        "reason": "ordering was never a declared contract; documenting in the followup walker-consolidation story",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/architecture_spec/review-result-architecture_boundary.json",
+          "source_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "source_digest": "bb6a7f2c362eb44af5b4490040c54b7e5f37023f0046eef36239ad580a98b381",
+          "native_id": "traversal-order-dfs-to-bfs-under-caps"
+        }
+      ]
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 409,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/409",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "8c52f7c65a377399b7a0514673865025fdef9712",
+        "status": "merged",
+        "merged_at": "2026-08-02T15:52:39Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}
