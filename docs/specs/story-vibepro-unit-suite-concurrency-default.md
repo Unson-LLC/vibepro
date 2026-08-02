@@ -1,3 +1,8 @@
+---
+story_id: story-vibepro-unit-suite-concurrency-default
+parent_design: vibepro-unit-suite-concurrency-default
+---
+
 # Spec: unit証跡の全体スイート実行を実測最適並列度に正本化する
 
 - story_id: story-vibepro-unit-suite-concurrency-default

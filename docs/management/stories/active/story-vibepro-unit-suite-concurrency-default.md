@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-unit-suite-concurrency-default
 title: "unit証跡の全体スイート実行を実測最適並列度に正本化し、verify runのタイムアウト余裕を確保する"
+parent_design: vibepro-unit-suite-concurrency-default
 status: active
 created_at: 2026-08-02
 updated_at: 2026-08-02
