@@ -1208,8 +1208,20 @@
         "started_at": "2026-07-30",
         "due_at": null,
         "category": "governance"
+      },
+      {
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "title": "進捗ハートビートpolicy kernelの抽出とgraphify/verification-runnerへの採用",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-02",
+        "due_at": null,
+        "category": "platform"
       }
     ],
-    "current_story_id": "story-vibepro-vacuous-e2e-test-elimination"
+    "current_story_id": "story-vibepro-progress-heartbeat-policy-kernel"
   }
 }
