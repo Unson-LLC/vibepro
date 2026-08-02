@@ -1,0 +1,157 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "The head-binding waiver's core factual claim is independently verified and is STRONGER than the waiver states: the branch changes zero product code relative to origin/main, and every src/ change in the unproven delta is strictly upstream and already merged to main. The discarded-run disclosure fix is genuine, not papering-over. All four verification records are reliable (runner_direct, timed_out=false, unchanged worktree/head hashes). All 3 review-surface violations are honestly acknowledged with explicit verdict-deliberately-NOT-recorded evidence, and no stale-head verdict was passed off as current. However, two of the structured observations added this round specifically to close gate:common_judgment_spine and gate:responsibility_authority contain claims that do not hold: the integration lane claims a VET-S-6 boundary scenario it does not execute, and the unit lane names a target file that does not exist. A gate closed on an observation asserting coverage the lane does not run is the exact vacuous-evidence pattern this Story exists to eliminate.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "integration-observation-claims-scenario-lane-does-not-execute",
+      "detail": "The integration observation scenario reads 'boundary_condition: VET-S-6 asserts the .spec.ts gate still counts more than zero specs after the 17 deletions'. The integration lane command is node --test over 8 named files, none of which exercises the .spec.ts gate; grep for run-e2e-ts-specs across those 8 files returns EMPTY. The real VET-S-6 coverage is in the acceptance spec, which runs in the E2E lane. Fix: remove that scenario line from the integration observation."
+    },
+    {
+      "severity": "medium",
+      "id": "unit-observation-names-nonexistent-target-file",
+      "detail": "The unit observation lists target test/managed-worktree-gate.test.js, which does not exist (ls reports No such file or directory). The AC-4/VET-S-4 bypassed-branch coverage it describes is real but lives in test/e2e/story-vibepro-managed-worktree-gate-main.test.js. The substance is truthful; the cited path is not. The sibling target test/execution-state.test.js does exist and does assert the agent_review derivation, so only the one path is wrong."
+    },
+    {
+      "severity": "low",
+      "id": "ac6-paraphrased-as-count-gt-zero-rather-than-fail-closed",
+      "detail": "Both observations paraphrase AC-6 as the .spec.ts gate counting more than zero specs. The actual test asserts the gate still fails closed on an empty spec set, a different and stronger property. Minor wording drift, but drift in exactly the asserting-about versus executing direction the Story targets."
+    },
+    {
+      "severity": "low",
+      "id": "waiver-text-current-head-is-itself-one-commit-stale",
+      "detail": "The waiver asserts integration bound to 06450d62 equals CURRENT HEAD. Current HEAD is b9ed51a3, recorded after the waiver. git diff 06450d62..b9ed51a3 is .vibepro/config.json only so the substance is unaffected, but by the waiver's own standard the statement should be restated rather than left as-is."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Independently re-derived every head-binding claim from git rather than accepting the waiver text: merge-base ea5e90fc, git diff --name-only ea5e90fc..HEAD -- src/ bin/ EMPTY, git merge-base --is-ancestor 31d84833 origin/main TRUE, git log 3be3ed55..HEAD exactly four commits, git diff 06450d62..b9ed51a3 config only. Verified the discarded-run disclosure documents and their cross-reference. Read all four verification-run JSONs and the verification-evidence.json observations, then checked each observation claim against the actual test files and run logs, which is where the two medium findings came from. Ran node scripts/lint-e2e-product-execution.mjs exit 0 over 66 files and review violations --json showing 3 of 3 acknowledged.",
+    "evidence": null,
+    "inputs": [
+      "scripts/lint-e2e-product-execution.mjs",
+      "CHANGELOG.md",
+      "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-unit-observation.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern: a waiver accepting four records bound to two non-HEAD commits, written by the implementing agent, is the classic shape of evidence laundering and I expected to block -> Final needs_changes: the head-binding argument is not only sound but understates itself, and the unit-discard disclosure is genuinely sufficient rather than papering-over. What moved me off pass was that the observations were added specifically to close two gates, so I checked them rather than reading them, and two claims fail. Two string edits, hence needs_changes rather than block."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+    "expected_root": null,
+    "expected_head_sha": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+    "current_head_sha": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+      "expected_root": null,
+      "expected_head_sha": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "current_head_sha": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-07-31T19:38:46.000Z",
+  "git_context": {
+    "head_sha": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+    "current_branch": "claude/vacuous-e2e-deletions",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-07-31T19:38:45.975Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "b9ed51a3014d1ea0ee094fe02e751f032a08999f",
+    "surface_files": [
+      {
+        "path": "CHANGELOG.md",
+        "sha256": "e8ff494b2936624b79543f46ffdbcc7fe3cacbf72b1ce6a0764fde670616e99e",
+        "size": 52067
+      },
+      {
+        "path": "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-unit-observation.md",
+        "sha256": "e3ea201d30357cf40fa359840a6ff10c7b937586ae7d987e02c6a4d0ce020553",
+        "size": 5455
+      },
+      {
+        "path": "scripts/lint-e2e-product-execution.mjs",
+        "sha256": "6c84ae9aab370455120838e55133d598d7c0c258c992db5d3e81a527de278fe0",
+        "size": 6792
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "8cf4fee272ae0ce5f5d5593e9ee75edaf0906034860408c1259096cc6b6e968a"
+  },
+  "source_fingerprint": "5c68b5d9cfe688466cfde83b1ec709574be451937479b0cd602f45e5f323aef7",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "ab93d6c3e009ce3d9",
+    "agent_role": null,
+    "model": "claude-opus-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "ab93d6c3e009ce3d9",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/ab93d6c3e009ce3d9.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-vacuous-e2e-test-elimination/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "returned final JSON verdict and terminated; lifecycle closed with close_reason completed",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "ab93d6c3e009ce3d9",
+      "implementation_session_id": "70ea817c-ee56-48c0-ab7c-612da8629872",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

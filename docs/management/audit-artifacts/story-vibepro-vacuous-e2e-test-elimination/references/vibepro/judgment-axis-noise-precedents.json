@@ -1,0 +1,87 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "release_ops|changed_path:release_ops",
+      "axis": "release_ops",
+      "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+      "decision_id": "decision-1785409756810-0d81bc84",
+      "source": "gate:judgment_axis_release_ops",
+      "reason": "release_note: CHANGELOG.md の Unreleased 節に削除17件と scripts/lint-e2e-product-execution.mjs の追加、widened typecheck glob、6件のreporter形式修正を記載した。operator action: 既存利用者に必要な操作は無い。本変更は公開CLI surface・artifact schema・runtime挙動のいずれも変更せず、repository内部のテスト品質gateのみを追加する。test/e2e にファイルを追加するcontributorは自分で書いたリテラルではなく実挙動をassertする必要がある、という点だけが新しい制約で、CHANGELOGは受理される4 signalを明示列挙する。observability_evidence: lintはexit codeと、offendingファイルを全て列挙する ::error:: annotation で観測できる。cleanメッセージは実際に走査したファイル数を出すため、ディレクトリが移動・空化した場合は無言のcleanではなく数の変化として見える。走査不能(任意の深さ、失敗したディレクトリ名を報告)・読取不能・空集合はいずれも exit 1 でfail closedする。これらは LINT-2/3/4/10 で個別に行使され、LINT-9 は CHANGELOG が全 PRODUCT_EXECUTION_SIGNALS id を列挙していることをassertするのでdocの記述ドリフトもbuildをfailさせる。rollback_instruction: 本commitをrevertすれば戻る。lintはstandaloneスクリプト1本とCI step 1つとnpm script 1つのみで、出力をデータとして読む消費者は無く、永続状態もschemaもmigrationも無い。revertせず無効化する場合は .github/workflows/ci.yml から npm run lint:e2e-product-execution のstepを外せばよく、LINT-9 がそのstepの実在をassertするのでドキュメントとCIの乖離も検出される。削除17件はlintに依存しないため単独で成立する。",
+      "artifact": "CHANGELOG.md",
+      "activation_candidates": [
+        "changed_path:release_ops"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-07-30T13:52:45.394Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:43|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+      "decision_id": "decision-1785543843693-94ee3b8b",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "See the companion record on source gate:judgment_dag_adjudication:axis:scope_reviewability for the full reasoning. In brief: the first adjudicator returned needs_human_judgment, correctly declining an owner-capacity call; the owner then ruled twice (decision-1785457697019-3d52c676 on 2026-07-31 and decision-1785543242469-0a518df3 reaffirming on 2026-08-01); a second independent adjudicator judged the item sound after verifying the grounds rather than accepting them. Verified grounds: splitting separates the 17 deletions from the mapping evidence that justifies them; the generated split plan's merge_order would put a red required check on main twice and its lanes do not cover the full change set (43 of 45 at the current head, the uncovered paths being .vibepro/config.json and a routing-profiles spec.json); and the branch's own product-code diff is empty. Counter-evidence recorded rather than omitted: pr-prepare.json's own split analysis recommends clean_branch_or_split_pr, citing 43 files against a 30-file guideline and 29 commits from base. The owner decided in full view of that recommendation.",
+      "artifact": "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:43",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-01T00:24:30.617Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "data_state|changed_path:data_state",
+      "axis": "data_state",
+      "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+      "decision_id": "decision-1785543842383-f12715ee",
+      "source": "gate:judgment_axis_data_state",
+      "reason": "Independently adjudicated judged_sound. The mechanical status was needs_evidence but the premise is directly falsifiable and was falsified by inspection. The src and bin diff against merge-base is EMPTY, and the full non-deletion changed set is CI config, package.json scripts, CHANGELOG, design-ssot.json, docs, .vibepro artifacts and test files. No migration, schema, query, cache or persisted object is touched, and no reader of stored data changed, so there is no replay-compatibility concern. The only persisted artifacts edited are .vibepro/spec and design-ssot.json entries, and those were changed to REMOVE references to files that no longer exist after the deletions, i.e. made consistent rather than migrated. The CHANGELOG's statement of no persisted state, no schema and no migration was checked against the diff rather than accepted at face value.",
+      "artifact": "CHANGELOG.md",
+      "activation_candidates": [
+        "changed_path:data_state"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-01T00:24:30.618Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+      "decision_id": "decision-1785543841081-3499ffe9",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "Independently adjudicated judged_sound. The mechanical status was needs_evidence, but the question has a checkable answer and it was checked. git diff --name-only against merge-base for src/ and bin/ returns EMPTY, so this branch changes no product code; there is consequently no rollout sequence, version-skew surface, persisted object or feature gate that a rollback could strand. The change is test deletions plus one standalone script plus one CI step, so a revert is total and leaves no residue. CHANGELOG.md:75 states this in owner-visible terms and gives the second path of removing the single CI step without reverting. The one element irreversible in practice is the deletion of 17 files, which is reversible by revert and is explicitly reasoned about in the mapping table. Recorded caveat from the release_risk review, not suppressed: a full revert would also undo the two rewritten tests and thereby re-open the src/execution-state.js deriveCompletedPhases and src/managed-worktree-gate.js bypassed-branch coverage gaps, so a rollback triggered by a lint false positive should be scoped to the lint and CI step alone rather than reverting the whole change.",
+      "artifact": "CHANGELOG.md",
+      "activation_candidates": [
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-01T00:24:30.618Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:46|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+      "decision_id": "decision-1785543843693-94ee3b8b",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "See the companion record on source gate:judgment_dag_adjudication:axis:scope_reviewability for the full reasoning. In brief: the first adjudicator returned needs_human_judgment, correctly declining an owner-capacity call; the owner then ruled twice (decision-1785457697019-3d52c676 on 2026-07-31 and decision-1785543242469-0a518df3 reaffirming on 2026-08-01); a second independent adjudicator judged the item sound after verifying the grounds rather than accepting them. Verified grounds: splitting separates the 17 deletions from the mapping evidence that justifies them; the generated split plan's merge_order would put a red required check on main twice and its lanes do not cover the full change set (43 of 45 at the current head, the uncovered paths being .vibepro/config.json and a routing-profiles spec.json); and the branch's own product-code diff is empty. Counter-evidence recorded rather than omitted: pr-prepare.json's own split analysis recommends clean_branch_or_split_pr, citing 43 files against a 30-file guideline and 29 commits from base. The owner decided in full view of that recommendation.",
+      "artifact": "docs/management/stories/active/story-vibepro-vacuous-e2e-test-elimination.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:46",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-01T16:58:04.714Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

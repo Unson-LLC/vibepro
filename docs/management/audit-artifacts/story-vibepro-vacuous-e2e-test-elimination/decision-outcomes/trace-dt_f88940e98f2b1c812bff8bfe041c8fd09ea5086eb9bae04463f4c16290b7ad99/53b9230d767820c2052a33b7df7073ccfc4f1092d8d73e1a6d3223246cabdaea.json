@@ -1,0 +1,125 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "ledger_path": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_f88940e98f2b1c812bff8bfe041c8fd09ea5086eb9bae04463f4c16290b7ad99"
+  },
+  "parent_revision_fingerprint": "5170edac49a7c034d4b886d772bf3164a13a6fae3b8a7d17c07ef4d5baff8703",
+  "revision_fingerprint": "53b9230d767820c2052a33b7df7073ccfc4f1092d8d73e1a6d3223246cabdaea",
+  "trace": {
+    "decision_trace_id": "dt_f88940e98f2b1c812bff8bfe041c8fd09ea5086eb9bae04463f4c16290b7ad99",
+    "collision_group": null,
+    "trace_source_ref": "tsr_502703215fc90b5368fac866d7256d157ecb2e095a1cab3fb8f2520dbcc7a1f7",
+    "normalized_subject_key": "finding:unit-scenario-carries-uncited-adjudication-claim",
+    "source_identity": {
+      "source_kind": "review_finding",
+      "source_ref": ".vibepro/reviews/story-vibepro-vacuous-e2e-test-elimination/gate/review-result-gate_evidence.json",
+      "native_id": "unit-scenario-carries-uncited-adjudication-claim",
+      "digest": "b9c748c868b12c6207d08c53c87f1f1acddc3d0ba0d67654a20579c59bf32849",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+    "parent_revision_fingerprint": "5170edac49a7c034d4b886d772bf3164a13a6fae3b8a7d17c07ef4d5baff8703",
+    "revision_fingerprint": "53b9230d767820c2052a33b7df7073ccfc4f1092d8d73e1a6d3223246cabdaea",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_f88940e98f2b1c812bff8bfe041c8fd09ea5086eb9bae04463f4c16290b7ad99"
+        },
+        "parent_revision_fingerprint": "1506200295b222e2c04f9444ff41033f4871cfc15bea9d58f245dab7c90cf06e"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "observed",
+      "value": {
+        "severity": "low",
+        "id": "unit-scenario-carries-uncited-adjudication-claim",
+        "detail": "The unit boundary_condition scenario states a mutation result that npm test did not produce, namely that an independent adjudicator mutation-proved AC-3 and AC-4. The reviewer verified the claim is accurate and traceable to the adjudication artifact at head 55131e55, but the record cites no artifact path for it, so a reader cannot trace it from the record alone."
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-vacuous-e2e-test-elimination/gate/review-result-gate_evidence.json",
+          "source_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+          "source_digest": "b9c748c868b12c6207d08c53c87f1f1acddc3d0ba0d67654a20579c59bf32849",
+          "native_id": "unit-scenario-carries-uncited-adjudication-claim"
+        }
+      ]
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "observed",
+      "value": {
+        "detected_by": "gate_evidence",
+        "stage": "gate",
+        "detected_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-vacuous-e2e-test-elimination/gate/review-result-gate_evidence.json",
+          "source_head_sha": "55131e5527227d09070a66e42cf0e0058abf3a19",
+          "source_digest": "b9c748c868b12c6207d08c53c87f1f1acddc3d0ba0d67654a20579c59bf32849",
+          "native_id": "unit-scenario-carries-uncited-adjudication-claim"
+        }
+      ]
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 407,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/407",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "8dc2c3d65ec9acd7936a0cbdb07b4009242d1ff3",
+        "status": "merged",
+        "merged_at": "2026-08-02T01:44:24Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-vacuous-e2e-test-elimination/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-vacuous-e2e-test-elimination",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "needs_changes",
+  "summary": "The two medium findings from the previous round are genuinely fixed and the retraction was honest: the false claims are deleted with nothing substituted, and the unit target was NOT quietly repointed at the real e2e-side file. The head-binding argument re-verified and holds. However the same integration observation block contains two MORE claims that misdescribe the files they name, of the same class as the two just withdrawn, which is why this is needs_changes rather than pass: the artifact_replay string names a file with zero pr-prepare/gate-dag references, and the flow_replay string attributes a traceability leg to a file with zero traceability references. Separately noted as non-blocking: hand-editing the evidence artifact is invisible to VibePro's own freshness machinery, which is how untrue observations survived multiple rounds.",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "integration-artifact-replay-names-wrong-file",
+      "detail": "The integration observation claimed 'artifact_replay: verification-runner-evidence-consumers replays recorded pr-prepare / gate-dag artifacts and asserts the consumers read them back unchanged'. grep for pr-prepare and gate-dag in test/integration/verification-runner-evidence-consumers.test.js returns 0 hits. What that file actually does (line 40) is create a fixture, generate fresh runner-direct evidence via verify run, and assert the usage report, traceability clause map and execution state consume it without loss. Same shape as the withdrawn VET-S-6 claim: the scenario type is real for the lane but the artifact attribution is false."
+    },
+    {
+      "severity": "medium",
+      "id": "integration-flow-replay-attributes-traceability-to-wrong-file",
+      "detail": "The integration observation claimed 'flow_replay: spec-pipeline replays the Story -> Spec -> traceability flow'. grep for traceability in test/spec-pipeline.test.js returns 0 hits. The Story to Spec leg is real (the file drives runCli spec write and buildSpecFingerprint), but traceability is exercised by other files in the lane, so the sentence attributes work to a file that does not do it. Milder than the mediums above because the lane as a whole is not misrepresented, only the named file."
+    },
+    {
+      "severity": "medium",
+      "id": "hand-edited-evidence-invisible-to-freshness-machinery",
+      "detail": "The observation corrections were made by editing verification-evidence.json directly. This is invisible to VibePro's own freshness detection: updated_at stays old, the fingerprint is unchanged, and because .vibepro is git-excluded the change leaves no tracked diff. Judged ACCEPTABLE as a method here (deletion-only, and re-recording via verify record would have stamped the current head onto lanes executed at other SHAs, which would be fabrication; the un-recomputed surface_hash is disclosed). The real defect is that the tooling cannot detect observation-level edits at all, which is why untrue observations survived four rounds. Not blocking this PR; a tooling gap to route to follow-up."
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified both prior findings were genuinely fixed: confirmed the VET-S-6 scenario and the nonexistent test/managed-worktree-gate.test.js target are absent from verification-evidence.json and that no substitute string was introduced, and specifically that the unit target was not repointed to test/e2e/story-vibepro-managed-worktree-gate-main.test.js. Then re-checked every surviving observation string against the files each lane's command executes, which surfaced the two new medium findings via grep counts of 0 for pr-prepare/gate-dag in the evidence-consumers test and 0 for traceability in spec-pipeline.test.js. Re-derived head binding independently: src/ and bin/ diff against merge-base EMPTY, and 31d84833 confirmed an ancestor of origin/main. Confirmed gate:common_judgment_spine and gate:responsibility_authority are passed and that the withdrawn claims were never load-bearing for them. Read the retraction decision record and the three acknowledged review-surface violations.",
+    "evidence": null,
+    "inputs": [
+      "scripts/lint-e2e-product-execution.mjs",
+      "CHANGELOG.md",
+      "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-unit-observation.md"
+    ]
+  },
+  "judgment_delta": [
+    "Initial: expect to confirm the two fixes and pass -> Final needs_changes, because checking rather than reading the remaining observations surfaced two more strings of the same defect class in the same integration block. The retraction itself is honest and the head-binding argument holds, so the blocking issue is narrowly the residual untrue attributions, not the evidence posture overall."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+    "expected_root": null,
+    "expected_head_sha": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+    "current_head_sha": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/p4-vacuous-e2e",
+      "expected_root": null,
+      "expected_head_sha": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "current_head_sha": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-01T00:17:06.075Z",
+  "git_context": {
+    "head_sha": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+    "current_branch": "claude/vacuous-e2e-deletions",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-01T00:17:06.049Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "2f200bf22cb2fbda72c1539761c840badc0d8514",
+    "surface_files": [
+      {
+        "path": "CHANGELOG.md",
+        "sha256": "e8ff494b2936624b79543f46ffdbcc7fe3cacbf72b1ce6a0764fde670616e99e",
+        "size": 52067
+      },
+      {
+        "path": "docs/management/decisions/2026-07-31-vacuous-e2e-discarded-unit-observation.md",
+        "sha256": "e3ea201d30357cf40fa359840a6ff10c7b937586ae7d987e02c6a4d0ce020553",
+        "size": 5455
+      },
+      {
+        "path": "scripts/lint-e2e-product-execution.mjs",
+        "sha256": "6c84ae9aab370455120838e55133d598d7c0c258c992db5d3e81a527de278fe0",
+        "size": 6792
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "8cf4fee272ae0ce5f5d5593e9ee75edaf0906034860408c1259096cc6b6e968a"
+  },
+  "source_fingerprint": "2d828a62a1f704bc53e31f609698c04a06528e146cf913efad925c06b464c09b",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a383488305222ae69",
+    "agent_role": null,
+    "model": "claude-opus-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a383488305222ae69",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/70ea817c-ee56-48c0-ab7c-612da8629872/tasks/a383488305222ae69.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-vacuous-e2e-test-elimination/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "returned final JSON verdict and terminated; lifecycle closed with close_reason completed",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a383488305222ae69",
+      "implementation_session_id": "70ea817c-ee56-48c0-ab7c-612da8629872",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}
