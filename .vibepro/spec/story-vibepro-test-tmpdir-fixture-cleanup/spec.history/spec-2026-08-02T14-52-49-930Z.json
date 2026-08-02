@@ -1,0 +1,180 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "generated_by": {
+    "caller": "unknown",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "Every test/**/*.test.js file whose source references mkdtemp or os.tmpdir() must import test/support/scratch-tmpdir.js; a conformance test enumerates all such files and fails, naming every offender, when any of them omits the import.",
+      "rationale": "Without a deterministic conformance guard, new test files reintroduce the same $TMPDIR fixture leak the helper was built to close, since the leak is invisible until fixtures accumulate over many runs.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "AC1: mkdtempを使う全テストファイルがscratch隔離ヘルパーをimportし"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "AC3: 回帰ガード: mkdtemp/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+            "section": "背景 / 問題",
+            "text_snippet": "test/ 配下123ファイル + src/ 4ファイルがmkdtempを使用し、prefixは約400種"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "test/support/scratch-tmpdir.js",
+            "anchor": "SCRATCH_PREFIX"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/scratch-tmpdir-conformance.test.js",
+            "case": "GATE conformance: every test/**/*.test.js file that uses mkdtemp/os.tmpdir imports the scratch-tmpdir helper"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "test/support/scratch-tmpdir.js",
+            "must_contain": "SCRATCH_PREFIX"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/scratch-tmpdir-conformance.test.js",
+            "must_cover": "imports the scratch-tmpdir helper"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T14:50:30.000Z",
+      "last_revised_at": "2026-08-02T14:52:49.937Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given a process that imports test/support/scratch-tmpdir.js, when that process (or any code it runs in-process, or any child process it spawns via inherited environment variables) calls mkdtemp against os.tmpdir(), then the resulting directory is created inside a per-process vibepro-scratch- root under the real $TMPDIR, and that scratch root no longer exists once the process exits normally.",
+      "rationale": "The helper only redirects fixtures safely if the redirection covers test-helper mkdtemp calls, in-process src code mkdtemp calls, and spawned child processes (e.g. git) alike, and cleans up on exit; otherwise fixtures keep leaking through whichever path is uncovered.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "AC1: テストプロセス正常終了時にそのプロセスが作ったfixtureディレクトリがホストの実$TMPDIR直下に残らない"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "AC2: 隔離はテスト内で呼ばれるsrc本体のmkdtempと、テストがspawnする子プロセス(git等)にも及ぶ(環境変数継承で保証)"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+            "section": "reason",
+            "text_snippet": "os.tmpdir()は呼び出しごとにTMPDIRを読む(Node実測済)ため、テストヘルパー経由・src本体経由・子プロセス経由のmkdtempすべてがscratch rootに閉じる"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "test/support/scratch-tmpdir.js",
+            "anchor": "process.env.TMPDIR = scratchRoot"
+          },
+          {
+            "file": "test/support/scratch-tmpdir.js",
+            "anchor": "process.once('exit'"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/scratch-tmpdir-conformance.test.js",
+            "case": "GATE behavioral: importing the helper redirects mkdtemp(os.tmpdir()) into a private scratch root that is removed on exit"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "test/support/scratch-tmpdir.js",
+            "must_contain": "process.env.TMPDIR = scratchRoot"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/scratch-tmpdir-conformance.test.js",
+            "must_cover": "removed on exit"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T14:50:30.000Z",
+      "last_revised_at": "2026-08-02T14:52:49.937Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "Given a vibepro-scratch- directory left in the real $TMPDIR with an mtime older than 24 hours (e.g. from a process killed before its exit handler ran), when any process imports test/support/scratch-tmpdir.js, then that stale directory is removed as part of the helper's self-healing sweep at import time.",
+      "rationale": "SIGKILL or other abnormal termination bypasses the process.once('exit') cleanup, so without a startup sweep, crashed test runs would still accumulate fixtures indefinitely and reproduce the original ENOSPC failure.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "AC4: クラッシュ残骸の自己回復: 24時間以上前のscratch root残骸をヘルパー起動時に掃除する"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+            "section": "reason",
+            "text_snippet": "SIGKILL等でexitフックが走らないケースは、ヘルパーが起動時に24時間以上前の自前prefixのscratch rootを掃除する自己回復で補う"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "test/support/scratch-tmpdir.js",
+            "anchor": "sweepStaleScratchDirs"
+          },
+          {
+            "file": "test/support/scratch-tmpdir.js",
+            "anchor": "STALE_AGE_MS"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/scratch-tmpdir-conformance.test.js",
+            "case": "GATE behavioral: the self-healing sweep removes stale vibepro-scratch-* directories on import"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "test/support/scratch-tmpdir.js",
+            "must_contain": "sweepStaleScratchDirs"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/scratch-tmpdir-conformance.test.js",
+            "must_cover": "self-healing sweep removes stale"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T14:50:30.000Z",
+      "last_revised_at": "2026-08-02T14:52:49.937Z"
+    }
+  ],
+  "generated_at": "2026-08-02T14:52:49.930Z",
+  "previous_spec_id": null
+}
