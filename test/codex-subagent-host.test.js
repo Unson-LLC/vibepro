@@ -105,9 +105,12 @@ test('production Codex host shutdown contains the detached worker process group'
   const childPidPath = path.join(repoRoot, 'codex-child.pid');
   const fakeCodex = path.join(repoRoot, 'fake-codex-sleep.mjs');
   await writeFile(fakeCodex, `
-    import { writeFile } from 'node:fs/promises';
+    import { rename, writeFile } from 'node:fs/promises';
     if (process.argv.includes('--version')) process.exit(0);
-    await writeFile(process.argv[2], String(process.pid));
+    const pidTarget = process.argv[2];
+    const pidTemp = pidTarget + '.tmp';
+    await writeFile(pidTemp, String(process.pid));
+    await rename(pidTemp, pidTarget);
     setInterval(() => {}, 1000);
     await new Promise(() => {});
   `);
@@ -117,8 +120,7 @@ test('production Codex host shutdown contains the detached worker process group'
     codexExecutableArgs: [fakeCodex, childPidPath]
   });
   const started = await host.spawn(runtimeRequest(repoRoot));
-  await waitFor(async () => access(childPidPath).then(() => true, () => false), { timeoutMs: 300000 });
-  const childPid = Number(await readFile(childPidPath, 'utf8'));
+  const childPid = await waitForChildPid(childPidPath);
   assert.equal(isProcessAlive(childPid), true);
   await host.shutdown({ provider_run_id: started.provider_run_id, repo_root: repoRoot, reason: 'containment_test' });
   await waitFor(async () => !isProcessAlive(childPid), { timeoutMs: 300000 });
@@ -132,16 +134,22 @@ test('production Codex host keeps containment inside the worker sandbox boundary
   const childStoppedPath = path.join(repoRoot, 'codex-child-stopped.txt');
   const fakeCodex = path.join(repoRoot, 'fake-codex-sleep.mjs');
   await writeFile(fakeCodex, `
-    import { writeFileSync } from 'node:fs';
-    import { writeFile } from 'node:fs/promises';
+    import { renameSync, writeFileSync } from 'node:fs';
+    import { rename, writeFile } from 'node:fs/promises';
     if (process.argv.includes('--version')) process.exit(0);
     for (const signal of ['SIGTERM', 'SIGINT']) {
       process.once(signal, () => {
-        writeFileSync(process.argv[3], signal);
+        const stoppedTarget = process.argv[3];
+        const stoppedTemp = stoppedTarget + '.tmp';
+        writeFileSync(stoppedTemp, signal);
+        renameSync(stoppedTemp, stoppedTarget);
         process.exit(signal === 'SIGTERM' ? 143 : 130);
       });
     }
-    await writeFile(process.argv[2], String(process.pid));
+    const pidTarget = process.argv[2];
+    const pidTemp = pidTarget + '.tmp';
+    await writeFile(pidTemp, String(process.pid));
+    await rename(pidTemp, pidTarget);
     setInterval(() => {}, 1000);
     await new Promise(() => {});
   `);
@@ -161,11 +169,14 @@ test('production Codex host keeps containment inside the worker sandbox boundary
     }
   });
   const started = await host.spawn(runtimeRequest(repoRoot));
-  await waitFor(async () => access(childPidPath).then(() => true, () => false), { timeoutMs: 300000 });
+  await waitForChildPid(childPidPath);
 
   await host.shutdown({ provider_run_id: started.provider_run_id, repo_root: repoRoot, reason: 'containment_eperm_test' });
 
-  await waitFor(async () => access(childStoppedPath).then(() => true, () => false), { timeoutMs: 300000 });
+  await waitFor(async () => {
+    const content = await readFile(childStoppedPath, 'utf8').then((value) => value, () => null);
+    return typeof content === 'string' && content.trim().length > 0;
+  }, { timeoutMs: 300000 });
   assert.equal(await readFile(childStoppedPath, 'utf8'), 'SIGTERM');
   assert.equal(deniedGroupSignals, 0);
 });
@@ -240,4 +251,24 @@ function isProcessAlive(pid) {
     if (error.code === 'ESRCH') return false;
     throw error;
   }
+}
+
+// Reading a pid file the instant it becomes visible can race the writer's
+// own content flush (even behind a rename, the directory entry can appear
+// slightly before a concurrent reader's cached negative-lookup clears on some
+// filesystems), so this polls until the content is a parsed, plausible pid
+// rather than trusting a single readFile after an access() check.
+async function waitForChildPid(childPidPath, options) {
+  let childPid = null;
+  await waitFor(async () => {
+    const content = await readFile(childPidPath, 'utf8').then((value) => value, () => null);
+    if (content === null) return false;
+    const trimmed = content.trim();
+    if (!/^\d+$/.test(trimmed)) return false;
+    const parsed = Number(trimmed);
+    if (!(parsed > 1)) return false;
+    childPid = parsed;
+    return true;
+  }, options ?? { timeoutMs: 300000 });
+  return childPid;
 }
