@@ -4,6 +4,22 @@ All notable changes to VibePro will be documented in this file.
 
 ## Unreleased
 
+- Pin the `test` npm script to `node --test --test-concurrency=2`. The suite is
+  I/O-bound and scales negatively with parallelism; `--test-concurrency=2` is
+  the measured optimum (unlimited parallelism took 28 minutes at load average
+  ~100), so `npm test` — the full-suite command the unit evidence command-form
+  gate recognizes — now runs at the optimal concurrency with no gate-logic
+  change. Operator action: none; `npm test` keeps working everywhere it did.
+  Rollback: revert the one-line script change.
+
+- Widen `verify run`'s default timeout (`DEFAULT_TIMEOUT_MS`) from 1800000 ms
+  to 7200000 ms. Measured full-suite runs (28 minutes at load ~100 unlimited;
+  56 minutes at load ~35 with `--test-concurrency=2`) left almost no margin,
+  and a timeout kill records a fail that is not a test failure. Explicit
+  `--timeout-ms` behavior is unchanged. Observability: the effective value is
+  recorded as `run.timeout_ms` in every verification run artifact. Rollback:
+  revert the one-line constant change.
+
 - Remove 17 files under `test/e2e` that imported no product code, started no
   process, and touched no filesystem. Each asserted a locally-defined string
   against a regex built from that same string, so no product regression could

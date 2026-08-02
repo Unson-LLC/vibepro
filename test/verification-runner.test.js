@@ -382,6 +382,9 @@ test('verify run records a timeout kill as a failing run and names the timeout a
   assert.equal(artifact.run.timeout_ms, 700);
 });
 
+// Covers story-vibepro-unit-suite-concurrency-default:AC-3 (default timeout is 7200000 ms and
+// lands in the run artifact) and story-vibepro-unit-suite-concurrency-default:AC-5 (this test
+// fails if the default shrinks).
 test('verify run defaults to a timeout with headroom over the measured loaded-host full-suite run', async () => {
   const root = await setupRepo();
   await cli([
