@@ -497,7 +497,10 @@ test('MGD-AC-16 a waiver-borrowed gate cannot satisfy the reservation', () => {
     storyId: STORY_ID,
     prPrepare: prPrepareFixture({
       gateStatus: { overall_status: 'ready_for_review', ready_for_pr_create: false, unresolved_gates: [], critical_unresolved_gates: [] },
-      gateDag: { overall_status: 'ready_for_review', nodes: [{ type: 'verification_gate', required: true, status: 'needs_evidence' }] }
+      // The node carries a real id, so hasUnresolvedGateDagNodes is true and the
+      // cause reaches the guard. With a nameless node the id filter would return
+      // gate_status_unresolvable first and this test would prove nothing.
+      gateDag: { overall_status: 'ready_for_review', nodes: [{ id: 'gate:named_in_dag', type: 'verification_gate', required: true, status: 'needs_evidence' }] }
     }),
     prCreate: prCreateFixture({
       gateOverride: { ...NONCRITICAL_WAIVER, unresolved_gates: [{ id: 'gate:from_waiver_only' }] }
@@ -507,6 +510,33 @@ test('MGD-AC-16 a waiver-borrowed gate cannot satisfy the reservation', () => {
   assert.equal(context.gateAuthorization.reason, 'current_gate_status_not_ready');
   assert.equal(context.diagnosis.cause, 'gate_status_unresolvable');
   assert.equal(context.diagnosis.stop_reason, 'gate_status_unresolved');
+  assert.deepEqual(context.diagnosis.blocking_gates, []);
+});
+
+test('MGD-AC-18 a DAG whose unresolved nodes are all unnameable keeps the specific cause', () => {
+  // hasUnresolvedGateDagNodes applies the same id filter collectBlockingGates
+  // uses. Without it this state reports the generic gate_status_unresolvable
+  // instead of naming what is actually wrong with the artifact.
+  const context = resolveMergeGateAuthorizationContext({
+    storyId: STORY_ID,
+    prPrepare: {
+      story: { story_id: STORY_ID },
+      // head-bound, but carries no gate_status at all
+      pr_context: {
+        gate_dag: {
+          overall_status: 'needs_verification',
+          nodes: [{ type: 'verification_gate', required: true, status: 'needs_evidence' }]
+        }
+      },
+      git: { base_ref: 'main', head_sha: HEAD },
+      artifact_freshness: freshness('pr_prepare', HEAD)
+    },
+    prCreate: prCreateFixture(),
+    currentHeadSha: HEAD
+  });
+  assert.equal(context.diagnosis.cause, 'gate_status_missing');
+  assert.equal(context.diagnosis.stop_reason, 'gate_status_unresolved');
+  assert.match(context.diagnosis.explanation, /carries no gate_status/);
   assert.deepEqual(context.diagnosis.blocking_gates, []);
 });
 

@@ -197,6 +197,9 @@ test('MGD-INT-1 a stale pr-create waiver reaches every merge output surface as a
   assert.match(html, /Diagnosis cause/);
   assert.match(html, /pr_create_artifact_stale/);
   assert.match(html, /pr_create=stale/);
+  // The review surface must distinguish a current gate from a waiver-document
+  // one; without the source suffix a stale waiver reads as current evidence.
+  assert.match(html, /gate:validation_sequencing=.*via current_gate_status/);
 });
 
 test('MGD-INT-2 execute merge --explain reports the same verdict read-only, and reports missing evidence as missing evidence', async () => {
