@@ -18,9 +18,10 @@ import {
 const execFileAsync = promisify(execFile);
 
 const ALLOWED_KINDS = new Set(['unit', 'integration', 'e2e', 'typecheck', 'build']);
-// The full suite has been measured at 28 minutes on a loaded host (load average ~100);
-// a default under that records timeout-kill fails that are not test failures.
-const DEFAULT_TIMEOUT_MS = 3600000;
+// The full suite has been measured at 28 minutes (load average ~100, unlimited parallelism)
+// and 56 minutes (load average ~35, --test-concurrency=2); a default near those measurements
+// records timeout-kill fails that are not test failures, so keep ~2x headroom over the worst.
+const DEFAULT_TIMEOUT_MS = 7200000;
 const MAX_OUTPUT_BUFFER_BYTES = 64 * 1024 * 1024;
 const MAX_STORED_LOG_BYTES = 256 * 1024;
 

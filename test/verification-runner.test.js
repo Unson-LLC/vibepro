@@ -390,9 +390,10 @@ test('verify run defaults to a timeout with headroom over the measured loaded-ho
     '--', 'node', '--test', 'tests/sample.test.js'
   ]);
   const artifact = await readJson(runArtifactPath(root, 'unit'));
-  // The full suite has been measured at 28 minutes under load average ~100; a default
-  // at or below that turns slow-host runs into timeout fails that are not test failures.
-  assert.equal(artifact.run.timeout_ms, 3600000);
+  // The full suite has been measured at 28 minutes (load ~100, unlimited parallelism) and
+  // 56 minutes (load ~35, --test-concurrency=2); a default near those turns slow-host runs
+  // into timeout fails that are not test failures.
+  assert.equal(artifact.run.timeout_ms, 7200000);
 });
 
 test('verify run keeps its computed summary sentence when the agent supplies one', async () => {

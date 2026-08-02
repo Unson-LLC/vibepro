@@ -41,7 +41,7 @@ load average 100 の高負荷ホストでは 28 分の実測がある。`verify 
 
 - [ ] `package.json` の `test` script が `node --test --test-concurrency=2` であり、`npm test` が実測最適並列度で全体スイートを実行する
 - [ ] `npm test` は従来どおり unit 証跡コマンド形式ゲートに受理される（ゲートロジック無変更）
-- [ ] `verify run` の既定タイムアウトが 3600000 ms（60 分）で、タイムアウト未指定の run 証跡に反映される
+- [ ] `verify run` の既定タイムアウトが 7200000 ms（120 分）で、タイムアウト未指定の run 証跡に反映される
 - [ ] test script の並列度指定が失われたら fail する回帰テストがある
 - [ ] 既定タイムアウトが縮んだら fail する回帰テストがある
 
@@ -49,4 +49,4 @@ load average 100 の高負荷ホストでは 28 分の実測がある。`verify 
 
 - 変更対象: `package.json`（test script）、`src/verification-runner.js`（`DEFAULT_TIMEOUT_MS`）
 - 変更しない: `src/verification-evidence.js` のコマンド形式ゲート（`npm test` 受理面は既存のまま）
-- タイムアウト 60 分は「高負荷時実測 28 分 × 2 弱」の余裕。concurrency=2 化で実測はさらに短縮見込みだが、タイムアウト fail は「テスト失敗でない fail」を生むため保守的に取る
+- タイムアウト 120 分は実測ベース。load average ~100 の無制限並列で 28 分、load average ~35 の concurrency=2 で 56 分（本Story作業中の verify run 実測、duration_ms=3379319）。最悪実測 56 分に対し約2倍の余裕を取る。タイムアウト fail は「テスト失敗でない fail」を生むため保守的に取る
