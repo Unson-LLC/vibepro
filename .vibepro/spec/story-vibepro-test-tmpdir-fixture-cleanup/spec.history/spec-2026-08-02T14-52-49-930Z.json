@@ -59,7 +59,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T14:50:30.000Z",
-      "last_revised_at": "2026-08-02T14:52:49.937Z"
+      "last_revised_at": "2026-08-02T15:02:06.723Z"
     },
     {
       "id": "S-001",
@@ -118,7 +118,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T14:50:30.000Z",
-      "last_revised_at": "2026-08-02T14:52:49.937Z"
+      "last_revised_at": "2026-08-02T15:02:06.723Z"
     },
     {
       "id": "S-002",
@@ -172,9 +172,27 @@
         ]
       },
       "first_seen_at": "2026-08-02T14:50:30.000Z",
-      "last_revised_at": "2026-08-02T14:52:49.937Z"
+      "last_revised_at": "2026-08-02T15:02:06.723Z"
     }
   ],
   "generated_at": "2026-08-02T14:52:49.930Z",
-  "previous_spec_id": null
+  "previous_spec_id": "2026-08-02T14:52:49.930Z",
+  "diagrams": [
+    {
+      "kind": "state",
+      "title": "Scratch-root lifecycle",
+      "entities": [
+        "scratch_root",
+        "real_tmpdir",
+        "test_process",
+        "child_process"
+      ],
+      "mermaid": "stateDiagram-v2\n    [*] --> no_scratch_root\n    no_scratch_root --> active: import test/support/scratch-tmpdir.js (mkdtemp scratch_root, TMPDIR redirected)\n    active --> active: test_process or child_process calls mkdtemp against real_tmpdir path (now scratch_root)\n    active --> no_scratch_root: test_process exits normally (process.once('exit') removes scratch_root)\n    no_scratch_root --> stale: test_process killed before exit handler runs (scratch_root left behind, mtime ages)\n    stale --> no_scratch_root: next helper import sweeps vibepro-scratch-* dirs older than 24h (sweepStaleScratchDirs)\n"
+    },
+    {
+      "kind": "threat_model",
+      "title": "TMPDIR fixture cleanup failure and abuse surfaces",
+      "mermaid": "flowchart TD\n    A[test_process starts] --> B{Does it import scratch-tmpdir helper?}\n    B -- no --> C[mkdtemp writes directly to real_tmpdir - conformance test fails]\n    B -- yes --> D[TMPDIR redirected to per-process scratch_root]\n    D --> E{Process terminates}\n    E -- normal exit --> F[process.once('exit') removes scratch_root]\n    E -- SIGKILL or crash --> G[scratch_root left behind, mtime ages past 24h]\n    G --> H[next helper import sweeps vibepro-scratch-* prefixed dirs older than 24h]\n    H --> I[Non-vibepro-scratch- content in real_tmpdir is never touched by the sweep]\n    D --> J[child_process spawned by test_process inherits redirected TMPDIR env var]\n    J --> K[child_process mkdtemp calls also land inside the same scratch_root]\n    D --> L{Concurrent test_process instances}\n    L --> M[Each test_process gets its own mkdtemp-created scratch_root - no cross-process deletion of live roots]\n    D --> N[rmSync uses force+recursive inside try/catch]\n    N --> O[Cleanup failure never throws or breaks the running tests]\n"
+    }
+  ]
 }
