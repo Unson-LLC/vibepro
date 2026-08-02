@@ -258,3 +258,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:409:start -->
 - [PR #409](https://github.com/Unson-LLC/vibepro/pull/409) — [2026-08](/ja/releases/2026-08): story-vibepro-profiler-file-walk-stack-overflow - architecture-profiler のファイル走査を反復処理化し、大規模treeでの "Maximum call stack size exceeded" を解消する
 <!-- vibepro-release-index-pr:409:end -->
+
+<!-- vibepro-release-index-pr:412:start -->
+- [PR #412](https://github.com/Unson-LLC/vibepro/pull/412) — [2026-08](/ja/releases/2026-08): story-vibepro-unit-suite-concurrency-default - unit証跡の全体スイート実行を実測最適並列度に正本化し、verify runのタイムアウト余裕を確保する
+<!-- vibepro-release-index-pr:412:end -->

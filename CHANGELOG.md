@@ -1412,3 +1412,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-profiler-fil
 なし
 
 <!-- vibepro-release-pr:409:end -->
+
+<!-- vibepro-release-pr:412:start -->
+## [#412](https://github.com/Unson-LLC/vibepro/pull/412) story-vibepro-unit-suite-concurrency-default - unit証跡の全体スイート実行を実測最適並列度に正本化し、verify runのタイムアウト余裕を確保する
+
+- Author: @sintariran
+- Merged: 2026-08-02T18:56:59Z
+- Commit: `0ac8c84e8c2cde3897fa8bd705b009473aa4d4e2`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:412:end -->
