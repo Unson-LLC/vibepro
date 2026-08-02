@@ -504,7 +504,8 @@
           "release_risk": 3,
           "pr_split_scope": 4
         },
-        "amendment_reason": "The base budget of six subagents was consumed by two full gate-stage review rounds: round 1 (gate_evidence, pr_split_scope, release_risk all pass at head 583f69fc) and round 2 at head 7db9956d after a docs-only lineage commit invalidated the content surface (gate_evidence pass, release_risk pass, pr_split_scope needs_changes citing the advisory split-plan recommendation). The owner approved on 2026-08-03 via AskUserQuestion in Claude Code session b72589e7-17b5-460f-8581-06932845d285 a bounded extension of four additional subagents and a 60-minute consumption ceiling for exactly one round-3 pr_split_scope replacement review plus adjudication redispatch headroom; the session transcript is the inspectable primary record.",
+        "amendment_reason": "The base budget of six subagents was consumed by two full gate-stage review rounds: round 1 (gate_evidence, pr_split_scope, release_risk all pass at head 583f69fc) and round 2 at head 7db9956d after a docs-only lineage commit invalidated the content surface (gate_evidence pass, release_risk pass, pr_split_scope needs_changes citing the advisory split-plan recommendation). The owner approved on 2026-08-03 via AskUserQuestion in Claude Code session b72589e7-17b5-460f-8581-06932845d285 a bounded extension of four additional subagents and a 60-minute consumption ceiling for exactly one round-3 pr_split_scope replacement review plus adjudication redispatch headroom; the session transcript is the inspectable primary record."
+      },
       "story-vibepro-uiux-intake-judgment-gate": {
         "max_subagent_count": 30,
         "max_agent_consumption_ms": 21600000,
