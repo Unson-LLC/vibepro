@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
   "source": "execute_merge",
-  "promoted_at": "2026-08-02T15:52:42.232Z",
+  "promoted_at": "2026-08-02T15:52:57.746Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-index.json",
@@ -38,11 +38,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:f6a79d2c984fec1f2983ca2b72908ec4978cf13c4b5cef913cf08a0a5fb6ec8d",
-    "compressed_hash": "sha256:1293eaa5c7a028c88beb59635942abf0a823f67561a23a93b5336f2648d8e0e2",
-    "expanded_bytes": 33176,
-    "compressed_bytes": 6187,
-    "expanded_line_count": 775,
+    "content_hash": "sha256:59b9866ec3f58df1d3f12ceac610e58ff36512367de9d065878081853a61738f",
+    "compressed_hash": "sha256:92bc017b3d1f75ce0bb52d432ec715dbd2ac5427aeacc30e0bb5e67e043ecac5",
+    "expanded_bytes": 32256,
+    "compressed_bytes": 6073,
+    "expanded_line_count": 755,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "decision_index",
@@ -62,9 +62,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-profiler-file-walk-stack-overflow",
     "cost": {
-      "compressed_bytes": 6187,
-      "expanded_bytes": 33176,
-      "expanded_line_count": 775,
+      "compressed_bytes": 6073,
+      "expanded_bytes": 32256,
+      "expanded_line_count": 755,
       "persisted_line_count": 1
     }
   },
@@ -79,26 +79,16 @@
       "merged_at": "2026-08-02T15:52:39Z"
     },
     "reconciliation": {
-      "status": "reconciliation_required",
-      "reasons": [
-        "decision_outcome_binding_failed"
-      ],
-      "evaluated_at": "2026-08-02T15:52:42.184Z",
+      "status": "reconciled",
+      "reasons": [],
+      "evaluated_at": "2026-08-02T15:52:57.054Z",
       "head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293"
     },
-    "reconciliation_action": {
-      "status": "required",
-      "reason": "decision_outcome_binding_failed",
-      "commands": [
-        "vibepro pr prepare . --story-id story-vibepro-profiler-file-walk-stack-overflow --base main",
-        "vibepro execute merge . --story-id story-vibepro-profiler-file-walk-stack-overflow --base main --pr https://github.com/Unson-LLC/vibepro/pull/409"
-      ]
-    },
     "decision_outcome_binding": {
-      "status": "failed",
-      "reason": "central_ledger_parse_failed",
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
       "expected_entry_count": 35,
-      "promoted_count": 0,
+      "promoted_count": 35,
       "duplicate_count": 0,
       "persistence_status": null
     },
@@ -114,7 +104,7 @@
     "status": "blocked",
     "resolved_reference_count": 94,
     "copied_reference_count": 70,
-    "unresolved_reference_count": 7,
+    "unresolved_reference_count": 14,
     "replay_bundle": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
     "replay_command": "vibepro audit replay . --story-id story-vibepro-profiler-file-walk-stack-overflow"
   },
@@ -131,7 +121,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:f6a79d2c984fec1f2983ca2b72908ec4978cf13c4b5cef913cf08a0a5fb6ec8d"
+      "content_hash": "sha256:59b9866ec3f58df1d3f12ceac610e58ff36512367de9d065878081853a61738f"
     }
   ],
   "raw_artifact_manifest": [
@@ -221,10 +211,10 @@
       "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-profiler-file-walk-stack-overflow/audit-replay-bundle.json.gz",
-      "digest": "sha256:c521a7fcb8a40ba5a5c543182586bec2f7083a5becff1acb75e586d224750023",
-      "audit_digest": "sha256:973fb74dc8660c8ecfa06e255a61c2ce41d5b0f2ca589a978bd0ee33a7e76519",
-      "line_count": 3460,
-      "raw_line_count": 6536,
+      "digest": "sha256:b7cda56d2b264b5198b39a59a30a550b13da887782f7a69258998888712d64ca",
+      "audit_digest": "sha256:06d612a880cf5ac4bbdf02cb40061a4718214163810aa104d7c0bd58c4eb1221",
+      "line_count": 3449,
+      "raw_line_count": 6534,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -1386,14 +1376,42 @@
       "size_bytes": 989500
     },
     {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/graphify/graph.json",
       "reason": "source_too_large",
       "size_bytes": 7428747
     },
     {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/design-ssot-reconciliation.json",
       "reason": "source_too_large",
       "size_bytes": 609259
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
     },
     {
       "source": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/surface-violations.json",
