@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-uiux-intake-judgment-gate
 title: uiux intakeのSkill発火 + 判断記録gate
+parent_design: vibepro-uiux-structured-intake
 view: dev
 period: 2026-08
 status: active
