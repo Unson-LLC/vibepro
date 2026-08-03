@@ -2,8 +2,8 @@
   "schema_version": "0.1.0",
   "kind": "artifact_summary",
   "source_artifact": "evidence-reuse.json",
-  "source_bytes": 17969,
-  "source_content_hash": "sha256:0ec66d85cad9fd0cc2c2c37dee98de5e43eb5e61a897bde4c6e4f4ac0124ce4d",
+  "source_bytes": 28848,
+  "source_content_hash": "sha256:03c2e813402b5809eec34aa5d72d2008114f54145813e8c97fa9028e84577686",
   "conclusion": {
     "status_fields": {
       "model": "vibepro-evidence-summary-reuse-v1",

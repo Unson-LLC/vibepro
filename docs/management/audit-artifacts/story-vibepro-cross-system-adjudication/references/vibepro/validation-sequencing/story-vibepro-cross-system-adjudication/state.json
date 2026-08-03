@@ -3,7 +3,7 @@
   "model": "vibepro-risk-adaptive-validation-sequencing-v1",
   "story_id": "story-vibepro-cross-system-adjudication",
   "created_at": "2026-08-03T02:22:02.171Z",
-  "updated_at": "2026-08-03T02:22:02.171Z",
+  "updated_at": "2026-08-03T02:22:56.251Z",
   "plan": {
     "model": "vibepro-risk-adaptive-validation-sequencing-v1",
     "story_id": "story-vibepro-cross-system-adjudication",
@@ -166,6 +166,7 @@
       "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/ref-topology.summary.json",
       "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/senior-gap-judgment.summary.json",
       "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/split-plan.json",
+      "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/split-plan.summary.json",
       "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/e2e.json",
       "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/e2e.log",
       "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/integration.json",
@@ -181,7 +182,8 @@
       "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round3.json",
       "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/spec/story-vibepro-cross-system-adjudication/spec.json",
       "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/stories/story-vibepro-cross-system-adjudication/tasks/tasks.json",
-      "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/stories/story-vibepro-cross-system-adjudication/tasks/tasks.md"
+      "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/stories/story-vibepro-cross-system-adjudication/tasks/tasks.md",
+      "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/validation-sequencing/story-vibepro-cross-system-adjudication/state.json"
     ],
     "phases": [
       "targeted_validation",
@@ -194,33 +196,33 @@
   "frozen_binding": null,
   "phases": {
     "targeted_validation": {
-      "status": "pending",
+      "status": "invalidated",
       "head_sha": null,
-      "reason": null,
+      "reason": "current change-risk classification differs from the persisted validation plan",
       "evidence": []
     },
     "preflight_review": {
-      "status": "pending",
+      "status": "invalidated",
       "head_sha": null,
-      "reason": null,
+      "reason": "current change-risk classification differs from the persisted validation plan",
       "evidence": []
     },
     "code_frozen": {
-      "status": "pending",
+      "status": "invalidated",
       "head_sha": null,
-      "reason": null,
+      "reason": "current change-risk classification differs from the persisted validation plan",
       "evidence": []
     },
     "expensive_verification": {
-      "status": "pending",
+      "status": "invalidated",
       "head_sha": null,
-      "reason": null,
+      "reason": "current change-risk classification differs from the persisted validation plan",
       "evidence": []
     },
     "final_review": {
-      "status": "pending",
+      "status": "invalidated",
       "head_sha": null,
-      "reason": null,
+      "reason": "current change-risk classification differs from the persisted validation plan",
       "evidence": []
     }
   },
@@ -229,5 +231,21 @@
     "test_fingerprint": null,
     "verification_command": null
   },
-  "invalidations": []
+  "invalidations": [
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current change-risk classification differs from the persisted validation plan",
+      "invalidated_at": "2026-08-03T02:22:56.251Z"
+    }
+  ]
 }

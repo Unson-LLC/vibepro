@@ -24,11 +24,10 @@
     "source_ref": "docs/management/stories/active/story-vibepro-cross-system-adjudication.md"
   },
   "rationale": [
-    "差分が 152 files あり、レビュー可能な目安 30 files を超えている",
-    "未コミット差分が 59 files 残っている",
-    "baseからのcommitが 18 件あり、別work item story-vibepro-uiux-intake-gate-pr-summary-surfaces のlineageが含まれている",
-    "4 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
-    "Graphifyで 6 changed files が一致し、152 related files を影響調査候補にした"
+    "差分が 67 files あり、レビュー可能な目安 30 files を超えている",
+    "未コミット差分が 61 files 残っている",
+    "2 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 0 changed files が一致し、0 related files を影響調査候補にした"
   ],
   "graph_context": {
     "available": true,
@@ -36,155 +35,10 @@
     "edge_source_key": "links",
     "node_count": 5864,
     "edge_count": 13090,
-    "matched_file_count": 6,
-    "related_file_count": 152,
-    "investigation_files": [
-      "bin/vibepro.js",
-      "scripts/generate-cli-reference.mjs",
-      "scripts/npm-release-lock.mjs",
-      "scripts/post-merge-release.mjs",
-      "src/adjudication.js",
-      "src/agent-harness-map.js",
-      "src/agent-harness-scanner.js",
-      "src/agent-review.js",
-      "src/agent-runtime-adapter.js",
-      "src/agent-runtime-connectors.js",
-      "src/architecture-conformance.js",
-      "src/architecture-readiness.js",
-      "src/architecture-store.js",
-      "src/artifact-routing.js",
-      "src/authorization-scoring.js",
-      "src/brainbase-importer.js",
-      "src/canonical-audit.js",
-      "src/change-risk-classifier.js",
-      "src/check-packs.js",
-      "src/checkpoint-manager.js",
-      "src/ci-evidence.js",
-      "src/cli.js",
-      "src/code-topology-provider.js",
-      "src/codex-manager.js",
-      "src/codex-runtime-bridge.js",
-      "src/content-binding.js",
-      "src/decision-outcome-ledger.js",
-      "src/decision-records.js",
-      "src/delivery-efficiency-guardrail.js",
-      "src/design-modernize.js"
-    ],
-    "impact_by_file": [
-      {
-        "file": "src/adjudication.js",
-        "matched_nodes": [
-          "src_adjudication_js",
-          "src_adjudication_adjudicationdir",
-          "src_adjudication_adjudicationartifactpath",
-          "src_adjudication_adjudicationrequestpath",
-          "src_adjudication_judgmentadjudicationartifactpath",
-          "src_adjudication_judgmentadjudicationrequestpath",
-          "src_adjudication_readjudgmentadjudicationifexists",
-          "src_adjudication_readadjudicationifexists"
-        ],
-        "related_files": [
-          "src/artifact-routing.js",
-          "src/cli.js",
-          "src/journey-map.js",
-          "src/pr-manager.js",
-          "src/requirement-consistency.js",
-          "src/run-context-capsule.js",
-          "src/workspace.js",
-          "test/judgment-adjudication.test.js",
-          "test/scan-status.test.js"
-        ]
-      },
-      {
-        "file": "src/cli.js",
-        "matched_nodes": [
-          "src_cli_js",
-          "src_cli_maybeautosnapshotprocessrecords",
-          "src_cli_runcli",
-          "src_cli_dispatchcli",
-          "src_cli_parsevalidationdisposition",
-          "src_cli_renderartifactroutes",
-          "src_cli_renderartifactmigrationplan",
-          "src_cli_buildclierrorpayload"
-        ],
-        "related_files": [
-          "bin/vibepro.js",
-          "scripts/generate-cli-reference.mjs",
-          "scripts/npm-release-lock.mjs",
-          "scripts/post-merge-release.mjs",
-          "src/adjudication.js",
-          "src/agent-harness-map.js",
-          "src/agent-harness-scanner.js",
-          "src/agent-review.js",
-          "src/agent-runtime-adapter.js",
-          "src/agent-runtime-connectors.js",
-          "src/architecture-conformance.js",
-          "src/architecture-readiness.js"
-        ]
-      },
-      {
-        "file": "src/pr-manager.js",
-        "matched_nodes": [
-          "src_pr_manager_js",
-          "src_pr_manager_createprprepareprogress",
-          "src_pr_manager_writefilewithtimeout",
-          "src_pr_manager_preparepullrequest",
-          "src_pr_manager_evaluategatereadiness",
-          "src_pr_manager_buildarchitecturereviewtemplate",
-          "src_pr_manager_buildhumanreviewtemplate",
-          "src_pr_manager_summarizereviewgate"
-        ],
-        "related_files": [
-          "src/adjudication.js",
-          "src/agent-review.js",
-          "src/architecture-readiness.js",
-          "src/artifact-routing.js",
-          "src/authorization-scoring.js",
-          "src/canonical-audit.js",
-          "src/change-risk-classifier.js",
-          "src/check-packs.js",
-          "src/checkpoint-manager.js",
-          "src/ci-evidence.js",
-          "src/cli.js",
-          "src/code-topology-provider.js"
-        ]
-      },
-      {
-        "file": "test/adjudication.test.js",
-        "matched_nodes": [
-          "test_adjudication_test_js",
-          "test_adjudication_test_git",
-          "test_adjudication_test_makerepo",
-          "test_adjudication_test_writeverificationevidence",
-          "test_adjudication_test_writeprepare",
-          "test_adjudication_test_task"
-        ],
-        "related_files": []
-      },
-      {
-        "file": "test/e2e/story-vibepro-evidence-adjudication-gate-main.test.js",
-        "matched_nodes": [
-          "test_e2e_story_vibepro_evidence_adjudication_gate_main_test_js",
-          "e2e_story_vibepro_evidence_adjudication_gate_main_test_run",
-          "e2e_story_vibepro_evidence_adjudication_gate_main_test_makerepo"
-        ],
-        "related_files": []
-      },
-      {
-        "file": "test/judgment-adjudication.test.js",
-        "matched_nodes": [
-          "test_judgment_adjudication_test_js",
-          "test_judgment_adjudication_test_git",
-          "test_judgment_adjudication_test_fixtureitems",
-          "test_judgment_adjudication_test_makerepo",
-          "test_judgment_adjudication_test_gatefor",
-          "test_judgment_adjudication_test_githead"
-        ],
-        "related_files": [
-          "src/adjudication.js"
-        ]
-      }
-    ]
+    "matched_file_count": 0,
+    "related_file_count": 0,
+    "investigation_files": [],
+    "impact_by_file": []
   },
   "lanes": [
     {
@@ -194,14 +48,8 @@
       "category": "requirements",
       "recommendation": "separate_pr",
       "files": [
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/stories/story-vibepro-uiux-intake-gate-pr-summary-surfaces/tasks/tasks.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/stories/story-vibepro-uiux-intake-gate-pr-summary-surfaces/tasks/tasks.md",
-        "docs/management/stories/active/story-vibepro-cross-system-adjudication.md",
-        "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/stories/story-vibepro-cross-system-adjudication/tasks/tasks.json",
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/stories/story-vibepro-cross-system-adjudication/tasks/tasks.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/spec-drift.md",
-        "docs/specs/story-vibepro-cross-system-adjudication.md",
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/spec-drift.md"
       ],
       "required_gates": [
@@ -212,73 +60,9 @@
         "実装差分が要求の範囲を超えていないか",
         "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
       ],
-      "file_count": 9,
-      "graph_investigation_files": [],
-      "suggested_branch": "feat/vibepro-cross-system-adjudication-requirements-ssot"
-    },
-    {
-      "id": "runtime-behavior",
-      "order": 20,
-      "title": "Runtime behavior and unit coverage",
-      "category": "implementation",
-      "recommendation": "primary_pr",
-      "files": [
-        "src/adjudication.js",
-        "src/cli.js",
-        "src/pr-manager.js",
-        "test/adjudication.test.js",
-        "test/judgment-adjudication.test.js",
-        "test/pr-human-summary-uiux-intake-gate.test.js"
-      ],
-      "required_gates": [
-        "Requirement Gate",
-        "Unit Gate",
-        "Integration Gate",
-        "E2E Gate"
-      ],
-      "review_focus": [
-        "受け入れ基準と実装分岐が対応しているか",
-        "Graphifyで隣接するファイルまで影響確認されているか"
-      ],
-      "file_count": 6,
-      "graph_investigation_files": [
-        "bin/vibepro.js",
-        "scripts/generate-cli-reference.mjs",
-        "scripts/npm-release-lock.mjs",
-        "scripts/post-merge-release.mjs",
-        "src/agent-harness-map.js",
-        "src/agent-harness-scanner.js",
-        "src/agent-review.js",
-        "src/agent-runtime-adapter.js",
-        "src/agent-runtime-connectors.js",
-        "src/architecture-conformance.js",
-        "src/architecture-readiness.js",
-        "src/artifact-routing.js"
-      ],
-      "suggested_branch": "feat/vibepro-cross-system-adjudication-runtime-behavior"
-    },
-    {
-      "id": "e2e-gate",
-      "order": 30,
-      "title": "E2E and verification harness",
-      "category": "verification",
-      "recommendation": "separate_pr",
-      "files": [
-        "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
-        "test/e2e/story-vibepro-evidence-adjudication-gate-main.test.js",
-        "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js"
-      ],
-      "required_gates": [
-        "E2E Gate",
-        "Integration Gate"
-      ],
-      "review_focus": [
-        "E2E harnessが失敗exit codeを握りつぶしていないか",
-        "PR Gateが変更対象のE2Eに正しくスコープされているか"
-      ],
       "file_count": 3,
       "graph_investigation_files": [],
-      "suggested_branch": "feat/vibepro-cross-system-adjudication-e2e-gate"
+      "suggested_branch": "feat/vibepro-cross-system-adjudication-requirements-ssot"
     },
     {
       "id": "misc-follow-up",
@@ -288,83 +72,8 @@
       "recommendation": "separate_pr",
       "files": [
         "CHANGELOG.md",
-        "design-ssot.json",
-        "docs/ja/reference/cli.md",
         "docs/ja/releases/2026-08.md",
         "docs/ja/releases/index.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/audit-bundle.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/audit-index.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/audit-replay-bundle.json.gz",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/collision-cg_141153618c22168268e5db52ac1a9e66a9d00a28dbaf811b0135e64f92b71356-tsr_b19e24bbc633372ad03eac6cd06064efba5357a8bcd9a560e982cc9044eee7cc/87377342ecc91882c767b46df0277ffd5bbb7b3458dfb4085ac5c2c304f52643.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/collision-cg_e8c837840c7c70dcfeae10aa67650b783847e6ada42e3832de734538e6451d02-tsr_d976a7205b7a1bf1db043b9554d22775e49e3054cf460e79cbea02dc9322b8de/d907f82ec38041acb352cecdc411e112d4ba1f90204d33611e411087342a2313.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/trace-dt_2adb9934fc55b02e68a95cb983eaf7a5d5468730748181d2487e1a914f025922/01c24962aa2138c8f61f52fd17712b02d8207b6c53eca672901b107e53d4c68d.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/trace-dt_3d5344ea51102aa70cb4887e50de02d24345a9685a500d8a1268a42a1615c94c/720bacce7f3b831d09837564d19b3a94bd23620c73c40af68761133216a3c5a4.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/trace-dt_5d0d0a273cce453e0636a76f4453b74cbf1af142735dd78bf156e3f53cb22a23/418af1e01256a28198e3da6869bd7952fd585e2a864e406fb464ba95c4bd12a1.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/trace-dt_a8ccaf26f3c17834cbd77409b56f73f40dde914b14f32af7053ecbb6bb956dbd/bb7b8731a5266683442260069932bef4f2e303eaa7c66ddd6af23e005b64263c.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/trace-dt_d31659b84c50121c0f962df7bb04128dcd5846ad39ca96f4920563b676ec3ab7/3e908e39f17b9cd5f97e067bd4178f1e5fe7f6674c1c6f39bcac6c9479cbf9b2.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/trace-dt_e3a0204d66c782d95786f777a822a7c5dc8806cea7c0e0b1c6e60e13ec530f6b/3d3a79bc90d72e8ff8bb684cc0252ef4d29817a1acc20c19cd71d6aa08ff9361.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-summary.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/adjudication/story-vibepro-uiux-intake-gate-pr-summary-surfaces/adjudication.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/adjudication/story-vibepro-uiux-intake-gate-pr-summary-surfaces/judgment-adjudication.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/config.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/architecture-profile.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/component-style-check-result.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/finding-review.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/flow-design-check-result.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/gesture-interaction-check-result.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/refactoring-delta.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/requirement-consistency.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/risk-register.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/summary.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/terminal-link-check-result.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/gate-outcomes/ledger.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/judgment-axis-noise-precedents.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture-review.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-index.summary.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-records.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-records.summary.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/design-ssot-reconciliation.summary.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/evidence-plan.summary.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/evidence-reuse.summary.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/human-review.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/pr-body.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/pr-create.html",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/pr-merge.html",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/ref-topology.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/ref-topology.summary.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/senior-gap-judgment.summary.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/split-plan.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.log",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.log",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.log",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.log",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/history/review-result-architecture_boundary-2026-08-02T19-19-06.841Z.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/history/review-result-architecture_boundary-2026-08-02T19-25-30.617Z.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/history/review-result-architecture_boundary-2026-08-02T19-25-55.772Z.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/history/review-result-architecture_boundary-2026-08-03T00-24-15.264Z.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/history/review-result-architecture_boundary-2026-08-03T00-51-49.344Z.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/history/review-result-architecture_boundary-2026-08-03T01-00-37.626Z.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/parallel-dispatch.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/gate/history/review-result-gate_evidence-2026-08-02T19-05-53.205Z.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/gate/history/review-result-gate_evidence-2026-08-02T19-28-06.070Z.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/gate/history/review-result-gate_evidence-2026-08-03T00-53-59.517Z.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/gate/history/review-result-pr_split_scope-2026-08-02T18-53-42.742Z.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/gate/parallel-dispatch.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/implementation/history/review-result-runtime_contract-2026-08-03T00-55-58.660Z.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/implementation/history/review-result-runtime_contract-2026-08-03T01-00-43.090Z.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/implementation/parallel-dispatch.md",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/surface-violations.json",
-        "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/validation-sequencing/story-vibepro-uiux-intake-gate-pr-summary-surfaces/state.json",
-        "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
-        "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
-        "docs/management/roi-ledger/ledger.json",
-        "docs/reference/cli.md",
-        "docs/releases/2026-08.md",
-        "docs/releases/index.md",
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/audit-bundle.json",
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/audit-index.json",
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/audit-replay-bundle.json.gz",
@@ -407,6 +116,7 @@
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/ref-topology.summary.json",
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/senior-gap-judgment.summary.json",
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/split-plan.json",
+        "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/split-plan.summary.json",
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/e2e.json",
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/e2e.log",
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/integration.json",
@@ -420,7 +130,11 @@
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round1.json",
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round2.json",
         "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round3.json",
-        "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/spec/story-vibepro-cross-system-adjudication/spec.json"
+        "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/spec/story-vibepro-cross-system-adjudication/spec.json",
+        "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/validation-sequencing/story-vibepro-cross-system-adjudication/state.json",
+        "docs/management/roi-ledger/ledger.json",
+        "docs/releases/2026-08.md",
+        "docs/releases/index.md"
       ],
       "required_gates": [
         "Manual Review"
@@ -428,24 +142,22 @@
       "review_focus": [
         "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
       ],
-      "file_count": 134,
+      "file_count": 64,
       "graph_investigation_files": [],
       "suggested_branch": "feat/vibepro-cross-system-adjudication-misc-follow-up"
     }
   ],
   "merge_order": [
     "requirements-ssot",
-    "runtime-behavior",
-    "e2e-gate",
     "misc-follow-up"
   ],
   "stacked_gate_plan": {
     "schema_version": "0.1.0",
     "model": "stacked-pr-gate-plan-v1",
     "summary": {
-      "lane_count": 4,
-      "cumulative_gate_count": 1,
-      "requires_cumulative_e2e": true,
+      "lane_count": 2,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false,
       "requires_atomic_head_validation": false
     },
     "lane_plans": [
@@ -460,35 +172,6 @@
         "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
       },
       {
-        "lane_id": "runtime-behavior",
-        "gate_mode": "isolated_pr",
-        "depends_on": [],
-        "isolated_checks": [
-          "node --test test/adjudication.test.js test/judgment-adjudication.test.js",
-          "node --test test/integration/verification-runner-evidence-consumers.test.js"
-        ],
-        "cumulative_checks": [],
-        "review_note": "runtime差分はUnit/Integrationを単体PRで確認し、E2Eは後続のe2e-gateまたは累積validationで確認する。"
-      },
-      {
-        "lane_id": "e2e-gate",
-        "gate_mode": "cumulative_after_dependencies",
-        "depends_on": [
-          "requirements-ssot",
-          "runtime-behavior"
-        ],
-        "isolated_checks": [
-          "node --test test/integration/verification-runner-evidence-consumers.test.js",
-          "Playwright harness smoke if runtime dependencies are already merged"
-        ],
-        "cumulative_checks": [
-          "node --test test/adjudication.test.js test/judgment-adjudication.test.js",
-          "node --test test/integration/verification-runner-evidence-consumers.test.js",
-          "node --test test/e2e/story-vibepro-cross-system-adjudication-main.test.js test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts"
-        ],
-        "review_note": "e2e-gate は単体PRだけで完了判定せず、requirements-ssot -> runtime-behavior を取り込んだ累積状態でGateを確認する。"
-      },
-      {
         "lane_id": "misc-follow-up",
         "gate_mode": "isolated_pr",
         "depends_on": [],
@@ -500,35 +183,24 @@
       }
     ],
     "final_validation": {
-      "required": true,
-      "trigger": "runtime-behavior と e2e-gate の両方がmerge対象に含まれる",
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
       "commands": [
         "node --test test/adjudication.test.js test/judgment-adjudication.test.js",
-        "node --test test/integration/verification-runner-evidence-consumers.test.js",
-        "node --test test/e2e/story-vibepro-cross-system-adjudication-main.test.js test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts"
+        "node --test test/integration/verification-runner-evidence-consumers.test.js"
       ]
     }
   },
   "next_actions": [
     {
       "lane_id": "requirements-ssot",
-      "action": "Create feat/vibepro-cross-system-adjudication-requirements-ssot with 9 files",
-      "command": "git switch -c feat/vibepro-cross-system-adjudication-requirements-ssot \"<base>\" && git add docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/stories/story-vibepro-uiux-intake-gate-pr-summary-surfaces/tasks/tasks.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/stories/story-vibepro-uiux-intake-gate-pr-summary-surfaces/tasks/tasks.md docs/management/stories/active/story-vibepro-cross-system-adjudication.md docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/stories/story-vibepro-cross-system-adjudication/tasks/tasks.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/stories/story-vibepro-cross-system-adjudication/tasks/tasks.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/spec-drift.md docs/specs/story-vibepro-cross-system-adjudication.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/spec-drift.md"
-    },
-    {
-      "lane_id": "runtime-behavior",
-      "action": "Create feat/vibepro-cross-system-adjudication-runtime-behavior with 6 files",
-      "command": "git switch -c feat/vibepro-cross-system-adjudication-runtime-behavior \"<base>\" && git add src/adjudication.js src/cli.js src/pr-manager.js test/adjudication.test.js test/judgment-adjudication.test.js test/pr-human-summary-uiux-intake-gate.test.js"
-    },
-    {
-      "lane_id": "e2e-gate",
-      "action": "Create feat/vibepro-cross-system-adjudication-e2e-gate with 3 files",
-      "command": "git switch -c feat/vibepro-cross-system-adjudication-e2e-gate \"<base>\" && git add test/e2e/story-vibepro-cross-system-adjudication-main.test.js test/e2e/story-vibepro-evidence-adjudication-gate-main.test.js test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js"
+      "action": "Create feat/vibepro-cross-system-adjudication-requirements-ssot with 3 files",
+      "command": "git switch -c feat/vibepro-cross-system-adjudication-requirements-ssot \"<base>\" && git add docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/stories/story-vibepro-cross-system-adjudication/tasks/tasks.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/stories/story-vibepro-cross-system-adjudication/tasks/tasks.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/spec-drift.md"
     },
     {
       "lane_id": "misc-follow-up",
-      "action": "Create feat/vibepro-cross-system-adjudication-misc-follow-up with 134 files",
-      "command": "git switch -c feat/vibepro-cross-system-adjudication-misc-follow-up \"<base>\" && git add CHANGELOG.md design-ssot.json docs/ja/reference/cli.md docs/ja/releases/2026-08.md docs/ja/releases/index.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/audit-bundle.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/audit-index.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/audit-replay-bundle.json.gz docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/collision-cg_141153618c22168268e5db52ac1a9e66a9d00a28dbaf811b0135e64f92b71356-tsr_b19e24bbc633372ad03eac6cd06064efba5357a8bcd9a560e982cc9044eee7cc/87377342ecc91882c767b46df0277ffd5bbb7b3458dfb4085ac5c2c304f52643.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/collision-cg_e8c837840c7c70dcfeae10aa67650b783847e6ada42e3832de734538e6451d02-tsr_d976a7205b7a1bf1db043b9554d22775e49e3054cf460e79cbea02dc9322b8de/d907f82ec38041acb352cecdc411e112d4ba1f90204d33611e411087342a2313.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/trace-dt_2adb9934fc55b02e68a95cb983eaf7a5d5468730748181d2487e1a914f025922/01c24962aa2138c8f61f52fd17712b02d8207b6c53eca672901b107e53d4c68d.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/trace-dt_3d5344ea51102aa70cb4887e50de02d24345a9685a500d8a1268a42a1615c94c/720bacce7f3b831d09837564d19b3a94bd23620c73c40af68761133216a3c5a4.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/trace-dt_5d0d0a273cce453e0636a76f4453b74cbf1af142735dd78bf156e3f53cb22a23/418af1e01256a28198e3da6869bd7952fd585e2a864e406fb464ba95c4bd12a1.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/trace-dt_a8ccaf26f3c17834cbd77409b56f73f40dde914b14f32af7053ecbb6bb956dbd/bb7b8731a5266683442260069932bef4f2e303eaa7c66ddd6af23e005b64263c.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/trace-dt_d31659b84c50121c0f962df7bb04128dcd5846ad39ca96f4920563b676ec3ab7/3e908e39f17b9cd5f97e067bd4178f1e5fe7f6674c1c6f39bcac6c9479cbf9b2.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-outcomes/trace-dt_e3a0204d66c782d95786f777a822a7c5dc8806cea7c0e0b1c6e60e13ec530f6b/3d3a79bc90d72e8ff8bb684cc0252ef4d29817a1acc20c19cd71d6aa08ff9361.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-summary.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/adjudication/story-vibepro-uiux-intake-gate-pr-summary-surfaces/adjudication.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/adjudication/story-vibepro-uiux-intake-gate-pr-summary-surfaces/judgment-adjudication.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/config.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/architecture-profile.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/component-style-check-result.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/finding-review.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/flow-design-check-result.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/gesture-interaction-check-result.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/refactoring-delta.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/requirement-consistency.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/risk-register.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/summary.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/terminal-link-check-result.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/gate-outcomes/ledger.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/judgment-axis-noise-precedents.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture-review.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-index.summary.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-records.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-records.summary.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/design-ssot-reconciliation.summary.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/evidence-plan.summary.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/evidence-reuse.summary.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/human-review.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/pr-body.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/pr-create.html docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/pr-merge.html docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/ref-topology.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/ref-topology.summary.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/senior-gap-judgment.summary.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/split-plan.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.log docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.log docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.log docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.log docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/history/review-result-architecture_boundary-2026-08-02T19-19-06.841Z.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/history/review-result-architecture_boundary-2026-08-02T19-25-30.617Z.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/history/review-result-architecture_boundary-2026-08-02T19-25-55.772Z.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/history/review-result-architecture_boundary-2026-08-03T00-24-15.264Z.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/history/review-result-architecture_boundary-2026-08-03T00-51-49.344Z.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/history/review-result-architecture_boundary-2026-08-03T01-00-37.626Z.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/parallel-dispatch.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/gate/history/review-result-gate_evidence-2026-08-02T19-05-53.205Z.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/gate/history/review-result-gate_evidence-2026-08-02T19-28-06.070Z.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/gate/history/review-result-gate_evidence-2026-08-03T00-53-59.517Z.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/gate/history/review-result-pr_split_scope-2026-08-02T18-53-42.742Z.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/gate/parallel-dispatch.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/implementation/history/review-result-runtime_contract-2026-08-03T00-55-58.660Z.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/implementation/history/review-result-runtime_contract-2026-08-03T01-00-43.090Z.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/implementation/parallel-dispatch.md docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/surface-violations.json docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/validation-sequencing/story-vibepro-uiux-intake-gate-pr-summary-surfaces/state.json docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md docs/management/roi-ledger/ledger.json docs/reference/cli.md docs/releases/2026-08.md docs/releases/index.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/audit-bundle.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/audit-index.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/audit-replay-bundle.json.gz docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_a2ac0dc134a79bd27e16c6daf5f58a4acc954b5ae56c1d97d9084dcca10cdc3e/5991ce06b16e23df9a65639f1158881e85b04cf3b6bfeda068b3a9d1d22a2b21.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_a2ac0dc134a79bd27e16c6daf5f58a4acc954b5ae56c1d97d9084dcca10cdc3e/fc53e4347b75c0e3af5479c43ac8d12b3aeb3d6383fb74ca3528c952a9e8c68c.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_a703c721010d3a14ac81b59051e9b997dfea9aad3f245227cd6583c63a1c7a14/694f84b7f06e5bf03cd0722b50ca35209e09c31446d8a96acc5262efe93983c0.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_a703c721010d3a14ac81b59051e9b997dfea9aad3f245227cd6583c63a1c7a14/a2a9c5c56ed8d1ec8f90b5caff3be02b5cff62ff6f31a8ba5260d3e7764e7652.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_b51b93d1e3e125098c8c232fb4e1dee075b8ce51053836de7eedff864e414e44/308d7d9ec5eb93d836478273db932d0874894e8d4448f6b6d1fb75f374419889.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_b51b93d1e3e125098c8c232fb4e1dee075b8ce51053836de7eedff864e414e44/608f3f04bb519a16848428dfaf103d0be2b5fc1fc6d989dbc164af973a171b4c.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_d59099200c29e0b8650140e37c096e8469a843a8e170a303675e42bceb6df781/096c1e7d3640574b6fef9b74fbe3b6fdec8d66fc9d57b61bdfce37d79a28923d.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_d59099200c29e0b8650140e37c096e8469a843a8e170a303675e42bceb6df781/d733491429a5695964b553cac658ef30b8fbc423518c0ca5e893df8fb906ecce.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-summary.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/adjudication/story-vibepro-cross-system-adjudication/adjudication.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/adjudication/story-vibepro-cross-system-adjudication/judgment-adjudication.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/config.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/architecture-profile.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/component-style-check-result.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/finding-review.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/flow-design-check-result.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/gesture-interaction-check-result.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/refactoring-delta.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/requirement-consistency.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/risk-register.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/summary.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/terminal-link-check-result.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/gate-outcomes/ledger.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/judgment-axis-noise-precedents.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/architecture-review.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/decision-index.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/decision-records.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/decision-records.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/design-ssot-reconciliation.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/evidence-plan.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/evidence-reuse.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/human-review.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/pr-body.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/pr-create.html docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/pr-merge.html docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/ref-topology.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/ref-topology.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/senior-gap-judgment.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/split-plan.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/e2e.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/e2e.log docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/integration.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/integration.log docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/unit.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/unit.log docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/history/review-result-gate_evidence-2026-08-02T18-25-42.919Z.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/history/review-result-gate_evidence-2026-08-02T18-40-41.189Z.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/history/review-result-gate_evidence-2026-08-02T18-51-37.982Z.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/parallel-dispatch.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round1.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round2.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round3.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/spec/story-vibepro-cross-system-adjudication/spec.json"
+      "action": "Create feat/vibepro-cross-system-adjudication-misc-follow-up with 64 files",
+      "command": "git switch -c feat/vibepro-cross-system-adjudication-misc-follow-up \"<base>\" && git add CHANGELOG.md docs/ja/releases/2026-08.md docs/ja/releases/index.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/audit-bundle.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/audit-index.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/audit-replay-bundle.json.gz docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_a2ac0dc134a79bd27e16c6daf5f58a4acc954b5ae56c1d97d9084dcca10cdc3e/5991ce06b16e23df9a65639f1158881e85b04cf3b6bfeda068b3a9d1d22a2b21.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_a2ac0dc134a79bd27e16c6daf5f58a4acc954b5ae56c1d97d9084dcca10cdc3e/fc53e4347b75c0e3af5479c43ac8d12b3aeb3d6383fb74ca3528c952a9e8c68c.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_a703c721010d3a14ac81b59051e9b997dfea9aad3f245227cd6583c63a1c7a14/694f84b7f06e5bf03cd0722b50ca35209e09c31446d8a96acc5262efe93983c0.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_a703c721010d3a14ac81b59051e9b997dfea9aad3f245227cd6583c63a1c7a14/a2a9c5c56ed8d1ec8f90b5caff3be02b5cff62ff6f31a8ba5260d3e7764e7652.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_b51b93d1e3e125098c8c232fb4e1dee075b8ce51053836de7eedff864e414e44/308d7d9ec5eb93d836478273db932d0874894e8d4448f6b6d1fb75f374419889.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_b51b93d1e3e125098c8c232fb4e1dee075b8ce51053836de7eedff864e414e44/608f3f04bb519a16848428dfaf103d0be2b5fc1fc6d989dbc164af973a171b4c.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_d59099200c29e0b8650140e37c096e8469a843a8e170a303675e42bceb6df781/096c1e7d3640574b6fef9b74fbe3b6fdec8d66fc9d57b61bdfce37d79a28923d.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-outcomes/trace-dt_d59099200c29e0b8650140e37c096e8469a843a8e170a303675e42bceb6df781/d733491429a5695964b553cac658ef30b8fbc423518c0ca5e893df8fb906ecce.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/decision-summary.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/adjudication/story-vibepro-cross-system-adjudication/adjudication.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/adjudication/story-vibepro-cross-system-adjudication/judgment-adjudication.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/config.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/architecture-profile.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/component-style-check-result.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/finding-review.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/flow-design-check-result.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/gesture-interaction-check-result.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/refactoring-delta.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/requirement-consistency.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/risk-register.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/summary.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/terminal-link-check-result.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/gate-outcomes/ledger.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/judgment-axis-noise-precedents.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/architecture-review.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/decision-index.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/decision-records.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/decision-records.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/design-ssot-reconciliation.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/evidence-plan.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/evidence-reuse.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/human-review.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/pr-body.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/pr-create.html docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/pr-merge.html docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/ref-topology.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/ref-topology.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/senior-gap-judgment.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/split-plan.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/split-plan.summary.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/e2e.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/e2e.log docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/integration.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/integration.log docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/unit.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/unit.log docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/history/review-result-gate_evidence-2026-08-02T18-25-42.919Z.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/history/review-result-gate_evidence-2026-08-02T18-40-41.189Z.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/history/review-result-gate_evidence-2026-08-02T18-51-37.982Z.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/parallel-dispatch.md docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round1.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round2.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round3.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/spec/story-vibepro-cross-system-adjudication/spec.json docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/validation-sequencing/story-vibepro-cross-system-adjudication/state.json docs/management/roi-ledger/ledger.json docs/releases/2026-08.md docs/releases/index.md"
     }
   ]
 }

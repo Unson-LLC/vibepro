@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-cross-system-adjudication",
   "source": "execute_merge",
-  "generated_at": "2026-08-03T02:22:26.450Z",
+  "generated_at": "2026-08-03T02:24:18.604Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -12,21 +12,12 @@
     "trigger_signals": [
       "merge_warning",
       "gate:gate:design_input_judgment:needs_review",
-      "gate:gate:judgment_axis_data_state:needs_evidence",
-      "gate:gate:judgment_axis_ux_surface:needs_evidence",
+      "gate:gate:judgment_axis_public_contract:needs_evidence",
       "gate:gate:judgment_agent_workflow_evidence_lifecycle:needs_evidence",
       "gate:gate:managed_worktree:needs_review",
-      "gate:gate:responsibility_authority:needs_evidence",
       "gate:gate:unit:needs_evidence",
-      "gate:gate:validation_sequencing:needs_evidence",
-      "gate:review:dispatch_batch:gate:failed",
-      "gate:review:preflight:gate:gate_evidence:failed",
-      "gate:review:record:gate:gate_evidence:needs_review",
-      "gate:review:join:gate:needs_review",
-      "gate:gate:agent_review:needs_review",
-      "gate:gate:definition_of_done:needs_evidence",
       "gate:gate:judgment_dag_adjudication:needs_evidence",
-      "gate:gate:senior_gap_judgment:block"
+      "gate:gate:senior_gap_judgment:needs_review"
     ],
     "diff_stats_status": "available",
     "diff_stats_source": "git diff --numstat '2c5bdd7fdaf5b2546ca0cd23ff5041f98fe7bee3^1...0e867b366dab194896633b5cb0ab4a5ddaad8899'",
@@ -38,9 +29,9 @@
       "merge_commit_sha": "2c5bdd7fdaf5b2546ca0cd23ff5041f98fe7bee3",
       "base_authority": "merge_commit_first_parent"
     },
-    "diff_stats_collected_at": "2026-08-03T02:22:14.890Z",
+    "diff_stats_collected_at": "2026-08-03T02:24:18.241Z",
     "diff_stats_reason": null,
-    "artifact_lines": 1482,
+    "artifact_lines": 1448,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 1363,
@@ -103,7 +94,7 @@
         "merge_commit_sha": "2c5bdd7fdaf5b2546ca0cd23ff5041f98fe7bee3",
         "base_authority": "merge_commit_first_parent"
       },
-      "collected_at": "2026-08-03T02:22:14.890Z",
+      "collected_at": "2026-08-03T02:24:18.241Z",
       "reason": null
     },
     "change_surface": {
@@ -138,7 +129,7 @@
     "product_code_changed_lines": 850,
     "product_code_changed_lines_status": "available",
     "product_code_changed_lines_reason": null,
-    "artifact_code_ratio": 1.087,
+    "artifact_code_ratio": 1.062,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -173,30 +164,30 @@
     "implementation_budget_status": "within_budget",
     "docs_only_budget_status": "not_applicable",
     "replay_bundle": {
-      "compressed_bytes": 13648,
-      "expanded_bytes": 134294,
-      "expanded_line_count": 1397,
+      "compressed_bytes": 8694,
+      "expanded_bytes": 97274,
+      "expanded_line_count": 1017,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 17785,
-    "raw_source_artifact_code_ratio": 13.048,
+    "raw_source_artifact_lines": 16964,
+    "raw_source_artifact_code_ratio": 12.446,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
     "present": true,
-    "created_at": "2026-08-03T02:22:07.746Z",
+    "created_at": "2026-08-03T02:23:55.211Z",
     "gate_status": {
       "ready_for_pr_create": false,
       "overall_status": "needs_verification",
       "fast_lane": false,
-      "critical_unresolved_gate_count": 7
+      "critical_unresolved_gate_count": 3
     }
   },
   "evidence_reuse": {
     "present": true,
-    "created_at": "2026-08-03T02:22:07.746Z",
+    "created_at": "2026-08-03T02:23:55.211Z",
     "status": "stale",
-    "evidence_key": "evk_f28a43737b7480fb7dff270b2576dc06",
+    "evidence_key": "evk_e5d4a8a23c1708c212052991a3b3d67b",
     "verification_summary_fingerprint": "sha256:5e00fd251eb1b5aa2ffaba0f6f5e7dfde194a0e59a7717f5ca5419a038c57da7",
     "verification_evidence_updated_at": "2026-08-03T02:20:08.482Z",
     "verification_command_timestamps": [
@@ -221,7 +212,7 @@
     "full_evidence_generation_count": 1,
     "full_evidence_generation_count_scope": "same_evidence_key",
     "full_evidence_same_key_generation_count": 1,
-    "full_evidence_cumulative_generation_count": 16
+    "full_evidence_cumulative_generation_count": 17
   },
   "pr_create": {
     "present": true,
@@ -245,9 +236,10 @@
       "reconciliation": {
         "status": "reconciliation_required",
         "reasons": [
-          "gate_not_ready"
+          "gate_not_ready",
+          "decision_outcome_binding_failed"
         ],
-        "evaluated_at": "2026-08-03T02:22:26.352Z",
+        "evaluated_at": "2026-08-03T02:24:18.587Z",
         "head_sha": "0e867b366dab194896633b5cb0ab4a5ddaad8899"
       },
       "reconciliation_action": {
@@ -259,11 +251,11 @@
         ]
       },
       "decision_outcome_binding": {
-        "status": "bound",
-        "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
-        "expected_entry_count": 25,
+        "status": "failed",
+        "reason": "central_ledger_parse_failed",
+        "expected_entry_count": 30,
         "promoted_count": 0,
-        "duplicate_count": 25,
+        "duplicate_count": 0,
         "persistence_status": null
       },
       "pr_url": "https://github.com/Unson-LLC/vibepro/pull/413",
@@ -283,7 +275,7 @@
   "senior_gap_judgment": {
     "present": true,
     "status": null,
-    "gap_count": 20,
+    "gap_count": 9,
     "blocking_gap_count": 0,
     "residual_risk_count": 0,
     "followup_count": 0
@@ -322,14 +314,14 @@
     "stale_count": 0
   },
   "handoff_replay_status": "blocked",
-  "handoff_replay_unresolved_reference_count": 17,
+  "handoff_replay_unresolved_reference_count": 10,
   "missing_artifacts": [],
   "raw_artifact_count": 14,
   "automation_value_audit": {
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-cross-system-adjudication",
-    "generated_at": "2026-08-03T02:22:26.450Z",
+    "generated_at": "2026-08-03T02:24:18.604Z",
     "status": "needs_evidence",
     "purpose": "daily_automation_input",
     "sources": {
@@ -353,17 +345,18 @@
       "reconciliation": {
         "status": "reconciliation_required",
         "reasons": [
-          "gate_not_ready"
+          "gate_not_ready",
+          "decision_outcome_binding_failed"
         ],
-        "evaluated_at": "2026-08-03T02:22:26.352Z",
+        "evaluated_at": "2026-08-03T02:24:18.587Z",
         "head_sha": "0e867b366dab194896633b5cb0ab4a5ddaad8899"
       },
       "decision_outcome_binding": {
-        "status": "bound",
-        "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
-        "expected_entry_count": 25,
+        "status": "failed",
+        "reason": "central_ledger_parse_failed",
+        "expected_entry_count": 30,
         "promoted_count": 0,
-        "duplicate_count": 25,
+        "duplicate_count": 0,
         "persistence_status": null
       },
       "merge_commit_sha": "2c5bdd7fdaf5b2546ca0cd23ff5041f98fe7bee3",
@@ -388,7 +381,7 @@
       "story_spec_architecture_to_src": 0.238,
       "audit_artifacts_to_src": 0,
       "automation_evidence_to_src": 2.398,
-      "artifact_lines_to_product_changed_lines": 1.087
+      "artifact_lines_to_product_changed_lines": 1.062
     },
     "session_cost": {
       "token_status": "unavailable",
@@ -415,16 +408,16 @@
       "evidence_reuse_stale_reason_count": 2,
       "traceability_lifecycle": "merged",
       "handoff_replay_status": "blocked",
-      "handoff_replay_unresolved_reference_count": 17,
+      "handoff_replay_unresolved_reference_count": 10,
       "missing_artifact_count": 0
     },
     "cost_controls": {
       "status": "action_required",
       "budget_status": "within_budget",
-      "artifact_code_ratio": 1.087,
+      "artifact_code_ratio": 1.062,
       "automation_evidence_to_src": 2.398,
       "budget_exceeded_reasons": [],
-      "canonical_artifact_lines": 1482,
+      "canonical_artifact_lines": 1448,
       "product_changed_lines": 1363,
       "evidence_depth": "standard",
       "recommended_evidence_depth": "standard",
@@ -448,7 +441,7 @@
         "id": "canonical_handoff_replay_blocked",
         "severity": "review_needed",
         "reason": "canonical audit references cannot be fully replayed by another engineer or agent",
-        "unresolved_reference_count": 17
+        "unresolved_reference_count": 10
       }
     ]
   },
@@ -457,11 +450,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:b22f7029b779bf7db3ef27fa10e90408b904a17050af6b8cba9724c00bdaa751",
-    "compressed_hash": "sha256:d5137df6f24214f00d0a7dba1a1a88ca8262bb9e024d82a215b1af4f5e54cbc1",
-    "expanded_bytes": 134294,
-    "compressed_bytes": 13648,
-    "expanded_line_count": 1397,
+    "content_hash": "sha256:9a7e9c55e0579c29a34214fc7def3d9c7000a6aa679d7a15e34fb2a0cbbc8368",
+    "compressed_hash": "sha256:82587b0b5a58d7f9f5bc7615dad7ca6b95869aaf8d2559db5ee09b7815aaab9b",
+    "expanded_bytes": 97274,
+    "compressed_bytes": 8694,
+    "expanded_line_count": 1017,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "decision_index",
@@ -481,9 +474,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-cross-system-adjudication",
     "cost": {
-      "compressed_bytes": 13648,
-      "expanded_bytes": 134294,
-      "expanded_line_count": 1397,
+      "compressed_bytes": 8694,
+      "expanded_bytes": 97274,
+      "expanded_line_count": 1017,
       "persisted_line_count": 1
     }
   }

@@ -2,8 +2,8 @@
   "schema_version": "0.1.0",
   "kind": "artifact_summary",
   "source_artifact": "ref-topology.json",
-  "source_bytes": 80200,
-  "source_content_hash": "sha256:608400753f8c06a5fa643aa6f7a8808f01339e16dd497a7f9cef4540c9ce910a",
+  "source_bytes": 80215,
+  "source_content_hash": "sha256:24bccc9a1708927dc3210a21f95022f4c191aa87002d2d5b3e08c988320e5624",
   "conclusion": {
     "status_fields": {},
     "top_level_counts": {
