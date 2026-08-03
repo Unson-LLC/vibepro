@@ -7792,7 +7792,7 @@
         "spec": [
           {
             "kind": "spec",
-            "path": ".vibepro/spec/story-vibepro-test-tmpdir-fixture-cleanup/spec.json",
+            "path": "docs/specs/story-vibepro-test-tmpdir-fixture-cleanup.md",
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
@@ -7802,7 +7802,7 @@
       "child_links": [
         {
           "kind": "spec",
-          "path": ".vibepro/spec/story-vibepro-test-tmpdir-fixture-cleanup/spec.json",
+          "path": "docs/specs/story-vibepro-test-tmpdir-fixture-cleanup.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
