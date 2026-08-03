@@ -2,8 +2,8 @@
   "schema_version": "0.1.0",
   "kind": "artifact_summary",
   "source_artifact": "evidence-reuse.json",
-  "source_bytes": 19137,
-  "source_content_hash": "sha256:8ef94b019af45482ad9dcb5ebbc991b8372e09d87e3704bf04159464b5f58e37",
+  "source_bytes": 17969,
+  "source_content_hash": "sha256:0ec66d85cad9fd0cc2c2c37dee98de5e43eb5e61a897bde4c6e4f4ac0124ce4d",
   "conclusion": {
     "status_fields": {
       "model": "vibepro-evidence-summary-reuse-v1",
@@ -12,7 +12,7 @@
       "gate_status": "needs_refresh"
     },
     "top_level_counts": {
-      "stale_reasons_count": 3
+      "stale_reasons_count": 2
     }
   },
   "highlights": [

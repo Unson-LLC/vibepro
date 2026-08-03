@@ -8,17 +8,17 @@
     }
   ],
   "refs": {
-    "base_ref": "origin/main",
+    "base_ref": "main",
     "head_ref": "HEAD",
     "current_branch": "claude/cross-system-adjudication",
-    "base_sha": "54ec9d3aab849fdfa59837aac400465ff4c38c6f",
+    "base_sha": "cdd4784c609b15edc7e03dba29d1a0be5dc63a9d",
     "head_sha": "0e867b366dab194896633b5cb0ab4a5ddaad8899",
-    "merge_base_sha": "54ec9d3aab849fdfa59837aac400465ff4c38c6f"
+    "merge_base_sha": "cdd4784c609b15edc7e03dba29d1a0be5dc63a9d"
   },
   "base_selection": {
-    "ref": "origin/main",
-    "explicit": false,
-    "rule": "origin_head_then_origin_develop_origin_main_develop_main_master_then_HEAD~1"
+    "ref": "main",
+    "explicit": true,
+    "rule": "cli_option"
   },
   "branches": [
     {
@@ -2390,7 +2390,7 @@
       "branch": "main",
       "local_sha": "cdd4784c609b15edc7e03dba29d1a0be5dc63a9d",
       "remotes": {
-        "origin": "54ec9d3aab849fdfa59837aac400465ff4c38c6f"
+        "origin": "c32ed79dd00e542e4b0b5cdc25eace71aff1f85d"
       },
       "divergence": {
         "local_vs_remote": true,

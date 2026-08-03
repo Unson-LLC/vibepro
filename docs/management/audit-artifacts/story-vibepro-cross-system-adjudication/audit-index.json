@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-cross-system-adjudication",
   "source": "execute_merge",
-  "generated_at": "2026-08-03T02:21:31.881Z",
+  "generated_at": "2026-08-03T02:22:15.538Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -12,7 +12,21 @@
     "trigger_signals": [
       "merge_warning",
       "gate:gate:design_input_judgment:needs_review",
-      "gate:gate:managed_worktree:needs_review"
+      "gate:gate:judgment_axis_data_state:needs_evidence",
+      "gate:gate:judgment_axis_ux_surface:needs_evidence",
+      "gate:gate:judgment_agent_workflow_evidence_lifecycle:needs_evidence",
+      "gate:gate:managed_worktree:needs_review",
+      "gate:gate:responsibility_authority:needs_evidence",
+      "gate:gate:unit:needs_evidence",
+      "gate:gate:validation_sequencing:needs_evidence",
+      "gate:review:dispatch_batch:gate:failed",
+      "gate:review:preflight:gate:gate_evidence:failed",
+      "gate:review:record:gate:gate_evidence:needs_review",
+      "gate:review:join:gate:needs_review",
+      "gate:gate:agent_review:needs_review",
+      "gate:gate:definition_of_done:needs_evidence",
+      "gate:gate:judgment_dag_adjudication:needs_evidence",
+      "gate:gate:senior_gap_judgment:block"
     ],
     "diff_stats_status": "available",
     "diff_stats_source": "git diff --numstat '2c5bdd7fdaf5b2546ca0cd23ff5041f98fe7bee3^1...0e867b366dab194896633b5cb0ab4a5ddaad8899'",
@@ -24,9 +38,9 @@
       "merge_commit_sha": "2c5bdd7fdaf5b2546ca0cd23ff5041f98fe7bee3",
       "base_authority": "merge_commit_first_parent"
     },
-    "diff_stats_collected_at": "2026-08-03T02:21:20.216Z",
+    "diff_stats_collected_at": "2026-08-03T02:22:14.890Z",
     "diff_stats_reason": null,
-    "artifact_lines": 1452,
+    "artifact_lines": 1457,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 1363,
@@ -89,7 +103,7 @@
         "merge_commit_sha": "2c5bdd7fdaf5b2546ca0cd23ff5041f98fe7bee3",
         "base_authority": "merge_commit_first_parent"
       },
-      "collected_at": "2026-08-03T02:21:20.216Z",
+      "collected_at": "2026-08-03T02:22:14.890Z",
       "reason": null
     },
     "change_surface": {
@@ -124,7 +138,7 @@
     "product_code_changed_lines": 850,
     "product_code_changed_lines_status": "available",
     "product_code_changed_lines_reason": null,
-    "artifact_code_ratio": 1.065,
+    "artifact_code_ratio": 1.069,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -159,30 +173,30 @@
     "implementation_budget_status": "within_budget",
     "docs_only_budget_status": "not_applicable",
     "replay_bundle": {
-      "compressed_bytes": 3817,
-      "expanded_bytes": 17115,
-      "expanded_line_count": 448,
+      "compressed_bytes": 13640,
+      "expanded_bytes": 134332,
+      "expanded_line_count": 1399,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 13620,
-    "raw_source_artifact_code_ratio": 9.993,
+    "raw_source_artifact_lines": 17786,
+    "raw_source_artifact_code_ratio": 13.049,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
     "present": true,
-    "created_at": "2026-08-03T02:20:20.684Z",
+    "created_at": "2026-08-03T02:22:07.746Z",
     "gate_status": {
-      "ready_for_pr_create": true,
-      "overall_status": "ready_for_review",
+      "ready_for_pr_create": false,
+      "overall_status": "needs_verification",
       "fast_lane": false,
-      "critical_unresolved_gate_count": 0
+      "critical_unresolved_gate_count": 7
     }
   },
   "evidence_reuse": {
     "present": true,
-    "created_at": "2026-08-03T02:20:20.684Z",
+    "created_at": "2026-08-03T02:22:07.746Z",
     "status": "stale",
-    "evidence_key": "evk_9556fa5695ec8a0b50fcfcc02e161fa7",
+    "evidence_key": "evk_f28a43737b7480fb7dff270b2576dc06",
     "verification_summary_fingerprint": "sha256:5e00fd251eb1b5aa2ffaba0f6f5e7dfde194a0e59a7717f5ca5419a038c57da7",
     "verification_evidence_updated_at": "2026-08-03T02:20:08.482Z",
     "verification_command_timestamps": [
@@ -202,12 +216,12 @@
         "git_recorded_at": "2026-08-03T02:03:59.901Z"
       }
     ],
-    "stale_reason_count": 3,
+    "stale_reason_count": 2,
     "full_evidence_status": "generated",
     "full_evidence_generation_count": 1,
     "full_evidence_generation_count_scope": "same_evidence_key",
     "full_evidence_same_key_generation_count": 1,
-    "full_evidence_cumulative_generation_count": 15
+    "full_evidence_cumulative_generation_count": 16
   },
   "pr_create": {
     "present": true,
@@ -231,25 +245,26 @@
       "reconciliation": {
         "status": "reconciliation_required",
         "reasons": [
-          "checks_not_ready"
+          "gate_not_ready",
+          "decision_outcome_binding_failed"
         ],
-        "evaluated_at": "2026-08-03T02:21:31.726Z",
+        "evaluated_at": "2026-08-03T02:22:15.489Z",
         "head_sha": "0e867b366dab194896633b5cb0ab4a5ddaad8899"
       },
       "reconciliation_action": {
         "status": "required",
-        "reason": "checks_not_ready",
+        "reason": "gate_not_ready",
         "commands": [
           "vibepro pr prepare . --story-id story-vibepro-cross-system-adjudication --base main",
           "vibepro execute merge . --story-id story-vibepro-cross-system-adjudication --base main --pr https://github.com/Unson-LLC/vibepro/pull/413"
         ]
       },
       "decision_outcome_binding": {
-        "status": "bound",
-        "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
+        "status": "failed",
+        "reason": "central_ledger_parse_failed",
         "expected_entry_count": 25,
         "promoted_count": 0,
-        "duplicate_count": 25,
+        "duplicate_count": 0,
         "persistence_status": null
       },
       "pr_url": "https://github.com/Unson-LLC/vibepro/pull/413",
@@ -269,7 +284,7 @@
   "senior_gap_judgment": {
     "present": true,
     "status": null,
-    "gap_count": 2,
+    "gap_count": 20,
     "blocking_gap_count": 0,
     "residual_risk_count": 0,
     "followup_count": 0
@@ -308,14 +323,14 @@
     "stale_count": 0
   },
   "handoff_replay_status": "blocked",
-  "handoff_replay_unresolved_reference_count": 18,
+  "handoff_replay_unresolved_reference_count": 10,
   "missing_artifacts": [],
   "raw_artifact_count": 14,
   "automation_value_audit": {
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-cross-system-adjudication",
-    "generated_at": "2026-08-03T02:21:31.881Z",
+    "generated_at": "2026-08-03T02:22:15.538Z",
     "status": "needs_evidence",
     "purpose": "daily_automation_input",
     "sources": {
@@ -339,17 +354,18 @@
       "reconciliation": {
         "status": "reconciliation_required",
         "reasons": [
-          "checks_not_ready"
+          "gate_not_ready",
+          "decision_outcome_binding_failed"
         ],
-        "evaluated_at": "2026-08-03T02:21:31.726Z",
+        "evaluated_at": "2026-08-03T02:22:15.489Z",
         "head_sha": "0e867b366dab194896633b5cb0ab4a5ddaad8899"
       },
       "decision_outcome_binding": {
-        "status": "bound",
-        "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
+        "status": "failed",
+        "reason": "central_ledger_parse_failed",
         "expected_entry_count": 25,
         "promoted_count": 0,
-        "duplicate_count": 25,
+        "duplicate_count": 0,
         "persistence_status": null
       },
       "merge_commit_sha": "2c5bdd7fdaf5b2546ca0cd23ff5041f98fe7bee3",
@@ -374,7 +390,7 @@
       "story_spec_architecture_to_src": 0.238,
       "audit_artifacts_to_src": 0,
       "automation_evidence_to_src": 2.398,
-      "artifact_lines_to_product_changed_lines": 1.065
+      "artifact_lines_to_product_changed_lines": 1.069
     },
     "session_cost": {
       "token_status": "unavailable",
@@ -398,19 +414,19 @@
       "senior_gap_status": null,
       "senior_gap_residual_risk_count": 0,
       "evidence_reuse_status": "stale",
-      "evidence_reuse_stale_reason_count": 3,
+      "evidence_reuse_stale_reason_count": 2,
       "traceability_lifecycle": "merged",
       "handoff_replay_status": "blocked",
-      "handoff_replay_unresolved_reference_count": 18,
+      "handoff_replay_unresolved_reference_count": 10,
       "missing_artifact_count": 0
     },
     "cost_controls": {
       "status": "action_required",
       "budget_status": "within_budget",
-      "artifact_code_ratio": 1.065,
+      "artifact_code_ratio": 1.069,
       "automation_evidence_to_src": 2.398,
       "budget_exceeded_reasons": [],
-      "canonical_artifact_lines": 1452,
+      "canonical_artifact_lines": 1457,
       "product_changed_lines": 1363,
       "evidence_depth": "standard",
       "recommended_evidence_depth": "standard",
@@ -434,7 +450,7 @@
         "id": "canonical_handoff_replay_blocked",
         "severity": "review_needed",
         "reason": "canonical audit references cannot be fully replayed by another engineer or agent",
-        "unresolved_reference_count": 18
+        "unresolved_reference_count": 10
       }
     ]
   },
@@ -443,11 +459,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:5e345eb36425bdaeb19d33a1ef192df3dcb39b2640dac7f70fef5e13372fdb75",
-    "compressed_hash": "sha256:7901d80efd40543fedcae2b2e5ab99275f76191069da0a063a6624f085475609",
-    "expanded_bytes": 17115,
-    "compressed_bytes": 3817,
-    "expanded_line_count": 448,
+    "content_hash": "sha256:2e85a076866e56aeaa1d3cf1a52a3db6f0e91c8637d7ae36a83e1be98a4ad71c",
+    "compressed_hash": "sha256:45fe279a75b1270fc644956f5f45aacad01c166a85017db8f38756cb8908b693",
+    "expanded_bytes": 134332,
+    "compressed_bytes": 13640,
+    "expanded_line_count": 1399,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "decision_index",
@@ -467,9 +483,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-cross-system-adjudication",
     "cost": {
-      "compressed_bytes": 3817,
-      "expanded_bytes": 17115,
-      "expanded_line_count": 448,
+      "compressed_bytes": 13640,
+      "expanded_bytes": 134332,
+      "expanded_line_count": 1399,
       "persisted_line_count": 1
     }
   }

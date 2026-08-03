@@ -2,32 +2,32 @@
   "schema_version": "0.1.0",
   "kind": "artifact_summary",
   "source_artifact": "decision-index.json",
-  "source_bytes": 20738,
-  "source_content_hash": "sha256:e1bd6ee6842276a1d0a642aa84a942fba744fa9fd6d42fec66a0699f10b64bc7",
+  "source_bytes": 31145,
+  "source_content_hash": "sha256:5ad984b7f801cc5201ad76a99fb3aa9f28c39d869b52ac914202457e97b8b43f",
   "conclusion": {
     "status_fields": {
       "model": "vibepro-evidence-decision-index-v1",
       "evidence_depth": "summary",
-      "overall_status": "ready_for_review",
-      "ready_for_pr_create": true,
+      "overall_status": "needs_verification",
+      "ready_for_pr_create": false,
       "scope_status": "needs_clean_branch",
       "route_type": "agent_workflow",
       "judgment_confidence": 0.82
     },
     "top_level_counts": {
-      "targeted_full_surfaces_count": 3,
-      "risk_signals_count": 3,
-      "unresolved_gate_count": 0,
-      "critical_unresolved_gate_count": 0,
-      "risk_signal_count": 3,
-      "active_axis_count": 2
+      "targeted_full_surfaces_count": 8,
+      "risk_signals_count": 4,
+      "unresolved_gate_count": 16,
+      "critical_unresolved_gate_count": 7,
+      "risk_signal_count": 4,
+      "active_axis_count": 4
     }
   },
   "highlights": [
     "model=vibepro-evidence-decision-index-v1",
     "evidence_depth=summary",
-    "overall_status=ready_for_review",
-    "ready_for_pr_create=true",
+    "overall_status=needs_verification",
+    "ready_for_pr_create=false",
     "scope_status=needs_clean_branch",
     "route_type=agent_workflow",
     "judgment_confidence=0.82"

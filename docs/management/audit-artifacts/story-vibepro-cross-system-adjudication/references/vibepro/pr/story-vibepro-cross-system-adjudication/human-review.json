@@ -1,9 +1,9 @@
 {
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-cross-system-adjudication",
-  "created_at": "2026-08-03T02:20:20.684Z",
+  "created_at": "2026-08-03T02:22:07.746Z",
   "recommended_decision": "split_pr",
-  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 7 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "recommendation_reason": "Gate DAG is needs_verification with 17 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: 差分が 152 files あり、レビュー可能な目安 30 files を超えている; 未コミット差分が 59 files 残っている; baseからのcommitが 18 件あり、別work item story-vibepro-uiux-intake-gate-pr-summary-surfaces のlineageが含まれている",
   "accepted_current_story_lineage": [],
   "source_artifacts": {
     "review_cockpit": null,
@@ -23,7 +23,7 @@
     "spec": {
       "status": "present",
       "required": true,
-      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-cross-system-adjudication.md)"
+      "reason": "explicit Spec docs are present (docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/references/vibepro/diagnostics/2026-08-03T010633Z/spec-drift.md, docs/specs/story-vibepro-cross-system-adjudication.md, docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/spec-drift.md)"
     },
     "decision_records": {
       "total": 4,
@@ -118,16 +118,16 @@
     },
     "visual_qa": null,
     "completion_quality": {
-      "status": "ready_for_human_acceptance",
+      "status": "needs_quality_closure",
       "e2e_experience_reach_rate": 1,
       "final_20_auto_closure_rate": 1,
       "visual_qa_pass_rate": null,
-      "required_evidence_count": 0
+      "required_evidence_count": 15
     }
   },
   "toolchain": {
     "schema_version": "0.1.0",
-    "collected_at": "2026-08-03T02:20:12.203Z",
+    "collected_at": "2026-08-03T02:21:56.873Z",
     "package": {
       "name": "vibepro",
       "version": "0.2.0-beta.2",
@@ -142,10 +142,12 @@
       "commit": "0e867b366dab194896633b5cb0ab4a5ddaad8899",
       "branch": "claude/cross-system-adjudication",
       "origin_url": "https://github.com/Unson-LLC/vibepro.git",
-      "origin_main_commit": "54ec9d3aab849fdfa59837aac400465ff4c38c6f",
-      "origin_main_relation": "ahead",
-      "dirty": false,
-      "dirty_summary": []
+      "origin_main_commit": "c32ed79dd00e542e4b0b5cdc25eace71aff1f85d",
+      "origin_main_relation": "behind",
+      "dirty": true,
+      "dirty_summary": [
+        "?? docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/"
+      ]
     }
   },
   "decision_options": [
