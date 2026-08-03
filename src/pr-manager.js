@@ -4699,13 +4699,14 @@ function buildHumanChangeIntent(fileGroups) {
   return `${parts.join(' / ')}を変更`;
 }
 
-function buildHumanEvidenceDigest(gateDag) {
+export function buildHumanEvidenceDigest(gateDag) {
   const nodes = gateDag?.nodes ?? [];
   const labels = [
     ['gate:engineering_judgment_route', 'Engineering Judgment'],
     ['gate:story_source_integrity', 'Story Source'],
     ['gate:common_judgment_spine', 'Judgment Spine'],
     ['gate:pr_route_classification', 'PR Route'],
+    ['gate:uiux_intake_judgment', 'UI/UX Intake'],
     ['gate:pr_body_contract', 'PR Body'],
     ['gate:managed_worktree', 'Managed Worktree'],
     ['gate:mirror_source_traceability', 'Source Trace'],
@@ -15274,13 +15275,14 @@ function summarizePrGateReason(reason) {
     .trim();
 }
 
-function renderPrGateSummary(gateDag) {
+export function renderPrGateSummary(gateDag) {
   const gates = gateDag.nodes.filter((node) => node.type === 'verification_gate');
   const storyGate = gateDag.nodes.find((node) => node.id === 'story');
   const architectureGate = gateDag.nodes.find((node) => node.id === 'architecture');
   const specGate = gateDag.nodes.find((node) => node.id === 'spec');
   const routeGates = [
     'gate:pr_route_classification',
+    'gate:uiux_intake_judgment',
     'gate:pr_body_contract',
     'gate:mirror_source_traceability',
     'gate:ci_status_or_waiver',
