@@ -507,8 +507,8 @@
         "amendment_reason": "The base budget of six subagents was consumed by two full gate-stage review rounds: round 1 (gate_evidence, pr_split_scope, release_risk all pass at head 583f69fc) and round 2 at head 7db9956d after a docs-only lineage commit invalidated the content surface (gate_evidence pass, release_risk pass, pr_split_scope needs_changes citing the advisory split-plan recommendation). The owner approved on 2026-08-03 via AskUserQuestion in Claude Code session b72589e7-17b5-460f-8581-06932845d285 a bounded extension of four additional subagents and a 60-minute consumption ceiling for exactly one round-3 pr_split_scope replacement review plus adjudication redispatch headroom; the session transcript is the inspectable primary record."
       },
       "story-vibepro-uiux-intake-gate-pr-summary-surfaces": {
-        "max_subagent_count": 8,
-        "amendment_reason": "Owner-approved raise scoped to this Story: +2 subagents (6->8) to dispatch the final implementation:runtime_contract review required by validation_sequencing final_review. Approved by sato_keigo on 2026-08-03 via AskUserQuestion in Claude Code session c3213594-536c-47ba-89cf-d8613ecaff91, observed directly by the recording agent."
+        "max_subagent_count": 10,
+        "amendment_reason": "Owner-approved raises scoped to this Story: 6->8 then 8->10 subagents. First raise for the final implementation:runtime_contract review; second raise after that review found a story accuracy defect (both summary surfaces dead in production), requiring gate_evidence and runtime_contract re-reviews of the corrected story text. Both approved by sato_keigo on 2026-08-03 via AskUserQuestion in Claude Code session c3213594-536c-47ba-89cf-d8613ecaff91, observed directly by the recording agent."
       }
     }
   },
