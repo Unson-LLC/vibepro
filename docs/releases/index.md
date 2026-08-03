@@ -286,3 +286,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:419:start -->
 - [PR #419](https://github.com/Unson-LLC/vibepro/pull/419) — [2026-08](/releases/2026-08): story-vibepro-pr-human-summary-dead-chain-removal - 死んだ人間向けPRサマリーレンダラーチェーンを削除する
 <!-- vibepro-release-index-pr:419:end -->
+
+<!-- vibepro-release-index-pr:420:start -->
+- [PR #420](https://github.com/Unson-LLC/vibepro/pull/420) — [2026-08](/releases/2026-08): story-vibepro-strict-head-binding-origin-guard - strict HEAD bindingをfrozen final_reviewとrole policy例外に限定する
+<!-- vibepro-release-index-pr:420:end -->
