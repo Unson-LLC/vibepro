@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
   "source": "execute_merge",
-  "promoted_at": "2026-08-03T01:25:41.010Z",
+  "promoted_at": "2026-08-03T01:25:51.567Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/audit-index.json",
@@ -41,11 +41,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:ba843317b31c9caa437fa785ceea1bcf6d554a5c86f40a98f24fdb230ee4c4c7",
-    "compressed_hash": "sha256:5b208cc4407a8321209427bc4d43dd9fcb76fe15450fab44f71e39df93b11c1a",
-    "expanded_bytes": 26440,
-    "compressed_bytes": 5286,
-    "expanded_line_count": 644,
+    "content_hash": "sha256:daee25302ba1117b2bf3f688eba4d0cfd6f701668832c67acfed9ca482214e28",
+    "compressed_hash": "sha256:cb875152dd4c6e8d3eeef63272e6eb7c1d6dd0086d38854023a8f79d541aafb6",
+    "expanded_bytes": 25508,
+    "compressed_bytes": 5174,
+    "expanded_line_count": 624,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "decision_index",
@@ -65,9 +65,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-uiux-intake-gate-pr-summary-surfaces",
     "cost": {
-      "compressed_bytes": 5286,
-      "expanded_bytes": 26440,
-      "expanded_line_count": 644,
+      "compressed_bytes": 5174,
+      "expanded_bytes": 25508,
+      "expanded_line_count": 624,
       "persisted_line_count": 1
     }
   },
@@ -82,26 +82,16 @@
       "merged_at": "2026-08-03T01:25:38Z"
     },
     "reconciliation": {
-      "status": "reconciliation_required",
-      "reasons": [
-        "decision_outcome_binding_failed"
-      ],
-      "evaluated_at": "2026-08-03T01:25:40.967Z",
+      "status": "reconciled",
+      "reasons": [],
+      "evaluated_at": "2026-08-03T01:25:51.494Z",
       "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6"
     },
-    "reconciliation_action": {
-      "status": "required",
-      "reason": "decision_outcome_binding_failed",
-      "commands": [
-        "vibepro pr prepare . --story-id story-vibepro-uiux-intake-gate-pr-summary-surfaces --base main",
-        "vibepro execute merge . --story-id story-vibepro-uiux-intake-gate-pr-summary-surfaces --base main --pr https://github.com/Unson-LLC/vibepro/pull/416"
-      ]
-    },
     "decision_outcome_binding": {
-      "status": "failed",
-      "reason": "central_ledger_parse_failed",
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
       "expected_entry_count": 52,
-      "promoted_count": 0,
+      "promoted_count": 52,
       "duplicate_count": 0,
       "persistence_status": null
     },
@@ -117,7 +107,7 @@
     "status": "blocked",
     "resolved_reference_count": 76,
     "copied_reference_count": 58,
-    "unresolved_reference_count": 6,
+    "unresolved_reference_count": 13,
     "replay_bundle": "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/audit-replay-bundle.json.gz",
     "replay_command": "vibepro audit replay . --story-id story-vibepro-uiux-intake-gate-pr-summary-surfaces"
   },
@@ -134,7 +124,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:ba843317b31c9caa437fa785ceea1bcf6d554a5c86f40a98f24fdb230ee4c4c7"
+      "content_hash": "sha256:daee25302ba1117b2bf3f688eba4d0cfd6f701668832c67acfed9ca482214e28"
     }
   ],
   "raw_artifact_manifest": [
@@ -224,10 +214,10 @@
       "source": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-uiux-intake-gate-pr-summary-surfaces/audit-replay-bundle.json.gz",
-      "digest": "sha256:aac79c02041389c07e686f8fc97e8e785bc964a49ba66347e65a19d4139c13ef",
-      "audit_digest": "sha256:cf2d4b47bf80c4f681d336c36b8161acd560d2480e521f07d2c55d59b659c1f4",
-      "line_count": 2260,
-      "raw_line_count": 4761,
+      "digest": "sha256:eda4d3946e4b9f8653ab1cbc9b2d11a3c1bfcca26da7bedacbb2969c4b0593ee",
+      "audit_digest": "sha256:a7a96af79120db16a0b7a256e63529debea6f61d44a1ab7c85958bfbebc8336c",
+      "line_count": 2249,
+      "raw_line_count": 4759,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -1155,14 +1145,42 @@
       "size_bytes": 993002
     },
     {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/graphify/graph.json",
       "reason": "source_too_large",
       "size_bytes": 7444604
     },
     {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/design-ssot-reconciliation.json",
       "reason": "source_too_large",
       "size_bytes": 615232
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
     },
     {
       "source": ".vibepro/uiux/story-vibepro-uiux-intake-gate-pr-summary-surfaces/ia-flow-map.json",
