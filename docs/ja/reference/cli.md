@@ -8,6 +8,8 @@ Architecture / Specを確定する前に `story diagnose --phase design-input --
 
 `decision record --source budget:delivery_efficiency:<story-id>` によるbudget grantは、workspaceのdecision store（gitignore対象）に加えて `docs/management/decisions/` 配下のtracked decision document（`type: budget_override_approval`）を必ず生成し、そのパスを `budget_approval.decision_doc` に記録します。PR diffでgrantor・digest・timestampをレビュー可能にするのはこのdocumentであり、生成先がgitignoreされている場合はコマンドがfailします。
 
+`review record --strict-head-binding --strict-head-reason <text>` は無条件のCLI overrideではありません。role policyで既に `freshness_mode: strict_head` と `freshness_reason` を明示したroleか、activeなfrozen validation sequenceの `implementation:runtime_contract` `final_review` の場合だけ許可されます。それ以外のstage/roleは明示的なエラーで拒否されます。完全な由来モデルと `pr prepare` の移行警告は[Agent Review](/ja/guide/agent-review)を参照してください。
+
 ## 現在のUsage
 
 ```text

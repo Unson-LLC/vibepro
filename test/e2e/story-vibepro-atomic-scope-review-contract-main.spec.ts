@@ -107,13 +107,26 @@ test('ASR-E2E-001 replays the complete atomic review workflow contract', async (
   await runPublicCli(childEnv, ['init', cliRepo, '--language', 'ja', '--story-id', storyId, '--title', 'Atomic scope CLI replay']);
   const fixtureConfigPath = path.join(cliRepo, '.vibepro', 'config.json');
   const fixtureConfig = JSON.parse(await readFile(fixtureConfigPath, 'utf8'));
+  // The atomic-scope contract binds every review to the complete atomic HEAD, so
+  // grant strict_head via role policy: the CLI --strict-head-binding override is
+  // reserved for the frozen validation-sequence final_review target.
+  const atomicStrictPolicy = {
+    freshness_mode: 'strict_head',
+    freshness_reason: 'atomic scope reviews own the complete atomic HEAD'
+  };
+  const atomicStrictRoles = Object.fromEntries([
+    'product_requirement', 'architecture_boundary', 'spec_consistency', 'scope_risk', 'acceptance_e2e',
+    'regression_risk', 'unit_integration', 'gate_coverage', 'code_spec_alignment', 'runtime_contract',
+    'ux_completion', 'gate_evidence', 'preview_smoke', 'network_runtime', 'human_usability'
+  ].map((role) => [role, { ...atomicStrictPolicy }]));
   fixtureConfig.agent_reviews = {
     ...(fixtureConfig.agent_reviews ?? {}),
     roles: {
       ...(fixtureConfig.agent_reviews?.roles ?? {}),
-      pr_split_scope: { mode: 'optional' },
-      e2e_ux: { mode: 'optional' },
-      release_risk: { mode: 'optional' }
+      ...atomicStrictRoles,
+      pr_split_scope: { mode: 'optional', ...atomicStrictPolicy },
+      e2e_ux: { mode: 'optional', ...atomicStrictPolicy },
+      release_risk: { mode: 'optional', ...atomicStrictPolicy }
     }
   };
   await writeFile(fixtureConfigPath, `${JSON.stringify(fixtureConfig, null, 2)}\n`);

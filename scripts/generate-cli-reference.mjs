@@ -74,7 +74,11 @@ function renderReference(language, sourceLanguage, commands) {
     ? '`decision record --source budget:delivery_efficiency:<story-id>` によるbudget grantは、workspaceのdecision store（gitignore対象）に加えて `docs/management/decisions/` 配下のtracked decision document（`type: budget_override_approval`）を必ず生成し、そのパスを `budget_approval.decision_doc` に記録します。PR diffでgrantor・digest・timestampをレビュー可能にするのはこのdocumentであり、生成先がgitignoreされている場合はコマンドがfailします。'
     : 'A budget grant via `decision record --source budget:delivery_efficiency:<story-id>` also writes a tracked decision document under `docs/management/decisions/` (`type: budget_override_approval`) and records its path as `budget_approval.decision_doc`. The workspace decision store is gitignored, so this document is what makes the grantor, digest, and timestamp reviewable in the PR diff; the command fails if that path is gitignored.';
 
-  return `# ${title}\n\n${notice}\n\n${intro}\n\n${workflow}\n\n${budgetGrant}\n\n## ${japanese ? '現在のUsage' : 'Current Usage'}\n\n\`\`\`text\n${commands.join('\n')}\n\`\`\`\n\n## ${japanese ? 'ドリフト確認' : 'Drift Check'}\n\n\`\`\`bash\nnpm run docs:cli:check\n\`\`\`\n`;
+  const strictHeadOrigin = japanese
+    ? '`review record --strict-head-binding --strict-head-reason <text>` は無条件のCLI overrideではありません。role policyで既に `freshness_mode: strict_head` と `freshness_reason` を明示したroleか、activeなfrozen validation sequenceの `implementation:runtime_contract` `final_review` の場合だけ許可されます。それ以外のstage/roleは明示的なエラーで拒否されます。完全な由来モデルと `pr prepare` の移行警告は[Agent Review](/ja/guide/agent-review)を参照してください。'
+    : '`review record --strict-head-binding --strict-head-reason <text>` is not an unconditional CLI override: it is authorized only for a role whose policy already declares `freshness_mode: strict_head` with a `freshness_reason`, or for the `implementation:runtime_contract` `final_review` of an active, frozen validation sequence. Any other stage/role rejects it with an explicit error; see [Agent Review](/guide/agent-review) for the full authorization model and the `pr prepare` migration warning for legacy unauthorized bindings.';
+
+  return `# ${title}\n\n${notice}\n\n${intro}\n\n${workflow}\n\n${budgetGrant}\n\n${strictHeadOrigin}\n\n## ${japanese ? '現在のUsage' : 'Current Usage'}\n\n\`\`\`text\n${commands.join('\n')}\n\`\`\`\n\n## ${japanese ? 'ドリフト確認' : 'Drift Check'}\n\n\`\`\`bash\nnpm run docs:cli:check\n\`\`\`\n`;
 }
 
 const invokedPath = process.argv[1] ? path.resolve(process.argv[1]) : null;

@@ -1249,6 +1249,18 @@ test('named profile Graphify review and PR producers leave the removed legacy di
     pr: { canonical: '.vibepro/packets/{feature_slug}/pr-prepare.json', ownership: 'generated', projections: [{ path: 'docs/features/{feature_slug}/10_release.md', ownership: 'generated', renderer: { id: 'release_summary_markdown', version: '1' } }] }
   });
   config.artifact_routing = { schema_version: '0.2.0', profiles: { feature_packet: routedProfile, governance_packet: completeProfile() } };
+  // Strict HEAD binding requires either the frozen validation-sequence
+  // final_review target or an explicit role policy (story-vibepro-strict-head-binding-origin-guard);
+  // declare regression_risk as a deliberate strict-head role so the fixture
+  // below can exercise --strict-head-binding.
+  config.agent_reviews = {
+    roles: {
+      regression_risk: {
+        freshness_mode: 'strict_head',
+        freshness_reason: 'projection freshness regression coverage requires the complete release head'
+      }
+    }
+  };
   const entry = config.brainbase.stories.find((story) => story.story_id === storyId);
   entry.artifact_profile = 'feature_packet'; entry.feature_slug = featureSlug;
   await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);

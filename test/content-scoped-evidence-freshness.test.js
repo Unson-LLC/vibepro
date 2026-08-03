@@ -9,6 +9,8 @@ import { promisify } from 'node:util';
 
 import { runCli } from '../src/cli.js';
 import { buildContentBinding } from '../src/content-binding.js';
+import { buildValidationSequencePlan, createValidationSequenceState, writeValidationSequence } from '../src/validation-sequencing.js';
+import { buildArtifactRemediationCommands, buildPrFreshnessGate, isRecordedStrictHeadStillAuthorized } from '../src/pr-manager.js';
 
 const execFileAsync = promisify(execFile);
 
@@ -606,10 +608,115 @@ test('global content-surface default applies to gate evidence without a built-in
   assert.equal(recordResult.result.review.freshness_policy.source, 'policy_default');
 });
 
-test('review strict HEAD CLI override requires and records an explicit reason', async () => {
+test('review strict HEAD CLI override requires an explicit reason before authorization is even checked', async () => {
   const repo = await makeGitRepoWithStory();
-  await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--role', 'runtime_contract']);
+  await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'preview', '--role', 'human_usability']);
   const baseArgs = [
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-content-binding',
+    '--stage',
+    'preview',
+    '--role',
+    'human_usability',
+    '--status',
+    'needs_changes',
+    '--summary',
+    'attempted unauthorized strict override',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-unauthorized-strict-review',
+    '--agent-closed',
+    '--strict-head-binding'
+  ];
+  const missingReason = await captureRunCli(baseArgs);
+  assert.equal(missingReason.exitCode, 1);
+  assert.match(missingReason.stderr, /requires --strict-head-reason/);
+
+  // story-vibepro-strict-head-binding-origin-guard (SHBO-S-1): a
+  // content_surface role (preview:human_usability, the surface that actually
+  // regressed) must not be strict-ified by an arbitrary CLI override, even
+  // with a reason supplied.
+  const rejected = await captureRunCli([
+    ...baseArgs,
+    '--strict-head-reason',
+    'trying to force strict binding on an ordinary content-scoped review'
+  ]);
+  assert.equal(rejected.exitCode, 1);
+  assert.match(rejected.stderr, /--strict-head-binding is not authorized for preview:human_usability/);
+  assert.match(rejected.stderr, /Configured freshness for this role is content_surface/);
+
+  const status = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'preview', '--json']);
+  const role = status.result.stages[0].roles.find((item) => item.role === 'human_usability');
+  assert.equal(role.status, 'missing');
+});
+
+test('SHBO-S-7 content_surface preview human_usability review stays current for unrelated HEAD changes and stales when its inspected surface changes', async () => {
+  const repo = await makeGitRepoWithStory();
+  await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'preview', '--role', 'human_usability']);
+  const recordResult = await runCli([
+    'review',
+    'record',
+    repo,
+    '--id',
+    'story-content-binding',
+    '--stage',
+    'preview',
+    '--role',
+    'human_usability',
+    '--status',
+    'pass',
+    '--summary',
+    'human usability reviewed against an explicit content surface',
+    '--inspection-summary',
+    'read the implementation surface for usability completeness',
+    '--inspection-input',
+    'src/content-binding-target.js',
+    '--judgment-delta',
+    'unknown -> content-scoped review of the implementation surface is sufficient',
+    '--agent-system',
+    'codex',
+    '--execution-mode',
+    'parallel_subagent',
+    '--agent-id',
+    'codex-human-usability-review',
+    '--agent-closed'
+  ]);
+  assert.equal(recordResult.exitCode, 0);
+  assert.equal(recordResult.result.review.freshness_policy.effective_mode, 'content_surface');
+
+  await writeFile(path.join(repo, 'docs', 'notes.md'), '# Notes\n\nUnrelated advance.\n');
+  await git(repo, ['add', 'docs/notes.md']);
+  await git(repo, ['commit', '-m', 'docs: advance outside the reviewed surface']);
+  const currentStatus = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'preview', '--json']);
+  const currentRole = currentStatus.result.stages[0].roles.find((item) => item.role === 'human_usability');
+  assert.equal(currentRole.binding_status, 'current');
+
+  await writeFile(path.join(repo, 'src', 'content-binding-target.js'), 'export const value = 42;\n');
+  const staleStatus = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'preview', '--json']);
+  const staleRole = staleStatus.result.stages[0].roles.find((item) => item.role === 'human_usability');
+  assert.equal(staleRole.binding_status, 'stale');
+});
+
+test('SHBO-S-2/S-7 review strict HEAD CLI override is authorized for the frozen validation-sequence final_review target, and stales on HEAD drift', async () => {
+  const repo = await makeGitRepoWithStory();
+  const { stdout: headOut } = await git(repo, ['rev-parse', 'HEAD']);
+  const headSha = headOut.trim();
+  const plan = buildValidationSequencePlan({ storyId: 'story-content-binding', riskProfile: 'workflow_heavy', riskSurfaces: [] });
+  const binding = { head_sha: headSha, test_fingerprint: 'tests-v1', verification_command: 'node --test' };
+  const state = {
+    ...createValidationSequenceState({ plan, headSha, testFingerprint: 'tests-v1', verificationCommand: 'node --test' }),
+    frozen_binding: binding
+  };
+  await writeValidationSequence(repo, state);
+
+  await runCli(['review', 'prepare', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--role', 'runtime_contract']);
+  const recorded = await runCli([
     'review',
     'record',
     repo,
@@ -622,99 +729,118 @@ test('review strict HEAD CLI override requires and records an explicit reason', 
     '--status',
     'pass',
     '--summary',
-    'runtime contract reviewed',
+    'final frozen-HEAD runtime contract review passed',
     '--inspection-summary',
     'read the runtime implementation',
     '--inspection-input',
     'src/content-binding-target.js',
     '--judgment-delta',
-    'content-scoped default -> strict because the complete release head is the review subject',
+    'content-scoped default -> strict because this is the frozen validation-sequence final_review target',
     '--agent-system',
     'codex',
     '--execution-mode',
     'parallel_subagent',
     '--agent-id',
-    'codex-cli-strict-review',
+    'codex-frozen-final-review',
     '--agent-closed',
-    '--strict-head-binding'
-  ];
-  const missingReason = await captureRunCli(baseArgs);
-  assert.equal(missingReason.exitCode, 1);
-  assert.match(missingReason.stderr, /requires --strict-head-reason/);
-
-  const recorded = await runCli([
-    ...baseArgs,
+    '--strict-head-binding',
     '--strict-head-reason',
-    'the complete release candidate head is the inspected contract'
+    'bind final review to the frozen release candidate'
   ]);
   assert.equal(recorded.exitCode, 0);
   assert.equal(recorded.result.review.freshness_policy.effective_mode, 'strict_head');
-  assert.equal(recorded.result.review.freshness_policy.source, 'cli_override');
+  assert.equal(recorded.result.review.freshness_policy.source, 'validation_sequence');
   assert.equal(
     recorded.result.review.freshness_policy.reason,
-    'the complete release candidate head is the inspected contract'
+    'bind final review to the frozen release candidate'
   );
   assert.match(recorded.result.review.content_binding.surface_hash, /^[a-f0-9]{64}$/);
 
-  await writeFile(path.join(repo, 'docs', 'notes.md'), '# Notes\n\nAdvance the release head.\n');
+  const currentStatus = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--json']);
+  const currentRole = currentStatus.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
+  assert.equal(currentRole.binding_status, 'current');
+
+  await writeFile(path.join(repo, 'docs', 'notes.md'), '# Notes\n\nAdvance the frozen release head.\n');
   await git(repo, ['add', 'docs/notes.md']);
-  await git(repo, ['commit', '-m', 'docs: advance strict review head']);
-  const prepared = await runCli(['pr', 'prepare', repo, '--story-id', 'story-content-binding', '--base', 'main', '--json']);
-  const artifactGate = findGate(prepared, 'gate:artifact_consistency');
-  const staleReview = artifactGate.stale_artifact_details.find((item) => item.role === 'runtime_contract');
-  const recoveryCommand = staleReview.remediation_commands.find((command) => command.startsWith('vibepro review record'));
-  assert.match(recoveryCommand, /--status '<pass\|needs_changes\|block>'/);
-  assert.match(recoveryCommand, /--strict-head-binding/);
-  assert.match(recoveryCommand, /--strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"/);
-  const freshnessGate = findGate(prepared, 'gate:pr_freshness');
-  const strictReviewBinding = freshnessGate.content_binding_details.bindings.find((binding) => (
-    binding.artifact_type === 'agent_review_result'
-      && binding.stage === 'implementation'
-      && binding.role === 'runtime_contract'
-  ));
-  assert.equal(strictReviewBinding.status, 'stale');
-  assert.equal(strictReviewBinding.binding_mode, 'strict_head');
-  assert.match(strictReviewBinding.reason, /recorded for .*current head/);
-  assert.deepEqual(strictReviewBinding.surface_files, ['src/content-binding-target.js']);
-  assert.deepEqual(strictReviewBinding.changed_files, []);
-  assert.deepEqual(strictReviewBinding.missing_files, []);
-  assert.match(strictReviewBinding.recorded_surface_hash, /^[a-f0-9]{64}$/);
-  assert.equal(strictReviewBinding.current_surface_hash, null);
-  assert.notEqual(strictReviewBinding.current_head_sha, strictReviewBinding.recorded_head_sha);
+  await git(repo, ['commit', '-m', 'docs: advance past the frozen final review head']);
 
-  const executableRecovery = recoveryCommand
-    .replace(/^vibepro\b/, `${JSON.stringify(process.execPath)} ${JSON.stringify(path.resolve('bin/vibepro.js'))}`)
-    .replace('<summary>', 'strict recovery review passed')
-    .replace('<inspection-summary>', 're-inspected the complete release candidate')
-    .replace('<inspection-evidence>', 'src/content-binding-target.js')
-    .replace('<inspection-input>', 'src/content-binding-target.js')
-    .replace('<initial judgment -> final judgment because evidence>', 'stale strict review -> accepted after complete candidate re-inspection')
-    .replace('<pass|needs_changes|block>', 'pass')
-    .replace('<agent-id>', 'agent-strict-recovery')
-    .replace('<agent-thread-id>', 'thread-strict-recovery')
-    .replace('<agent-session-id>', 'session-strict-recovery')
-    .replace('<implementation-session-id>', 'session-implementation')
-    .replace('<agent-transcript>', 'src/content-binding-target.js')
-    .replace('<agent-close-evidence>', 'src/content-binding-target.js');
-  await runCli(['review', 'start', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--role', 'runtime_contract', '--agent-system', 'codex', '--agent-id', 'agent-strict-recovery', '--agent-thread-id', 'thread-strict-recovery', '--agent-session-id', 'session-strict-recovery']);
-  await runCli(['review', 'close', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--role', 'runtime_contract', '--agent-id', 'agent-strict-recovery', '--close-reason', 'completed', '--close-evidence', 'src/content-binding-target.js']);
-  await execFileAsync('/bin/sh', ['-c', executableRecovery], { cwd: repo, encoding: 'utf8' });
+  const staleStatus = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--json']);
+  const staleRole = staleStatus.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
+  assert.equal(staleRole.binding_status, 'stale');
+});
 
-  const status = await runCli(['review', 'status', repo, '--id', 'story-content-binding', '--stage', 'implementation', '--json']);
-  const recoveredRole = status.result.stages[0].roles.find((item) => item.role === 'runtime_contract');
-  assert.equal(recoveredRole.effective_status, 'pass');
-  assert.equal(recoveredRole.binding_status, 'current');
-  assert.equal(recoveredRole.content_binding.mode, 'strict_head');
-  const recoveredArtifact = JSON.parse(await readFile(path.join(
-    repo,
-    '.vibepro',
-    'reviews',
-    'story-content-binding',
-    'implementation',
-    'review-result-runtime_contract.json'
-  ), 'utf8'));
-  assert.equal(recoveredArtifact.freshness_policy.effective_mode, 'strict_head');
-  assert.equal(recoveredArtifact.freshness_policy.reason, 'preserve the recorded strict HEAD freshness policy during recovery');
+test('SHBO-S-4 isRecordedStrictHeadStillAuthorized only trusts role_policy and validation_sequence origins', () => {
+  assert.equal(isRecordedStrictHeadStillAuthorized({ effective_mode: 'strict_head', source: 'role_policy' }), true);
+  assert.equal(isRecordedStrictHeadStillAuthorized({ effective_mode: 'strict_head', source: 'validation_sequence' }), true);
+  assert.equal(isRecordedStrictHeadStillAuthorized({ effective_mode: 'strict_head', source: 'cli_override' }), false);
+  assert.equal(isRecordedStrictHeadStillAuthorized({ effective_mode: 'content_surface', source: 'role_policy' }), false);
+  assert.equal(isRecordedStrictHeadStillAuthorized(null), false);
+});
+
+test('SHBO-S-4 legacy cli_override strict artifact does not propagate --strict-head-binding into remediation commands', () => {
+  const legacyArtifact = {
+    artifact_type: 'agent_review_result',
+    stage: 'preview',
+    role: 'human_usability',
+    content_binding: { mode: 'strict_head' },
+    freshness_policy: { effective_mode: 'strict_head', source: 'cli_override' }
+  };
+  const commands = buildArtifactRemediationCommands(legacyArtifact, 'story-content-binding');
+  const recordCommand = commands.find((command) => command.startsWith('vibepro review record'));
+  assert.ok(recordCommand);
+  assert.doesNotMatch(recordCommand, /--strict-head-binding/);
+});
+
+test('SHBO-S-4 role-policy strict artifact still propagates --strict-head-binding into remediation commands', () => {
+  const strictRoleArtifact = {
+    artifact_type: 'agent_review_result',
+    stage: 'implementation',
+    role: 'runtime_contract',
+    content_binding: { mode: 'strict_head' },
+    freshness_policy: { effective_mode: 'strict_head', source: 'role_policy' }
+  };
+  const commands = buildArtifactRemediationCommands(strictRoleArtifact, 'story-content-binding');
+  const recordCommand = commands.find((command) => command.startsWith('vibepro review record'));
+  assert.match(recordCommand, /--strict-head-binding/);
+  assert.match(recordCommand, /--strict-head-reason/);
+});
+
+test('SHBO-S-5/S-6 gate:pr_freshness surfaces strict_head_origin and a migration warning for legacy cli_override bindings', () => {
+  const agentReviews = {
+    stages: [{
+      stage: 'preview',
+      roles: [{
+        role: 'human_usability',
+        binding_status: 'current',
+        content_binding: { mode: 'strict_head' },
+        freshness_policy: { effective_mode: 'strict_head', source: 'cli_override' }
+      }]
+    }]
+  };
+  const gate = buildPrFreshnessGate({ pr_freshness: { status: 'passed' } }, { agentReviews });
+  const binding = gate.content_binding_details.bindings.find((item) => item.role === 'human_usability');
+  assert.equal(binding.strict_head_origin, 'cli_override');
+  assert.ok(gate.warnings.some((warning) => (
+    warning.includes('preview:human_usability') && warning.includes('cli_override')
+  )));
+});
+
+test('SHBO-S-5 gate:pr_freshness does not warn for authorized strict_head origins', () => {
+  const agentReviews = {
+    stages: [{
+      stage: 'implementation',
+      roles: [{
+        role: 'runtime_contract',
+        binding_status: 'current',
+        content_binding: { mode: 'strict_head' },
+        freshness_policy: { effective_mode: 'strict_head', source: 'validation_sequence' }
+      }]
+    }]
+  };
+  const gate = buildPrFreshnessGate({ pr_freshness: { status: 'passed' } }, { agentReviews });
+  const binding = gate.content_binding_details.bindings.find((item) => item.role === 'runtime_contract');
+  assert.equal(binding.strict_head_origin, 'validation_sequence');
+  assert.equal(gate.warnings.length, 0);
 });
 
 test('custom strict HEAD role policy requires and persists its rationale', async () => {

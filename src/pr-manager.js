@@ -2401,7 +2401,18 @@ function buildReviewAuthorizeCommandTemplate(storyId, stage, roleArg) {
   return `vibepro review authorize . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(roleArg)} --review-kind preflight --closes-risk ${shellQuote(`complete ${stage}:${roleArg} independent review`)} --expected-judgment-delta ${shellQuote(`resolve ${stage}:${roleArg} review state from current evidence`)} --json`;
 }
 
-export function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { contentBinding = null, identity = 'agent', agentSystem = 'codex' } = {}) {
+// A recorded review's strict_head content_binding is not, by itself, proof
+// that re-recording with --strict-head-binding would still be authorized:
+// the binding may be a legacy unauthorized cli_override from before this
+// guard existed. The recorded freshness_policy.source is the durable signal
+// of *why* it was strict, so remediation commands trust that instead of the
+// content_binding mode. See story-vibepro-strict-head-binding-origin-guard.
+export function isRecordedStrictHeadStillAuthorized(freshnessPolicy) {
+  return freshnessPolicy?.effective_mode === 'strict_head'
+    && ['role_policy', 'validation_sequence'].includes(freshnessPolicy?.source);
+}
+
+export function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { strictHeadAuthorized = false, identity = 'agent', agentSystem = 'codex' } = {}) {
   const command = [
     'vibepro review record .',
     '--id',
@@ -2427,7 +2438,7 @@ export function buildReviewRecordCommandTemplate(storyId, stage, roleArg, { cont
     '--agent-closed',
     `--agent-close-evidence ${shellQuote(`<${identity}-close-evidence>`)}`
   ].join(' ');
-  if (contentBinding?.mode !== 'strict_head') return command;
+  if (!strictHeadAuthorized) return command;
   return `${command} --strict-head-binding --strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"`;
 }
 
@@ -11874,10 +11885,11 @@ function buildChangeClassificationGate(changeClassification) {
   };
 }
 
-function buildPrFreshnessGate(git, options = {}) {
+export function buildPrFreshnessGate(git, options = {}) {
   const freshness = git?.pr_freshness ?? null;
   const status = freshness?.status === 'passed' ? 'passed' : freshness?.status ?? 'needs_evidence';
   const evidenceBindings = collectPrFreshnessEvidenceBindings(options);
+  const strictHeadOriginWarnings = buildStrictHeadOriginWarnings(evidenceBindings);
   return {
     id: 'gate:pr_freshness',
     type: 'pr_freshness_gate',
@@ -11903,8 +11915,32 @@ function buildPrFreshnessGate(git, options = {}) {
       stale_evidence_count: evidenceBindings.filter((binding) => binding.status === 'stale').length,
       bindings: evidenceBindings
     },
+    warnings: strictHeadOriginWarnings,
     reason: freshness?.reason ?? 'PR freshness could not be proven'
   };
+}
+
+// Every strict_head agent_review binding this gate reports carries the
+// origin it was authorized under. A binding whose origin is 'cli_override'
+// predates story-vibepro-strict-head-binding-origin-guard (or bypassed it)
+// and is not re-authorizable by re-running the same command; surface it as
+// an explicit migration diagnostic instead of silently trusting it forever.
+const STRICT_HEAD_ORIGIN_WARNING_PREFIX = 'VibePro strict HEAD binding origin:';
+
+function resolveStrictHeadOrigin(freshnessPolicy, bindingMode) {
+  if (bindingMode !== 'strict_head') return null;
+  if (!freshnessPolicy || freshnessPolicy.effective_mode !== 'strict_head') return 'unknown';
+  return ['validation_sequence', 'role_policy'].includes(freshnessPolicy.source)
+    ? freshnessPolicy.source
+    : 'cli_override';
+}
+
+function buildStrictHeadOriginWarnings(evidenceBindings) {
+  return evidenceBindings
+    .filter((binding) => binding.artifact_type === 'agent_review_result' && binding.strict_head_origin === 'cli_override')
+    .map((binding) => (
+      `${STRICT_HEAD_ORIGIN_WARNING_PREFIX} ${binding.stage}:${binding.role} is recorded strict_head with an unauthorized cli_override origin (content_surface is configured for this role). Re-record this review so it either follows content_surface freshness or is authorized by a role policy / frozen validation-sequence final_review; the existing artifact is not rewritten automatically.`
+    ));
 }
 
 function collectPrFreshnessEvidenceBindings({ verificationEvidence = null, agentReviews = null } = {}) {
@@ -11938,6 +11974,7 @@ function collectPrFreshnessEvidenceBindings({ verificationEvidence = null, agent
         status: role.binding_status ?? null,
         reason: role.stale_reason ?? null,
         binding_mode: contentBinding.mode ?? null,
+        strict_head_origin: resolveStrictHeadOrigin(role.freshness_policy, contentBinding.mode ?? null),
         surface_files: contentBinding.surface_files ?? [],
         changed_files: contentBinding.changed_files ?? [],
         missing_files: contentBinding.missing_files ?? [],
@@ -12102,7 +12139,7 @@ export function buildArtifactRemediationCommands(artifact, storyId = null) {
       artifact.stage ?? '<stage>',
       artifact.role ?? '<role>'
     );
-    const strictFreshnessArgs = artifact.content_binding?.mode === 'strict_head'
+    const strictFreshnessArgs = isRecordedStrictHeadStillAuthorized(artifact.freshness_policy)
       ? ' --strict-head-binding --strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"'
       : '';
     return [
@@ -12266,6 +12303,7 @@ function collectReviewArtifactBindings(agentReviews = null, changeClassification
         status,
         required_current: !historicalNonblocking,
         content_binding: role.content_binding ?? null,
+        freshness_policy: role.freshness_policy ?? null,
         reuse_policy: mergeDeltaReused ? role.merge_delta_reuse ?? { mode: 'merge_delta_reuse' } : reusableLowRisk ? changeClassification?.evidence_reuse_policy ?? null : null,
         reason: historicalNonblocking
           ? 'review result is retained as audit history but is not part of the current PR-final or checkpoint-required review set'
@@ -13661,7 +13699,7 @@ function buildAgentReviewRecoveryItem(item, role, storyId) {
       role: item.role,
       recoveryKind,
       lifecycleRecovery,
-      contentBinding: role?.content_binding ?? null
+      freshnessPolicy: role?.freshness_policy ?? null
     })
   };
 }
@@ -13723,7 +13761,7 @@ function buildAgentReviewLifecycleRecovery({ storyId, stage, role, lifecycle, re
   };
 }
 
-export function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery, contentBinding = null }) {
+export function buildAgentReviewRecoveryCommands({ storyId, stage, role, recoveryKind, lifecycleRecovery, freshnessPolicy = null }) {
   const prepareCommand = `vibepro review prepare . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)}`;
   const authorizeCommand = buildReviewAuthorizeCommandTemplate(storyId, stage, role);
   const rawStartCommand = lifecycleRecovery?.replacement_command
@@ -13733,7 +13771,7 @@ export function buildAgentReviewRecoveryCommands({ storyId, stage, role, recover
     : `${rawStartCommand} --dispatch-authorization ${shellQuote('<dispatch-authorization-id>')}`;
   const closeNewCommand = `vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role)} --agent-id ${shellQuote('<replacement-agent-id>')} --close-reason completed --close-evidence ${shellQuote('<replacement-agent-close-evidence>')}`;
   const recordCommand = buildReviewRecordCommandTemplate(storyId, stage, role, {
-    contentBinding,
+    strictHeadAuthorized: isRecordedStrictHeadStillAuthorized(freshnessPolicy),
     identity: 'replacement-agent',
     agentSystem: lifecycleRecovery?.agent_system ?? '<codex|claude_code>'
   });

@@ -1329,8 +1329,20 @@
         "started_at": "2026-08-03",
         "due_at": null,
         "category": "refactor"
+      },
+      {
+        "story_id": "story-vibepro-strict-head-binding-origin-guard",
+        "title": "strict HEAD bindingをfrozen final_reviewとrole policy例外に限定する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-03",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-pr-human-summary-dead-chain-removal"
+    "current_story_id": "story-vibepro-strict-head-binding-origin-guard"
   }
 }
