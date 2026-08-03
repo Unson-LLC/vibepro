@@ -3,7 +3,7 @@ story_id: story-vibepro-test-tmpdir-fixture-cleanup
 title: Test-suite scratch TMPDIR isolation Spec
 status: active
 parent_design: vibepro-test-tmpdir-fixture-cleanup
-last_reviewed_root_hash: fdc3ab1c3fda8fe91c4776c7bc66b841ad8a16a6f4355b828187be80f96723b3
+last_reviewed_root_hash: 49130dd91a8a5c2639222c57d5ac8e2eb055c052842d4cf8bd8b3b0056313256
 ---
 
 # Test-suite scratch TMPDIR isolation Spec
