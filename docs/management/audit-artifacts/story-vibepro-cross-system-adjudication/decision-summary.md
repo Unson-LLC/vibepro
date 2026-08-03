@@ -3,9 +3,9 @@
 - story: story-vibepro-cross-system-adjudication
 - evidence_depth: standard
 - budget_status: within_budget
-- artifact_lines: 1457
+- artifact_lines: 1482
 - product_changed_lines: 1363
-- artifact_code_ratio: 1.069
+- artifact_code_ratio: 1.087
 - diff_stats: available
 - token_accounting: unavailable total=unknown source=unknown
 - elapsed_time_accounting: unavailable elapsed_ms=unknown source=unknown
@@ -15,7 +15,7 @@
 - evidence_reuse: stale key=evk_f28a43737b7480fb7dff270b2576dc06 verification_updated_at=2026-08-03T02:20:08.482Z verification_fingerprint=sha256:5e00fd251eb1b5aa2ffaba0f6f5e7dfde194a0e59a7717f5ca5419a038c57da7
 - senior_gap_judgment: present gaps=20 blocking=0 residual=0
 - pr_create: updated_existing_pr
-- pr_merge: merged_externally delivery=merged_externally reconciliation=reconciliation_required reasons=gate_not_ready|decision_outcome_binding_failed action=vibepro pr prepare . --story-id story-vibepro-cross-system-adjudication --base main -> vibepro execute merge . --story-id story-vibepro-cross-system-adjudication --base main --pr https://github.com/Unson-LLC/vibepro/pull/413
+- pr_merge: merged_externally delivery=merged_externally reconciliation=reconciliation_required reasons=gate_not_ready action=vibepro pr prepare . --story-id story-vibepro-cross-system-adjudication --base main -> vibepro execute merge . --story-id story-vibepro-cross-system-adjudication --base main --pr https://github.com/Unson-LLC/vibepro/pull/413
 - verification: commands=3 pass=3 fail=0
 - review: summaries=1 results=1 pass=1 block=0
 - missing_artifacts: 0
