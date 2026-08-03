@@ -274,3 +274,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:413:start -->
 - [PR #413](https://github.com/Unson-LLC/vibepro/pull/413) — [2026-08](/ja/releases/2026-08): story-vibepro-cross-system-adjudication - Cross-system adjudication requires a different model family than the implementer
 <!-- vibepro-release-index-pr:413:end -->
+
+<!-- vibepro-release-index-pr:417:start -->
+- [PR #417](https://github.com/Unson-LLC/vibepro/pull/417) — [2026-08](/ja/releases/2026-08): story-vibepro-test-tmpdir-fixture-cleanup - テストスイートが$TMPDIRに残すmkdtemp fixtureのクリーンアップ機構
+<!-- vibepro-release-index-pr:417:end -->
