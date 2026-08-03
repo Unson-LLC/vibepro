@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
   "source": "execute_merge",
-  "promoted_at": "2026-08-03T08:26:32.866Z",
+  "promoted_at": "2026-08-03T08:26:56.150Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-pr-human-summary-dead-chain-removal",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-pr-human-summary-dead-chain-removal/audit-index.json",
@@ -38,11 +38,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-pr-human-summary-dead-chain-removal/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:fe3644a2690e34dca77f29724d62e7949d213eb18fb0ba3c82114e9d9c0f9cc9",
-    "compressed_hash": "sha256:20576222e4bf6d18e81676b13ab82c0e26452b4086343b0361d7a70dcb27cac6",
-    "expanded_bytes": 27470,
-    "compressed_bytes": 5420,
-    "expanded_line_count": 663,
+    "content_hash": "sha256:c867a450dfd12fed05afa00754e0de75554ece1f8abf0b7730770a8163da31b2",
+    "compressed_hash": "sha256:539a6064061d0263abb9a1ff2877dbbdc102d75a9d95d44685a06ed29d4d9641",
+    "expanded_bytes": 26542,
+    "compressed_bytes": 5313,
+    "expanded_line_count": 643,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "decision_index",
@@ -62,9 +62,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-pr-human-summary-dead-chain-removal",
     "cost": {
-      "compressed_bytes": 5420,
-      "expanded_bytes": 27470,
-      "expanded_line_count": 663,
+      "compressed_bytes": 5313,
+      "expanded_bytes": 26542,
+      "expanded_line_count": 643,
       "persisted_line_count": 1
     }
   },
@@ -79,26 +79,16 @@
       "merged_at": "2026-08-03T08:25:33Z"
     },
     "reconciliation": {
-      "status": "reconciliation_required",
-      "reasons": [
-        "decision_outcome_binding_failed"
-      ],
-      "evaluated_at": "2026-08-03T08:26:32.849Z",
+      "status": "reconciled",
+      "reasons": [],
+      "evaluated_at": "2026-08-03T08:26:55.943Z",
       "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43"
     },
-    "reconciliation_action": {
-      "status": "required",
-      "reason": "decision_outcome_binding_failed",
-      "commands": [
-        "vibepro pr prepare . --story-id story-vibepro-pr-human-summary-dead-chain-removal --base main",
-        "vibepro execute merge . --story-id story-vibepro-pr-human-summary-dead-chain-removal --base main --pr https://github.com/Unson-LLC/vibepro/pull/419"
-      ]
-    },
     "decision_outcome_binding": {
-      "status": "failed",
-      "reason": "central_ledger_parse_failed",
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
       "expected_entry_count": 25,
-      "promoted_count": 0,
+      "promoted_count": 25,
       "duplicate_count": 0,
       "persistence_status": null
     },
@@ -114,7 +104,7 @@
     "status": "blocked",
     "resolved_reference_count": 67,
     "copied_reference_count": 47,
-    "unresolved_reference_count": 7,
+    "unresolved_reference_count": 14,
     "replay_bundle": "docs/management/audit-artifacts/story-vibepro-pr-human-summary-dead-chain-removal/audit-replay-bundle.json.gz",
     "replay_command": "vibepro audit replay . --story-id story-vibepro-pr-human-summary-dead-chain-removal"
   },
@@ -131,7 +121,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-pr-human-summary-dead-chain-removal/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:fe3644a2690e34dca77f29724d62e7949d213eb18fb0ba3c82114e9d9c0f9cc9"
+      "content_hash": "sha256:c867a450dfd12fed05afa00754e0de75554ece1f8abf0b7730770a8163da31b2"
     }
   ],
   "raw_artifact_manifest": [
@@ -221,10 +211,10 @@
       "source": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-pr-human-summary-dead-chain-removal/audit-replay-bundle.json.gz",
-      "digest": "sha256:6758a7d73e759e17945f23e51b2d4c3179ff8c6964df42e47400065072e1b55c",
-      "audit_digest": "sha256:d22ae79bce9238106ae8d888564803bca41621e94cce74689ce672fe06fa4c34",
-      "line_count": 1840,
-      "raw_line_count": 4324,
+      "digest": "sha256:8bc80bab36022accba3be8950bf943fedf979dc2e54824ff287fc02fea7ddebb",
+      "audit_digest": "sha256:72e9cf43be5d37a1db9df6cb591ad7f1d42ac6738dff24f2c86a4428c14e55b7",
+      "line_count": 1829,
+      "raw_line_count": 4322,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -1064,14 +1054,42 @@
       "size_bytes": 995160
     },
     {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/graphify/graph.json",
       "reason": "source_too_large",
       "size_bytes": 7465558
     },
     {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/design-ssot-reconciliation.json",
       "reason": "source_too_large",
       "size_bytes": 625830
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
     },
     {
       "source": ".vibepro/reviews/story-vibepro-pr-human-summary-dead-chain-removal/surface-violations.json",

@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
   "source": "execute_merge",
-  "generated_at": "2026-08-03T08:26:32.866Z",
+  "generated_at": "2026-08-03T08:26:56.150Z",
   "evidence_depth": "standard",
   "budget_status": "within_budget",
   "cost_summary": {
@@ -26,7 +26,7 @@
     },
     "diff_stats_collected_at": "2026-08-03T08:26:32.499Z",
     "diff_stats_reason": null,
-    "artifact_lines": 1590,
+    "artifact_lines": 1596,
     "changed_lines": {
       "status": "available",
       "total_changed_lines": 881,
@@ -117,7 +117,7 @@
     "product_code_changed_lines": 738,
     "product_code_changed_lines_status": "available",
     "product_code_changed_lines_reason": null,
-    "artifact_code_ratio": 1.805,
+    "artifact_code_ratio": 1.812,
     "artifact_code_ratio_reason": null,
     "budget": {
       "profile": "high",
@@ -152,13 +152,13 @@
     "implementation_budget_status": "within_budget",
     "docs_only_budget_status": "not_applicable",
     "replay_bundle": {
-      "compressed_bytes": 5420,
-      "expanded_bytes": 27470,
-      "expanded_line_count": 663,
+      "compressed_bytes": 5313,
+      "expanded_bytes": 26542,
+      "expanded_line_count": 643,
       "persisted_line_count": 1
     },
-    "raw_source_artifact_lines": 16949,
-    "raw_source_artifact_code_ratio": 19.238,
+    "raw_source_artifact_lines": 16938,
+    "raw_source_artifact_code_ratio": 19.226,
     "artifact_lines_source": "persisted_canonical_compact"
   },
   "pr_prepare": {
@@ -227,26 +227,16 @@
         "merged_at": "2026-08-03T08:25:33Z"
       },
       "reconciliation": {
-        "status": "reconciliation_required",
-        "reasons": [
-          "decision_outcome_binding_failed"
-        ],
-        "evaluated_at": "2026-08-03T08:26:32.849Z",
+        "status": "reconciled",
+        "reasons": [],
+        "evaluated_at": "2026-08-03T08:26:55.943Z",
         "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43"
       },
-      "reconciliation_action": {
-        "status": "required",
-        "reason": "decision_outcome_binding_failed",
-        "commands": [
-          "vibepro pr prepare . --story-id story-vibepro-pr-human-summary-dead-chain-removal --base main",
-          "vibepro execute merge . --story-id story-vibepro-pr-human-summary-dead-chain-removal --base main --pr https://github.com/Unson-LLC/vibepro/pull/419"
-        ]
-      },
       "decision_outcome_binding": {
-        "status": "failed",
-        "reason": "central_ledger_parse_failed",
+        "status": "bound",
+        "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
         "expected_entry_count": 25,
-        "promoted_count": 0,
+        "promoted_count": 25,
         "duplicate_count": 0,
         "persistence_status": null
       },
@@ -306,15 +296,15 @@
     "stale_count": 0
   },
   "handoff_replay_status": "blocked",
-  "handoff_replay_unresolved_reference_count": 7,
+  "handoff_replay_unresolved_reference_count": 14,
   "missing_artifacts": [],
   "raw_artifact_count": 26,
   "automation_value_audit": {
     "schema_version": "0.1.0",
     "artifact_kind": "vibepro_automation_value_audit",
     "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
-    "generated_at": "2026-08-03T08:26:32.866Z",
-    "status": "needs_evidence",
+    "generated_at": "2026-08-03T08:26:56.150Z",
+    "status": "partial",
     "purpose": "daily_automation_input",
     "sources": {
       "canonical_audit": true,
@@ -335,18 +325,16 @@
         "merged_at": "2026-08-03T08:25:33Z"
       },
       "reconciliation": {
-        "status": "reconciliation_required",
-        "reasons": [
-          "decision_outcome_binding_failed"
-        ],
-        "evaluated_at": "2026-08-03T08:26:32.849Z",
+        "status": "reconciled",
+        "reasons": [],
+        "evaluated_at": "2026-08-03T08:26:55.943Z",
         "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43"
       },
       "decision_outcome_binding": {
-        "status": "failed",
-        "reason": "central_ledger_parse_failed",
+        "status": "bound",
+        "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
         "expected_entry_count": 25,
-        "promoted_count": 0,
+        "promoted_count": 25,
         "duplicate_count": 0,
         "persistence_status": null
       },
@@ -372,7 +360,7 @@
       "story_spec_architecture_to_src": 0.161,
       "audit_artifacts_to_src": 0,
       "automation_evidence_to_src": 0.728,
-      "artifact_lines_to_product_changed_lines": 1.805
+      "artifact_lines_to_product_changed_lines": 1.812
     },
     "session_cost": {
       "token_status": "unavailable",
@@ -399,16 +387,16 @@
       "evidence_reuse_stale_reason_count": 1,
       "traceability_lifecycle": "merged",
       "handoff_replay_status": "blocked",
-      "handoff_replay_unresolved_reference_count": 7,
+      "handoff_replay_unresolved_reference_count": 14,
       "missing_artifact_count": 0
     },
     "cost_controls": {
       "status": "action_required",
       "budget_status": "within_budget",
-      "artifact_code_ratio": 1.805,
+      "artifact_code_ratio": 1.812,
       "automation_evidence_to_src": 0.728,
       "budget_exceeded_reasons": [],
-      "canonical_artifact_lines": 1590,
+      "canonical_artifact_lines": 1596,
       "product_changed_lines": 881,
       "evidence_depth": "standard",
       "recommended_evidence_depth": "standard",
@@ -432,7 +420,7 @@
         "id": "canonical_handoff_replay_blocked",
         "severity": "review_needed",
         "reason": "canonical audit references cannot be fully replayed by another engineer or agent",
-        "unresolved_reference_count": 7
+        "unresolved_reference_count": 14
       }
     ]
   },
@@ -441,11 +429,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-pr-human-summary-dead-chain-removal/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:fe3644a2690e34dca77f29724d62e7949d213eb18fb0ba3c82114e9d9c0f9cc9",
-    "compressed_hash": "sha256:20576222e4bf6d18e81676b13ab82c0e26452b4086343b0361d7a70dcb27cac6",
-    "expanded_bytes": 27470,
-    "compressed_bytes": 5420,
-    "expanded_line_count": 663,
+    "content_hash": "sha256:c867a450dfd12fed05afa00754e0de75554ece1f8abf0b7730770a8163da31b2",
+    "compressed_hash": "sha256:539a6064061d0263abb9a1ff2877dbbdc102d75a9d95d44685a06ed29d4d9641",
+    "expanded_bytes": 26542,
+    "compressed_bytes": 5313,
+    "expanded_line_count": 643,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "decision_index",
@@ -465,9 +453,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-pr-human-summary-dead-chain-removal",
     "cost": {
-      "compressed_bytes": 5420,
-      "expanded_bytes": 27470,
-      "expanded_line_count": 663,
+      "compressed_bytes": 5313,
+      "expanded_bytes": 26542,
+      "expanded_line_count": 643,
       "persisted_line_count": 1
     }
   }
