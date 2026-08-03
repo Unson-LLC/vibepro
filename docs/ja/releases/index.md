@@ -278,3 +278,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:417:start -->
 - [PR #417](https://github.com/Unson-LLC/vibepro/pull/417) — [2026-08](/ja/releases/2026-08): story-vibepro-test-tmpdir-fixture-cleanup - テストスイートが$TMPDIRに残すmkdtemp fixtureのクリーンアップ機構
 <!-- vibepro-release-index-pr:417:end -->
+
+<!-- vibepro-release-index-pr:418:start -->
+- [PR #418](https://github.com/Unson-LLC/vibepro/pull/418) — [2026-08](/ja/releases/2026-08): story-vibepro-verification-checkpoint-uiux-intake-gate - verification checkpoint の curated gate list に gate:uiux_intake_judgment を追加する
+<!-- vibepro-release-index-pr:418:end -->

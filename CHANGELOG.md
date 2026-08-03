@@ -1517,3 +1517,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-test-tmpdir-
 なし
 
 <!-- vibepro-release-pr:417:end -->
+
+<!-- vibepro-release-pr:418:start -->
+## [#418](https://github.com/Unson-LLC/vibepro/pull/418) story-vibepro-verification-checkpoint-uiux-intake-gate - verification checkpoint の curated gate list に gate:uiux_intake_judgment を追加する
+
+- Author: @sintariran
+- Merged: 2026-08-03T06:55:00Z
+- Commit: `2326a3c533d1e493f888f64e7eb49a4dd16abefc`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:418:end -->
