@@ -282,3 +282,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:418:start -->
 - [PR #418](https://github.com/Unson-LLC/vibepro/pull/418) — [2026-08](/releases/2026-08): story-vibepro-verification-checkpoint-uiux-intake-gate - verification checkpoint の curated gate list に gate:uiux_intake_judgment を追加する
 <!-- vibepro-release-index-pr:418:end -->
+
+<!-- vibepro-release-index-pr:419:start -->
+- [PR #419](https://github.com/Unson-LLC/vibepro/pull/419) — [2026-08](/releases/2026-08): story-vibepro-pr-human-summary-dead-chain-removal - 死んだ人間向けPRサマリーレンダラーチェーンを削除する
+<!-- vibepro-release-index-pr:419:end -->
