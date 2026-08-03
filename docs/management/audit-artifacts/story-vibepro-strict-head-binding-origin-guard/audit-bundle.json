@@ -1,0 +1,1149 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-strict-head-binding-origin-guard",
+  "source": "execute_merge",
+  "promoted_at": "2026-08-03T14:46:29.284Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:d2ccb57555d64a0df4a8ea98e8c2ca521e96a96d8b2e766f7d73de0d2e21894f",
+    "compressed_hash": "sha256:5ee6eb3545c248bf5e7bfcd6569cd24da3973f8666cea9d1ce83a14d9766e6a6",
+    "expanded_bytes": 25373,
+    "compressed_bytes": 5007,
+    "expanded_line_count": 627,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "decision_outcome_ledger",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-strict-head-binding-origin-guard",
+    "cost": {
+      "compressed_bytes": 5007,
+      "expanded_bytes": 25373,
+      "expanded_line_count": 627,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "base": "main",
+    "delivery": {
+      "status": "merged",
+      "source": "github_pr",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/420",
+      "merge_commit_sha": "c0be2d11de8704f070b0af6e872f2ab5cbbb1518",
+      "merged_at": "2026-08-03T14:46:26Z"
+    },
+    "reconciliation": {
+      "status": "reconciliation_required",
+      "reasons": [
+        "decision_outcome_binding_failed"
+      ],
+      "evaluated_at": "2026-08-03T14:46:29.263Z",
+      "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f"
+    },
+    "reconciliation_action": {
+      "status": "required",
+      "reason": "decision_outcome_binding_failed",
+      "commands": [
+        "vibepro pr prepare . --story-id story-vibepro-strict-head-binding-origin-guard --base main",
+        "vibepro execute merge . --story-id story-vibepro-strict-head-binding-origin-guard --base main --pr https://github.com/Unson-LLC/vibepro/pull/420"
+      ]
+    },
+    "decision_outcome_binding": {
+      "status": "failed",
+      "reason": "central_ledger_parse_failed",
+      "expected_entry_count": 31,
+      "promoted_count": 0,
+      "duplicate_count": 0,
+      "persistence_status": null
+    },
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/420",
+    "merge_commit_sha": "c0be2d11de8704f070b0af6e872f2ab5cbbb1518",
+    "merged_at": "2026-08-03T14:46:26Z",
+    "current_head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...e44e249d7a191df3649c8c62c2a21afff3e3a12f"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 74,
+    "copied_reference_count": 56,
+    "unresolved_reference_count": 8,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-strict-head-binding-origin-guard"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:d2ccb57555d64a0df4a8ea98e8c2ca521e96a96d8b2e766f7d73de0d2e21894f"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:8555f7486b08e55cb915b3987732904683bf769101f65c287b0124182efc9ad2",
+      "audit_digest": "sha256:8555f7486b08e55cb915b3987732904683bf769101f65c287b0124182efc9ad2",
+      "line_count": 475,
+      "raw_line_count": 475,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_outcome_ledger",
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-outcome-ledger.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:c6de5af6a46cfb65926d9594ddab3b552a82f02403cd5cc779b44aa4f9b66592",
+      "audit_digest": "sha256:c6de5af6a46cfb65926d9594ddab3b552a82f02403cd5cc779b44aa4f9b66592",
+      "line_count": 376,
+      "raw_line_count": 376,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:de5b788907bf99c74abfc82a82d3c77918a3e9102dcd3ee4d138f3fcd9e1c9c8",
+      "audit_digest": "sha256:432adbac68da4851722997ac22432ffc6f2aac4c71228da1ade15166981f3674",
+      "line_count": 6855,
+      "raw_line_count": 43217,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:8dcb58eb54b8e67389f00de4ed6b70da3d1c2d18294d2c4b122e59362b2cd2bb",
+      "audit_digest": "sha256:d0258d48a6a1117226f80bb0100d112c7531e4973c2fc28c4a88721167388f11",
+      "line_count": 2349,
+      "raw_line_count": 5362,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:57d71005e93cece409b3fdf8929a11530d1b4b8c92bb5eb20736c6b5b04ed148",
+      "audit_digest": "sha256:1d9bd1b8da1aa433335e2cb5ba5c492d6aeded72f048eed6562dee5bbe625621",
+      "line_count": 47,
+      "raw_line_count": 742,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:fd391d442f635243983cd61e9fb64eed9956ebc217efd63d8fe58be7a2105b2b",
+      "audit_digest": "sha256:4577e75a220414aa125af6262b97dcdaecbb37833820f6450bc4d7b5406db407",
+      "line_count": 2403,
+      "raw_line_count": 5602,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:b04e82b8287c435ba401c4b73be1c562acc2f04db08bc219e8fdb97ffa394861",
+      "audit_digest": "sha256:b04e82b8287c435ba401c4b73be1c562acc2f04db08bc219e8fdb97ffa394861",
+      "line_count": 627,
+      "raw_line_count": 627,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:f254ae87941a68e8dd41886ee4508735bb26cc1fd96af3421929e3ec528e7fd1",
+      "audit_digest": "sha256:e39ac02f12ba93438998b46d9226c18052b7ac5bef154c96d8562b684487a7ae",
+      "line_count": 66,
+      "raw_line_count": 1303,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:b022fa224a9201909bb59f9b7e27b0969061882f69d346850f7d45d2e28cd118",
+      "audit_digest": "sha256:b022fa224a9201909bb59f9b7e27b0969061882f69d346850f7d45d2e28cd118",
+      "line_count": 585,
+      "raw_line_count": 585,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:d0a65f9847cc319e21e4400791b00f2067ea1a0d57f7a155a90193bfe218b9e4",
+      "audit_digest": "sha256:d0a65f9847cc319e21e4400791b00f2067ea1a0d57f7a155a90193bfe218b9e4",
+      "line_count": 595,
+      "raw_line_count": 595,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:1997ee9a54e8666863b6390d15d6e445bc550b5d008c35a1e7fb3c8d69a769ac",
+      "audit_digest": "sha256:1997ee9a54e8666863b6390d15d6e445bc550b5d008c35a1e7fb3c8d69a769ac",
+      "line_count": 205,
+      "raw_line_count": 205,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/review-request-architecture_boundary.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:be1cc3272ea53e81d5e2e44d0885bf030b8e9ef7aff58a843777a14fbdca5d23",
+      "audit_digest": "sha256:be1cc3272ea53e81d5e2e44d0885bf030b8e9ef7aff58a843777a14fbdca5d23",
+      "line_count": 159,
+      "raw_line_count": 159,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/review-result-architecture_boundary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:b790291e63dc248fecfcfe5e65b44d2d368a4033ac038947c58dab44dfeccb43",
+      "audit_digest": "sha256:b790291e63dc248fecfcfe5e65b44d2d368a4033ac038947c58dab44dfeccb43",
+      "line_count": 251,
+      "raw_line_count": 251,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:7c31fca3ebc7b868ccadf18a46c1505b9e264c1532a0e37c0e1835249f55e080",
+      "audit_digest": "sha256:7c31fca3ebc7b868ccadf18a46c1505b9e264c1532a0e37c0e1835249f55e080",
+      "line_count": 603,
+      "raw_line_count": 603,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:737237130dde21c723d793aa7b40b3aa4af64c41d93b007fe396f81e308e0510",
+      "audit_digest": "sha256:737237130dde21c723d793aa7b40b3aa4af64c41d93b007fe396f81e308e0510",
+      "line_count": 401,
+      "raw_line_count": 401,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:1ac1918e0f9575d94ce91fdf790855a1c81c5ea7ad9469c2539f17b85178b9cb",
+      "audit_digest": "sha256:1ac1918e0f9575d94ce91fdf790855a1c81c5ea7ad9469c2539f17b85178b9cb",
+      "line_count": 146,
+      "raw_line_count": 146,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:34fd79c63d79acd1241881be4c438907f2e216d2d9cf7b25d712e682e5aaa678",
+      "audit_digest": "sha256:34fd79c63d79acd1241881be4c438907f2e216d2d9cf7b25d712e682e5aaa678",
+      "line_count": 146,
+      "raw_line_count": 146,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:82f9c16e997eeed2534508e0709717f320ece2cb6214e46e2b772ec4ab634836",
+      "audit_digest": "sha256:82f9c16e997eeed2534508e0709717f320ece2cb6214e46e2b772ec4ab634836",
+      "line_count": 185,
+      "raw_line_count": 185,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/review-result-release_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:51609eadae3c10b56d1ffef14418247bd477c342428380322ab81e2435f2900a",
+      "audit_digest": "sha256:51609eadae3c10b56d1ffef14418247bd477c342428380322ab81e2435f2900a",
+      "line_count": 203,
+      "raw_line_count": 203,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:5328577bee2848584e0960208eb2ba8516e9ba85fd2a6c90cbb329da055072fb",
+      "audit_digest": "sha256:5328577bee2848584e0960208eb2ba8516e9ba85fd2a6c90cbb329da055072fb",
+      "line_count": 1111,
+      "raw_line_count": 1111,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:ba9e02ab41af4cc463685562bd3134ad1033c32ce09b6dc7142290b2e29981a4",
+      "audit_digest": "sha256:ba9e02ab41af4cc463685562bd3134ad1033c32ce09b6dc7142290b2e29981a4",
+      "line_count": 205,
+      "raw_line_count": 205,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/review-request-runtime_contract.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:0af9223eee440b826ebefbdccbbf64dc8421a8a68e531c65decd2530a07ccccb",
+      "audit_digest": "sha256:0af9223eee440b826ebefbdccbbf64dc8421a8a68e531c65decd2530a07ccccb",
+      "line_count": 162,
+      "raw_line_count": 162,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/review-result-runtime_contract.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:63ff3f75b12326a135820a1b8feefd774a56e0a3fb2031d99289fad17107ab8d",
+      "audit_digest": "sha256:63ff3f75b12326a135820a1b8feefd774a56e0a3fb2031d99289fad17107ab8d",
+      "line_count": 155,
+      "raw_line_count": 155,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/audit-replay-bundle.json.gz",
+      "digest": "sha256:af333ccfbb9d211559d724cf341d25dda0589bbed131c6296a6f57dd6dd9633e",
+      "audit_digest": "sha256:af333ccfbb9d211559d724cf341d25dda0589bbed131c6296a6f57dd6dd9633e",
+      "line_count": 570,
+      "raw_line_count": 570,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-strict-head-binding-origin-guard/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/adjudication/story-vibepro-strict-head-binding-origin-guard/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-strict-head-binding-origin-guard/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/adjudication/story-vibepro-strict-head-binding-origin-guard/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-outcome-ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/pr/decision-outcome-ledger.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/pr/traceability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/history/review-result-architecture_boundary-2026-08-03T13-07-08.563Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/history/review-result-architecture_boundary-2026-08-03T13-07-08.563Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/history/review-result-architecture_boundary-2026-08-03T13-35-34.072Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/history/review-result-architecture_boundary-2026-08-03T13-35-34.072Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/history/review-result-architecture_boundary-2026-08-03T14-12-34.340Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/history/review-result-architecture_boundary-2026-08-03T14-12-34.340Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/review-request-architecture_boundary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/reviews/architecture_spec/review-request-architecture_boundary.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/review-result-architecture_boundary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/reviews/architecture_spec/review-result-architecture_boundary.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/subagent-results/architecture_boundary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/subagent-results/architecture_boundary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/history/review-result-gate_evidence-2026-08-03T12-48-28.766Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/history/review-result-gate_evidence-2026-08-03T12-48-28.766Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/history/review-result-release_risk-2026-08-03T12-52-56.780Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/history/review-result-release_risk-2026-08-03T12-52-56.780Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/review-request-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/reviews/gate/review-request-release_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/review-result-release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/reviews/gate/review-result-release_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/subagent-results/gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/subagent-results/gate_evidence.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/subagent-results/release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/subagent-results/release_risk.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/history/review-result-runtime_contract-2026-08-03T13-41-00.579Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/history/review-result-runtime_contract-2026-08-03T13-41-00.579Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/history/review-result-runtime_contract-2026-08-03T14-45-14.544Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/history/review-result-runtime_contract-2026-08-03T14-45-14.544Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/review-request-runtime_contract.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/reviews/implementation/review-request-runtime_contract.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/review-result-runtime_contract.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/reviews/implementation/review-result-runtime_contract.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-strict-head-binding-origin-guard/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/stories/story-vibepro-strict-head-binding-origin-guard/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-strict-head-binding-origin-guard/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/stories/story-vibepro-strict-head-binding-origin-guard/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-strict-head-binding-origin-guard/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/validation-sequencing/story-vibepro-strict-head-binding-origin-guard/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-strict-head-binding-origin-guard/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/adjudication/story-vibepro-strict-head-binding-origin-guard/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-strict-head-binding-origin-guard/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/adjudication/story-vibepro-strict-head-binding-origin-guard/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/diagnostics/2026-08-02T173347Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/history/review-result-architecture_boundary-2026-08-03T13-07-08.563Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/history/review-result-architecture_boundary-2026-08-03T13-07-08.563Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/history/review-result-architecture_boundary-2026-08-03T13-35-34.072Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/history/review-result-architecture_boundary-2026-08-03T13-35-34.072Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/history/review-result-architecture_boundary-2026-08-03T14-12-34.340Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/history/review-result-architecture_boundary-2026-08-03T14-12-34.340Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/subagent-results/architecture_boundary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/subagent-results/architecture_boundary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/history/review-result-gate_evidence-2026-08-03T12-48-28.766Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/history/review-result-gate_evidence-2026-08-03T12-48-28.766Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/history/review-result-release_risk-2026-08-03T12-52-56.780Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/history/review-result-release_risk-2026-08-03T12-52-56.780Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/subagent-results/gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/subagent-results/gate_evidence.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/subagent-results/release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/gate/subagent-results/release_risk.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/history/review-result-runtime_contract-2026-08-03T13-41-00.579Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/history/review-result-runtime_contract-2026-08-03T13-41-00.579Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/history/review-result-runtime_contract-2026-08-03T14-45-14.544Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/history/review-result-runtime_contract-2026-08-03T14-45-14.544Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-strict-head-binding-origin-guard/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/stories/story-vibepro-strict-head-binding-origin-guard/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-strict-head-binding-origin-guard/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/stories/story-vibepro-strict-head-binding-origin-guard/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-strict-head-binding-origin-guard/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-strict-head-binding-origin-guard/references/vibepro/validation-sequencing/story-vibepro-strict-head-binding-origin-guard/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 7369199
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T173347Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 991600
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 7431484
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 631394
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/subagent-results/runtime_contract.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/surface-violations.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-strict-head-binding-origin-guard/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-strict-head-binding-origin-guard/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    }
+  ]
+}

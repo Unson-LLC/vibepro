@@ -1,0 +1,528 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-strict-head-binding-origin-guard",
+  "updated_at": "2026-08-03T14:12:54.353Z",
+  "events": [
+    {
+      "event_id": "e10fc40b-d921-4198-9d3f-a422f997e7eb",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The 7 AC clauses map one-to-one onto the diff (authorization guard, shared target predicate, origin reporting) and onto e2e test markers; intent was carried through, not just documented.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "recorded_at": "2026-08-03T12:58:05.483Z"
+    },
+    {
+      "event_id": "715c81ea-0f58-456d-8259-d27399ee0851",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e file builds a real git fixture and drives the CLI in-process, replaying current behavior (rerun verified 7/7 pass); a substantive current-reality check.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "recorded_at": "2026-08-03T12:58:05.892Z"
+    },
+    {
+      "event_id": "ea933f79-44f2-4850-b46a-8248b64934ff",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "docs/specs states INV-001 and traces it to resolveReviewFreshnessPolicy, isFrozenFinalReviewTarget, resolveStrictHeadOrigin, all present in the diff and covered by e2e/unit tests.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "recorded_at": "2026-08-03T12:58:06.308Z"
+    },
+    {
+      "event_id": "d7cc0c70-d184-45ca-b003-22875583ab6a",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "docs/architecture Boundaries section names the shared predicate location, authorization preconditions, and dispatch non-propagation rule, substantively answering the boundaries question.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "recorded_at": "2026-08-03T12:58:06.737Z"
+    },
+    {
+      "event_id": "43b6d8d3-1def-42a1-9490-eff6b21d39ff",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e suite exercises rejection paths (missing reason, unauthorized role, missing freshness_reason) with asserted stderr and exit codes; genuine failure-mode coverage.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "recorded_at": "2026-08-03T12:58:07.155Z"
+    },
+    {
+      "event_id": "d0848703-0a2e-4e43-a5b5-96d645a77e49",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e and flow_replay evidence asserts the done-state outputs (freshness_policy fields, gate warnings, binding_status transitions) described by the story.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "recorded_at": "2026-08-03T12:58:07.556Z"
+    },
+    {
+      "event_id": "68150247-e185-46bc-8093-5aaddf4fbed5",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The CLI tightening (arbitrary strict override now rejected) is itself the documented, tested acceptance criterion with a migration warning path for legacy artifacts; a deliberate, evidenced contract change.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "recorded_at": "2026-08-03T12:58:07.972Z"
+    },
+    {
+      "event_id": "1f53bfb2-59b0-4af7-a0da-fe69a9ca6d9b",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "assertFinalReviewProvenance/isFrozenFinalReviewTarget centralize an existing hardcoded check without altering lifecycle semantics; AC-7 e2e exercises current-to-stale transitions end-to-end.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "recorded_at": "2026-08-03T12:58:08.398Z"
+    },
+    {
+      "event_id": "fce8f293-43cd-48bc-ba6f-9e3ded264787",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The 21-file diff is a single coherent feature (story+arch+spec+3 src files+matching tests) reviewable as one PR; the needs_evidence status reflected a missing scope artifact, not an actual scope problem.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "recorded_at": "2026-08-03T12:58:08.809Z"
+    },
+    {
+      "event_id": "2ae2c342-6dde-40be-b987-36a180b71e71",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Tests assert rejection for malformed inputs (missing --strict-head-reason, missing freshness_reason config) with exact error text; direct validation failure-mode coverage.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "recorded_at": "2026-08-03T12:58:09.212Z"
+    },
+    {
+      "event_id": "10757f0b-5cb7-4f17-9cc9-0479d6011fcd",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The story is an authorization-denial feature; ac:1 and ac:3 rejection paths are auth-denied scenarios asserted by exit code and stderr.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "recorded_at": "2026-08-03T12:58:09.628Z"
+    },
+    {
+      "event_id": "d5ec8da1-cc1f-4a2a-994a-d2db93ffeb31",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "AC-6 legacy-artifact migration warning and AC-7 binding transitions test whether stale/legacy evidence produces misleading green states; both pass with non-misleading results.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "recorded_at": "2026-08-03T12:58:10.081Z"
+    },
+    {
+      "event_id": "d4bfed53-2d6a-4a08-8f27-b08bb39052f3",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "AC-7 asserts binding_status current-to-stale transitions for content_surface and frozen strict_head roles across real git commits.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "ca73d29d440bd0d6a64210f873f53e714e1d13fc",
+      "recorded_at": "2026-08-03T12:58:10.598Z"
+    },
+    {
+      "event_id": "1697622c-40a2-453e-afba-3db411c3be26",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The 7 AC clauses map one-to-one onto the diff (authorization guard, shared target predicate, origin reporting) and onto e2e test markers; intent was carried through, not just documented.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "recorded_at": "2026-08-03T14:12:48.783Z"
+    },
+    {
+      "event_id": "46dc01d2-47d2-414d-86ff-055a014b2c98",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e file builds a real git fixture and drives the CLI in-process, replaying current behavior (rerun verified 7/7 pass); a substantive current-reality check.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "recorded_at": "2026-08-03T14:12:49.234Z"
+    },
+    {
+      "event_id": "52142a7b-2b0f-497b-b776-d92b826899b0",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "docs/specs states INV-001 and traces it to resolveReviewFreshnessPolicy, isFrozenFinalReviewTarget, resolveStrictHeadOrigin, all present in the diff and covered by e2e/unit tests.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "recorded_at": "2026-08-03T14:12:49.693Z"
+    },
+    {
+      "event_id": "21a26500-31a8-4c61-9453-3329cb9e0a3a",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "docs/architecture Boundaries section names the shared predicate location, authorization preconditions, and dispatch non-propagation rule, substantively answering the boundaries question.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "recorded_at": "2026-08-03T14:12:50.118Z"
+    },
+    {
+      "event_id": "49da3864-9232-4a88-b05a-cc4429102426",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e suite exercises rejection paths (missing reason, unauthorized role, missing freshness_reason) with asserted stderr and exit codes; genuine failure-mode coverage.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "recorded_at": "2026-08-03T14:12:50.594Z"
+    },
+    {
+      "event_id": "8d6e8d54-2059-459d-b3f4-21b5aa3dbaef",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e and flow_replay evidence asserts the done-state outputs (freshness_policy fields, gate warnings, binding_status transitions) described by the story.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "recorded_at": "2026-08-03T14:12:51.070Z"
+    },
+    {
+      "event_id": "94b9ddce-a26b-411a-804e-d536c2065ce4",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The CLI tightening (arbitrary strict override now rejected) is itself the documented, tested acceptance criterion with a migration warning path for legacy artifacts; a deliberate, evidenced contract change.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "recorded_at": "2026-08-03T14:12:51.544Z"
+    },
+    {
+      "event_id": "92021c80-d742-4216-b103-027f49e4a305",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "assertFinalReviewProvenance/isFrozenFinalReviewTarget centralize an existing hardcoded check without altering lifecycle semantics; AC-7 e2e exercises current-to-stale transitions end-to-end.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "recorded_at": "2026-08-03T14:12:51.983Z"
+    },
+    {
+      "event_id": "4a7b263a-41f5-42bc-9a09-fb27de024792",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The 21-file diff is a single coherent feature (story+arch+spec+3 src files+matching tests) reviewable as one PR; the needs_evidence status reflected a missing scope artifact, not an actual scope problem.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "recorded_at": "2026-08-03T14:12:52.422Z"
+    },
+    {
+      "event_id": "ac710907-663a-420a-aaa9-0632151f6938",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Tests assert rejection for malformed inputs (missing --strict-head-reason, missing freshness_reason config) with exact error text; direct validation failure-mode coverage.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "recorded_at": "2026-08-03T14:12:52.944Z"
+    },
+    {
+      "event_id": "1bf9d317-d44a-4a44-a6db-587fad3cbe94",
+      "type": "verdict",
+      "item_id": "failure_mode:auth_denied",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The story is an authorization-denial feature; ac:1 and ac:3 rejection paths are auth-denied scenarios asserted by exit code and stderr.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "recorded_at": "2026-08-03T14:12:53.444Z"
+    },
+    {
+      "event_id": "e780cfb2-a909-4979-8478-d9c7e58e7067",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "AC-6 legacy-artifact migration warning and AC-7 binding transitions test whether stale/legacy evidence produces misleading green states; both pass with non-misleading results.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "recorded_at": "2026-08-03T14:12:53.873Z"
+    },
+    {
+      "event_id": "3336ba6f-136d-47a9-b1ee-f0b2d0c3dfed",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "AC-7 asserts binding_status current-to-stale transitions for content_surface and frozen strict_head roles across real git commits.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a80ff1c178a2aa6a2",
+        "session_ref": null,
+        "same_system_override": {
+          "reason": "single-environment adjudication: no non-Claude runtime is authorized for this repo state; the judge is a fresh-context subagent (a80ff1c178a2aa6a2) fully independent of the implementing session, and its verdict basis is recorded per item"
+        }
+      },
+      "warnings": [],
+      "head_commit": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "recorded_at": "2026-08-03T14:12:54.353Z"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|changed_files:20|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-strict-head-binding-origin-guard",
+      "decision_id": "decision-1785762177242-607c90fb",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: a single reviewer can read this diff as one coherent judgment — the strict HEAD binding origin guard (issue #411). All 21 files serve that one contract: authorization in resolveReviewFreshnessPolicy, the shared final-review-target predicate, origin reporting and migration warnings in pr prepare, matching regression/e2e tests, and en/ja documentation. The review_owner_map is covered by the recorded gate-stage reviews (gate_evidence, release_risk) with closed lifecycles. Splitting per the 4-lane plan would break spec anchors and produce non-shippable partial lanes.",
+      "artifact": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:20",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T13:41:34.591Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:22|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-strict-head-binding-origin-guard",
+      "decision_id": "decision-1785762177242-607c90fb",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: a single reviewer can read this diff as one coherent judgment — the strict HEAD binding origin guard (issue #411). All 21 files serve that one contract: authorization in resolveReviewFreshnessPolicy, the shared final-review-target predicate, origin reporting and migration warnings in pr prepare, matching regression/e2e tests, and en/ja documentation. The review_owner_map is covered by the recorded gate-stage reviews (gate_evidence, release_risk) with closed lifecycles. Splitting per the 4-lane plan would break spec anchors and produce non-shippable partial lanes.",
+      "artifact": ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:22",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T14:45:36.327Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}
