@@ -1454,3 +1454,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-codex-host-c
 なし
 
 <!-- vibepro-release-pr:415:end -->
+
+<!-- vibepro-release-pr:416:start -->
+## [#416](https://github.com/Unson-LLC/vibepro/pull/416) story-vibepro-uiux-intake-gate-pr-summary-surfaces - gate:uiux_intake_judgment を人間向けPRサマリー表面に表示する
+
+- Author: @sintariran
+- Merged: 2026-08-03T01:25:38Z
+- Commit: `aa58826cd087f5db2e11511de15151b46bda4bb1`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:416:end -->

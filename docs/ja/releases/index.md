@@ -266,3 +266,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:415:start -->
 - [PR #415](https://github.com/Unson-LLC/vibepro/pull/415) — [2026-08](/ja/releases/2026-08): story-vibepro-codex-host-containment-test-load-tolerance - test/codex-subagent-host.test.js の containment テストが load average 20-35 の full suite 実行時のみ condition timeout でフレークする
 <!-- vibepro-release-index-pr:415:end -->
+
+<!-- vibepro-release-index-pr:416:start -->
+- [PR #416](https://github.com/Unson-LLC/vibepro/pull/416) — [2026-08](/ja/releases/2026-08): story-vibepro-uiux-intake-gate-pr-summary-surfaces - gate:uiux_intake_judgment を人間向けPRサマリー表面に表示する
+<!-- vibepro-release-index-pr:416:end -->

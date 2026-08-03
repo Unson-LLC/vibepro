@@ -266,3 +266,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:415:start -->
 - [PR #415](https://github.com/Unson-LLC/vibepro/pull/415) — [2026-08](/releases/2026-08): story-vibepro-codex-host-containment-test-load-tolerance - test/codex-subagent-host.test.js の containment テストが load average 20-35 の full suite 実行時のみ condition timeout でフレークする
 <!-- vibepro-release-index-pr:415:end -->
+
+<!-- vibepro-release-index-pr:416:start -->
+- [PR #416](https://github.com/Unson-LLC/vibepro/pull/416) — [2026-08](/releases/2026-08): story-vibepro-uiux-intake-gate-pr-summary-surfaces - gate:uiux_intake_judgment を人間向けPRサマリー表面に表示する
+<!-- vibepro-release-index-pr:416:end -->
