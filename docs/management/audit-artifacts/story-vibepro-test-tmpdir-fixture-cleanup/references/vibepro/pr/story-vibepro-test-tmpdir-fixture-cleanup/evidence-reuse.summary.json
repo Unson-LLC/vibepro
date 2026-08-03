@@ -1,0 +1,26 @@
+{
+  "schema_version": "0.1.0",
+  "kind": "artifact_summary",
+  "source_artifact": "evidence-reuse.json",
+  "source_bytes": 36584,
+  "source_content_hash": "sha256:01d80d9bab14a729c550da849812743f6560c5585b8ff2167a76f679d22e2547",
+  "conclusion": {
+    "status_fields": {
+      "model": "vibepro-evidence-summary-reuse-v1",
+      "status": "stale",
+      "fresh_use_allowed": false,
+      "gate_status": "needs_refresh"
+    },
+    "top_level_counts": {
+      "stale_reasons_count": 3
+    }
+  },
+  "highlights": [
+    "model=vibepro-evidence-summary-reuse-v1",
+    "status=stale",
+    "fresh_use_allowed=false",
+    "gate_status=needs_refresh"
+  ],
+  "over_budget_reason": "source_bytes exceeds budget 16384",
+  "full_artifact_path": "evidence-reuse.json"
+}

@@ -1,0 +1,730 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-unit-suite-concurrency-default",
+  "updated_at": "2026-08-02T16:52:02.855Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+      "expected_root": null,
+      "expected_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+      "current_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785689522782-90b05694",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-unit-suite-concurrency-default",
+      "source_status": null,
+      "summary": "Owner-approved bounded budget extension: 10 subagents / 3600000 ms for one round-3 pr_split_scope replacement review plus adjudication headroom",
+      "reason": "GRANT PROVENANCE. Grantor: sato_keigo, human owner. Recorder: the implementing agent in Claude Code session b72589e7-17b5-460f-8581-06932845d285; the owner's approval was given on 2026-08-03 via AskUserQuestion in this same session, and the session transcript (~/.claude/projects/-Users-ksato-workspace-repos-vibepro/b72589e7-17b5-460f-8581-06932845d285.jsonl) is the inspectable primary record. WHAT WAS ASKED. The question stated: round-3 pr_split_scope re-review dispatch stopped at the 6/6 subagent base budget; gate_evidence and release_risk pass at the current head; pr_split_scope alone returned needs_changes grounded in the advisory split-plan recommendation while the DAG authority gates are resolved by accepted decisions, matching the PR #406 precedent; the proposed extension was +4 subagents and a 60-minute consumption ceiling. The owner selected the recommended approval option. WHAT IS APPROVED. Exactly the numbers in the config override this record accompanies: max_subagent_count 10, max_agent_consumption_ms 3600000, per-role caps gate_evidence 3 / release_risk 3 / pr_split_scope 4. SCOPE. One pr_split_scope round-3 replacement review, adjudication redispatch for the final head, and PR creation. It authorizes no gate waiver, no test-suite skip, and no further raise.",
+      "reviewer": null,
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-unit-suite-concurrency-default",
+        "override_digest": "b59cf74411ac7551cf3a25b4cba7e62a6021e59ed16f4b440308649ced27bc66",
+        "grantor_kind": "human",
+        "grantor": "sato_keigo",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "b72589e7-implementing-agent"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-02-budget-override-story-vibepro-unit-suite-concurrency-default-b59cf744.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "expected_root": null,
+          "expected_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+          "current_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+        "current_branch": "claude/awesome-tereshkova-ee0e2d",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-08-02T16:52:02.755Z"
+      },
+      "recorded_at": "2026-08-02T16:52:02.785Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785687335938-72dd5958",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_release_ops",
+      "source_status": null,
+      "summary": "Timeout margin re-justified against the newly observed 86.2-minute run: 120min ceiling remains correct; doc margin phrasing is a bounded follow-up",
+      "reason": "Response to release_risk finding release-risk-margin-claim-vs-observed-duration. The freshly recorded unit run at head 7db9956d took duration_ms=5171317 (86.2 minutes) on this heavily loaded dev host, so the documented '~2x over 56-minute worst case' phrasing understates the observed worst case; the real margin at 7200000 ms is ~1.4x. The ceiling itself remains correct: (a) the run passed with timed_out=false well inside the default; (b) the escalating local measurements (28/43/56/86 min) are all from a dev host under load average 14-38, while the CI consumers of npm test run on unloaded GH runners measured at ~9 minutes pre-change (gh run 30755351517) against 90-360 minute job budgets; (c) DEFAULT_TIMEOUT_MS is a hang-detection backstop, not a performance target, and --timeout-ms override remains available for pathological hosts. The doc phrasing correction (margin wording in story/spec/architecture) is a bounded documentation follow-up that does not change the constant or any behavior; also covers release-risk-ci-timeout-budget-not-named with the one-time post-merge timing spot-check of npm-publish.yml / post-merge-release.yml noted as operator guidance.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "expected_root": null,
+          "expected_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+          "current_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+        "current_branch": "claude/awesome-tereshkova-ee0e2d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T16:15:35.900Z"
+      },
+      "recorded_at": "2026-08-02T16:15:35.939Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785687326875-06d27e4c",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "split-plan recommendation resolved by bundled-scope decision: package.json IS the story's enforcement surface, not a rider (precedent: PR #406 landing)",
+      "reason": "Response to pr_split_scope round-2 findings. (1) pr-split-scope-automatic-split-required / pr-split-scope-unsafe-repo-control-surface: split-plan.json status=split_recommended derives solely from mixed_repo_control_surface with task_binding.reason_code=task_context_missing; the DAG authority gates (gate:pr_scope_judgment, gate:split_resolution) are resolved by this accepted decision lineage, and the vibepro-workflow skill states scope.status is PR size/scope guidance, not completion authority. package.json scripts.test is not an independently releasable repo-control rider: it is the story's entire subject — AC-1 states the pin lives in scripts.test because npm test is the only full-suite command the evidence gate accepts. Splitting package.json from the regression test that pins it (test/full-suite-command-form.test.js) would land either an unguarded pin or a test asserting a value main does not have; the lanes are not independently releasable. Direct precedent: story-vibepro-vacuous-e2e-test-elimination landed package.json+ci.yml repo-control changes bundled with product changes through an accepted gate:pr_scope_judgment decision on the same mixed_repo_control_surface signal. (2) pr-split-scope-missing-frontmatter-declaration: pr_scope_* frontmatter enables the OPTIONAL atomic-scope override of the advisory split-plan status; it is not required by the DAG authority gates, and editing the story doc now would invalidate the two passing content-bound reviews for a purely advisory artifact. (3) pr-split-scope-unowned-review-facets: the current-head reviewer owner map is populated by the very reviews recorded at this head — gate_evidence pass and release_risk pass are recorded, and this decision plus the round-3 review closes the set. scope_reviewed: full diff main...HEAD, 10 files, single story lineage across 6 commits, no foreign-story content.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "expected_root": null,
+          "expected_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+          "current_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+        "current_branch": "claude/awesome-tereshkova-ee0e2d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T16:15:26.837Z"
+      },
+      "recorded_at": "2026-08-02T16:15:26.877Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785675195837-6ac4f22a",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "scope_reviewed: 7-file single-intent bundle; review_owner_map: one reviewer, pr_split_scope subagent confirmed no split needed",
+      "reason": "scope_reviewed: the full diff main...HEAD (4 commits, 7 files, ~125 insertions) was reviewed as one judgment by the pr_split_scope review subagent (verdict pass, recorded in review-result-pr_split_scope.json): npm-script concurrency pin + timeout constant + their regression tests + story/CHANGELOG/config registration, no unrelated riders. review_owner_map: a single reviewer owns the whole surface — runtime changes are one script line (package.json) and one constant (src/verification-runner.js), both owned by the VibePro core CLI surface; tests and docs follow the same ownership. related_file_blast_radius: repo-wide grep confirmed no other node --test call sites need the pin (CI delegates to npm test) and DEFAULT_TIMEOUT_MS is not shared with other modules (managed-command-executor.js and code-topology-provider.js constants are separate subsystems). decision_record: the bundled-scope justification is recorded against gate:pr_scope_judgment and gate:split_resolution with the story doc as artifact; split is not chosen because each runtime line must land with the regression test that guards it.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "expected_root": null,
+          "expected_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "current_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "current_branch": "claude/awesome-tereshkova-ee0e2d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T12:53:15.830Z"
+      },
+      "recorded_at": "2026-08-02T12:53:15.837Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785675194594-331b8ba8",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": null,
+      "summary": "Backward-compatible: npm test contract unchanged for all consumers; timeout default widening is permissive-only with old/new values documented in CHANGELOG",
+      "reason": "public_contract: the change does not break external users, CLI/API, configuration, output format, or the PR body contract. Reviewable old/new expectation: package.json scripts.test old 'node --test' -> new 'node --test --test-concurrency=2' (same command surface, same exit codes, same TAP output; only scheduling parallelism changes), and src/verification-runner.js DEFAULT_TIMEOUT_MS old 1800000 -> new 7200000 (permissive-only: every run that previously finished still finishes; explicit --timeout-ms behavior unchanged; the effective value is visible as run.timeout_ms in every run artifact). Compatibility evidence: the command-form gate (src/verification-evidence.js) is byte-identical to main, verified by the gate_evidence review and by adjudication AC-2 (function-level call [REDACTED:1e71daeda117]('unit','npm test','pass') does not throw); all three CI workflows invoke npm test unchanged with 5-9 minute historical durations against 90-360 minute budgets (release_risk review, gh run history). CHANGELOG.md Unreleased documents both old/new values, operator action (none), and rollback (revert one line each). story_spec_traceability: AC-1..AC-5 adjudicated demonstrated at head 583f69fc.",
+      "reviewer": null,
+      "artifact": "CHANGELOG.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "expected_root": null,
+          "expected_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "current_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "current_branch": "claude/awesome-tereshkova-ee0e2d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T12:53:14.587Z"
+      },
+      "recorded_at": "2026-08-02T12:53:14.595Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785671502968-9f188a91",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": ".vibepro in diff is only config.json, the gitignore-allowed story registration SSOT",
+      "reason": "The only .vibepro path in the PR diff is .vibepro/config.json, which .gitignore explicitly allows and which is the SSOT for story registration; the diff appends one brainbase.stories[] entry for this story. No diagnostic artifacts are committed.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 1,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "expected_root": null,
+          "expected_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "current_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "current_branch": "claude/awesome-tereshkova-ee0e2d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:51:42.962Z"
+      },
+      "recorded_at": "2026-08-02T11:51:42.969Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785671476149-31087010",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:design_ssot_reconciliation",
+      "source_status": null,
+      "summary": "Story doc owns no design surface; no design root registration to avoid cross-story lineage contamination",
+      "reason": "The flagged action item is only that the new Story doc is not registered in design-ssot.json. This story changes one npm script line and one numeric default; it introduces no architecture surface, owns no runtime contract beyond the two regression tests, and no existing design root claims package.json scripts or DEFAULT_TIMEOUT_MS. Registering a new design root for a two-line change was deliberately rejected: the prior story-vibepro-vacuous-e2e-test-elimination round showed root registration for narrow changes contaminates other stories' lineage (it had to be retracted after gate:story_source_integrity correctly rejected the mixed doc). The Story doc's reason: frontmatter carries [REDACTED:01d138d5fb8c] in place of a separate ADR.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+      "verification_evidence_summary": {
+        "count": 1,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "expected_root": null,
+          "expected_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "current_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "current_branch": "claude/awesome-tereshkova-ee0e2d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:51:16.141Z"
+      },
+      "recorded_at": "2026-08-02T11:51:16.149Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785671474789-6a9d89ad",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": ".vibepro in diff is only config.json, the gitignore-allowed story registration SSOT",
+      "reason": "The only .vibepro path in the PR diff is .vibepro/config.json, the single file .gitignore explicitly allows (!.vibepro/config.json) and the SSOT for story registration; the diff appends one brainbase.stories[] entry for this story. No diagnostic artifacts, runs, or generated evidence files are committed.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 1,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "expected_root": null,
+          "expected_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "current_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "current_branch": "claude/awesome-tereshkova-ee0e2d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:51:14.782Z"
+      },
+      "recorded_at": "2026-08-02T11:51:14.789Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785671473349-67226579",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "No split: both halves are guarded by regression tests that must land with the changes they guard",
+      "reason": "clean_branch_or_split_pr is not chosen. The two runtime lines (script pin, timeout constant) each ship with the regression test that makes their loss a CI failure; splitting tests from changes would land either an unguarded pin or an unguarded timeout on main. All commits on this branch belong to this story lineage (9d323602 story, 096bb820 implementation, fbd72d87 measured-evidence revision, 583f69fc traceability/CHANGELOG); no foreign story content is mixed in. The branch is clean against main apart from this story's files.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+      "verification_evidence_summary": {
+        "count": 1,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "expected_root": null,
+          "expected_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "current_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "current_branch": "claude/awesome-tereshkova-ee0e2d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:51:13.338Z"
+      },
+      "recorded_at": "2026-08-02T11:51:13.350Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785671471924-c0ed841f",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Bundled scope justified: npm-script concurrency pin and timeout widening are one measured-evidence intent across 7 files",
+      "reason": "Bundled-scope justification: this PR touches exactly 7 files — package.json (test script pin), src/verification-runner.js (DEFAULT_TIMEOUT_MS), two regression test files, the Story doc, CHANGELOG.md, and .vibepro/config.json (story registration). The npm-script pin and the timeout widening are one product intent: the same measured evidence (28-minute full-suite run at load ~100, 56-minute run at load ~35 recorded in this story's verification runs) motivates both, and splitting them would leave either an unpinned script or an unguarded timeout on main. The mixed repo-control surface (package.json scripts) is the change itself, not a rider: the story's point is that the npm test script is the only place where the gate-recognized full-suite command and the measured-optimal concurrency coincide. scope_reviewed: yes, against git diff main...HEAD. review_owner_map: one reviewer holds this as a single judgment; runtime changes are one script line and one constant.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+      "verification_evidence_summary": {
+        "count": 1,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "expected_root": null,
+          "expected_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "current_head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "583f69fcfa083f32235497a8c6fa203d4b63b37d",
+        "current_branch": "claude/awesome-tereshkova-ee0e2d",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T11:51:11.913Z"
+      },
+      "recorded_at": "2026-08-02T11:51:11.924Z"
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "open": 0,
+    "by_type": {
+      "waiver": 1,
+      "needs_review": 9
+    },
+    "by_status": {
+      "accepted": 10
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+        "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+        "expected_root": null,
+        "expected_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+        "current_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785689522782-90b05694",
+      "story_id": "story-vibepro-unit-suite-concurrency-default",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-unit-suite-concurrency-default",
+      "source_status": null,
+      "summary": "Owner-approved bounded budget extension: 10 subagents / 3600000 ms for one round-3 pr_split_scope replacement review plus adjudication headroom",
+      "reason": "GRANT PROVENANCE. Grantor: sato_keigo, human owner. Recorder: the implementing agent in Claude Code session b72589e7-17b5-460f-8581-06932845d285; the owner's approval was given on 2026-08-03 via AskUserQuestion in this same session, and the session transcript (~/.claude/projects/-Users-ksato-workspace-repos-vibepro/b72589e7-17b5-460f-8581-06932845d285.jsonl) is the inspectable primary record. WHAT WAS ASKED. The question stated: round-3 pr_split_scope re-review dispatch stopped at the 6/6 subagent base budget; gate_evidence and release_risk pass at the current head; pr_split_scope alone returned needs_changes grounded in the advisory split-plan recommendation while the DAG authority gates are resolved by accepted decisions, matching the PR #406 precedent; the proposed extension was +4 subagents and a 60-minute consumption ceiling. The owner selected the recommended approval option. WHAT IS APPROVED. Exactly the numbers in the config override this record accompanies: max_subagent_count 10, max_agent_consumption_ms 3600000, per-role caps gate_evidence 3 / release_risk 3 / pr_split_scope 4. SCOPE. One pr_split_scope round-3 replacement review, adjudication redispatch for the final head, and PR creation. It authorizes no gate waiver, no test-suite skip, and no further raise.",
+      "reviewer": null,
+      "artifact": null,
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-unit-suite-concurrency-default",
+        "override_digest": "b59cf74411ac7551cf3a25b4cba7e62a6021e59ed16f4b440308649ced27bc66",
+        "grantor_kind": "human",
+        "grantor": "sato_keigo",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "b72589e7-implementing-agent"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-02-budget-override-story-vibepro-unit-suite-concurrency-default-b59cf744.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+          "expected_root": null,
+          "expected_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+          "current_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+        "current_branch": "claude/awesome-tereshkova-ee0e2d",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-08-02T16:52:02.755Z"
+      },
+      "recorded_at": "2026-08-02T16:52:02.785Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-unit-suite-concurrency-default/decision-records.json"
+}

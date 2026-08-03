@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+  "stage": "implementation",
+  "role": "runtime_contract",
+  "status": "pass",
+  "summary": "HEAD f44165f2 deletes the dead renderer chain (24 functions incl. the two export surfaces) with zero remaining runtime consumers repo-wide; rendered artifacts (pr-body.md concise contract, gate-dag.html, review-cockpit.html) unaffected because they never depended on the removed chain; vibepro pr prepare works end-to-end per a real fixture-repo e2e test.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "risk_surfaces=src/pr-manager.js export surface, pr-body.md rendering path, gate-dag.html/review-cockpit.html rendering paths, CLI pr-prepare end-to-end, test suite for removed exports; inspected via git show/diff of HEAD f44165f2, repo-wide grep for removed symbols, node --check plus module import smoke of src/pr-manager.js, and node --test execution of the story e2e file.",
+    "evidence": "node --test test/e2e/story-vibepro-pr-human-summary-dead-chain-removal-main.test.js -> 4/4 pass; node --check src/pr-manager.js -> OK; node -e import smoke -> exit 0",
+    "inputs": [
+      "src/pr-manager.js",
+      "test/e2e/story-vibepro-pr-human-summary-dead-chain-removal-main.test.js",
+      "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+      "test/pr-human-summary-uiux-intake-gate.test.js",
+      "docs/management/stories/active/story-vibepro-pr-human-summary-dead-chain-removal.md",
+      "docs/specs/story-vibepro-pr-human-summary-dead-chain-removal.md",
+      "design-ssot.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern: the removed export names were not visible at the top of the diff, raising suspicion the described removal might not match the code -> final: both export definitions confirmed deleted in the same hunk with no remaining references, and the ac:3 e2e proves the live CLI path renders the intact concise contract"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+    "expected_root": null,
+    "expected_head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+    "current_head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+      "expected_root": null,
+      "expected_head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "current_head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-03T08:07:18.463Z",
+  "git_context": {
+    "head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+    "current_branch": "claude/youthful-fermi-2f2520",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-03T08:07:18.435Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 5 file(s)",
+    "recorded_head_sha": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "b07560fa14eae778a9f0319fa19f45b9d832cf02c18b73688352e84528908215",
+        "size": 264207
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-pr-human-summary-dead-chain-removal.md",
+        "sha256": "47695cf79d0e51460ba733d8cafa310f424c21d8b4c69394864aac0a30c2c47e",
+        "size": 5869
+      },
+      {
+        "path": "docs/specs/story-vibepro-pr-human-summary-dead-chain-removal.md",
+        "sha256": "b6052a8168fc1bfeebbd520248db315eb70a5236b7b79280538b0f7ab9d904b6",
+        "size": 3225
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "8b2fc42dd9b01b78dd6951f6a8d92ff57d018d00d924f58acf28dc99015b1fbc",
+        "size": 705236
+      },
+      {
+        "path": "test/e2e/story-vibepro-pr-human-summary-dead-chain-removal-main.test.js",
+        "sha256": "8996ce7c3ecf6818d24d811d553f4385fc3dd432e97f911dfe720546d29965d5",
+        "size": 8294
+      }
+    ],
+    "missing_files": [
+      "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+      "test/pr-human-summary-uiux-intake-gate.test.js"
+    ],
+    "surface_hash": "7ad021ab4c2d50d165206e346d47ca39808e161821b1f83cec948c70edb156ea"
+  },
+  "source_fingerprint": "64efa4ffe058ad7405fd863af253de15f116e0de5a5bc8a7d2e5fe94c9857d7d",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "ab2346fa10e2a37b2",
+    "agent_role": null,
+    "model": "sonnet",
+    "reasoning_effort": "medium",
+    "cost_tier": null,
+    "thread_id": "ab2346fa10e2a37b2",
+    "session_id": "ab2346fa10e2a37b2",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-youthful-fermi-2f2520/679533d7-f261-4e71-a70e-ae23cc12a1e7/tasks/ab2346fa10e2a37b2.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-pr-human-summary-dead-chain-removal/implementation/review-request-runtime_contract.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "Synchronous Task subagent terminated after returning verdict JSON; lifecycle closed completed",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "ab2346fa10e2a37b2",
+      "implementation_session_id": "679533d7-f261-4e71-a70e-ae23cc12a1e7",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

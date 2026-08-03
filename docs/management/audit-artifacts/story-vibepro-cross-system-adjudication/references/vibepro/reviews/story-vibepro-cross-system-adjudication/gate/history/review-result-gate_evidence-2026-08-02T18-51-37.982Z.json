@@ -1,0 +1,136 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cross-system-adjudication",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Corrupt-provenance silent-downgrade path fully closed by 40c09842: readImplementationProvenanceIfExists throws on JSON.parse failure (ENOENT stays null), both call sites propagate uncaught (fail closed on evidence and judgment-DAG routes), no other reader exists per grep, CSA-S-004/CSA-S-012 assert throw plus no artifact write. Evidence head-bound to 40c09842: unit 53/53, e2e 18/18 including judgment-dag-adjudication and classifier-premise-recovery consumer suites; reviewer independently reran unit suites (53/53).",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read full src/adjudication.js diff 814c6df5..40c09842; grepped all callers of readImplementationProvenanceIfExists and all references to implementation-provenance.json across src/ and test/ (only two production call sites, both propagate); read CSA-S-004/CSA-S-012 test diffs; ran node --test on adjudication and judgment-adjudication suites (53/53); inspected verification-evidence.json head binding and consumer-suite e2e command.",
+    "evidence": ".vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round3.json",
+    "inputs": [
+      "src/adjudication.js",
+      "test/adjudication.test.js",
+      "test/judgment-adjudication.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "judged_unsound corrupt-provenance downgrade concern -> pass because parse failure now fails closed on every provenance-reading route with tests asserting throw and no artifact write, and head-bound evidence confirms 53/53 unit and 18/18 e2e at 40c09842"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication",
+    "expected_root": null,
+    "expected_head_sha": "40c09842cdf0985e8f94568f2439958d36ddde0d",
+    "current_head_sha": "40c09842cdf0985e8f94568f2439958d36ddde0d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication",
+      "expected_root": null,
+      "expected_head_sha": "40c09842cdf0985e8f94568f2439958d36ddde0d",
+      "current_head_sha": "40c09842cdf0985e8f94568f2439958d36ddde0d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T18:51:37.982Z",
+  "git_context": {
+    "head_sha": "40c09842cdf0985e8f94568f2439958d36ddde0d",
+    "current_branch": "claude/cross-system-adjudication",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T18:51:37.959Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "40c09842cdf0985e8f94568f2439958d36ddde0d",
+    "surface_files": [
+      {
+        "path": "src/adjudication.js",
+        "sha256": "c0aa57d422145f889b7e8aaf3e3c7fc44c010cb786343eb6ca3c234f9a91b59e",
+        "size": 81527
+      },
+      {
+        "path": "test/adjudication.test.js",
+        "sha256": "1662504f0f7a2795c6264557fbc2e8437bae2039ea6246bf0d95f02e8492b867",
+        "size": 37610
+      },
+      {
+        "path": "test/judgment-adjudication.test.js",
+        "sha256": "631e1acba14bfd6b29c8adfd00a1053de6f8307cc445b2b8833969b6dd1ad01d",
+        "size": 53393
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "3c56d8d41535fd6536c964e9b38c8a43f3b8267807ee443ef7c32ddf59db6ab8"
+  },
+  "source_fingerprint": "224d660328161cc7347cbfb9b01fc8dd1813e619654cc79dc2bd30b632121a0e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a18b1230d90868365",
+    "agent_role": null,
+    "model": "sonnet",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a18b1230d90868365",
+    "session_id": "a18b1230d90868365",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-cross-system-adjudication/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-cross-system-adjudication/gate/subagent-results/gate_evidence-round3.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "a18b1230d90868365",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

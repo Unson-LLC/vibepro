@@ -1,3 +1,4 @@
+import '../support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
@@ -159,7 +160,7 @@ test('story-vibepro-evidence-adjudication-gate ac:11 the unit suite contains exe
   delete childEnv.NODE_TEST_CONTEXT;
   delete childEnv.NODE_OPTIONS;
   const { stdout } = await execFileAsync(process.execPath, ['--test', '--test-reporter=spec', 'test/adjudication.test.js'], { cwd: path.resolve('.'), encoding: 'utf8', env: childEnv }).catch((error) => ({ stdout: error.stdout ?? '' }));
-  assert.match(stdout, /pass 19/);
+  assert.match(stdout, /pass 23/);
   assert.match(stdout, /fail 0/);
 });
 

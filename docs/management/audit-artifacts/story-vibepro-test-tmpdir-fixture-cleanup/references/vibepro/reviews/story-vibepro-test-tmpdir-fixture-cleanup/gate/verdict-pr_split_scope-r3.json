@@ -1,0 +1,1 @@
+{"role":"pr_split_scope","status":"pass","agent_id":"a8c79d6c86bf8d4ce","round":3,"summary":"All 21 branch commits belong to this story; config net delta adds only this story's entries; the JSON repair restored the other story's entry byte-for-byte; releases/design-ssot deltas append-only.","findings":[]}

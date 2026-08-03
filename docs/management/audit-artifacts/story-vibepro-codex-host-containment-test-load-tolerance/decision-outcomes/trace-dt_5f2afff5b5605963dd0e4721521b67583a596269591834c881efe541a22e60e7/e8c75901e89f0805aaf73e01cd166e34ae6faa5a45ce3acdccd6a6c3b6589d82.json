@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+  "ledger_path": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_5f2afff5b5605963dd0e4721521b67583a596269591834c881efe541a22e60e7"
+  },
+  "parent_revision_fingerprint": "02895e6ca74882d307e4a67e573258ad5c4848d18fa1f1ee45d996ad138bb1da",
+  "revision_fingerprint": "e8c75901e89f0805aaf73e01cd166e34ae6faa5a45ce3acdccd6a6c3b6589d82",
+  "trace": {
+    "decision_trace_id": "dt_5f2afff5b5605963dd0e4721521b67583a596269591834c881efe541a22e60e7",
+    "collision_group": null,
+    "trace_source_ref": "tsr_058c46d806b8ba5036b9cc2bbbccb8c18e7218521e6b58535788e5240c9ad878",
+    "normalized_subject_key": "gate:split_resolution",
+    "source_identity": {
+      "source_kind": "linked_sources",
+      "source_ref": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-records.json,.vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-records.json",
+      "native_id": "decision-1785691063388-85f5140e,decision-1785701419023-bf05cb8c",
+      "digest": "b249cb68c2790e4ea129fcfaaa8e14f0079f98fa2e18e965742c62eea8e94077",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+    "parent_revision_fingerprint": "02895e6ca74882d307e4a67e573258ad5c4848d18fa1f1ee45d996ad138bb1da",
+    "revision_fingerprint": "e8c75901e89f0805aaf73e01cd166e34ae6faa5a45ce3acdccd6a6c3b6589d82",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_5f2afff5b5605963dd0e4721521b67583a596269591834c881efe541a22e60e7"
+        },
+        "parent_revision_fingerprint": "c043924fe5fc571721e9d7be799a11caa5043703e5078c82794b2d5466f84384"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 415,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/415",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "e3a0560f73d49b6ccdbea82bd355d8b6bf2e6bf5",
+        "status": "merged",
+        "merged_at": "2026-08-02T21:31:46Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

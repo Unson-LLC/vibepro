@@ -1,0 +1,368 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cross-system-adjudication",
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "The enforced weight-independence axis is agent_system only (codex vs claude_code), never --agent-model; judgment-DAG adjudicate record --judgment and adjudicate correct must reject an --agent-system equal to the story's recorded implementation-provenance agent_system before any persistence, unless --allow-same-system <reason> is supplied or an accepted gate:judgment_dag_adjudication:same_system_environment decision exists.",
+      "rationale": "An adjudicator sharing the implementer's model family shares its training-distribution priors, so plausible-but-wrong patterns are judged sound for the same reason the implementer believed them correct; the independent-verification error product only holds across a genuinely different weight family.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "adjudicate record and adjudicate correct with an --agent-system equal to the recorded implementation system are rejected before persistence unless --allow-same-system <reason> is provided"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "async function enforceCrossSystemAdjudicator(root, storyId, {"
+          },
+          {
+            "file": "src/adjudication.js",
+            "anchor": "const SAME_SYSTEM_ENVIRONMENT_DECISION_SOURCE = 'gate:judgment_dag_adjudication:same_system_environment';"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-adjudication.test.js",
+            "case": "CSA-S-004 judgment-DAG record rejects a same-system adjudicator before persistence and leaves the artifact untouched"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/adjudication.js",
+            "must_contain": "async function enforceCrossSystemAdjudicator(root, storyId, {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/judgment-adjudication.test.js",
+            "must_cover": "CSA-S-004 judgment-DAG record rejects a same-system adjudicator before persistence and leaves the artifact untouched"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T18:02:54.516Z",
+      "last_revised_at": "2026-08-02T18:02:54.516Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "AC-1: vibepro adjudicate provenance <repo> --id <story-id> --agent-system codex|claude_code records the implementation agent's system into .vibepro/adjudication/<story-id>/implementation-provenance.json with recorded_at and head commit; an agent system outside ADJUDICATION_AGENT_SYSTEMS is rejected before any write.",
+      "rationale": "Provenance capture is the only truthful source of implementer identity; it must fail closed on an invalid agent_system before touching the filesystem.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "records the implementation agent's system into .vibepro/adjudication/<story-id>/implementation-provenance.json with recorded_at and head commit"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "export async function recordImplementationProvenance(repoRoot, options = {}) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/adjudication.test.js",
+            "case": "CSA-S-001 adjudicate provenance validates story id and agent system before any write, then binds HEAD"
+          },
+          {
+            "file": "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+            "case": "CSA-E2E-001 story-vibepro-cross-system-adjudication ac:1 adjudicate provenance records implementation-provenance.json with recorded_at and head commit, rejecting unknown agent systems before any write"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/adjudication.js",
+            "must_contain": "export async function recordImplementationProvenance(repoRoot, options = {}) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+            "must_cover": "ac:1"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T18:02:54.516Z",
+      "last_revised_at": "2026-08-02T18:02:54.516Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "AC-2: when implementation provenance is recorded and adjudicate record (evidence path, no --judgment) receives the same --agent-system, the recorded result carries a same_system warning naming both systems; verdict recording is never blocked on the evidence path.",
+      "rationale": "State independence (fresh context) is preserved even on a same-system evidence verdict, so blocking would discard otherwise-valid evidence; visibility via a warning is sufficient on this path.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "the recorded result carries a same_system warning naming both systems; verdict recording is not blocked on the evidence path"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "const implementationProvenance = await readImplementationProvenanceIfExists(root, storyId);"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/adjudication.test.js",
+            "case": "CSA-S-002 evidence-path adjudicate record attaches a non-blocking same_system warning naming both systems"
+          },
+          {
+            "file": "test/adjudication.test.js",
+            "case": "CSA-S-003 evidence-path adjudicate record from a cross-system adjudicator carries no warning"
+          },
+          {
+            "file": "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+            "case": "CSA-E2E-002 story-vibepro-cross-system-adjudication ac:2 evidence-adjudication record with the same --agent-system as implementation provenance carries a same_system warning and is not blocked"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+            "must_cover": "ac:2"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T18:02:54.516Z",
+      "last_revised_at": "2026-08-02T18:02:54.516Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "AC-3: on the judgment-DAG path, adjudicate record --judgment and adjudicate correct with an --agent-system equal to the recorded implementation system are rejected before persistence unless --allow-same-system <reason> is provided; the granted override reason is appended to the append-only log .vibepro/adjudication/<story-id>/same-system-log.jsonl and stored on the persisted event's provenance.",
+      "rationale": "This is the enforcement branch: judgment-DAG axes are where token-matched, mechanically-consumed judgments are re-judged, so weight independence must be a hard gate here, with an auditable append-only override trail rather than a silent bypass.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "the granted override reason is appended to the append-only log .vibepro/adjudication/<story-id>/same-system-log.jsonl and stored on the persisted event's provenance"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "export function sameSystemLogPath(repoRoot, storyId) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-adjudication.test.js",
+            "case": "CSA-S-005 --allow-same-system appends the append-only log and stores the override on the persisted event"
+          },
+          {
+            "file": "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+            "case": "CSA-E2E-003 story-vibepro-cross-system-adjudication ac:3 judgment-DAG record/correct reject a same-system agent-system before persistence unless --allow-same-system is provided, and the override reason is appended to the append-only log and stored on the event"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+            "must_cover": "ac:3"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T18:02:54.516Z",
+      "last_revised_at": "2026-08-02T18:02:54.516Z"
+    },
+    {
+      "id": "S-004",
+      "type": "scenario",
+      "statement": "AC-4: an accepted decision record with source gate:judgment_dag_adjudication:same_system_environment and a non-empty reason and artifact downgrades judgment-DAG same-system rejection to a warning for that story, so a single-system environment closes through an explicit recorded decision rather than an implicit same-system pass.",
+      "rationale": "Some environments genuinely run one agent_system only; the human/decision-record closure path keeps that an explicit, auditable exception instead of a config switch that would make same-system passes an implicit default (see Story frontmatter reason).",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "downgrades judgment-DAG same-system rejection to a warning for that story, so a single-system environment closes through an explicit recorded decision"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "decision?.source === SAME_SYSTEM_ENVIRONMENT_DECISION_SOURCE"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-adjudication.test.js",
+            "case": "CSA-S-006 an accepted decision record with the environment source downgrades same-system rejection to a warning"
+          },
+          {
+            "file": "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+            "case": "CSA-E2E-004 story-vibepro-cross-system-adjudication ac:4 an accepted decision record with source gate:judgment_dag_adjudication:same_system_environment (non-empty reason and artifact) downgrades judgment-DAG same-system rejection to a warning"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+            "must_cover": "ac:4"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T18:02:54.516Z",
+      "last_revised_at": "2026-08-02T18:02:54.516Z"
+    },
+    {
+      "id": "S-005",
+      "type": "scenario",
+      "statement": "AC-5: when no implementation provenance is recorded for the story, judgment-DAG recording emits a provenance_missing warning and otherwise behaves exactly as before this story; a cross-system adjudicator with provenance recorded produces no same-system warning and no override requirement.",
+      "rationale": "Additive staged rollout: stories with no recorded provenance keep today's behavior except an advisory warning, so this story does not retroactively block every story lacking a provenance record.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "judgment-DAG recording emits a provenance_missing warning and otherwise behaves exactly as before this story"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "id: 'provenance_missing',"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-adjudication.test.js",
+            "case": "CSA-S-007 missing implementation provenance emits a provenance_missing warning only and behaves as before"
+          },
+          {
+            "file": "test/judgment-adjudication.test.js",
+            "case": "CSA-S-008 a cross-system adjudicator with recorded provenance produces no warning and needs no override"
+          },
+          {
+            "file": "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+            "case": "CSA-E2E-005 story-vibepro-cross-system-adjudication ac:5 no recorded implementation provenance emits a provenance_missing warning and otherwise behaves exactly as before this story; a cross-system adjudicator with provenance recorded produces no same-system warning and no override requirement"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+            "must_cover": "ac:5"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T18:02:54.516Z",
+      "last_revised_at": "2026-08-02T18:02:54.516Z"
+    },
+    {
+      "id": "S-006",
+      "type": "scenario",
+      "statement": "AC-6: the existing same-judge-identity rejection for premise-correction re-adjudication (a correction cannot be re-adjudicated by the same agent_system:agent_id judge identity) is preserved unchanged alongside the new system-level check.",
+      "rationale": "Individual independence (same-judge-identity) and weight independence (same-system) are orthogonal axes; adding the system-level check must not weaken or replace the pre-existing identity check.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "The existing same-judge-identity rejection for premise-correction re-adjudication is preserved unchanged alongside the new system-level check"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/adjudication.js",
+            "anchor": "async function enforceCrossSystemAdjudicator(root, storyId, {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/judgment-adjudication.test.js",
+            "case": "CSA-S-009 adjudicate correct also enforces cross-system adjudication before persisting the premise correction"
+          },
+          {
+            "file": "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+            "case": "CSA-E2E-006 story-vibepro-cross-system-adjudication ac:6 the existing same-judge-identity rejection for premise-correction re-adjudication is preserved unchanged alongside the new system-level check"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+            "must_cover": "ac:6"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T18:02:54.516Z",
+      "last_revised_at": "2026-08-02T18:02:54.516Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "CLI surface: vibepro adjudicate provenance <repo> --id <story-id> --agent-system codex|claude_code [--agent-id <id>] [--session-ref <ref>] [--json]; adjudicate record --judgment and adjudicate correct gain an optional --allow-same-system <reason> flag. The evidence path (adjudicate record without --judgment) accepts no new required flag and is never blocked by this story.",
+      "rationale": "Public CLI contract addition/extension that downstream automation and Skills must be able to rely on.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "vibepro adjudicate provenance <repo> --id <story-id> --agent-system codex|claude_code"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/cli.js",
+            "anchor": "if (subcommand === 'provenance') {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/adjudication.test.js",
+            "case": "CSA-S-001 adjudicate provenance validates story id and agent system before any write, then binds HEAD"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/cli.js",
+            "must_contain": "if (subcommand === 'provenance') {"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T18:02:54.516Z",
+      "last_revised_at": "2026-08-02T18:02:54.516Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "mermaid": "flowchart LR\n  Provenance[adjudicate provenance --agent-system] --> Store[implementation-provenance.json]\n  Store --> Evidence[adjudicate record evidence path]\n  Evidence --> WarnOnly[same_system warning, never blocks]\n  Store --> Judgment[adjudicate record --judgment / adjudicate correct]\n  Judgment --> Compare{agent_system == implementation_system?}\n  Compare -- no --> Persist[verdict/correction persisted]\n  Compare -- yes --> Override{--allow-same-system or accepted decision?}\n  Override -- no --> Reject[rejected before persistence]\n  Override -- yes, flag --> Log[same-system-log.jsonl append + event provenance] --> Persist\n  Override -- yes, decision --> WarnPersist[warning + persist] --> Persist",
+      "rationale": "Shows the two independent enforcement branches (evidence-path warning-only vs judgment-DAG hard reject) both keyed off the same implementation-provenance record."
+    },
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart LR\n  Attacker[Same-model-family adjudicator judging its own implementer's plausible-but-wrong pattern] --> T1[Threat: weight-correlated verdict passes judgment-DAG as judged_sound]\n  T1 --> M1[Mitigation: enforceCrossSystemAdjudicator rejects agent_system == implementation_system before persistence on the judgment-DAG route]\n  Attacker --> T2[Threat: silent bypass via undocumented override]\n  T2 --> M2[Mitigation: --allow-same-system reason is appended to append-only same-system-log.jsonl and stored on the persisted event provenance, never a silent skip]\n  Attacker --> T3[Threat: config flag makes same-system passes an implicit default]\n  T3 --> M3[Mitigation: no global disable switch; only a per-story accepted decision record with source gate:judgment_dag_adjudication:same_system_environment, requiring reason and artifact, downgrades to a warning]\n  Attacker --> T4[Threat: missing provenance silently disables the axis]\n  T4 --> M4[Mitigation: provenance_missing is an explicit warning on every judgment-DAG record, visible in the persisted event, not a silent no-op]",
+      "rationale": "The security-relevant surface is adjudicator independence itself: the story closes a specific bypass (same-weight-family judging) without opening a new one (silent overrides or implicit same-system defaults)."
+    }
+  ],
+  "generated_at": "2026-08-02T18:02:54.513Z",
+  "generated_by": {
+    "caller": "claude_code",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": null
+}

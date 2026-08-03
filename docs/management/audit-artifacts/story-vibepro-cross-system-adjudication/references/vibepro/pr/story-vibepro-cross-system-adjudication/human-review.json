@@ -1,0 +1,167 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cross-system-adjudication",
+  "created_at": "2026-08-03T02:23:55.211Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is needs_verification with 6 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: 差分が 67 files あり、レビュー可能な目安 30 files を超えている; 未コミット差分が 61 files 残っている",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-cross-system-adjudication/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-cross-system-adjudication/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-cross-system-adjudication/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-cross-system-adjudication/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADR不要: Deriving implementer identity from implementation-stage review records was rejected because those records carry the reviewer's system, not the implementer's; an explicit provenance record is the only truthful source. A global config switch to disable the check was rejected because it would make same-system passes an implicit default. The compatible boundary is additive staged rollout - stories with no recorded implementation provenance keep today's behavior except advisory warnings, evidence adjudication stays warning-only, and enforcement applies only to the judgment-DAG path that already exists solely on agent_workflow / workflow_heavy routes. Rollback is removal of the provenance command and the enforcement branch; all new artifacts are additive files under .vibepro/adjudication/<story-id>/. Model-level diversity (--agent-model) is out of scope; the enforced axis is agent_system only."
+    },
+    "spec": {
+      "status": "present",
+      "required": true,
+      "reason": "explicit Spec docs are present (docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/spec-drift.md)"
+    },
+    "decision_records": {
+      "total": 4,
+      "open": 0,
+      "by_type": {
+        "needs_review": 4
+      },
+      "by_status": {
+        "accepted": 4
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication",
+          "expected_root": null,
+          "expected_head_sha": "40c09842cdf0985e8f94568f2439958d36ddde0d",
+          "current_head_sha": "40c09842cdf0985e8f94568f2439958d36ddde0d",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1785696911025-49c5bf62",
+        "story_id": "story-vibepro-cross-system-adjudication",
+        "type": "needs_review",
+        "status": "accepted",
+        "source": "gate:judgment_axis_scope_reviewability",
+        "source_status": null,
+        "summary": "scope_reviewability axis closed: PR is reviewable as one coherent judgment by a single reviewer",
+        "reason": "The diff (src/adjudication.js, src/cli.js, three test files, story/spec docs) forms one coherent judgment: cross-system adjudicator enforcement. It was read in full by the gate_evidence reviewer across three rounds without a split request; commits are sequenced (feature, spec/lineage, two review-driven fail-closed fixes) and each is independently reviewable.",
+        "reviewer": null,
+        "artifact": ".vibepro/reviews/story-vibepro-cross-system-adjudication/gate/review-result-gate_evidence.json",
+        "verification_evidence_summary": {
+          "count": 3,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/integration.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/e2e.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-cross-system-adjudication/verification-runs/unit.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "budget_approval": null,
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication",
+            "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication",
+            "expected_root": null,
+            "expected_head_sha": "40c09842cdf0985e8f94568f2439958d36ddde0d",
+            "current_head_sha": "40c09842cdf0985e8f94568f2439958d36ddde0d",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "40c09842cdf0985e8f94568f2439958d36ddde0d",
+          "current_branch": "claude/cross-system-adjudication",
+          "dirty": false,
+          "status_fingerprint": "",
+          "recorded_at": "2026-08-02T18:55:11.017Z"
+        },
+        "recorded_at": "2026-08-02T18:55:11.026Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "needs_quality_closure",
+      "e2e_experience_reach_rate": null,
+      "final_20_auto_closure_rate": null,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 4
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-03T02:23:46.817Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "0e867b366dab194896633b5cb0ab4a5ddaad8899",
+      "branch": "claude/cross-system-adjudication",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "4475715d8d041f46e664d51bff07b5d96782d7f0",
+      "origin_main_relation": "behind",
+      "dirty": true,
+      "dirty_summary": [
+        "?? docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/"
+      ]
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

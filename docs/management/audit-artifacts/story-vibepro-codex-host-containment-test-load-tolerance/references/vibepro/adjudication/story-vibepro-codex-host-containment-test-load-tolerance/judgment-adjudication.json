@@ -1,0 +1,462 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+  "updated_at": "2026-08-02T21:00:59.489Z",
+  "events": [
+    {
+      "event_id": "90fba2cf-b9de-4029-98f1-3f50c45bf1cf",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story text (root cause narrative: non-atomic pid-file write racing access()-poll, Number('')=0, process.kill(0,0) POSIX self-group semantics) matches the actual diff exactly: fixture tmp+rename writes, waitForChildPid's positive-integer parse, and the worker's synchronous codex-process.json registration. Intent is coherent and traceable end-to-end from Story to code.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:09:32.344Z"
+    },
+    {
+      "event_id": "5bba6be4-b708-434a-86ce-4df14e4017f8",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Beyond the graph_impact_scope token match, the Story documents an actual instrumented reproduction (18 runs / 2 leaks, killProcess-injected harness) that pinned the exact runtime mechanism. I independently confirmed the claimed POSIX fact (process.kill(0,0) succeeds for the caller's own process group, making isProcessAlive(0) permanently true) is correct kill(2)/Node semantics, so the current-reality claim is not just self-reported but independently verifiable as true.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:09:33.039Z"
+    },
+    {
+      "event_id": "1eef9430-8f48-4911-9183-9a6febe53eb4",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec INV-001 explicitly states terminateWorkerTree's SIGTERM-to-SIGKILL escalation phases and sandbox EPERM fallback are unchanged. Direct diff of src/codex-subagent-host.js confirms this: the only additions are resolveCodexPid() calls; phase order, wait durations, and the ['EINVAL','EPERM'] fallback list are untouched.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:09:33.666Z"
+    },
+    {
+      "event_id": "bcd3dbe5-9279-4311-a152-6c736ef8a6b9",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "The matched decision_record (decision-1785691063388-85f5140e, timestamped 2026-08-02T17:17:43Z) justifies bundling scope with the explicit claim 'there are no unrelated source changes (src/ untouched)'. This premise is false at the final head: commit d07cb290 (committed later, 2026-08-02T18:58:34Z) modifies both src/codex-subagent-host.js and src/codex-subagent-host-worker.js (the codexPid re-resolution and synchronous registration hardening). The decision's bundling conclusion is independently defensible via the Story's later, more complete 'boundary and scope' statement which does list src/ as in-scope, but the decision record itself, as currently recorded, rests on a scope-of-diff premise that the final diff contradicts and should be corrected or superseded rather than relied upon as-is.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:09:34.317Z"
+    },
+    {
+      "event_id": "457bca4b-3108-45bb-b4a1-c0a462f26e85",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The dominant failure mode (registration race producing a false containment-success) is exercised by the two containment tests, which I reran in isolation (5/5 pass, including both). These tests spawn real child processes and send real POSIX signals (not mocks), so they functionally exercise the exact failure path the Story describes, even though the recorded evidence is tagged kind=unit rather than an e2e/flow_replay artifact type.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:09:35.019Z"
+    },
+    {
+      "event_id": "ecfd3954-98ff-4c7f-8576-27fefc27dc75",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "verification-evidence.json / unit.json records exit_code=0, 2380/2380 pass at head_sha d07cb290 (matches current HEAD), and I independently reran the targeted containment tests (5/5 pass) at the same head. The done-state claim is corroborated by evidence I generated myself, not only by the implementer's self-report.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:09:35.790Z"
+    },
+    {
+      "event_id": "7d955d4b-f04b-46c3-aad6-5ff7d2188cb9",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Diff is limited to test/codex-subagent-host.test.js (local helper waitFor, not exported), src/codex-subagent-host.js (internal terminateWorkerTree helper additions), src/codex-subagent-host-worker.js (internal pid registration timing), plus docs/design-ssot lineage. No CLI flags, exported function signatures, config schema, or output format changed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:09:36.336Z"
+    },
+    {
+      "event_id": "b8f6ee4b-99c8-4b83-9b37-ddc686aafa38",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "resolveCodexPid performs a single bounded readJson (which gracefully returns null on ENOENT) with no added loop or retry; it cannot deadlock. The synchronous codex-process.json write happens before any await in the worker, closing the described race without introducing a new blocking window. terminateWorkerTree's existing bounded wait stages are unchanged.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:09:36.982Z"
+    },
+    {
+      "event_id": "7be45214-5734-475e-8bfb-100430ef10e5",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Single coherent root cause (pid-file read race) with three tightly coupled surfaces: fixture atomicity, host registration hardening, and deadline widening, plus mandatory Story/Spec/design-ssot self-dogfood artifacts. Net diff is ~92 lines across 5 files with one clear narrative; a single reviewer can read it end-to-end as one judgment.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:09:37.531Z"
+    },
+    {
+      "event_id": "f0aa837e-9324-4aec-8f8e-1d66678b6ff3",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This story is literally about timeout/deadline behavior (waitFor timeoutMs). AC-1 and AC-2 evidence, independently confirmed by direct source read, demonstrate the configurable-timeout and load-margin deadline construction. The behavior is verified, not merely asserted.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:09:37.991Z"
+    },
+    {
+      "event_id": "4459e6fb-c99d-470b-be95-82625cf7ae87",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The only new JSON parse path is readJson(codex-process.json) in resolveCodexPid, reading a file that is always written atomically via tmp+rename (both the pre-existing async writeJson and the new writeJsonSync). readJson already treats ENOENT as null; a torn/partial read is precluded by the rename-based atomicity guarantee, so malformed-input risk here is negligible for this change's scope.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:09:38.516Z"
+    },
+    {
+      "event_id": "7752727a-fa7b-4ab1-8169-57e428a4c72a",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change touches the worker/polling escalation path directly (resolveCodexPid re-resolution at each stage). I reran the containment tests in isolation and they pass 5/5, and the added logic is a single bounded read with no retry loop of its own, riding on the existing bounded wait stages. No duplicate-signal or duplicate-work risk beyond the intentional late-resolved-pid SIGKILL, which is itself idempotent (killing an already-exited pid throws ESRCH, handled).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:09:39.037Z"
+    },
+    {
+      "event_id": "15ac1b85-75c4-4e39-84c6-e79e92fd9754",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This change does not touch any gate, review, or evidence-recording mechanism -- it is scoped to test fixtures and the codex-host containment/termination path. Not applicable, and marking it not_required is consistent with the diff.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:09:39.742Z"
+    },
+    {
+      "event_id": "31cdc673-3af2-4617-a6b2-e7416ff41b96",
+      "type": "premise_correction",
+      "item_id": "spine:boundaries",
+      "corrects_verdict_id": "bcd3dbe5-9279-4311-a152-6c736ef8a6b9",
+      "wrong_premise": "The matched split_resolution decision (decision-1785691063388-85f5140e) asserted 'no unrelated source changes (src/ untouched)', which was true when recorded but became false after commit d07cb290 added the containment registration hardening to src/codex-subagent-host.js and src/codex-subagent-host-worker.js.",
+      "corrected_premise": "A superseding accepted split_resolution decision now states the accurate bundled scope: test fixture atomic-write fix, narrowly scoped src containment hardening (escalation behavior unchanged), and the mandatory self-dogfood registration surface, all from one root-cause investigation with one rollback plan, independently endorsed by the pr_split_scope round-2 review.",
+      "reason": "The stale premise was in the coordinator's earlier decision record, not in the implementation; the boundary judgment itself (bundling is one reviewable intent) holds under the corrected premise.",
+      "replacement_evidence": [
+        {
+          "artifact": "docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md",
+          "sha256": "39e68f847601981e286314d10d1da9da0131e220e34e5a5b83907bb6fd6f9e51"
+        }
+      ],
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "coordinator-correction-1",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:10:29.345Z"
+    },
+    {
+      "event_id": "d14e3882-b0bf-4805-98a1-d93c63e45c5b",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "31cdc673-3af2-4617-a6b2-e7416ff41b96",
+      "reason": "Independent re-check under the corrected premise: the superseding decision (decision-1785701419023-bf05cb8c, head d07cb290, latest and un-superseded) accurately states scope as one root-cause investigation (containment registration race) producing three tightly coupled surfaces -- test fixture atomic-write fix, narrowly scoped src hardening, and mandatory self-dogfood registration. I independently diffed src/codex-subagent-host.js and src/codex-subagent-host-worker.js: the only additions are resolveCodexPid() re-resolution calls and a synchronous writeJsonSync registration before the child's stdin is fed; SIGTERM/SIGKILL escalation order, wait durations, and the ['EINVAL','EPERM'] sandbox fallback are byte-for-byte unchanged, matching Story AC4. git diff origin/main...HEAD --stat shows exactly the 7 files the corrected boundary description names, with no unrelated src changes. The pr_split_scope round-2 subagent result is not a bare self-report: it records its own two fresh re-runs (5/5 pass, ~2.0s vs a reproduced 62.7-63.0s failure) as inspection_evidence, giving independent corroboration that the bundled fix is load-independent and the scope claim holds. Splitting would strand a test-only PR that fails Story registration gates and a docs-only PR with no referent, so bundling is the only reviewable-as-one-intent option. Under the corrected premise, the boundary is sound.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-2",
+        "session_ref": null
+      },
+      "head_commit": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+      "recorded_at": "2026-08-02T20:11:45.951Z"
+    },
+    {
+      "event_id": "bcc6f976-675a-40fe-a20a-42217ec005f3",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Delta re-check at HEAD 03ac374b: the only change since d07cb290 is the addition of an e2e replay test carrying explicit ac:2/ac:5/ac:6 markers that match the Story's own acceptance criteria wording. Intent remains coherent end-to-end; the new file reinforces rather than alters it.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "recorded_at": "2026-08-02T21:00:54.360Z"
+    },
+    {
+      "event_id": "9a191fde-f1fd-482d-98bd-58e68a5ad7a0",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Unchanged conclusion, now further corroborated: the new e2e test independently reproduces the real spawn/registration/shutdown/reap lifecycle through the public API and passed when I reran it (2/2). This is direct behavioral confirmation of the current runtime reality, not just narrative or unit-level evidence.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "recorded_at": "2026-08-02T21:00:54.775Z"
+    },
+    {
+      "event_id": "ce3a50ee-0a34-458a-96e7-37219b2d8cda",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No src changes since last review (confirmed via git diff d07cb290..HEAD --stat: test/e2e file only). INV-001 (escalation phases/signal order/EPERM fallback unchanged) still holds; the new e2e test does not touch or require changing that invariant.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "recorded_at": "2026-08-02T21:00:55.176Z"
+    },
+    {
+      "event_id": "e367b029-2da3-4bec-a492-d2ec67766c53",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-adjudicated directly (not relying on the prior correction chain): decision-1785701419023-bf05cb8c explicitly supersedes the stale decision-1785691063388-85f5140e, correctly states src/codex-subagent-host.js and src/codex-subagent-host-worker.js were changed, and gives an accurate 3-part scope (fixture fix, narrow src registration-race hardening, mandatory self-dogfood registration surface). I confirmed this scope description still matches the current diff: git diff d07cb290..HEAD adds only the e2e test file, which is consistent with the same single story intent and introduces no new unrelated surface. The superseding decision's premise is accurate at current HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "recorded_at": "2026-08-02T21:00:55.600Z"
+    },
+    {
+      "event_id": "9ab44fab-4452-446a-9023-0e16f124a32f",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "verification-evidence.json now carries a dedicated kind=e2e verify run (2/2 pass, head 03ac374b) with explicit ac markers and a documented negative_path note (the unknown/empty pid misread failure mode can no longer satisfy the wait). I independently reran this e2e file and confirmed 2/2 pass. The registration-race failure mode is now demonstrated via both unit-level and true e2e-level evidence.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "recorded_at": "2026-08-02T21:00:56.021Z"
+    },
+    {
+      "event_id": "11ed93ed-8562-43ff-96af-98ba0a48dc2b",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "This closes the gap flagged in the prior adjudication round: verification-evidence.json now has a distinct kind=e2e command entry (node --test test/e2e/story-vibepro-codex-host-containment-test-load-tolerance-main.test.js, 2/2 pass) alongside the kind=unit entry (2382/2382 pass), both at head_sha 03ac374b matching current HEAD. I independently reran both and confirmed pass. Done-state evidence now satisfies the flow_replay/scenario_clause_e2e evidence-type requirement directly, not just by functional analogy.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "recorded_at": "2026-08-02T21:00:56.458Z"
+    },
+    {
+      "event_id": "e9f7c322-e71e-4915-b5f0-b5a976881005",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The delta adds only a new test file under test/e2e/, exercising the existing public createCodexSubagentHost API with no new exported surface, CLI flag, config schema, or output-format change. Public contract conclusion is unaffected and remains sound.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "recorded_at": "2026-08-02T21:00:56.914Z"
+    },
+    {
+      "event_id": "b5a7d3c8-1e91-4480-bc99-653c8cf042e6",
+      "type": "verdict",
+      "item_id": "axis:execution_topology",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The new e2e test exercises the real spawn/shutdown/process-group topology through the public API with no test-only shortcuts (per its own header comment), and passed in isolation. No new deadlock or artifact-lifecycle-gap risk is introduced; this is additional evidence for, not against, topology soundness.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "recorded_at": "2026-08-02T21:00:57.367Z"
+    },
+    {
+      "event_id": "138a43a9-34a0-4f4c-94ff-914ed45b2eb7",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Delta is a single new, self-contained 136-line test file with a clear docstring explaining exactly what it replays and why (avoiding the unit tests' internal shortcuts). It is a natural, easily reviewable addition to the same single-intent PR, not scope creep.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "recorded_at": "2026-08-02T21:00:57.779Z"
+    },
+    {
+      "event_id": "f68da2bf-b6cc-4d70-b83e-2811a71e8db5",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "New e2e test block 2 directly measures and asserts observedMs < 300000 through the public API, adding a real timing observation on top of the previously-verified source-level deadline construction (AC-1/AC-2). Reran in isolation, passes.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "recorded_at": "2026-08-02T21:00:58.192Z"
+    },
+    {
+      "event_id": "6628fa46-a263-407a-887a-6c2644e0fe27",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The new e2e test reads codex-process.json via JSON.parse after the existing atomic tmp+rename write path; no new parse path or malformed-input risk is introduced. Conclusion unchanged from the prior round.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "recorded_at": "2026-08-02T21:00:58.622Z"
+    },
+    {
+      "event_id": "0d5b1673-43d8-40ba-99fd-a3803fb7e9bd",
+      "type": "verdict",
+      "item_id": "failure_mode:retry_or_async_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "No new worker/polling/retry code was added; the e2e test only adds an external behavioral check on the existing escalation path. Reran in isolation (2/2 pass), confirming no duplicate-work or duplicate-signal regression.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "recorded_at": "2026-08-02T21:00:59.074Z"
+    },
+    {
+      "event_id": "4936b8f0-1cb9-4907-aba8-7bb3109a5f27",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The delta only adds a test file; it does not touch any gate/review/evidence-recording mechanism. Not applicable, consistent with the prior round's conclusion.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-fresh-1",
+        "session_ref": null
+      },
+      "head_commit": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "recorded_at": "2026-08-02T21:00:59.487Z"
+    }
+  ]
+}

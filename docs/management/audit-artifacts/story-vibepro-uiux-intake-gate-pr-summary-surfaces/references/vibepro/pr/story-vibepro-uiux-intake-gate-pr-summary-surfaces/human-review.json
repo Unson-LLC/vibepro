@@ -1,0 +1,182 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+  "created_at": "2026-08-03T01:25:28.427Z",
+  "recommended_decision": "split_pr",
+  "recommendation_reason": "Gate DAG is ready_for_review with 0 unresolved evidence item(s). Split Plan is split_recommended with strategy split_by_lane_then_prepare. Scope is needs_clean_branch; recommended strategy is clean_branch_or_split_pr. Scope evidence: baseからのcommitが 7 件あるため履歴確認が必要だが、別Story lineageは検出されていない",
+  "accepted_current_story_lineage": [],
+  "source_artifacts": {
+    "review_cockpit": null,
+    "architecture_review": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture-review.json",
+    "pr_body": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/pr-body.md",
+    "gate_dag": null,
+    "split_plan": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/split-plan.json",
+    "decision_records": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-records.json",
+    "visual_qa": []
+  },
+  "evidence_summary": {
+    "architecture": {
+      "status": "satisfied",
+      "required": true,
+      "reason": "ADR不要: |"
+    },
+    "spec": {
+      "status": "inferred",
+      "required": true,
+      "reason": "3 clauses inferred from Story+Code+Test"
+    },
+    "decision_records": {
+      "total": 9,
+      "open": 0,
+      "by_type": {
+        "waiver": 3,
+        "needs_review": 6
+      },
+      "by_status": {
+        "accepted": 9
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "expected_root": null,
+          "expected_head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+          "current_head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+          "managed_worktree": null
+        }
+      ],
+      "latest": {
+        "schema_version": "0.1.0",
+        "decision_id": "decision-1785718159225-de035b1c",
+        "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+        "type": "waiver",
+        "status": "accepted",
+        "source": "budget:delivery_efficiency:story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+        "source_status": null,
+        "summary": "Owner grant: 8->10 subagents for gate_evidence and runtime_contract re-reviews of the corrected story text",
+        "reason": "The runtime_contract review (lifecycle at head e4a6f68d) found the story overclaimed production reachability of buildHumanEvidenceDigest; the correction commit 3bc551f8 staled the gate_evidence and runtime_contract reviews, both of which must re-run. sato_keigo approved the raise via AskUserQuestion in session c3213594-536c-47ba-89cf-d8613ecaff91 on 2026-08-03, observed directly by this recording agent.",
+        "reviewer": null,
+        "artifact": ".vibepro/config.json",
+        "verification_evidence_summary": {
+          "count": 4,
+          "entries": [
+            {
+              "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.json",
+              "type": "e2e",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.json",
+              "type": "typecheck",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.json",
+              "type": "integration",
+              "result": "pass"
+            },
+            {
+              "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.json",
+              "type": "unit",
+              "result": "pass"
+            }
+          ]
+        },
+        "budget_approval": {
+          "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+          "override_digest": "adf0a3bfdeeb1000a1dfb5ce0de55af6916cfd7cf8660623ceac4003ceda9e15",
+          "grantor_kind": "human",
+          "grantor": "sato_keigo",
+          "recorded_by": {
+            "agent_system": "claude_code",
+            "agent_id": "coordinator-sweet-spence-0193db"
+          },
+          "config_ref": ".vibepro/config.json",
+          "decision_doc": "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md"
+        },
+        "secret_exposure": null,
+        "redaction": {
+          "applied": false,
+          "hit_count": 0
+        },
+        "warnings": [
+          {
+            "id": "managed_worktree_locality",
+            "status": "needs_review",
+            "mode": "preferred",
+            "required": false,
+            "command_name": "decision record",
+            "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+            "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+            "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+            "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+            "expected_root": null,
+            "expected_head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+            "current_head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+            "managed_worktree": null
+          }
+        ],
+        "git_context": {
+          "head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+          "current_branch": "claude/sweet-spence-0193db",
+          "dirty": true,
+          "status_fingerprint": "M .vibepro/config.json",
+          "recorded_at": "2026-08-03T00:49:19.218Z"
+        },
+        "recorded_at": "2026-08-03T00:49:19.226Z"
+      }
+    },
+    "visual_qa": null,
+    "completion_quality": {
+      "status": "ready_for_human_acceptance",
+      "e2e_experience_reach_rate": 1,
+      "final_20_auto_closure_rate": 1,
+      "visual_qa_pass_rate": null,
+      "required_evidence_count": 0
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-03T01:25:24.712Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "branch": "claude/sweet-spence-0193db",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "cdd4784c609b15edc7e03dba29d1a0be5dc63a9d",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "decision_options": [
+    "proceed",
+    "split_pr",
+    "add_evidence",
+    "waive_with_reason",
+    "block"
+  ],
+  "review_record": {
+    "selected_decision": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

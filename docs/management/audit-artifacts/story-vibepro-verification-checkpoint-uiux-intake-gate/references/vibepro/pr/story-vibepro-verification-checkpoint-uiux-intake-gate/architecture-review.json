@@ -1,0 +1,53 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+  "created_at": "2026-08-03T06:54:51.847Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADR不要: |",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADR不要: |"
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-03T06:54:48.298Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/elegant-haslett-d52345"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/elegant-haslett-d52345/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/elegant-haslett-d52345/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "branch": "claude/elegant-haslett-d52345",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "ff39480d27660e4197d4c6b7793cb988ff943c35",
+      "origin_main_relation": "ahead",
+      "dirty": false,
+      "dirty_summary": []
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

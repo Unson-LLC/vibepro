@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+      "decision_id": "decision-1785736509663-1aefe794",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: the PR diff is one coherent intent — remove the production-dead human PR summary renderer chain from src/pr-manager.js (-583 lines, zero callers confirmed by three independent reviews in story-vibepro-uiux-intake-gate-pr-summary-surfaces), delete the two tests that pinned the dead exports, and add the story doc, spec pointer/contract doc, design registry entry, config registration, and one story e2e test. review_owner_map: a single reviewer owns the whole surface; the gate stage gate_evidence review role covers src/pr-manager.js and the test/docs surfaces in one pass since every deleted function is unreachable and the live-path behavior is pinned by the pre-existing concise-body contract tests. related_file_blast_radius: production blast radius is zero by construction (all deleted functions had no callers; shared helpers retained and pinned by ac:2). split_plan: no split needed — splitting docs from code would leave the registry/spec pointing at unremoved code or vice versa.",
+      "artifact": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/split-plan.json",
+      "activation_candidates": [
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T06:57:31.654Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

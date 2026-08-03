@@ -1,0 +1,159 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Structural no-op verified: collectCheckpointGateFindings drops missing node ids; no gate DAG builder constructs gate:uiux_intake_judgment on this HEAD; no consumer or test hardcodes the verification gate_ids list; rollback is one array entry plus the test file",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read full origin/main...HEAD diff; verified map/filter(Boolean) semantics in collectCheckpointGateFindings; exhaustively grepped every gate node construction site in src/pr-manager.js buildGateDag and helpers (none produce the id); checked consumers src/cli.js:2528 and src/task-manager.js:1008-1028; ran the story e2e test 2/2 pass; read coordinator unit.json 2416/2416 pass",
+    "evidence": "node --test test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js 2/2 pass; .vibepro/pr/story-vibepro-verification-checkpoint-uiux-intake-gate/verification-runs/unit.json npm test 2416/2416 pass",
+    "inputs": [
+      "src/checkpoint-manager.js",
+      "src/pr-manager.js",
+      "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js",
+      "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+      "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+      "design-ssot.json"
+    ]
+  },
+  "judgment_delta": [
+    "Initial concern that the list change could silently block in-flight stories or that the no-op claim was unverified -> final pass because the reviewer independently reproduced the drop-missing-id semantics and confirmed no builder constructs the node on this HEAD"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/elegant-haslett-d52345",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/elegant-haslett-d52345",
+    "expected_root": null,
+    "expected_head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+    "current_head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/elegant-haslett-d52345",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/elegant-haslett-d52345",
+      "expected_root": null,
+      "expected_head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "current_head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-03T06:34:33.510Z",
+  "git_context": {
+    "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+    "current_branch": "claude/elegant-haslett-d52345",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-03T06:34:33.385Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 6 file(s)",
+    "recorded_head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+    "surface_files": [
+      {
+        "path": "design-ssot.json",
+        "sha256": "2bddad6e4243d75ff01528bd655ab2f05ea87229b3a2b82b581b72e118b7fdb5",
+        "size": 262549
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+        "sha256": "12ac908c430a0e6aaf9338b88646de10841317f5c665760f4d41c121a8ba965e",
+        "size": 4253
+      },
+      {
+        "path": "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+        "sha256": "a62565f8483f262ae98b89c46a3416333497225e4f48564f9538ce1283a9f2f8",
+        "size": 2869
+      },
+      {
+        "path": "src/checkpoint-manager.js",
+        "sha256": "075cd9e93fb393328096d2349badbdc52a10ebc2636a5bb91d6e9a85b7483d43",
+        "size": 9935
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "7c8766e91bb8b900f4f564e41be441e8812aba84c1528977c32a5c9897fec493",
+        "size": 729578
+      },
+      {
+        "path": "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js",
+        "sha256": "20df7b25b0582dbb9045943bae51e1904f146e14a47ff7622050b9bff9d5f41d",
+        "size": 2869
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "099ba48b224b12f8ba314ea705298885191df4ddd70b9193fc5e4a357734e9c5"
+  },
+  "source_fingerprint": "0dbbc49e3678ef07e955d69a65b53cae325eb982e052ca0f7e6780dc8fb20b77",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a111a0a3c49d2232d",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": "medium",
+    "cost_tier": "low",
+    "thread_id": null,
+    "session_id": "a111a0a3c49d2232d",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-verification-checkpoint-uiux-intake-gate/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": false,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a111a0a3c49d2232d",
+      "implementation_session_id": "0c23f6fd-ab3f-442d-86c7-fcd1ffd1c21d",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": {
+    "input_tokens": null,
+    "output_tokens": null,
+    "total_tokens": 104270,
+    "cost_usd": null
+  }
+}

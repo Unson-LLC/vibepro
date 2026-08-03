@@ -46,7 +46,7 @@
     "docs:build:check": "node scripts/check-public-manual-build.mjs",
     "docs:deploy": "node scripts/deploy-public-manual.mjs",
     "docs:preview": "vitepress preview docs",
-    "test": "node --test",
+    "test": "node --test --test-concurrency=2",
     "test:e2e:ts": "node scripts/run-e2e-ts-specs.mjs",
     "lint:e2e-product-execution": "node scripts/lint-e2e-product-execution.mjs",
     "typecheck": "for f in bin/vibepro.js src/*.js scripts/*.mjs; do node --check \"$f\" || exit 1; done",

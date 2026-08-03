@@ -1,3 +1,4 @@
+import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -380,6 +381,23 @@ test('verify run records a timeout kill as a failing run and names the timeout a
   const artifact = await readJson(runArtifactPath(root, 'build'));
   assert.equal(artifact.run.timed_out, true);
   assert.equal(artifact.run.timeout_ms, 700);
+});
+
+// Covers story-vibepro-unit-suite-concurrency-default:AC-3 (default timeout is 7200000 ms and
+// lands in the run artifact) and story-vibepro-unit-suite-concurrency-default:AC-5 (this test
+// fails if the default shrinks).
+test('verify run defaults to a timeout with headroom over the measured loaded-host full-suite run', async () => {
+  const root = await setupRepo();
+  await cli([
+    'verify', 'run', root, '--id', STORY_ID, '--kind', 'unit',
+    '--target', 'tests/sample.test.js',
+    '--', 'node', '--test', 'tests/sample.test.js'
+  ]);
+  const artifact = await readJson(runArtifactPath(root, 'unit'));
+  // The full suite has been measured at 28 minutes (load ~100, unlimited parallelism) and
+  // 56 minutes (load ~35, --test-concurrency=2); a default near those turns slow-host runs
+  // into timeout fails that are not test failures.
+  assert.equal(artifact.run.timeout_ms, 7200000);
 });
 
 test('verify run keeps its computed summary sentence when the agent supplies one', async () => {

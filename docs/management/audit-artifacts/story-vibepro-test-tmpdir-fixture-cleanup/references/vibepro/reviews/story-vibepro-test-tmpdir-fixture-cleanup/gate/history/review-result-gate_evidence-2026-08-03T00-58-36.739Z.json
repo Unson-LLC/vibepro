@@ -1,0 +1,151 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "All three verification commands are runner_direct with log-matched counts (unit 2386/2386, e2e 5/5, typecheck pass); the AC-3 conformance guard independently re-passes at current head; implementation-stage reviews show distinct agent ids per round with agent_closed and separate_session provenance",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "unit-evidence-head-sha-drift",
+      "detail": "the unit record's head predates six later commits brought by a rebase; the content_binding files hash-match the current head byte-for-byte and a fresh conformance run passes 3/3, so the story-scoped evidence remains valid under content-surface freshness"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "unit-evidence-head-sha-drift",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "content-scoped binding is the repo's designed freshness policy; CI on the PR will re-run the full suite at the merged head",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read verification-evidence.json; tallied unit.log and e2e.log against claimed counts; verified cited docs exist; executed the conformance test at current head 3/3; shasum-verified content_binding surfaces; checked review lifecycle provenance",
+    "evidence": null,
+    "inputs": [
+      ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.log",
+      "test/scratch-tmpdir-conformance.test.js",
+      "test/support/scratch-tmpdir.js",
+      "docs/releases/2026-08.md"
+    ]
+  },
+  "judgment_delta": [
+    "the head-sha drift initially looked like stale evidence; resolved as content-binding-valid after hash verification and an independent guard rerun"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "expected_root": null,
+    "expected_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+    "current_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "expected_root": null,
+      "expected_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+      "current_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-03T00:58:36.739Z",
+  "git_context": {
+    "head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+    "current_branch": "claude/adoring-keller-f403ec",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-03T00:58:36.680Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+    "surface_files": [
+      {
+        "path": "docs/releases/2026-08.md",
+        "sha256": "f44e4c10b8ed982962b91f1d4b38df90e2a5341bf59dbd10446695cdd05ebe27",
+        "size": 7270
+      },
+      {
+        "path": "test/scratch-tmpdir-conformance.test.js",
+        "sha256": "c866e87745afa90cab5d5c959c99a18c24a0c66187dc08a36bab590d160344f1",
+        "size": 4157
+      },
+      {
+        "path": "test/support/scratch-tmpdir.js",
+        "sha256": "df5021804544842d9638d8b83fcb3257c868f0adce78789f5ebfdc79a89cf71a",
+        "size": 2070
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "e8be447a2661ec915fb4c7d02b4058ef1dbe3358483d421a77548e49fa88f0af"
+  },
+  "source_fingerprint": "a30047162676d6eef398cf9ebb96bd4240195763da07114689479708a57e243c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a62b01e3490470d67",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a62b01e3490470d67",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/gate/verdict-gate_evidence.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a62b01e3490470d67",
+      "implementation_session_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

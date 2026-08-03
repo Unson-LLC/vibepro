@@ -1,0 +1,12 @@
+✔ story-vibepro-pr-human-summary-dead-chain-removal removes every dead-chain function and its exports from src/pr-manager.js (ac:1) (17.522334ms)
+✔ story-vibepro-pr-human-summary-dead-chain-removal keeps every shared helper that has live callers outside the chain (ac:2) (4.062708ms)
+✔ story-vibepro-pr-human-summary-dead-chain-removal keeps the concise pr-body contract intact when pr prepare renders a real repository (ac:3) (3048.575791ms)
+✔ story-vibepro-pr-human-summary-dead-chain-removal leaves no module surface for the removed exports (ac:4) (0.221666ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 4
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3638.10175

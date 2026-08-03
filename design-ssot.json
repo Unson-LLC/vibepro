@@ -5419,6 +5419,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "spec": [
@@ -5462,6 +5469,13 @@
             "path": "docs/specs/vibepro-codex-detached-completion-inbox.md",
             "required": true,
             "relationship": "specifies",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-codex-host-containment-test-load-tolerance.md",
+            "required": true,
+            "relationship": "implements",
             "last_reviewed_root_hash": null
           }
         ],
@@ -5605,6 +5619,13 @@
           "last_reviewed_root_hash": null
         },
         {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
           "kind": "spec",
           "path": "docs/specs/story-vibepro-autonomy-roadmap-rebaseline.md",
           "required": true,
@@ -5644,6 +5665,13 @@
           "path": "docs/specs/vibepro-codex-detached-completion-inbox.md",
           "required": true,
           "relationship": "specifies",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-codex-host-containment-test-load-tolerance.md",
+          "required": true,
+          "relationship": "implements",
           "last_reviewed_root_hash": null
         },
         {
@@ -7744,6 +7772,45 @@
       "source": "design-ssot.json"
     },
     {
+      "id": "vibepro-test-tmpdir-fixture-cleanup",
+      "title": "Test-suite TMPDIR fixture cleanup isolation",
+      "root_doc": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "owner": "sato_keigo",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-test-tmpdir-fixture-cleanup.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-test-tmpdir-fixture-cleanup.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
       "id": "story-vibepro-profiler-file-walk-stack-overflow",
       "title": "diagnosis-path directory walkers iterative rewrite",
       "root_doc": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
@@ -7780,6 +7847,205 @@
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": "2c0991ec929bcca1b6e12da190eac0a816a863fe52d04816b03fbb2fe43d1549"
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-unit-suite-concurrency-default",
+      "title": "VibePro Unit Suite Concurrency and Verify Run Timeout Defaults",
+      "root_doc": "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "npm test full-suite concurrency pin and verify run default timeout",
+      "owned_surfaces": [
+        "package.json scripts.test concurrency pin",
+        "src/verification-runner.js DEFAULT_TIMEOUT_MS"
+      ],
+      "required_child_kinds": [
+        "story",
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ],
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "title": "gate:uiux_intake_judgment human PR summary surface labels",
+      "root_doc": "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+      "owner": "VibePro diagnostics maintainer",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "curated human PR summary label lists in src/pr-manager.js",
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {},
+      "child_links": [],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-cross-system-adjudication",
+      "title": "Cross-system adjudication requires a different model family than the implementer",
+      "root_doc": "docs/management/stories/active/story-vibepro-cross-system-adjudication.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-cross-system-adjudication.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-cross-system-adjudication.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-verification-checkpoint-uiux-intake-gate",
+      "title": "Verification checkpoint gate list: gate:uiux_intake_judgment",
+      "root_doc": "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+      "owner": "sato_keigo",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "curated verification checkpoint gate_ids in src/checkpoint-manager.js",
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-pr-human-summary-dead-chain-removal",
+      "title": "死んだ人間向けPRサマリーレンダラーチェーンを削除する",
+      "root_doc": "docs/management/stories/active/story-vibepro-pr-human-summary-dead-chain-removal.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-pr-human-summary-dead-chain-removal.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-pr-human-summary-dead-chain-removal.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
         }
       ],
       "source": "design-ssot.json"
@@ -7840,5 +8106,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-08-03T04:43:40.540Z"
+  "updated_at": "2026-08-03T06:59:30.606Z"
 }

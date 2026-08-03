@@ -1,0 +1,197 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+  "generated_by": {
+    "caller": "unknown",
+    "stage": "ai_synthesis"
+  },
+  "clauses": [
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "The waitFor test helper accepts a caller-specified timeout via an options object ({ timeoutMs }) while keeping the default at 10000ms so existing call sites keep their current deadline behavior.",
+      "rationale": "AC1: callers must be able to widen the polling deadline without changing every existing waitFor call site.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "AC1: `waitFor` がタイムアウト値を呼び出し側から指定できる。"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "test/codex-subagent-host.test.js",
+            "anchor": "async function waitFor(predicate, { timeoutMs = 10000 } = {})"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/codex-subagent-host.test.js",
+            "case": "production Codex host shutdown contains the detached worker process group"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T14:45:31.174Z",
+      "last_revised_at": "2026-08-02T20:16:26.531Z"
+    },
+    {
+      "id": "S-004",
+      "type": "scenario",
+      "statement": "The four load-sensitive containment waits (pid-file appearance after spawn and worker-exit / SIGTERM-marker detection after shutdown, in both the process-group containment test and the sandbox-boundary containment test) pass timeoutMs 300000, sized from review-measured evidence: under host load average 120-155 the post-shutdown wait reached ~63s, so the deadline carries a ~4.7x margin over the worst observation on top of the ~7.5s terminateWorkerTree SIGTERM-to-SIGKILL escalation ceiling.",
+      "rationale": "AC2: the deadline must absorb the production escalation ceiling under real multi-worktree host load (observed load average up to 155, where 60000ms was measured insufficient) so the containment tests stop flaking during full-suite runs.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "AC2: containment テスト（process group / sandbox boundary）の shutdown 後待機と spawn 後の pid ファイル待機が、production の終了エスカレーション上限＋高負荷マージンを織り込んだ deadline を持つ。"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "test/codex-subagent-host.test.js",
+            "anchor": "{ timeoutMs: 300000 }"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/codex-subagent-host.test.js",
+            "case": "production Codex host keeps containment inside the worker sandbox boundary"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T14:59:50.904Z",
+      "last_revised_at": "2026-08-02T20:16:26.531Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "The previously flaky containment test passes in both a targeted single-file run (node --test test/codex-subagent-host.test.js) and a full-suite run, verified by current-head verification evidence.",
+      "rationale": "AC3: the fix must hold in the execution mode where the flake was observed (full suite), not only in isolation.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "AC3: 単体実行・full suite（`node --test --test-concurrency=2`）の双方で該当テストが pass する。"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "test/codex-subagent-host.test.js",
+            "anchor": "codexExecutableArgs: [fakeCodex, childPidPath]"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/codex-subagent-host.test.js",
+            "case": "production Codex host shutdown contains the detached worker process group"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T14:45:31.174Z",
+      "last_revised_at": "2026-08-02T20:16:26.531Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "Production changes are limited to closing the containment registration race: the shutdown escalation phases, signal ordering, sandbox EPERM fallback, Windows branches, and event delivery keep their existing behavior.",
+      "rationale": "AC4 (revised): the escalation ladder is behaviorally verified by the sandbox-boundary containment test; only the codex pid registration timing and its re-resolution may change.",
+      "inherited_behavior": {
+        "condition": "terminateWorkerTree SIGTERM-to-SIGKILL escalation phases and sandbox EPERM fallback are unchanged/existing",
+        "classification": "inherited",
+        "files": [
+          "src/codex-subagent-host.js"
+        ]
+      },
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "AC4: production 変更は containment 登録レースの閉鎖に限定する。"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/codex-subagent-host.js",
+            "anchor": "async function terminateWorkerTree"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/codex-subagent-host.test.js",
+            "case": "production Codex host keeps containment inside the worker sandbox boundary"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T18:58:19.689Z",
+      "last_revised_at": "2026-08-02T20:16:26.531Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "The worker registers the codex child pid in codex-process.json synchronously (writeFileSync) immediately after spawn and before any await, and terminateWorkerTree re-resolves codex-process.json whenever codexPid is unknown — before escalation phases and before the final containment confirmation, SIGKILLing a late-resolved pid — so an unregistered detached codex child is never reported as contained.",
+      "rationale": "AC5: an inspection-found (not flake-observed) hardening — the async registration window plus waitForPidExit(null)=true semantics could in principle let shutdown report success without ever signaling a detached codex child whose pid registration was starved past the escalation ladder.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "AC5: worker は codex 子プロセスの spawn 直後に同期的（writeFileSync）に codex-process.json を登録し、host の terminateWorkerTree は codexPid 不明のとき escalation 各段階と最終確認前に codex-process.json を再解決"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/codex-subagent-host-worker.js",
+            "anchor": "codex-process.json"
+          },
+          {
+            "file": "src/codex-subagent-host.js",
+            "anchor": "codex-process.json"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/codex-subagent-host.test.js",
+            "case": "production Codex host shutdown contains the detached worker process group"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T18:58:19.689Z",
+      "last_revised_at": "2026-08-02T20:16:26.531Z"
+    },
+    {
+      "id": "S-005",
+      "type": "scenario",
+      "statement": "Test fixtures write pid files and signal markers atomically (tmp+rename), and the test-side waits parse the pid file content until it is a positive integer (> 1) instead of checking file existence alone, so a zero-byte read can never yield childPid=0 — whose isProcessAlive(0) via process.kill(0,0) is always true and made the post-shutdown wait structurally unsatisfiable at any deadline.",
+      "rationale": "AC6: the measured root cause of the surviving 300s timeouts (18-run instrumented harness, 2 leaks, both rawChildPidContent empty) was the fixture's non-atomic pid write racing the access()-only poll; production containment signal delivery was confirmed correct in every run.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "AC6: テストフィクスチャの pid ファイル・シグナルマーカーの書き込みは tmp+rename でアトミック化し、テスト側の読み取りは「非空・正整数としてパースできるまで」を待機条件に含める。"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "test/codex-subagent-host.test.js",
+            "anchor": "codex-child.pid"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/codex-subagent-host.test.js",
+            "case": "production Codex host keeps containment inside the worker sandbox boundary"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-02T18:58:19.689Z",
+      "last_revised_at": "2026-08-02T20:16:26.531Z"
+    }
+  ],
+  "generated_at": "2026-08-02T20:16:26.529Z",
+  "previous_spec_id": "2026-08-02T18:59:23.360Z"
+}
