@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "stage": "implementation",
+  "role": "code_spec_alignment",
+  "status": "needs_changes",
+  "summary": "Core mechanics match INV-001/S-001/S-002 and sampled imports are correct, but the conformance guard scans only test/**/*.test.js while story AC1 covers all test files: 11 mkdtemp-using .spec.ts files are patched today yet unguarded going forward",
+  "findings": [
+    {
+      "severity": "medium",
+      "id": "conformance-guard-excludes-spec-ts",
+      "detail": "walkTestFiles only collects .test.js so a future .spec.ts/.spec.js with mkdtemp and no helper import passes the AC3 guard silently; real scope gap vs AC1 wording (全テストファイル)"
+    },
+    {
+      "severity": "low",
+      "id": "unit-log-preexisting-unrelated-failures",
+      "detail": "3 unit.log failures traced to missing vitepress dependency, unrelated to this diff; resolved by npm install"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read helper, conformance test, story e2e test, spec clauses, story doc; verified sampled import insertions from b7ff55ab in 5 files; grepped .test.js and .spec.ts corpus for mkdtemp usage; read unit.log and e2e.log tails",
+    "evidence": null,
+    "inputs": [
+      "test/support/scratch-tmpdir.js",
+      "test/scratch-tmpdir-conformance.test.js",
+      "test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js",
+      "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md"
+    ]
+  },
+  "judgment_delta": [
+    "narrow code-vs-spec check would pass since INV-001 glob matches implementation; cross-checking story AC1 wording against the .spec.ts corpus surfaced the unguarded surface, changing verdict from pass to needs_changes"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "expected_root": null,
+    "expected_head_sha": "7e45805cdb2a83345ac83b2e4a27d845b981ab07",
+    "current_head_sha": "7e45805cdb2a83345ac83b2e4a27d845b981ab07",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "expected_root": null,
+      "expected_head_sha": "7e45805cdb2a83345ac83b2e4a27d845b981ab07",
+      "current_head_sha": "7e45805cdb2a83345ac83b2e4a27d845b981ab07",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T19:04:43.108Z",
+  "git_context": {
+    "head_sha": "7e45805cdb2a83345ac83b2e4a27d845b981ab07",
+    "current_branch": "claude/adoring-keller-f403ec",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T19:04:43.055Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "7e45805cdb2a83345ac83b2e4a27d845b981ab07",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+        "sha256": "fdc3ab1c3fda8fe91c4776c7bc66b841ad8a16a6f4355b828187be80f96723b3",
+        "size": 3762
+      },
+      {
+        "path": "test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js",
+        "sha256": "7db7daadc273481b12585fefb3d883920b0bc731de5272cc958d10632320296c",
+        "size": 11920
+      },
+      {
+        "path": "test/scratch-tmpdir-conformance.test.js",
+        "sha256": "6545dbe9b5cfe14da41a86038d920c65c336a6a300d47ec53789227c2452099b",
+        "size": 4113
+      },
+      {
+        "path": "test/support/scratch-tmpdir.js",
+        "sha256": "df5021804544842d9638d8b83fcb3257c868f0adce78789f5ebfdc79a89cf71a",
+        "size": 2070
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "fee6d702e46bf00a22da55933742b8e486e29037ae2929c6c09f746bce2857c6"
+  },
+  "source_fingerprint": "b8ea5029a1472dcdfefa624f258b6acb2793a4d157df8dd56bb76ea6255a221e",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "ae868be26bbdf296b",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "ae868be26bbdf296b",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/implementation/review-request-code_spec_alignment.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/implementation/verdict-code_spec_alignment.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "ae868be26bbdf296b",
+      "implementation_session_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

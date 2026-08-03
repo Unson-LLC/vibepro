@@ -1,0 +1,951 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "updated_at": "2026-08-03T02:31:13.830Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "expected_root": null,
+      "expected_head_sha": "ef7f7f1763423035804ea339c1b6521f2250e4d7",
+      "current_head_sha": "ef7f7f1763423035804ea339c1b6521f2250e4d7",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785724273768-0553f17c",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-test-tmpdir-fixture-cleanup",
+      "source_status": null,
+      "summary": "Rebind the third owner approval to the current override content: the approved spare slot realized as pr_split_scope role cap 3->4, aggregate cap unchanged at 20",
+      "reason": "Keigo Sato's third approval (2026-08-03, AskUserQuestion in session 75333c2f-bf73-49ea-a75c-1e2b8ee93273) granted one pr_split_scope re-confirmation plus one spare. The third rebase again staled only pr_split_scope, which is the exact contingency the spare covered; the role cap was raised 3->4 with no aggregate change, and this decision rebinds the approval digest to that content.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+        "override_digest": "c7de51d9ca904f41c52ddbc3f2ff20505146a12c13e2ed7c35e06210b74a7a97",
+        "grantor_kind": "human",
+        "grantor": "sato_keigo",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-c7de51d9.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "expected_root": null,
+          "expected_head_sha": "ef7f7f1763423035804ea339c1b6521f2250e4d7",
+          "current_head_sha": "ef7f7f1763423035804ea339c1b6521f2250e4d7",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ef7f7f1763423035804ea339c1b6521f2250e4d7",
+        "current_branch": "claude/adoring-keller-f403ec",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-03T02:31:13.758Z"
+      },
+      "recorded_at": "2026-08-03T02:31:13.769Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785723647417-8e2b8557",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-test-tmpdir-fixture-cleanup",
+      "source_status": null,
+      "summary": "Third owner-approved bounded extension (aggregate 20) for one pr_split_scope re-confirmation after the second externally-forced rebase",
+      "reason": "Keigo Sato approved on 2026-08-03 via AskUserQuestion in Claude Code session 75333c2f-bf73-49ea-a75c-1e2b8ee93273. A rebase onto origin/main (11 upstream commits) plus a JSON repair commit changed .vibepro/config.json, staling only the pr_split_scope review; all other roles remain content-current. Bounded to one re-confirmation plus one spare.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+        "override_digest": "5bb49be532713fc3c2c3d7c173857622c7c81398fe07627e4c552c8f017fec4d",
+        "grantor_kind": "human",
+        "grantor": "sato_keigo",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-5bb49be5.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "expected_root": null,
+          "expected_head_sha": "d13299216b1bb1e92cd69fb6330113ef2805a8c9",
+          "current_head_sha": "d13299216b1bb1e92cd69fb6330113ef2805a8c9",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "d13299216b1bb1e92cd69fb6330113ef2805a8c9",
+        "current_branch": "claude/adoring-keller-f403ec",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-03T02:20:47.392Z"
+      },
+      "recorded_at": "2026-08-03T02:20:47.420Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785721942969-e7635593",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-test-tmpdir-fixture-cleanup",
+      "source_status": null,
+      "summary": "Second owner-approved bounded extension (aggregate 18 dispatches, 90-min consumption) for the differential re-review round after the adjudication-found guard defect fix",
+      "reason": "Keigo Sato approved on 2026-08-03 via AskUserQuestion in Claude Code session 75333c2f-bf73-49ea-a75c-1e2b8ee93273. Independent adjudication found the conformance guard regex missed mkdtempSync and destructured tmpdir(), leaving two unguarded files; the fix (c36e9254) staled five reviews whose content surface includes the guard file. Bounded to one differential re-review round plus spare; not a gate waiver.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+        "override_digest": "9a99e7cb46f9ab2e7518a51286b2da0abc789e2c26399def85cb1e13f0dadbd4",
+        "grantor_kind": "human",
+        "grantor": "sato_keigo",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-9a99e7cb.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "expected_root": null,
+          "expected_head_sha": "fa3f98c354246530a1aeef64c607f4d3c4ca2d5c",
+          "current_head_sha": "fa3f98c354246530a1aeef64c607f4d3c4ca2d5c",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "fa3f98c354246530a1aeef64c607f4d3c4ca2d5c",
+        "current_branch": "claude/adoring-keller-f403ec",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-03T01:52:22.960Z"
+      },
+      "recorded_at": "2026-08-03T01:52:22.970Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785718171436-d657c10d",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-test-tmpdir-fixture-cleanup",
+      "source_status": null,
+      "summary": "Owner-approved bounded review dispatch extension (aggregate 12 subagents, 60-min consumption) for the round-3 code_spec_alignment confirmation and ux_completion re-confirmation",
+      "reason": "Keigo Sato approved the extension on 2026-08-03 via AskUserQuestion in Claude Code session 75333c2f-bf73-49ea-a75c-1e2b8ee93273 after the default 6-dispatch cap was consumed by two legitimate review rounds and a rebase staled the ux_completion content surface. Bounded to exactly the confirmation dispatches plus replacement headroom; not a gate waiver.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+        "override_digest": "14963605a06bd2453f58aabd5afec5e013516c519d10cfe332c76504d3a1f914",
+        "grantor_kind": "human",
+        "grantor": "sato_keigo",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-14963605.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "expected_root": null,
+          "expected_head_sha": "edc3904aca28cb9184ecbc8a9d9511e22003a251",
+          "current_head_sha": "edc3904aca28cb9184ecbc8a9d9511e22003a251",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "edc3904aca28cb9184ecbc8a9d9511e22003a251",
+        "current_branch": "claude/adoring-keller-f403ec",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-03T00:49:31.429Z"
+      },
+      "recorded_at": "2026-08-03T00:49:31.437Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785701161587-58824aed",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-test-tmpdir-fixture-cleanup",
+      "source_status": null,
+      "summary": "Authorize the story-local review dispatch budget override (12 subagents, role caps csa=4/rc=3/ux=3) so the round-3 code_spec_alignment confirmation review can dispatch",
+      "reason": "Two full review rounds legitimately consumed the default 6-subagent cap: round 1 found a real medium coverage gap, round 2 verified the fix and left one low partial-edit finding now fixed at a1327f75. One differential dispatch is needed to confirm; the override grants exactly that plus minimal spare. Granted autonomously within the standing instruction to complete this story end-to-end via the VibePro flow.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+        "override_digest": "14963605a06bd2453f58aabd5afec5e013516c519d10cfe332c76504d3a1f914",
+        "grantor_kind": "agent",
+        "grantor": "claude-fable-5-session-75333c2f",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-02-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-14963605.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "expected_root": null,
+          "expected_head_sha": "d24d294b1f116fd1c9eb7e42eeee860ceee918f9",
+          "current_head_sha": "d24d294b1f116fd1c9eb7e42eeee860ceee918f9",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "d24d294b1f116fd1c9eb7e42eeee860ceee918f9",
+        "current_branch": "claude/adoring-keller-f403ec",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T20:06:01.575Z"
+      },
+      "recorded_at": "2026-08-02T20:06:01.589Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785687618033-22824244",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_ux_surface",
+      "source_status": null,
+      "summary": "No user-facing UX surface: change is scoped to test-suite fixture cleanup with no UI/CLI/output changes",
+      "reason": "screenshot/visual_qa/accessibility_evidence/flow_replay: not applicable -- this story changes only internal test infrastructure (test/support/scratch-tmpdir.js and its import across test files). No CLI output, UI, or accessibility surface is added or modified; there is nothing a user or operator sees or interacts with differently as a result of this change.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.json",
+            "type": "unit",
+            "result": "fail"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "expected_root": null,
+          "expected_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "current_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+        "current_branch": "claude/adoring-keller-f403ec",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T16:20:18.000Z"
+      },
+      "recorded_at": "2026-08-02T16:20:18.035Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785687614575-3ff880b7",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_data_state",
+      "source_status": null,
+      "summary": "No persisted/migrated data touched: only ephemeral mkdtemp scratch directories inside process-scoped TMPDIR roots",
+      "reason": "migration_plan: not applicable -- no schema or persisted data is introduced or changed. rollback_plan: reverting the helper import lines removes the behavior entirely, with no stored state to unwind. idempotency_test: the helper's self-healing sweep (removing >24h-old vibepro-scratch- roots at import time, per test/scratch-tmpdir-conformance.test.js) is safe to run repeatedly and is exercised by that conformance test. query_semantics_test: not applicable -- no query/cache layer is touched; the only state is filesystem scratch directories created via mkdtemp and removed on normal process exit.",
+      "reviewer": null,
+      "artifact": "test/scratch-tmpdir-conformance.test.js",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.json",
+            "type": "unit",
+            "result": "fail"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "expected_root": null,
+          "expected_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "current_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+        "current_branch": "claude/adoring-keller-f403ec",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T16:20:14.549Z"
+      },
+      "recorded_at": "2026-08-02T16:20:14.575Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785687611056-f595c996",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "source_status": null,
+      "summary": "No rollback-sensitive surface: test-infrastructure-only change with a trivial revert path, no stored state or feature gate",
+      "reason": "rollback_plan: rollback is simply reverting the test helper file and the mechanical import-line additions across the 133 test files; there is no data migration, no version skew, and no feature gate to toggle. feature_gate_disabled_behavior: not applicable -- this change introduces no feature gate. upgrade_downgrade_test: not applicable -- the helper only affects mkdtemp() scratch directories used during test execution and leaves no persisted state that could skew across versions. This is a test-infrastructure-only change with no public CLI/API/data surface at risk of irreversible rollback.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.json",
+            "type": "unit",
+            "result": "fail"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "expected_root": null,
+          "expected_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "current_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+        "current_branch": "claude/adoring-keller-f403ec",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T16:20:11.043Z"
+      },
+      "recorded_at": "2026-08-02T16:20:11.058Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785687587746-f06d9267",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Single reviewable intent: scratch-tmpdir leak fix (helper+sweep+registration+e2e), reading order documented",
+      "reason": "scope_reviewed: this PR is one coherent intent -- stop TMPDIR fixture leaks across the suite -- not a bundle of unrelated decisions. review_owner_map: a single reviewer can read it in the fixed order helper (test/support/scratch-tmpdir.js, 63 lines) -> conformance test (test/scratch-tmpdir-conformance.test.js) -> one representative import-line diff (repeated identically across the other 132 test files) -> e2e coverage (test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js). decision_record: this record is the explicit scope-reviewability decision; see also gate:split_resolution decision recorded in this same story for the full bundling rationale.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.json",
+            "type": "unit",
+            "result": "fail"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "expected_root": null,
+          "expected_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "current_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+        "current_branch": "claude/adoring-keller-f403ec",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T16:19:47.730Z"
+      },
+      "recorded_at": "2026-08-02T16:19:47.747Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785687581018-b50a9ea0",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:path_surface_matrix",
+      "source_status": null,
+      "summary": "review_surface path is covered by the story doc + design-ssot reconciliation artifact, not a runtime UI/API surface",
+      "reason": "The flagged review_surface row corresponds to review/registration artifacts (story doc, design-ssot linkage) introduced for VibePro self-dogfood, not a runtime API/UI/persistence surface. The actual behavioral surface (scratch-tmpdir helper + its consumers) is covered by test/scratch-tmpdir-conformance.test.js and test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js, both current-bound verification evidence already recorded for this HEAD.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.json",
+            "type": "unit",
+            "result": "fail"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "expected_root": null,
+          "expected_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "current_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+        "current_branch": "claude/adoring-keller-f403ec",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T16:19:41.008Z"
+      },
+      "recorded_at": "2026-08-02T16:19:41.019Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785687562839-4feeab22",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": "Committed .vibepro artifacts are limited to config.json (story registration) and spec/<story-id>/** (spec SSOT), consistent with prior stories",
+      "reason": "This PR commits only .vibepro/config.json (adds the story registration entry to brainbase.stories[], required for VibePro self-dogfood) and .vibepro/spec/story-vibepro-test-tmpdir-fixture-cleanup/** (the spec SSOT artifact for this story). No other .vibepro/ diagnostic/workspace evidence (pr-prepare.json, verification-runs, adjudication, etc.) is committed. This matches the established policy used by prior VibePro self-dogfood stories that commit config.json + spec/<story-id>/** as tracked SSOT content while keeping the rest of the .vibepro workspace store gitignored.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.json",
+            "type": "unit",
+            "result": "fail"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "expected_root": null,
+          "expected_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "current_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+        "current_branch": "claude/adoring-keller-f403ec",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T16:19:22.828Z"
+      },
+      "recorded_at": "2026-08-02T16:19:22.840Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785687540930-c03e6593",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Bundled scope is one reviewable intent: mechanical scratch-tmpdir import sweep + helper + story/spec/design-ssot registration + e2e coverage test",
+      "reason": "The PR bundles (a) a mechanical 1-line import across 133 test files plus the scratch-tmpdir.js helper (63 lines) and its conformance test, (b) the story/spec/design-ssot/release-note registration artifacts required by VibePro self-dogfood, and (c) a story e2e coverage test. These are not independent decisions: splitting the import sweep from the helper would leave the suite broken mid-split, and the registration docs exist only to describe this same change. Recommended reviewer reading order: test/support/scratch-tmpdir.js (helper) -> test/scratch-tmpdir-conformance.test.js -> one representative import diff -> test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js. No unrelated repo-control or product changes are bundled in.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.json",
+            "type": "unit",
+            "result": "fail"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "expected_root": null,
+          "expected_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "current_head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "7e85be1c8dea831604bf7e99909d6b40ca5fc734",
+        "current_branch": "claude/adoring-keller-f403ec",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T16:19:00.915Z"
+      },
+      "recorded_at": "2026-08-02T16:19:00.931Z"
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "open": 0,
+    "by_type": {
+      "needs_review": 12
+    },
+    "by_status": {
+      "accepted": 12
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+        "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+        "expected_root": null,
+        "expected_head_sha": "ef7f7f1763423035804ea339c1b6521f2250e4d7",
+        "current_head_sha": "ef7f7f1763423035804ea339c1b6521f2250e4d7",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785724273768-0553f17c",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-test-tmpdir-fixture-cleanup",
+      "source_status": null,
+      "summary": "Rebind the third owner approval to the current override content: the approved spare slot realized as pr_split_scope role cap 3->4, aggregate cap unchanged at 20",
+      "reason": "Keigo Sato's third approval (2026-08-03, AskUserQuestion in session 75333c2f-bf73-49ea-a75c-1e2b8ee93273) granted one pr_split_scope re-confirmation plus one spare. The third rebase again staled only pr_split_scope, which is the exact contingency the spare covered; the role cap was raised 3->4 with no aggregate change, and this decision rebinds the approval digest to that content.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+        "override_digest": "c7de51d9ca904f41c52ddbc3f2ff20505146a12c13e2ed7c35e06210b74a7a97",
+        "grantor_kind": "human",
+        "grantor": "sato_keigo",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-c7de51d9.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+          "expected_root": null,
+          "expected_head_sha": "ef7f7f1763423035804ea339c1b6521f2250e4d7",
+          "current_head_sha": "ef7f7f1763423035804ea339c1b6521f2250e4d7",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ef7f7f1763423035804ea339c1b6521f2250e4d7",
+        "current_branch": "claude/adoring-keller-f403ec",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-03T02:31:13.758Z"
+      },
+      "recorded_at": "2026-08-03T02:31:13.769Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/decision-records.json"
+}

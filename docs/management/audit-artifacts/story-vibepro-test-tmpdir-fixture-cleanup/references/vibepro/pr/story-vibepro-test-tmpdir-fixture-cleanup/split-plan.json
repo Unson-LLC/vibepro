@@ -1,0 +1,2156 @@
+{
+  "schema_version": "0.1.0",
+  "model": "story-pr-split-plan-v1",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "status": "split_recommended",
+  "recommended_strategy": "split_by_lane_then_prepare",
+  "automatic_recommendation": {
+    "status": "split_recommended",
+    "recommended_strategy": "split_by_lane_then_prepare"
+  },
+  "accepted_current_story_lineage": [],
+  "task_bound_repo_control": null,
+  "atomic_scope": {
+    "status": "not_requested",
+    "strategy": null,
+    "reason": null,
+    "review_facets": [],
+    "dependency_boundaries": [],
+    "missing_review_facets": [],
+    "missing_dependency_facets": [],
+    "invalid_dependency_boundaries": [],
+    "unsafe_scope_signals": [],
+    "unsafe_scope_reasons": [],
+    "source_ref": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md"
+  },
+  "rationale": [
+    "差分が 151 files あり、レビュー可能な目安 30 files を超えている",
+    "baseからのcommitが 25 件あり、別work item story-local のlineageが含まれている",
+    "4 lanes に分けると、要求正本・実装・検証基盤・repo制御を別々にレビューできる",
+    "Graphifyで 142 changed files が一致し、55 related files を影響調査候補にした"
+  ],
+  "graph_context": {
+    "available": true,
+    "graph_path": ".vibepro/graphify/graph.json",
+    "edge_source_key": "links",
+    "node_count": 5881,
+    "edge_count": 13107,
+    "matched_file_count": 142,
+    "related_file_count": 55,
+    "investigation_files": [
+      "scripts/build-public-manual.mjs",
+      "scripts/check-public-manual-build.mjs",
+      "scripts/deploy-public-manual.mjs",
+      "scripts/lint-e2e-product-execution.mjs",
+      "scripts/npm-release-lock.mjs",
+      "scripts/post-merge-release.mjs",
+      "scripts/run-e2e-ts-specs.mjs",
+      "src/adjudication.js",
+      "src/agent-review.js",
+      "src/agent-runtime-adapter.js",
+      "src/api-boundary-scanner.js",
+      "src/architecture-conformance.js",
+      "src/architecture-store.js",
+      "src/atomic-file.js",
+      "src/canonical-audit.js",
+      "src/cli.js",
+      "src/code-quality-scanner.js",
+      "src/codex-runtime-bridge.js",
+      "src/codex-subagent-host-worker.js",
+      "src/component-style-scanner.js",
+      "src/content-binding.js",
+      "src/database-access-scanner.js",
+      "src/decision-outcome-ledger.js",
+      "src/design-modernize.js",
+      "src/execution-state.js",
+      "src/flow-verifier.js",
+      "src/gate-outcome-ledger.js",
+      "src/gesture-interaction-scanner.js",
+      "src/guard.js",
+      "src/guarded-run-session.js"
+    ],
+    "impact_by_file": [
+      {
+        "file": "test/adjudication.test.js",
+        "matched_nodes": [
+          "test_adjudication_test_js",
+          "test_adjudication_test_git",
+          "test_adjudication_test_makerepo",
+          "test_adjudication_test_writeverificationevidence",
+          "test_adjudication_test_writeprepare",
+          "test_adjudication_test_task"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/agent-completion-inbox.test.js",
+        "matched_nodes": [
+          "test_agent_completion_inbox_test_js"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/agent-review-independence.test.js",
+        "matched_nodes": [
+          "test_agent_review_independence_test_js",
+          "test_agent_review_independence_test_git",
+          "test_agent_review_independence_test_readjson",
+          "test_agent_review_independence_test_setuprepo",
+          "test_agent_review_independence_test_recordgateevidencereview"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/architecture-conformance.test.js",
+        "matched_nodes": [
+          "test_architecture_conformance_test_js",
+          "test_architecture_conformance_test_makeconformancerepo",
+          "test_architecture_conformance_test_defaultfiles",
+          "test_architecture_conformance_test_defaultmodel"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/architecture-profiler.test.js",
+        "matched_nodes": [
+          "test_architecture_profiler_test_js",
+          "test_architecture_profiler_test_makewiderepo"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/architecture-readiness.test.js",
+        "matched_nodes": [
+          "test_architecture_readiness_test_js",
+          "test_architecture_readiness_test_makearchitecturerepo",
+          "test_architecture_readiness_test_writereadyarchitectureevidence",
+          "test_architecture_readiness_test_initgitrepo",
+          "test_architecture_readiness_test_commitall",
+          "test_architecture_readiness_test_writeminimalreadinessprerequisites",
+          "test_architecture_readiness_test_readablefrom",
+          "test_architecture_readiness_test_captureruncli"
+        ],
+        "related_files": [
+          "src/architecture-store.js",
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/artifact-routing.test.js",
+        "matched_nodes": [
+          "test_artifact_routing_test_js",
+          "test_artifact_routing_test_completeprofile",
+          "test_artifact_routing_test_namedprofilerepo",
+          "test_artifact_routing_test_projectedpacketprofile",
+          "test_artifact_routing_test_repo",
+          "test_artifact_routing_test_routedartifact"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/bin-entrypoint.test.js",
+        "matched_nodes": [
+          "test_bin_entrypoint_test_js"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/budget-override-consuming-surfaces.test.js",
+        "matched_nodes": [
+          "test_budget_override_consuming_surfaces_test_js",
+          "test_budget_override_consuming_surfaces_test_git",
+          "test_budget_override_consuming_surfaces_test_setuprepo",
+          "test_budget_override_consuming_surfaces_test_authorize",
+          "test_budget_override_consuming_surfaces_test_makeprrepo",
+          "test_budget_override_consuming_surfaces_test_render"
+        ],
+        "related_files": [
+          "src/agent-review.js"
+        ]
+      },
+      {
+        "file": "test/canonical-audit-idempotent-persistence.test.js",
+        "matched_nodes": [
+          "test_canonical_audit_idempotent_persistence_test_js",
+          "test_canonical_audit_idempotent_persistence_test_writejson",
+          "test_canonical_audit_idempotent_persistence_test_snapshotdir",
+          "test_canonical_audit_idempotent_persistence_test_differingfiles",
+          "test_canonical_audit_idempotent_persistence_test_seedmergeinputs",
+          "test_canonical_audit_idempotent_persistence_test_basemerge",
+          "test_canonical_audit_idempotent_persistence_test_withcanonicalauditbookkeeping",
+          "test_canonical_audit_idempotent_persistence_test_writeprmerge"
+        ],
+        "related_files": [
+          "src/public-discovery-scanner.js"
+        ]
+      },
+      {
+        "file": "test/canonical-audit-self-contained.test.js",
+        "matched_nodes": [
+          "test_canonical_audit_self_contained_test_js",
+          "test_canonical_audit_self_contained_test_readjson",
+          "test_canonical_audit_self_contained_test_writejson",
+          "test_canonical_audit_self_contained_test_writelargeverificationevidence",
+          "test_canonical_audit_self_contained_test_argvfromreplaycommand"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/canonical-decision-outcome-revisions.test.js",
+        "matched_nodes": [
+          "test_canonical_decision_outcome_revisions_test_js"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/canonical-persistence.test.js",
+        "matched_nodes": [
+          "test_canonical_persistence_test_js",
+          "test_canonical_persistence_test_canonicalinput",
+          "test_canonical_persistence_test_failcommand",
+          "test_canonical_persistence_test_remotehead",
+          "test_canonical_persistence_test_exists",
+          "test_canonical_persistence_test_createrepository",
+          "test_canonical_persistence_test_git"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/ci-evidence-import.test.js",
+        "matched_nodes": [
+          "test_ci_evidence_import_test_js",
+          "test_ci_evidence_import_test_git",
+          "test_ci_evidence_import_test_readjson",
+          "test_ci_evidence_import_test_makefakeghchecks",
+          "test_ci_evidence_import_test_setuprepo",
+          "test_ci_evidence_import_test_rollup",
+          "test_ci_evidence_import_test_evidencepath",
+          "test_ci_evidence_import_test_writephaseevidence"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/validation-sequencing.js",
+          "test/validation-sequencing.test.js"
+        ]
+      },
+      {
+        "file": "test/cli-smoke.test.js",
+        "matched_nodes": [
+          "test_cli_smoke_test_js",
+          "test_cli_smoke_test_git",
+          "test_cli_smoke_test_makestoryrepo",
+          "test_cli_smoke_test_makebaregitrepo",
+          "test_cli_smoke_test_repofor"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/cli-status-honesty.test.js",
+        "matched_nodes": [
+          "test_cli_status_honesty_test_js",
+          "test_cli_status_honesty_test_git",
+          "test_cli_status_honesty_test_readjson",
+          "test_cli_status_honesty_test_writejson",
+          "test_cli_status_honesty_test_runcliwithstdout",
+          "test_cli_status_honesty_test_makefakeghalreadymerged",
+          "test_cli_status_honesty_test_setupmergedprrepo"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/codex-subagent-host.test.js",
+        "matched_nodes": [
+          "test_codex_subagent_host_test_js",
+          "test_codex_subagent_host_test_runtimerequest",
+          "test_codex_subagent_host_test_coordinatorruntimerequest",
+          "test_codex_subagent_host_test_waitfor",
+          "test_codex_subagent_host_test_isprocessalive",
+          "test_codex_subagent_host_test_waitforchildpid"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/codex-subagent-runtime-adapter.test.js",
+        "matched_nodes": [
+          "test_codex_subagent_runtime_adapter_test_js",
+          "test_codex_subagent_runtime_adapter_test_fakecodexhost",
+          "test_codex_subagent_runtime_adapter_test_reviewrequest",
+          "test_codex_subagent_runtime_adapter_test_completedreviewresult",
+          "test_codex_subagent_runtime_adapter_test_probe",
+          "test_codex_subagent_runtime_adapter_test_spawn",
+          "test_codex_subagent_runtime_adapter_test_status",
+          "test_codex_subagent_runtime_adapter_test_shutdown"
+        ],
+        "related_files": [
+          "scripts/run-e2e-ts-specs.mjs",
+          "src/agent-runtime-adapter.js",
+          "src/cli.js",
+          "src/codex-subagent-host-worker.js",
+          "src/story-run-portfolio.js"
+        ]
+      },
+      {
+        "file": "test/content-scoped-evidence-freshness.test.js",
+        "matched_nodes": [
+          "test_content_scoped_evidence_freshness_test_js",
+          "test_content_scoped_evidence_freshness_test_git",
+          "test_content_scoped_evidence_freshness_test_captureruncli",
+          "test_content_scoped_evidence_freshness_test_makegitrepowithstory",
+          "test_content_scoped_evidence_freshness_test_findgate"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/coverage-report.test.js",
+        "matched_nodes": [
+          "test_coverage_report_test_js"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/decision-outcome-ledger.test.js",
+        "matched_nodes": [
+          "test_decision_outcome_ledger_test_js",
+          "test_decision_outcome_ledger_test_observationfor",
+          "test_decision_outcome_ledger_test_sortfixture",
+          "test_decision_outcome_ledger_test_finding",
+          "test_decision_outcome_ledger_test_build",
+          "test_decision_outcome_ledger_test_writeledger",
+          "test_decision_outcome_ledger_test_createoutcomerepository",
+          "test_decision_outcome_ledger_test_writemergeauthority"
+        ],
+        "related_files": [
+          "src/canonical-audit.js",
+          "src/content-binding.js",
+          "src/decision-outcome-ledger.js",
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "test/decision-records.test.js",
+        "matched_nodes": [
+          "test_decision_records_test_js",
+          "test_decision_records_test_makeworkspacerepo",
+          "test_decision_records_test_makebudgetworkspacerepo",
+          "test_decision_records_test_budgetgrantoptions"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/design-input-judgment.test.js",
+        "matched_nodes": [
+          "test_design_input_judgment_test_js",
+          "test_design_input_judgment_test_git",
+          "test_design_input_judgment_test_makerepo",
+          "test_design_input_judgment_test_makegitrepo",
+          "test_design_input_judgment_test_writegraphifyout",
+          "test_design_input_judgment_test_writecrosssurfacedesignchange",
+          "test_design_input_judgment_test_writelongpolicystory",
+          "test_design_input_judgment_test_findgate"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/design-ssot.test.js",
+        "matched_nodes": [
+          "test_design_ssot_test_js",
+          "test_design_ssot_test_makerepo",
+          "test_design_ssot_test_writedesigndocs",
+          "test_design_ssot_test_basedesignssotregistry",
+          "test_design_ssot_test_writedesignssotregistry",
+          "test_design_ssot_test_readjson",
+          "test_design_ssot_test_git"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/docs-only-evidence-profile-integration.test.js",
+        "matched_nodes": [
+          "test_docs_only_evidence_profile_integration_test_js",
+          "test_docs_only_evidence_profile_integration_test_git",
+          "test_docs_only_evidence_profile_integration_test_writejson",
+          "test_docs_only_evidence_profile_integration_test_mergeartifact",
+          "test_docs_only_evidence_profile_integration_test_buildmergedrepo",
+          "test_docs_only_evidence_profile_integration_test_promotefrommergedrepo",
+          "test_docs_only_evidence_profile_integration_test_bundle"
+        ],
+        "related_files": [
+          "scripts/post-merge-release.mjs",
+          "src/canonical-audit.js",
+          "src/decision-outcome-ledger.js",
+          "src/merge-manager.js"
+        ]
+      },
+      {
+        "file": "test/e2e-product-execution-lint.test.js",
+        "matched_nodes": [
+          "test_e2e_product_execution_lint_test_js",
+          "test_e2e_product_execution_lint_test_makefixtureroot",
+          "test_e2e_product_execution_lint_test_runlint"
+        ],
+        "related_files": [
+          "scripts/lint-e2e-product-execution.mjs"
+        ]
+      },
+      {
+        "file": "test/e2e/cli-input-and-swift-classification.test.js",
+        "matched_nodes": [
+          "test_e2e_cli_input_and_swift_classification_test_js",
+          "e2e_cli_input_and_swift_classification_test_run",
+          "e2e_cli_input_and_swift_classification_test_runwithstdin",
+          "e2e_cli_input_and_swift_classification_test_makerepo",
+          "e2e_cli_input_and_swift_classification_test_nodebyid"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/process-record-store-worktree-loss.e2e.test.js",
+        "matched_nodes": [
+          "test_e2e_process_record_store_worktree_loss_e2e_test_js",
+          "e2e_process_record_store_worktree_loss_e2e_test_git"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-artifact-output-routing-main.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_artifact_output_routing_main_spec_ts"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_atomic_scope_review_contract_main_spec_ts",
+          "e2e_story_vibepro_atomic_scope_review_contract_main_spec_runpubliccli",
+          "e2e_story_vibepro_atomic_scope_review_contract_main_spec_assertpublicclirejected"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-budget-grant-tracked-decision-doc-acceptance.spec.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_budget_grant_tracked_decision_doc_acceptance_spec_js",
+          "e2e_story_vibepro_budget_grant_tracked_decision_doc_acceptance_spec_makegrantrepo",
+          "e2e_story_vibepro_budget_grant_tracked_decision_doc_acceptance_spec_writeconfig",
+          "e2e_story_vibepro_budget_grant_tracked_decision_doc_acceptance_spec_grantoptions",
+          "e2e_story_vibepro_budget_grant_tracked_decision_doc_acceptance_spec_grantargs"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_classifier_premise_recovery_main_spec_ts",
+          "e2e_story_vibepro_classifier_premise_recovery_main_spec_git",
+          "e2e_story_vibepro_classifier_premise_recovery_main_spec_makerepo",
+          "e2e_story_vibepro_classifier_premise_recovery_main_spec_headof",
+          "e2e_story_vibepro_classifier_premise_recovery_main_spec_runvibepro",
+          "e2e_story_vibepro_classifier_premise_recovery_main_spec_seedclassifiercorrection"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-codex-detached-completion-inbox-main.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_codex_detached_completion_inbox_main_spec_ts",
+          "e2e_story_vibepro_codex_detached_completion_inbox_main_spec_createbridge",
+          "e2e_story_vibepro_codex_detached_completion_inbox_main_spec_waitforcondition",
+          "e2e_story_vibepro_codex_detached_completion_inbox_main_spec_isprocessalive"
+        ],
+        "related_files": [
+          "src/codex-runtime-bridge.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-codex-host-containment-test-load-tolerance-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_codex_host_containment_test_load_tolerance_main_test_js",
+          "e2e_story_vibepro_codex_host_containment_test_load_tolerance_main_test_runtimerequest",
+          "e2e_story_vibepro_codex_host_containment_test_load_tolerance_main_test_writeatomicpidfixture",
+          "e2e_story_vibepro_codex_host_containment_test_load_tolerance_main_test_waitfor",
+          "e2e_story_vibepro_codex_host_containment_test_load_tolerance_main_test_waitforchildpid",
+          "e2e_story_vibepro_codex_host_containment_test_load_tolerance_main_test_isprocessalive"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_delivery_reconciliation_state_main_spec_ts",
+          "e2e_story_vibepro_delivery_reconciliation_state_main_spec_git",
+          "e2e_story_vibepro_delivery_reconciliation_state_main_spec_readjson",
+          "e2e_story_vibepro_delivery_reconciliation_state_main_spec_writejson",
+          "e2e_story_vibepro_delivery_reconciliation_state_main_spec_initializegithubauthorityfixture",
+          "e2e_story_vibepro_delivery_reconciliation_state_main_spec_makealreadymergedprovider",
+          "e2e_story_vibepro_delivery_reconciliation_state_main_spec_setuppublicdeliveryfixture",
+          "e2e_story_vibepro_delivery_reconciliation_state_main_spec_runfocused"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-design-input-judgment-flow.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_design_input_judgment_flow_spec_ts",
+          "e2e_story_vibepro_design_input_judgment_flow_spec_git",
+          "e2e_story_vibepro_design_input_judgment_flow_spec_makerepo",
+          "e2e_story_vibepro_design_input_judgment_flow_spec_makegitrepo",
+          "e2e_story_vibepro_design_input_judgment_flow_spec_writegraphifyout",
+          "e2e_story_vibepro_design_input_judgment_flow_spec_writestoryplangraph",
+          "e2e_story_vibepro_design_input_judgment_flow_spec_writecrosssurfacedesignchange",
+          "e2e_story_vibepro_design_input_judgment_flow_spec_findgate"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-docs-only-evidence-profile-acceptance.spec.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_docs_only_evidence_profile_acceptance_spec_js",
+          "e2e_story_vibepro_docs_only_evidence_profile_acceptance_spec_childenv",
+          "e2e_story_vibepro_docs_only_evidence_profile_acceptance_spec_git",
+          "e2e_story_vibepro_docs_only_evidence_profile_acceptance_spec_writejson",
+          "e2e_story_vibepro_docs_only_evidence_profile_acceptance_spec_bundle",
+          "e2e_story_vibepro_docs_only_evidence_profile_acceptance_spec_readcost"
+        ],
+        "related_files": [
+          "src/canonical-audit.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-evidence-adjudication-gate-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_evidence_adjudication_gate_main_test_js",
+          "e2e_story_vibepro_evidence_adjudication_gate_main_test_run",
+          "e2e_story_vibepro_evidence_adjudication_gate_main_test_makerepo"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_execution_judgment_status_integrity_main_test_js",
+          "e2e_story_vibepro_execution_judgment_status_integrity_main_test_makemergedstoryrepo",
+          "e2e_story_vibepro_execution_judgment_status_integrity_main_test_findnode"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_explicit_run_attribution_lineage_main_test_js",
+          "e2e_story_vibepro_explicit_run_attribution_lineage_main_test_runauditcli",
+          "e2e_story_vibepro_explicit_run_attribution_lineage_main_test_writesessionfile",
+          "e2e_story_vibepro_explicit_run_attribution_lineage_main_test_git"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-fake-value-hardening-main.spec.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_fake_value_hardening_main_spec_js",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_git",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_readjson",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_writejson",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_pathexists",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_runcliwithoutput",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_makestoryrepo",
+          "e2e_story_vibepro_fake_value_hardening_main_spec_nodebyid"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_gate_decision_outcome_ledger_workflow_spec_js",
+          "e2e_story_vibepro_gate_decision_outcome_ledger_workflow_spec_mergeddelivery",
+          "e2e_story_vibepro_gate_decision_outcome_ledger_workflow_spec_writeclimergeauthority",
+          "e2e_story_vibepro_gate_decision_outcome_ledger_workflow_spec_snapshotoutcomestate",
+          "e2e_story_vibepro_gate_decision_outcome_ledger_workflow_spec_createrepository",
+          "e2e_story_vibepro_gate_decision_outcome_ledger_workflow_spec_createprpreparefixture",
+          "e2e_story_vibepro_gate_decision_outcome_ledger_workflow_spec_preparegatedag",
+          "e2e_story_vibepro_gate_decision_outcome_ledger_workflow_spec_writeghstub"
+        ],
+        "related_files": [
+          "src/content-binding.js",
+          "src/decision-outcome-ledger.js",
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-gate-evidence-edge-robustness-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_gate_evidence_edge_robustness_main_test_js",
+          "e2e_story_vibepro_gate_evidence_edge_robustness_main_test_git",
+          "e2e_story_vibepro_gate_evidence_edge_robustness_main_test_makerepo"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-guarded-run-session-contract-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_guarded_run_session_contract_main_test_js",
+          "e2e_story_vibepro_guarded_run_session_contract_main_test_git",
+          "e2e_story_vibepro_guarded_run_session_contract_main_test_runjson"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_independent_review_orchestration_acceptance_spec_ts",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_git",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_fixture",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_reviewoptions",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_lifecycle",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_dispatchruntime",
+          "e2e_story_vibepro_independent_review_orchestration_acceptance_spec_pollruntime"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/cli.js",
+          "src/independent-review-orchestrator.js",
+          "src/one-command-pr-ready-closure.js",
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_issues_189_204_gate_friction_main_test_js",
+          "e2e_story_vibepro_issues_189_204_gate_friction_main_test_git",
+          "e2e_story_vibepro_issues_189_204_gate_friction_main_test_makestoryrepo",
+          "e2e_story_vibepro_issues_189_204_gate_friction_main_test_gatebyid"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_judgment_dag_adjudication_main_test_js",
+          "e2e_story_vibepro_judgment_dag_adjudication_main_test_git",
+          "e2e_story_vibepro_judgment_dag_adjudication_main_test_makerepo",
+          "e2e_story_vibepro_judgment_dag_adjudication_main_test_judgmentprprepare",
+          "e2e_story_vibepro_judgment_dag_adjudication_main_test_headof",
+          "e2e_story_vibepro_judgment_dag_adjudication_main_test_verdictentry"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_managed_worktree_execution_dag_main_test_js",
+          "e2e_story_vibepro_managed_worktree_execution_dag_main_test_nodebyid",
+          "e2e_story_vibepro_managed_worktree_execution_dag_main_test_exec",
+          "e2e_story_vibepro_managed_worktree_execution_dag_main_test_git",
+          "e2e_story_vibepro_managed_worktree_execution_dag_main_test_runvibepro",
+          "e2e_story_vibepro_managed_worktree_execution_dag_main_test_makeruntimerepo"
+        ],
+        "related_files": [
+          "scripts/run-e2e-ts-specs.mjs",
+          "src/api-boundary-scanner.js",
+          "src/architecture-conformance.js",
+          "src/code-quality-scanner.js",
+          "src/component-style-scanner.js",
+          "src/database-access-scanner.js",
+          "src/execution-state.js",
+          "src/flow-verifier.js",
+          "src/gesture-interaction-scanner.js",
+          "src/journey-map.js",
+          "src/network-contract-scanner.js",
+          "src/pr-manager.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-managed-worktree-gate-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_managed_worktree_gate_main_test_js",
+          "e2e_story_vibepro_managed_worktree_gate_main_test_git",
+          "e2e_story_vibepro_managed_worktree_gate_main_test_readjson",
+          "e2e_story_vibepro_managed_worktree_gate_main_test_writejson",
+          "e2e_story_vibepro_managed_worktree_gate_main_test_makerequiredmoderepo",
+          "e2e_story_vibepro_managed_worktree_gate_main_test_recordmanagedworktreewaiver"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_managed_worktree_policy_resync_main_test_js",
+          "e2e_story_vibepro_managed_worktree_policy_resync_main_test_git",
+          "e2e_story_vibepro_managed_worktree_policy_resync_main_test_writejson",
+          "e2e_story_vibepro_managed_worktree_policy_resync_main_test_makerepofixture"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_one_command_pr_ready_closure_runtime_spec_ts",
+          "e2e_story_vibepro_one_command_pr_ready_closure_runtime_spec_normalizedmacpath",
+          "e2e_story_vibepro_one_command_pr_ready_closure_runtime_spec_schemav2executionprofile",
+          "e2e_story_vibepro_one_command_pr_ready_closure_runtime_spec_currenthead",
+          "e2e_story_vibepro_one_command_pr_ready_closure_runtime_spec_context",
+          "e2e_story_vibepro_one_command_pr_ready_closure_runtime_spec_invoke"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-owner-gated-budget-override-acceptance.spec.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_owner_gated_budget_override_acceptance_spec_js",
+          "e2e_story_vibepro_owner_gated_budget_override_acceptance_spec_makerepo",
+          "e2e_story_vibepro_owner_gated_budget_override_acceptance_spec_writeconfig",
+          "e2e_story_vibepro_owner_gated_budget_override_acceptance_spec_readconfig",
+          "e2e_story_vibepro_owner_gated_budget_override_acceptance_spec_readdecisions",
+          "e2e_story_vibepro_owner_gated_budget_override_acceptance_spec_grantargs",
+          "e2e_story_vibepro_owner_gated_budget_override_acceptance_spec_decision",
+          "e2e_story_vibepro_owner_gated_budget_override_acceptance_spec_grant"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-pr-driven-continuous-release-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_pr_driven_continuous_release_main_test_js",
+          "e2e_story_vibepro_pr_driven_continuous_release_main_test_releasefixture"
+        ],
+        "related_files": [
+          "scripts/post-merge-release.mjs"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-pr-readiness-status-ssot-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_pr_readiness_status_ssot_main_test_js",
+          "e2e_story_vibepro_pr_readiness_status_ssot_main_test_git",
+          "e2e_story_vibepro_pr_readiness_status_ssot_main_test_writejson",
+          "e2e_story_vibepro_pr_readiness_status_ssot_main_test_makestoryrepo",
+          "e2e_story_vibepro_pr_readiness_status_ssot_main_test_makefakeghmerge",
+          "e2e_story_vibepro_pr_readiness_status_ssot_main_test_gatedag"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-pr-route-gate-dag-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_pr_route_gate_dag_main_test_js",
+          "e2e_story_vibepro_pr_route_gate_dag_main_test_run",
+          "e2e_story_vibepro_pr_route_gate_dag_main_test_runvibepro",
+          "e2e_story_vibepro_pr_route_gate_dag_main_test_makerepo",
+          "e2e_story_vibepro_pr_route_gate_dag_main_test_nodebyid"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-profiler-file-walk-stack-overflow-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_profiler_file_walk_stack_overflow_main_test_js",
+          "e2e_story_vibepro_profiler_file_walk_stack_overflow_main_test_makewiderepo"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-recipe-preflight-autopilot-main.spec.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_recipe_preflight_autopilot_main_spec_js",
+          "e2e_story_vibepro_recipe_preflight_autopilot_main_spec_git",
+          "e2e_story_vibepro_recipe_preflight_autopilot_main_spec_makesyntheticrepo",
+          "e2e_story_vibepro_recipe_preflight_autopilot_main_spec_writeevidence",
+          "e2e_story_vibepro_recipe_preflight_autopilot_main_spec_writestorydoc",
+          "e2e_story_vibepro_recipe_preflight_autopilot_main_spec_writespecdoc",
+          "e2e_story_vibepro_recipe_preflight_autopilot_main_spec_writefinalspec",
+          "e2e_story_vibepro_recipe_preflight_autopilot_main_spec_writedecisionrecords"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-release-note-link-normalization-acceptance.spec.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_release_note_link_normalization_acceptance_spec_js",
+          "e2e_story_vibepro_release_note_link_normalization_acceptance_spec_releasefixture",
+          "e2e_story_vibepro_release_note_link_normalization_acceptance_spec_mergedprevent"
+        ],
+        "related_files": [
+          "scripts/post-merge-release.mjs"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-release-surface-guard-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_release_surface_guard_main_test_js",
+          "e2e_story_vibepro_release_surface_guard_main_test_run",
+          "e2e_story_vibepro_release_surface_guard_main_test_vibepro",
+          "e2e_story_vibepro_release_surface_guard_main_test_makerepo",
+          "e2e_story_vibepro_release_surface_guard_main_test_runwithstdin"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_responsibility_authority_registry_main_test_js",
+          "e2e_story_vibepro_responsibility_authority_registry_main_test_makeworkflowrepo",
+          "e2e_story_vibepro_responsibility_authority_registry_main_test_writestorydocs",
+          "e2e_story_vibepro_responsibility_authority_registry_main_test_writeresponsibilityfixture",
+          "e2e_story_vibepro_responsibility_authority_registry_main_test_git"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_ts",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_git",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_readjson",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_makestoryrepo",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_prepareprartifacts",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_recordgateevidence",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_nodebyid",
+          "e2e_story_vibepro_review_dispatch_preflight_dag_main_spec_preflightfor"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-review-status-required-only-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_review_status_required_only_main_test_js",
+          "e2e_story_vibepro_review_status_required_only_main_test_git",
+          "e2e_story_vibepro_review_status_required_only_main_test_readjson",
+          "e2e_story_vibepro_review_status_required_only_main_test_writejson",
+          "e2e_story_vibepro_review_status_required_only_main_test_makereviewstatusrepo"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_risk_adaptive_validation_sequencing_acceptance_spec_ts"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_routing_profiles_rendered_projections_main_spec_ts",
+          "e2e_story_vibepro_routing_profiles_rendered_projections_main_spec_invoke"
+        ],
+        "related_files": [
+          "src/independent-review-orchestrator.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-runner-direct-evidence-acceptance.spec.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_runner_direct_evidence_acceptance_spec_js",
+          "e2e_story_vibepro_runner_direct_evidence_acceptance_spec_acceptancefixture",
+          "e2e_story_vibepro_runner_direct_evidence_acceptance_spec_git",
+          "e2e_story_vibepro_runner_direct_evidence_acceptance_spec_cli",
+          "e2e_story_vibepro_runner_direct_evidence_acceptance_spec_readjson",
+          "e2e_story_vibepro_runner_direct_evidence_acceptance_spec_evidencefor",
+          "e2e_story_vibepro_runner_direct_evidence_acceptance_spec_runartifactfor"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-scanner-inconclusive-coverage-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_scanner_inconclusive_coverage_main_test_js",
+          "e2e_story_vibepro_scanner_inconclusive_coverage_main_test_makerepo"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_test_tmpdir_fixture_cleanup_main_test_js",
+          "e2e_story_vibepro_test_tmpdir_fixture_cleanup_main_test_statsyncsafe"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_ui_journey_e2e_dogfood_main_test_js",
+          "e2e_story_vibepro_ui_journey_e2e_dogfood_main_test_git",
+          "e2e_story_vibepro_ui_journey_e2e_dogfood_main_test_captureruncli",
+          "e2e_story_vibepro_ui_journey_e2e_dogfood_main_test_readjson",
+          "e2e_story_vibepro_ui_journey_e2e_dogfood_main_test_writejson",
+          "e2e_story_vibepro_ui_journey_e2e_dogfood_main_test_writepng",
+          "e2e_story_vibepro_ui_journey_e2e_dogfood_main_test_pngchunk",
+          "e2e_story_vibepro_ui_journey_e2e_dogfood_main_test_uint32"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-usage-report-canonical-traceability-main.spec.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_usage_report_canonical_traceability_main_spec_js",
+          "e2e_story_vibepro_usage_report_canonical_traceability_main_spec_writejson",
+          "e2e_story_vibepro_usage_report_canonical_traceability_main_spec_writestory",
+          "e2e_story_vibepro_usage_report_canonical_traceability_main_spec_prartifact"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-usage-report-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_usage_report_main_test_js",
+          "e2e_story_vibepro_usage_report_main_test_writejson",
+          "e2e_story_vibepro_usage_report_main_test_runvibepro"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/e2e/story-vibepro-verify-command-test-path-existence-guard-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_verify_command_test_path_existence_guard_main_test_js",
+          "e2e_story_vibepro_verify_command_test_path_existence_guard_main_test_makeworkspacerepo",
+          "e2e_story_vibepro_verify_command_test_path_existence_guard_main_test_fileexists",
+          "e2e_story_vibepro_verify_command_test_path_existence_guard_main_test_verifyrecord"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js",
+        "matched_nodes": [
+          "test_e2e_story_vibepro_workflow_pre_pr_evidence_gate_main_test_js",
+          "e2e_story_vibepro_workflow_pre_pr_evidence_gate_main_test_git",
+          "e2e_story_vibepro_workflow_pre_pr_evidence_gate_main_test_readjson",
+          "e2e_story_vibepro_workflow_pre_pr_evidence_gate_main_test_makeworkflowrepo"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/engineering-judgment-activation-precision.test.js",
+        "matched_nodes": [
+          "test_engineering_judgment_activation_precision_test_js",
+          "test_engineering_judgment_activation_precision_test_git",
+          "test_engineering_judgment_activation_precision_test_makegitrepowithstory"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/environment-graph.test.js",
+        "matched_nodes": [
+          "test_environment_graph_test_js",
+          "test_environment_graph_test_bytype"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/evidence-depth-pr-prepare.test.js",
+        "matched_nodes": [
+          "test_evidence_depth_pr_prepare_test_js",
+          "test_evidence_depth_pr_prepare_test_git",
+          "test_evidence_depth_pr_prepare_test_readjson",
+          "test_evidence_depth_pr_prepare_test_exists",
+          "test_evidence_depth_pr_prepare_test_setuplowriskrepo",
+          "test_evidence_depth_pr_prepare_test_setuphighriskauthrepo"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/evidence-summary-reuse.test.js",
+        "matched_nodes": [
+          "test_evidence_summary_reuse_test_js",
+          "test_evidence_summary_reuse_test_git",
+          "test_evidence_summary_reuse_test_readjson",
+          "test_evidence_summary_reuse_test_setupreuserepo",
+          "test_evidence_summary_reuse_test_writespec"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/execution-state.test.js",
+        "matched_nodes": [
+          "test_execution_state_test_js",
+          "test_execution_state_test_executionartifactprofile",
+          "test_execution_state_test_contend"
+        ],
+        "related_files": [
+          "src/story-transaction-lock.js"
+        ]
+      },
+      {
+        "file": "test/fast-lane-gate.test.js",
+        "matched_nodes": [
+          "test_fast_lane_gate_test_js",
+          "test_fast_lane_gate_test_git",
+          "test_fast_lane_gate_test_readjson",
+          "test_fast_lane_gate_test_setuprepo",
+          "test_fast_lane_gate_test_gatenode"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/gate-evidence-edge-robustness.test.js",
+        "matched_nodes": [
+          "test_gate_evidence_edge_robustness_test_js"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/gate-outcome-ledger-central-promotion.test.js",
+        "matched_nodes": [
+          "test_gate_outcome_ledger_central_promotion_test_js",
+          "test_gate_outcome_ledger_central_promotion_test_entry",
+          "test_gate_outcome_ledger_central_promotion_test_centraltext"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/gate-outcome-ledger-promotion-integration.test.js",
+        "matched_nodes": [
+          "test_gate_outcome_ledger_promotion_integration_test_js",
+          "test_gate_outcome_ledger_promotion_integration_test_git",
+          "test_gate_outcome_ledger_promotion_integration_test_entry",
+          "test_gate_outcome_ledger_promotion_integration_test_commitcanonicalauditandledgerpromotion"
+        ],
+        "related_files": [
+          "src/gate-outcome-ledger.js"
+        ]
+      },
+      {
+        "file": "test/gate-outcome-ledger.test.js",
+        "matched_nodes": [
+          "test_gate_outcome_ledger_test_js"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/guard.test.js",
+        "matched_nodes": [
+          "test_guard_test_js",
+          "test_guard_test_git",
+          "test_guard_test_makerepo",
+          "test_guard_test_defaultconfigfor",
+          "test_guard_test_readinessevaluator"
+        ],
+        "related_files": [
+          "src/guard.js"
+        ]
+      },
+      {
+        "file": "test/guarded-run-session.test.js",
+        "matched_nodes": [
+          "test_guarded_run_session_test_js",
+          "test_guarded_run_session_test_stopreason",
+          "test_guarded_run_session_test_fixturehumandecision",
+          "test_guarded_run_session_test_preparedatcurrenthead",
+          "test_guarded_run_session_test_cp",
+          "test_guarded_run_session_test_probe",
+          "test_guarded_run_session_test_start",
+          "test_guarded_run_session_test_status"
+        ],
+        "related_files": [
+          "src/agent-runtime-adapter.js",
+          "src/execution-state.js",
+          "src/merge-manager.js",
+          "src/outcome-manager.js",
+          "src/pr-manager.js"
+        ]
+      },
+      {
+        "file": "test/human-decision-checkpoint.test.js",
+        "matched_nodes": [
+          "test_human_decision_checkpoint_test_js"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/integration/story-vibepro-budget-grant-tracked-decision-doc.test.js",
+        "matched_nodes": [
+          "test_integration_story_vibepro_budget_grant_tracked_decision_doc_test_js",
+          "integration_story_vibepro_budget_grant_tracked_decision_doc_test_makegrantrepo",
+          "integration_story_vibepro_budget_grant_tracked_decision_doc_test_grantargs"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/integration/verification-runner-evidence-consumers.test.js",
+        "matched_nodes": [
+          "test_integration_verification_runner_evidence_consumers_test_js",
+          "integration_verification_runner_evidence_consumers_test_fixture",
+          "integration_verification_runner_evidence_consumers_test_readevidence"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/journey-map.test.js",
+        "matched_nodes": [
+          "test_journey_map_test_js",
+          "test_journey_map_test_git",
+          "test_journey_map_test_captureruncli",
+          "test_journey_map_test_writestory",
+          "test_journey_map_test_writecuratedjourney"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/judgment-adjudication.test.js",
+        "matched_nodes": [
+          "test_judgment_adjudication_test_js",
+          "test_judgment_adjudication_test_git",
+          "test_judgment_adjudication_test_fixtureitems",
+          "test_judgment_adjudication_test_makerepo",
+          "test_judgment_adjudication_test_gatefor",
+          "test_judgment_adjudication_test_githead"
+        ],
+        "related_files": [
+          "src/adjudication.js"
+        ]
+      },
+      {
+        "file": "test/managed-command-executor.test.js",
+        "matched_nodes": [
+          "test_managed_command_executor_test_js",
+          "test_managed_command_executor_test_assertprocessgone"
+        ],
+        "related_files": [
+          "src/task-bound-repo-control.js"
+        ]
+      },
+      {
+        "file": "test/managed-worktree-policy-resync.test.js",
+        "matched_nodes": [
+          "test_managed_worktree_policy_resync_test_js",
+          "test_managed_worktree_policy_resync_test_git",
+          "test_managed_worktree_policy_resync_test_readjson",
+          "test_managed_worktree_policy_resync_test_writejson",
+          "test_managed_worktree_policy_resync_test_baseconfig",
+          "test_managed_worktree_policy_resync_test_makerepofixture",
+          "test_managed_worktree_policy_resync_test_makerepowithmanagedworktree",
+          "test_managed_worktree_policy_resync_test_updateparentconfig"
+        ],
+        "related_files": [
+          "src/managed-worktree.js"
+        ]
+      },
+      {
+        "file": "test/merge-diff-base-preservation.test.js",
+        "matched_nodes": [
+          "test_merge_diff_base_preservation_test_js",
+          "test_merge_diff_base_preservation_test_git",
+          "test_merge_diff_base_preservation_test_buildmergedrepo"
+        ],
+        "related_files": [
+          "scripts/post-merge-release.mjs"
+        ]
+      },
+      {
+        "file": "test/node20-e2e-ts-ci-visibility.test.js",
+        "matched_nodes": [
+          "test_node20_e2e_ts_ci_visibility_test_js",
+          "test_node20_e2e_ts_ci_visibility_test_makefixtureroot"
+        ],
+        "related_files": [
+          "scripts/run-e2e-ts-specs.mjs"
+        ]
+      },
+      {
+        "file": "test/playbook-exporter.test.js",
+        "matched_nodes": [
+          "test_playbook_exporter_test_js",
+          "test_playbook_exporter_test_pathexists",
+          "test_playbook_exporter_test_makerepo"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/spec-store.js"
+        ]
+      },
+      {
+        "file": "test/post-merge-release.test.js",
+        "matched_nodes": [
+          "test_post_merge_release_test_js",
+          "test_post_merge_release_test_livepullrequestevent",
+          "test_post_merge_release_test_createreprojectfixture",
+          "test_post_merge_release_test_runreleasesubprocess",
+          "test_post_merge_release_test_readfiles",
+          "test_post_merge_release_test_rungit",
+          "test_post_merge_release_test_firstrenderedhref"
+        ],
+        "related_files": [
+          "scripts/npm-release-lock.mjs",
+          "scripts/post-merge-release.mjs"
+        ]
+      },
+      {
+        "file": "test/pr-artifact-size-budget.test.js",
+        "matched_nodes": [
+          "test_pr_artifact_size_budget_test_js",
+          "test_pr_artifact_size_budget_test_git",
+          "test_pr_artifact_size_budget_test_readjson",
+          "test_pr_artifact_size_budget_test_exists",
+          "test_pr_artifact_size_budget_test_makerepo",
+          "test_pr_artifact_size_budget_test_setbudget",
+          "test_pr_artifact_size_budget_test_gateverdicts"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/pr-prepare-authorization-scoring.test.js",
+        "matched_nodes": [
+          "test_pr_prepare_authorization_scoring_test_js",
+          "test_pr_prepare_authorization_scoring_test_git",
+          "test_pr_prepare_authorization_scoring_test_readjson",
+          "test_pr_prepare_authorization_scoring_test_setuprepowithstory"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/process-record-store.integration.test.js",
+        "matched_nodes": [
+          "test_process_record_store_integration_test_js",
+          "test_process_record_store_integration_test_makeclirepo",
+          "test_process_record_store_integration_test_writespecinput"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/process-record-store.test.js",
+        "matched_nodes": [
+          "test_process_record_store_test_js",
+          "test_process_record_store_test_makerepowithworktree",
+          "test_process_record_store_test_writerecord",
+          "test_process_record_store_test_ledger"
+        ],
+        "related_files": [
+          "src/workspace-status.js"
+        ]
+      },
+      {
+        "file": "test/public-discovery-live-targets.test.js",
+        "matched_nodes": [
+          "test_public_discovery_live_targets_test_js",
+          "test_public_discovery_live_targets_test_makerepository",
+          "test_public_discovery_live_targets_test_writecrawlerfiles",
+          "test_public_discovery_live_targets_test_fetchimpl"
+        ],
+        "related_files": [
+          "src/public-discovery-scanner.js"
+        ]
+      },
+      {
+        "file": "test/public-manual-build-contract.test.js",
+        "matched_nodes": [
+          "test_public_manual_build_contract_test_js",
+          "test_public_manual_build_contract_test_createvalidbuild"
+        ],
+        "related_files": [
+          "scripts/check-public-manual-build.mjs"
+        ]
+      },
+      {
+        "file": "test/public-manual-build-runner.test.js",
+        "matched_nodes": [
+          "test_public_manual_build_runner_test_js",
+          "test_public_manual_build_runner_test_git"
+        ],
+        "related_files": [
+          "scripts/build-public-manual.mjs"
+        ]
+      },
+      {
+        "file": "test/public-manual-deploy.test.js",
+        "matched_nodes": [
+          "test_public_manual_deploy_test_js",
+          "test_public_manual_deploy_test_createrepositorywithorigin"
+        ],
+        "related_files": [
+          "scripts/deploy-public-manual.mjs"
+        ]
+      },
+      {
+        "file": "test/recipe-preflight.test.js",
+        "matched_nodes": [
+          "test_recipe_preflight_test_js",
+          "test_recipe_preflight_test_makerepo",
+          "test_recipe_preflight_test_writeevidence",
+          "test_recipe_preflight_test_writestorydoc",
+          "test_recipe_preflight_test_writespecdoc",
+          "test_recipe_preflight_test_writefinalspec",
+          "test_recipe_preflight_test_writedecisionrecords",
+          "test_recipe_preflight_test_findresult"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/regression-risk-scanner.test.js",
+        "matched_nodes": [
+          "test_regression_risk_scanner_test_js",
+          "test_regression_risk_scanner_test_fixturegraph"
+        ],
+        "related_files": [
+          "test/scan-status.test.js"
+        ]
+      },
+      {
+        "file": "test/report-pipeline.test.js",
+        "matched_nodes": [
+          "test_report_pipeline_test_js",
+          "test_report_pipeline_test_git",
+          "test_report_pipeline_test_readablefrom",
+          "test_report_pipeline_test_captureruncli",
+          "test_report_pipeline_test_makereportrepo",
+          "test_report_pipeline_test_task"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/spec-store.js"
+        ]
+      },
+      {
+        "file": "test/responsibility-authority.test.js",
+        "matched_nodes": [
+          "test_responsibility_authority_test_js",
+          "test_responsibility_authority_test_writereviewedworkspacestatus",
+          "test_responsibility_authority_test_responsibilityentry",
+          "test_responsibility_authority_test_makefixturerepo",
+          "test_responsibility_authority_test_writestorydocs",
+          "test_responsibility_authority_test_writeresponsibilityfixture",
+          "test_responsibility_authority_test_writereadonlyreportingresponsibilityfixture",
+          "test_responsibility_authority_test_git"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/review-evidence-handling.test.js",
+        "matched_nodes": [
+          "test_review_evidence_handling_test_js",
+          "test_review_evidence_handling_test_git",
+          "test_review_evidence_handling_test_setuprepo",
+          "test_review_evidence_handling_test_extract"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/review-finding-repair-loop.test.js",
+        "matched_nodes": [
+          "test_review_finding_repair_loop_test_js",
+          "test_review_finding_repair_loop_test_review",
+          "test_review_finding_repair_loop_test_rereview"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/review-inspection-first.test.js",
+        "matched_nodes": [
+          "test_review_inspection_first_test_js",
+          "test_review_inspection_first_test_git",
+          "test_review_inspection_first_test_setuprepo",
+          "test_review_inspection_first_test_startcloseable"
+        ],
+        "related_files": [
+          "src/agent-review.js"
+        ]
+      },
+      {
+        "file": "test/review-repair.test.js",
+        "matched_nodes": [
+          "test_review_repair_test_js",
+          "test_review_repair_test_git",
+          "test_review_repair_test_fileexists",
+          "test_review_repair_test_role",
+          "test_review_repair_test_healthyrole",
+          "test_review_repair_test_writereviewsummary",
+          "test_review_repair_test_setuprepairrepo",
+          "test_review_repair_test_findcandidate"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/review-surface-violation-ledger.test.js",
+        "matched_nodes": [
+          "test_review_surface_violation_ledger_test_js",
+          "test_review_surface_violation_ledger_test_git",
+          "test_review_surface_violation_ledger_test_setuprepo",
+          "test_review_surface_violation_ledger_test_lifecyclepath",
+          "test_review_surface_violation_ledger_test_violationspath",
+          "test_review_surface_violation_ledger_test_readjson",
+          "test_review_surface_violation_ledger_test_start",
+          "test_review_surface_violation_ledger_test_close"
+        ],
+        "related_files": [
+          "src/agent-review.js",
+          "src/agent-runtime-adapter.js",
+          "src/atomic-file.js",
+          "src/cli.js",
+          "src/design-modernize.js"
+        ]
+      },
+      {
+        "file": "test/risk-adaptive-gate.test.js",
+        "matched_nodes": [
+          "test_risk_adaptive_gate_test_js",
+          "test_risk_adaptive_gate_test_git",
+          "test_risk_adaptive_gate_test_readjson",
+          "test_risk_adaptive_gate_test_hashfingerprint",
+          "test_risk_adaptive_gate_test_cleangitfingerprinthash",
+          "test_risk_adaptive_gate_test_gitfingerprinthash",
+          "test_risk_adaptive_gate_test_collectuntrackedfingerprint",
+          "test_risk_adaptive_gate_test_makegitrepo"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "test/run-context-capsule-lineage.test.js",
+        "matched_nodes": [
+          "test_run_context_capsule_lineage_test_js"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/run-context-capsule.test.js",
+        "matched_nodes": [
+          "test_run_context_capsule_test_js",
+          "test_run_context_capsule_test_createfixture",
+          "test_run_context_capsule_test_errorwithcode",
+          "test_run_context_capsule_test_serializefixturecapsule"
+        ],
+        "related_files": [
+          "src/canonical-audit.js"
+        ]
+      },
+      {
+        "file": "test/run-lineage-evidence-propagation.test.js",
+        "matched_nodes": [
+          "test_run_lineage_evidence_propagation_test_js",
+          "test_run_lineage_evidence_propagation_test_fixture"
+        ],
+        "related_files": [
+          "scripts/post-merge-release.mjs",
+          "src/run-lineage.js"
+        ]
+      },
+      {
+        "file": "test/safe-action-orchestrator.test.js",
+        "matched_nodes": [
+          "test_safe_action_orchestrator_test_js",
+          "test_safe_action_orchestrator_test_make",
+          "test_safe_action_orchestrator_test_run"
+        ],
+        "related_files": [
+          "src/pr-manager.js"
+        ]
+      },
+      {
+        "file": "test/scan-status.test.js",
+        "matched_nodes": [
+          "test_scan_status_test_js",
+          "test_scan_status_test_makerepo",
+          "test_scan_status_test_node",
+          "test_scan_status_test_call"
+        ],
+        "related_files": [
+          "src/adjudication.js",
+          "src/guarded-run-session.js",
+          "src/story-catalog-generator.js",
+          "test/independent-review-orchestrator.test.js",
+          "test/regression-risk-scanner.test.js"
+        ]
+      },
+      {
+        "file": "test/scope-boundary-gate.test.js",
+        "matched_nodes": [
+          "test_scope_boundary_gate_test_js",
+          "test_scope_boundary_gate_test_git",
+          "test_scope_boundary_gate_test_readjson",
+          "test_scope_boundary_gate_test_writejson",
+          "test_scope_boundary_gate_test_makerepo",
+          "test_scope_boundary_gate_test_makegitrepowithstory",
+          "test_scope_boundary_gate_test_writetasksfixture",
+          "test_scope_boundary_gate_test_gatenode"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/scratch-tmpdir-conformance.test.js",
+        "matched_nodes": [
+          "test_scratch_tmpdir_conformance_test_js",
+          "test_scratch_tmpdir_conformance_test_walktestfiles",
+          "test_scratch_tmpdir_conformance_test_statsyncsafe"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/senior-gap-judgment.test.js",
+        "matched_nodes": [
+          "test_senior_gap_judgment_test_js",
+          "test_senior_gap_judgment_test_makerepo",
+          "test_senior_gap_judgment_test_writeseniorgapfixture",
+          "test_senior_gap_judgment_test_git"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/session-efficiency-audit.test.js",
+        "matched_nodes": [
+          "test_session_efficiency_audit_test_js",
+          "test_session_efficiency_audit_test_writejson",
+          "test_session_efficiency_audit_test_git",
+          "test_session_efficiency_audit_test_createfixture",
+          "test_session_efficiency_audit_test_writesessionjsonl",
+          "test_session_efficiency_audit_test_sessionlines"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/session-efficiency-run-lineage.test.js",
+        "matched_nodes": [
+          "test_session_efficiency_run_lineage_test_js",
+          "test_session_efficiency_run_lineage_test_git",
+          "test_session_efficiency_run_lineage_test_lineage",
+          "test_session_efficiency_run_lineage_test_fixture",
+          "test_session_efficiency_run_lineage_test_writecanonicalrun",
+          "test_session_efficiency_run_lineage_test_writesessionfile"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/spec-diagrams.test.js",
+        "matched_nodes": [
+          "test_spec_diagrams_test_js",
+          "test_spec_diagrams_test_temproot",
+          "test_spec_diagrams_test_basespec"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/spec-pipeline.test.js",
+        "matched_nodes": [
+          "test_spec_pipeline_test_js",
+          "test_spec_pipeline_test_makespecrepo",
+          "test_spec_pipeline_test_writereadyprespecevidence",
+          "test_spec_pipeline_test_initgitrepo",
+          "test_spec_pipeline_test_commitall",
+          "test_spec_pipeline_test_writeminimalreadinessprerequisites",
+          "test_spec_pipeline_test_readablefrom",
+          "test_spec_pipeline_test_captureruncli"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/spec-store.js"
+        ]
+      },
+      {
+        "file": "test/story-discovery.test.js",
+        "matched_nodes": [
+          "test_story_discovery_test_js",
+          "test_story_discovery_test_git",
+          "test_story_discovery_test_captureruncli"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/story-run-portfolio.test.js",
+        "matched_nodes": [
+          "test_story_run_portfolio_test_js",
+          "test_story_run_portfolio_test_invoke",
+          "test_story_run_portfolio_test_createfixture",
+          "test_story_run_portfolio_test_runstate",
+          "test_story_run_portfolio_test_errorcode",
+          "test_story_run_portfolio_test_capture"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/story-run-portfolio.js"
+        ]
+      },
+      {
+        "file": "test/story-transaction-lock.test.js",
+        "matched_nodes": [
+          "test_story_transaction_lock_test_js",
+          "test_story_transaction_lock_test_lockpaths",
+          "test_story_transaction_lock_test_ownermetadata",
+          "test_story_transaction_lock_test_writeowner",
+          "test_story_transaction_lock_test_agepath"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/story-vibepro-profiler-file-walk-integration.test.js",
+        "matched_nodes": [
+          "test_story_vibepro_profiler_file_walk_integration_test_js"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/support/scratch-tmpdir.js",
+        "matched_nodes": [
+          "test_support_scratch_tmpdir_js",
+          "support_scratch_tmpdir_sweepstalescratchdirs"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/traceability-autobind.test.js",
+        "matched_nodes": [
+          "test_traceability_autobind_test_js",
+          "test_traceability_autobind_test_git",
+          "test_traceability_autobind_test_readjson",
+          "test_traceability_autobind_test_setuprepo"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/traceability-backfill.test.js",
+        "matched_nodes": [
+          "test_traceability_backfill_test_js",
+          "test_traceability_backfill_test_git",
+          "test_traceability_backfill_test_readjson",
+          "test_traceability_backfill_test_fileexists",
+          "test_traceability_backfill_test_storydoc",
+          "test_traceability_backfill_test_setupbackfillrepo"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/traceability-promotion.test.js",
+        "matched_nodes": [
+          "test_traceability_promotion_test_js",
+          "test_traceability_promotion_test_git",
+          "test_traceability_promotion_test_readjson",
+          "test_traceability_promotion_test_writejson",
+          "test_traceability_promotion_test_setuppreparerepo",
+          "test_traceability_promotion_test_traceabilitypath",
+          "test_traceability_promotion_test_evidencerefs",
+          "test_traceability_promotion_test_makefakeghmerge"
+        ],
+        "related_files": [
+          "src/cli.js",
+          "src/spec-store.js"
+        ]
+      },
+      {
+        "file": "test/traceability-usage-report.test.js",
+        "matched_nodes": [
+          "test_traceability_usage_report_test_js",
+          "test_traceability_usage_report_test_storydoc",
+          "test_traceability_usage_report_test_traceabilityartifact",
+          "test_traceability_usage_report_test_setupreportrepo",
+          "test_traceability_usage_report_test_findstory",
+          "test_traceability_usage_report_test_missinggaps"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/validation-sequencing.test.js",
+        "matched_nodes": [
+          "test_validation_sequencing_test_js",
+          "test_validation_sequencing_test_stateforhighrisk",
+          "test_validation_sequencing_test_nativecommand"
+        ],
+        "related_files": [
+          "src/validation-sequencing.js",
+          "test/ci-evidence-import.test.js"
+        ]
+      },
+      {
+        "file": "test/verification-command-test-path-guard.test.js",
+        "matched_nodes": [
+          "test_verification_command_test_path_guard_test_js",
+          "test_verification_command_test_path_guard_test_makeworkspacerepo",
+          "test_verification_command_test_path_guard_test_addtestfile",
+          "test_verification_command_test_path_guard_test_evidencefileexists"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/verification-evidence-artifact-check.test.js",
+        "matched_nodes": [
+          "test_verification_evidence_artifact_check_test_js",
+          "test_verification_evidence_artifact_check_test_makeworkspacerepo",
+          "test_verification_evidence_artifact_check_test_evidencefileexists",
+          "test_verification_evidence_artifact_check_test_latestcommand"
+        ],
+        "related_files": []
+      },
+      {
+        "file": "test/verification-observation.test.js",
+        "matched_nodes": [
+          "test_verification_observation_test_js",
+          "test_verification_observation_test_git",
+          "test_verification_observation_test_readjson",
+          "test_verification_observation_test_setuprepo",
+          "test_verification_observation_test_evidencepath",
+          "test_verification_observation_test_writestory",
+          "test_verification_observation_test_writeevidence"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/verification-runner.test.js",
+        "matched_nodes": [
+          "test_verification_runner_test_js",
+          "test_verification_runner_test_cli",
+          "test_verification_runner_test_git",
+          "test_verification_runner_test_readjson",
+          "test_verification_runner_test_evidencepath",
+          "test_verification_runner_test_runartifactpath",
+          "test_verification_runner_test_setuprepo",
+          "test_verification_runner_test_complete"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/vibepro-cli.test.js",
+        "matched_nodes": [
+          "test_vibepro_cli_test_js",
+          "test_vibepro_cli_test_runcli",
+          "test_vibepro_cli_test_ispassingreviewrecord",
+          "test_vibepro_cli_test_firstexistingreviewfixture",
+          "test_vibepro_cli_test_makerepo",
+          "test_vibepro_cli_test_readjson",
+          "test_vibepro_cli_test_writejson",
+          "test_vibepro_cli_test_writepng"
+        ],
+        "related_files": [
+          "src/run-context-capsule.js"
+        ]
+      },
+      {
+        "file": "test/vibepro-gate-check.test.js",
+        "matched_nodes": [
+          "test_vibepro_gate_check_test_js",
+          "test_vibepro_gate_check_test_makerepo",
+          "test_vibepro_gate_check_test_git",
+          "test_vibepro_gate_check_test_readjson",
+          "test_vibepro_gate_check_test_makegitrepowithstory"
+        ],
+        "related_files": [
+          "src/cli.js"
+        ]
+      },
+      {
+        "file": "test/workspace-status.test.js",
+        "matched_nodes": [
+          "test_workspace_status_test_js",
+          "test_workspace_status_test_git",
+          "test_workspace_status_test_writeartifact"
+        ],
+        "related_files": []
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "requirements-ssot",
+      "order": 10,
+      "title": "Story / Spec / Architecture / Policy SSOT",
+      "category": "requirements",
+      "recommendation": "separate_pr",
+      "files": [
+        "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+        "docs/specs/story-vibepro-test-tmpdir-fixture-cleanup.md"
+      ],
+      "required_gates": [
+        "Requirement Gate"
+      ],
+      "review_focus": [
+        "Story / Spec / Architecture / Policy の正本が互いに矛盾していないか",
+        "実装差分が要求の範囲を超えていないか",
+        "Storyに明示されたREADME/helpなどの利用者向け出力面が受け入れ基準と対応しているか"
+      ],
+      "file_count": 2,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-test-tmpdir-fixture-cleanup-requirements-ssot"
+    },
+    {
+      "id": "runtime-behavior",
+      "order": 20,
+      "title": "Runtime behavior and unit coverage",
+      "category": "implementation",
+      "recommendation": "primary_pr",
+      "files": [
+        "test/adjudication.test.js",
+        "test/agent-completion-inbox.test.js",
+        "test/agent-review-independence.test.js",
+        "test/architecture-conformance.test.js",
+        "test/architecture-profiler.test.js",
+        "test/architecture-readiness.test.js",
+        "test/artifact-routing.test.js",
+        "test/bin-entrypoint.test.js",
+        "test/budget-override-consuming-surfaces.test.js",
+        "test/canonical-audit-idempotent-persistence.test.js",
+        "test/canonical-audit-self-contained.test.js",
+        "test/canonical-decision-outcome-revisions.test.js",
+        "test/canonical-persistence.test.js",
+        "test/ci-evidence-import.test.js",
+        "test/cli-smoke.test.js",
+        "test/cli-status-honesty.test.js",
+        "test/codex-subagent-host.test.js",
+        "test/codex-subagent-runtime-adapter.test.js",
+        "test/content-scoped-evidence-freshness.test.js",
+        "test/coverage-report.test.js",
+        "test/decision-outcome-ledger.test.js",
+        "test/decision-records.test.js",
+        "test/design-input-judgment.test.js",
+        "test/design-ssot.test.js",
+        "test/docs-only-evidence-profile-integration.test.js",
+        "test/e2e-product-execution-lint.test.js",
+        "test/engineering-judgment-activation-precision.test.js",
+        "test/environment-graph.test.js",
+        "test/evidence-depth-pr-prepare.test.js",
+        "test/evidence-summary-reuse.test.js",
+        "test/execution-state.test.js",
+        "test/fast-lane-gate.test.js",
+        "test/gate-evidence-edge-robustness.test.js",
+        "test/gate-outcome-ledger-central-promotion.test.js",
+        "test/gate-outcome-ledger-promotion-integration.test.js",
+        "test/gate-outcome-ledger.test.js",
+        "test/guard.test.js",
+        "test/guarded-run-session.test.js",
+        "test/human-decision-checkpoint.test.js",
+        "test/integration/story-vibepro-budget-grant-tracked-decision-doc.test.js",
+        "test/integration/verification-runner-evidence-consumers.test.js",
+        "test/journey-map.test.js",
+        "test/judgment-adjudication.test.js",
+        "test/managed-command-executor.test.js",
+        "test/managed-worktree-policy-resync.test.js",
+        "test/merge-diff-base-preservation.test.js",
+        "test/node20-e2e-ts-ci-visibility.test.js",
+        "test/playbook-exporter.test.js",
+        "test/post-merge-release.test.js",
+        "test/pr-artifact-size-budget.test.js",
+        "test/pr-prepare-authorization-scoring.test.js",
+        "test/process-record-store.integration.test.js",
+        "test/process-record-store.test.js",
+        "test/public-discovery-live-targets.test.js",
+        "test/public-manual-build-contract.test.js",
+        "test/public-manual-build-runner.test.js",
+        "test/public-manual-deploy.test.js",
+        "test/recipe-preflight.test.js",
+        "test/regression-risk-scanner.test.js",
+        "test/report-pipeline.test.js",
+        "test/responsibility-authority.test.js",
+        "test/review-evidence-handling.test.js",
+        "test/review-finding-repair-loop.test.js",
+        "test/review-inspection-first.test.js",
+        "test/review-repair.test.js",
+        "test/review-surface-violation-ledger.test.js",
+        "test/risk-adaptive-gate.test.js",
+        "test/run-context-capsule-lineage.test.js",
+        "test/run-context-capsule.test.js",
+        "test/run-lineage-evidence-propagation.test.js",
+        "test/safe-action-orchestrator.test.js",
+        "test/scan-status.test.js",
+        "test/scope-boundary-gate.test.js",
+        "test/scratch-tmpdir-conformance.test.js",
+        "test/senior-gap-judgment.test.js",
+        "test/session-efficiency-audit.test.js",
+        "test/session-efficiency-run-lineage.test.js",
+        "test/spec-diagrams.test.js",
+        "test/spec-pipeline.test.js",
+        "test/story-discovery.test.js",
+        "test/story-run-portfolio.test.js",
+        "test/story-transaction-lock.test.js",
+        "test/story-vibepro-profiler-file-walk-integration.test.js",
+        "test/support/scratch-tmpdir.js",
+        "test/traceability-autobind.test.js",
+        "test/traceability-backfill.test.js",
+        "test/traceability-promotion.test.js",
+        "test/traceability-usage-report.test.js",
+        "test/validation-sequencing.test.js",
+        "test/verification-command-test-path-guard.test.js",
+        "test/verification-evidence-artifact-check.test.js",
+        "test/verification-observation.test.js",
+        "test/verification-runner.test.js",
+        "test/vibepro-cli.test.js",
+        "test/vibepro-gate-check.test.js",
+        "test/workspace-status.test.js"
+      ],
+      "required_gates": [
+        "Requirement Gate",
+        "Unit Gate",
+        "Integration Gate",
+        "E2E Gate"
+      ],
+      "review_focus": [
+        "受け入れ基準と実装分岐が対応しているか",
+        "Graphifyで隣接するファイルまで影響確認されているか"
+      ],
+      "file_count": 96,
+      "graph_investigation_files": [
+        "scripts/build-public-manual.mjs",
+        "scripts/check-public-manual-build.mjs",
+        "scripts/deploy-public-manual.mjs",
+        "scripts/lint-e2e-product-execution.mjs",
+        "scripts/npm-release-lock.mjs",
+        "scripts/post-merge-release.mjs",
+        "scripts/run-e2e-ts-specs.mjs",
+        "src/adjudication.js",
+        "src/agent-review.js",
+        "src/agent-runtime-adapter.js",
+        "src/architecture-store.js",
+        "src/atomic-file.js"
+      ],
+      "suggested_branch": "feat/vibepro-test-tmpdir-fixture-cleanup-runtime-behavior"
+    },
+    {
+      "id": "e2e-gate",
+      "order": 30,
+      "title": "E2E and verification harness",
+      "category": "verification",
+      "recommendation": "separate_pr",
+      "files": [
+        "test/e2e/cli-input-and-swift-classification.test.js",
+        "test/e2e/process-record-store-worktree-loss.e2e.test.js",
+        "test/e2e/story-vibepro-artifact-output-routing-main.spec.ts",
+        "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+        "test/e2e/story-vibepro-budget-grant-tracked-decision-doc-acceptance.spec.js",
+        "test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts",
+        "test/e2e/story-vibepro-codex-detached-completion-inbox-main.spec.ts",
+        "test/e2e/story-vibepro-codex-host-containment-test-load-tolerance-main.test.js",
+        "test/e2e/story-vibepro-cross-system-adjudication-main.test.js",
+        "test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts",
+        "test/e2e/story-vibepro-design-input-judgment-flow.spec.ts",
+        "test/e2e/story-vibepro-docs-only-evidence-profile-acceptance.spec.js",
+        "test/e2e/story-vibepro-evidence-adjudication-gate-main.test.js",
+        "test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js",
+        "test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js",
+        "test/e2e/story-vibepro-fake-value-hardening-main.spec.js",
+        "test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js",
+        "test/e2e/story-vibepro-gate-evidence-edge-robustness-main.test.js",
+        "test/e2e/story-vibepro-guarded-run-session-contract-main.test.js",
+        "test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts",
+        "test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js",
+        "test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js",
+        "test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js",
+        "test/e2e/story-vibepro-managed-worktree-gate-main.test.js",
+        "test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js",
+        "test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts",
+        "test/e2e/story-vibepro-owner-gated-budget-override-acceptance.spec.js",
+        "test/e2e/story-vibepro-pr-driven-continuous-release-main.test.js",
+        "test/e2e/story-vibepro-pr-readiness-status-ssot-main.test.js",
+        "test/e2e/story-vibepro-pr-route-gate-dag-main.test.js",
+        "test/e2e/story-vibepro-profiler-file-walk-stack-overflow-main.test.js",
+        "test/e2e/story-vibepro-recipe-preflight-autopilot-main.spec.js",
+        "test/e2e/story-vibepro-release-note-link-normalization-acceptance.spec.js",
+        "test/e2e/story-vibepro-release-surface-guard-main.test.js",
+        "test/e2e/story-vibepro-responsibility-authority-registry-main.test.js",
+        "test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts",
+        "test/e2e/story-vibepro-review-status-required-only-main.test.js",
+        "test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts",
+        "test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts",
+        "test/e2e/story-vibepro-runner-direct-evidence-acceptance.spec.js",
+        "test/e2e/story-vibepro-scanner-inconclusive-coverage-main.test.js",
+        "test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js",
+        "test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js",
+        "test/e2e/story-vibepro-usage-report-canonical-traceability-main.spec.js",
+        "test/e2e/story-vibepro-usage-report-main.test.js",
+        "test/e2e/story-vibepro-verify-command-test-path-existence-guard-main.test.js",
+        "test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js"
+      ],
+      "required_gates": [
+        "E2E Gate",
+        "Integration Gate"
+      ],
+      "review_focus": [
+        "E2E harnessが失敗exit codeを握りつぶしていないか",
+        "PR Gateが変更対象のE2Eに正しくスコープされているか"
+      ],
+      "file_count": 47,
+      "graph_investigation_files": [
+        "scripts/post-merge-release.mjs",
+        "scripts/run-e2e-ts-specs.mjs",
+        "src/agent-review.js",
+        "src/api-boundary-scanner.js",
+        "src/architecture-conformance.js",
+        "src/canonical-audit.js",
+        "src/cli.js",
+        "src/code-quality-scanner.js",
+        "src/codex-runtime-bridge.js",
+        "src/component-style-scanner.js",
+        "src/content-binding.js",
+        "src/database-access-scanner.js"
+      ],
+      "suggested_branch": "feat/vibepro-test-tmpdir-fixture-cleanup-e2e-gate"
+    },
+    {
+      "id": "misc-follow-up",
+      "order": 90,
+      "title": "Miscellaneous follow-up",
+      "category": "other",
+      "recommendation": "separate_pr",
+      "files": [
+        "design-ssot.json",
+        "docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-14963605.md",
+        "docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-5bb49be5.md",
+        "docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-9a99e7cb.md",
+        "docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-c7de51d9.md",
+        "docs/releases/2026-08.md"
+      ],
+      "required_gates": [
+        "Manual Review"
+      ],
+      "review_focus": [
+        "Storyとの対応が不明な差分をPRから外すか、Storyに根拠を追記する"
+      ],
+      "file_count": 6,
+      "graph_investigation_files": [],
+      "suggested_branch": "feat/vibepro-test-tmpdir-fixture-cleanup-misc-follow-up"
+    }
+  ],
+  "merge_order": [
+    "requirements-ssot",
+    "runtime-behavior",
+    "e2e-gate",
+    "misc-follow-up"
+  ],
+  "stacked_gate_plan": {
+    "schema_version": "0.1.0",
+    "model": "stacked-pr-gate-plan-v1",
+    "summary": {
+      "lane_count": 4,
+      "cumulative_gate_count": 0,
+      "requires_cumulative_e2e": false,
+      "requires_atomic_head_validation": false
+    },
+    "lane_plans": [
+      {
+        "lane_id": "requirements-ssot",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "Requirement Gate / document consistency review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "requirements-ssot は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "runtime-behavior",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "npm test",
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/30779873795/job/91583976036"
+        ],
+        "cumulative_checks": [],
+        "review_note": "runtime差分はUnit/Integrationを単体PRで確認する。E2E Gateが不要な変更では、後続E2Eまたは累積validationを要求しない。"
+      },
+      {
+        "lane_id": "e2e-gate",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/30779873795/job/91583976036",
+          "Playwright harness smoke if runtime dependencies are already merged"
+        ],
+        "cumulative_checks": [],
+        "review_note": "e2e-gate は単体PRとしてレビュー可能。"
+      },
+      {
+        "lane_id": "misc-follow-up",
+        "gate_mode": "isolated_pr",
+        "depends_on": [],
+        "isolated_checks": [
+          "manual review"
+        ],
+        "cumulative_checks": [],
+        "review_note": "misc-follow-up は単体PRとしてレビュー可能。"
+      }
+    ],
+    "final_validation": {
+      "required": false,
+      "trigger": "各PRのisolated checksで十分",
+      "commands": [
+        "npm test",
+        "CI CI: https://github.com/Unson-LLC/vibepro/actions/runs/30779873795/job/91583976036"
+      ]
+    }
+  },
+  "next_actions": [
+    {
+      "lane_id": "requirements-ssot",
+      "action": "Create feat/vibepro-test-tmpdir-fixture-cleanup-requirements-ssot with 2 files",
+      "command": "git switch -c feat/vibepro-test-tmpdir-fixture-cleanup-requirements-ssot \"<base>\" && git add docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md docs/specs/story-vibepro-test-tmpdir-fixture-cleanup.md"
+    },
+    {
+      "lane_id": "runtime-behavior",
+      "action": "Create feat/vibepro-test-tmpdir-fixture-cleanup-runtime-behavior with 96 files",
+      "command": "git switch -c feat/vibepro-test-tmpdir-fixture-cleanup-runtime-behavior \"<base>\" && git add test/adjudication.test.js test/agent-completion-inbox.test.js test/agent-review-independence.test.js test/architecture-conformance.test.js test/architecture-profiler.test.js test/architecture-readiness.test.js test/artifact-routing.test.js test/bin-entrypoint.test.js test/budget-override-consuming-surfaces.test.js test/canonical-audit-idempotent-persistence.test.js test/canonical-audit-self-contained.test.js test/canonical-decision-outcome-revisions.test.js test/canonical-persistence.test.js test/ci-evidence-import.test.js test/cli-smoke.test.js test/cli-status-honesty.test.js test/codex-subagent-host.test.js test/codex-subagent-runtime-adapter.test.js test/content-scoped-evidence-freshness.test.js test/coverage-report.test.js test/decision-outcome-ledger.test.js test/decision-records.test.js test/design-input-judgment.test.js test/design-ssot.test.js test/docs-only-evidence-profile-integration.test.js test/e2e-product-execution-lint.test.js test/engineering-judgment-activation-precision.test.js test/environment-graph.test.js test/evidence-depth-pr-prepare.test.js test/evidence-summary-reuse.test.js test/execution-state.test.js test/fast-lane-gate.test.js test/gate-evidence-edge-robustness.test.js test/gate-outcome-ledger-central-promotion.test.js test/gate-outcome-ledger-promotion-integration.test.js test/gate-outcome-ledger.test.js test/guard.test.js test/guarded-run-session.test.js test/human-decision-checkpoint.test.js test/integration/story-vibepro-budget-grant-tracked-decision-doc.test.js test/integration/verification-runner-evidence-consumers.test.js test/journey-map.test.js test/judgment-adjudication.test.js test/managed-command-executor.test.js test/managed-worktree-policy-resync.test.js test/merge-diff-base-preservation.test.js test/node20-e2e-ts-ci-visibility.test.js test/playbook-exporter.test.js test/post-merge-release.test.js test/pr-artifact-size-budget.test.js test/pr-prepare-authorization-scoring.test.js test/process-record-store.integration.test.js test/process-record-store.test.js test/public-discovery-live-targets.test.js test/public-manual-build-contract.test.js test/public-manual-build-runner.test.js test/public-manual-deploy.test.js test/recipe-preflight.test.js test/regression-risk-scanner.test.js test/report-pipeline.test.js test/responsibility-authority.test.js test/review-evidence-handling.test.js test/review-finding-repair-loop.test.js test/review-inspection-first.test.js test/review-repair.test.js test/review-surface-violation-ledger.test.js test/risk-adaptive-gate.test.js test/run-context-capsule-lineage.test.js test/run-context-capsule.test.js test/run-lineage-evidence-propagation.test.js test/safe-action-orchestrator.test.js test/scan-status.test.js test/scope-boundary-gate.test.js test/scratch-tmpdir-conformance.test.js test/senior-gap-judgment.test.js test/session-efficiency-audit.test.js test/session-efficiency-run-lineage.test.js test/spec-diagrams.test.js test/spec-pipeline.test.js test/story-discovery.test.js test/story-run-portfolio.test.js test/story-transaction-lock.test.js test/story-vibepro-profiler-file-walk-integration.test.js test/support/scratch-tmpdir.js test/traceability-autobind.test.js test/traceability-backfill.test.js test/traceability-promotion.test.js test/traceability-usage-report.test.js test/validation-sequencing.test.js test/verification-command-test-path-guard.test.js test/verification-evidence-artifact-check.test.js test/verification-observation.test.js test/verification-runner.test.js test/vibepro-cli.test.js test/vibepro-gate-check.test.js test/workspace-status.test.js"
+    },
+    {
+      "lane_id": "e2e-gate",
+      "action": "Create feat/vibepro-test-tmpdir-fixture-cleanup-e2e-gate with 47 files",
+      "command": "git switch -c feat/vibepro-test-tmpdir-fixture-cleanup-e2e-gate \"<base>\" && git add test/e2e/cli-input-and-swift-classification.test.js test/e2e/process-record-store-worktree-loss.e2e.test.js test/e2e/story-vibepro-artifact-output-routing-main.spec.ts test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts test/e2e/story-vibepro-budget-grant-tracked-decision-doc-acceptance.spec.js test/e2e/story-vibepro-classifier-premise-recovery-main.spec.ts test/e2e/story-vibepro-codex-detached-completion-inbox-main.spec.ts test/e2e/story-vibepro-codex-host-containment-test-load-tolerance-main.test.js test/e2e/story-vibepro-cross-system-adjudication-main.test.js test/e2e/story-vibepro-delivery-reconciliation-state-main.spec.ts test/e2e/story-vibepro-design-input-judgment-flow.spec.ts test/e2e/story-vibepro-docs-only-evidence-profile-acceptance.spec.js test/e2e/story-vibepro-evidence-adjudication-gate-main.test.js test/e2e/story-vibepro-execution-judgment-status-integrity-main.test.js test/e2e/story-vibepro-explicit-run-attribution-lineage-main.test.js test/e2e/story-vibepro-fake-value-hardening-main.spec.js test/e2e/story-vibepro-gate-decision-outcome-ledger-workflow.spec.js test/e2e/story-vibepro-gate-evidence-edge-robustness-main.test.js test/e2e/story-vibepro-guarded-run-session-contract-main.test.js test/e2e/story-vibepro-independent-review-orchestration-acceptance.spec.ts test/e2e/story-vibepro-issues-189-204-gate-friction-main.test.js test/e2e/story-vibepro-judgment-dag-adjudication-main.test.js test/e2e/story-vibepro-managed-worktree-execution-dag-main.test.js test/e2e/story-vibepro-managed-worktree-gate-main.test.js test/e2e/story-vibepro-managed-worktree-policy-resync-main.test.js test/e2e/story-vibepro-one-command-pr-ready-closure-runtime.spec.ts test/e2e/story-vibepro-owner-gated-budget-override-acceptance.spec.js test/e2e/story-vibepro-pr-driven-continuous-release-main.test.js test/e2e/story-vibepro-pr-readiness-status-ssot-main.test.js test/e2e/story-vibepro-pr-route-gate-dag-main.test.js test/e2e/story-vibepro-profiler-file-walk-stack-overflow-main.test.js test/e2e/story-vibepro-recipe-preflight-autopilot-main.spec.js test/e2e/story-vibepro-release-note-link-normalization-acceptance.spec.js test/e2e/story-vibepro-release-surface-guard-main.test.js test/e2e/story-vibepro-responsibility-authority-registry-main.test.js test/e2e/story-vibepro-review-dispatch-preflight-dag-main.spec.ts test/e2e/story-vibepro-review-status-required-only-main.test.js test/e2e/story-vibepro-risk-adaptive-validation-sequencing-acceptance.spec.ts test/e2e/story-vibepro-routing-profiles-rendered-projections-main.spec.ts test/e2e/story-vibepro-runner-direct-evidence-acceptance.spec.js test/e2e/story-vibepro-scanner-inconclusive-coverage-main.test.js test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js test/e2e/story-vibepro-ui-journey-e2e-dogfood-main.test.js test/e2e/story-vibepro-usage-report-canonical-traceability-main.spec.js test/e2e/story-vibepro-usage-report-main.test.js test/e2e/story-vibepro-verify-command-test-path-existence-guard-main.test.js test/e2e/story-vibepro-workflow-pre-pr-evidence-gate-main.test.js"
+    },
+    {
+      "lane_id": "misc-follow-up",
+      "action": "Create feat/vibepro-test-tmpdir-fixture-cleanup-misc-follow-up with 6 files",
+      "command": "git switch -c feat/vibepro-test-tmpdir-fixture-cleanup-misc-follow-up \"<base>\" && git add design-ssot.json docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-14963605.md docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-5bb49be5.md docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-9a99e7cb.md docs/management/decisions/2026-08-03-budget-override-story-vibepro-test-tmpdir-fixture-cleanup-c7de51d9.md docs/releases/2026-08.md"
+    }
+  ]
+}

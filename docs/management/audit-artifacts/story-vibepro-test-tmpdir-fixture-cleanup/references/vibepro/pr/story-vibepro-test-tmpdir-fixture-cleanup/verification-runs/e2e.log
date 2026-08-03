@@ -1,0 +1,13 @@
+✔ story-vibepro-test-tmpdir-fixture-cleanup ac:1 a process importing the helper leaves no fixture behind in the real TMPDIR after normal exit (109.023917ms)
+✔ story-vibepro-test-tmpdir-fixture-cleanup ac:2 isolation reaches src-code mkdtemp calls made in-process and mkdtemp calls made by a spawned child inheriting the environment (189.130167ms)
+✔ story-vibepro-test-tmpdir-fixture-cleanup ac:3 a conformance guard exists that fails offending test files that skip the helper import (567.091667ms)
+✔ story-vibepro-test-tmpdir-fixture-cleanup ac:4 a 24-hour-old stale scratch root is swept away when the helper is imported by any process (97.655709ms)
+✔ story-vibepro-test-tmpdir-fixture-cleanup ac:5 the existing test suite keeps passing after adding the scratch TMPDIR isolation helper (259.203583ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1525.296042
