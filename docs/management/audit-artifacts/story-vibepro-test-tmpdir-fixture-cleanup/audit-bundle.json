@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
   "source": "execute_merge",
-  "promoted_at": "2026-08-03T03:10:20.982Z",
+  "promoted_at": "2026-08-03T03:10:30.831Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-test-tmpdir-fixture-cleanup",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-test-tmpdir-fixture-cleanup/audit-index.json",
@@ -38,11 +38,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-test-tmpdir-fixture-cleanup/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:8f45ef4e55034f850e927213cf35b6e56d74f37195976bd2ce24712ecf44fa1e",
-    "compressed_hash": "sha256:804ea8836e8d2ef5459b2c832afa9061f72514a7ce31f3fdcd843ff1c0c46e96",
-    "expanded_bytes": 26779,
-    "compressed_bytes": 5196,
-    "expanded_line_count": 663,
+    "content_hash": "sha256:483048f6107d1a73f49cc60d06a07d46241e14107653b466cad5aecfcdc24908",
+    "compressed_hash": "sha256:6d0eeae29447420210f9de15a6fc93876c964aa122fa1290ebec38b7562cd6d9",
+    "expanded_bytes": 25883,
+    "compressed_bytes": 5084,
+    "expanded_line_count": 643,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "decision_index",
@@ -62,9 +62,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-test-tmpdir-fixture-cleanup",
     "cost": {
-      "compressed_bytes": 5196,
-      "expanded_bytes": 26779,
-      "expanded_line_count": 663,
+      "compressed_bytes": 5084,
+      "expanded_bytes": 25883,
+      "expanded_line_count": 643,
       "persisted_line_count": 1
     }
   },
@@ -79,26 +79,16 @@
       "merged_at": "2026-08-03T03:10:18Z"
     },
     "reconciliation": {
-      "status": "reconciliation_required",
-      "reasons": [
-        "decision_outcome_binding_failed"
-      ],
-      "evaluated_at": "2026-08-03T03:10:20.960Z",
+      "status": "reconciled",
+      "reasons": [],
+      "evaluated_at": "2026-08-03T03:10:30.723Z",
       "head_sha": "f56a1f7556f28f106876338eb03508d787e0d19e"
     },
-    "reconciliation_action": {
-      "status": "required",
-      "reason": "decision_outcome_binding_failed",
-      "commands": [
-        "vibepro pr prepare . --story-id story-vibepro-test-tmpdir-fixture-cleanup --base main",
-        "vibepro execute merge . --story-id story-vibepro-test-tmpdir-fixture-cleanup --base main --pr https://github.com/Unson-LLC/vibepro/pull/417"
-      ]
-    },
     "decision_outcome_binding": {
-      "status": "failed",
-      "reason": "central_ledger_parse_failed",
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
       "expected_entry_count": 39,
-      "promoted_count": 0,
+      "promoted_count": 39,
       "duplicate_count": 0,
       "persistence_status": null
     },
@@ -114,7 +104,7 @@
     "status": "blocked",
     "resolved_reference_count": 110,
     "copied_reference_count": 88,
-    "unresolved_reference_count": 7,
+    "unresolved_reference_count": 14,
     "replay_bundle": "docs/management/audit-artifacts/story-vibepro-test-tmpdir-fixture-cleanup/audit-replay-bundle.json.gz",
     "replay_command": "vibepro audit replay . --story-id story-vibepro-test-tmpdir-fixture-cleanup"
   },
@@ -131,7 +121,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-test-tmpdir-fixture-cleanup/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:8f45ef4e55034f850e927213cf35b6e56d74f37195976bd2ce24712ecf44fa1e"
+      "content_hash": "sha256:483048f6107d1a73f49cc60d06a07d46241e14107653b466cad5aecfcdc24908"
     }
   ],
   "raw_artifact_manifest": [
@@ -221,10 +211,10 @@
       "source": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-test-tmpdir-fixture-cleanup/audit-replay-bundle.json.gz",
-      "digest": "sha256:3a9d73b7e869c9aee6a70e0e82f509490e8a5225936eb3dff615dcb3e7185237",
-      "audit_digest": "sha256:6437b38bfbc51d5a0c4973771f1e9cdf216305b56365c98e86e249c6b208b21b",
-      "line_count": 3510,
-      "raw_line_count": 8147,
+      "digest": "sha256:5b19b3a0a25bb6de58d41bb6c5cd81b590b4d68310b5debec35c83c34992aab5",
+      "audit_digest": "sha256:099fe4d4e5ed3ac256b1f9178673c3816aee8eff8c999622c2fcfd1d7dc1b8bf",
+      "line_count": 3499,
+      "raw_line_count": 8145,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -1484,14 +1474,42 @@
       "size_bytes": 993002
     },
     {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/graphify/graph.json",
       "reason": "source_too_large",
       "size_bytes": 7446247
     },
     {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/design-ssot-reconciliation.json",
       "reason": "source_too_large",
       "size_bytes": 636695
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
     },
     {
       "source": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/surface-violations.json",
