@@ -508,7 +508,8 @@
       },
       "story-vibepro-uiux-intake-gate-pr-summary-surfaces": {
         "max_subagent_count": 10,
-        "amendment_reason": "Owner-approved raises scoped to this Story: 6->8 then 8->10 subagents. First raise for the final implementation:runtime_contract review; second raise after that review found a story accuracy defect (both summary surfaces dead in production), requiring gate_evidence and runtime_contract re-reviews of the corrected story text. Both approved by sato_keigo on 2026-08-03 via AskUserQuestion in Claude Code session c3213594-536c-47ba-89cf-d8613ecaff91, observed directly by the recording agent.",
+        "amendment_reason": "Owner-approved raises scoped to this Story: 6->8 then 8->10 subagents. First raise for the final implementation:runtime_contract review; second raise after that review found a story accuracy defect (both summary surfaces dead in production), requiring gate_evidence and runtime_contract re-reviews of the corrected story text. Both approved by sato_keigo on 2026-08-03 via AskUserQuestion in Claude Code session c3213594-536c-47ba-89cf-d8613ecaff91, observed directly by the recording agent."
+      },
       "story-vibepro-test-tmpdir-fixture-cleanup": {
         "max_subagent_count": 18,
         "max_agent_consumption_ms": 5400000,
