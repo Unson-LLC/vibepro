@@ -6,9 +6,10 @@ import { buildHumanEvidenceDigest, renderPrGateSummary } from '../../src/pr-mana
 const STORY_ID = 'story-vibepro-uiux-intake-gate-pr-summary-surfaces';
 
 // The gap: gate:uiux_intake_judgment (story-vibepro-uiux-intake-judgment-gate) exists in
-// gate_dag.nodes and gate_status, but both curated human PR summary surfaces silently
-// dropped it because their label lists were never extended, so a required blocking gate
-// was invisible in pr-body.md and the human evidence digest.
+// gate_dag.nodes and gate_status, but both curated human-summary label lists silently
+// dropped it because they were never extended. Both render functions are currently
+// unreferenced by production code (their caller chains were removed in earlier commits);
+// this test pins the function contracts so the gate is not missing if they are re-wired.
 function realisticGateDag({ withIntakeGate }) {
   const nodes = [
     { id: 'story', type: 'story_gate', label: 'Story', status: 'passed', required: true, reason: 'story registered' },

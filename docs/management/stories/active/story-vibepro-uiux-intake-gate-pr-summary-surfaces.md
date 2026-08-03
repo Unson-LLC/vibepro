@@ -16,7 +16,7 @@ reason: |
 
 `gate:uiux_intake_judgment`（story-vibepro-uiux-intake-judgment-gate で追加）は gate_dag.nodes と gate_status には現れるが、人間向けPRサマリーの2表面 — `renderPrGateSummary` の routeGates 一覧と `buildHumanEvidenceDigest` のラベル一覧 — に含まれていない。
 
-現時点の到達性は2表面で異なる: `buildHumanEvidenceDigest` は `renderHumanDecisionGraph` 経由で生成PR本文の人間向けダイジェストに実際に到達するライブ表面であり、そこからこのゲートの状態が見えないのが実害。一方 `renderPrGateSummary` は過去のcommitで唯一の呼び出し元が削除され、現在productionコードからは未参照（テストのみが参照）。本Storyはライブ表面の修正に加え、未参照側のcuratedリストも同じ内容に揃えることで、再配線されたときにゲートが欠落しない状態を保つ（未参照表面の変更に現時点のユーザー可視の効果はない）。
+現時点では両表面ともproductionコードから未参照である: `renderPrGateSummary` は過去のcommitで唯一の呼び出し元が削除済み、`buildHumanEvidenceDigest` も唯一の呼び出しチェーン（`renderPrDecisionSection` → `renderHumanDecisionGraph`）の起点 `renderPrDecisionSection` に呼び出し元が存在しない（いずれもテストのみが参照。runtime_contract reviewのcall graph追跡で確認）。したがって本Storyの変更に現時点のユーザー可視の効果はない。本Storyの価値は、curatedラベル一覧を gate_dag の実ノード集合と揃えておくことで、これらのサマリー表面が将来再配線されたときに `gate:uiux_intake_judgment` が欠落しない状態を保つことにある。
 
 ## Acceptance Criteria
 
