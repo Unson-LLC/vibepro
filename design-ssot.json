@@ -7999,8 +7999,57 @@
             "last_reviewed_root_hash": null
           }
         ]
-      }
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-pr-human-summary-dead-chain-removal",
+      "title": "死んだ人間向けPRサマリーレンダラーチェーンを削除する",
+      "root_doc": "docs/management/stories/active/story-vibepro-pr-human-summary-dead-chain-removal.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-pr-human-summary-dead-chain-removal.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-pr-human-summary-dead-chain-removal.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-08-03T03:40:00.000Z"
+  "updated_at": "2026-08-03T06:59:30.606Z"
 }
