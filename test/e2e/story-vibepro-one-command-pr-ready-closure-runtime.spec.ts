@@ -1,3 +1,4 @@
+import '../support/scratch-tmpdir.js';
 // Executable coverage markers:
 // AC-1 OCR-S-1: guarded one-command defaults to the autonomous closure profile.
 // AC-2 OCR-S-2: the closed action DAG composes the canonical implementation owners.

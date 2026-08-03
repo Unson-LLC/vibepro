@@ -7772,6 +7772,45 @@
       "source": "design-ssot.json"
     },
     {
+      "id": "vibepro-test-tmpdir-fixture-cleanup",
+      "title": "Test-suite TMPDIR fixture cleanup isolation",
+      "root_doc": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "owner": "sato_keigo",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-test-tmpdir-fixture-cleanup.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-test-tmpdir-fixture-cleanup.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
+    },
+    {
       "id": "story-vibepro-profiler-file-walk-stack-overflow",
       "title": "diagnosis-path directory walkers iterative rewrite",
       "root_doc": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
