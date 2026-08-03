@@ -1,0 +1,11 @@
+✔ renderPrGateSummary renders gate:uiux_intake_judgment when present in the gate DAG (2.773584ms)
+✔ buildHumanEvidenceDigest includes gate:uiux_intake_judgment status when present (16.605958ms)
+✔ both human summary surfaces are unchanged when the gate node is absent (0.418333ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 337.308375
