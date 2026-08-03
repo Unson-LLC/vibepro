@@ -1274,8 +1274,14 @@
         "started_at": "2026-08-03",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-cross-system-adjudication",
+        "title": "Cross-system adjudication requires a different model family than the implementer",
+        "ssot": "local",
+        "status": "active"
       }
     ],
-    "current_story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces"
+    "current_story_id": "story-vibepro-cross-system-adjudication"
   }
 }

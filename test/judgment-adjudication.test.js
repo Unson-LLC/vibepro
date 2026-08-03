@@ -10,11 +10,14 @@ import {
   JUDGMENT_ADJUDICATION_VERDICTS,
   buildJudgmentDagAdjudicationGate,
   collectJudgmentItems,
+  implementationProvenancePath,
   prepareJudgmentAdjudication,
   readJudgmentAdjudicationIfExists,
+  recordImplementationProvenance,
   recordJudgmentAdjudication,
   recordPremiseCorrection,
   resolveCurrentJudgmentState,
+  sameSystemLogPath,
   summarizeJudgmentAdjudicationForPr
 } from '../src/adjudication.js';
 import { preparePullRequest } from '../src/pr-manager.js';
@@ -958,3 +961,247 @@ async function gitHead(repo) {
   const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: repo });
   return stdout.trim();
 }
+
+test('CSA-S-004 judgment-DAG record rejects a same-system adjudicator before persistence and leaves the artifact untouched', async () => {
+  const repo = await makeRepo();
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-1' });
+  const before = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(before, null);
+  await assert.rejects(() => recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1'
+  }), /requires a cross-system adjudicator/);
+  const after = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(after, null, 'a rejected same-system record must not write the judgment-adjudication.json artifact');
+});
+
+test('CSA-S-005 --allow-same-system appends the append-only log and stores the override on the persisted event', async () => {
+  const repo = await makeRepo();
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-1' });
+  const result = await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1',
+    allowSameSystemReason: 'single-system environment for this repo'
+  });
+  assert.equal(result.entry.provenance.same_system_override.reason, 'single-system environment for this repo');
+  const logRaw = await readFile(sameSystemLogPath(repo, STORY_ID), 'utf8');
+  const lines = logRaw.trim().split('\n');
+  assert.equal(lines.length, 1);
+  const logEntry = JSON.parse(lines[0]);
+  assert.equal(logEntry.reason, 'single-system environment for this repo');
+  assert.equal(logEntry.agent_system, 'claude_code');
+  assert.equal(logEntry.story_id, STORY_ID);
+});
+
+test('CSA-S-006 an accepted decision record with the environment source downgrades same-system rejection to a warning', async () => {
+  const repo = await makeRepo();
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-1' });
+  const decisionRecordsPath = path.join(repo, '.vibepro', 'pr', STORY_ID, 'decision-records.json');
+  await mkdir(path.dirname(decisionRecordsPath), { recursive: true });
+  await writeFile(decisionRecordsPath, `${JSON.stringify({
+    schema_version: '0.1.0',
+    model: 'vibepro-decision-records-v1',
+    story_id: STORY_ID,
+    decisions: [{
+      decision_id: 'decision-env-1',
+      story_id: STORY_ID,
+      type: 'waiver',
+      status: 'accepted',
+      source: 'gate:judgment_dag_adjudication:same_system_environment',
+      reason: 'single-system agent environment for this repository',
+      artifact: 'docs/decisions/single-system.md'
+    }]
+  }, null, 2)}\n`, 'utf8');
+  const result = await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1'
+  });
+  assert.equal(result.warnings.length, 1);
+  assert.equal(result.warnings[0].id, 'same_system');
+  assert.match(result.warnings[0].reason, /decision-env-1/);
+});
+
+test('CSA-S-007 missing implementation provenance emits a provenance_missing warning only and behaves as before', async () => {
+  const repo = await makeRepo();
+  const result = await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1'
+  });
+  assert.equal(result.warnings.length, 1);
+  assert.equal(result.warnings[0].id, 'provenance_missing');
+  const stored = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(stored.events.length, 1);
+  assert.equal(stored.events[0].verdict, 'judged_sound');
+});
+
+test('CSA-S-008 a cross-system adjudicator with recorded provenance produces no warning and needs no override', async () => {
+  const repo = await makeRepo();
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'codex', agentId: 'impl-1' });
+  const result = await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1'
+  });
+  assert.deepEqual(result.warnings, []);
+  assert.equal(result.entry.provenance.same_system_override, undefined);
+});
+
+test('CSA-S-009 adjudicate correct also enforces cross-system adjudication before persisting the premise correction', async () => {
+  const repo = await makeRepo();
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-1' });
+  const evidencePath = path.join(repo, 'docs', 'premise-proof-csa.md');
+  await mkdir(path.dirname(evidencePath), { recursive: true });
+  await writeFile(evidencePath, '# Replacement evidence\n', 'utf8');
+  const original = await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_unsound',
+    unsoundCause: 'classifier_premise_unsound',
+    reason: 'classifier assumed a public output change',
+    agentSystem: 'codex',
+    agentId: 'judge-original'
+  });
+  await assert.rejects(() => recordPremiseCorrection(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    originalVerdictId: original.entry.event_id,
+    incorrectPremise: 'public output changed',
+    correctedPremise: 'public output is unchanged',
+    reason: 'diff proves the corrected premise',
+    replacementEvidence: ['docs/premise-proof-csa.md'],
+    agentSystem: 'claude_code',
+    agentId: 'operator-1'
+  }), /requires a cross-system adjudicator/);
+  const stored = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(stored.events.length, 1, 'a rejected correction must not be appended to the artifact');
+
+  const correction = await recordPremiseCorrection(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    originalVerdictId: original.entry.event_id,
+    incorrectPremise: 'public output changed',
+    correctedPremise: 'public output is unchanged',
+    reason: 'diff proves the corrected premise',
+    replacementEvidence: ['docs/premise-proof-csa.md'],
+    agentSystem: 'claude_code',
+    agentId: 'operator-1',
+    allowSameSystemReason: 'single agent-system CI runner'
+  });
+  assert.equal(correction.entry.provenance.same_system_override.reason, 'single agent-system CI runner');
+});
+
+test('CSA-S-010 the gate surfaces a provenance_missing_count and mentions it in reason without changing pass/fail status', () => {
+  const items = fixtureItems();
+  // The legacy `verdicts` fixture shape (used elsewhere in this file) is converted into events
+  // via named-field mapping only and does not carry `warnings` (that field postdates the legacy
+  // format), so these fixtures use the v2 `events` array directly, as the real recorders do.
+  const eventsMissingProvenance = items.map((item, index) => ({
+    event_id: `evt-missing-${index}`,
+    type: 'verdict',
+    item_id: item.id,
+    verdict: 'judged_sound',
+    unsound_cause: null,
+    responds_to_correction_id: null,
+    reason: 'ok',
+    head_commit: 'head-1',
+    provenance: { agent_system: 'claude_code', agent_id: 'judge-1' },
+    warnings: [{ id: 'provenance_missing', reason: 'no implementation provenance is recorded' }]
+  }));
+  const gateWithWarnings = buildJudgmentDagAdjudicationGate({
+    storyId: STORY_ID, items, adjudication: { events: eventsMissingProvenance }, headSha: 'head-1', decisions: []
+  });
+  assert.equal(gateWithWarnings.provenance_missing_count, items.length);
+  assert.match(gateWithWarnings.reason, /no recorded implementation provenance/);
+
+  const eventsClean = items.map((item, index) => ({
+    event_id: `evt-clean-${index}`,
+    type: 'verdict',
+    item_id: item.id,
+    verdict: 'judged_sound',
+    unsound_cause: null,
+    responds_to_correction_id: null,
+    reason: 'ok',
+    head_commit: 'head-1',
+    provenance: { agent_system: 'claude_code', agent_id: 'judge-1' },
+    warnings: []
+  }));
+  const gateClean = buildJudgmentDagAdjudicationGate({
+    storyId: STORY_ID, items, adjudication: { events: eventsClean }, headSha: 'head-1', decisions: []
+  });
+  assert.equal(gateClean.provenance_missing_count, 0);
+  // CSA-S-010(c): warning presence must not flip pass/fail status
+  assert.equal(gateWithWarnings.status, 'passed');
+  assert.equal(gateClean.status, 'passed');
+  assert.equal(gateWithWarnings.status, gateClean.status);
+});
+
+test('CSA-S-011 --allow-same-system produces a same_system_override_count in both the gate node and the PR summary', async () => {
+  const repo = await makeRepo();
+  await recordImplementationProvenance(repo, { storyId: STORY_ID, agentSystem: 'claude_code', agentId: 'impl-1' });
+  const items = fixtureItems();
+  await recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: items[0].id,
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1',
+    allowSameSystemReason: 'single agent-system CI runner'
+  });
+  for (const item of items.slice(1)) {
+    await recordJudgmentAdjudication(repo, {
+      storyId: STORY_ID,
+      itemId: item.id,
+      verdict: 'judged_sound',
+      reason: '互換テストが検証している',
+      agentSystem: 'codex',
+      agentId: 'judge-2'
+    });
+  }
+  const artifact = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  const headSha = await gitHead(repo);
+  const gate = buildJudgmentDagAdjudicationGate({ storyId: STORY_ID, items, adjudication: artifact, headSha, decisions: [] });
+  assert.equal(gate.status, 'passed', 'CSA-S-011(c): an override must not flip the gate to failed');
+  assert.equal(gate.same_system_override_count, 1);
+  assert.equal(gate.same_system_warning_count, 0, 'an accepted override clears the same_system warning, it does not add one');
+  assert.match(gate.reason, /--allow-same-system override/);
+
+  const summary = summarizeJudgmentAdjudicationForPr({ storyId: STORY_ID, items, adjudication: artifact, headSha, decisions: [] });
+  assert.equal(summary.same_system_override_count, 1);
+});
+
+test('CSA-S-012 judgment-DAG record fails closed on a corrupt implementation-provenance.json instead of falling through to provenance_missing', async () => {
+  const repo = await makeRepo();
+  const provenancePath = implementationProvenancePath(repo, STORY_ID);
+  await mkdir(path.dirname(provenancePath), { recursive: true });
+  await writeFile(provenancePath, '{ this is not json', 'utf8');
+  await assert.rejects(() => recordJudgmentAdjudication(repo, {
+    storyId: STORY_ID,
+    itemId: 'axis:public_contract',
+    verdict: 'judged_sound',
+    reason: '互換テストが検証している',
+    agentSystem: 'claude_code',
+    agentId: 'judge-1'
+  }), /implementation-provenance\.json.*not valid JSON/s);
+  const after = await readJudgmentAdjudicationIfExists(repo, STORY_ID);
+  assert.equal(after, null, 'a corrupt provenance record must reject before persistence, not write a provenance_missing-warning event');
+});

@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { createHash, randomUUID } from 'node:crypto';
-import { lstat, mkdir, readFile, realpath, stat, writeFile } from 'node:fs/promises';
+import { appendFile, lstat, mkdir, readFile, realpath, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
@@ -8,15 +8,18 @@ import { findStorySource } from './requirement-consistency.js';
 import { extractAcceptanceCriteria } from './traceability.js';
 import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
+import { readDecisionRecordsIfExists } from './decision-records.js';
 
 const execFileAsync = promisify(execFile);
 
 export const ADJUDICATION_SCHEMA_VERSION = '0.1.0';
 export const JUDGMENT_ADJUDICATION_SCHEMA_VERSION = '0.2.0';
+export const IMPLEMENTATION_PROVENANCE_MODEL = 'vibepro-implementation-provenance-v1';
 export const ADJUDICATION_VERDICTS = ['demonstrated', 'not_demonstrated', 'not_verifiable_by_automation'];
 export const JUDGMENT_ADJUDICATION_VERDICTS = ['judged_sound', 'judged_unsound', 'needs_human_judgment'];
 export const JUDGMENT_UNSOUND_CAUSES = ['implementation_unsound', 'classifier_premise_unsound'];
 const ADJUDICATION_AGENT_SYSTEMS = ['codex', 'claude_code'];
+const SAME_SYSTEM_ENVIRONMENT_DECISION_SOURCE = 'gate:judgment_dag_adjudication:same_system_environment';
 
 const VERDICT_DEFINITIONS = {
   demonstrated: '紐づく証拠が、このclauseの成果が実際に起きたことを実証している。証拠の観測内容から成果へ推論の飛躍なしに到達できる場合のみ選ぶ。',
@@ -48,6 +51,132 @@ export function judgmentAdjudicationArtifactPath(repoRoot, storyId) {
 
 export function judgmentAdjudicationRequestPath(repoRoot, storyId) {
   return path.join(adjudicationDir(repoRoot, storyId), 'judgment-adjudication-request.md');
+}
+
+export function implementationProvenancePath(repoRoot, storyId) {
+  return path.join(adjudicationDir(repoRoot, storyId), 'implementation-provenance.json');
+}
+
+export function sameSystemLogPath(repoRoot, storyId) {
+  return path.join(adjudicationDir(repoRoot, storyId), 'same-system-log.jsonl');
+}
+
+export async function readImplementationProvenanceIfExists(repoRoot, storyId) {
+  const artifactPath = implementationProvenancePath(repoRoot, storyId);
+  let raw = null;
+  try {
+    raw = await readFile(artifactPath, 'utf8');
+  } catch {
+    return null;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch (error) {
+    // Fail closed, mirroring readJudgmentAdjudicationIfExists: a corrupt provenance record must
+    // never be silently treated as "no provenance recorded", because that would silently
+    // downgrade judgment-DAG enforcement to the non-blocking provenance_missing warning path.
+    throw new Error(
+      `implementation-provenance.json for ${storyId} at ${artifactPath} exists but is not valid JSON (${error.message}). `
+      + 'A corrupt provenance record must not be silently ignored; re-record it with `vibepro adjudicate provenance`.'
+    );
+  }
+}
+
+// Captures which agent_system implemented the story, so judgment-DAG adjudication can later
+// compare the adjudicator's agent_system against it (weight independence). Validated before any
+// write: an agent_system outside ADJUDICATION_AGENT_SYSTEMS must never reach the artifact.
+export async function recordImplementationProvenance(repoRoot, options = {}) {
+  const storyId = requireCliValue(options.storyId, 'adjudicate provenance requires --id <story-id>');
+  const agentSystem = requireCliValue(options.agentSystem, 'adjudicate provenance requires --agent-system <codex|claude_code>');
+  if (!ADJUDICATION_AGENT_SYSTEMS.includes(agentSystem)) {
+    throw new Error(`adjudicate provenance --agent-system must be one of: ${ADJUDICATION_AGENT_SYSTEMS.join(', ')}`);
+  }
+  const root = path.resolve(repoRoot);
+  const headCommit = await resolveHeadCommit(root);
+  if (!headCommit) {
+    throw new Error('adjudicate provenance could not resolve the current HEAD commit (git rev-parse HEAD failed); provenance must be head-bound, so run this command inside the target git repository');
+  }
+  const record = {
+    schema_version: ADJUDICATION_SCHEMA_VERSION,
+    model: IMPLEMENTATION_PROVENANCE_MODEL,
+    story_id: storyId,
+    provenance: {
+      agent_system: agentSystem,
+      agent_id: options.agentId ?? null,
+      session_ref: options.sessionRef ?? null
+    },
+    head_commit: headCommit,
+    recorded_at: new Date().toISOString()
+  };
+  await mkdir(adjudicationDir(root, storyId), { recursive: true });
+  const artifactPath = implementationProvenancePath(root, storyId);
+  await writeFile(artifactPath, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
+  return { record, artifact: toWorkspaceRelative(root, artifactPath) };
+}
+
+// Shared weight-independence check for the judgment-DAG routes (adjudicate record --judgment
+// and adjudicate correct). Evidence-path `adjudicate record` never calls this - it is warning-only
+// there and handled inline in recordAdjudication.
+async function enforceCrossSystemAdjudicator(root, storyId, {
+  agentSystem,
+  agentId,
+  headCommit,
+  allowSameSystemReason,
+  itemId,
+  commandLabel
+}) {
+  const provenance = await readImplementationProvenanceIfExists(root, storyId);
+  const implementationSystem = provenance?.provenance?.agent_system ?? null;
+  if (!implementationSystem) {
+    return {
+      warnings: [{
+        id: 'provenance_missing',
+        reason: `no implementation provenance is recorded for ${storyId}; cross-system adjudication cannot be verified. Record it with \`vibepro adjudicate provenance\`.`
+      }]
+    };
+  }
+  if (implementationSystem !== agentSystem) {
+    return { warnings: [] };
+  }
+  const decisionRecords = await readDecisionRecordsIfExists(root, storyId);
+  const acceptedEnvironmentDecision = (decisionRecords?.decisions ?? []).find((decision) => (
+    decision?.status === 'accepted'
+    && Boolean(decision?.reason)
+    && Boolean(decision?.artifact)
+    && decision?.source === SAME_SYSTEM_ENVIRONMENT_DECISION_SOURCE
+  ));
+  if (acceptedEnvironmentDecision) {
+    return {
+      warnings: [{
+        id: 'same_system',
+        reason: `adjudicator agent_system ${agentSystem} matches implementation agent_system ${implementationSystem}; `
+          + `downgraded from rejection to warning by accepted decision record ${acceptedEnvironmentDecision.decision_id} `
+          + `(source ${SAME_SYSTEM_ENVIRONMENT_DECISION_SOURCE}).`
+      }]
+    };
+  }
+  const overrideReason = typeof allowSameSystemReason === 'string' ? allowSameSystemReason.trim() : '';
+  if (overrideReason) {
+    const logEntry = {
+      reason: overrideReason,
+      story_id: storyId,
+      item_id: itemId ?? null,
+      agent_system: agentSystem,
+      agent_id: agentId,
+      head_commit: headCommit,
+      recorded_at: new Date().toISOString()
+    };
+    const logPath = sameSystemLogPath(root, storyId);
+    await mkdir(path.dirname(logPath), { recursive: true });
+    await appendFile(logPath, `${JSON.stringify(logEntry)}\n`, 'utf8');
+    return { warnings: [], sameSystemOverride: { reason: overrideReason } };
+  }
+  throw new Error(
+    `${commandLabel} requires a cross-system adjudicator: agent_system "${agentSystem}" matches the recorded implementation `
+    + `agent_system "${implementationSystem}" for ${storyId}. Provide --allow-same-system <reason> to override with a recorded `
+    + `reason, or close a genuinely single-system environment with an accepted decision record `
+    + `(source ${SAME_SYSTEM_ENVIRONMENT_DECISION_SOURCE}, with --reason and --artifact).`
+  );
 }
 
 export async function readJudgmentAdjudicationIfExists(repoRoot, storyId) {
@@ -388,6 +517,17 @@ export async function recordAdjudication(repoRoot, options = {}) {
   const storyClauses = source?.content ? extractAcceptanceCriteria(source.content) : [];
   const acceptanceScope = await resolveCurrentAcceptanceScope(root, storyId, storyClauses);
   const scopeFingerprint = acceptanceScopeFingerprint(acceptanceScope);
+  // Evidence-path weight independence is warning-only (never blocking): a same-system
+  // adjudicator is advisory-flagged so the correlated-error risk is visible on the record,
+  // but verdict recording is never blocked here. Enforcement is judgment-DAG-only.
+  const implementationProvenance = await readImplementationProvenanceIfExists(root, storyId);
+  const implementationSystem = implementationProvenance?.provenance?.agent_system ?? null;
+  const warnings = implementationSystem && implementationSystem === agentSystem
+    ? [{
+      id: 'same_system',
+      reason: `adjudicator agent_system ${agentSystem} matches implementation agent_system ${implementationSystem}; weight-correlated verdict (evidence path is warning-only).`
+    }]
+    : [];
   const entry = {
     clause_id: clauseId,
     verdict,
@@ -397,6 +537,7 @@ export async function recordAdjudication(repoRoot, options = {}) {
       agent_id: agentId,
       session_ref: options.sessionRef ?? null
     },
+    warnings,
     head_commit: headCommit,
     acceptance_scope: acceptanceScope,
     acceptance_scope_fingerprint: scopeFingerprint,
@@ -421,6 +562,7 @@ export async function recordAdjudication(repoRoot, options = {}) {
   return {
     entry,
     records: next,
+    warnings,
     artifact: toWorkspaceRelative(root, artifactPath)
   };
 }
@@ -1194,6 +1336,18 @@ export async function recordJudgmentAdjudication(repoRoot, options = {}) {
   } else if (currentEvents.some((event) => event.type === 'verdict' && event.item_id === itemId && !event.responds_to_correction_id)) {
     throw new Error(`item ${itemId} already has a current-HEAD root verdict; use a linked premise correction flow instead of overwriting history`);
   }
+  // Weight independence is enforced (not just warned) on the judgment-DAG route. This runs
+  // last, after every other validation, so an override reason is only appended to the
+  // append-only log when the event it corresponds to actually gets persisted below - a
+  // rejection anywhere earlier leaves no same-system-log entry and no artifact mutation.
+  const crossSystemResult = await enforceCrossSystemAdjudicator(root, storyId, {
+    agentSystem,
+    agentId,
+    headCommit,
+    allowSameSystemReason: options.allowSameSystemReason,
+    itemId,
+    commandLabel: 'adjudicate record --judgment'
+  });
   const entry = {
     event_id: randomUUID(),
     type: 'verdict',
@@ -1205,8 +1359,10 @@ export async function recordJudgmentAdjudication(repoRoot, options = {}) {
     provenance: {
       agent_system: agentSystem,
       agent_id: agentId,
-      session_ref: options.sessionRef ?? null
+      session_ref: options.sessionRef ?? null,
+      ...(crossSystemResult.sameSystemOverride ? { same_system_override: crossSystemResult.sameSystemOverride } : {})
     },
+    warnings: crossSystemResult.warnings,
     head_commit: headCommit,
     recorded_at: new Date().toISOString()
   };
@@ -1223,6 +1379,7 @@ export async function recordJudgmentAdjudication(repoRoot, options = {}) {
   return {
     entry,
     records: next,
+    warnings: crossSystemResult.warnings,
     artifact: toWorkspaceRelative(root, artifactPath)
   };
 }
@@ -1303,6 +1460,16 @@ export async function recordPremiseCorrection(repoRoot, options = {}) {
     throw new Error(`verdict ${originalVerdictId} already has a premise correction; history is append-only`);
   }
   const replacementEvidence = await resolveReplacementEvidence(root, options.replacementEvidence);
+  // See recordJudgmentAdjudication: same weight-independence enforcement, run last so an
+  // override reason is only logged when the correction it corresponds to is actually persisted.
+  const crossSystemResult = await enforceCrossSystemAdjudicator(root, storyId, {
+    agentSystem,
+    agentId,
+    headCommit,
+    allowSameSystemReason: options.allowSameSystemReason,
+    itemId,
+    commandLabel: 'adjudicate correct'
+  });
   const entry = {
     event_id: randomUUID(),
     type: 'premise_correction',
@@ -1315,8 +1482,10 @@ export async function recordPremiseCorrection(repoRoot, options = {}) {
     provenance: {
       agent_system: agentSystem,
       agent_id: agentId,
-      session_ref: options.sessionRef ?? null
+      session_ref: options.sessionRef ?? null,
+      ...(crossSystemResult.sameSystemOverride ? { same_system_override: crossSystemResult.sameSystemOverride } : {})
     },
+    warnings: crossSystemResult.warnings,
     head_commit: headCommit,
     recorded_at: new Date().toISOString()
   };
@@ -1330,7 +1499,43 @@ export async function recordPremiseCorrection(repoRoot, options = {}) {
   await mkdir(adjudicationDir(root, storyId), { recursive: true });
   const artifactPath = judgmentAdjudicationArtifactPath(root, storyId);
   await writeFile(artifactPath, `${JSON.stringify(next, null, 2)}\n`, 'utf8');
-  return { entry, records: next, artifact: toWorkspaceRelative(root, artifactPath) };
+  return { entry, records: next, warnings: crossSystemResult.warnings, artifact: toWorkspaceRelative(root, artifactPath) };
+}
+
+// A verdict passing (judged_sound, or needs_human_judgment closed by decision) says nothing
+// about whether weight independence was ever established for it. This walks the resolved
+// current_verdict per item and counts the three states a reviewer needs visible on the gate
+// node and PR summary: no provenance recorded to check against, a same-system adjudicator
+// (warning, not blocked, evidence path only reaches this via the analogous judgment verdict
+// path), and a same-system rejection that was explicitly overridden with --allow-same-system.
+function summarizeJudgmentWarningStates(items) {
+  let provenanceMissingCount = 0;
+  let sameSystemWarningCount = 0;
+  let sameSystemOverrideCount = 0;
+  for (const item of items) {
+    const verdict = item?.current_verdict;
+    if (!verdict) continue;
+    const warnings = Array.isArray(verdict.warnings) ? verdict.warnings : [];
+    if (warnings.some((warning) => warning?.id === 'provenance_missing')) provenanceMissingCount += 1;
+    if (warnings.some((warning) => warning?.id === 'same_system')) sameSystemWarningCount += 1;
+    if (verdict.provenance?.same_system_override) sameSystemOverrideCount += 1;
+  }
+  return {
+    provenance_missing_count: provenanceMissingCount,
+    same_system_warning_count: sameSystemWarningCount,
+    same_system_override_count: sameSystemOverrideCount
+  };
+}
+
+function describeJudgmentWarningStates(warningStates) {
+  if (!warningStates) return null;
+  const { provenance_missing_count: missing, same_system_warning_count: warned, same_system_override_count: overridden } = warningStates;
+  if (missing === 0 && warned === 0 && overridden === 0) return null;
+  const parts = [];
+  if (missing > 0) parts.push(`${missing} item(s) have no recorded implementation provenance to verify weight independence against`);
+  if (warned > 0) parts.push(`${warned} item(s) were judged by a same-agent_system adjudicator (weight-correlated verdict)`);
+  if (overridden > 0) parts.push(`${overridden} item(s) used a recorded --allow-same-system override`);
+  return `Weight-independence note (does not affect gate status): ${parts.join('; ')}.`;
 }
 
 export function buildJudgmentDagAdjudicationGate({
@@ -1370,6 +1575,8 @@ export function buildJudgmentDagAdjudicationGate({
       reason: `Judgment adjudication history is invalid and cannot be resolved safely: ${state.invalid_reasons.join('; ')}.`
     };
   }
+  const warningStates = summarizeJudgmentWarningStates(state.items);
+  const warningNote = describeJudgmentWarningStates(warningStates);
   const missing = [];
   const unsound = [];
   const needsHuman = [];
@@ -1398,10 +1605,12 @@ export function buildJudgmentDagAdjudicationGate({
       ...base,
       status: 'failed',
       judged_unsound_items: unsound,
+      ...warningStates,
       reason: `Judge ruled ${unsound.length} judgment item(s) unsound (tokens present but the judgment does not hold): `
         + unsound.map((item) => `${item.item_id} [${item.unsound_cause}] (${item.reason})`).join('; ')
         + '. implementation_unsound requires an implementation/evidence change and a new-HEAD adjudication. '
         + (classifierRecovery.length > 0 ? classifierRecovery.join(' ') : '')
+        + (warningNote ? ` ${warningNote}` : '')
     };
   }
   if (missing.length > 0 || needsHuman.length > 0 || pendingCorrections.length > 0) {
@@ -1425,13 +1634,16 @@ export function buildJudgmentDagAdjudicationGate({
       missing_items: missing,
       human_judgment_items: needsHuman,
       pending_correction_items: pendingCorrections,
-      reason: reasons.join(' ')
+      ...warningStates,
+      reason: reasons.join(' ') + (warningNote ? ` ${warningNote}` : '')
     };
   }
   return {
     ...base,
     status: 'passed',
+    ...warningStates,
     reason: `All ${items.length} judgment item(s) hold under current-head adjudication (judged_sound, or needs_human_judgment closed by an accepted human decision record).`
+      + (warningNote ? ` ${warningNote}` : '')
   };
 }
 
@@ -1443,7 +1655,8 @@ export function summarizeJudgmentAdjudicationForPr({ storyId = null, items = [],
     headSha,
     decisions
   });
-  const current = (state.status === 'invalid_history' ? [] : state.items)
+  const resolvedItems = state.status === 'invalid_history' ? [] : state.items;
+  const current = resolvedItems
     .map((item) => item.current_verdict)
     .filter(Boolean);
   return {
@@ -1455,6 +1668,7 @@ export function summarizeJudgmentAdjudicationForPr({ storyId = null, items = [],
     pending_correction_count: state.status === 'invalid_history'
       ? 0
       : state.items.filter((item) => item.status === 'awaiting_re_adjudication').length,
-    invalid_history_count: state.invalid_reasons.length
+    invalid_history_count: state.invalid_reasons.length,
+    ...summarizeJudgmentWarningStates(resolvedItems)
   };
 }
