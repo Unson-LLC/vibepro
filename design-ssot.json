@@ -7971,7 +7971,36 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-verification-checkpoint-uiux-intake-gate",
+      "title": "Verification checkpoint gate list: gate:uiux_intake_judgment",
+      "root_doc": "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+      "owner": "sato_keigo",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": "curated verification checkpoint gate_ids in src/checkpoint-manager.js",
+      "owned_surfaces": [],
+      "required_child_kinds": [],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      }
     }
   ],
-  "updated_at": "2026-08-03T02:00:46.764Z"
+  "updated_at": "2026-08-03T03:40:00.000Z"
 }

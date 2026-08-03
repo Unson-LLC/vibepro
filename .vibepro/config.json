@@ -1305,8 +1305,20 @@
         "started_at": "2026-08-02",
         "due_at": null,
         "category": "bugfix"
+      },
+      {
+        "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+        "title": "verification checkpoint の curated gate list に gate:uiux_intake_judgment を追加する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-03",
+        "due_at": null,
+        "category": "bugfix"
       }
     ],
-    "current_story_id": "story-vibepro-test-tmpdir-fixture-cleanup"
+    "current_story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate"
   }
 }
