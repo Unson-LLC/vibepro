@@ -270,3 +270,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:416:start -->
 - [PR #416](https://github.com/Unson-LLC/vibepro/pull/416) — [2026-08](/ja/releases/2026-08): story-vibepro-uiux-intake-gate-pr-summary-surfaces - gate:uiux_intake_judgment を人間向けPRサマリー表面に表示する
 <!-- vibepro-release-index-pr:416:end -->
+
+<!-- vibepro-release-index-pr:413:start -->
+- [PR #413](https://github.com/Unson-LLC/vibepro/pull/413) — [2026-08](/ja/releases/2026-08): story-vibepro-cross-system-adjudication - Cross-system adjudication requires a different model family than the implementer
+<!-- vibepro-release-index-pr:413:end -->
