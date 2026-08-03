@@ -14,8 +14,8 @@ const STORY_ID = 'story-vibepro-verification-checkpoint-uiux-intake-gate';
 // for current gate DAGs — the same forward-compatible pattern PR #416 used for the
 // human PR summary surfaces.
 test(`${STORY_ID} verification checkpoint blocks on gate:uiux_intake_judgment alongside its sibling route gates (AC-1)`, () => {
-  // ${STORY_ID} VC-001
-  // ${STORY_ID} ac:1
+  // story-vibepro-verification-checkpoint-uiux-intake-gate VC-001
+  // story-vibepro-verification-checkpoint-uiux-intake-gate ac:1
   // Given the checkpoint policy table, when the verification stage is listed, then
   // gate:uiux_intake_judgment appears in gate_ids directly after
   // gate:pr_route_classification, matching the sibling route/policy gate ordering used
@@ -29,8 +29,8 @@ test(`${STORY_ID} verification checkpoint blocks on gate:uiux_intake_judgment al
 });
 
 test(`${STORY_ID} no other checkpoint stage gained gate:uiux_intake_judgment (AC-2)`, () => {
-  // ${STORY_ID} VC-002
-  // ${STORY_ID} ac:2
+  // story-vibepro-verification-checkpoint-uiux-intake-gate VC-002
+  // story-vibepro-verification-checkpoint-uiux-intake-gate ac:2
   // Given the checkpoint policy table, when every non-verification stage is listed, then
   // none of their gate_ids contains gate:uiux_intake_judgment and the pr stage still
   // delegates to all required gates (gate_ids null) — the addition is scoped to the
