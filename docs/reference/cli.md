@@ -8,6 +8,8 @@ Run `story diagnose --phase design-input --run-graphify` before finalizing Archi
 
 A budget grant via `decision record --source budget:delivery_efficiency:<story-id>` also writes a tracked decision document under `docs/management/decisions/` (`type: budget_override_approval`) and records its path as `budget_approval.decision_doc`. The workspace decision store is gitignored, so this document is what makes the grantor, digest, and timestamp reviewable in the PR diff; the command fails if that path is gitignored.
 
+`review record --strict-head-binding --strict-head-reason <text>` is not an unconditional CLI override: it is authorized only for a role whose policy already declares `freshness_mode: strict_head` with a `freshness_reason`, or for the `implementation:runtime_contract` `final_review` of an active, frozen validation sequence. Any other stage/role rejects it with an explicit error; see [Agent Review](/guide/agent-review) for the full authorization model and the `pr prepare` migration warning for legacy unauthorized bindings.
+
 ## Current Usage
 
 ```text

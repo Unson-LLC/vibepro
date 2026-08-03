@@ -270,8 +270,8 @@ test('parallel dispatch record command and prompt include inspection fields', as
   assert.match(content, /judgment_delta/);
   assert.match(content, /actual source, test, Story, Spec, contract, or config files/i);
   assert.match(content, /generated `.vibepro` artifact alone is not a content surface/i);
-  assert.match(content, /Do not add `--strict-head-binding` unless making a deliberate CLI override/i);
-  assert.match(content, /`--strict-head-reason` is required/i);
+  assert.match(content, /`--strict-head-binding` is only ever authorized for the frozen validation-sequence/i);
+  assert.match(content, /any other use is rejected/i);
   assert.match(content, /close --close-reason timeout.*review authorize.*action: dispatch.*--dispatch-authorization <authorization-id>.*--replacement-for <lifecycle-id>/is);
 });
 

@@ -36,6 +36,10 @@ vibepro review status . --id <story-id> --stage gate
 
 有効なstatusは `pass`、`needs_changes`、`block` です。`pass` のinspection inputには、実際に読んだ `.vibepro` 外のsource、test、Story、Spec、contract、configを指定します。生成された `.vibepro` artifactだけではinspection surfaceになりません。
 
-`gate_evidence`と`release_risk`を含むreviewは既定でcontent-surface-boundです。record後にcommitが増えてもinspection surfaceが不変ならcurrentを維持し、inspection surfaceを変更するとstaleになります。理由付きのrole別`strict_head` policy、または `--strict-head-binding --strict-head-reason <reason>` のreviewはstrict HEAD-boundで、任意のcommit後にstaleになります。accepted findingを修正し、再検証して、final treeに対する影響reviewだけを取り直します。
+`gate_evidence`と`release_risk`を含むreviewは既定でcontent-surface-boundです。record後にcommitが増えてもinspection surfaceが不変ならcurrentを維持し、inspection surfaceを変更するとstaleになります。理由付きのrole別`strict_head` policyのreviewはstrict HEAD-boundで、任意のcommit後にstaleになります。
+
+`--strict-head-binding --strict-head-reason <reason>` は無条件のCLI overrideでは**ありません**。許可される由来は2つだけです: role policyで既に `freshness_mode: strict_head` と `freshness_reason` を明示したrole（この場合flagは冗長だが害はない）、または activeなfrozen validation sequence（`vibepro sequence ...`）の `implementation:runtime_contract` `final_review`（release candidateへのTOCTOU防止）。それ以外のstage/roleはそのroleの設定済みfreshness modeを名指しした明示的なエラーで拒否されます。通常のcontent-surface reviewをCLIからstrict化しようとしないでください。`vibepro pr prepare`は各strict bindingの由来（`role_policy` / `validation_sequence` / legacyな `cli_override`）を報告し、既存の `cli_override` artifactは自動書き換えせず移行警告として表示します。
+
+accepted findingを修正し、再検証して、final treeに対する影響reviewだけを取り直します。
 
 Adjudicationは別の独立判断です。実装と証跡の確定後、`adjudicate prepare` / `adjudicate record` でSpec clauseのdemonstrationとSenior Judgment itemを裁定します。

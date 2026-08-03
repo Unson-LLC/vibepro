@@ -1006,8 +1006,10 @@ Sample generation must run a preflight workflow, start detection, poll status, r
     ...freshSequence.plan.preflight_required_inspection_inputs.flatMap((input) => ['--inspection-input', input]),
     '--judgment-delta', 'unverified aggregate workflow boundary became verified',
     '--agent-system', 'codex', '--execution-mode', 'parallel_subagent', '--agent-id', 'boundary-reviewer',
-    '--agent-transcript', preflightTranscriptRelative, '--agent-closed', '--agent-close-evidence', preflightTranscriptRelative,
-    '--strict-head-binding', '--strict-head-reason', 'validation preflight binds to the planned head'
+    '--agent-transcript', preflightTranscriptRelative, '--agent-closed', '--agent-close-evidence', preflightTranscriptRelative
+    // preflight_review is not an authorized --strict-head-binding target
+    // (story-vibepro-strict-head-binding-origin-guard); content_surface
+    // freshness is sufficient here since the inspected surface is unchanged.
   ])).exitCode, 0);
   const preflightReviewEvidence = '.vibepro/reviews/story-risk-adaptive/architecture_spec/review-result-architecture_boundary.json';
   let preflightSequenceStderr = '';
@@ -1372,9 +1374,10 @@ Sample generation must run a preflight workflow, poll status, retry failed detec
     '--agent-system', 'codex',
     '--execution-mode', 'parallel_subagent',
     '--agent-id', 'agent-regression-risk',
-    '--agent-closed',
-    '--strict-head-binding',
-    '--strict-head-reason', 'the complete workflow release head is the review subject'
+    '--agent-closed'
+    // architecture_spec:regression_risk is not an authorized --strict-head-binding
+    // target (story-vibepro-strict-head-binding-origin-guard); this fixture only
+    // needs the review recorded, not bound strictly to this HEAD.
   ])).exitCode, 0);
 
   await writeFile(path.join(repo, 'src', 'lib', 'services', 'formProjectStartService.ts'), 'export function startFormWorkflow(){ return "retry-status-v2"; }\n');
