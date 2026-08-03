@@ -19,6 +19,8 @@
 // established in test/content-scoped-evidence-freshness.test.js's SHBO-prefixed test
 // titles for this same story, reused here for continuity between unit and e2e coverage.
 
+import '../support/scratch-tmpdir.js';
+
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
