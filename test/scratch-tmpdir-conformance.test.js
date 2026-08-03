@@ -27,14 +27,14 @@ function walkTestFiles(dir) {
   return results;
 }
 
-test('GATE conformance: every test/**/*.{test,spec}.{js,ts,jsx,tsx,cjs,mjs} file that uses mkdtemp/os.tmpdir imports the scratch-tmpdir helper', () => {
+test('GATE conformance: every test/**/*.{test,spec}.{js,ts,jsx,tsx,cjs,mjs} file that calls mkdtemp/mkdtempSync or tmpdir()/os.tmpdir() imports the scratch-tmpdir helper', () => {
   const offenders = [];
   for (const filePath of walkTestFiles(testDir)) {
     if (filePath === path.join(repoRoot, 'test/support/scratch-tmpdir.js')) {
       continue;
     }
     const source = readFileSync(filePath, 'utf8');
-    if (/\bmkdtemp\b|os\.tmpdir\(/.test(source) && !source.includes('support/scratch-tmpdir.js')) {
+    if (/\bmkdtemp(?:Sync)?\s*\(|\btmpdir\s*\(/.test(source) && !source.includes('support/scratch-tmpdir.js')) {
       offenders.push(path.relative(repoRoot, filePath));
     }
   }

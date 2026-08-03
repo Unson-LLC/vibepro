@@ -9,7 +9,7 @@
     {
       "id": "INV-001",
       "type": "invariant",
-      "statement": "Every test/**/*.{test,spec}.{js,ts,jsx,tsx,cjs,mjs} file whose source references mkdtemp or os.tmpdir() must import test/support/scratch-tmpdir.js; a conformance test enumerates all such files and fails, naming every offender, when any of them omits the import.",
+      "statement": "Every test/**/*.{test,spec}.{js,ts,jsx,tsx,cjs,mjs} file whose source calls mkdtemp or mkdtempSync, or calls tmpdir()/os.tmpdir(), must import test/support/scratch-tmpdir.js; a conformance test enumerates all such files and fails, naming every offender, when any of them omits the import.",
       "rationale": "Without a deterministic conformance guard, new test files reintroduce the same $TMPDIR fixture leak the helper was built to close, since the leak is invisible until fixtures accumulate over many runs.",
       "origin": {
         "story_refs": [
@@ -40,7 +40,7 @@
         "test_refs": [
           {
             "file": "test/scratch-tmpdir-conformance.test.js",
-            "case": "GATE conformance: every test/**/*.{test,spec}.{js,ts,jsx,tsx,cjs,mjs} file that uses mkdtemp/os.tmpdir imports the scratch-tmpdir helper"
+            "case": "GATE conformance: every test/**/*.{test,spec}.{js,ts,jsx,tsx,cjs,mjs} file that calls mkdtemp/mkdtempSync or tmpdir()/os.tmpdir() imports the scratch-tmpdir helper"
           }
         ]
       },
@@ -59,7 +59,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T14:50:30.000Z",
-      "last_revised_at": "2026-08-02T20:04:22.381Z"
+      "last_revised_at": "2026-08-03T01:03:17.078Z"
     },
     {
       "id": "S-001",
@@ -118,7 +118,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T14:50:30.000Z",
-      "last_revised_at": "2026-08-02T20:04:22.381Z"
+      "last_revised_at": "2026-08-03T01:03:17.078Z"
     },
     {
       "id": "S-002",
@@ -172,7 +172,7 @@
         ]
       },
       "first_seen_at": "2026-08-02T14:50:30.000Z",
-      "last_revised_at": "2026-08-02T20:04:22.381Z"
+      "last_revised_at": "2026-08-03T01:03:17.078Z"
     }
   ],
   "generated_at": "2026-08-02T14:52:49.930Z",
