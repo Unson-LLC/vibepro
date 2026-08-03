@@ -43,7 +43,7 @@ fixtureで枯渇しないでほしい。ENOSPC起因の偽の大量テスト失�
 
 - AC1: mkdtempを使う全テストファイルがscratch隔離ヘルパーをimportし、テストプロセス正常終了時にそのプロセスが作ったfixtureディレクトリがホストの実$TMPDIR直下に残らない。
 - AC2: 隔離はテスト内で呼ばれるsrc本体のmkdtempと、テストがspawnする子プロセス(git等)にも及ぶ(環境変数継承で保証)。
-- AC3: 回帰ガード: mkdtemp/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。
+- AC3: 回帰ガード: mkdtemp/mkdtempSyncまたはtmpdir()/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。
 - AC4: クラッシュ残骸の自己回復: 24時間以上前のscratch root残骸をヘルパー起動時に掃除する。
 - AC5: 既存テストスイートが引き続き全件パスする。
 

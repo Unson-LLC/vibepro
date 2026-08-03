@@ -115,15 +115,15 @@ test('story-vibepro-test-tmpdir-fixture-cleanup ac:3 a conformance guard exists 
 
   assert.ok(
     statSyncSafe(conformancePath),
-    'story-vibepro-test-tmpdir-fixture-cleanup ac:3 AC3: 回帰ガード: mkdtemp/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。the conformance guard file exists at test/scratch-tmpdir-conformance.test.js'
+    'story-vibepro-test-tmpdir-fixture-cleanup ac:3 AC3: 回帰ガード: mkdtemp/mkdtempSyncまたはtmpdir()/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。the conformance guard file exists at test/scratch-tmpdir-conformance.test.js'
   );
   assert.ok(
     conformanceSource.includes('mkdtemp') && conformanceSource.includes('os.tmpdir('),
-    'story-vibepro-test-tmpdir-fixture-cleanup ac:3 AC3: 回帰ガード: mkdtemp/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。the guard scans test files for mkdtemp/os.tmpdir() references'
+    'story-vibepro-test-tmpdir-fixture-cleanup ac:3 AC3: 回帰ガード: mkdtemp/mkdtempSyncまたはtmpdir()/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。the guard scans test files for mkdtemp/os.tmpdir() references'
   );
   assert.ok(
     conformanceSource.includes('support/scratch-tmpdir.js'),
-    'story-vibepro-test-tmpdir-fixture-cleanup ac:3 AC3: 回帰ガード: mkdtemp/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。the guard requires the scratch-tmpdir helper import to be present'
+    'story-vibepro-test-tmpdir-fixture-cleanup ac:3 AC3: 回帰ガード: mkdtemp/mkdtempSyncまたはtmpdir()/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。the guard requires the scratch-tmpdir helper import to be present'
   );
 
   const { stdout, stderr } = await execFileAsync(process.execPath, ['--test', 'test/scratch-tmpdir-conformance.test.js'], {
@@ -134,12 +134,12 @@ test('story-vibepro-test-tmpdir-fixture-cleanup ac:3 a conformance guard exists 
   assert.doesNotMatch(
     stderr,
     /not ok/,
-    'story-vibepro-test-tmpdir-fixture-cleanup ac:3 AC3: 回帰ガード: mkdtemp/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。the conformance guard suite itself passes when run standalone'
+    'story-vibepro-test-tmpdir-fixture-cleanup ac:3 AC3: 回帰ガード: mkdtemp/mkdtempSyncまたはtmpdir()/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。the conformance guard suite itself passes when run standalone'
   );
   assert.match(
     stdout,
     /pass 3/,
-    'story-vibepro-test-tmpdir-fixture-cleanup ac:3 AC3: 回帰ガード: mkdtemp/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。all three conformance guard assertions passed'
+    'story-vibepro-test-tmpdir-fixture-cleanup ac:3 AC3: 回帰ガード: mkdtemp/mkdtempSyncまたはtmpdir()/os.tmpdir()を参照するテストファイルがヘルパーをimportしていない場合に失敗するconformanceテストが存在する。all three conformance guard assertions passed'
   );
 });
 
