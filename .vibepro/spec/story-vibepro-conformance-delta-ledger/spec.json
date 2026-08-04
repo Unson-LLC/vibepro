@@ -56,7 +56,7 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T02:22:52.208Z"
+      "last_revised_at": "2026-08-04T04:44:58.886Z"
     },
     {
       "id": "S-001",
@@ -112,7 +112,7 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T02:22:52.208Z"
+      "last_revised_at": "2026-08-04T04:44:58.886Z"
     },
     {
       "id": "S-002",
@@ -167,7 +167,7 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T02:22:52.208Z"
+      "last_revised_at": "2026-08-04T04:44:58.886Z"
     },
     {
       "id": "S-003",
@@ -218,7 +218,7 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T02:22:52.208Z"
+      "last_revised_at": "2026-08-04T04:44:58.886Z"
     },
     {
       "id": "S-004",
@@ -236,7 +236,7 @@
         "code_refs": [
           {
             "file": "src/pr-manager.js",
-            "anchor": "async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner }) {"
+            "anchor": "async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner, persist }) {"
           },
           {
             "file": "src/pr-manager.js",
@@ -277,7 +277,7 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T02:22:52.208Z"
+      "last_revised_at": "2026-08-04T04:44:58.886Z"
     },
     {
       "id": "S-005",
@@ -295,7 +295,7 @@
         "code_refs": [
           {
             "file": "src/pr-manager.js",
-            "anchor": "async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner }) {"
+            "anchor": "async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner, persist }) {"
           }
         ],
         "test_refs": [
@@ -313,7 +313,7 @@
         "code_pattern": [
           {
             "file_glob": "src/pr-manager.js",
-            "must_contain": "async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner }) {"
+            "must_contain": "async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner, persist }) {"
           }
         ],
         "test_pattern": [
@@ -324,7 +324,7 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T02:22:52.208Z"
+      "last_revised_at": "2026-08-04T04:44:58.886Z"
     },
     {
       "id": "C-001",
@@ -371,13 +371,13 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T02:22:52.208Z"
+      "last_revised_at": "2026-08-04T04:44:58.886Z"
     }
   ],
-  "generated_at": "2026-08-04T02:22:52.205Z",
+  "generated_at": "2026-08-04T04:44:58.885Z",
   "generated_by": {
     "caller": "unknown",
     "stage": "ai_synthesis"
   },
-  "previous_spec_id": null
+  "previous_spec_id": "2026-08-04T02:22:52.205Z"
 }
