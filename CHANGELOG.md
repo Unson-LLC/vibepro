@@ -1685,3 +1685,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-target-model
 なし
 
 <!-- vibepro-release-pr:424:end -->
+
+<!-- vibepro-release-pr:427:start -->
+## [#427](https://github.com/Unson-LLC/vibepro/pull/427) story-vibepro-target-model-projection-v2 - target model projection v2 — 佐藤裁定済みの5問を target-model.json へ機械的に投影し model_version を 2 へ上げる
+
+- Author: @sintariran
+- Merged: 2026-08-04T17:02:28Z
+- Commit: `71bab5ec9f901dc724d07e94973979fd14a095cf`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-target-model-projection-v2.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-target-model-projection-v2.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:427:end -->

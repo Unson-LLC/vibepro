@@ -310,3 +310,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:424:start -->
 - [PR #424](https://github.com/Unson-LLC/vibepro/pull/424) — [2026-08](/ja/releases/2026-08): story-vibepro-target-model-governance-rebaseline - target model governance rebaseline — 誰がモデルを変えてよいかを三分法で確定し、再baseline案と裁定カードを機械生成する
 <!-- vibepro-release-index-pr:424:end -->
+
+<!-- vibepro-release-index-pr:427:start -->
+- [PR #427](https://github.com/Unson-LLC/vibepro/pull/427) — [2026-08](/ja/releases/2026-08): story-vibepro-target-model-projection-v2 - target model projection v2 — 佐藤裁定済みの5問を target-model.json へ機械的に投影し model_version を 2 へ上げる
+<!-- vibepro-release-index-pr:427:end -->
