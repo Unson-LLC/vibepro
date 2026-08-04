@@ -1,0 +1,496 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-gate-outcome-ledger-v3",
+  "updated_at": "2026-08-04T16:43:39.285Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:senior_gap_judgment|needs_review|passed|2026-08-04T16:32:59.411Z|2026-08-04T16:43:22.575Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T16:32:59.411Z",
+      "resolved_at": "2026-08-04T16:43:22.575Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:judgment_dag_adjudication|needs_evidence|passed|2026-08-04T16:32:59.411Z|2026-08-04T16:43:22.575Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T16:32:59.411Z",
+      "resolved_at": "2026-08-04T16:43:22.575Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:evidence_adjudication|needs_evidence|passed|2026-08-04T16:32:59.411Z|2026-08-04T16:43:22.575Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T16:32:59.411Z",
+      "resolved_at": "2026-08-04T16:43:22.575Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-08-04T16:32:59.411Z|2026-08-04T16:43:22.575Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T16:32:59.411Z",
+      "resolved_at": "2026-08-04T16:43:22.575Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:traceability_clause_coverage|needs_evidence|passed|2026-08-04T15:56:41.514Z|2026-08-04T16:32:59.411Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T15:56:41.514Z",
+      "resolved_at": "2026-08-04T16:32:59.411Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "bc4d50c562ce60a9d7886840402eecd32288ffda",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:artifact_consistency|stale_evidence|passed|2026-08-04T15:51:54.419Z|2026-08-04T15:56:41.514Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T15:51:54.419Z",
+      "resolved_at": "2026-08-04T15:56:41.514Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "cbbe9667258257e0a6d92f60b93e1a881f83f08e",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:unit|needs_evidence|passed|2026-08-04T15:51:54.419Z|2026-08-04T15:56:41.514Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:unit",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T15:51:54.419Z",
+      "resolved_at": "2026-08-04T15:56:41.514Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "cbbe9667258257e0a6d92f60b93e1a881f83f08e",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:design_ssot_reconciliation|needs_review|passed|2026-08-04T15:51:54.419Z|2026-08-04T15:56:41.514Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:design_ssot_reconciliation",
+      "gate_type": "design_ssot_reconciliation_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T15:51:54.419Z",
+      "resolved_at": "2026-08-04T15:56:41.514Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "cbbe9667258257e0a6d92f60b93e1a881f83f08e",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:uiux_intake_judgment|needs_evidence|passed|2026-08-04T15:51:54.419Z|2026-08-04T15:56:41.514Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:uiux_intake_judgment",
+      "gate_type": "uiux_intake_judgment_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T15:51:54.419Z",
+      "resolved_at": "2026-08-04T15:56:41.514Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "cbbe9667258257e0a6d92f60b93e1a881f83f08e",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:split_resolution|needs_review|passed|2026-08-04T15:51:54.419Z|2026-08-04T15:56:41.514Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:split_resolution",
+      "gate_type": "split_resolution_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T15:51:54.419Z",
+      "resolved_at": "2026-08-04T15:56:41.514Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "cbbe9667258257e0a6d92f60b93e1a881f83f08e",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:vibepro_artifact_policy|needs_review|passed|2026-08-04T15:51:54.419Z|2026-08-04T15:56:41.514Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:vibepro_artifact_policy",
+      "gate_type": "vibepro_artifact_policy_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T15:51:54.419Z",
+      "resolved_at": "2026-08-04T15:56:41.514Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "cbbe9667258257e0a6d92f60b93e1a881f83f08e",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:judgment_axis_scope_reviewability|needs_evidence|accepted_followup|2026-08-04T15:51:54.419Z|2026-08-04T15:56:41.514Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:judgment_axis_scope_reviewability",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "accepted_followup",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T15:51:54.419Z",
+      "resolved_at": "2026-08-04T15:56:41.514Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "cbbe9667258257e0a6d92f60b93e1a881f83f08e",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:judgment_axis_data_state|needs_evidence|accepted_followup|2026-08-04T15:51:54.419Z|2026-08-04T15:56:41.514Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:judgment_axis_data_state",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "accepted_followup",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T15:51:54.419Z",
+      "resolved_at": "2026-08-04T15:56:41.514Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "cbbe9667258257e0a6d92f60b93e1a881f83f08e",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:traceability_clause_coverage|needs_evidence|passed|2026-08-04T14:29:10.181Z|2026-08-04T15:50:52.652Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T14:29:10.181Z",
+      "resolved_at": "2026-08-04T15:50:52.652Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "d152fcdbed9e55124daf57083a2ff8571f820e76",
+        "changed_files": [
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:definition_of_done|needs_evidence|passed|2026-08-04T14:29:10.181Z|2026-08-04T15:50:52.652Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T14:29:10.181Z",
+      "resolved_at": "2026-08-04T15:50:52.652Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "d152fcdbed9e55124daf57083a2ff8571f820e76",
+        "changed_files": [
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:judgment_axis_public_contract|needs_evidence|passed|2026-08-04T14:29:10.181Z|2026-08-04T15:50:52.652Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T14:29:10.181Z",
+      "resolved_at": "2026-08-04T15:50:52.652Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "d152fcdbed9e55124daf57083a2ff8571f820e76",
+        "changed_files": [
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-target-model-projection-v2|gate:common_judgment_spine|needs_evidence|passed|2026-08-04T14:29:10.181Z|2026-08-04T15:50:52.652Z",
+      "story_id": "story-vibepro-target-model-projection-v2",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-04T14:29:10.181Z",
+      "resolved_at": "2026-08-04T15:50:52.652Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "d152fcdbed9e55124daf57083a2ff8571f820e76",
+        "changed_files": [
+          "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "docs/architecture/target-model.json",
+          "docs/management/stories/active/story-vibepro-target-model-projection-v2.md",
+          "test/architecture-rebaseline-proposal.test.js",
+          "test/target-model-projection-v2.test.js"
+        ]
+      }
+    }
+  ]
+}
