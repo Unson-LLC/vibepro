@@ -1,0 +1,1 @@
+{"status":"pass","summary":"Byte-level comparison shows zero drift in every uiux_intake_judgment line since the approved fix; delta content is unrelated merge material or expected fixture closures; no residual blast-radius concern at 0ea28994.","agent_id":"a4f9c1c0687ca018d","agent_system":"claude_code","model":"claude-sonnet-5","head":"0ea28994"}

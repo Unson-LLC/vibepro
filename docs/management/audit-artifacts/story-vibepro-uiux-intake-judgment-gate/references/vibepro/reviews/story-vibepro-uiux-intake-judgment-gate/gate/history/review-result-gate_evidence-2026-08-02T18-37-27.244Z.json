@@ -1,0 +1,142 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-intake-judgment-gate",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Evidence genuinely closes the gates: unit/typecheck/e2e records are runner_direct at the frozen HEAD; independent re-runs reproduced 9/9 and 4/4 with substantive assertions; decisions honest and head-bound; the repo-wide rollout is disclosed with recovery guidance.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read verification-evidence.json (3 runner_direct commands at head 7042185e), independently re-ran both test files reproducing identical counts, read both test files line-by-line for substantive assertions, read decision-records.json including the self-application intake_not_applicable decision, grepped the gate wiring and enforcement, read the architecture doc rollout/rollback sections; risk_surfaces=gate_orchestration",
+    "evidence": null,
+    "inputs": [
+      "src/pr-manager.js",
+      "test/uiux-intake-judgment-gate.test.js",
+      "test/e2e/story-vibepro-uiux-intake-judgment-gate-main.test.js",
+      "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md"
+    ]
+  },
+  "judgment_delta": [
+    "Evidence-reuse staleness flag was diagnosed as a reuse-cache comparison of two prior runs, not current-head unbinding; the repo-wide blocking regression is disclosed and evidenced, not silent. Low finding: typecheck record has no parsed counts (inherent to typecheck)."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+    "expected_root": null,
+    "expected_head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+    "current_head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "expected_root": null,
+      "expected_head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+      "current_head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T18:37:27.244Z",
+  "git_context": {
+    "head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+    "current_branch": "claude/sweet-chatelet-c1b354",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T18:37:27.195Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "7042185e8af15db549da8dd7c13eb3181b21f32d",
+    "surface_files": [
+      {
+        "path": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+        "sha256": "bad24d5794282c7f4bc926bf969d126fba5c1826c0de30cc6cac734f18297edf",
+        "size": 2935
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "94ac5447114a4ad2a6889bb8ec3b04b767afd7ecf512ed5dc050ca9323899f76",
+        "size": 733807
+      },
+      {
+        "path": "test/e2e/story-vibepro-uiux-intake-judgment-gate-main.test.js",
+        "sha256": "e986901d85e7f64a8ee5f5803204ada1f095483ffa5a1a038217017c399b4d3f",
+        "size": 6221
+      },
+      {
+        "path": "test/uiux-intake-judgment-gate.test.js",
+        "sha256": "ae98701515a2142b4d241bddb8d7ac4ffa0305669017e5f45212305e550bcba9",
+        "size": 8371
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "fdb967b0e8d3b4df75168189f217074f4b31e3b0ba6c716bbcb62ec3b55e1918"
+  },
+  "source_fingerprint": "a13b46591106069c194abcf34f283fe8ab948665ae1bb9aebc7134e5d24a84d5",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a70bb4fccd449cfef",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a70bb4fccd449cfef",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-uiux-intake-judgment-gate/gate/subagent-results/gate_evidence-transcript.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-uiux-intake-judgment-gate/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "a70bb4fccd449cfef",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

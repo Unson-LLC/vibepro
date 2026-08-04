@@ -1,0 +1,108 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "decision_id": "decision-1785692597146-4dd40242",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "review_owner_map: src/pr-manager.js gate builder + src/decision-records.js decision type + skills/vibepro-workflow/SKILL.md firing judgment + docs lineage are one contract; splitting would ship a blocking gate without its closure paths. Four focused commits, 8 tracked files, one behavioral surface (pr prepare gate DAG).",
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T17:44:20.919Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:16|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "decision_id": "decision-1785695710042-d7f6c83a",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "review_owner_map: src/pr-manager.js gate builder + enforcement wiring and src/decision-records.js decision type owned by gate_evidence role; Skill/docs/lineage owned by the same story. The bundle grew from 4 to 7 commits during review: 417c3124 fixes the enforcement omission the review itself found (the feat-only state shipped a decorative gate - concrete proof a split PR at that point would have been non-functional), 438ab5d8 closes the resulting gate-check fixture regression, 7042185e is the digest-bound budget grant bookkeeping for the review cycle. All 15 files trace to the one gate contract or its story-process bookkeeping.",
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:16",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T18:55:55.835Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:18|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "decision_id": "decision-1785695710042-d7f6c83a",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "review_owner_map: src/pr-manager.js gate builder + enforcement wiring and src/decision-records.js decision type owned by gate_evidence role; Skill/docs/lineage owned by the same story. The bundle grew from 4 to 7 commits during review: 417c3124 fixes the enforcement omission the review itself found (the feat-only state shipped a decorative gate - concrete proof a split PR at that point would have been non-functional), 438ab5d8 closes the resulting gate-check fixture regression, 7042185e is the digest-bound budget grant bookkeeping for the review cycle. All 15 files trace to the one gate contract or its story-process bookkeeping.",
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:18",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T19:16:14.240Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:101|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "decision_id": "decision-1785698541545-c5871755",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "review_owner_map: src/pr-manager.js gate builder + enforcement wiring and src/decision-records.js decision type owned by gate_evidence role; Skill/docs/lineage owned by the same story. The bundle grew from 4 to 11 commits during review: 417c3124 fixes the enforcement omission the review itself found (the feat-only state shipped a decorative gate - concrete proof a split PR at that point would have been non-functional), 438ab5d8 closes the resulting gate-check fixture regression, 07d1a793 adds the acceptance spec the Story E2E coverage scanner requires plus architecture-doc frontmatter and design-ssot lineage, and [REDACTED:d51350c779fb] are the four digest-bound budget grant bookkeeping pairs the head-bound review lifecycle consumed. All 19 files trace to the one gate contract or its story-process bookkeeping.",
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:101",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T19:48:39.518Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:19|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "decision_id": "decision-1785698541545-c5871755",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "review_owner_map: src/pr-manager.js gate builder + enforcement wiring and src/decision-records.js decision type owned by gate_evidence role; Skill/docs/lineage owned by the same story. The bundle grew from 4 to 11 commits during review: 417c3124 fixes the enforcement omission the review itself found (the feat-only state shipped a decorative gate - concrete proof a split PR at that point would have been non-functional), 438ab5d8 closes the resulting gate-check fixture regression, 07d1a793 adds the acceptance spec the Story E2E coverage scanner requires plus architecture-doc frontmatter and design-ssot lineage, and [REDACTED:d51350c779fb] are the four digest-bound budget grant bookkeeping pairs the head-bound review lifecycle consumed. All 19 files trace to the one gate contract or its story-process bookkeeping.",
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:19",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-04T00:36:47.351Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:20|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-uiux-intake-judgment-gate",
+      "decision_id": "decision-1785698541545-c5871755",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "review_owner_map: src/pr-manager.js gate builder + enforcement wiring and src/decision-records.js decision type owned by gate_evidence role; Skill/docs/lineage owned by the same story. The bundle grew from 4 to 11 commits during review: 417c3124 fixes the enforcement omission the review itself found (the feat-only state shipped a decorative gate - concrete proof a split PR at that point would have been non-functional), 438ab5d8 closes the resulting gate-check fixture regression, 07d1a793 adds the acceptance spec the Story E2E coverage scanner requires plus architecture-doc frontmatter and design-ssot lineage, and [REDACTED:d51350c779fb] are the four digest-bound budget grant bookkeeping pairs the head-bound review lifecycle consumed. All 19 files trace to the one gate contract or its story-process bookkeeping.",
+      "artifact": "docs/architecture/story-vibepro-uiux-intake-judgment-gate.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:20",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-04T01:54:28.779Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

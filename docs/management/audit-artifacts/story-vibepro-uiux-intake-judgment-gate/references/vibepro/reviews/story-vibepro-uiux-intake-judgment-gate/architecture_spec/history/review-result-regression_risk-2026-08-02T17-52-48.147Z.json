@@ -1,0 +1,160 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-intake-judgment-gate",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "Always-present gate wires cleanly into the DAG via the established parallel edge pattern; decision type is additive; repo-wide fail-closed blocking is the intended migration with a one-command closure.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read the full pr-manager.js gate builder and edge wiring diff, decision-records.js and cli.js diffs, Skill numbering shift, both CLI reference docs, design-ssot.json/config.json diffs, coordinator unit/e2e logs (7/7, 4/4), and cross-checked dag_connectivity and findAcceptedDecisionForSource usage against scope-boundary/risk-adaptive/fast-lane gate tests.",
+    "evidence": null,
+    "inputs": [
+      "src/pr-manager.js",
+      "src/decision-records.js",
+      "src/cli.js",
+      "skills/vibepro-workflow/SKILL.md",
+      "test/uiux-intake-judgment-gate.test.js",
+      "test/e2e/story-vibepro-uiux-intake-judgment-gate-main.test.js",
+      "test/risk-adaptive-gate.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "Refuted the dag_connectivity/waiver-interference concern (parallel-path pattern, source-scoped lookup, additive type set). Flagged: gate missing from renderPrGateSummary and buildHumanEvidenceDigest human-readable label lists (output surface gap, not a regression); design-ssot normalization collateral verified by coordinator against origin/main as stale child_links cleanup, not a revert."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+    "expected_root": null,
+    "expected_head_sha": "94186fc5e3f7934eddf7d287564eae0ec36d8347",
+    "current_head_sha": "94186fc5e3f7934eddf7d287564eae0ec36d8347",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "expected_root": null,
+      "expected_head_sha": "94186fc5e3f7934eddf7d287564eae0ec36d8347",
+      "current_head_sha": "94186fc5e3f7934eddf7d287564eae0ec36d8347",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T17:52:48.147Z",
+  "git_context": {
+    "head_sha": "94186fc5e3f7934eddf7d287564eae0ec36d8347",
+    "current_branch": "claude/sweet-chatelet-c1b354",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T17:52:48.073Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 7 file(s)",
+    "recorded_head_sha": "94186fc5e3f7934eddf7d287564eae0ec36d8347",
+    "surface_files": [
+      {
+        "path": "skills/vibepro-workflow/SKILL.md",
+        "sha256": "cb5bd86ddbb5f5975fe64a1515b2c71032b0809fb727dc57a40117ca1636f0b3",
+        "size": 24565
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "0f298b0bd1df9ac96ae5b88510256f77d1bd919eaa1da07631549152b88121b0",
+        "size": 257953
+      },
+      {
+        "path": "src/decision-records.js",
+        "sha256": "89c87ef161d725e719982e045e05ea28a1619584722b65891b16a8ed03fe2bae",
+        "size": 19450
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "e5bb718329b85942733db58309fe8f3e9a2ce61aa4f39b697514ecc631927a4a",
+        "size": 733684
+      },
+      {
+        "path": "test/e2e/story-vibepro-uiux-intake-judgment-gate-main.test.js",
+        "sha256": "2c4185883090db669a97384d7f34102e16632b75260bf00d075fdce5573734b6",
+        "size": 5921
+      },
+      {
+        "path": "test/risk-adaptive-gate.test.js",
+        "sha256": "0120eb3441ac2c9bba9f8cae4672419d38e818279527b6cdcd50efc03cd629c0",
+        "size": 98922
+      },
+      {
+        "path": "test/uiux-intake-judgment-gate.test.js",
+        "sha256": "46458e2da9af1f33c3ea6a031e3a41cf471483fc67fc20dc78108b37fe0e9a4b",
+        "size": 6932
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "6018105370107648c195cb66417f3909523aba83392f397eaa4841363f3a0fad"
+  },
+  "source_fingerprint": "a3732c3a828bd45a24a411057e05d2bdf2c0b2cc41b07a108737c063b132bddc",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a4f9c1c0687ca018d",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a4f9c1c0687ca018d",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-uiux-intake-judgment-gate/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "a4f9c1c0687ca018d",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}
