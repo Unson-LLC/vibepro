@@ -8203,7 +8203,48 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "story-vibepro-repo-walk-scale-and-session-worktree-exclusion",
+      "title": "repo-walk scale safety and session-worktree scan exclusion",
+      "root_doc": "docs/management/stories/active/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.md",
+      "owner": "VibePro diagnostics maintainer",
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "spec"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "spec": [
+          {
+            "kind": "spec",
+            "path": "docs/specs/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": "18a2201bd2220f60e71801d3546d92e203ac3894970d0991a3ba2450b4642abc"
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "spec",
+          "path": "docs/specs/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": "18a2201bd2220f60e71801d3546d92e203ac3894970d0991a3ba2450b4642abc"
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-08-03T06:59:30.606Z"
+  "updated_at": "2026-08-04T08:17:51.705Z"
 }
