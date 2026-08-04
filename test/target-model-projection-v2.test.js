@@ -128,6 +128,7 @@ const RESOLVE_PAIRS_NOT_DECLARED = [
   ['diagnosis', 'gate-pr']
 ];
 
+// Clause binding: story-vibepro-target-model-projection-v2:AC-1
 test('TMP-S-1: agent-runtime モジュールが新設され Q1 の8ファイルを保持する', async () => {
   const model = await loadModel();
   const agentRuntime = model.modules.find((m) => m.name === 'agent-runtime');
@@ -150,6 +151,7 @@ test('TMP-S-1: agent-runtime モジュールが新設され Q1 の8ファイル�
   assert.deepEqual([...agentRuntime.paths].sort(), [...expected].sort());
 });
 
+// Clause binding: story-vibepro-target-model-projection-v2:AC-2
 test('TMP-S-2: Q2/Q3/Q5 の割当が modules[].paths に反映されている', async () => {
   const model = await loadModel();
   const expectations = {
@@ -173,6 +175,7 @@ test('TMP-S-2: Q2/Q3/Q5 の割当が modules[].paths に反映されている', 
   }
 });
 
+// Clause binding: story-vibepro-target-model-projection-v2:AC-3
 test('TMP-S-3: Q1 で承認された agent-runtime の2宣言が反映されている', async () => {
   const model = await loadModel();
   assert.deepEqual(model.allowed_dependencies['agent-runtime'], ['workspace-infra']);
@@ -182,6 +185,8 @@ test('TMP-S-3: Q1 で承認された agent-runtime の2宣言が反映されて�
   );
 });
 
+// Clause binding: story-vibepro-target-model-projection-v2:AC-4
+// Clause binding: story-vibepro-target-model-projection-v2:AC-8 — resolve 19件が宣言されないことが、投影後 conformance の未宣言依存22件(= resolve19 + 誘発3)の内訳を成立させる
 test('TMP-S-4: Q4 の declare 候補22件が宣言され resolve 19件は宣言されない', async () => {
   const model = await loadModel();
   const deps = model.allowed_dependencies;
@@ -201,6 +206,7 @@ test('TMP-S-4: Q4 の declare 候補22件が宣言され resolve 19件は宣言�
   assert.equal(RESOLVE_PAIRS_NOT_DECLARED.length, 19);
 });
 
+// Clause binding: story-vibepro-target-model-projection-v2:AC-5
 test('TMP-S-5: model_version が 2 で governance.adjudicated_at が 2026-08-04', async () => {
   const model = await loadModel();
   assert.equal(model.model_version, 2);
@@ -208,6 +214,7 @@ test('TMP-S-5: model_version が 2 で governance.adjudicated_at が 2026-08-04'
   assert.equal(model.status, 'adjudicated');
 });
 
+// Clause binding: story-vibepro-target-model-projection-v2:AC-6
 test('TMP-S-6: rules[] / scope_roots / budgets は governance rebaseline 時点と一致する', async () => {
   const model = await loadModel();
   assert.deepEqual(model.rules, FROZEN_RULES);
@@ -222,6 +229,7 @@ test('TMP-S-6: rules[] / scope_roots / budgets は governance rebaseline 時点�
   assert.equal(model.governance.machine_maintainable.length, 5);
 });
 
+// Clause binding: story-vibepro-target-model-projection-v2:AC-7
 test('TMP-S-7: 裁定カードが回答済みで provenance と全5問の採択が記録されている', async () => {
   const text = await readFile(cardsPath, 'utf8');
   const frontmatter = text.slice(0, text.indexOf('\n---', 4));
