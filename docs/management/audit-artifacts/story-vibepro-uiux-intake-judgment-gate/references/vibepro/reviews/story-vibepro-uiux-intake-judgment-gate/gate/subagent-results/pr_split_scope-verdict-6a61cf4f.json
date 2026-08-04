@@ -1,0 +1,1 @@
+{"status":"pass","summary":"Bundled scope (11 commits / 19 files) is one reviewable lane; all three scope decisions re-recorded at 6a61cf4f with accurate counts and per-commit accounting matching independent inspection.","agent_id":"abc9f73e6fd2a2357","agent_system":"claude_code","model":"claude-sonnet-5","head":"6a61cf4f"}

@@ -290,3 +290,11 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:420:start -->
 - [PR #420](https://github.com/Unson-LLC/vibepro/pull/420) — [2026-08](/ja/releases/2026-08): story-vibepro-strict-head-binding-origin-guard - strict HEAD bindingをfrozen final_reviewとrole policy例外に限定する
 <!-- vibepro-release-index-pr:420:end -->
+
+<!-- vibepro-release-index-pr:414:start -->
+- [PR #414](https://github.com/Unson-LLC/vibepro/pull/414) — [2026-08](/ja/releases/2026-08): story-vibepro-uiux-intake-judgment-gate - uiux intakeのSkill発火 + 判断記録gate
+<!-- vibepro-release-index-pr:414:end -->
+
+<!-- vibepro-release-index-pr:408:start -->
+- [PR #408](https://github.com/Unson-LLC/vibepro/pull/408) — [2026-08](/ja/releases/2026-08): story-vibepro-progress-heartbeat-policy-kernel - src配下37箇所の長時間実行バウンドのうち理想形を満たすのはevaluateProgressBounds 1箇所のみ。バウンド皆無の子プロセスと進捗シグナル破棄サイトを正本kernelへ寄せたい
+<!-- vibepro-release-index-pr:408:end -->

@@ -1,0 +1,157 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+  "ledger_path": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_0ec8b15a99d53e32143b62ee70ae30bf69ef64517807c53538816582245a2372"
+  },
+  "parent_revision_fingerprint": "b7e3ac2aa764607811e6aecdc258bded3c8159b3ef7a510b5c3da19401fea14d",
+  "revision_fingerprint": "6368ec7d55d12cbb040dc96c4a8605bd604334d84a9685de591805b915b7803b",
+  "trace": {
+    "decision_trace_id": "dt_0ec8b15a99d53e32143b62ee70ae30bf69ef64517807c53538816582245a2372",
+    "collision_group": null,
+    "trace_source_ref": "tsr_d63d7e643c2403f4b961982bfb04d4af89b81b39032eadad938ce2cb0fb175df",
+    "normalized_subject_key": "gate:judgment_agent_workflow_evidence_lifecycle",
+    "source_identity": {
+      "source_kind": "gate_outcome",
+      "source_ref": ".vibepro/gate-outcomes/ledger.json",
+      "native_id": "story-vibepro-progress-heartbeat-policy-kernel|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-08-04T04:39:36.885Z|2026-08-04T04:40:18.259Z",
+      "digest": "92d1d25f55a8c6a7e37b4f57cbdd9f7d9451be4e472d981e3f42f8ffeb058487",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+    "parent_revision_fingerprint": "b7e3ac2aa764607811e6aecdc258bded3c8159b3ef7a510b5c3da19401fea14d",
+    "revision_fingerprint": "6368ec7d55d12cbb040dc96c4a8605bd604334d84a9685de591805b915b7803b",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_0ec8b15a99d53e32143b62ee70ae30bf69ef64517807c53538816582245a2372"
+        },
+        "parent_revision_fingerprint": "9de7e0c7d973fd60d994d2dc339845d107993786760288a2fcea3479392f7362"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "observed",
+      "value": {
+        "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle"
+      },
+      "provenance": [
+        {
+          "source_kind": "gate_outcome",
+          "source_ref": ".vibepro/gate-outcomes/ledger.json",
+          "source_head_sha": null,
+          "source_digest": "92d1d25f55a8c6a7e37b4f57cbdd9f7d9451be4e472d981e3f42f8ffeb058487",
+          "native_id": "story-vibepro-progress-heartbeat-policy-kernel|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-08-04T04:39:36.885Z|2026-08-04T04:40:18.259Z"
+        }
+      ]
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "observed",
+      "value": {
+        "schema_version": "0.1.0",
+        "entry_key": "story-vibepro-progress-heartbeat-policy-kernel|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-08-04T04:39:36.885Z|2026-08-04T04:40:18.259Z",
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+        "gate_type": "agent_evidence_lifecycle_gate",
+        "previous_status": "needs_evidence",
+        "resolved_status": "passed",
+        "outcome": "unclassified",
+        "classification": "ambiguous_resolution_surface",
+        "overridden": false,
+        "evidence_refs": [],
+        "decision_refs": [],
+        "previous_prepare_created_at": "2026-08-04T04:39:36.885Z",
+        "resolved_at": "2026-08-04T04:40:18.259Z",
+        "git": {
+          "base_ref": "main",
+          "head_ref": "HEAD",
+          "head_sha": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+          "changed_files": [
+            "design-ssot.json",
+            "docs/architecture/story-vibepro-progress-heartbeat-policy-kernel.md",
+            "docs/ja/reference/cli.md",
+            "docs/management/stories/active/story-vibepro-progress-heartbeat-policy-kernel.md",
+            "docs/reference/cli.md",
+            "docs/specs/story-vibepro-progress-heartbeat-policy-kernel.md",
+            "src/cli.js",
+            "src/codex-subagent-runtime-adapter.js",
+            "src/graphify-adapter.js",
+            "src/progress-deadline.js",
+            "src/verification-evidence.js",
+            "src/verification-runner.js",
+            "test/e2e/story-vibepro-progress-heartbeat-policy-kernel-main.test.js",
+            "test/graphify-adapter.test.js",
+            "test/progress-deadline.test.js",
+            "test/verification-runner.test.js"
+          ]
+        }
+      },
+      "provenance": [
+        {
+          "source_kind": "gate_outcome",
+          "source_ref": ".vibepro/gate-outcomes/ledger.json",
+          "source_head_sha": null,
+          "source_digest": "92d1d25f55a8c6a7e37b4f57cbdd9f7d9451be4e472d981e3f42f8ffeb058487",
+          "native_id": "story-vibepro-progress-heartbeat-policy-kernel|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-08-04T04:39:36.885Z|2026-08-04T04:40:18.259Z"
+        }
+      ]
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 408,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/408",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "bc722efef60c61c4ff4c58a93321e294a92c571d",
+        "status": "merged",
+        "merged_at": "2026-08-04T04:40:27Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

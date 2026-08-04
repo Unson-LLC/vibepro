@@ -1,0 +1,172 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-uiux-intake-judgment-gate",
+  "stage": "architecture_spec",
+  "role": "regression_risk",
+  "status": "pass",
+  "summary": "No residual blast-radius risk at 0ea28994: every uiux_intake_judgment-touching line in src/pr-manager.js is byte-identical to the approved fix; touched tests are either expected gate closures for now-blocked fixtures or unrelated stories; the pr_artifact_bytes headroom is a commented, narrowly-scoped fixture accommodation with dedicated budget coverage elsewhere.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Diffed 417c3124..HEAD (745 files, merge-dominated), byte-compared the 8 uiux gate lines and both function bodies across revisions, verified DECISION_TYPES unchanged, classified every touched test file, confirmed test/pr-artifact-size-budget.test.js covers the budget semantics, and read the current unit.log (9/9 incl. SCENARIO-008/009); risk_surfaces=gate_orchestration",
+    "evidence": null,
+    "inputs": [
+      "src/pr-manager.js",
+      "src/decision-records.js",
+      "src/cli.js",
+      "test/vibepro-gate-check.test.js",
+      "test/vibepro-cli.test.js",
+      "test/risk-adaptive-gate.test.js",
+      "test/pr-artifact-size-budget.test.js",
+      "test/e2e/story-vibepro-uiux-intake-judgment-gate-acceptance.spec.ts",
+      "test/uiux-intake-judgment-gate.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "The merge/cleanup wave did not disturb the enforcement fix or any adjacent gate's critical rule; fixture closures match the already-validated pattern."
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+    "expected_root": null,
+    "expected_head_sha": "0ea2899462e87a1def6c06440b303223bcac36a5",
+    "current_head_sha": "0ea2899462e87a1def6c06440b303223bcac36a5",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-chatelet-c1b354",
+      "expected_root": null,
+      "expected_head_sha": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "current_head_sha": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-04T02:07:39.758Z",
+  "git_context": {
+    "head_sha": "0ea2899462e87a1def6c06440b303223bcac36a5",
+    "current_branch": "claude/sweet-chatelet-c1b354",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-04T02:07:39.725Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 9 file(s)",
+    "recorded_head_sha": "0ea2899462e87a1def6c06440b303223bcac36a5",
+    "surface_files": [
+      {
+        "path": "src/cli.js",
+        "sha256": "09b43e92558b4aee4d20c671492dbdd7e289fe32601c6054b7931cd78d5daf54",
+        "size": 260560
+      },
+      {
+        "path": "src/decision-records.js",
+        "sha256": "89c87ef161d725e719982e045e05ea28a1619584722b65891b16a8ed03fe2bae",
+        "size": 19450
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "fe75862e9229d04a4218800f7e6382faefaf7136118e1efa9b4b4008e0daedbe",
+        "size": 712029
+      },
+      {
+        "path": "test/e2e/story-vibepro-uiux-intake-judgment-gate-acceptance.spec.ts",
+        "sha256": "a2c5bf455c17decd9bc54bb1dfdc5c202f75ecc85c1a9013bf4e07b11da54e39",
+        "size": 7788
+      },
+      {
+        "path": "test/pr-artifact-size-budget.test.js",
+        "sha256": "117190249e6fb59f21df5fb13352641a60a426d4a9cf9669d9157e4abf58e10d",
+        "size": 14686
+      },
+      {
+        "path": "test/risk-adaptive-gate.test.js",
+        "sha256": "4ad1a9980dff6e90c4fe9a0750ab605a771b40cfe3cb3065218368bd6735eb61",
+        "size": 99198
+      },
+      {
+        "path": "test/uiux-intake-judgment-gate.test.js",
+        "sha256": "72234965fee0d8cb3852570dbdcf69941364cff62cf25e9377a7775dcd443d14",
+        "size": 8409
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "d6ea13ec54a7b9275f8b95657ebe2b1830955f565b0a4bc52752162cdf7a60ce",
+        "size": 1291479
+      },
+      {
+        "path": "test/vibepro-gate-check.test.js",
+        "sha256": "5cfcf5899b2f581b0ac00271baac1002635ff04432572d45eeec79a1de98951c",
+        "size": 12809
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "497eab700699a77300d2da2b5c4fb5de2992173e7308437d3de1ae474a1e373b"
+  },
+  "source_fingerprint": "614a094f70ca6792936b3610b2fa3f551ca1eb409ed07ae540ea9badff5c73d3",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a4f9c1c0687ca018d",
+    "agent_role": null,
+    "model": null,
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a4f9c1c0687ca018d",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-uiux-intake-judgment-gate/architecture_spec/subagent-results/regression_risk-transcript.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-uiux-intake-judgment-gate/architecture_spec/review-request-regression_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": null,
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "unknown",
+      "reviewer_session_id": "a4f9c1c0687ca018d",
+      "implementation_session_id": null,
+      "source": "undeclared"
+    }
+  },
+  "agent_usage": null
+}

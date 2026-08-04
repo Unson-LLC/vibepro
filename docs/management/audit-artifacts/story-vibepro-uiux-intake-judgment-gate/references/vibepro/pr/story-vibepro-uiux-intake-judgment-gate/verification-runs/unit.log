@@ -1,0 +1,17 @@
+✔ UIJ-SCENARIO-001 gate:uiux_intake_judgment blocks with needs_evidence when no intake judgment is recorded (3141.248208ms)
+✔ UIJ-SCENARIO-008 unrecorded judgment reaches the enforcement surface: execution gate blocks on gate:uiux_intake_judgment (2987.82525ms)
+✔ UIJ-SCENARIO-009 recorded judgment releases the enforcement surface for this gate (3294.422708ms)
+✔ UIJ-SCENARIO-002 intake coverage artifact under .vibepro/uiux satisfies the gate (2868.922125ms)
+✔ UIJ-SCENARIO-003 intake coverage artifact under .vibepro/design-modernize satisfies the gate (2896.340375ms)
+✔ UIJ-SCENARIO-004 accepted intake_not_applicable decision satisfies the gate and carries the reason (3256.89475ms)
+✔ UIJ-SCENARIO-005 intake_not_applicable without --reason is rejected (857.220334ms)
+✔ UIJ-SCENARIO-006 corrupt coverage artifact does not satisfy the gate (2691.566167ms)
+✔ UIJ-SCENARIO-007 waiver decision against gate:uiux_intake_judgment satisfies the gate (3076.168084ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 25696.736208

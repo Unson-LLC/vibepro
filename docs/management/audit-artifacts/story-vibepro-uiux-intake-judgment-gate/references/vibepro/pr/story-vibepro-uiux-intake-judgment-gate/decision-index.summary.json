@@ -1,0 +1,37 @@
+{
+  "schema_version": "0.1.0",
+  "kind": "artifact_summary",
+  "source_artifact": "decision-index.json",
+  "source_bytes": 32718,
+  "source_content_hash": "sha256:03e84ac7c3dc5a886c7f31ea4914dd8c557735fb34740d2707bf10625d1cc3ae",
+  "conclusion": {
+    "status_fields": {
+      "model": "vibepro-evidence-decision-index-v1",
+      "evidence_depth": "summary",
+      "overall_status": "ready_for_review",
+      "ready_for_pr_create": true,
+      "scope_status": "needs_clean_branch",
+      "route_type": "agent_workflow",
+      "judgment_confidence": 0.82
+    },
+    "top_level_counts": {
+      "targeted_full_surfaces_count": 4,
+      "risk_signals_count": 4,
+      "unresolved_gate_count": 0,
+      "critical_unresolved_gate_count": 0,
+      "risk_signal_count": 4,
+      "active_axis_count": 3
+    }
+  },
+  "highlights": [
+    "model=vibepro-evidence-decision-index-v1",
+    "evidence_depth=summary",
+    "overall_status=ready_for_review",
+    "ready_for_pr_create=true",
+    "scope_status=needs_clean_branch",
+    "route_type=agent_workflow",
+    "judgment_confidence=0.82"
+  ],
+  "over_budget_reason": "source_bytes exceeds budget 16384",
+  "full_artifact_path": "decision-index.json"
+}

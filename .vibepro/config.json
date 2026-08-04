@@ -506,6 +506,20 @@
         },
         "amendment_reason": "The base budget of six subagents was consumed by two full gate-stage review rounds: round 1 (gate_evidence, pr_split_scope, release_risk all pass at head 583f69fc) and round 2 at head 7db9956d after a docs-only lineage commit invalidated the content surface (gate_evidence pass, release_risk pass, pr_split_scope needs_changes citing the advisory split-plan recommendation). The owner approved on 2026-08-03 via AskUserQuestion in Claude Code session b72589e7-17b5-460f-8581-06932845d285 a bounded extension of four additional subagents and a 60-minute consumption ceiling for exactly one round-3 pr_split_scope replacement review plus adjudication redispatch headroom; the session transcript is the inspectable primary record."
       },
+      "story-vibepro-uiux-intake-judgment-gate": {
+        "max_subagent_count": 36,
+        "max_agent_consumption_ms": 28800000,
+        "max_review_dispatches_by_role": {
+          "architecture_boundary": 11,
+          "spec_consistency": 4,
+          "regression_risk": 4,
+          "gate_evidence": 5,
+          "pr_split_scope": 4,
+          "release_risk": 4,
+          "runtime_contract": 6
+        },
+        "amendment_reason": "The architecture_spec preflight cycle consumed four architecture_boundary lifecycles (initial block on the decorative-gate critical, fix verification, fixture-regression verification, and full changed-path coverage) plus differential re-reviews for spec_consistency and regression_risk. The gate-stage final reviews (gate_evidence, pr_split_scope, release_risk) still need their first dispatches at the frozen head. Amended again: the validation-sequencing final_review phase requires an implementation:runtime_contract review with strong closed parallel-subagent provenance, which the original per-role caps did not include; one runtime_contract dispatch added. Final amendment: every budget-grant commit moves HEAD and stales the head-bound preflight lifecycle, forcing another architecture_boundary re-record; caps are raised once with headroom so the remaining closure (preflight re-record, runtime_contract record, adjudication) completes without further grant commits. Amended once more: the acceptance-spec commit required by the Story E2E coverage scanner moved HEAD after the runtime_contract review, and final_review binds to the frozen HEAD, so one more architecture_boundary re-record and one more runtime_contract lifecycle are needed at the final head. Amended for the delta-merge landing: origin/main advanced with PR #415-#420 (including src/pr-manager.js changes from #416/#418/#419), staling the content-bound gate_evidence/architecture_boundary/runtime_contract reviews; one differential re-review round plus frozen final_review re-record is needed at the merged head, and caps are raised with spare slots so a further externally-forced merge does not require another grant commit."
+      },
       "story-vibepro-uiux-intake-gate-pr-summary-surfaces": {
         "max_subagent_count": 10,
         "amendment_reason": "Owner-approved raises scoped to this Story: 6->8 then 8->10 subagents. First raise for the final implementation:runtime_contract review; second raise after that review found a story accuracy defect (both summary surfaces dead in production), requiring gate_evidence and runtime_contract re-reviews of the corrected story text. Both approved by sato_keigo on 2026-08-03 via AskUserQuestion in Claude Code session c3213594-536c-47ba-89cf-d8613ecaff91, observed directly by the recording agent."
@@ -1277,6 +1291,18 @@
         "category": "delivery-efficiency"
       },
       {
+        "story_id": "story-vibepro-uiux-intake-judgment-gate",
+        "title": "uiux intakeのSkill発火 + 判断記録gate",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-03",
+        "due_at": null,
+        "category": "governance"
+      },
+      {
         "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
         "title": "gate:uiux_intake_judgment を人間向けPRサマリー表面に表示する",
         "ssot": "local",
@@ -1341,6 +1367,18 @@
         "started_at": "2026-08-03",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+        "title": "進捗ハートビートpolicy kernelの抽出とgraphify/verification-runnerへの採用",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-02",
+        "due_at": null,
+        "category": "platform"
       },
       {
         "story_id": "story-vibepro-repo-walk-scale-and-session-worktree-exclusion",

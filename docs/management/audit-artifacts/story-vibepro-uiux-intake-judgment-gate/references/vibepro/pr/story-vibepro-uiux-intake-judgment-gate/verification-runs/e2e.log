@@ -1,0 +1,18 @@
+(node:24854) ExperimentalWarning: Type Stripping is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ story-vibepro-uiux-intake-judgment-gate ac:5 the gate is always present and blocks unrecorded judgments (3143.328584ms)
+✔ story-vibepro-uiux-intake-judgment-gate ac:6 S-001 an intake coverage artifact resolves the gate (3048.880167ms)
+✔ story-vibepro-uiux-intake-judgment-gate ac:7 S-002 intake_not_applicable requires a reason and resolves the gate (3114.050833ms)
+✔ story-vibepro-uiux-intake-judgment-gate ac:8 S-003 recovery guidance and waiver closure (5013.248584ms)
+✔ story-vibepro-uiux-intake-judgment-gate ac:1 gate always present and blocks without a recorded judgment (3147.153667ms)
+✔ story-vibepro-uiux-intake-judgment-gate ac:2 intake coverage artifact resolves the gate (3081.918041ms)
+✔ story-vibepro-uiux-intake-judgment-gate ac:3 intake_not_applicable decision with reason resolves the gate and reasonless is rejected (3215.105334ms)
+✔ story-vibepro-uiux-intake-judgment-gate ac:4 recovery guidance names both honest closures (2480.521875ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 15289.641166

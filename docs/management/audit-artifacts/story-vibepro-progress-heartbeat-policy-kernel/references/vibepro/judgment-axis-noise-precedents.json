@@ -1,0 +1,56 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+      "decision_id": "decision-1785672202658-d353ca7a",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The operator pre-decided this boundary when commissioning the Story: kernel extraction plus the graphify-adapter and verification-runner adopters ship together as the first Story, while pr-manager autopilot shell, performance-measurer, independent-review-orchestrator adoption and the spawn-setTimeout lint guard are explicitly split into followup Stories (Story Out of Scope section). One reviewer reads a single semantic decision — the kernel policy semantics proven by its two most-damaged adopters — with ownership and blast radius bounded to the six target source files recorded in the verification evidence. Followup cleanup is tracked without hiding required review ownership.",
+      "artifact": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T12:03:27.832Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:16|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+      "decision_id": "decision-1785672202658-d353ca7a",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The operator pre-decided this boundary when commissioning the Story: kernel extraction plus the graphify-adapter and verification-runner adopters ship together as the first Story, while pr-manager autopilot shell, performance-measurer, independent-review-orchestrator adoption and the spawn-setTimeout lint guard are explicitly split into followup Stories (Story Out of Scope section). One reviewer reads a single semantic decision — the kernel policy semantics proven by its two most-damaged adopters — with ownership and blast radius bounded to the six target source files recorded in the verification evidence. Followup cleanup is tracked without hiding required review ownership.",
+      "artifact": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:16",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-04T03:09:16.232Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:154|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+      "decision_id": "decision-1785672202658-d353ca7a",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The operator pre-decided this boundary when commissioning the Story: kernel extraction plus the graphify-adapter and verification-runner adopters ship together as the first Story, while pr-manager autopilot shell, performance-measurer, independent-review-orchestrator adoption and the spawn-setTimeout lint guard are explicitly split into followup Stories (Story Out of Scope section). One reviewer reads a single semantic decision — the kernel policy semantics proven by its two most-damaged adopters — with ownership and blast radius bounded to the six target source files recorded in the verification evidence. Followup cleanup is tracked without hiding required review ownership.",
+      "artifact": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:154",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-04T04:35:53.382Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

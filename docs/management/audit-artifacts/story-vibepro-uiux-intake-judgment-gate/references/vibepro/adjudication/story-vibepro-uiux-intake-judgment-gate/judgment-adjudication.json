@@ -1,0 +1,956 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-uiux-intake-judgment-gate",
+  "updated_at": "2026-08-04T02:02:35.799Z",
+  "events": [
+    {
+      "event_id": "55addddb-624a-44bf-8560-3bc0058b83c8",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story md carries a genuine intent narrative (background: src/pr-manager.js had zero intake references; standard flow never invoked intake) plus 4 concrete, falsifiable AC clauses and a frontmatter reason: block covering alternatives (change-risk-classifier detector rejected due to gate-erosion precedent), compatibility (existing stories close with one decision), rollback, and boundary. This is authored reasoning, not template filler.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:52:14.042Z"
+    },
+    {
+      "event_id": "87b680f8-24e5-4be1-ab10-b7abff6bbeb6",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "artifact_replay/flow_replay evidence is real: e2e test builds a fresh git repo via git init + runCli(['init',...]) and drives real pr-prepare CLI subprocess-free, not a mock. UIJ-SCENARIO-001 in the unit test replays the same standard flow. graph_impact_scope (5 changed/153 related) corroborates the change touches the claimed surface. Verified independently by running both suites (9/9 and 4/4 pass).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:52:17.837Z"
+    },
+    {
+      "event_id": "cbf16735-4a2b-41ed-8220-0ea7a6b82002",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "docs/specs/story-vibepro-uiux-intake-judgment-gate.md states 5 concrete clauses (INV-001, SCN-002, SCN-003, INV-004, SCN-005) each mapped to a specific test scenario (verified INV-004 corresponds to UIJ-SCENARIO-006 corrupt-artifact fail-closed test, SCN-003 to UIJ-SCENARIO-005 reasonless-rejection test). Architecture doc explicitly states the gate is always-present/required and wired in the DAG, matching src/pr-manager.js. This is genuine spec-to-test traceability, not just docs existing in the diff.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:52:21.016Z"
+    },
+    {
+      "event_id": "884594b2-110a-4758-a082-4a129fa89ec4",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The cited decision_record (decision-1785692604565-7874dbb9) is spurious for this specific question -- it is source=gate:vibepro_artifact_policy about committing .vibepro/config.json, unrelated to the uiux intake judgment boundary. Flagging this as a false-positive match in the mechanical digestion. However the OR-matched architecture_doc evidence genuinely addresses boundaries: the architecture doc explicitly states 'missing_required_fields in the coverage artifact is deliberately out of scope' and the gate 'fail-closes only on the absence of the recorded judgment, never on the intake content quality' -- this is a real, specific boundary statement, and current_verification (typecheck) plus the corrupt-artifact test (UIJ-SCENARIO-006) support it operationally. The overall item is sound despite the irrelevant decision_record citation because the required evidence class (architecture_doc) is genuinely present and on-point.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:52:23.742Z"
+    },
+    {
+      "event_id": "7d18602f-56ab-4bc6-aff0-009562f85bc4",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "flow_replay/artifact_replay/scenario_clause_e2e evidence directly exercises failure paths: UIJ-SCENARIO-006 (corrupt/unparsable coverage artifact does not satisfy gate, does not crash pr prepare), UIJ-SCENARIO-005 (reasonless decision rejected), UIJ-SCENARIO-008/009 (blocking/release state transitions). These are genuine negative-path tests exercising the real CLI, not just green-path replay.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:52:26.179Z"
+    },
+    {
+      "event_id": "4fa20664-ecbc-44eb-9365-3f6eede07f5c",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "9 unit scenarios + 4 e2e acceptance blocks pass at HEAD (independently reran both suites: 9/9 and 4/4). Each of the 4 story AC clauses maps to a dedicated e2e test block with criterion tokens in assertion messages (ac:1..ac:4), and unit scenarios cover both green and negative paths. This is genuine artifact_replay/scenario_clause_e2e done-evidence, not just a pass/fail flag.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:52:28.729Z"
+    },
+    {
+      "event_id": "0e2de48a-9364-4191-84b6-02514a4d5865",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The change is a real public-contract shift: a new required gate now blocks pr prepare for every existing story that lacks a judgment record, and this is explicitly documented in the architecture doc's Public Contract section ('pr prepare behavior changes for every story'). The CLI addition (intake_not_applicable decision type) is additive and regenerated into both cli.md and ja/cli.md (verified grep hits in both plus src/cli.js help text, all three identical). UIJ-SCENARIO-001/e2e ac:1 test exactly the blocking behavior change. This was considered, not glossed over.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:52:44.855Z"
+    },
+    {
+      "event_id": "0f03960c-7dbe-48a4-b3e6-df8249c58587",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "12 changed files form one coherent intent (gate + decision type + Skill guidance + docs + tests). Story frontmatter reason explicitly justifies not splitting: 'bundled because the gate, decision type, and Skill text are one contract and separating them would ship a blocking gate without its closure paths' -- this is a real, checkable claim (shipping the gate without the intake_not_applicable type or Skill guidance would strand every story with no honest closure). Reviewable as a single diff: one gate builder function, one decision type, matching tests.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:52:47.866Z"
+    },
+    {
+      "event_id": "ee4ada3d-0956-447a-b79c-61fec34daf29",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture doc has explicit Rollout/Rollback/Observability sections: rollout = merge itself (no deploy targets), rollback = remove one gate-builder call + two DAG edges + one DECISION_TYPES entry (verified this matches the actual code shape at src/pr-manager.js:11539/11688/11797-11798 and decision-records.js:18), observability = gate surfaces resolved_by/intake_coverage/decision in pr-prepare.json gate_dag nodes (verified fields exist in buildUiuxIntakeJudgmentGate's return object). These are concrete, verifiable operator-facing statements, not boilerplate.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:52:51.920Z"
+    },
+    {
+      "event_id": "a758e0ed-9cbb-42ba-9c5e-6e6f80acacd1",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_unsound",
+      "unsound_cause": "classifier_premise_unsound",
+      "responds_to_correction_id": null,
+      "reason": "Classifier premise 'not_required, no evidence' is factually wrong for this diff. src/pr-manager.js readUiuxIntakeJudgmentContext (added by this change) calls JSON.parse(await readFile(...uiux-intake-coverage.json...)) on externally-authored input, wrapped in try/catch. This is squarely the parse_failure failure mode (parser/JSON extraction can fail on malformed input). The premise that this failure mode doesn't apply is incorrect -- it clearly applies. Note: the underlying behavior is actually fine and well-tested (UIJ-SCENARIO-006 'corrupt coverage artifact does not satisfy the gate' exercises exactly this path and passed independently), so this is a classifier premise error, not an implementation defect -- re-adjudication should attach UIJ-SCENARIO-006 / node --test test/uiux-intake-judgment-gate.test.js as the covering evidence rather than leaving this item unevidenced.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:53:01.408Z"
+    },
+    {
+      "event_id": "6c861aea-55ea-4a8b-a990-d13879c0f92e",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "UIJ-SCENARIO-005 exercises exactly this: decision-records.js line 43-44 throws when type=intake_not_applicable and --reason is absent; the unit test asserts this rejection, and e2e ac:3 asserts it via the real CLI path too (non-zero exit). Verified independently by rerunning both suites. This is real schema/validation-failure coverage, not incidental.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:53:04.280Z"
+    },
+    {
+      "event_id": "78a8b7f1-6294-4b4b-96d6-cada4669c8a4",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Decision records for intake_not_applicable are written/read through the same writeJsonAtomic/readDecisionRecordsIfExists lifecycle as every other decision type (verified DECISION_TYPES set includes intake_not_applicable alongside existing types, no bespoke storage path added). UIJ-SCENARIO-004/005/007 exercise record-then-read round trips including the waiver path (UIJ-SCENARIO-007). No new gate-evidence surface was introduced that could produce a misleading green artifact independent of the existing decision-record machinery.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:53:07.464Z"
+    },
+    {
+      "event_id": "c444cfd2-e57e-4c3e-9a48-69a00e54d37c",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "UIJ-SCENARIO-008 and UIJ-SCENARIO-009 directly test the stale/pending-gate-state failure mode: 008 confirms an unrecorded judgment reaches the enforcement surface (execution_gate blocks), 009 confirms a recorded judgment actually releases that same enforcement surface (not just the node status). This distinguishes node-level cosmetic pass from real enforcement-surface release, which is exactly what workflow_state_regression is concerned with. Verified independently by rerunning the suite.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:53:10.425Z"
+    },
+    {
+      "event_id": "5a1c0106-0429-4a04-b081-cdceb9d98a14",
+      "type": "premise_correction",
+      "item_id": "failure_mode:parse_failure",
+      "corrects_verdict_id": "a758e0ed-9cbb-42ba-9c5e-6e6f80acacd1",
+      "wrong_premise": "The failure-mode classifier marked parse_failure coverage as not_required with no evidence, treating the diff as if it added no external-input parsing",
+      "corrected_premise": "The diff adds readUiuxIntakeJudgmentContext, which JSON.parses externally-authored uiux-intake-coverage.json; parse_failure coverage IS required and is covered: a corrupt/unparsable artifact is treated as no-judgment (gate stays needs_evidence, pr prepare does not crash), verified by UIJ-SCENARIO-006 in the recorded runner-direct unit run",
+      "reason": "The judge confirmed the parse path exists and its failure behavior is fail-closed and test-covered; only the classifier's not_required premise was wrong",
+      "replacement_evidence": [
+        {
+          "artifact": ".vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json",
+          "sha256": "aaa67e4d91494cd531e01437ccb3b73596e643a7f4f85a14299401f06ef68913"
+        }
+      ],
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "sweet-chatelet-c1b354",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:53:53.004Z"
+    },
+    {
+      "event_id": "1f516ac1-bea9-4af3-8733-99cba5e81dd7",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": "5a1c0106-0429-4a04-b081-cdceb9d98a14",
+      "reason": "Independently verified: readUiuxIntakeJudgmentContext (src/pr-manager.js:10891-10911) wraps JSON.parse of externally-authored uiux-intake-coverage.json in try/catch; corrupt input is treated as no-judgment (returns null) so pr prepare does not crash and gate:uiux_intake_judgment stays needs_evidence. UIJ-SCENARIO-006 in test/uiux-intake-judgment-gate.test.js exercises exactly this path and passed (node --test, 9/9 pass, run locally). Replacement evidence .vibepro/pr/story-vibepro-uiux-intake-judgment-gate/verification-runs/unit.json sha256 matches recorded correction. Original classifier premise (not_required) was wrong; corrected premise (required and covered) is confirmed sound.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge2-parse-failure-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "f86101457e674edcb9327e8878bd9e0ce610b8e7",
+      "recorded_at": "2026-08-02T18:55:28.984Z"
+    },
+    {
+      "event_id": "77ff182d-8879-45e6-9281-4867a6c6a63b",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-recorded at HEAD 6a61cf4f: original verdict a758e0ed and premise_correction 5a1c0106 were head-bound to f8610145 and the CLI now rejects that correction-id as stale at the new head. Re-verified git diff f8610145..6a61cf4f -- src/pr-manager.js test/uiux-intake-judgment-gate.test.js is empty (deltas are docs/design-ssot/budget bookkeeping + a new acceptance spec only, no src changes). readUiuxIntakeJudgmentContext still wraps JSON.parse of externally-authored uiux-intake-coverage.json in try/catch; corrupt input yields null so gate:uiux_intake_judgment stays needs_evidence rather than crashing. UIJ-SCENARIO-006 unchanged, previously run and passing (9/9 suite). Substance of correction 5a1c0106 (classifier premise 'not_required' was wrong; parse_failure coverage is required and covered) stands verified at this head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge2-parse-failure-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "recorded_at": "2026-08-02T19:14:22.642Z"
+    },
+    {
+      "event_id": "19c00a01-c50c-408e-aae9-e8f906db64a1",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 6a61cf4f: delta is doc-lineage/frontmatter/budget bookkeeping plus a new acceptance spec; no change to the story's intent text or AC clauses. Original grounds (authored reasoning, alternatives/compat/rollback/boundary in frontmatter) still hold unchanged.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "recorded_at": "2026-08-02T19:15:03.217Z"
+    },
+    {
+      "event_id": "be2aa52e-0885-46d3-8d50-0253b1e456e4",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 6a61cf4f: new acceptance spec adds another independent artifact_replay (fresh git repo, real CLI, subprocess-free runCli) reinforcing current_reality; reran independently, 4/4 pass. No src changes. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "recorded_at": "2026-08-02T19:15:05.766Z"
+    },
+    {
+      "event_id": "d0c45c19-5015-47f1-bee9-5fd68ee9c8a1",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 6a61cf4f: the new acceptance spec explicitly labels its tests with the spec clause ids (S-001, S-002, S-003) matching docs/specs/story-vibepro-uiux-intake-judgment-gate.md SCN-002/SCN-003/SCN-005, strengthening spec-to-test traceability beyond what was inspected before. No src changes. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "recorded_at": "2026-08-02T19:15:08.339Z"
+    },
+    {
+      "event_id": "4c32aac7-6798-4bc1-8cb1-ca6805a3ca96",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 6a61cf4f: design-ssot.json delta adds the architecture doc as a registered child_link/architecture link under the parent design, formalizing the lineage that documents the boundary (missing_required_fields deliberately out of scope). The previously-flagged spurious decision_record citation (budget/artifact-policy, unrelated to this boundary) is unchanged and still noted as a false-positive match, but architecture_doc evidence remains genuine and sufficient. No src changes. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "recorded_at": "2026-08-02T19:15:10.927Z"
+    },
+    {
+      "event_id": "a1a1a643-9064-4466-a859-ccb3a32edc9b",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 6a61cf4f: no src changes since prior recording; existing negative-path coverage (UIJ-SCENARIO-005/006/008/009) is untouched. The new acceptance spec adds positive-path S-001..S-003 coverage but does not remove or weaken failure-mode coverage. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "recorded_at": "2026-08-02T19:15:13.424Z"
+    },
+    {
+      "event_id": "46244be1-8b29-400a-b777-4de54c847c99",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 6a61cf4f: total e2e coverage grew from 4 to 8 passing acceptance-criterion-tagged blocks (original ac:1-4 plus new ac:5-8/S-001-003) plus 9 unit scenarios, all independently rerun and passing. This strengthens done_evidence beyond the prior recording. No src changes. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "recorded_at": "2026-08-02T19:15:15.947Z"
+    },
+    {
+      "event_id": "ae18c765-d015-45de-a38f-be9cffac6c90",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 6a61cf4f: no src or CLI-doc changes since prior recording; delta is doc lineage/budget bookkeeping and a new test file. Public-contract claims (additive CLI type, documented behavior change for pr prepare) are unchanged and still substantiated. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "recorded_at": "2026-08-02T19:15:24.099Z"
+    },
+    {
+      "event_id": "099cf513-0d60-4ff1-b6a0-cfc73d8a6d29",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 6a61cf4f: the new acceptance spec is an additional test file for the same single intent (not scope creep into unrelated territory), and the budget-override decision doc explicitly explains why it was added after the frozen review (E2E coverage scanner required it, moving HEAD past a recorded review). This is normal tail-closure bookkeeping, not an unreviewed scope expansion. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "recorded_at": "2026-08-02T19:15:27.913Z"
+    },
+    {
+      "event_id": "35fce072-4469-4e46-b52f-dfdc55e73d02",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 6a61cf4f: no changes to the architecture doc's Rollout/Rollback/Observability sections content (only frontmatter added) and no src changes since prior recording. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "recorded_at": "2026-08-02T19:15:31.031Z"
+    },
+    {
+      "event_id": "e02a0cd7-0fe8-42ed-9390-8bbdeb810684",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 6a61cf4f: no src changes since prior recording; UIJ-SCENARIO-005 and the new acceptance ac:7/S-002 both independently exercise the reasonless-rejection schema-validation path, reran and pass. Original grounds still hold, now doubly covered.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "recorded_at": "2026-08-02T19:15:34.059Z"
+    },
+    {
+      "event_id": "4cfe9802-f10d-438f-ae2d-c9bda6382c61",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 6a61cf4f: no src changes since prior recording. New acceptance spec ac:8/S-003 adds an e2e-level waiver-decision round trip (previously only unit-tested via UIJ-SCENARIO-007), strengthening evidence-lifecycle coverage of the decision-record path. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "recorded_at": "2026-08-02T19:15:37.282Z"
+    },
+    {
+      "event_id": "eaf22b75-65e9-465e-9072-faf4848ff41c",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 6a61cf4f: no src changes since prior recording; UIJ-SCENARIO-008/009 (enforcement-surface block/release) remain intact and were not touched by this delta. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "6a61cf4f94a7ac0a786fb68dc50f85ec2101c657",
+      "recorded_at": "2026-08-02T19:15:40.117Z"
+    },
+    {
+      "event_id": "57b607d7-69f8-470a-be8d-b5cfa3c8e1a7",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-recorded at HEAD 2f6c2e67 after branch rebase onto advanced main. Confirmed git diff 6a61cf4f..2f6c2e67 -- src/pr-manager.js test/uiux-intake-judgment-gate.test.js is empty; readUiuxIntakeJudgmentContext parse handling (try/catch around JSON.parse of externally-authored uiux-intake-coverage.json, corrupt input -> null -> gate stays needs_evidence, no crash) and UIJ-SCENARIO-006 are byte-identical to the prior verified head. Prior correction-id 5a1c0106 rejected by CLI as stale at this head (not current-HEAD), consistent with prior rebase re-record. Substance of correction (classifier premise not_required was wrong; parse_failure coverage is required and covered) remains verified: prior test run at unchanged code was 9/9 pass including UIJ-SCENARIO-006.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge2-parse-failure-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "2f6c2e67c63184e6efd074dccee3e9840189e232",
+      "recorded_at": "2026-08-02T19:55:34.699Z"
+    },
+    {
+      "event_id": "9b2f4a31-24c7-4193-9cd9-4052a877c45f",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 2f6c2e67 after rebase onto main. Story md content unchanged for this story's own text (rebase only added main's unrelated registrations to design-ssot.json/config.json plus one config.json brace-restore fix). Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "2f6c2e67c63184e6efd074dccee3e9840189e232",
+      "recorded_at": "2026-08-02T19:56:28.077Z"
+    },
+    {
+      "event_id": "4ee12cde-104b-4562-8672-e2804ba4ed6b",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 2f6c2e67 after rebase onto main. Reran the full story test surface (26/26 pass) confirming artifact_replay/flow_replay still hold against real CLI paths post-rebase. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "2f6c2e67c63184e6efd074dccee3e9840189e232",
+      "recorded_at": "2026-08-02T19:56:31.541Z"
+    },
+    {
+      "event_id": "e8bb7699-a374-4109-aa41-cd3bb66a5a43",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 2f6c2e67 after rebase onto main. src/pr-manager.js and src/decision-records.js gate/decision-type code byte-identical to prior inspection; spec clause to test mapping (INV-001, SCN-002/003/005) unaffected by rebase. Reran suite: 26/26 pass. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "2f6c2e67c63184e6efd074dccee3e9840189e232",
+      "recorded_at": "2026-08-02T19:56:35.118Z"
+    },
+    {
+      "event_id": "9a8b9690-4945-4868-86d1-19d7b5594917",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 2f6c2e67 after rebase onto main. Architecture doc boundary statement (missing_required_fields deliberately out of scope) unchanged; design-ssot.json rebase delta is main's unrelated story registrations, not a change to this story's lineage entries. Previously-flagged spurious decision_record citation (unrelated artifact-policy decision) still noted as a false-positive match but does not affect the sufficiency of the architecture_doc evidence. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "2f6c2e67c63184e6efd074dccee3e9840189e232",
+      "recorded_at": "2026-08-02T19:56:37.755Z"
+    },
+    {
+      "event_id": "9bcf4920-2115-426a-8c66-53aebf3b6995",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 2f6c2e67 after rebase onto main. Negative-path scenarios (UIJ-SCENARIO-005/006/008/009) byte-identical to prior inspection and rerun clean (26/26 pass overall). Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "2f6c2e67c63184e6efd074dccee3e9840189e232",
+      "recorded_at": "2026-08-02T19:56:40.577Z"
+    },
+    {
+      "event_id": "0e06a073-311d-4d8e-a5db-f709be7449e8",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 2f6c2e67 after rebase onto main. Full story test surface (unit + both e2e files + gate-check) independently rerun: 26/26 pass at the post-rebase head. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "2f6c2e67c63184e6efd074dccee3e9840189e232",
+      "recorded_at": "2026-08-02T19:56:43.289Z"
+    },
+    {
+      "event_id": "e89a8d3a-68d7-433d-b023-01523bd54294",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 2f6c2e67 after rebase onto main. docs/reference/cli.md and docs/ja/reference/cli.md show only a 1-line change each in the rebase diff (unrelated to this story's additive intake_not_applicable type, which remains present); src/cli.js unaffected for this contract. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "2f6c2e67c63184e6efd074dccee3e9840189e232",
+      "recorded_at": "2026-08-02T19:56:55.360Z"
+    },
+    {
+      "event_id": "6048a2be-ea53-423b-94fa-3e4fd07f6bd5",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 2f6c2e67 after rebase onto main. The 19-file diff vs origin/main is the same single-intent story content as before plus main's unrelated design-ssot.json/config.json registrations pulled in by the rebase (not new scope added by this story) and one brace-restore fix commit for a rebase-merge artifact. Still reviewable as one coherent intent. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "2f6c2e67c63184e6efd074dccee3e9840189e232",
+      "recorded_at": "2026-08-02T19:56:57.814Z"
+    },
+    {
+      "event_id": "5749999b-02d7-4a01-920b-71f4164bbab2",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 2f6c2e67 after rebase onto main. Architecture doc Rollout/Rollback/Observability sections unchanged; rebase delta is unrelated main registrations plus a config.json brace-restore fix, not a change to release-ops claims. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "2f6c2e67c63184e6efd074dccee3e9840189e232",
+      "recorded_at": "2026-08-02T19:57:00.621Z"
+    },
+    {
+      "event_id": "0f1508b6-f25f-4c65-91ab-0b7622c9feeb",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 2f6c2e67 after rebase onto main. UIJ-SCENARIO-005 and ac:7/S-002 reasonless-rejection tests byte-identical to prior inspection, rerun clean. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "2f6c2e67c63184e6efd074dccee3e9840189e232",
+      "recorded_at": "2026-08-02T19:57:02.742Z"
+    },
+    {
+      "event_id": "78291278-628a-4c5e-96e0-8ff9bd4866b9",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 2f6c2e67 after rebase onto main. Decision-record write/read round trips (UIJ-SCENARIO-004/005/007, ac:8/S-003 waiver e2e) byte-identical to prior inspection, rerun clean. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "2f6c2e67c63184e6efd074dccee3e9840189e232",
+      "recorded_at": "2026-08-02T19:57:05.515Z"
+    },
+    {
+      "event_id": "9ead9f22-7554-4aef-9921-384391da8724",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 2f6c2e67 after rebase onto main. UIJ-SCENARIO-008/009 enforcement-surface block/release tests byte-identical to prior inspection, rerun clean. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "head_commit": "2f6c2e67c63184e6efd074dccee3e9840189e232",
+      "recorded_at": "2026-08-02T19:57:10.026Z"
+    },
+    {
+      "event_id": "ede83192-327d-4b52-9953-3a99a5e5073c",
+      "type": "verdict",
+      "item_id": "failure_mode:parse_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-recorded at HEAD 0ea28994 after origin/main delta-merge. Confirmed git diff 2f6c2e67..HEAD -- src/pr-manager.js has zero hits for readUiuxIntakeJudgmentContext (only unrelated changes: strict-head-binding authorization helper, dead renderPrDecisionSection/formatPrRouteForHuman removal). git diff for test/uiux-intake-judgment-gate.test.js shows only a new scratch-tmpdir import line; UIJ-SCENARIO-006 body/assertions unchanged. The try/catch fail-closed JSON.parse handling of externally-authored uiux-intake-coverage.json remains intact: corrupt input -> null -> gate:uiux_intake_judgment stays needs_evidence. Substance of prior verified correction stands.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge2-parse-failure-f8610145",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-uiux-intake-judgment-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "recorded_at": "2026-08-04T02:00:53.716Z"
+    },
+    {
+      "event_id": "f55808c6-dd7a-4040-832c-fbb1ad03f00e",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 0ea28994. No changes to this story's own md content; delta since 2f6c2e67 is an origin/main merge (#415-#420), budget-grant bookkeeping, a vibepro-cli fixture budget headroom fix, and scratch-tmpdir import lines in story tests. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-uiux-intake-judgment-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "recorded_at": "2026-08-04T02:01:57.398Z"
+    },
+    {
+      "event_id": "210ce574-ad28-4aa2-ae70-e0d1875cd70e",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 0ea28994. artifact_replay/flow_replay tests unaffected in logic (only a tmpdir-routing import added); reran full story suite 26/26 pass confirming replay behavior holds against real CLI paths at this head. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-uiux-intake-judgment-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "recorded_at": "2026-08-04T02:02:00.356Z"
+    },
+    {
+      "event_id": "24699b0a-c85a-455a-a80f-abdb8d231114",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 0ea28994. Gate/decision-type code and spec clause mapping (INV-001, SCN-002/003/005) byte-identical to prior inspection. Reran suite: 26/26 pass. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-uiux-intake-judgment-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "recorded_at": "2026-08-04T02:02:03.330Z"
+    },
+    {
+      "event_id": "9a6cb3db-57ed-4030-82ff-032e80975e12",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 0ea28994. Architecture doc boundary statement and gate builder unaffected by this delta (merge of unrelated PRs #415-#420 plus test-infra import lines). Previously-flagged spurious decision_record citation (unrelated artifact-policy decision) still noted as a false-positive match but does not affect sufficiency of the architecture_doc evidence. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-uiux-intake-judgment-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "recorded_at": "2026-08-04T02:02:06.286Z"
+    },
+    {
+      "event_id": "e5dd2c49-682e-4709-b4c2-31aeb092dfd6",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 0ea28994. Negative-path scenarios UIJ-SCENARIO-005/006/008/009 unaffected by this delta (logic byte-identical), rerun clean as part of the 26/26 pass. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-uiux-intake-judgment-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "recorded_at": "2026-08-04T02:02:09.815Z"
+    },
+    {
+      "event_id": "6c3e0bbf-4367-42b3-aada-0999becc22f3",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 0ea28994. Full story test surface (unit + both e2e files + gate-check) independently rerun at this head: 26/26 pass. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-uiux-intake-judgment-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "recorded_at": "2026-08-04T02:02:12.518Z"
+    },
+    {
+      "event_id": "cbaddb2a-a912-48c6-9931-3a72f184cc40",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 0ea28994. CLI docs/contract for intake_not_applicable unaffected by this delta (merge of unrelated PRs plus test-infra changes). Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-uiux-intake-judgment-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "recorded_at": "2026-08-04T02:02:21.785Z"
+    },
+    {
+      "event_id": "a3b21c68-b81f-4f42-b4f5-74c936c5c74b",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 0ea28994. This story's own diff remains a single coherent intent; the additional churn since 2f6c2e67 (521-line pr-manager.js shift, vibepro-cli fixture budget headroom, scratch-tmpdir imports) is confirmed to be an origin/main delta-merge of unrelated PRs #415-#420 plus shared test-infra plumbing, not new scope added to this story. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-uiux-intake-judgment-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "recorded_at": "2026-08-04T02:02:24.748Z"
+    },
+    {
+      "event_id": "be3d312b-d348-438f-94c8-d584f5ffdfeb",
+      "type": "verdict",
+      "item_id": "axis:release_ops",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 0ea28994. Architecture doc Rollout/Rollback/Observability sections unaffected by this delta. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-uiux-intake-judgment-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "recorded_at": "2026-08-04T02:02:27.325Z"
+    },
+    {
+      "event_id": "ea519a48-29db-4a92-ad42-2c573238f203",
+      "type": "verdict",
+      "item_id": "failure_mode:schema_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 0ea28994. UIJ-SCENARIO-005 and ac:7/S-002 reasonless-rejection tests logic-unchanged (only import line added), rerun clean. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-uiux-intake-judgment-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "recorded_at": "2026-08-04T02:02:29.712Z"
+    },
+    {
+      "event_id": "d6226f34-fc98-4113-9e98-7c7fd86927bd",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 0ea28994. Decision-record round trips (UIJ-SCENARIO-004/005/007, ac:8/S-003 waiver e2e) logic-unchanged, rerun clean. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-uiux-intake-judgment-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "recorded_at": "2026-08-04T02:02:32.403Z"
+    },
+    {
+      "event_id": "1bc5ca85-785c-4d4d-9011-b27915e68800",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Re-verified at HEAD 0ea28994. UIJ-SCENARIO-008/009 enforcement-surface block/release tests logic-unchanged, rerun clean. Original grounds still hold.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "judge-uiux-intake-f8610145",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-uiux-intake-judgment-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "0ea2899462e87a1def6c06440b303223bcac36a5",
+      "recorded_at": "2026-08-04T02:02:35.794Z"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+✔ AC1: duplicate progress values must not extend the no-progress deadline (3.360416ms)
+✔ AC2: structured cause distinguishes no_progress / hard cap / external_signal (1.087625ms)
+✔ AC3: evaluateProgressBounds stalled contract preserved via kernel delegation (47.707125ms)
+✔ AC4: graphify subprocess killed SIGTERM then SIGKILL with structured stop_reason and bounded stdout (253.10575ms)
+✔ AC5: streaming test-completion progress extends life; external SIGTERM recorded timed_out=false external kill (975.083208ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1475.045083

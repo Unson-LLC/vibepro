@@ -1,0 +1,11 @@
+✔ runner-direct evidence is consumed by the usage report, traceability clause map, and execution state without loss (1871.252209ms)
+✔ a failing runner-direct run is recorded as failing and is not reported as a passing claim (1339.307209ms)
+✔ pr autopilot records its own executed outcome as a computed source, not as self-reported (4018.919625ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7664.622958
