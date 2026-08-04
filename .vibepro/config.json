@@ -519,11 +519,40 @@
           "runtime_contract": 4
         },
         "amendment_reason": "The architecture_spec preflight cycle consumed four architecture_boundary lifecycles (initial block on the decorative-gate critical, fix verification, fixture-regression verification, and full changed-path coverage) plus differential re-reviews for spec_consistency and regression_risk. The gate-stage final reviews (gate_evidence, pr_split_scope, release_risk) still need their first dispatches at the frozen head. Amended again: the validation-sequencing final_review phase requires an implementation:runtime_contract review with strong closed parallel-subagent provenance, which the original per-role caps did not include; one runtime_contract dispatch added. Final amendment: every budget-grant commit moves HEAD and stales the head-bound preflight lifecycle, forcing another architecture_boundary re-record; caps are raised once with headroom so the remaining closure (preflight re-record, runtime_contract record, adjudication) completes without further grant commits. Amended once more: the acceptance-spec commit required by the Story E2E coverage scanner moved HEAD after the runtime_contract review, and final_review binds to the frozen HEAD, so one more architecture_boundary re-record and one more runtime_contract lifecycle are needed at the final head."
+      },
+      "story-vibepro-uiux-intake-gate-pr-summary-surfaces": {
+        "max_subagent_count": 10,
+        "amendment_reason": "Owner-approved raises scoped to this Story: 6->8 then 8->10 subagents. First raise for the final implementation:runtime_contract review; second raise after that review found a story accuracy defect (both summary surfaces dead in production), requiring gate_evidence and runtime_contract re-reviews of the corrected story text. Both approved by sato_keigo on 2026-08-03 via AskUserQuestion in Claude Code session c3213594-536c-47ba-89cf-d8613ecaff91, observed directly by the recording agent."
+      },
+      "story-vibepro-test-tmpdir-fixture-cleanup": {
+        "max_subagent_count": 20,
+        "max_agent_consumption_ms": 5400000,
+        "max_review_dispatches_by_role": {
+          "code_spec_alignment": 5,
+          "runtime_contract": 4,
+          "ux_completion": 5,
+          "gate_evidence": 3,
+          "pr_split_scope": 4,
+          "release_risk": 3
+        },
+        "amendment_reason": "The default 6-subagent cap was consumed exactly by two legitimate review rounds: round 1 (3 roles) found a real medium coverage gap (conformance guard scanned only .test.js while story AC1 covers all test files), and round 2 (3 roles) verified the fix and surfaced one residual low finding (spec INV-001 test_refs case string left unsynced with the renamed test title), fixed at f74c05b1. A rebase onto origin/main then made the ux_completion round-2 content surface stale (docs/releases/2026-08.md gained upstream entries). The owner (Keigo Sato) approved on 2026-08-03 via AskUserQuestion in Claude Code session 75333c2f-bf73-49ea-a75c-1e2b8ee93273 a bounded extension of six additional subagents (aggregate cap 12) and a 60-minute consumption ceiling for exactly one code_spec_alignment round-3 confirmation dispatch and one ux_completion re-confirmation dispatch plus bounded replacement headroom; the session transcript is the inspectable primary record. This is a review budget amendment only, not a Gate waiver. UPDATE (2026-08-03, second owner approval in the same session 75333c2f-bf73-49ea-a75c-1e2b8ee93273 via AskUserQuestion): independent evidence adjudication found a real guard defect (the conformance regex missed mkdtempSync and destructured tmpdir(), leaving two unguarded test files, contradicting AC-1/AC-3). The fix (c36e9254) changed the guard file that sits in five review roles' content surfaces, staling them. The owner approved six additional dispatches (aggregate 18) and a 90-minute consumption ceiling for exactly one differential re-review round (implementation code_spec_alignment/runtime_contract/ux_completion and gate gate_evidence/release_risk) plus one spare; adjudication-found-defect re-confirmation, not a widening of defaults. UPDATE 2 (2026-08-03, third owner approval in session 75333c2f-bf73-49ea-a75c-1e2b8ee93273 via AskUserQuestion): a second externally-forced rebase (origin/main advanced 11 commits) plus a JSON repair commit changed .vibepro/config.json, staling only the pr_split_scope review. The owner approved two additional dispatches (aggregate 20) for exactly one pr_split_scope re-confirmation plus one spare. NOTE: the third approval's spare slot is realized as pr_split_scope role cap 3->4 (aggregate cap unchanged at 20); the third rebase again touched .vibepro/config.json, staling only pr_split_scope, which is exactly the contingency the owner-approved spare covered."
       }
     }
   },
   "brainbase": {
     "stories": [
+      {
+        "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+        "title": "Codex host containment テストの waitFor を高負荷ホストでフレークしない待機設計にする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-02",
+        "due_at": null,
+        "category": "platform"
+      },
       {
         "story_id": "story-vibepro-budget-override-residual-findings",
         "title": "owner-gated budget override の残余 low finding 2件（fallback 方向性の文書精度 / design root の空登録）を解消する",
@@ -1272,8 +1301,74 @@
         "started_at": "2026-08-03",
         "due_at": null,
         "category": "governance"
+      },
+      {
+        "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+        "title": "gate:uiux_intake_judgment を人間向けPRサマリー表面に表示する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-03",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-cross-system-adjudication",
+        "title": "Cross-system adjudication requires a different model family than the implementer",
+        "ssot": "local",
+        "status": "active"
+      },
+      {
+        "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+        "title": "テストスイートが$TMPDIRに残すmkdtemp fixtureのクリーンアップ機構",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-02",
+        "due_at": null,
+        "category": "bugfix"
+      },
+      {
+        "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+        "title": "verification checkpoint の curated gate list に gate:uiux_intake_judgment を追加する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-03",
+        "due_at": null,
+        "category": "bugfix"
+      },
+      {
+        "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+        "title": "死んだ人間向けPRサマリーレンダラーチェーンを削除する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-03",
+        "due_at": null,
+        "category": "refactor"
+      },
+      {
+        "story_id": "story-vibepro-strict-head-binding-origin-guard",
+        "title": "strict HEAD bindingをfrozen final_reviewとrole policy例外に限定する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-03",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-uiux-intake-judgment-gate"
+    "current_story_id": "story-vibepro-strict-head-binding-origin-guard"
   }
 }

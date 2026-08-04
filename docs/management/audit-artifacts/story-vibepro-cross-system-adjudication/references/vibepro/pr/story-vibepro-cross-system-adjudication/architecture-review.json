@@ -1,0 +1,55 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-cross-system-adjudication",
+  "created_at": "2026-08-03T02:23:55.211Z",
+  "status": "satisfied",
+  "required": true,
+  "architecture_decision": "ADR不要: Deriving implementer identity from implementation-stage review records was rejected because those records carry the reviewer's system, not the implementer's; an explicit provenance record is the only truthful source. A global config switch to disable the check was rejected because it would make same-system passes an implicit default. The compatible boundary is additive staged rollout - stories with no recorded implementation provenance keep today's behavior except advisory warnings, evidence adjudication stays warning-only, and enforcement applies only to the judgment-DAG path that already exists solely on agent_workflow / workflow_heavy routes. Rollback is removal of the provenance command and the enforcement branch; all new artifacts are additive files under .vibepro/adjudication/<story-id>/. Model-level diversity (--agent-model) is out of scope; the enforced axis is agent_system only.",
+  "source_artifacts": {
+    "story": "docs/management/stories/active/story-vibepro-cross-system-adjudication.md",
+    "review_cockpit": null,
+    "gate_dag": null
+  },
+  "gates": {
+    "architecture": {
+      "status": "satisfied",
+      "reason": "ADR不要: Deriving implementer identity from implementation-stage review records was rejected because those records carry the reviewer's system, not the implementer's; an explicit provenance record is the only truthful source. A global config switch to disable the check was rejected because it would make same-system passes an implicit default. The compatible boundary is additive staged rollout - stories with no recorded implementation provenance keep today's behavior except advisory warnings, evidence adjudication stays warning-only, and enforcement applies only to the judgment-DAG path that already exists solely on agent_workflow / workflow_heavy routes. Rollback is removal of the provenance command and the enforcement branch; all new artifacts are additive files under .vibepro/adjudication/<story-id>/. Model-level diversity (--agent-model) is out of scope; the enforced axis is agent_system only."
+    },
+    "spec": {
+      "status": "present",
+      "reason": "explicit Spec docs are present (docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/references/vibepro/diagnostics/2026-08-02T173812Z/spec-drift.md)"
+    }
+  },
+  "toolchain": {
+    "schema_version": "0.1.0",
+    "collected_at": "2026-08-03T02:23:46.817Z",
+    "package": {
+      "name": "vibepro",
+      "version": "0.2.0-beta.2",
+      "root": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication"
+    },
+    "cli": {
+      "entrypoint": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication/bin/vibepro.js",
+      "runtime_module": "/Users/ksato/workspace/repos/vibepro/.worktrees/cross-system-adjudication/src/runtime-info.js"
+    },
+    "source_git": {
+      "is_git_repo": true,
+      "commit": "0e867b366dab194896633b5cb0ab4a5ddaad8899",
+      "branch": "claude/cross-system-adjudication",
+      "origin_url": "https://github.com/Unson-LLC/vibepro.git",
+      "origin_main_commit": "4475715d8d041f46e664d51bff07b5d96782d7f0",
+      "origin_main_relation": "behind",
+      "dirty": true,
+      "dirty_summary": [
+        "?? docs/management/audit-artifacts/story-vibepro-cross-system-adjudication/"
+      ]
+    }
+  },
+  "review_record": {
+    "approved": null,
+    "reviewer": null,
+    "reason": null,
+    "reviewed_at": null,
+    "comments": null
+  }
+}

@@ -1,0 +1,1 @@
+{"role":"runtime_contract","status":"pass","agent_id":"a84e93cb196520673","round":3,"summary":"Side-effect import only redirects env; spawnSync children inherit TMPDIR with no env override; 21/21 target tests pass; independent walk of 141 matched files shows 0 offenders and 0 false positives.","findings":[]}

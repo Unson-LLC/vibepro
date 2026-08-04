@@ -1,0 +1,211 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+  "story_id": "story-vibepro-strict-head-binding-origin-guard",
+  "created_at": "2026-08-03T14:10:26.677Z",
+  "updated_at": "2026-08-03T14:45:15.865Z",
+  "plan": {
+    "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+    "story_id": "story-vibepro-strict-head-binding-origin-guard",
+    "required": true,
+    "risk_profile": "workflow_heavy",
+    "risk_surfaces": [
+      "gate_orchestration",
+      "regression_blast_radius",
+      "review_lifecycle",
+      "test_coverage"
+    ],
+    "preflight_roles": [
+      "architecture_boundary"
+    ],
+    "preflight_reviews": [
+      {
+        "stage": "architecture_spec",
+        "role": "architecture_boundary",
+        "surfaces": [
+          "gate_orchestration",
+          "review_lifecycle"
+        ]
+      }
+    ],
+    "preflight_surfaces": [
+      "gate_orchestration",
+      "review_lifecycle"
+    ],
+    "preflight_required_inspection_inputs": [
+      "design-ssot.json",
+      "docs/architecture/vibepro-strict-head-binding-origin-guard.md",
+      "docs/guide/agent-review.md",
+      "docs/ja/guide/agent-review.md",
+      "docs/ja/reference/cli.md",
+      "docs/management/stories/active/story-vibepro-strict-head-binding-origin-guard.md",
+      "docs/reference/cli.md",
+      "docs/specs/story-vibepro-strict-head-binding-origin-guard.md",
+      "scripts/generate-cli-reference.mjs",
+      "src/agent-review.js",
+      "src/pr-manager.js",
+      "src/validation-sequencing.js",
+      "test/artifact-routing.test.js",
+      "test/content-scoped-evidence-freshness.test.js",
+      "test/e2e/story-vibepro-content-scoped-evidence-freshness-main.test.js",
+      "test/e2e/story-vibepro-strict-head-binding-origin-guard-main.test.js",
+      "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+      "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+      "test/e2e/story-vibepro-codex-detached-completion-inbox-main.spec.ts",
+      "test/review-inspection-first.test.js",
+      "test/risk-adaptive-gate.test.js",
+      "test/vibepro-cli.test.js"
+    ],
+    "phases": [
+      "targeted_validation",
+      "preflight_review",
+      "code_frozen",
+      "expensive_verification",
+      "final_review"
+    ]
+  },
+  "frozen_binding": {
+    "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+    "test_fingerprint": "1651341a10156c9a47ea675fea8e8bd57f133f67",
+    "verification_command": "npm test"
+  },
+  "phases": {
+    "targeted_validation": {
+      "status": "passed",
+      "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-08-03T14:44:04.400Z",
+      "binding": {
+        "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+        "test_fingerprint": "1651341a10156c9a47ea675fea8e8bd57f133f67",
+        "verification_command": "npm test"
+      }
+    },
+    "preflight_review": {
+      "status": "passed",
+      "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/architecture_spec/review-result-architecture_boundary.json"
+      ],
+      "record_type": "advisory_preflight",
+      "findings": [],
+      "dispositions": [],
+      "satisfies_final_review": false,
+      "recorded_at": "2026-08-03T14:44:16.655Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-strict-head-binding-origin-guard",
+        "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+        "system": "claude_code",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "architecture_boundary",
+        "stage": "architecture_spec",
+        "inspection_summary": "reviewed gate_orchestration and review_lifecycle boundaries across all planned changed paths; risk_surfaces=gate_orchestration,review_lifecycle. Original full-diff review at ca73d29d plus differential re-review of ca73d29d..e44e249d (only test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts and test/e2e/story-vibepro-codex-detached-completion-inbox-main.spec.ts, both adopting the supported role_policy strict route); ran the story e2e suite 7/7 pass",
+        "inspection_inputs": [
+          "design-ssot.json",
+          "docs/architecture/vibepro-strict-head-binding-origin-guard.md",
+          "docs/guide/agent-review.md",
+          "docs/ja/guide/agent-review.md",
+          "docs/ja/reference/cli.md",
+          "docs/management/stories/active/story-vibepro-strict-head-binding-origin-guard.md",
+          "docs/reference/cli.md",
+          "docs/specs/story-vibepro-strict-head-binding-origin-guard.md",
+          "scripts/generate-cli-reference.mjs",
+          "src/agent-review.js",
+          "src/pr-manager.js",
+          "src/validation-sequencing.js",
+          "test/artifact-routing.test.js",
+          "test/content-scoped-evidence-freshness.test.js",
+          "test/e2e/story-vibepro-content-scoped-evidence-freshness-main.test.js",
+          "test/e2e/story-vibepro-strict-head-binding-origin-guard-main.test.js",
+          "test/e2e/story-vibepro-surface-aware-agent-review-freshness-main.spec.ts",
+          "test/e2e/story-vibepro-atomic-scope-review-contract-main.spec.ts",
+          "test/e2e/story-vibepro-codex-detached-completion-inbox-main.spec.ts",
+          "test/review-inspection-first.test.js",
+          "test/risk-adaptive-gate.test.js",
+          "test/vibepro-cli.test.js"
+        ]
+      },
+      "binding": {
+        "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+        "test_fingerprint": "1651341a10156c9a47ea675fea8e8bd57f133f67",
+        "verification_command": "npm test"
+      }
+    },
+    "code_frozen": {
+      "status": "passed",
+      "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "reason": null,
+      "evidence": [],
+      "recorded_at": "2026-08-03T14:44:17.041Z",
+      "binding": {
+        "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+        "test_fingerprint": "1651341a10156c9a47ea675fea8e8bd57f133f67",
+        "verification_command": "npm test"
+      }
+    },
+    "expensive_verification": {
+      "status": "passed",
+      "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-strict-head-binding-origin-guard/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-08-03T14:44:51.954Z",
+      "binding": {
+        "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+        "test_fingerprint": "1651341a10156c9a47ea675fea8e8bd57f133f67",
+        "verification_command": "node --test test/e2e/story-vibepro-strict-head-binding-origin-guard-main.test.js"
+      }
+    },
+    "final_review": {
+      "status": "passed",
+      "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-strict-head-binding-origin-guard/implementation/review-result-runtime_contract.json"
+      ],
+      "source": "agent_review",
+      "recorded_at": "2026-08-03T14:45:15.865Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-strict-head-binding-origin-guard",
+        "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+        "system": "claude_code",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "runtime_contract",
+        "stage": "implementation",
+        "inspection_summary": "Read agent-review.js, validation-sequencing.js, pr-manager.js relevant sections; grepped every resolveReviewFreshnessPolicy and readValidationSequence call site for await correctness; ran content-scoped-evidence-freshness 21/21 and story e2e 7/7; differential re-review confirmed at HEAD e44e249d via git rev-parse HEAD with only fixture-config changes in the delta",
+        "inspection_inputs": [
+          "src/agent-review.js",
+          "src/validation-sequencing.js",
+          "src/pr-manager.js",
+          "test/content-scoped-evidence-freshness.test.js",
+          "test/e2e/story-vibepro-strict-head-binding-origin-guard-main.test.js",
+          "docs/management/stories/active/story-vibepro-strict-head-binding-origin-guard.md"
+        ]
+      },
+      "binding": {
+        "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+        "test_fingerprint": "1651341a10156c9a47ea675fea8e8bd57f133f67",
+        "verification_command": "npm test"
+      }
+    }
+  },
+  "proposed_binding": {
+    "head_sha": "e44e249d7a191df3649c8c62c2a21afff3e3a12f",
+    "test_fingerprint": "1651341a10156c9a47ea675fea8e8bd57f133f67",
+    "verification_command": "npm test"
+  },
+  "invalidations": []
+}

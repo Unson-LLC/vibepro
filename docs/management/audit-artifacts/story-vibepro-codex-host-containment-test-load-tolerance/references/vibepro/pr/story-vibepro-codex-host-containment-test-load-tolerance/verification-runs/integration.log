@@ -1,0 +1,13 @@
+✔ production Codex host replays spawn -> synchronous containment registration -> shutdown -> orphan reaped (1763.307875ms)
+✔ production Codex host containment wait succeeds well inside the widened 300000ms deadline (1736.775583ms)
+✔ mutating CLI commands auto-snapshot durable records into the store (695.366959ms)
+✔ auto-snapshot is fail-soft: an unwritable store never fails the producing command (275.862917ms)
+✔ durability.enabled=false disables the auto-snapshot hook (274.465166ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6150.606625

@@ -1,0 +1,15 @@
+✔ story-vibepro-strict-head-binding-origin-guard ac:1 S-001 unauthorized CLI override on a content_surface role is rejected fail-closed (1768.625292ms)
+✔ story-vibepro-strict-head-binding-origin-guard ac:2 S-002 frozen validation-sequence final_review records strict_head from source validation_sequence (1518.716292ms)
+✔ story-vibepro-strict-head-binding-origin-guard ac:3 S-003 role policy strict_head with freshness_reason records source role_policy (1753.450291ms)
+✔ story-vibepro-strict-head-binding-origin-guard ac:4 S-004 review prepare and parallel-dispatch.md never propagate --strict-head-binding (989.507ms)
+✔ story-vibepro-strict-head-binding-origin-guard ac:5 S-005 pr prepare explains strict binding origin as validation_sequence, role_policy, or rejected cli_override (3331.372708ms)
+✔ story-vibepro-strict-head-binding-origin-guard ac:6 S-006 pr prepare emits a migration warning for a legacy cli_override strict artifact (3186.477792ms)
+✔ story-vibepro-strict-head-binding-origin-guard ac:7 S-007 unrelated HEAD change keeps human_usability current, surface change stales it, and frozen runtime_contract final_review stales on any HEAD change (3163.782458ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16306.229916

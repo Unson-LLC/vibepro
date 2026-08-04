@@ -1,0 +1,74 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "decision_id": "decision-1785698287756-3ae7fd6b",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: the gate-stage pr_split_scope subagent review (recorded pass) judged the bundled diff one coherent intent, and the gate_evidence re-review at the current head confirmed the surface claims. review_owner_map is not applicable: this is a single-owner repo change touching one runtime file plus its tests and story docs; blast radius is bounded to the two curated label lists (split-plan and graphify related-file scope recorded in .vibepro artifacts). decision_record: the bundled-scope justification is recorded against gate:pr_scope_judgment and gate:split_resolution.",
+      "artifact": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T19:18:39.109Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|pr_route:runtime_change|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "decision_id": "decision-1785698284938-da95d2e9",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "The only public output surface affected is the human PR summary text: a UI/UX Intake line renders solely when a gate:uiux_intake_judgment node exists in gate_dag.nodes. Old/new expectations are reviewable in the story e2e test, which asserts the with-node rendering (label/status/required line and digest entry, PS-001/PS-002) and proves the without-node output byte-identical to the previous behavior (PS-003 deepEqual/equal assertions). Exports of the two render functions are additive module surface for tests; no existing caller changes. gate evaluation, DAG wiring, CLI flags, and config formats are untouched.",
+      "artifact": "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+      "activation_candidates": [
+        "pr_route:runtime_change",
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T19:18:39.109Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "public_contract|file_group:contract_docs|pr_route:config_or_agent_policy|text:public_contract",
+      "axis": "public_contract",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "decision_id": "decision-1785699369709-92d4fab4",
+      "source": "gate:judgment_axis_public_contract",
+      "reason": "The blocker public_contract_traceability_missing fired on the absence of a contract_doc file-group artifact. The judgment DAG adjudication ruled this premise classifier_premise_unsound (correction 761fcf8f-fa3d-4731-9ca9-23351be76fb2) and an independent second judge re-adjudicated axis:public_contract judged_sound (event cc3921e5-e131-4139-bcd3-57d04814b369): this repo's sanctioned convention accepts the Story reason: frontmatter ([REDACTED:01d138d5fb8c]) as the contract artifact for this scale of change, and the old/new output expectation is reviewable in the story e2e test, which proves the added line when the node exists and byte-identical output when absent. The change is additive-only; no CLI/API/config surface changes.",
+      "artifact": "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+      "activation_candidates": [
+        "pr_route:config_or_agent_policy",
+        "file_group:contract_docs",
+        "text:public_contract"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T01:06:09.706Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:152|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "decision_id": "decision-1785698287756-3ae7fd6b",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: the gate-stage pr_split_scope subagent review (recorded pass) judged the bundled diff one coherent intent, and the gate_evidence re-review at the current head confirmed the surface claims. review_owner_map is not applicable: this is a single-owner repo change touching one runtime file plus its tests and story docs; blast radius is bounded to the two curated label lists (split-plan and graphify related-file scope recorded in .vibepro artifacts). decision_record: the bundled-scope justification is recorded against gate:pr_scope_judgment and gate:split_resolution.",
+      "artifact": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/split-plan.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:152",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T01:06:09.706Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

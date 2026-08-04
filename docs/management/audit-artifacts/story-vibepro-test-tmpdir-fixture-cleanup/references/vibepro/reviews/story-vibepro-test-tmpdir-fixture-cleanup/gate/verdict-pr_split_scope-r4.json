@@ -1,0 +1,1 @@
+{"role":"pr_split_scope","status":"pass","agent_id":"a7797ec671b0552a4","round":4,"summary":"All 25 branch commits belong to this story's single intent after the third rebase; config/design-ssot/releases deltas purely additive for this story; the one new test change is the standard 1-line helper import.","findings":[]}

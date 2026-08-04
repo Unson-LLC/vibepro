@@ -1,0 +1,150 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "stage": "gate",
+  "role": "release_risk",
+  "status": "pass",
+  "summary": "Test-infrastructure-only change: src/ and .github/ diffs verified empty; rollback is delete-helper-plus-imports with no persisted state; the 24h sweep is strictly vibepro-scratch- prefix-scoped under os.tmpdir(); the conformance guard's failure mode is a single named-offender assertion",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "conformance-gate-friction",
+      "detail": "future test files referencing mkdtemp must add the helper import; the per-file named-offender failure is intentional and self-explanatory"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "conformance-gate-friction",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "intentional deterministic guard; the failure message names the exact file and fix",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified empty src/ and .github/ diffs vs origin/main; read the sweep implementation in full for blast radius; read the rollback section and the conformance guard failure mode",
+    "evidence": null,
+    "inputs": [
+      "test/support/scratch-tmpdir.js",
+      "test/scratch-tmpdir-conformance.test.js",
+      "docs/releases/2026-08.md"
+    ]
+  },
+  "judgment_delta": [
+    "sweep blast-radius and merge-order friction concerns resolved by reading the strict prefix filter and the named-offender assertion; pass instead of needs_changes"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "expected_root": null,
+    "expected_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+    "current_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "expected_root": null,
+      "expected_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+      "current_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-03T00:54:32.407Z",
+  "git_context": {
+    "head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+    "current_branch": "claude/adoring-keller-f403ec",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-03T00:54:32.382Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+    "surface_files": [
+      {
+        "path": "docs/releases/2026-08.md",
+        "sha256": "f44e4c10b8ed982962b91f1d4b38df90e2a5341bf59dbd10446695cdd05ebe27",
+        "size": 7270
+      },
+      {
+        "path": "test/scratch-tmpdir-conformance.test.js",
+        "sha256": "c866e87745afa90cab5d5c959c99a18c24a0c66187dc08a36bab590d160344f1",
+        "size": 4157
+      },
+      {
+        "path": "test/support/scratch-tmpdir.js",
+        "sha256": "df5021804544842d9638d8b83fcb3257c868f0adce78789f5ebfdc79a89cf71a",
+        "size": 2070
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "e8be447a2661ec915fb4c7d02b4058ef1dbe3358483d421a77548e49fa88f0af"
+  },
+  "source_fingerprint": "810fe7caaf14f981fbd8f82b5597f5db6ed60c18b66ca976c4f7fc4df727976a",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a0198e498e49e64ef",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a0198e498e49e64ef",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/gate/review-request-release_risk.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/gate/verdict-release_risk.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a0198e498e49e64ef",
+      "implementation_session_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

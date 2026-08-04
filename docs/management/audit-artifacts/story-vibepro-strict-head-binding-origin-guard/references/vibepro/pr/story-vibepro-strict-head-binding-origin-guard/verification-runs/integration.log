@@ -1,0 +1,16 @@
+✔ docs-only merge promotes a docs_only-scoped canonical bundle with a recovered diff base (1099.183667ms)
+✔ implementation merge keeps the implementation budget scope through canonical promotion (957.468209ms)
+✔ a docs-only promotion with no risk signal reaches the summary depth default end to end (988.728708ms)
+✔ over-budget docs-only promotion keeps its scope through compact re-measurement (935.408292ms)
+✔ usage report separates docs-only evidence spend from the implementation signal (357.91175ms)
+✔ runner-direct evidence is consumed by the usage report, traceability clause map, and execution state without loss (2341.6065ms)
+✔ a failing runner-direct run is recorded as failing and is not reported as a passing claim (1548.559208ms)
+✔ pr autopilot records its own executed outcome as a computed source, not as self-reported (4656.576209ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9055.107292

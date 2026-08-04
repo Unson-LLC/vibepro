@@ -1,0 +1,537 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-gate-outcome-ledger-v3",
+  "updated_at": "2026-08-03T06:39:46.166Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:senior_gap_judgment|needs_review|passed|2026-08-03T06:36:20.474Z|2026-08-03T06:39:46.153Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T06:36:20.474Z",
+      "resolved_at": "2026-08-03T06:39:46.153Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:judgment_dag_adjudication|needs_evidence|passed|2026-08-03T06:36:20.474Z|2026-08-03T06:39:46.153Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T06:36:20.474Z",
+      "resolved_at": "2026-08-03T06:39:46.153Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:evidence_adjudication|needs_evidence|passed|2026-08-03T06:36:20.474Z|2026-08-03T06:39:46.153Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T06:36:20.474Z",
+      "resolved_at": "2026-08-03T06:39:46.153Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:definition_of_done|needs_evidence|passed|2026-08-03T03:40:29.271Z|2026-08-03T06:36:20.474Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:40:29.271Z",
+      "resolved_at": "2026-08-03T06:36:20.474Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:agent_review|needs_review|passed|2026-08-03T03:40:29.271Z|2026-08-03T06:36:20.474Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:40:29.271Z",
+      "resolved_at": "2026-08-03T06:36:20.474Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|review:join:gate|needs_review|passed|2026-08-03T03:40:29.271Z|2026-08-03T06:36:20.474Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:40:29.271Z",
+      "resolved_at": "2026-08-03T06:36:20.474Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|review:record:gate:gate_evidence|needs_review|passed|2026-08-03T03:40:29.271Z|2026-08-03T06:36:20.474Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:40:29.271Z",
+      "resolved_at": "2026-08-03T06:36:20.474Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|review:gate:gate_evidence|missing|passed|2026-08-03T03:40:29.271Z|2026-08-03T06:36:20.474Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "review:gate:gate_evidence",
+      "gate_type": "agent_review_role_gate",
+      "previous_status": "missing",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:40:29.271Z",
+      "resolved_at": "2026-08-03T06:36:20.474Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|review:prepare:gate|needs_review|passed|2026-08-03T03:40:29.271Z|2026-08-03T06:36:20.474Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "review:prepare:gate",
+      "gate_type": "agent_review_prepare_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:40:29.271Z",
+      "resolved_at": "2026-08-03T06:36:20.474Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|review:dispatch_batch:gate|needs_review|passed|2026-08-03T03:40:29.271Z|2026-08-03T06:36:20.474Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:40:29.271Z",
+      "resolved_at": "2026-08-03T06:36:20.474Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:split_resolution|needs_review|passed|2026-08-03T03:40:29.271Z|2026-08-03T06:36:20.474Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:split_resolution",
+      "gate_type": "split_resolution_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:40:29.271Z",
+      "resolved_at": "2026-08-03T06:36:20.474Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-08-03T03:40:29.271Z|2026-08-03T06:36:20.474Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:40:29.271Z",
+      "resolved_at": "2026-08-03T06:36:20.474Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:integration|needs_evidence|passed|2026-08-03T03:32:51.855Z|2026-08-03T03:40:29.271Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:integration",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:32:51.855Z",
+      "resolved_at": "2026-08-03T03:40:29.271Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:design_ssot_reconciliation|needs_review|passed|2026-08-03T03:32:51.855Z|2026-08-03T03:40:29.271Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:design_ssot_reconciliation",
+      "gate_type": "design_ssot_reconciliation_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:32:51.855Z",
+      "resolved_at": "2026-08-03T03:40:29.271Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:vibepro_artifact_policy|needs_review|passed|2026-08-03T03:32:51.855Z|2026-08-03T03:40:29.271Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:vibepro_artifact_policy",
+      "gate_type": "vibepro_artifact_policy_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:32:51.855Z",
+      "resolved_at": "2026-08-03T03:40:29.271Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:judgment_axis_scope_reviewability|needs_evidence|accepted_followup|2026-08-03T03:32:51.855Z|2026-08-03T03:40:29.271Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:judgment_axis_scope_reviewability",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "accepted_followup",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:32:51.855Z",
+      "resolved_at": "2026-08-03T03:40:29.271Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:judgment_axis_public_contract|block|passed|2026-08-03T03:32:51.855Z|2026-08-03T03:40:29.271Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "block",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:32:51.855Z",
+      "resolved_at": "2026-08-03T03:40:29.271Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:common_judgment_spine|needs_evidence|passed|2026-08-03T03:32:51.855Z|2026-08-03T03:40:29.271Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:32:51.855Z",
+      "resolved_at": "2026-08-03T03:40:29.271Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "docs/specs/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-verification-checkpoint-uiux-intake-gate|gate:e2e|needs_evidence|passed|2026-08-03T03:30:06.045Z|2026-08-03T03:32:32.423Z",
+      "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+      "gate_id": "gate:e2e",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T03:30:06.045Z",
+      "resolved_at": "2026-08-03T03:32:32.423Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "7328049a9bf5294a9bc4f48c7b7552bdcf6a4b88",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-verification-checkpoint-uiux-intake-gate.md",
+          "src/checkpoint-manager.js",
+          "test/e2e/story-vibepro-verification-checkpoint-uiux-intake-gate-main.test.js"
+        ]
+      }
+    }
+  ]
+}

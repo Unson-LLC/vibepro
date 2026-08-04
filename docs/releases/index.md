@@ -262,3 +262,31 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:412:start -->
 - [PR #412](https://github.com/Unson-LLC/vibepro/pull/412) — [2026-08](/releases/2026-08): story-vibepro-unit-suite-concurrency-default - unit証跡の全体スイート実行を実測最適並列度に正本化し、verify runのタイムアウト余裕を確保する
 <!-- vibepro-release-index-pr:412:end -->
+
+<!-- vibepro-release-index-pr:415:start -->
+- [PR #415](https://github.com/Unson-LLC/vibepro/pull/415) — [2026-08](/releases/2026-08): story-vibepro-codex-host-containment-test-load-tolerance - test/codex-subagent-host.test.js の containment テストが load average 20-35 の full suite 実行時のみ condition timeout でフレークする
+<!-- vibepro-release-index-pr:415:end -->
+
+<!-- vibepro-release-index-pr:416:start -->
+- [PR #416](https://github.com/Unson-LLC/vibepro/pull/416) — [2026-08](/releases/2026-08): story-vibepro-uiux-intake-gate-pr-summary-surfaces - gate:uiux_intake_judgment を人間向けPRサマリー表面に表示する
+<!-- vibepro-release-index-pr:416:end -->
+
+<!-- vibepro-release-index-pr:413:start -->
+- [PR #413](https://github.com/Unson-LLC/vibepro/pull/413) — [2026-08](/releases/2026-08): story-vibepro-cross-system-adjudication - Cross-system adjudication requires a different model family than the implementer
+<!-- vibepro-release-index-pr:413:end -->
+
+<!-- vibepro-release-index-pr:417:start -->
+- [PR #417](https://github.com/Unson-LLC/vibepro/pull/417) — [2026-08](/releases/2026-08): story-vibepro-test-tmpdir-fixture-cleanup - テストスイートが$TMPDIRに残すmkdtemp fixtureのクリーンアップ機構
+<!-- vibepro-release-index-pr:417:end -->
+
+<!-- vibepro-release-index-pr:418:start -->
+- [PR #418](https://github.com/Unson-LLC/vibepro/pull/418) — [2026-08](/releases/2026-08): story-vibepro-verification-checkpoint-uiux-intake-gate - verification checkpoint の curated gate list に gate:uiux_intake_judgment を追加する
+<!-- vibepro-release-index-pr:418:end -->
+
+<!-- vibepro-release-index-pr:419:start -->
+- [PR #419](https://github.com/Unson-LLC/vibepro/pull/419) — [2026-08](/releases/2026-08): story-vibepro-pr-human-summary-dead-chain-removal - 死んだ人間向けPRサマリーレンダラーチェーンを削除する
+<!-- vibepro-release-index-pr:419:end -->
+
+<!-- vibepro-release-index-pr:420:start -->
+- [PR #420](https://github.com/Unson-LLC/vibepro/pull/420) — [2026-08](/releases/2026-08): story-vibepro-strict-head-binding-origin-guard - strict HEAD bindingをfrozen final_reviewとrole policy例外に限定する
+<!-- vibepro-release-index-pr:420:end -->
