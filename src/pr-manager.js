@@ -7219,23 +7219,37 @@ async function readVisualQaRun(repoRoot, qaDir, qaId, git = null) {
   };
 }
 
-async function walkFiles(dir) {
-  let entries = [];
-  try {
-    entries = await readdir(dir, { withFileTypes: true });
-  } catch (error) {
-    if (error.code === 'ENOENT') return [];
-    throw error;
-  }
+// Exported (in addition to its internal callers below) only so tests can drive
+// the spread-argument-limit regression and the ENOENT/flat-path contract directly;
+// the exported entrypoints that reach it (buildStoryE2eCoverage, readVisualQaRun)
+// require full story/git/repo fixtures that would make that setup disproportionate.
+export async function walkFiles(dir) {
+  // Iterative walk with a single accumulator: recursion + spread-push overflows
+  // the call stack once a subtree holds more entries than V8 accepts as arguments.
+  // ENOENT is tolerated per pending directory (not just at the root) so a
+  // subdirectory that vanishes mid-walk is skipped rather than failing the walk.
   const files = [];
-  for (const entry of entries) {
-    const fullPath = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      files.push(...await walkFiles(fullPath));
-    } else if (entry.isFile()) {
-      files.push(fullPath);
+  const pending = [dir];
+
+  for (let index = 0; index < pending.length; index += 1) {
+    let entries;
+    try {
+      entries = await readdir(pending[index], { withFileTypes: true });
+    } catch (error) {
+      if (error.code === 'ENOENT') continue;
+      throw error;
+    }
+
+    for (const entry of entries) {
+      const fullPath = path.join(pending[index], entry.name);
+      if (entry.isDirectory()) {
+        pending.push(fullPath);
+      } else if (entry.isFile()) {
+        files.push(fullPath);
+      }
     }
   }
+
   return files;
 }
 
