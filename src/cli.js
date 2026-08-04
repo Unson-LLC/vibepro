@@ -3564,6 +3564,12 @@ async function dispatchCli(argv, io = {}) {
           allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
           language: getOption(rest, '--language'),
           gateOutcome: getOption(rest, '--outcome'),
+          // Dependency-injected into the architecture_conformance_delta shadow stage (CDL-S-7):
+          // gate-pr (src/pr-manager.js) must not import src/architecture-conformance-delta.js
+          // directly (target-model.json has no gate-pr -> architecture allowed_dependency), so
+          // only cli.js ("*" dependency) wires the runner. Other preparePullRequest call sites
+          // that do not pass this option fall back to the stage's inconclusive info node.
+          conformanceDelta: runArchitectureConformanceDelta,
           env: io.env ?? process.env
         });
         write(stdout, viewOutput
