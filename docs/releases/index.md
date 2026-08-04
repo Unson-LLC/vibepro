@@ -294,3 +294,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:414:start -->
 - [PR #414](https://github.com/Unson-LLC/vibepro/pull/414) — [2026-08](/releases/2026-08): story-vibepro-uiux-intake-judgment-gate - uiux intakeのSkill発火 + 判断記録gate
 <!-- vibepro-release-index-pr:414:end -->
+
+<!-- vibepro-release-index-pr:408:start -->
+- [PR #408](https://github.com/Unson-LLC/vibepro/pull/408) — [2026-08](/releases/2026-08): story-vibepro-progress-heartbeat-policy-kernel - src配下37箇所の長時間実行バウンドのうち理想形を満たすのはevaluateProgressBounds 1箇所のみ。バウンド皆無の子プロセスと進捗シグナル破棄サイトを正本kernelへ寄せたい
+<!-- vibepro-release-index-pr:408:end -->
