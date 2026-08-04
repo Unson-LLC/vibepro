@@ -81,6 +81,7 @@ export async function runArchitectureConformance(repoRoot, options = {}) {
     model: {
       path: toRepoRelative(root, modelPath),
       status: model.status,
+      version: model.model_version,
       adjudicated_by: model.adjudicated_by ?? null,
       module_count: model.modules.length
     },
@@ -153,6 +154,8 @@ export async function loadTargetModel(modelPath) {
     scope_roots: model.scope_roots ?? ['src', 'bin'],
     status: model.status,
     adjudicated_by: model.adjudicated_by ?? null,
+    model_version: parseModelVersion(model.model_version, modelPath),
+    governance: model.governance ?? null,
     modules: model.modules,
     allowed_dependencies: model.allowed_dependencies ?? {},
     budgets: {
@@ -160,6 +163,21 @@ export async function loadTargetModel(modelPath) {
       file_line_baseline: model.budgets?.file_line_baseline ?? {}
     }
   };
+}
+
+// TMG-S-2: model_version identifies which adjudicated revision of the target model a measurement
+// was taken against. It is optional (older/consumer models predate it) and degrades to null rather
+// than failing the scan, but a present-yet-malformed value is an error: silently treating "0" or
+// "v2" as "no version" would let a delta silently compare across model revisions -- exactly the
+// misreading versioning exists to prevent (see governance.model_version_policy in target-model.json).
+export function parseModelVersion(value, modelPath) {
+  if (value == null) return null;
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
+    throw new Error(
+      `target model の model_version は1以上の整数が必須 (received: ${JSON.stringify(value)}): ${modelPath}`
+    );
+  }
+  return value;
 }
 
 // graph.json is optional context only (dependency-violation detection no
@@ -200,7 +218,7 @@ async function loadGraphContext(root, graphPath) {
 // Walk each scope root once and return both the full file set (any
 // extension, used to resolve import specifiers) and the subset of
 // .js/.mjs/.cjs source files (used for import scanning + line-budget checks).
-async function collectScopeSource(root, scopeRoots) {
+export async function collectScopeSource(root, scopeRoots) {
   const allFiles = new Set();
   const jsFiles = [];
   for (const scopeRoot of scopeRoots) {
@@ -510,7 +528,7 @@ export function renderConformanceMarkdown(result) {
   const lines = [
     '# Architecture Conformance (dry-run)',
     '',
-    `- model: ${result.model.path} (status=${result.model.status}, modules=${result.model.module_count})`,
+    `- model: ${result.model.path} (status=${result.model.status}, version=${result.model.version ?? 'unversioned'}, modules=${result.model.module_count})`,
     `- edge_source: ${result.edge_source} (${result.import_scan.scanned_file_count} files scanned, ${result.import_scan.edge_count} internal import edges, ${result.import_scan.unresolved_reference_count} unresolved references)`,
     `- graph_context: ${result.graph_context.available ? `${result.graph_context.path} (nodes=${result.graph_context.node_count}, calls_edges=${result.graph_context.calls_edge_count}, context only)` : `unavailable (${result.graph_context.reason})`}`,
     `- violations: ${result.summary.violation_count} (undeclared_dependency=${result.summary.undeclared_dependency_count}, budget=${result.summary.budget_violation_count}, orphan=${result.summary.orphan_file_count}, stale_pattern=${result.summary.stale_pattern_count}, dependency_cycle=${result.summary.dependency_cycle_count})`

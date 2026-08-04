@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
@@ -47,13 +47,28 @@ export async function runArchitectureConformanceDelta(repoRoot, options = {}) {
 
   const delta = computeConformanceDelta({ base: baseSnapshot, head: headSnapshot });
 
+  const base = summarizeSnapshot(baseSnapshot);
+  const head = summarizeSnapshot(headSnapshot);
+  const previousModelVersion = await readPreviousModelVersion(root);
   const output = {
     schema_version: CONFORMANCE_DELTA_SCHEMA_VERSION,
     generated_at: new Date().toISOString(),
     base_ref: baseRef,
     head_ref: headRef,
-    base: summarizeSnapshot(baseSnapshot),
-    head: summarizeSnapshot(headSnapshot),
+    base,
+    head,
+    // TMG-S-3. Both sides are measured against the *current* target model (modelPath is resolved
+    // against the live repoRoot before the base worktree is created), which is deliberate: a fixed
+    // yardstick is what isolates "the code changed" from "the model changed". base.model_version
+    // and head.model_version are therefore expected to agree, and are reported so a reader can
+    // confirm the yardstick rather than assume it.
+    //
+    // The move that does need flagging is between *recorded measurements*: assigning orphan files
+    // to modules surfaces imports that were previously invisible, so a model revision makes the
+    // next delta show new violations without any code getting worse. Comparing the head model
+    // version against the previously persisted delta artifact is what detects that.
+    previous_model_version: previousModelVersion,
+    model_version_changed: previousModelVersion != null && previousModelVersion !== head.model_version,
     delta
   };
 
@@ -84,6 +99,20 @@ export async function runArchitectureConformanceDelta(repoRoot, options = {}) {
   }
 
   return output;
+}
+
+// Reads the head model version recorded by the previous delta run, if any. A missing, unreadable,
+// or malformed artifact means "no prior measurement to compare against" -- never an error, since the
+// first run of the ledger legitimately has no predecessor.
+async function readPreviousModelVersion(root) {
+  const deltaPath = path.join(root, WORKSPACE_DIR, 'architecture', 'conformance', 'delta.json');
+  try {
+    const previous = JSON.parse(await readFile(deltaPath, 'utf8'));
+    const version = previous?.head?.model_version;
+    return typeof version === 'number' ? version : null;
+  } catch {
+    return null;
+  }
 }
 
 async function scanSafely(root, { modelPath, graphPath }) {
@@ -119,11 +148,12 @@ function summarizeSnapshot(snapshot) {
   if (snapshot.status === 'ok') {
     return {
       status: 'ok',
+      model_version: snapshot.result.model.version ?? null,
       violation_count: snapshot.result.violations.length,
       summary: snapshot.result.summary
     };
   }
-  return { status: 'inconclusive', reason: snapshot.reason };
+  return { status: 'inconclusive', model_version: null, reason: snapshot.reason };
 }
 
 // CDL-S-3/S-4: matches base and head violations by stable violation id (architecture-conformance.js
@@ -195,7 +225,8 @@ export function renderConformanceDeltaMarkdown(output) {
     `- base_ref: ${output.base_ref ?? '(none)'}`,
     `- head_ref: ${output.head_ref}`,
     `- base: ${renderSnapshotLine(output.base)}`,
-    `- head: ${renderSnapshotLine(output.head)}`
+    `- head: ${renderSnapshotLine(output.head)}`,
+    `- model_version: ${output.head.model_version ?? 'unversioned'} (前回計測時: ${output.previous_model_version ?? 'なし'})${output.model_version_changed ? ' — モデル改訂を跨いだ計測。前回との件数比較は同一の物差しではない' : ''}`
   ];
   if (output.delta.status === 'ok') {
     const summary = output.delta.summary;
