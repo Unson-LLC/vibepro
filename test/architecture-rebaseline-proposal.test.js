@@ -323,7 +323,11 @@ test('TMG-S-1/S-8: the repository target model declares the governance three-way
   const model = JSON.parse(
     await readFile(path.join(repoRoot, 'docs', 'architecture', 'target-model.json'), 'utf8')
   );
-  assert.equal(model.model_version, 1);
+  // model_version moves only when a human_adjudicated revision is projected in; the exact current
+  // value is pinned by the story that performed the projection
+  // (test/target-model-projection-v2.test.js, TMP-S-5). Here we only require that the model stays
+  // versioned, so this test does not have to be edited by every future projection.
+  assert.equal(Number.isInteger(model.model_version) && model.model_version > 0, true);
   assert.ok(Array.isArray(model.governance.machine_maintainable) && model.governance.machine_maintainable.length > 0);
   assert.ok(Array.isArray(model.governance.human_adjudicated) && model.governance.human_adjudicated.length > 0);
   assert.ok(Array.isArray(model.governance.machine_projection) && model.governance.machine_projection.length > 0);
@@ -352,16 +356,29 @@ test('TMG-S-1/S-8: the repository target model declares the governance three-way
   assert.deepEqual(model.allowed_dependencies.cli, ['*']);
 });
 
-test('TMG-S-7: adjudication cards stay pending, hold at most 5 questions, and each carries a recommendation', async () => {
+test('TMG-S-7: adjudication cards are either pending or carry human answer provenance, hold at most 5 questions, and each carries a recommendation', async () => {
   const repoRoot = path.resolve(import.meta.dirname, '..');
   const cards = await readFile(
     path.join(repoRoot, 'docs', 'architecture', 'adjudication', 'target-model-rebaseline-cards.md'),
     'utf8'
   );
-  // The agent generates the cards but must never answer them: an answered card would be an
-  // unauthorized human_adjudicated change to the model.
-  assert.match(cards, /status: pending_adjudication/);
-  assert.match(cards, /answered_at: null/);
+  // The agent generates the cards but must never answer them. A card may therefore be in exactly
+  // two states: pending with a null answered_at, or adjudicated with a human adjudicator, an
+  // answer date and the channel the answer arrived through. An "adjudicated" card without that
+  // provenance is indistinguishable from an agent that answered its own question, so it fails.
+  const frontmatter = cards.slice(0, cards.indexOf('\n---', 4));
+  const status = frontmatter.match(/^status: (\S+)$/m)?.[1];
+  assert.ok(
+    status === 'pending_adjudication' || status === 'adjudicated',
+    `unexpected card status: ${status}`
+  );
+  if (status === 'pending_adjudication') {
+    assert.match(frontmatter, /^answered_at: null$/m);
+  } else {
+    assert.match(frontmatter, /^answered_at: \d{4}-\d{2}-\d{2}$/m);
+    assert.match(frontmatter, /^adjudicator: \S+$/m);
+    assert.match(frontmatter, /^answer_channel: .+$/m);
+  }
   const questions = cards.match(/^## Q\d+\./gm) ?? [];
   assert.ok(questions.length > 0 && questions.length <= 5, `expected 1..5 questions, got ${questions.length}`);
   const recommendations = cards.match(/\*\*\(推奨\)/g) ?? [];
