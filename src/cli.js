@@ -235,6 +235,10 @@ import {
   runArchitectureConformanceDelta
 } from './architecture-conformance-delta.js';
 import {
+  renderRebaselineProposalMarkdown,
+  runRebaselineProposal
+} from './architecture-rebaseline-proposal.js';
+import {
   readInferredSpec,
   stabilizeClauseIds,
   writeDraftSpec,
@@ -582,6 +586,7 @@ Usage:
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
   vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--base <ref>] [--head <ref>] [--strict] [--json]
+  vibepro architecture rebaseline-proposal [repo] [--model <path>] [--output <path>] [--json]
   vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
@@ -849,6 +854,7 @@ Usage:
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
   vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--base <ref>] [--head <ref>] [--strict] [--json]
+  vibepro architecture rebaseline-proposal [repo] [--model <path>] [--output <path>] [--json]
   vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
@@ -3812,6 +3818,17 @@ async function dispatchCli(argv, io = {}) {
         const strict = hasFlag(rest, '--strict');
         const exitCode = strict && result.summary.violation_count > 0 ? 2 : 0;
         return { exitCode, command, subcommand, result };
+      }
+
+      if (subcommand === 'rebaseline-proposal') {
+        const result = await runRebaselineProposal(repoRoot, {
+          modelPath: getOption(rest, '--model'),
+          outputPath: getOption(rest, '--output')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : renderRebaselineProposalMarkdown(result));
+        return { exitCode: 0, command, subcommand, result };
       }
 
       if (subcommand === 'write') {

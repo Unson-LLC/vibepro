@@ -47,13 +47,20 @@ export async function runArchitectureConformanceDelta(repoRoot, options = {}) {
 
   const delta = computeConformanceDelta({ base: baseSnapshot, head: headSnapshot });
 
+  const base = summarizeSnapshot(baseSnapshot);
+  const head = summarizeSnapshot(headSnapshot);
   const output = {
     schema_version: CONFORMANCE_DELTA_SCHEMA_VERSION,
     generated_at: new Date().toISOString(),
     base_ref: baseRef,
     head_ref: headRef,
-    base: summarizeSnapshot(baseSnapshot),
-    head: summarizeSnapshot(headSnapshot),
+    base,
+    head,
+    // TMG-S-3: a delta taken across a model revision is not an apples-to-apples improvement /
+    // regression measurement -- e.g. assigning orphan files to modules surfaces imports that were
+    // previously invisible, which appear as new violations without any code getting worse. Callers
+    // must be able to see that the yardstick itself moved.
+    model_version_changed: base.model_version !== head.model_version,
     delta
   };
 
@@ -119,11 +126,12 @@ function summarizeSnapshot(snapshot) {
   if (snapshot.status === 'ok') {
     return {
       status: 'ok',
+      model_version: snapshot.result.model.version ?? null,
       violation_count: snapshot.result.violations.length,
       summary: snapshot.result.summary
     };
   }
-  return { status: 'inconclusive', reason: snapshot.reason };
+  return { status: 'inconclusive', model_version: null, reason: snapshot.reason };
 }
 
 // CDL-S-3/S-4: matches base and head violations by stable violation id (architecture-conformance.js
@@ -195,7 +203,8 @@ export function renderConformanceDeltaMarkdown(output) {
     `- base_ref: ${output.base_ref ?? '(none)'}`,
     `- head_ref: ${output.head_ref}`,
     `- base: ${renderSnapshotLine(output.base)}`,
-    `- head: ${renderSnapshotLine(output.head)}`
+    `- head: ${renderSnapshotLine(output.head)}`,
+    `- model_version: base=${output.base.model_version ?? 'unversioned'}, head=${output.head.model_version ?? 'unversioned'}${output.model_version_changed ? ' (changed — base/headは同一の物差しではない)' : ''}`
   ];
   if (output.delta.status === 'ok') {
     const summary = output.delta.summary;
