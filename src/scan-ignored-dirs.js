@@ -8,7 +8,16 @@
 // checkouts under `.worktrees`) rather than repository source. A real checkout
 // can accumulate hundreds of thousands of files there; walking them is pure
 // scan cost with nothing to detect.
-export const SCAN_IGNORED_DIRS = Object.freeze(new Set([
+//
+// This is exposed as a has()-only facade rather than a Set: Object.freeze on a
+// Set only freezes its own properties, not its internal slots, so .add()/
+// .delete() would still mutate the one shared instance and silently change
+// what all three consumers ignore. Every call site here only needs membership
+// checks (`IGNORED_DIRS.has(name)`), so a frozen plain object with a has()
+// method is a genuine (not just cosmetic) immutability guarantee -- freezing a
+// plain object really does block adding/reassigning/deleting its properties --
+// while leaving call sites unchanged.
+const ignoredDirNames = new Set([
   '.claude',
   '.git',
   '.next',
@@ -18,4 +27,8 @@ export const SCAN_IGNORED_DIRS = Object.freeze(new Set([
   'coverage',
   'graphify-out',
   'node_modules'
-]));
+]);
+
+export const SCAN_IGNORED_DIRS = Object.freeze({
+  has: (name) => ignoredDirNames.has(name)
+});

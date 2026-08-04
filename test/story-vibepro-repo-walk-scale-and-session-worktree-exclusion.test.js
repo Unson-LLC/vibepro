@@ -85,10 +85,16 @@ test(`${STORY_ID} walkFiles returns nested files as absolute paths and treats a 
 });
 
 // ${STORY_ID} ac:RWS-S-3
-// The pre-existing walker tolerated ENOENT at every recursion level, not just for the root
-// directory, so a subdirectory that vanishes mid-walk was skipped rather than failing the
-// whole walk. The iterative rewrite must preserve that per-directory tolerance, while still
-// propagating non-ENOENT errors (e.g. ENOTDIR from treating a file as a directory).
+// This test only asserts non-ENOENT propagation for the root path (ENOTDIR from treating a
+// file as a directory). It does not independently assert per-directory ENOENT tolerance for a
+// subdirectory that vanishes mid-walk -- reproducing that deterministically would require
+// removing a queued subdirectory from disk at the exact moment between it being listed by its
+// parent's readdir and the walk reaching it, which is a real timing race, not something this
+// suite fakes. That tolerance still holds structurally: `catch { if (error.code === 'ENOENT')
+// continue; throw error; }` wraps `readdir(pending[index])` identically for every index, root
+// or nested, so the "missing directory" coverage above -- which exercises that exact catch for
+// index 0 -- exercises the same code every later index runs too. There is no root-vs-non-root
+// branch that could regress independently.
 test(`${STORY_ID} walkFiles propagates non-ENOENT errors instead of swallowing them`, async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-walkfiles-enotdir-'));
   const notADir = path.join(root, 'not-a-dir');
