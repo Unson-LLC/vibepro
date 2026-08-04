@@ -557,7 +557,7 @@
         "story_id": "story-vibepro-budget-override-residual-findings",
         "title": "owner-gated budget override の残余 low finding 2件（fallback 方向性の文書精度 / design root の空登録）を解消する",
         "ssot": "local",
-        "status": "active",
+        "status": "completed",
         "horizon": "now",
         "view": "dev",
         "period": "2026-07",
