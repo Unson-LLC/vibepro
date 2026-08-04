@@ -1,4 +1,5 @@
 import { createAgentCompletionInbox } from './agent-completion-inbox.js';
+import { createProgressDeadline } from './progress-deadline.js';
 
 const TERMINAL_KINDS = new Set(['completed', 'failed', 'cancelled']);
 
@@ -340,45 +341,43 @@ function completionStatus(event) {
   };
 }
 
+// Delegates to the shared progress-deadline kernel (src/progress-deadline.js) as the one
+// semantic source of truth for "stay alive while progress advances, die on an independent
+// hard cap." The kernel is stateless across calls, so a fresh instance is built per
+// evaluation and the historical inbox event log is replayed into it via `observe(..., {at})`
+// — this reproduces the exact same "latest unique-progress timestamp" that the former
+// lastUniqueProgressAt() computed, because both dedupe on first-seen-wins in event order.
 function evaluateProgressBounds(record, reconciled, providerStatus, observedNow) {
   const requirements = record.request.requirements;
-  const elapsed = observedNow.getTime() - Date.parse(record.logical_started_at);
-  const lastProgressAt = lastUniqueProgressAt(reconciled.events, record.attempt_started_at);
-  const noProgressElapsed = observedNow.getTime() - Date.parse(lastProgressAt);
+  const kernel = createProgressDeadline({
+    no_progress_deadline_ms: requirements.no_progress_deadline_ms,
+    max_wall_clock_ms: requirements.max_wall_clock_ms,
+    max_attempts: requirements.max_attempts,
+    max_cost_usd: requirements.max_cost_usd,
+    started_at: record.logical_started_at,
+    // The no-progress clock's origin is the current attempt's start, not the logical
+    // (possibly recovered) run's start: a resumed attempt restarts the no-progress clock
+    // without resetting the wall-clock origin.
+    progress_started_at: record.attempt_started_at,
+    now: () => observedNow
+  });
+  replayProgressEvents(kernel, reconciled.events);
   const attempts = Math.max(providerStatus.attempts ?? 1, record.recovery_attempts ?? 1);
   const reportedAttemptCost = reportedCost(providerStatus);
-  const cost = reportedAttemptCost === null ? null : (record.accumulated_cost_usd ?? 0) + reportedAttemptCost;
-  if (elapsed > requirements.max_wall_clock_ms) return stalled('max_wall_clock_exceeded');
-  if (attempts > requirements.max_attempts) return stalled('max_attempts_exceeded');
-  if (requirements.max_cost_usd > 0 && cost !== null && cost >= requirements.max_cost_usd) return stalled('max_cost_exceeded');
-  if (requirements.max_cost_usd > 0 && cost === null && noProgressElapsed > requirements.no_progress_deadline_ms) {
-    return stalled('cost_accounting_unavailable');
-  }
-  if (noProgressElapsed > requirements.no_progress_deadline_ms) return stalled('no_progress_deadline_exceeded');
-  return null;
+  const costUsd = reportedAttemptCost === null ? null : (record.accumulated_cost_usd ?? 0) + reportedAttemptCost;
+  const verdict = kernel.check({ attempts, costUsd });
+  return verdict.ok ? null : stalled(verdict.kill.code);
 }
 
-function lastUniqueProgressAt(events, fallback) {
-  const checkpoints = new Set();
-  const judgments = new Set();
-  let latest = fallback;
+function replayProgressEvents(kernel, events) {
   for (const event of events) {
-    let advanced = false;
-    if (event.checkpoint_id && !checkpoints.has(event.checkpoint_id)) {
-      checkpoints.add(event.checkpoint_id);
-      advanced = true;
-    }
+    if (event.checkpoint_id) kernel.observe(`checkpoint:${event.checkpoint_id}`, { at: event.observed_at });
     if (event.kind === 'partial_result') {
       for (const judgment of judgmentItems(event.payload)) {
-        if (!judgments.has(judgment.judgment_id)) {
-          judgments.add(judgment.judgment_id);
-          advanced = true;
-        }
+        kernel.observe(`judgment:${judgment.judgment_id}`, { at: event.observed_at });
       }
     }
-    if (advanced) latest = event.observed_at;
   }
-  return latest;
 }
 
 function reconstructRecord(dispatch) {
