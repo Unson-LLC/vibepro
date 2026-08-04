@@ -298,3 +298,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:408:start -->
 - [PR #408](https://github.com/Unson-LLC/vibepro/pull/408) — [2026-08](/releases/2026-08): story-vibepro-progress-heartbeat-policy-kernel - src配下37箇所の長時間実行バウンドのうち理想形を満たすのはevaluateProgressBounds 1箇所のみ。バウンド皆無の子プロセスと進捗シグナル破棄サイトを正本kernelへ寄せたい
 <!-- vibepro-release-index-pr:408:end -->
+
+<!-- vibepro-release-index-pr:421:start -->
+- [PR #421](https://github.com/Unson-LLC/vibepro/pull/421) — [2026-08](/releases/2026-08): story-vibepro-conformance-delta-ledger - conformance delta ledger — base/head差分でアーキテクチャ逸脱を再現可能に観測する
+<!-- vibepro-release-index-pr:421:end -->
