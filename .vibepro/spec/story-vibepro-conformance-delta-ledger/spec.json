@@ -1,6 +1,13 @@
 {
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-conformance-delta-ledger",
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "Conformance delta shadow stage: trust boundaries and failure surfaces",
+      "mermaid": "flowchart LR\n    TM[target-model.json human-authored read-only] --> Scan\n    BaseRef[base ref via git worktree] --> Scan[import-scan edge graph build]\n    HeadRef[head ref via git worktree] --> Scan\n    Scan --> ID[stable violation ID derivation from element semantic values]\n    ID --> Delta[base/head delta by dimension]\n    Delta --> Ledger[conformance.json / delta.json persisted artifacts]\n    Ledger --> Shadow[pr prepare shadow stage info-only gate node]\n\n    subgraph Threats\n        T1[scanner exception or zero-file scope silently reported as zero violations]\n        T2[malicious or path-traversal base/head ref reads outside repo worktree]\n        T3[non-deterministic or ordinal-based IDs let an attacker mask a real regression as noise]\n        T4[forged shadow-stage output since stage is derive-only and creates no recorded review evidence]\n    end\n\n    Scan -.-> T1\n    BaseRef -.-> T2\n    HeadRef -.-> T2\n    ID -.-> T3\n    Shadow -.-> T4\n\n    T1 -->|mitigation| M1[inconclusive is a distinct reasoned dimension, fail-closed, never coerced to zero]\n    T2 -->|mitigation| M2[refs resolved through existing git worktree APIs only, no shell interpolation of ref text]\n    T3 -->|mitigation| M3[ID = kind + normalized module pair + involved file paths, never array index or group ordinal]\n    T4 -->|mitigation| M4[stage stays non-blocking and re-derives every run so no stale accepted evidence can be replayed]\n"
+    }
+  ],
   "clauses": [
     {
       "id": "INV-001",
@@ -56,7 +63,7 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T04:44:58.886Z"
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
     },
     {
       "id": "S-001",
@@ -112,7 +119,7 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T04:44:58.886Z"
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
     },
     {
       "id": "S-002",
@@ -167,7 +174,7 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T04:44:58.886Z"
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
     },
     {
       "id": "S-003",
@@ -218,7 +225,7 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T04:44:58.886Z"
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
     },
     {
       "id": "S-004",
@@ -277,7 +284,7 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T04:44:58.886Z"
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
     },
     {
       "id": "S-005",
@@ -324,7 +331,7 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T04:44:58.886Z"
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
     },
     {
       "id": "C-001",
@@ -371,13 +378,13 @@
         ]
       },
       "first_seen_at": "2026-08-04T02:22:52.208Z",
-      "last_revised_at": "2026-08-04T04:44:58.886Z"
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
     }
   ],
-  "generated_at": "2026-08-04T04:44:58.885Z",
+  "generated_at": "2026-08-04T04:55:10.824Z",
   "generated_by": {
-    "caller": "unknown",
+    "caller": "claude-agent",
     "stage": "ai_synthesis"
   },
-  "previous_spec_id": "2026-08-04T02:22:52.205Z"
+  "previous_spec_id": "2026-08-04T04:44:58.885Z"
 }

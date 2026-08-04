@@ -8203,7 +8203,48 @@
         }
       ],
       "source": "design-ssot.json"
+    },
+    {
+      "id": "vibepro-conformance-delta-ledger",
+      "title": "Conformance Delta Ledger Architecture",
+      "root_doc": "docs/architecture/vibepro-conformance-delta-ledger.md",
+      "owner": null,
+      "status": "active",
+      "authority_level": "design_root",
+      "scope": null,
+      "owned_surfaces": [],
+      "required_child_kinds": [
+        "story"
+      ],
+      "reconciliation_policy": {
+        "root_only_change": "needs_review",
+        "missing_required_child": "block",
+        "frontmatter_missing": "needs_review",
+        "stale_review_hash": "needs_review",
+        "accepted_adr_supersession_conflict": "block"
+      },
+      "children": {
+        "story": [
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-conformance-delta-ledger.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
+          }
+        ]
+      },
+      "child_links": [
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-conformance-delta-ledger.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        }
+      ],
+      "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-08-03T06:59:30.606Z"
+  "updated_at": "2026-08-04T04:56:12.488Z"
 }
