@@ -1403,8 +1403,21 @@
         "started_at": "2026-08-04",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-target-model-governance-rebaseline",
+        "title": "target model governance rebaseline — 誰がモデルを変えてよいかを三分法で確定し、再baseline案と裁定カードを機械生成する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-04",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-repo-walk-scale-and-session-worktree-exclusion"
-  }
+    "current_story_id": "story-vibepro-target-model-governance-rebaseline"
+  },
+  "current_story_id": "story-vibepro-target-model-governance-rebaseline"
 }
