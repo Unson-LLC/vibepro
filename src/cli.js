@@ -231,6 +231,10 @@ import {
   runArchitectureConformance
 } from './architecture-conformance.js';
 import {
+  renderConformanceDeltaMarkdown,
+  runArchitectureConformanceDelta
+} from './architecture-conformance-delta.js';
+import {
   readInferredSpec,
   stabilizeClauseIds,
   writeDraftSpec,
@@ -577,7 +581,7 @@ Usage:
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
-  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--strict] [--json]
+  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--base <ref>] [--head <ref>] [--strict] [--json]
   vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
@@ -844,7 +848,7 @@ Usage:
   vibepro pr create [repo] [--story-id <id>] [--task <task-id>] [--group <group-id>] [--base <ref>] [--head <branch>] [--title <title>] [--dry-run] [--allow-needs-verification --verification-waiver <reason>] [--stage-timeout-ms <ms>] [--progress] [--strict] [--allow-extra-files] [--language ja|en] [--json]
   vibepro brainbase [repo] [--sync-stories] [--publish-status] [--dry-run] [--story-id <id>]
   vibepro architecture readiness [repo] --id <story-id> [--base <ref>] [--json]
-  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--strict] [--json]
+  vibepro architecture conformance [repo] [--model <path>] [--graph <path>] [--base <ref>] [--head <ref>] [--strict] [--json]
   vibepro architecture write [repo] --id <story-id> [--from-stdin] [--input <file>] [--caller <name>] [--output <path>] [--draft|--final] [--json]
   vibepro spec fingerprint [repo] --id <story-id> [--include-instructions] [--json]
   vibepro spec readiness [repo] --id <story-id> [--base <ref>] [--json]
@@ -3560,6 +3564,12 @@ async function dispatchCli(argv, io = {}) {
           allowExtraFiles: hasFlag(rest, '--allow-extra-files'),
           language: getOption(rest, '--language'),
           gateOutcome: getOption(rest, '--outcome'),
+          // Dependency-injected into the architecture_conformance_delta shadow stage (CDL-S-7):
+          // gate-pr (src/pr-manager.js) must not import src/architecture-conformance-delta.js
+          // directly (target-model.json has no gate-pr -> architecture allowed_dependency), so
+          // only cli.js ("*" dependency) wires the runner. Other preparePullRequest call sites
+          // that do not pass this option fall back to the stage's inconclusive info node.
+          conformanceDelta: runArchitectureConformanceDelta,
           env: io.env ?? process.env
         });
         write(stdout, viewOutput
@@ -3775,6 +3785,23 @@ async function dispatchCli(argv, io = {}) {
       }
 
       if (subcommand === 'conformance') {
+        const baseRef = getOption(rest, '--base');
+        // --base/--head opt in to base/head delta mode (CDL-S-3/S-4); omitting --base preserves
+        // the original single-snapshot behavior and output schema exactly.
+        if (baseRef) {
+          const result = await runArchitectureConformanceDelta(repoRoot, {
+            baseRef,
+            headRef: getOption(rest, '--head') ?? 'HEAD',
+            modelPath: getOption(rest, '--model'),
+            graphPath: getOption(rest, '--graph')
+          });
+          write(stdout, hasFlag(rest, '--json')
+            ? `${JSON.stringify(result, null, 2)}\n`
+            : renderConformanceDeltaMarkdown(result));
+          const strict = hasFlag(rest, '--strict');
+          const exitCode = strict && result.delta.status === 'ok' && result.delta.summary.new_count > 0 ? 2 : 0;
+          return { exitCode, command, subcommand, result };
+        }
         const result = await runArchitectureConformance(repoRoot, {
           modelPath: getOption(rest, '--model'),
           graphPath: getOption(rest, '--graph')

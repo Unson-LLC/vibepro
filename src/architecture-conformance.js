@@ -51,6 +51,7 @@ export async function runArchitectureConformance(repoRoot, options = {}) {
     kind: 'orphan_file',
     severity: 'review',
     rule_id: null,
+    id: `orphan_file:${file}`,
     file,
     summary: `${file} はtarget modelのどのモジュールにも属していない`
   }));
@@ -58,12 +59,20 @@ export async function runArchitectureConformance(repoRoot, options = {}) {
     kind: 'stale_pattern',
     severity: 'review',
     rule_id: null,
+    id: `stale_pattern:${entry.module}:${entry.pattern}`,
     module: entry.module,
     pattern: entry.pattern,
     summary: `モジュール ${entry.module} のパターン ${entry.pattern} に一致するファイルが存在しない`
   }));
+  const cycleFindings = findDependencyCycles({ importEdges, assignments });
 
-  const violations = [...dependencyFindings, ...budgetFindings, ...orphanFindings, ...stalePatternFindings];
+  const violations = [
+    ...dependencyFindings,
+    ...budgetFindings,
+    ...orphanFindings,
+    ...stalePatternFindings,
+    ...cycleFindings
+  ];
   const result = {
     schema_version: CONFORMANCE_SCHEMA_VERSION,
     mode: 'dry_run',
@@ -90,6 +99,7 @@ export async function runArchitectureConformance(repoRoot, options = {}) {
       budget_violation_count: budgetFindings.length,
       orphan_file_count: orphanFindings.length,
       stale_pattern_count: stalePatternFindings.length,
+      dependency_cycle_count: cycleFindings.length,
       module_file_counts: Object.fromEntries(
         model.modules.map((module) => [module.name, assignments.filesByModule.get(module.name)?.length ?? 0])
       )
@@ -368,12 +378,84 @@ function findDependencyViolations({ importEdges, model, assignments }) {
       kind: 'undeclared_dependency',
       severity: 'review',
       rule_id: deriveUndeclaredDependencyRuleId(entry),
+      id: `undeclared_dependency:${entry.from_module}->${entry.to_module}`,
       from_module: entry.from_module,
       to_module: entry.to_module,
       edge_count: entry.edge_count,
       example_edges: entry.example_edges,
       summary: `${entry.from_module} -> ${entry.to_module} は宣言されていない依存 (${entry.edge_count} edges, import scan)`
     }));
+}
+
+// Independent dimension (CDL-S-6): module-level directed cycles derived from the same
+// import-scan edges used for dependency-violation detection (not graph.json "calls" edges --
+// see EDGE_SOURCE_NOTE). A cycle is reported regardless of whether its edges are individually
+// "allowed" by allowed_dependencies: a declared but circular dependency pair is still a design
+// smell the ledger must surface, distinct from (and orthogonal to) undeclared_dependency.
+function findDependencyCycles({ importEdges, assignments }) {
+  const seenModuleEdge = new Set();
+  const moduleEdges = [];
+  for (const edge of importEdges) {
+    const fromModule = assignments.moduleByFile.get(edge.source_file);
+    const toModule = assignments.moduleByFile.get(edge.target_file);
+    if (!fromModule || !toModule || fromModule === toModule) continue;
+    const key = `${fromModule}->${toModule}`;
+    if (seenModuleEdge.has(key)) continue;
+    seenModuleEdge.add(key);
+    moduleEdges.push({ from: fromModule, to: toModule });
+  }
+  return detectModuleCycles(moduleEdges).map((modules) => ({
+    kind: 'dependency_cycle',
+    severity: 'review',
+    rule_id: null,
+    id: `dependency_cycle:${modules.join('->')}`,
+    modules,
+    summary: `モジュール循環依存: ${modules.join(' -> ')} -> ${modules[0]}`
+  }));
+}
+
+// Find every distinct simple cycle in a small directed module graph (module counts here are
+// low tens, so an exhaustive DFS per start node is cheap and -- unlike a single global-visited
+// pass -- finds cycles reachable from every entry point, not only the first one visited).
+// Cycles are deduplicated and identified by their own module sequence (rotated to start at the
+// lexicographically smallest module) rather than by discovery order, so the id is stable across
+// re-scans (CDL-S-1/S-2).
+export function detectModuleCycles(moduleEdges) {
+  const adjacency = new Map();
+  for (const { from, to } of moduleEdges) {
+    if (!adjacency.has(from)) adjacency.set(from, new Set());
+    adjacency.get(from).add(to);
+  }
+  const cycleByKey = new Map();
+  for (const start of adjacency.keys()) {
+    const stack = [];
+    const onStack = new Set();
+    const visit = (node) => {
+      stack.push(node);
+      onStack.add(node);
+      for (const next of adjacency.get(node) ?? []) {
+        const idx = stack.indexOf(next);
+        if (idx !== -1) {
+          const normalized = normalizeCycle(stack.slice(idx));
+          cycleByKey.set(normalized.join('->'), normalized);
+        } else if (!onStack.has(next)) {
+          visit(next);
+        }
+      }
+      stack.pop();
+      onStack.delete(node);
+    };
+    visit(start);
+  }
+  return [...cycleByKey.values()].sort((a, b) => a.join('->').localeCompare(b.join('->')));
+}
+
+function normalizeCycle(cyclePath) {
+  let minIndex = 0;
+  for (let i = 1; i < cyclePath.length; i += 1) {
+    if (cyclePath[i] < cyclePath[minIndex]) minIndex = i;
+  }
+  return [...cyclePath.slice(minIndex), ...cyclePath.slice(0, minIndex)];
 }
 
 function deriveUndeclaredDependencyRuleId(entry) {
@@ -394,6 +476,7 @@ function findBudgetViolations({ scopeFiles, model, assignments }) {
         kind: 'budget_violation',
         severity: 'review',
         rule_id: 'R-003',
+        id: `budget_violation:file:${file}`,
         file,
         line_count: lineCount,
         limit,
@@ -412,6 +495,7 @@ function findBudgetViolations({ scopeFiles, model, assignments }) {
         kind: 'budget_violation',
         severity: 'review',
         rule_id: 'R-003',
+        id: `budget_violation:module:${module.name}`,
         module: module.name,
         file_count: count,
         limit: module.max_files,
@@ -429,7 +513,7 @@ export function renderConformanceMarkdown(result) {
     `- model: ${result.model.path} (status=${result.model.status}, modules=${result.model.module_count})`,
     `- edge_source: ${result.edge_source} (${result.import_scan.scanned_file_count} files scanned, ${result.import_scan.edge_count} internal import edges, ${result.import_scan.unresolved_reference_count} unresolved references)`,
     `- graph_context: ${result.graph_context.available ? `${result.graph_context.path} (nodes=${result.graph_context.node_count}, calls_edges=${result.graph_context.calls_edge_count}, context only)` : `unavailable (${result.graph_context.reason})`}`,
-    `- violations: ${result.summary.violation_count} (undeclared_dependency=${result.summary.undeclared_dependency_count}, budget=${result.summary.budget_violation_count}, orphan=${result.summary.orphan_file_count}, stale_pattern=${result.summary.stale_pattern_count})`
+    `- violations: ${result.summary.violation_count} (undeclared_dependency=${result.summary.undeclared_dependency_count}, budget=${result.summary.budget_violation_count}, orphan=${result.summary.orphan_file_count}, stale_pattern=${result.summary.stale_pattern_count}, dependency_cycle=${result.summary.dependency_cycle_count})`
   ];
   if (result.edge_source_note) {
     lines.push('', `> ${result.edge_source_note}`);
@@ -441,7 +525,8 @@ export function renderConformanceMarkdown(result) {
     ['undeclared_dependency', '## 宣言外のモジュール間依存'],
     ['budget_violation', '## 複雑性予算超過'],
     ['orphan_file', '## 孤児ファイル'],
-    ['stale_pattern', '## 一致ファイルのないパターン']
+    ['stale_pattern', '## 一致ファイルのないパターン'],
+    ['dependency_cycle', '## モジュール循環依存']
   ];
   for (const [kind, heading] of byKind) {
     const items = result.violations.filter((violation) => violation.kind === kind);

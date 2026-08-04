@@ -1381,6 +1381,18 @@
         "category": "platform"
       },
       {
+        "story_id": "story-vibepro-conformance-delta-ledger",
+        "title": "conformance delta ledger — base/head差分でアーキテクチャ逸脱を再現可能に観測する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-04",
+        "due_at": null,
+        "category": "quality"
+      },
+      {
         "story_id": "story-vibepro-repo-walk-scale-and-session-worktree-exclusion",
         "title": "リポジトリ走査層のスケール安全性とセッションworktree除外を揃える",
         "ssot": "local",

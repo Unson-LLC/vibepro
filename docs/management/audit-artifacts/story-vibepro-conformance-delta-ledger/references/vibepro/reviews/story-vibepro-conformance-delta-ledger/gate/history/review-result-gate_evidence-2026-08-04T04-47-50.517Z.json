@@ -1,0 +1,167 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-conformance-delta-ledger",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Differential re-review at HEAD 4ba964eb: docs-only commit corrected S-004/S-005 code_refs and must_contain anchors to the current runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner, persist }) signature matching src/pr-manager.js:5997; vibepro spec drift is clean (0 items across spec_code/spec_test/code_test/spec_pr); full unit suite 2445/2445 pass and targeted shadow-stage tests 5/5 pass. All prior findings resolved; no new findings.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Confirmed 4ba964eb touches only .vibepro/spec spec.json (anchor/timestamp edits, no code or test changes); verified S-004/S-005 anchors resolve against live source lines (pr-manager.js:5997, :6026, cli.js:3571); ran spec drift --json reproducing status clean; reran targeted shadow-stage test file 5/5 pass; read persisted unit.log tests=2445 pass=2445.",
+    "evidence": "git show 4ba964eb (spec.json-only diff); node bin/vibepro.js spec drift . --id story-vibepro-conformance-delta-ledger --json (status=clean, 0 drift items); node --test test/architecture-conformance-delta-shadow-stage.test.js (5/5 pass); verification-runs/unit.log tests=2445 pass=2445 fail=0",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-conformance-delta-ledger.md",
+      ".vibepro/spec/story-vibepro-conformance-delta-ledger/spec.json",
+      "src/pr-manager.js",
+      "src/cli.js",
+      "src/architecture-conformance.js",
+      "src/architecture-conformance-delta.js",
+      "test/architecture-conformance-delta.test.js",
+      "test/architecture-conformance-delta-shadow-stage.test.js",
+      "test/architecture-conformance.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern that the anchor fix might be partial or that other code_refs had drifted -> pass because both fixed anchors and the unchanged buildArchitectureConformanceDeltaGate/cli wiring anchors were verified directly against source, spec drift independently reports clean, and git show proves the commit is docs-only so previously verified behavior is unaffected"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger",
+    "expected_root": null,
+    "expected_head_sha": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+    "current_head_sha": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger",
+      "expected_root": null,
+      "expected_head_sha": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+      "current_head_sha": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-04T04:47:50.517Z",
+  "git_context": {
+    "head_sha": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+    "current_branch": "codex/story-vibepro-conformance-delta-ledger",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-04T04:47:50.491Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 8 file(s)",
+    "recorded_head_sha": "4ba964eb2719d536eef7cba1857b8cf43a3bce31",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-conformance-delta-ledger.md",
+        "sha256": "2f73b3e0242c2a5d358dc5310d476f4a6a315be5229e043cf4cb2deb2832a100",
+        "size": 7773
+      },
+      {
+        "path": "src/architecture-conformance-delta.js",
+        "sha256": "7b4e6fb3ac324e870432ef6122dd6a2470719d92135d65486608fa02325a64a6",
+        "size": 9494
+      },
+      {
+        "path": "src/architecture-conformance.js",
+        "sha256": "246bb106e84907f6dd071d9f4f84681e00fc6e6ce51574e37eb9f92aeea65436",
+        "size": 22337
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "cccc9c45e043f3665c10b7daaf3a87227d7b47a058fffdad9adddfcf6bde9529",
+        "size": 262142
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "a734dc895e4a54aa03feece1cd83bd360f3b31a94bf4b1ca5f48ab5b18a51bf0",
+        "size": 712069
+      },
+      {
+        "path": "test/architecture-conformance-delta-shadow-stage.test.js",
+        "sha256": "7f41aa5d15c03e6936f8c8c9845f83479c2f7d4418885420e8bf92d760b4f8a6",
+        "size": 9127
+      },
+      {
+        "path": "test/architecture-conformance-delta.test.js",
+        "sha256": "6725330b16c8682eb2329a6f0545126bd3669e7e7872df2f18d0135dfd28f028",
+        "size": 13829
+      },
+      {
+        "path": "test/architecture-conformance.test.js",
+        "sha256": "1dafb2a48fc5b1b26feb2d0c4c1828a69210bebae5ec201965e57238c286a513",
+        "size": 18403
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "3e5c67f0d66f5c29ad17c901179d4b20d77b459966cd8184c739a7064480c8a8"
+  },
+  "source_fingerprint": "4e7e01b9a20e92111e69ffd6dabdf7ac5a8a1a33bf5b4753583b500c1e97979c",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a7da9931c2745687b",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a7da9931c2745687b",
+    "session_id": "5dba809a-0bb8-481f-a513-6f094921cc5f",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/5dba809a-0bb8-481f-a513-6f094921cc5f/tasks/a7da9931c2745687b.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "review close recorded with close_reason=completed at head 4ba964eb; differential re-review subagent ended after returning pass verdict JSON",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "5dba809a-0bb8-481f-a513-6f094921cc5f",
+      "implementation_session_id": "subagent-acee9550e61a47ab9",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

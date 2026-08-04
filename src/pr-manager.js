@@ -546,6 +546,25 @@ export async function preparePullRequest(repoRoot, options = {}) {
   reconcileGateDagOutcomeSummary(prContext.gate_dag);
   prContext.execution_gate = buildExecutionGateStatus(prContext.gate_dag);
   gateStatus = buildPrPrepareGateStatus(prContext.gate_dag, prContext.completion_quality);
+  // Shadow stage (CDL-S-7/S-8, story-vibepro-conformance-delta-ledger): derive-only, info-only
+  // base/head architecture conformance delta. Must run before load_target_architecture_context so
+  // .vibepro/architecture/conformance/conformance.json exists for that stage to read. See the
+  // runArchitectureConformanceDeltaStage doc comment for why this calls an injected function
+  // instead of importing src/architecture-conformance-delta.js.
+  const architectureConformanceDelta = await progress.stage(
+    'architecture_conformance_delta',
+    () => runArchitectureConformanceDeltaStage(root, {
+      baseRef: reviewGit.base_ref,
+      headRef: reviewGit.head_sha,
+      runner: options.conformanceDelta ?? null,
+      persist: workspace.initialized
+    })
+  );
+  prContext.gate_dag.nodes.push(buildArchitectureConformanceDeltaGate(architectureConformanceDelta));
+  prContext.gate_dag.summary.architecture_conformance_delta = {
+    status: architectureConformanceDelta.status,
+    reason: architectureConformanceDelta.reason ?? null
+  };
   const targetArchitecture = await progress.stage(
     'load_target_architecture_context',
     () => loadTargetArchitectureContext(root)
@@ -5968,6 +5987,68 @@ async function readJsonIfExists(filePath) {
     if (error.code === 'ENOENT') return null;
     throw error;
   }
+}
+
+// Runs the architecture_conformance_delta shadow stage via dependency injection instead of a
+// static import. target-model.json's allowed_dependencies has no gate-pr -> architecture entry
+// (see docs/architecture/vibepro-conformance-delta-ledger.md "Authority Boundary"; the
+// loadTargetArchitectureContext comment above documents the same rule for its own read), so this
+// file never imports src/architecture-conformance-delta.js. Only src/cli.js -- whose module is
+// allowed_dependencies: "*" -- imports that module and passes its exported
+// runArchitectureConformanceDelta function through options.conformanceDelta. Any other caller of
+// preparePullRequest that does not pass this option (e.g. the lighter internal gate-status check
+// path) gets the documented fallback: an inconclusive info node, never a thrown error and never a
+// blocking gate.
+async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner, persist }) {
+  if (typeof runner !== 'function') {
+    return {
+      status: 'inconclusive',
+      reason: 'architecture conformance delta runner was not injected into preparePullRequest options.conformanceDelta for this call path',
+      base_ref: baseRef ?? null,
+      head_ref: headRef ?? null
+    };
+  }
+  try {
+    // persist=false keeps the uninitialized-workspace contract: pr prepare against a repo without
+    // a VibePro workspace must not create .vibepro/ (artifact_location: temporary).
+    const output = await runner(root, { baseRef, headRef, write: persist !== false });
+    return { status: output?.delta?.status ?? 'ok', output, base_ref: baseRef ?? null, head_ref: headRef ?? null };
+  } catch (error) {
+    return {
+      status: 'inconclusive',
+      reason: `architecture conformance delta runner threw: ${error instanceof Error ? error.message : String(error)}`,
+      base_ref: baseRef ?? null,
+      head_ref: headRef ?? null
+    };
+  }
+}
+
+// Info-only gate node (CDL-S-7): its `type` is intentionally absent from
+// collectUnresolvedRequiredGates' allowlist below, so it can never contribute to
+// needs_verification / block regardless of status -- ratcheting new violations into a blocking
+// gate is explicitly out of scope for this story (architecture-ratchet-gate, a later story, owns
+// that). `required: false` documents the same intent locally for readers of this node alone.
+function buildArchitectureConformanceDeltaGate(stageResult) {
+  const inconclusive = stageResult.status !== 'ok';
+  return {
+    id: 'gate:architecture_delta',
+    type: 'architecture_conformance_delta_gate',
+    label: 'Architecture Conformance Delta (info)',
+    status: inconclusive ? 'info' : 'passed',
+    required: false,
+    info_only: true,
+    inconclusive,
+    reason: inconclusive
+      ? (stageResult.reason
+        ?? stageResult.output?.delta?.head_reason
+        ?? stageResult.output?.delta?.base_reason
+        ?? 'architecture conformance delta is inconclusive')
+      : 'base/head architecture conformance delta computed (see .vibepro/architecture/conformance/delta.json)',
+    base_ref: stageResult.output?.base_ref ?? stageResult.base_ref ?? null,
+    head_ref: stageResult.output?.head_ref ?? stageResult.head_ref ?? null,
+    summary: stageResult.output?.delta?.summary ?? null,
+    artifacts: stageResult.output?.artifacts ?? null
+  };
 }
 
 const TARGET_ARCHITECTURE_MODEL_PATH = path.join('docs', 'architecture', 'target-model.json');
