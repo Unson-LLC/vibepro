@@ -1,21 +1,39 @@
 ---
 title: Target Model Rebaseline — 裁定カード
-status: pending_adjudication
+status: adjudicated
 parent_design: vibepro-target-model-governance-rebaseline
 adjudicator: sato_keigo
-answered_at: null
+answer_channel: coordinator session AskUserQuestion
+answer_provenance: 2026-08-04 に佐藤圭吾が coordinator セッションの AskUserQuestion で全5問に回答（全問とも推奨案=選択肢1を採択）
+projected_by_story: story-vibepro-target-model-projection-v2
+projected_model_version: 2
+answered_at: 2026-08-04
 model_version_at_generation: 1
 generated_from: .vibepro/architecture/rebaseline/proposal.json
 measured_at_head: d4e46eb2
 related_stories:
   - story-vibepro-target-model-governance-rebaseline
+  - story-vibepro-target-model-projection-v2
 ---
 
-# Target Model Rebaseline — 裁定カード（未回答）
+# Target Model Rebaseline — 裁定カード（回答済み・2026-08-04）
 
-`docs/architecture/target-model.json` の `governance.human_adjudicated` に該当する判断だけを5問に圧縮したもの。**agent はこのカードに回答しない。** 回答が入るまで各項目は未裁定のまま残る。
+`docs/architecture/target-model.json` の `governance.human_adjudicated` に該当する判断だけを5問に圧縮したもの。**agent はこのカードに回答しない。**
 
-回答後の反映は `governance.machine_projection`（承認結果の反映 + `model_version` の +1）として機械が行う。
+## 回答サマリー
+
+| 問 | 採択 | 内容 |
+|---|---|---|
+| Q1 | 選択肢1（推奨） | 新モジュール `agent-runtime` を新設し8ファイルを割当。`agent-runtime: [workspace-infra]` と `run-session: [..., agent-runtime]` の2宣言を同時承認 |
+| Q2 | 選択肢1（推奨） | 低レベル4件を `workspace-infra` へ、`decision-outcome-ledger`/`outcome-manager` を `gate-pr` へ |
+| Q3 | 選択肢1（推奨） | 4件すべて `gate-pr` へ |
+| Q4 | 選択肢1（推奨） | declare候補22件を一括宣言し、resolve 19件を負債として残す |
+| Q5 | 選択肢1（推奨） | review由来3件を `review` へ、`budget-override-authority` を `gate-pr` へ |
+
+- **裁定者**: sato_keigo（佐藤圭吾）
+- **回答日**: 2026-08-04
+- **回答経路**: coordinator セッションの AskUserQuestion
+- **投影**: `story-vibepro-target-model-projection-v2` が `governance.machine_projection` として `target-model.json` へ反映し、`model_version` を 1 → 2 へインクリメント済み
 
 ## 前提（機械が既に処理済み・裁定不要）
 
@@ -39,6 +57,8 @@ related_stories:
 4. **今回は裁定せず孤児のまま残す**
    帰結: 孤児22件が維持され、ratchet gate 導入時にこの8件は計測対象外のまま残る（不可視の負債が続く）。
 
+**回答（2026-08-04, sato_keigo, coordinator session AskUserQuestion）: 選択肢1を採択。** 新モジュール `agent-runtime`（responsibility: 外部agentプロセスの起動・出力契約・完了通知・進捗期限）を新設し、対象8ファイルを割り当てる。`agent-runtime: [workspace-infra]` と `run-session` への `agent-runtime` 追加の2宣言を本裁定で同時承認する。
+
 ---
 
 ## Q2. 永続化クラスタ（6ファイル）をどう扱うか
@@ -55,6 +75,8 @@ related_stories:
 4. **今回は裁定せず孤児のまま残す**
    帰結: 孤児22件が維持される。
 
+**回答（2026-08-04, sato_keigo, coordinator session AskUserQuestion）: 選択肢1を採択。** `atomic-file.js`・`canonical-persistence.js`・`process-record-store.js`・`story-transaction-lock.js` を `workspace-infra` へ、`decision-outcome-ledger.js`・`outcome-manager.js` を `gate-pr` へ割り当てる。新規 allowed_dependencies 宣言は不要。
+
 ---
 
 ## Q3. merge 授権・公開投影・調停クラスタ（4ファイル）をどう扱うか
@@ -69,6 +91,8 @@ related_stories:
    帰結: merge 授権が独立した統治面として可視化される。`merge-governance: [workspace-infra, gate-pr]` と、`workspace-infra`（`merge-manager.js`）からの参照をどう扱うかの追加判断が必要になり、R-001 逆転が1件増える恐れがある。
 4. **今回は裁定せず孤児のまま残す**
    帰結: 孤児22件が維持される。
+
+**回答（2026-08-04, sato_keigo, coordinator session AskUserQuestion）: 選択肢1を採択。** `merge-gate-authorization.js`・`merge-public-projection.js`・`reconciliation-action.js`・`task-bound-repo-control.js` の4件すべてを `gate-pr` へ割り当てる。新規 allowed_dependencies 宣言は不要。
 
 ---
 
@@ -85,6 +109,8 @@ related_stories:
 4. **今回は裁定せず全41件を未宣言のまま残す**
    帰結: R-004 は執行不能なまま維持される。
 
+**回答（2026-08-04, sato_keigo, coordinator session AskUserQuestion）: 選択肢1を採択。** declare候補22件を一括で `allowed_dependencies` に宣言する。resolve 対象19件は宣言せず、負債として ratchet gate の対象に残す（ledger 化は別storyのスコープ）。
+
 ---
 
 ## Q5. 残余の責務不明瞭な孤児4件と review/gate-pr 境界
@@ -100,11 +126,32 @@ related_stories:
 4. **今回は裁定せず孤児のまま残す**
    帰結: 孤児22件が維持される。
 
+**回答（2026-08-04, sato_keigo, coordinator session AskUserQuestion）: 選択肢1を採択。** `review-inspection-inputs.js`・`review-surface-violations.js`・`dispatch-identity.js` を `review` へ、`budget-override-authority.js` を `gate-pr` へ割り当てる。
+
 ---
 
-## 回答後に機械が行うこと（machine_projection）
+## 回答後に機械が行ったこと（machine_projection・完了）
 
-1. 承認された割当を `modules[].paths` へ反映
-2. 承認された新モジュール・新規 `allowed_dependencies` を反映
-3. `model_version` を 1 → 2 へインクリメント、`governance.adjudicated_at` を更新
+`story-vibepro-target-model-projection-v2` にて実施。
+
+1. 承認された割当を `modules[].paths` へ反映（22ファイル）
+2. 承認された新モジュール `agent-runtime` と新規 `allowed_dependencies` 24宣言（Q1の2件 + Q4の22件）を反映
+3. `model_version` を 1 → 2 へインクリメント、`governance.adjudicated_at` を 2026-08-04 へ更新
 4. `architecture conformance --base origin/main` を再実行し、`model_version_changed: true` 付きの delta を記録
+
+### 投影後の実測（`vibepro architecture conformance .`）
+
+| 指標 | 投影前 | 投影後 |
+|---|---|---|
+| 孤児ファイル | 23 | 1 |
+| 未宣言依存 | 41 | 22 |
+| 予算超過 | 11 | 11 |
+| モジュール数 | 16 | 17 |
+
+- 残存孤児1件は `src/scan-ignored-dirs.js`。カード生成（HEAD `d4e46eb2`）以降に追加されたファイルで本裁定5問の対象外。既存モジュールへの割当は `governance.machine_maintainable` に該当するため、別途機械保守で処理できる。
+- 未宣言依存は 41 → 22。内訳は Q4 の resolve 対象19件（宣言せず負債として残す裁定どおり）+ **Q1 の新モジュール新設によって誘発された新規3件**:
+  - `agent-runtime -> run-session`（3 edges）
+  - `agent-runtime -> evidence`（1 edge）
+  - `graph -> agent-runtime`（1 edge）
+- この3件は Q1 で承認された宣言（`agent-runtime: [workspace-infra]` / `run-session: [..., agent-runtime]`）の範囲外であり、機械は宣言できない（新規 `allowed_dependencies` は `governance.human_adjudicated`）。とくに `agent-runtime -> run-session` は宣言済みの `run-session -> agent-runtime` と逆向きであり、宣言すれば循環になる。**次の裁定の対象**として resolve 側の負債に加わる。
+- declare 候補22件はすべて宣言済みで、未宣言として残っているものはゼロ。
