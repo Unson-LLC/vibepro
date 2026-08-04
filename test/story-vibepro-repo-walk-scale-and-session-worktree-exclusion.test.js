@@ -9,6 +9,9 @@ import test from 'node:test';
 import { promisify } from 'node:util';
 
 import { walkFiles } from '../src/pr-manager.js';
+import { profileArchitecture } from '../src/architecture-profiler.js';
+import { scanCodeQuality } from '../src/code-quality-scanner.js';
+import { scanDatabaseAccess } from '../src/database-access-scanner.js';
 
 const STORY_ID = 'story-vibepro-repo-walk-scale-and-session-worktree-exclusion';
 const execFileAsync = promisify(execFile);
@@ -95,4 +98,55 @@ test(`${STORY_ID} walkFiles propagates non-ENOENT errors instead of swallowing t
     () => walkFiles(notADir),
     (error) => error && error.code !== 'ENOENT'
   );
+});
+
+// ${STORY_ID} ac:RWS-S-5
+// The three repo-walking scanners (architecture-profiler, code-quality-scanner,
+// database-access-scanner) must all skip .claude and .worktrees subtrees now that they
+// share SCAN_IGNORED_DIRS. .claude/worktrees is the Claude Code session-worktree store and
+// .worktrees is the generic managed-worktree store; a real checkout can accumulate hundreds
+// of thousands of files there, so scanning them is pure cost with nothing to detect.
+test(`${STORY_ID} architecture-profiler, code-quality-scanner, and database-access-scanner all skip .claude and .worktrees`, async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'vibepro-ignored-dirs-'));
+
+  // Real source file: triggers findings in both the database-access and code-quality
+  // scanners, and contributes a distinctive language to the architecture profile.
+  await mkdir(path.join(root, 'src'), { recursive: true });
+  const realSource = `
+export async function handler() {
+  const rows = await prisma.company.findMany();
+  if (!authorized) {
+    return Response.json({ status: 403 });
+  }
+  return rows;
+}
+`;
+  await writeFile(path.join(root, 'src', 'real.ts'), realSource);
+
+  // Decoy source files under the session/managed worktree stores: identical
+  // findings-triggering content, plus a distinctive extension (.py) that only the
+  // architecture profiler would pick up as a new language if it ever walked them.
+  const decoyDirs = [
+    path.join(root, '.claude', 'worktrees', 'x', 'src'),
+    path.join(root, '.worktrees', 'y', 'src')
+  ];
+  for (const decoyDir of decoyDirs) {
+    await mkdir(decoyDir, { recursive: true });
+    await writeFile(path.join(decoyDir, 'decoy.ts'), realSource);
+    await writeFile(path.join(decoyDir, 'decoy.py'), 'def decoy():\n    return prisma.company.find_many()\n');
+  }
+
+  const profile = await profileArchitecture(root);
+  assert.ok(profile.languages.includes('typescript'), 'real.ts must still be scanned');
+  assert.ok(!profile.languages.includes('python'), '.claude/.worktrees decoy .py files must not be scanned');
+
+  const codeQuality = await scanCodeQuality(root);
+  assert.equal(codeQuality.scanned_files, 1, 'only src/real.ts should be scanned, decoys excluded');
+  assert.equal(codeQuality.authorization_order_risks.length, 1);
+  assert.equal(codeQuality.authorization_order_risks[0].file, 'src/real.ts');
+
+  const databaseAccess = await scanDatabaseAccess(root);
+  assert.equal(databaseAccess.scanned_files, 1, 'only src/real.ts should be scanned, decoys excluded');
+  assert.equal(databaseAccess.unbounded_find_many.length, 1);
+  assert.equal(databaseAccess.unbounded_find_many[0].file, 'src/real.ts');
 });

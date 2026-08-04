@@ -1,15 +1,9 @@
 import { readdir, readFile, stat } from 'node:fs/promises';
 import path from 'node:path';
 
-const IGNORED_DIRS = new Set([
-  '.git',
-  '.next',
-  '.turbo',
-  '.vibepro',
-  'coverage',
-  'node_modules',
-  'graphify-out'
-]);
+import { SCAN_IGNORED_DIRS } from './scan-ignored-dirs.js';
+
+const IGNORED_DIRS = SCAN_IGNORED_DIRS;
 const SOURCE_EXTENSIONS = new Set(['.js', '.jsx', '.mjs', '.ts', '.tsx']);
 const GATE_EFFECTS = ['block', 'review', 'info'];
 
