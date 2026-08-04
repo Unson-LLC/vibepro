@@ -8314,6 +8314,22 @@
             "relationship": "implements",
             "last_reviewed_root_hash": null
           }
+        ],
+        "architecture": [
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/target-model-rebaseline-proposal.md",
+            "required": false,
+            "relationship": "derives_from",
+            "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+            "required": false,
+            "relationship": "derives_from",
+            "last_reviewed_root_hash": null
+          }
         ]
       },
       "child_links": [
@@ -8323,10 +8339,24 @@
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/target-model-rebaseline-proposal.md",
+          "required": false,
+          "relationship": "derives_from",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+          "required": false,
+          "relationship": "derives_from",
+          "last_reviewed_root_hash": null
         }
       ],
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-08-04T11:49:11.101Z"
+  "updated_at": "2026-08-04T12:36:36.510Z"
 }
