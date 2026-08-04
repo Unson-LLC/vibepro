@@ -1,0 +1,240 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-target-model-governance-rebaseline",
+  "updated_at": "2026-08-04T14:00:41.326Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "TMG-S-1/S-8 rerun by the adjudicator (pass): the 5 story-assigned files are no longer orphans under actual modules[].paths and rules[]/allowed_dependencies are byte-unchanged from baseline.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7ae36c97f333a0b9",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-governance-rebaseline",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMG-S-1: `target-model.json` は `governance` ブロックを持ち、`machine_maintainable` / `human_adjudicated` / `machine_projection` の3カテゴリに、具体的な操作が列挙される。`rules[]` の本文は変更されない。",
+          "TMG-S-2: `target-model.json` は `model_version`（正の整数）を持ち、`loadTargetModel` はこれを読み取る。欠落時は `null` に degrade し、不正値（0以下・非整数・非数値）は理由付きエラーになる。",
+          "TMG-S-3: `architecture conformance` の出力は `model.version` を含み、`architecture conformance --base` の delta 出力は base/head 双方の `model_version` と `model_version_changed` を含む。",
+          "TMG-S-4: `vibepro architecture rebaseline-proposal` は、現状スキャンから (a) 孤児全件のモジュール割当候補（各候補は import 実績を根拠として持つ）、(b) 孤児の相互依存に基づくクラスタ、(c) 未宣言依存全件の `declare` / `resolve` 仕分け（rule_id 由来の根拠付き）を含む proposal artifact を生成する。",
+          "TMG-S-5: 各割当候補は、その割当を適用した場合に誘発される新規モジュール間依存（`induced_dependencies`、既存の `allowed_dependencies` で許可されるかの判定付き）を含む。",
+          "TMG-S-6: proposal は決定論的である。同一入力に対して2回生成すると、`generated_at` を除く全内容が完全一致する。",
+          "TMG-S-7: 人間裁定が必要な項目（新モジュール新設、新規許可依存の承認、R-001/R-002 逆転依存の扱い）は、選択肢5問以内・各選択肢の帰結明記・推奨付きの裁定カードとして残され、未回答であることが artifact 上で判別できる。",
+          "TMG-S-8: 機械保守範囲として `modules[].paths` に追加した割当は、割当後の再スキャンで当該ファイルが孤児から消え、かつ `rules[]` と `allowed_dependencies` が無変更であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "590b1fedbebec0a9408a76c701619ebda74db6d8076f6b215d8b5271b9b9a452",
+      "recorded_at": "2026-08-04T14:00:41.324Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "target-model-rebaseline-cards.md read directly: status pending_adjudication, answered_at null, exactly 5 questions each with at most 4 options, consequence lines, and a marked recommendation; also confirmed via TMG-S-7 test run.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7ae36c97f333a0b9",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-governance-rebaseline",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMG-S-1: `target-model.json` は `governance` ブロックを持ち、`machine_maintainable` / `human_adjudicated` / `machine_projection` の3カテゴリに、具体的な操作が列挙される。`rules[]` の本文は変更されない。",
+          "TMG-S-2: `target-model.json` は `model_version`（正の整数）を持ち、`loadTargetModel` はこれを読み取る。欠落時は `null` に degrade し、不正値（0以下・非整数・非数値）は理由付きエラーになる。",
+          "TMG-S-3: `architecture conformance` の出力は `model.version` を含み、`architecture conformance --base` の delta 出力は base/head 双方の `model_version` と `model_version_changed` を含む。",
+          "TMG-S-4: `vibepro architecture rebaseline-proposal` は、現状スキャンから (a) 孤児全件のモジュール割当候補（各候補は import 実績を根拠として持つ）、(b) 孤児の相互依存に基づくクラスタ、(c) 未宣言依存全件の `declare` / `resolve` 仕分け（rule_id 由来の根拠付き）を含む proposal artifact を生成する。",
+          "TMG-S-5: 各割当候補は、その割当を適用した場合に誘発される新規モジュール間依存（`induced_dependencies`、既存の `allowed_dependencies` で許可されるかの判定付き）を含む。",
+          "TMG-S-6: proposal は決定論的である。同一入力に対して2回生成すると、`generated_at` を除く全内容が完全一致する。",
+          "TMG-S-7: 人間裁定が必要な項目（新モジュール新設、新規許可依存の承認、R-001/R-002 逆転依存の扱い）は、選択肢5問以内・各選択肢の帰結明記・推奨付きの裁定カードとして残され、未回答であることが artifact 上で判別できる。",
+          "TMG-S-8: 機械保守範囲として `modules[].paths` に追加した割当は、割当後の再スキャンで当該ファイルが孤児から消え、かつ `rules[]` と `allowed_dependencies` が無変更であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "590b1fedbebec0a9408a76c701619ebda74db6d8076f6b215d8b5271b9b9a452",
+      "recorded_at": "2026-08-04T14:00:40.786Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "TMG-S-6 determinism test rerun by the adjudicator (pass): two independent generation runs deep-equal after removing generated_at.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7ae36c97f333a0b9",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-governance-rebaseline",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMG-S-1: `target-model.json` は `governance` ブロックを持ち、`machine_maintainable` / `human_adjudicated` / `machine_projection` の3カテゴリに、具体的な操作が列挙される。`rules[]` の本文は変更されない。",
+          "TMG-S-2: `target-model.json` は `model_version`（正の整数）を持ち、`loadTargetModel` はこれを読み取る。欠落時は `null` に degrade し、不正値（0以下・非整数・非数値）は理由付きエラーになる。",
+          "TMG-S-3: `architecture conformance` の出力は `model.version` を含み、`architecture conformance --base` の delta 出力は base/head 双方の `model_version` と `model_version_changed` を含む。",
+          "TMG-S-4: `vibepro architecture rebaseline-proposal` は、現状スキャンから (a) 孤児全件のモジュール割当候補（各候補は import 実績を根拠として持つ）、(b) 孤児の相互依存に基づくクラスタ、(c) 未宣言依存全件の `declare` / `resolve` 仕分け（rule_id 由来の根拠付き）を含む proposal artifact を生成する。",
+          "TMG-S-5: 各割当候補は、その割当を適用した場合に誘発される新規モジュール間依存（`induced_dependencies`、既存の `allowed_dependencies` で許可されるかの判定付き）を含む。",
+          "TMG-S-6: proposal は決定論的である。同一入力に対して2回生成すると、`generated_at` を除く全内容が完全一致する。",
+          "TMG-S-7: 人間裁定が必要な項目（新モジュール新設、新規許可依存の承認、R-001/R-002 逆転依存の扱い）は、選択肢5問以内・各選択肢の帰結明記・推奨付きの裁定カードとして残され、未回答であることが artifact 上で判別できる。",
+          "TMG-S-8: 機械保守範囲として `modules[].paths` に追加した割当は、割当後の再スキャンで当該ファイルが孤児から消え、かつ `rules[]` と `allowed_dependencies` が無変更であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "590b1fedbebec0a9408a76c701619ebda74db6d8076f6b215d8b5271b9b9a452",
+      "recorded_at": "2026-08-04T14:00:40.236Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "buildInducedDependencies attaches induced_dependencies with allowed (checked against live allowed_dependencies) and creates_new_violation to each candidate; confirmed by direct code read.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7ae36c97f333a0b9",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-governance-rebaseline",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMG-S-1: `target-model.json` は `governance` ブロックを持ち、`machine_maintainable` / `human_adjudicated` / `machine_projection` の3カテゴリに、具体的な操作が列挙される。`rules[]` の本文は変更されない。",
+          "TMG-S-2: `target-model.json` は `model_version`（正の整数）を持ち、`loadTargetModel` はこれを読み取る。欠落時は `null` に degrade し、不正値（0以下・非整数・非数値）は理由付きエラーになる。",
+          "TMG-S-3: `architecture conformance` の出力は `model.version` を含み、`architecture conformance --base` の delta 出力は base/head 双方の `model_version` と `model_version_changed` を含む。",
+          "TMG-S-4: `vibepro architecture rebaseline-proposal` は、現状スキャンから (a) 孤児全件のモジュール割当候補（各候補は import 実績を根拠として持つ）、(b) 孤児の相互依存に基づくクラスタ、(c) 未宣言依存全件の `declare` / `resolve` 仕分け（rule_id 由来の根拠付き）を含む proposal artifact を生成する。",
+          "TMG-S-5: 各割当候補は、その割当を適用した場合に誘発される新規モジュール間依存（`induced_dependencies`、既存の `allowed_dependencies` で許可されるかの判定付き）を含む。",
+          "TMG-S-6: proposal は決定論的である。同一入力に対して2回生成すると、`generated_at` を除く全内容が完全一致する。",
+          "TMG-S-7: 人間裁定が必要な項目（新モジュール新設、新規許可依存の承認、R-001/R-002 逆転依存の扱い）は、選択肢5問以内・各選択肢の帰結明記・推奨付きの裁定カードとして残され、未回答であることが artifact 上で判別できる。",
+          "TMG-S-8: 機械保守範囲として `modules[].paths` に追加した割当は、割当後の再スキャンで当該ファイルが孤児から消え、かつ `rules[]` と `allowed_dependencies` が無変更であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "590b1fedbebec0a9408a76c701619ebda74db6d8076f6b215d8b5271b9b9a452",
+      "recorded_at": "2026-08-04T14:00:39.704Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "buildOrphanAssignments/buildOrphanClusters/buildDependencyTriage produce candidates with import-based evidence, BFS orphan clusters, and declare/resolve triage with rule_id; confirmed by direct code read.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7ae36c97f333a0b9",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-governance-rebaseline",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMG-S-1: `target-model.json` は `governance` ブロックを持ち、`machine_maintainable` / `human_adjudicated` / `machine_projection` の3カテゴリに、具体的な操作が列挙される。`rules[]` の本文は変更されない。",
+          "TMG-S-2: `target-model.json` は `model_version`（正の整数）を持ち、`loadTargetModel` はこれを読み取る。欠落時は `null` に degrade し、不正値（0以下・非整数・非数値）は理由付きエラーになる。",
+          "TMG-S-3: `architecture conformance` の出力は `model.version` を含み、`architecture conformance --base` の delta 出力は base/head 双方の `model_version` と `model_version_changed` を含む。",
+          "TMG-S-4: `vibepro architecture rebaseline-proposal` は、現状スキャンから (a) 孤児全件のモジュール割当候補（各候補は import 実績を根拠として持つ）、(b) 孤児の相互依存に基づくクラスタ、(c) 未宣言依存全件の `declare` / `resolve` 仕分け（rule_id 由来の根拠付き）を含む proposal artifact を生成する。",
+          "TMG-S-5: 各割当候補は、その割当を適用した場合に誘発される新規モジュール間依存（`induced_dependencies`、既存の `allowed_dependencies` で許可されるかの判定付き）を含む。",
+          "TMG-S-6: proposal は決定論的である。同一入力に対して2回生成すると、`generated_at` を除く全内容が完全一致する。",
+          "TMG-S-7: 人間裁定が必要な項目（新モジュール新設、新規許可依存の承認、R-001/R-002 逆転依存の扱い）は、選択肢5問以内・各選択肢の帰結明記・推奨付きの裁定カードとして残され、未回答であることが artifact 上で判別できる。",
+          "TMG-S-8: 機械保守範囲として `modules[].paths` に追加した割当は、割当後の再スキャンで当該ファイルが孤児から消え、かつ `rules[]` と `allowed_dependencies` が無変更であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "590b1fedbebec0a9408a76c701619ebda74db6d8076f6b215d8b5271b9b9a452",
+      "recorded_at": "2026-08-04T14:00:39.132Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "conformance result.model.version is present and delta summarizeSnapshot sets model_version for base and head plus previous_model_version/model_version_changed; confirmed by source read and rerunning TMG-S-3 (pass).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7ae36c97f333a0b9",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-governance-rebaseline",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMG-S-1: `target-model.json` は `governance` ブロックを持ち、`machine_maintainable` / `human_adjudicated` / `machine_projection` の3カテゴリに、具体的な操作が列挙される。`rules[]` の本文は変更されない。",
+          "TMG-S-2: `target-model.json` は `model_version`（正の整数）を持ち、`loadTargetModel` はこれを読み取る。欠落時は `null` に degrade し、不正値（0以下・非整数・非数値）は理由付きエラーになる。",
+          "TMG-S-3: `architecture conformance` の出力は `model.version` を含み、`architecture conformance --base` の delta 出力は base/head 双方の `model_version` と `model_version_changed` を含む。",
+          "TMG-S-4: `vibepro architecture rebaseline-proposal` は、現状スキャンから (a) 孤児全件のモジュール割当候補（各候補は import 実績を根拠として持つ）、(b) 孤児の相互依存に基づくクラスタ、(c) 未宣言依存全件の `declare` / `resolve` 仕分け（rule_id 由来の根拠付き）を含む proposal artifact を生成する。",
+          "TMG-S-5: 各割当候補は、その割当を適用した場合に誘発される新規モジュール間依存（`induced_dependencies`、既存の `allowed_dependencies` で許可されるかの判定付き）を含む。",
+          "TMG-S-6: proposal は決定論的である。同一入力に対して2回生成すると、`generated_at` を除く全内容が完全一致する。",
+          "TMG-S-7: 人間裁定が必要な項目（新モジュール新設、新規許可依存の承認、R-001/R-002 逆転依存の扱い）は、選択肢5問以内・各選択肢の帰結明記・推奨付きの裁定カードとして残され、未回答であることが artifact 上で判別できる。",
+          "TMG-S-8: 機械保守範囲として `modules[].paths` に追加した割当は、割当後の再スキャンで当該ファイルが孤児から消え、かつ `rules[]` と `allowed_dependencies` が無変更であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "590b1fedbebec0a9408a76c701619ebda74db6d8076f6b215d8b5271b9b9a452",
+      "recorded_at": "2026-08-04T14:00:38.575Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "loadTargetModel calls parseModelVersion which returns null on missing value and throws a reasoned error on non-positive-integer values; confirmed by source read and by rerunning the TMG-S-2 tests (pass).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7ae36c97f333a0b9",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-governance-rebaseline",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMG-S-1: `target-model.json` は `governance` ブロックを持ち、`machine_maintainable` / `human_adjudicated` / `machine_projection` の3カテゴリに、具体的な操作が列挙される。`rules[]` の本文は変更されない。",
+          "TMG-S-2: `target-model.json` は `model_version`（正の整数）を持ち、`loadTargetModel` はこれを読み取る。欠落時は `null` に degrade し、不正値（0以下・非整数・非数値）は理由付きエラーになる。",
+          "TMG-S-3: `architecture conformance` の出力は `model.version` を含み、`architecture conformance --base` の delta 出力は base/head 双方の `model_version` と `model_version_changed` を含む。",
+          "TMG-S-4: `vibepro architecture rebaseline-proposal` は、現状スキャンから (a) 孤児全件のモジュール割当候補（各候補は import 実績を根拠として持つ）、(b) 孤児の相互依存に基づくクラスタ、(c) 未宣言依存全件の `declare` / `resolve` 仕分け（rule_id 由来の根拠付き）を含む proposal artifact を生成する。",
+          "TMG-S-5: 各割当候補は、その割当を適用した場合に誘発される新規モジュール間依存（`induced_dependencies`、既存の `allowed_dependencies` で許可されるかの判定付き）を含む。",
+          "TMG-S-6: proposal は決定論的である。同一入力に対して2回生成すると、`generated_at` を除く全内容が完全一致する。",
+          "TMG-S-7: 人間裁定が必要な項目（新モジュール新設、新規許可依存の承認、R-001/R-002 逆転依存の扱い）は、選択肢5問以内・各選択肢の帰結明記・推奨付きの裁定カードとして残され、未回答であることが artifact 上で判別できる。",
+          "TMG-S-8: 機械保守範囲として `modules[].paths` に追加した割当は、割当後の再スキャンで当該ファイルが孤児から消え、かつ `rules[]` と `allowed_dependencies` が無変更であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "590b1fedbebec0a9408a76c701619ebda74db6d8076f6b215d8b5271b9b9a452",
+      "recorded_at": "2026-08-04T14:00:37.977Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "git diff of target-model.json shows rules[] byte-identical while a new governance block was added with populated machine_maintainable/human_adjudicated/machine_projection operation lists; verified by the adjudicator via direct diff read.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a7ae36c97f333a0b9",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "7eb0fc19690dfa640004eaee35deaf7e49fbd82c",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-target-model-governance-rebaseline",
+        "task_id": null,
+        "acceptance_criteria": [
+          "TMG-S-1: `target-model.json` は `governance` ブロックを持ち、`machine_maintainable` / `human_adjudicated` / `machine_projection` の3カテゴリに、具体的な操作が列挙される。`rules[]` の本文は変更されない。",
+          "TMG-S-2: `target-model.json` は `model_version`（正の整数）を持ち、`loadTargetModel` はこれを読み取る。欠落時は `null` に degrade し、不正値（0以下・非整数・非数値）は理由付きエラーになる。",
+          "TMG-S-3: `architecture conformance` の出力は `model.version` を含み、`architecture conformance --base` の delta 出力は base/head 双方の `model_version` と `model_version_changed` を含む。",
+          "TMG-S-4: `vibepro architecture rebaseline-proposal` は、現状スキャンから (a) 孤児全件のモジュール割当候補（各候補は import 実績を根拠として持つ）、(b) 孤児の相互依存に基づくクラスタ、(c) 未宣言依存全件の `declare` / `resolve` 仕分け（rule_id 由来の根拠付き）を含む proposal artifact を生成する。",
+          "TMG-S-5: 各割当候補は、その割当を適用した場合に誘発される新規モジュール間依存（`induced_dependencies`、既存の `allowed_dependencies` で許可されるかの判定付き）を含む。",
+          "TMG-S-6: proposal は決定論的である。同一入力に対して2回生成すると、`generated_at` を除く全内容が完全一致する。",
+          "TMG-S-7: 人間裁定が必要な項目（新モジュール新設、新規許可依存の承認、R-001/R-002 逆転依存の扱い）は、選択肢5問以内・各選択肢の帰結明記・推奨付きの裁定カードとして残され、未回答であることが artifact 上で判別できる。",
+          "TMG-S-8: 機械保守範囲として `modules[].paths` に追加した割当は、割当後の再スキャンで当該ファイルが孤児から消え、かつ `rules[]` と `allowed_dependencies` が無変更であることが確認できる。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "590b1fedbebec0a9408a76c701619ebda74db6d8076f6b215d8b5271b9b9a452",
+      "recorded_at": "2026-08-04T14:00:37.022Z"
+    }
+  ]
+}
