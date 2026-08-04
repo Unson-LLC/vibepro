@@ -31,6 +31,7 @@ const MAX_EVIDENCE_EDGES = 5;
 export async function runRebaselineProposal(repoRoot, options = {}) {
   const root = path.resolve(repoRoot);
   const modelPath = path.resolve(root, options.modelPath ?? DEFAULT_TARGET_MODEL_PATH);
+  const parentDesign = options.parentDesign ?? null;
   const model = await loadTargetModel(modelPath);
 
   const { jsFiles, allFiles } = await collectScopeSource(root, model.scope_roots);
@@ -86,7 +87,7 @@ export async function runRebaselineProposal(repoRoot, options = {}) {
     const jsonPath = path.join(outDir, 'proposal.json');
     await writeFile(jsonPath, `${JSON.stringify(proposal, null, 2)}\n`);
     const mdPath = path.join(outDir, 'proposal.md');
-    await writeFile(mdPath, renderRebaselineProposalMarkdown(proposal));
+    await writeFile(mdPath, renderRebaselineProposalMarkdown(proposal, { parentDesign }));
     proposal.artifacts = {
       json: toRepoRelative(root, jsonPath),
       markdown: toRepoRelative(root, mdPath)
@@ -94,7 +95,7 @@ export async function runRebaselineProposal(repoRoot, options = {}) {
     if (options.outputPath) {
       const snapshotPath = path.resolve(root, options.outputPath);
       await mkdir(path.dirname(snapshotPath), { recursive: true });
-      await writeFile(snapshotPath, renderRebaselineProposalMarkdown(proposal));
+      await writeFile(snapshotPath, renderRebaselineProposalMarkdown(proposal, { parentDesign }));
       proposal.artifacts.snapshot = toRepoRelative(root, snapshotPath);
     }
   }
@@ -406,8 +407,24 @@ function buildAdjudicationIndex({ orphanClusters, dependencyTriage }) {
   ].sort((a, b) => (a.kind.localeCompare(b.kind)) || a.id.localeCompare(b.id));
 }
 
-export function renderRebaselineProposalMarkdown(proposal) {
-  const lines = [
+// The committed snapshot is a design doc, so Design SSOT expects it to declare its parent design
+// root in frontmatter. The value is supplied by the caller (--parent-design) rather than hardcoded:
+// this generator is not specific to VibePro's own design tree. Frontmatter carries no timestamp, so
+// regenerating an unchanged repository still produces a byte-identical file (INV-003).
+export function renderRebaselineProposalMarkdown(proposal, { parentDesign = null } = {}) {
+  const lines = [];
+  if (parentDesign) {
+    lines.push(
+      '---',
+      'title: Target Model Rebaseline Proposal (generated)',
+      'status: active',
+      `parent_design: ${parentDesign}`,
+      'generated_by: vibepro architecture rebaseline-proposal',
+      '---',
+      ''
+    );
+  }
+  lines.push(
     '# Target Model Rebaseline Proposal',
     '',
     `- model: ${proposal.model.path} (version=${proposal.model.version ?? 'unversioned'}, status=${proposal.model.status}, governance=${proposal.model.governance_present ? 'present' : 'absent'})`,
@@ -421,7 +438,7 @@ export function renderRebaselineProposalMarkdown(proposal) {
     '',
     '## 孤児ファイルの割当候補',
     ''
-  ];
+  );
   for (const entry of proposal.orphan_assignments) {
     lines.push(`### ${entry.file}`, '');
     lines.push(`- 推奨: ${entry.recommendation.action}${entry.recommendation.module ? ` (${entry.recommendation.module})` : ''} — ${entry.recommendation.reason}`);

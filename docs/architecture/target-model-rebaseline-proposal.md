@@ -1,8 +1,15 @@
+---
+title: Target Model Rebaseline Proposal (generated)
+status: active
+parent_design: vibepro-target-model-governance-rebaseline
+generated_by: vibepro architecture rebaseline-proposal
+---
+
 # Target Model Rebaseline Proposal
 
 - model: docs/architecture/target-model.json (version=1, status=adjudicated, governance=present)
-- 孤児: 22 (候補あり 16 / 候補なし 6)
-- 孤児クラスタ: 14
+- 孤児: 23 (候補あり 17 / 候補なし 6)
+- 孤児クラスタ: 15
 - 未宣言依存: 41 (declare候補 22 / resolve 19)
 
 > 候補モジュールのスコアは (被import元モジュールのedge数 × consumer_edge_weight) + (import先モジュールのedge数 × dependency_edge_weight)。同点はモジュール名の辞書順。allowed_dependencies が "*" のdispatcherモジュールは所有シグナルにならないため候補から除外する。
@@ -200,6 +207,17 @@
   - 根拠: src/agent-review.js -> src/review-surface-violations.js
   - 誘発依存: gate-pr -> review (1 edges, allowed=true, 新規違反=false)
 
+### src/scan-ignored-dirs.js
+
+- 推奨: human_adjudication (scanners) — 割当により新規の未宣言依存ペアが発生する (architecture->scanners)
+- 候補 `scanners` score=4 (consumer=2, dependency=0)
+  - 根拠: src/code-quality-scanner.js -> src/scan-ignored-dirs.js
+  - 根拠: src/database-access-scanner.js -> src/scan-ignored-dirs.js
+  - 誘発依存: architecture -> scanners (1 edges, allowed=false, 新規違反=true)
+- 候補 `architecture` score=2 (consumer=1, dependency=0)
+  - 根拠: src/architecture-profiler.js -> src/scan-ignored-dirs.js
+  - 誘発依存: scanners -> architecture (2 edges, allowed=false, 新規違反=true)
+
 ### src/story-transaction-lock.js
 
 - 推奨: machine_maintainable_assign (workspace-infra) — 単独最高スコアであり、割当により新規の未宣言依存ペアが発生しない
@@ -262,6 +280,8 @@
   - src/review-inspection-inputs.js
 - orphan_cluster:src/review-surface-violations.js — members=1, touchpoints=gate-pr/review, authority=machine_maintainable
   - src/review-surface-violations.js
+- orphan_cluster:src/scan-ignored-dirs.js — members=1, touchpoints=architecture/scanners, authority=machine_maintainable
+  - src/scan-ignored-dirs.js
 - orphan_cluster:src/story-transaction-lock.js — members=1, touchpoints=workspace-infra, authority=machine_maintainable
   - src/story-transaction-lock.js
 - orphan_cluster:src/task-bound-repo-control.js — members=1, touchpoints=gate-pr, authority=machine_maintainable

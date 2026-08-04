@@ -302,7 +302,7 @@ test('TMG-S-6: proposal generation is deterministic apart from generated_at', as
 test('TMG-S-4: cli writes proposal artifacts and an optional committed snapshot', async () => {
   const root = await makeRepo();
   const stdout = [];
-  const result = await runCli(['architecture', 'rebaseline-proposal', root, '--output', 'docs/architecture/proposal-snapshot.md'], {
+  const result = await runCli(['architecture', 'rebaseline-proposal', root, '--output', 'docs/architecture/proposal-snapshot.md', '--parent-design', 'demo-design-root'], {
     stdout: { write: (chunk) => stdout.push(chunk) }
   });
   assert.equal(result.exitCode, 0);
@@ -313,6 +313,8 @@ test('TMG-S-4: cli writes proposal artifacts and an optional committed snapshot'
   assert.equal(persisted.model.governance_present, true);
   const snapshot = await readFile(path.join(root, 'docs', 'architecture', 'proposal-snapshot.md'), 'utf8');
   assert.match(snapshot, /# Target Model Rebaseline Proposal/);
+  // The committed snapshot is a Design SSOT child, so it must declare its parent design root.
+  assert.match(snapshot, /^---\ntitle: [^\n]+\nstatus: active\nparent_design: demo-design-root\n/);
   assert.match(stdout.join(''), /孤児/);
 });
 

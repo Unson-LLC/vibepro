@@ -1,6 +1,7 @@
 ---
 title: Target Model Rebaseline — 裁定カード
 status: pending_adjudication
+parent_design: vibepro-target-model-governance-rebaseline
 adjudicator: sato_keigo
 answered_at: null
 model_version_at_generation: 1
