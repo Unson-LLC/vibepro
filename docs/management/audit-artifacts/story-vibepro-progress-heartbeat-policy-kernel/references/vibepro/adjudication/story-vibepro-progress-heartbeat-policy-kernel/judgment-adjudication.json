@@ -1,0 +1,608 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+  "updated_at": "2026-08-04T04:35:41.418Z",
+  "events": [
+    {
+      "event_id": "6d52bac9-c232-4a5e-98b0-15d204bc4063",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc states a concrete intent (unify scattered timeout/kill implementations behind one policy kernel), cites a real prior incident (external SIGTERM misrecorded as timed_out true), and frontmatter reason covers alternatives, compatibility, rollback, boundary. Genuine documented intent.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0efb10b108079c2a",
+        "session_ref": null
+      },
+      "head_commit": "a6585de7c75686596b5590e0b67affbb512b79f5",
+      "recorded_at": "2026-08-02T12:02:22.170Z"
+    },
+    {
+      "event_id": "f7af3e81-48f8-4dce-a029-aa00fda50a1a",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "flow_replay and artifact_replay evidence points at real test files the judge executed directly, spawning actual child processes driving the kernel and adapters end to end. Current-reality claims corroborated by reading the pre-change code paths referenced in the architecture doc.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0efb10b108079c2a",
+        "session_ref": null
+      },
+      "head_commit": "a6585de7c75686596b5590e0b67affbb512b79f5",
+      "recorded_at": "2026-08-02T12:02:22.659Z"
+    },
+    {
+      "event_id": "a3bb4aee-a13d-4421-80d3-a5fc62834173",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture doc enumerates the kernel invariants (heartbeat never extends life, only novel progress tokens do; wall-clock cost attempts are independent hard caps; fixed five-code precedence). A dedicated precedence-order test asserts all five codes fire in documented order when simultaneously true. Real testable invariant.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0efb10b108079c2a",
+        "session_ref": null
+      },
+      "head_commit": "a6585de7c75686596b5590e0b67affbb512b79f5",
+      "recorded_at": "2026-08-02T12:02:23.211Z"
+    },
+    {
+      "event_id": "e61731ea-44d8-4753-b5b7-84408fadab31",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Artifact-policy decision record substantively explains why config.json and spec.json are committed citing repo convention and prior stories. Architecture doc has an explicit public contract and compatibility section covering the new flag default, the additive external_kill_signal field, and the timed_out semantics correction. typecheck run passed per verification-runs artifact.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0efb10b108079c2a",
+        "session_ref": null
+      },
+      "head_commit": "a6585de7c75686596b5590e0b67affbb512b79f5",
+      "recorded_at": "2026-08-02T12:02:23.678Z"
+    },
+    {
+      "event_id": "321cf2db-7f46-40cf-882a-9f22f220fd9d",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The failure modes central to the story (no-progress stall, wall-clock overrun, output overflow, external kill misattribution) are each covered by a real subprocess-spawning test the judge ran directly. Genuine negative-path exercises.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0efb10b108079c2a",
+        "session_ref": null
+      },
+      "head_commit": "a6585de7c75686596b5590e0b67affbb512b79f5",
+      "recorded_at": "2026-08-02T12:02:24.206Z"
+    },
+    {
+      "event_id": "5da42709-80d7-4751-a06f-6d470050bf66",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e suite has one block per AC asserting the literal acceptance-criterion behavior against real kernel adapter subprocess execution; judge confirmed all five pass. Done-evidence demonstrates the ACs rather than checking artifact field presence.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0efb10b108079c2a",
+        "session_ref": null
+      },
+      "head_commit": "a6585de7c75686596b5590e0b67affbb512b79f5",
+      "recorded_at": "2026-08-02T12:02:24.671Z"
+    },
+    {
+      "event_id": "83c318a6-963c-4d5b-b92e-e428d0de4464",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Compatibility table is specific and checkable against the diff: the new CLI flag is optional defaulting to prior behavior (normalizeNoProgressDeadline defaults to timeoutMs), and the unmodified consumer-contract integration test exercising verification-evidence consumers passes, evidencing the additive field breaks no downstream readers. The timed_out semantics change is the stated purpose, called out explicitly as intentional.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0efb10b108079c2a",
+        "session_ref": null
+      },
+      "head_commit": "a6585de7c75686596b5590e0b67affbb512b79f5",
+      "recorded_at": "2026-08-02T12:02:25.165Z"
+    },
+    {
+      "event_id": "0165a12c-9859-46af-aea0-1ac7828017ce",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "needs_human_judgment",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Mechanical digestion reached needs_evidence only. The diff is about 1662 insertions across 14 files touching a shared kernel plus three adopters and their tests and docs. Whether this reads as one coherent reviewable decision or should be split per adopter requires the actual human reviewer capacity judgment, not re-reading by the judge.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0efb10b108079c2a",
+        "session_ref": null
+      },
+      "head_commit": "a6585de7c75686596b5590e0b67affbb512b79f5",
+      "recorded_at": "2026-08-02T12:02:25.639Z"
+    },
+    {
+      "event_id": "24f714f8-4274-45a0-8f0b-6a17f33fa41e",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Timeout deadline behavior is the central subject. Direct unit coverage of max_wall_clock_exceeded firing independently of progress, plus real subprocess wall-clock kills in graphify tests and e2e AC4. Judge ran these and confirmed the exact failure mode occurs and is correctly attributed.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0efb10b108079c2a",
+        "session_ref": null
+      },
+      "head_commit": "a6585de7c75686596b5590e0b67affbb512b79f5",
+      "recorded_at": "2026-08-02T12:02:26.087Z"
+    },
+    {
+      "event_id": "e85ea41e-624f-44e1-a1a9-5559896e983a",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Core adopters are process provider boundaries: Codex provider stalls (AC3, existing CDI-S-8 provider-correlation coverage untouched) and graphify verify subprocesses killed externally (AC4 AC5 external-signal attribution verified via e2e self-delivered SIGTERM recorded as external_kill_signal). Genuine coverage, not keyword match.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a0efb10b108079c2a",
+        "session_ref": null
+      },
+      "head_commit": "a6585de7c75686596b5590e0b67affbb512b79f5",
+      "recorded_at": "2026-08-02T12:02:26.650Z"
+    },
+    {
+      "event_id": "1014476e-c084-45c5-bda0-f735a63f6807",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc contains full User Story, Background, Design Principle, Scope and Out-of-Scope, and five acceptance criteria matching the diff actual surfaces (kernel plus adopters). Intent genuinely legible from the story text, not a token match.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aac0df000f9f5e66c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "59d172b1687df0a691de761d145f89558828e336",
+      "recorded_at": "2026-08-04T03:14:46.681Z"
+    },
+    {
+      "event_id": "4ac358d6-52a8-43e0-9244-79e748e056ac",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The pre-existing bugs (naive unbounded runProcess, execFile runner misattributing external SIGTERM as timed_out) are documented in Background and directly reproduced by real subprocess-spawning tests, not simulated mocks. flow_replay evidence is genuine.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aac0df000f9f5e66c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "59d172b1687df0a691de761d145f89558828e336",
+      "recorded_at": "2026-08-04T03:14:47.159Z"
+    },
+    {
+      "event_id": "1fe08b1c-2684-41d8-bf0a-e56a00b59c33",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Invariants (heartbeat never extends deadline, hard caps independent of progress, fixed precedence) stated in the architecture doc, enforced with explicit precedence ordering in check(), covered by a dedicated precedence-order unit test. Real invariant check.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aac0df000f9f5e66c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "59d172b1687df0a691de761d145f89558828e336",
+      "recorded_at": "2026-08-04T03:14:47.625Z"
+    },
+    {
+      "event_id": "10cd8e27-2928-494b-a7c3-ad435bacbfd7",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Decision records and the story frontmatter reason field document alternatives, compatibility impact, rollback plan, and boundary scope explicitly. The architecture doc Boundary and Scope section and compatibility table are substantive.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aac0df000f9f5e66c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "59d172b1687df0a691de761d145f89558828e336",
+      "recorded_at": "2026-08-04T03:14:48.081Z"
+    },
+    {
+      "event_id": "1846d1c7-5df6-4f5d-a0a0-311b2baee3b7",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Failure modes (no-progress stall, wall-clock overrun, external kill misattribution) exercised with real spawned children that are actually silent, actually ignore SIGTERM, and actually self-deliver an external SIGTERM. Genuine failure-mode replay.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aac0df000f9f5e66c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "59d172b1687df0a691de761d145f89558828e336",
+      "recorded_at": "2026-08-04T03:14:48.547Z"
+    },
+    {
+      "event_id": "cad2c002-13c8-43c4-a448-d38060423b39",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence is the real-subprocess e2e suite (5/5) plus full npm test unit run (2460/2460), integration, and typecheck runs recorded at head 59d172b1, runner-computed artifacts with sha256 and counts, reproduced locally by the judge.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aac0df000f9f5e66c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "59d172b1687df0a691de761d145f89558828e336",
+      "recorded_at": "2026-08-04T03:14:49.001Z"
+    },
+    {
+      "event_id": "429a95ff-970a-4f61-9411-a293d95577e5",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The new flag defaults to timeoutMs when unset (normalizeNoProgressDeadline) so unset behavior is byte-identical; both CLI reference docs updated; the timed_out semantic change is documented in the compatibility table as an intentional misattribution fix with exact old and new conditions; external_kill_signal is additive.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aac0df000f9f5e66c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "59d172b1687df0a691de761d145f89558828e336",
+      "recorded_at": "2026-08-04T03:14:49.604Z"
+    },
+    {
+      "event_id": "72048303-1031-4b10-8c5e-a902f0683ed8",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "18 changed files form one coherent semantic extraction: one kernel module plus adopters, each with its own architecture subsection, test file, and independently statable rollback. A reviewer follows kernel then adopters then e2e as one linear narrative; not an unrelated grab-bag.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aac0df000f9f5e66c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "59d172b1687df0a691de761d145f89558828e336",
+      "recorded_at": "2026-08-04T03:14:50.084Z"
+    },
+    {
+      "event_id": "0c8c7edd-d5a2-402b-ac81-a405fc95f345",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Timeout deadline behavior is the core subject, tested with real processes hitting wall-clock caps, no-progress caps, and precedence between them (precedence-order unit test, e2e AC1 AC2 AC4 AC5). Substantive coverage.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aac0df000f9f5e66c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "59d172b1687df0a691de761d145f89558828e336",
+      "recorded_at": "2026-08-04T03:14:50.525Z"
+    },
+    {
+      "event_id": "69dd18bd-4487-412d-81e7-1f73011b0f7b",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "CDI-S-5 suite provably unchanged (empty diff, 27/27 local pass) including provider-stall and malformed-completion scenarios, so the refactor does not alter provider-failure handling; for graphify and the runner the provider is the child process whose external kill, output overflow, and silent hang are directly tested in the e2e suite.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "aac0df000f9f5e66c",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "59d172b1687df0a691de761d145f89558828e336",
+      "recorded_at": "2026-08-04T03:14:50.980Z"
+    },
+    {
+      "event_id": "1c4f5ce7-cdd4-40a7-a65e-584719ad86b0",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc has concrete User Story, Background (37-site audit, sole conforming site), Design Principle, Scope, explicit Out of Scope, five ACs. Intent matches the actual diff (kernel module plus graphify and verification-runner adoption). Real content, not token match.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "recorded_at": "2026-08-04T04:35:37.616Z"
+    },
+    {
+      "event_id": "470d79c5-fd12-4355-a5c8-e249a9123f6f",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "flow_replay, artifact_replay, scenario_clause_e2e all point to the e2e file the judge ran directly, spawning real children and driving the real adapter. The AC5 external-SIGTERM sub-test reproduces the exact prior misattribution bug scenario and shows it now resolves correctly.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "recorded_at": "2026-08-04T04:35:38.042Z"
+    },
+    {
+      "event_id": "adf0d4db-a9ab-4ac9-ae7e-7f802d040ac7",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec enumerates INV-001 and INV-002, both directly unit-tested (precedence-order test) and e2e-tested; the architecture doc restates the invariants with the same precedence order as the code. Substantive evidence.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "recorded_at": "2026-08-04T04:35:38.453Z"
+    },
+    {
+      "event_id": "5ccbac17-fb9f-49cd-a995-029d9101e95c",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Architecture doc documents module boundaries (kernel has no timers or I/O; enforcement is the adopter responsibility) and per-file adoption boundaries. The decision record documents kernel plus two adopters shipping together with three candidate adopters explicitly deferred per the Story Out of Scope section. Real traceable boundary decision.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "recorded_at": "2026-08-04T04:35:38.884Z"
+    },
+    {
+      "event_id": "25718966-d737-4bca-98c6-d6905e0dc51c",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "e2e AC4 and AC5 are literal failure-mode replays: hung silent subprocess, subprocess ignoring SIGTERM forcing SIGKILL, externally delivered SIGTERM previously misattributed. Exactly the failure modes named in Background. Verified by direct execution.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "recorded_at": "2026-08-04T04:35:39.307Z"
+    },
+    {
+      "event_id": "4fd0df2f-d7d1-4711-80ee-1929c895cd6a",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Done evidence is reproducible: the judge re-ran the cited test files at the current head and obtained the same pass counts referenced in the artifacts (e2e 5/5, adapter suites 32/32, evidence-consumer integration 3/3). Genuine done evidence.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "recorded_at": "2026-08-04T04:35:39.737Z"
+    },
+    {
+      "event_id": "ae13b7d4-9861-4ba0-ae75-f6b922ea1559",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The new optional flag is appended alongside existing flags with no existing flag, output field, or exit-code semantic removed (confirmed by grep and reading the verify-run help text). The architecture doc states the default equals timeout-ms so unset behavior is unchanged, consistent with the code path.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "recorded_at": "2026-08-04T04:35:40.153Z"
+    },
+    {
+      "event_id": "e1b0604a-8114-4986-b219-3cba675c973f",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Changed files span exactly one semantic unit: kernel, its two adopters plus the extraction source, their tests, and the docs describing the same change. Decision record reasoning (blast radius bounded, other adopters deferred to followups) matches the actual file list. A single reviewer can read this as one coherent decision.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "recorded_at": "2026-08-04T04:35:40.561Z"
+    },
+    {
+      "event_id": "25638ca7-c19d-4e16-9fbf-365e7a55b06d",
+      "type": "verdict",
+      "item_id": "failure_mode:timeout",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Timeout is the central failure mode under test: wall-clock timeout, no-progress timeout, and the fixed misattribution (external SIGTERM now timed_out=false) all exercised directly by the e2e and unit precedence tests. Verified by direct execution.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "recorded_at": "2026-08-04T04:35:40.985Z"
+    },
+    {
+      "event_id": "4961cf39-10e2-4181-8295-6d7a6451bd73",
+      "type": "verdict",
+      "item_id": "failure_mode:provider_failure",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The provider-failure analogue is an external uncontrolled process termination (external SIGTERM standing in for OOM killer or manual kill), exactly what the AC5 e2e sub-test and classifyTermination unit tests exercise with real signal delivery and real spawned processes. Concrete mapping, not keyword coincidence.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a70216fd5d1a4d68a",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-progress-heartbeat-policy-kernel; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+      "recorded_at": "2026-08-04T04:35:41.417Z"
+    }
+  ]
+}

@@ -1,0 +1,905 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
+  "source": "execute_merge",
+  "promoted_at": "2026-08-04T04:40:29.915Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:198ef3f66cea0e67e18e4d13a4489dbbbda88f594fd752a12441cd9e36ce79bc",
+    "compressed_hash": "sha256:b1a1525fa12bff305ad33c80f561f9257bef10c56e6f69fdfad658f0407ead8f",
+    "expanded_bytes": 17387,
+    "compressed_bytes": 3868,
+    "expanded_line_count": 449,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "decision_outcome_ledger",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-progress-heartbeat-policy-kernel",
+    "cost": {
+      "compressed_bytes": 3868,
+      "expanded_bytes": 17387,
+      "expanded_line_count": 449,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "base": "main",
+    "delivery": {
+      "status": "merged",
+      "source": "github_pr",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/408",
+      "merge_commit_sha": "bc722efef60c61c4ff4c58a93321e294a92c571d",
+      "merged_at": "2026-08-04T04:40:27Z"
+    },
+    "reconciliation": {
+      "status": "reconciliation_required",
+      "reasons": [
+        "decision_outcome_binding_failed"
+      ],
+      "evaluated_at": "2026-08-04T04:40:29.901Z",
+      "head_sha": "2bd5dabc9ebda05f970e41662fca9d9804256e6c"
+    },
+    "reconciliation_action": {
+      "status": "required",
+      "reason": "decision_outcome_binding_failed",
+      "commands": [
+        "vibepro pr prepare . --story-id story-vibepro-progress-heartbeat-policy-kernel --base main",
+        "vibepro execute merge . --story-id story-vibepro-progress-heartbeat-policy-kernel --base main --pr https://github.com/Unson-LLC/vibepro/pull/408"
+      ]
+    },
+    "decision_outcome_binding": {
+      "status": "failed",
+      "reason": "central_ledger_parse_failed",
+      "expected_entry_count": 56,
+      "promoted_count": 0,
+      "duplicate_count": 0,
+      "persistence_status": null
+    },
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/408",
+    "merge_commit_sha": "bc722efef60c61c4ff4c58a93321e294a92c571d",
+    "merged_at": "2026-08-04T04:40:27Z",
+    "current_head_sha": "2bd5dabc9ebda05f970e41662fca9d9804256e6c",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...2bd5dabc9ebda05f970e41662fca9d9804256e6c"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 59,
+    "copied_reference_count": 47,
+    "unresolved_reference_count": 7,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-progress-heartbeat-policy-kernel"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:198ef3f66cea0e67e18e4d13a4489dbbbda88f594fd752a12441cd9e36ce79bc"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:54f84972da13c48874d69a8705a50aaaf374d514ed0119cb53f3be8899ecf01b",
+      "audit_digest": "sha256:54f84972da13c48874d69a8705a50aaaf374d514ed0119cb53f3be8899ecf01b",
+      "line_count": 1208,
+      "raw_line_count": 1208,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_outcome_ledger",
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-outcome-ledger.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:fc769e21c17c7f45ef4ef7278b2736223817e0ca284bf736ee44fae327b54a35",
+      "audit_digest": "sha256:fc769e21c17c7f45ef4ef7278b2736223817e0ca284bf736ee44fae327b54a35",
+      "line_count": 1938,
+      "raw_line_count": 1938,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:b66647521a361ce47e23773a1bb835b5b542838d95384964c73487944e19f52a",
+      "audit_digest": "sha256:21df3249d0ff99f874ecc330fd15b39e4194d3b5e7bc4e7b6c2c646062df43d4",
+      "line_count": 5764,
+      "raw_line_count": 45934,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:574be3cb328d3d91504fc7dfef7aff7cb4509030e01b01d4b687004e05f99683",
+      "audit_digest": "sha256:82c1f40c34977dd6d5129a706482f74f34cb57ebd2bafd165c3bca1850b3823b",
+      "line_count": 2812,
+      "raw_line_count": 5177,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:85ef9cb3960277c9b93e7f673ee0de5267de063b5a439567250dfdc988f584be",
+      "audit_digest": "sha256:c5eb8fb304cf8a7c81d8e3f5eb4e3b9f310a2d823e7ed34a8ac5e782acaede5d",
+      "line_count": 21,
+      "raw_line_count": 609,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:5eb8abe80997d9f7be5fb9a514905dc6653c5cf8a109e528c19a2674f6a6778a",
+      "audit_digest": "sha256:4be42d1f029ca22bada19becb2065a94c207dfab5fefe274f8c78d9c78d12e92",
+      "line_count": 2866,
+      "raw_line_count": 5397,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:754f3fb60ae97f1e0e6af1d50c4f8dafcc1072b10264b99659b2ad3a3d9ef96a",
+      "audit_digest": "sha256:754f3fb60ae97f1e0e6af1d50c4f8dafcc1072b10264b99659b2ad3a3d9ef96a",
+      "line_count": 463,
+      "raw_line_count": 463,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:e053ff66deebac71ae1e4381d08d0888654f4641dbc1651c3e6e9286f9e7ec66",
+      "audit_digest": "sha256:b50e53495a02f45a8b6122bb3bb18bd20f6e188fb266f1f47afedc144b1254fe",
+      "line_count": 66,
+      "raw_line_count": 1282,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:95a8a90377172bb87a8d14d5b7f8b237eb50093c8f1aa02ea39b3a72924bf005",
+      "audit_digest": "sha256:95a8a90377172bb87a8d14d5b7f8b237eb50093c8f1aa02ea39b3a72924bf005",
+      "line_count": 1290,
+      "raw_line_count": 1290,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:b2d244cf15bd6b34f027854fc2441356142d35cac273ad9a805a966c33b98946",
+      "audit_digest": "sha256:b2d244cf15bd6b34f027854fc2441356142d35cac273ad9a805a966c33b98946",
+      "line_count": 1308,
+      "raw_line_count": 1308,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:88fed9ed308a42a9b97678b4cf5ac993a681b340f1668c7081af10c94ea1770a",
+      "audit_digest": "sha256:88fed9ed308a42a9b97678b4cf5ac993a681b340f1668c7081af10c94ea1770a",
+      "line_count": 597,
+      "raw_line_count": 597,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:adbdbd52cc8142785a82ffac324cadb250cca406c4f1bffe4d93e1291be9ce53",
+      "audit_digest": "sha256:adbdbd52cc8142785a82ffac324cadb250cca406c4f1bffe4d93e1291be9ce53",
+      "line_count": 139,
+      "raw_line_count": 139,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:7153af89e204d73c87ac11db1973d93c570f60e0467b3efc5c97375788c5c122",
+      "audit_digest": "sha256:7153af89e204d73c87ac11db1973d93c570f60e0467b3efc5c97375788c5c122",
+      "line_count": 155,
+      "raw_line_count": 155,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
+      "digest": "sha256:b2cdaa36b28364e4d3cf79f6ed55fcb6c3f7e65bfea4a0465d5f0e76695e55da",
+      "audit_digest": "sha256:b2cdaa36b28364e4d3cf79f6ed55fcb6c3f7e65bfea4a0465d5f0e76695e55da",
+      "line_count": 969,
+      "raw_line_count": 969,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-progress-heartbeat-policy-kernel/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/adjudication/story-vibepro-progress-heartbeat-policy-kernel/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-progress-heartbeat-policy-kernel/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/adjudication/story-vibepro-progress-heartbeat-policy-kernel/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-outcome-ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/pr/decision-outcome-ledger.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/pr/traceability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/history/review-result-gate_evidence-2026-08-02T11-56-52.372Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/history/review-result-gate_evidence-2026-08-02T11-56-52.372Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/history/review-result-gate_evidence-2026-08-04T03-11-58.328Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/history/review-result-gate_evidence-2026-08-04T03-11-58.328Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/history/review-result-gate_evidence-2026-08-04T03-53-52.654Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/history/review-result-gate_evidence-2026-08-04T03-53-52.654Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-progress-heartbeat-policy-kernel/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/spec/story-vibepro-progress-heartbeat-policy-kernel/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-progress-heartbeat-policy-kernel/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/stories/story-vibepro-progress-heartbeat-policy-kernel/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-progress-heartbeat-policy-kernel/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/stories/story-vibepro-progress-heartbeat-policy-kernel/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-progress-heartbeat-policy-kernel/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/validation-sequencing/story-vibepro-progress-heartbeat-policy-kernel/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-progress-heartbeat-policy-kernel/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/adjudication/story-vibepro-progress-heartbeat-policy-kernel/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-progress-heartbeat-policy-kernel/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/adjudication/story-vibepro-progress-heartbeat-policy-kernel/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/diagnostics/2026-08-02T110149Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/history/review-result-gate_evidence-2026-08-02T11-56-52.372Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/history/review-result-gate_evidence-2026-08-02T11-56-52.372Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/history/review-result-gate_evidence-2026-08-04T03-11-58.328Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/history/review-result-gate_evidence-2026-08-04T03-11-58.328Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/history/review-result-gate_evidence-2026-08-04T03-53-52.654Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/history/review-result-gate_evidence-2026-08-04T03-53-52.654Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-progress-heartbeat-policy-kernel/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/spec/story-vibepro-progress-heartbeat-policy-kernel/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-progress-heartbeat-policy-kernel/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/stories/story-vibepro-progress-heartbeat-policy-kernel/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-progress-heartbeat-policy-kernel/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/stories/story-vibepro-progress-heartbeat-policy-kernel/tasks/tasks.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-progress-heartbeat-policy-kernel/state.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/references/vibepro/validation-sequencing/story-vibepro-progress-heartbeat-policy-kernel/state.json",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 7366370
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T110149Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 989500
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 7428747
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 637802
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/surface-violations.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-progress-heartbeat-policy-kernel/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-progress-heartbeat-policy-kernel/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    }
+  ]
+}
