@@ -1415,9 +1415,21 @@
         "started_at": "2026-08-04",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-target-model-projection-v2",
+        "title": "target model projection v2 — 佐藤裁定済みの5問を target-model.json へ機械的に投影し model_version を 2 へ上げる",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-04",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-target-model-governance-rebaseline"
+    "current_story_id": "story-vibepro-target-model-projection-v2"
   },
-  "current_story_id": "story-vibepro-target-model-governance-rebaseline"
+  "current_story_id": "story-vibepro-target-model-projection-v2"
 }
