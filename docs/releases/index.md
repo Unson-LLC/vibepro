@@ -302,3 +302,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:421:start -->
 - [PR #421](https://github.com/Unson-LLC/vibepro/pull/421) — [2026-08](/releases/2026-08): story-vibepro-conformance-delta-ledger - conformance delta ledger — base/head差分でアーキテクチャ逸脱を再現可能に観測する
 <!-- vibepro-release-index-pr:421:end -->
+
+<!-- vibepro-release-index-pr:422:start -->
+- [PR #422](https://github.com/Unson-LLC/vibepro/pull/422) — [2026-08](/releases/2026-08): fix: iterative pr-manager walkFiles + exclude .claude from repo scanners
+<!-- vibepro-release-index-pr:422:end -->
