@@ -1580,3 +1580,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-strict-head-
 なし
 
 <!-- vibepro-release-pr:420:end -->
+
+<!-- vibepro-release-pr:414:start -->
+## [#414](https://github.com/Unson-LLC/vibepro/pull/414) story-vibepro-uiux-intake-judgment-gate - uiux intakeのSkill発火 + 判断記録gate
+
+- Author: @sintariran
+- Merged: 2026-08-04T02:09:12Z
+- Commit: `a6610283e9688d1e768b588efc2eda886c2b36aa`
+
+### Change Summary
+
+「行為を強制せず、無言を禁止する」というVibePro内の確立パターン （`not_verifiable_by_automation` のaccepted decision、`not_applicable` decisionによる 正直な閉じ方、guardのbypass理由必須）に揃え、分業を次で切る: 1. **Skill側（発火判断）**: `skills/vibepro-workflow/SKILL.md` にStory受領時のintake要否 判断を追記する。UI/UX intentなら `vibepro uiux intake validate` を回し、不要と判断 したら理由付きの `intake_not_applicable` decision recordを記録する。 2. **ハーネス側（判断存在の検証）**: `pr prepare` はintake coverageそのものを要求しない。 要求するのは「intake要否の判断が記録されていること」のみ。 - intake coverage artifact（`.vibepro/uiux/&lt;story-id&gt;/uiux-intake-coverage.json` または `.vibepro/design-modernize/&lt;story-id&gt;/uiux-intake-coverage.json`）が存在すれば satisfied - `intake_not_applicable`...
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:414:end -->

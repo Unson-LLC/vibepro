@@ -2973,6 +2973,9 @@ function formatExecutionGateAction(gate) {
   if (gate.id === 'gate:safety_secret_surface') {
     return `Record a secret_exposure decision (\`vibepro decision record --type secret_exposure --secret-location <ref> --secret-action redacted|rotated|revoked|false_positive\`) or a waiver against gate:safety_secret_surface: ${gate.reason ?? gate.status}`;
   }
+  if (gate.id === 'gate:uiux_intake_judgment') {
+    return `Record the intake applicability judgment: run \`vibepro uiux intake validate . --id <story-id>\` for UI/UX intents, or \`vibepro decision record . --id <story-id> --type intake_not_applicable --summary <text> --reason <why intake does not apply>\` when the story has no UI/UX intent: ${gate.reason ?? gate.status}`;
+  }
   if (gate.id === 'gate:deploy_verification') {
     return `Record current-bound deploy/smoke/health evidence (\`vibepro verify record ...\`) or a waiver against gate:deploy_verification (\`vibepro decision record --source gate:deploy_verification --type waiver --reason ...\`): ${gate.reason ?? gate.status}`;
   }
@@ -5775,6 +5778,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     storySource: primaryStory,
     fileGroups
   });
+  const uiuxIntakeJudgment = await readUiuxIntakeJudgmentContext(repoRoot, story.story_id);
   const environmentGraph = await readEnvironmentGraphIfExists(repoRoot);
   const agentReviews = await summarizeAgentReviewsForPr(repoRoot, {
     storyId: story.story_id,
@@ -5915,6 +5919,7 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     architectureSources,
     bugPhysicsTriage,
     architectureBlueprint,
+    uiuxIntakeJudgment,
     environmentGraph,
     git,
     scope,
@@ -10471,6 +10476,73 @@ function buildArchitectureBlueprintGate(blueprintCoverage, decisionRecords = nul
   };
 }
 
+// The uiux intake machinery (src/uiux-intake.js) only runs when an operator
+// explicitly invokes it, so the standard flow can ship a UI/UX story without
+// the intake questions ever being asked. This gate does not force the intake
+// itself -- auto-firing it off change detection would reproduce the
+// false-block -> gate-erosion cycle -- it forbids silence: every story must
+// either carry an intake coverage artifact or an explicit, reasoned
+// intake_not_applicable decision. The applicability judgment belongs to the
+// Skill/operator; the harness only verifies the judgment was recorded.
+const UIUX_INTAKE_COVERAGE_DIRS = ['uiux', 'design-modernize'];
+
+async function readUiuxIntakeJudgmentContext(repoRoot, storyId) {
+  if (!storyId) return null;
+  for (const dir of UIUX_INTAKE_COVERAGE_DIRS) {
+    const relPath = ['.vibepro', dir, storyId, 'uiux-intake-coverage.json'].join('/');
+    try {
+      const coverage = JSON.parse(await readFile(path.join(repoRoot, relPath), 'utf8'));
+      if (!coverage || typeof coverage !== 'object') continue;
+      return {
+        artifact: relPath,
+        status: coverage.status ?? null,
+        missing_required_fields: Array.isArray(coverage.missing_required_fields)
+          ? coverage.missing_required_fields.length
+          : null
+      };
+    } catch {
+      // Unreadable/corrupt artifacts prove no judgment; keep the gate closed
+      // instead of crashing pr prepare or passing on garbage.
+    }
+  }
+  return null;
+}
+
+function buildUiuxIntakeJudgmentGate({ uiuxIntakeJudgment = null, decisionRecords = null } = {}) {
+  const decisions = Array.isArray(decisionRecords?.decisions) ? decisionRecords.decisions : [];
+  const notApplicableDecision = decisions.find((decision) => (
+    decision.type === 'intake_not_applicable' && decision.status === 'accepted'
+  )) ?? null;
+  const waiver = findAcceptedDecisionForSource(decisionRecords, 'gate:uiux_intake_judgment');
+  const resolvedBy = uiuxIntakeJudgment
+    ? 'intake_coverage_artifact'
+    : notApplicableDecision
+      ? 'intake_not_applicable_decision'
+      : waiver ? 'waiver_decision' : null;
+  const decision = notApplicableDecision ?? waiver;
+  return {
+    id: 'gate:uiux_intake_judgment',
+    type: 'uiux_intake_judgment_gate',
+    label: 'UI/UX Intake Judgment Gate',
+    status: resolvedBy ? 'passed' : 'needs_evidence',
+    required: true,
+    resolved_by: resolvedBy,
+    intake_coverage: uiuxIntakeJudgment,
+    decision: decision ? {
+      decision_id: decision.decision_id,
+      type: decision.type,
+      reason: decision.reason ?? null
+    } : null,
+    reason: resolvedBy === 'intake_coverage_artifact'
+      ? `UI/UX intake coverage artifact is recorded (${uiuxIntakeJudgment.artifact}, status: ${uiuxIntakeJudgment.status ?? 'unknown'})`
+      : resolvedBy === 'intake_not_applicable_decision'
+        ? `intake_not_applicable decision is recorded: ${notApplicableDecision.reason ?? notApplicableDecision.summary ?? 'reason recorded'}`
+        : resolvedBy === 'waiver_decision'
+          ? `UI/UX intake judgment waived: ${waiver.summary ?? 'waiver recorded'}`
+          : 'No intake applicability judgment is recorded for this story. For UI/UX intents run `vibepro uiux intake validate . --id <story-id>`; otherwise record `vibepro decision record . --id <story-id> --type intake_not_applicable --summary <text> --reason <why intake does not apply>`'
+  };
+}
+
 function buildSafetySecretSurfaceGate(fileGroups, decisionRecords = null) {
   const files = detectSafetySurfaceFiles(fileGroups);
   if (files.length === 0) return null;
@@ -10941,6 +11013,7 @@ function buildGateDag({
   architectureSources = [],
   bugPhysicsTriage = null,
   architectureBlueprint = null,
+  uiuxIntakeJudgment = null,
   environmentGraph = null,
   git = null,
   scope = null,
@@ -11061,6 +11134,7 @@ function buildGateDag({
   const effectiveManagedWorktreeGate = managedWorktreeGate ?? buildManagedWorktreeGate(managedWorktreeContext);
   const safetySecretSurfaceGate = buildSafetySecretSurfaceGate(fileGroups, decisionRecords);
   const deployVerificationGate = buildDeployVerificationGate({ environmentGraph, changeClassification, prRoute, verificationEvidence, decisionRecords });
+  const uiuxIntakeJudgmentGate = buildUiuxIntakeJudgmentGate({ uiuxIntakeJudgment, decisionRecords });
   const designDiagramsGate = buildDesignDiagramsGate({ storySource, fileGroups, inferredSpec: designDiagramSpec ?? inferredSpec });
   const changeClassificationGate = buildChangeClassificationGate(changeClassification);
   const prFreshnessGate = buildPrFreshnessGate(git, { verificationEvidence, agentReviews });
@@ -11209,6 +11283,7 @@ function buildGateDag({
     ...(effectiveManagedWorktreeGate ? [effectiveManagedWorktreeGate] : []),
     ...(safetySecretSurfaceGate ? [safetySecretSurfaceGate] : []),
     ...(deployVerificationGate ? [deployVerificationGate] : []),
+    uiuxIntakeJudgmentGate,
     changeClassificationGate,
     prFreshnessGate,
     architectureGate,
@@ -11317,6 +11392,8 @@ function buildGateDag({
       { from: 'gate:pr_route_classification', to: 'gate:deploy_verification' },
       { from: 'gate:deploy_verification', to: 'gate:pr_body_contract' }
     ] : []),
+    { from: 'gate:pr_route_classification', to: 'gate:uiux_intake_judgment' },
+    { from: 'gate:uiux_intake_judgment', to: 'gate:pr_body_contract' },
     ...(effectiveManagedWorktreeGate ? [
       { from: 'gate:pr_body_contract', to: 'gate:managed_worktree' },
       { from: 'gate:managed_worktree', to: 'gate:change_classification' }
@@ -15054,6 +15131,7 @@ function collectUnresolvedRequiredGates(gateDag) {
       'agent_evidence_lifecycle_gate',
       'safety_surface_gate',
       'deploy_verification_gate',
+      'uiux_intake_judgment_gate',
       'bug_physics_triage_gate',
       'bug_physics_profile_gate',
       'bug_physics_feedback_gate',
@@ -15267,6 +15345,7 @@ function isCriticalUnresolvedGate(gate) {
   if (gate.id === 'gate:ci_status_or_waiver' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:vibepro_artifact_policy' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:split_resolution' && gate.status !== 'passed') return true;
+  if (gate.id === 'gate:uiux_intake_judgment' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:managed_worktree' && gate.required && !['passed', 'bypassed', 'not_applicable', 'satisfied'].includes(gate.status)) return true;
   if (gate.type === 'workflow_heavy_gate' && gate.status !== 'passed') return true;
   if (gate.id === 'gate:agent_review' && gate.status !== 'passed') return true;

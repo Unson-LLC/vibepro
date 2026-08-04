@@ -1,0 +1,1 @@
+{"status":"pass","summary":"All three verification records are runner_direct at HEAD 7042185e; independent re-runs reproduced 9/9 and 4/4; decisions are honest and head-bound; the repo-wide gate rollout is disclosed with recovery guidance.","agent_id":"a70bb4fccd449cfef","agent_system":"claude_code","model":"claude-sonnet-5","head":"7042185e"}

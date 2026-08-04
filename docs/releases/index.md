@@ -290,3 +290,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:420:start -->
 - [PR #420](https://github.com/Unson-LLC/vibepro/pull/420) — [2026-08](/releases/2026-08): story-vibepro-strict-head-binding-origin-guard - strict HEAD bindingをfrozen final_reviewとrole policy例外に限定する
 <!-- vibepro-release-index-pr:420:end -->
+
+<!-- vibepro-release-index-pr:414:start -->
+- [PR #414](https://github.com/Unson-LLC/vibepro/pull/414) — [2026-08](/releases/2026-08): story-vibepro-uiux-intake-judgment-gate - uiux intakeのSkill発火 + 判断記録gate
+<!-- vibepro-release-index-pr:414:end -->
