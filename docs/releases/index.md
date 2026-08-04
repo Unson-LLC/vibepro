@@ -306,3 +306,7 @@ See [Version and Release Channels](/reference/version-history) to identify the v
 <!-- vibepro-release-index-pr:422:start -->
 - [PR #422](https://github.com/Unson-LLC/vibepro/pull/422) — [2026-08](/releases/2026-08): fix: iterative pr-manager walkFiles + exclude .claude from repo scanners
 <!-- vibepro-release-index-pr:422:end -->
+
+<!-- vibepro-release-index-pr:424:start -->
+- [PR #424](https://github.com/Unson-LLC/vibepro/pull/424) — [2026-08](/releases/2026-08): story-vibepro-target-model-governance-rebaseline - target model governance rebaseline — 誰がモデルを変えてよいかを三分法で確定し、再baseline案と裁定カードを機械生成する
+<!-- vibepro-release-index-pr:424:end -->

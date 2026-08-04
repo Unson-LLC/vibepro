@@ -1664,3 +1664,24 @@ Story文書を更新: [docs/management/stories/active/story-vibepro-conformance-
 なし
 
 <!-- vibepro-release-pr:422:end -->
+
+<!-- vibepro-release-pr:424:start -->
+## [#424](https://github.com/Unson-LLC/vibepro/pull/424) story-vibepro-target-model-governance-rebaseline - target model governance rebaseline — 誰がモデルを変えてよいかを三分法で確定し、再baseline案と裁定カードを機械生成する
+
+- Author: @sintariran
+- Merged: 2026-08-04T14:16:30Z
+- Commit: `b34a74cf8e9e5f17d4b258f8fff53473cfa4cc1b`
+
+### Change Summary
+
+Story文書を更新: [docs/management/stories/active/story-vibepro-target-model-governance-rebaseline.md](https://github.com/Unson-LLC/vibepro/blob/main/docs/management/stories/active/story-vibepro-target-model-governance-rebaseline.md)
+
+### Compatibility
+
+なし
+
+### User Action
+
+なし
+
+<!-- vibepro-release-pr:424:end -->
