@@ -45,8 +45,10 @@ target-model.json の `note` は上記の `governance` ブロックを参照す�
 
 - `model_version` は正の整数。**人間裁定による改訂でのみ増える**（machine_maintainable な割当追加では増えない）。
 - 欠落は `null` に degrade する（本repo以外の利用リポジトリの後方互換）。0以下・非整数・非数値は理由付きエラー。
-- conformance 出力は `model.version` を持つ。delta 出力は `base.model_version` / `head.model_version` / `model_version_changed` を持つ。
-- **なぜ必要か**: モデル改訂を跨いだ delta は同一軸の改善/悪化ではない。孤児をモジュールへ割り当てると、それまで不可視だった import が module 間依存として顕在化し、new violation として現れる。version が付いていなければ、これは「コードが悪化した」と誤読される。
+- conformance 出力は `model.version` を持つ。delta 出力は `base.model_version` / `head.model_version` / `previous_model_version` / `model_version_changed` を持つ。
+- **物差しは固定する**。1回の delta では base 側も head 側も *現在の* target model で計測する（`modelPath` は base worktree 作成前に live repo 基準で解決される既存挙動）。これにより単一 delta は「コードが変わった」だけを表し、「モデルが変わった」を混入させない。`base.model_version` と `head.model_version` は一致するのが正常であり、読み手が物差しを仮定せず確認できるよう両方出力する。
+- **動いたことを検出すべきは計測間**。`model_version_changed` は、前回永続化された `delta.json` の `head.model_version` と現在の model_version を比較する。初回計測（前回artifactなし）は `false`（比較対象がないだけで「変わっていない」証拠ではないため、`previous_model_version: null` を併記する）。
+- **なぜ必要か**: 孤児をモジュールへ割り当てると、それまで不可視だった import が module 間依存として顕在化し、new violation として現れる。version が付いていなければ、これは「コードが悪化した」と誤読される。
 
 ## Rebaseline Proposal のデータフロー
 
