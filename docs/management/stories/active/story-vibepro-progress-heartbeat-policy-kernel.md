@@ -59,7 +59,7 @@ updated_at: 2026-08-02
 ## Acceptance Criteria
 
 - AC1: policy kernelは純関数+注入clockで構成され、`observe` に同一進捗値を渡してもデッドラインが延長されない（重複進捗の延命拒否）。
-- AC2: kernelの `check()` は `no_progress` / `hard_cap`（wall_clock・cost・attempts別）/ `external_signal` を区別した構造化causeを返す。
+- AC2: kernelは構造化causeを発行する: `check()` が `no_progress` / `hard_cap`（wall_clock・cost・attempts別）を固定優先順位の構造化causeとして返し、`classifyTermination` が `external_signal`（policyが送っていないsignal）を policy kill と区別して帰属する。
 - AC3: codex-subagent-runtime-adapterの既存テスト（CDI-S-5系）が変更なしまたは意味論保存の最小変更で全通過する。
 - AC4: graphify update子プロセスは進捗停止時・wall-clock超過時に SIGTERM→猶予→SIGKILL で終了し、stop_reasonが証跡に残る。stdout蓄積に上限がある。
 - AC5: verification-runnerは実行中にテスト完了数をストリーミング観測し、進捗が続く限り延命する。外部SIGTERMで殺された実行は `timed_out: false` かつ external kill として帰属される。
