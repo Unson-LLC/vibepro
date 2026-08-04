@@ -1,0 +1,407 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-target-model-governance-rebaseline",
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "Target model governance: who may change the yardstick, and how that authority can be subverted",
+      "mermaid": "flowchart LR\n    Scan[conformance import scan] --> Gen[rebaseline proposal generator read-only]\n    Model[target-model.json adjudicated yardstick] --> Gen\n    Gen --> MM[machine_maintainable orphan assignment]\n    Gen --> Cards[adjudication cards pending human answer]\n    Cards --> Human[sato_keigo adjudication]\n    Human --> Proj[machine_projection apply approved result and bump model_version]\n    MM --> Model\n    Proj --> Model\n\n    subgraph Threats\n        T1[agent relaxes the norm by editing rules or declaring new allowed dependencies under the guise of maintenance]\n        T2[agent answers its own adjudication cards and treats the answer as human approval]\n        T3[orphan assignment silently introduces new undeclared dependencies so model cleanup reads as code regression]\n        T4[model revision between measurements makes violation counts incomparable and hides a real regression]\n        T5[non-deterministic proposal output lets the same repo produce different recommendations run to run]\n    end\n\n    MM -.-> T1\n    Cards -.-> T2\n    MM -.-> T3\n    Proj -.-> T4\n    Gen -.-> T5\n\n    T1 -->|mitigation| M1[governance block enumerates the three categories and rules content is pinned by a repository test]\n    T2 -->|mitigation| M2[cards carry status pending_adjudication and answered_at null, asserted by test, and the agent records no answer]\n    T3 -->|mitigation| M3[every candidate carries induced_dependencies with creates_new_violation, and such a candidate is downgraded to human_adjudication]\n    T4 -->|mitigation| M4[delta records base and head model_version plus previous_model_version and model_version_changed against the last persisted measurement]\n    T5 -->|mitigation| M5[all ordering derives from element values, never traversal order, proven by a two-run deep equality test]\n"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "The adjudicated target model carries a machine-readable governance block that enumerates machine_maintainable, human_adjudicated and machine_projection operations, and no work performed under machine_maintainable authority alters rules[] or allowed_dependencies.",
+      "rationale": "The previous note simultaneously forbade automatic revision and permitted machine maintenance, so what an agent may do was reader-dependent; the split must be explicit and the normative core must be provably untouched.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "TMG-S-1: target-model.json は governance ブロックを持ち、machine_maintainable / human_adjudicated / machine_projection の3カテゴリに、具体的な操作が列挙される"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "docs/architecture/target-model.json",
+            "anchor": "\"governance\": {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-rebaseline-proposal.test.js",
+            "case": "TMG-S-1/S-8: the repository target model declares the governance three-way split and a model version"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "docs/architecture/target-model.json",
+            "must_contain": "\"machine_maintainable\":"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-rebaseline-proposal.test.js",
+            "must_cover": "TMG-S-1/S-8: the repository target model declares the governance three-way split and a model version"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T10:46:07.209Z",
+      "last_revised_at": "2026-08-04T10:46:07.209Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "model_version is optional and degrades to null when absent, but a present value that is not an integer of at least 1 fails the scan with a reason instead of being silently treated as unversioned.",
+      "rationale": "Silently coercing 0 or \"2\" to \"no version\" would let a delta compare measurements across model revisions without anyone noticing — exactly the misreading versioning exists to prevent.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "TMG-S-2: target-model.json は model_version（正の整数）を持ち、loadTargetModel はこれを読み取る。欠落時は null に degrade し、不正値は理由付きエラーになる"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "export function parseModelVersion(value, modelPath) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-rebaseline-proposal.test.js",
+            "case": "TMG-S-2: malformed model_version fails loudly instead of degrading to unversioned"
+          },
+          {
+            "file": "test/architecture-rebaseline-proposal.test.js",
+            "case": "TMG-S-2: model_version is read, surfaced on conformance output, and optional"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance.js",
+            "must_contain": "export function parseModelVersion(value, modelPath) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-rebaseline-proposal.test.js",
+            "must_cover": "TMG-S-2: malformed model_version fails loudly instead of degrading to unversioned"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T10:46:07.209Z",
+      "last_revised_at": "2026-08-04T10:46:07.209Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "Every ordering, score and identifier in the rebaseline proposal is derived from the elements' own values (module name, file path, edge count) and never from traversal or discovery order, so two runs over identical inputs produce byte-identical output apart from generated_at.",
+      "rationale": "A proposal that shifts between runs cannot be used as the evidence base for an adjudication, and ordinal-derived identity is a known trap that breaks under insertion.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "TMG-S-6: proposal は決定論的である。同一入力に対して2回生成すると、generated_at を除く全内容が完全一致する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-rebaseline-proposal.js",
+            "anchor": "function buildOrphanClusters(context) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-rebaseline-proposal.test.js",
+            "case": "TMG-S-6: proposal generation is deterministic apart from generated_at"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-rebaseline-proposal.js",
+            "must_contain": "id: `orphan_cluster:${members[0]}`"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-rebaseline-proposal.test.js",
+            "must_cover": "TMG-S-6: proposal generation is deterministic apart from generated_at"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T10:46:07.209Z",
+      "last_revised_at": "2026-08-04T10:46:07.209Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given a repository with orphan files and undeclared module dependencies, running vibepro architecture rebaseline-proposal produces an artifact containing a ranked home-module candidate list per orphan with the real import edges as evidence, connected components over orphan-to-orphan imports as new-module candidate clusters, and every undeclared dependency triaged into declare_candidate or resolve with its rule_id-derived reason.",
+      "rationale": "The adjudicator must receive candidates and grounds, not a raw violation dump; ranking that treats the wildcard entrypoint as an ownership signal would make the entrypoint win nearly every orphan.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "TMG-S-4: vibepro architecture rebaseline-proposal は、現状スキャンから (a) 孤児全件のモジュール割当候補、(b) 孤児の相互依存に基づくクラスタ、(c) 未宣言依存全件の declare / resolve 仕分けを含む proposal artifact を生成する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-rebaseline-proposal.js",
+            "anchor": "export async function runRebaselineProposal(repoRoot, options = {}) {"
+          },
+          {
+            "file": "src/architecture-rebaseline-proposal.js",
+            "anchor": "export function isDispatcherModule(context, module) {"
+          },
+          {
+            "file": "src/architecture-rebaseline-proposal.js",
+            "anchor": "function buildDependencyTriage(context) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-rebaseline-proposal.test.js",
+            "case": "TMG-S-4: orphan assignment ranks consumers over dependencies and excludes dispatcher modules"
+          },
+          {
+            "file": "test/architecture-rebaseline-proposal.test.js",
+            "case": "TMG-S-4: undeclared dependencies are triaged into declare candidates and must-resolve entries"
+          },
+          {
+            "file": "test/architecture-rebaseline-proposal.test.js",
+            "case": "TMG-S-4: orphan clusters group mutually importing orphans and are flagged human adjudicated"
+          },
+          {
+            "file": "test/architecture-rebaseline-proposal.test.js",
+            "case": "TMG-S-4: cli writes proposal artifacts and an optional committed snapshot"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-rebaseline-proposal.js",
+            "must_contain": "export async function runRebaselineProposal(repoRoot, options = {}) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-rebaseline-proposal.test.js",
+            "must_cover": "TMG-S-4: orphan assignment ranks consumers over dependencies and excludes dispatcher modules"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T10:46:07.209Z",
+      "last_revised_at": "2026-08-04T10:46:07.209Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "Given an orphan whose assignment to its top candidate module would surface an import as a module dependency that allowed_dependencies does not permit and that does not already exist as a violating pair, the candidate carries that pair in induced_dependencies with creates_new_violation true and the recommendation is downgraded from machine_maintainable_assign to human_adjudication.",
+      "rationale": "Assigning an orphan is not semantically neutral: previously invisible imports become module-level dependencies, so applying such an assignment as routine maintenance would quietly worsen the measured architecture.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "TMG-S-5: 各割当候補は、その割当を適用した場合に誘発される新規モジュール間依存（induced_dependencies、既存の allowed_dependencies で許可されるかの判定付き）を含む"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-rebaseline-proposal.js",
+            "anchor": "export function buildInducedDependencies(context, { module, dependencyEdges, consumerEdges }) {"
+          },
+          {
+            "file": "src/architecture-rebaseline-proposal.js",
+            "anchor": "function buildRecommendation(candidates) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-rebaseline-proposal.test.js",
+            "case": "TMG-S-5: assignment candidates carry the module dependencies the assignment would induce"
+          },
+          {
+            "file": "test/architecture-rebaseline-proposal.test.js",
+            "case": "TMG-S-5: an assignment that would create a new violating pair is not recommended as machine maintainable"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-rebaseline-proposal.js",
+            "must_contain": "creates_new_violation: !entry.allowed && !entry.pair_already_present"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-rebaseline-proposal.test.js",
+            "must_cover": "TMG-S-5: an assignment that would create a new violating pair is not recommended as machine maintainable"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T10:46:07.209Z",
+      "last_revised_at": "2026-08-04T10:46:07.209Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "Given a base/head conformance delta run, the output records the model version on both sides — which agree, because both sides are measured against the current model as a fixed yardstick — together with previous_model_version read from the last persisted delta artifact and model_version_changed, which is true only when a prior measurement exists and used a different model version.",
+      "rationale": "Isolating code change from model change requires a fixed yardstick inside one delta; the movement that must be flagged is between recorded measurements, where a model revision makes counts incomparable.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "TMG-S-3: architecture conformance の出力は model.version を含み、architecture conformance --base の delta 出力は base/head 双方の model_version と model_version_changed を含む"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance-delta.js",
+            "anchor": "async function readPreviousModelVersion(root) {"
+          },
+          {
+            "file": "src/architecture-conformance-delta.js",
+            "anchor": "function summarizeSnapshot(snapshot) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-rebaseline-proposal.test.js",
+            "case": "TMG-S-3: delta reports the model version on both sides and flags a revision since the last recorded measurement"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance-delta.js",
+            "must_contain": "previous_model_version: previousModelVersion,"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-rebaseline-proposal.test.js",
+            "must_cover": "TMG-S-3: delta reports the model version on both sides and flags a revision since the last recorded measurement"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T10:46:07.209Z",
+      "last_revised_at": "2026-08-04T10:46:07.209Z"
+    },
+    {
+      "id": "S-004",
+      "type": "scenario",
+      "statement": "Given items that fall under governance.human_adjudicated — new module creation, new allowed dependency declaration, and rule inversions — they are delivered as at most five option cards, each option stating its consequence and one option marked as recommended, and the card document remains machine-detectably unanswered until the adjudicator answers it.",
+      "rationale": "Handing a human a dependency matrix has been measured to fail; the agent generating and then answering its own cards would fabricate the very human approval R-004 requires.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 6,
+            "text_snippet": "TMG-S-7: 人間裁定が必要な項目は、選択肢5問以内・各選択肢の帰結明記・推奨付きの裁定カードとして残され、未回答であることが artifact 上で判別できる"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-rebaseline-proposal.js",
+            "anchor": "function buildAdjudicationIndex({ orphanClusters, dependencyTriage }) {"
+          },
+          {
+            "file": "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+            "anchor": "status: pending_adjudication"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-rebaseline-proposal.test.js",
+            "case": "TMG-S-7: adjudication cards stay pending, hold at most 5 questions, and each carries a recommendation"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "docs/architecture/adjudication/target-model-rebaseline-cards.md",
+            "must_contain": "answered_at: null"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-rebaseline-proposal.test.js",
+            "must_cover": "TMG-S-7: adjudication cards stay pending, hold at most 5 questions, and each carries a recommendation"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T10:46:07.209Z",
+      "last_revised_at": "2026-08-04T10:46:07.209Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "An assignment applied under machine_maintainable authority adds only entries to modules[].paths: the affected files stop being orphans, allowed_dependencies and rules[] are byte-identical to their adjudicated state, and the undeclared dependency count does not increase.",
+      "rationale": "This is the boundary that keeps machine maintenance from becoming an unauthorized relaxation of the norm; it must be checkable rather than promised.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 7,
+            "text_snippet": "TMG-S-8: 機械保守範囲として modules[].paths に追加した割当は、割当後の再スキャンで当該ファイルが孤児から消え、かつ rules[] と allowed_dependencies が無変更であることが確認できる"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "docs/architecture/target-model.json",
+            "anchor": "\"src/architecture-conformance-delta.js\","
+          },
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "export function assignFilesToModules(files, modules) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-rebaseline-proposal.test.js",
+            "case": "TMG-S-1/S-8: the repository target model declares the governance three-way split and a model version"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "docs/architecture/target-model.json",
+            "must_contain": "\"src/architecture-rebaseline-proposal.js\""
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-rebaseline-proposal.test.js",
+            "must_cover": "TMG-S-1/S-8: the repository target model declares the governance three-way split and a model version"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T10:46:07.209Z",
+      "last_revised_at": "2026-08-04T10:46:07.209Z"
+    }
+  ],
+  "generated_at": "2026-08-04T10:46:07.207Z",
+  "generated_by": {
+    "caller": "codex",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": null
+}
