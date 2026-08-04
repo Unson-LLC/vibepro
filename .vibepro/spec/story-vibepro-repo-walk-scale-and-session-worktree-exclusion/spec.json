@@ -1,0 +1,333 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-repo-walk-scale-and-session-worktree-exclusion",
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "src/pr-manager.js's walkFiles(dir) walks the directory tree with an explicit pending queue and a single files accumulator; it does not recurse per directory or pass an accumulated subtree result as spread call arguments, so the walked file count never enters a call's argument list.",
+      "rationale": "The previous implementation was files.push(...await walkFiles(fullPath)); once a subtree accumulates more entries than V8 accepts as call arguments this throws 'Maximum call stack size exceeded', the same failure class PR #409 fixed for 8 other walkers but did not cover for this one.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "明示キューと単一アキュムレータによる反復走査で実装される"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "export async function walkFiles(dir) {"
+          },
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "const pending = [dir];"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.test.js",
+            "case": "walkFiles survives a subtree larger than the spread-argument limit and returns the full count"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/pr-manager.js",
+            "must_contain": "const pending = [dir];"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.test.js",
+            "must_cover": "survives a subtree larger than the spread-argument limit"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T08:17:30.656Z",
+      "last_revised_at": "2026-08-04T08:17:30.656Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given a subtree containing more entries than V8's spread-argument limit for the running stack size, when pr-manager.js's walkFiles processes it through its explicit-queue traversal flow -- moving each pending directory through a queued state then a processed state exactly once -- verified in a child process at --stack-size=200 with 30000 files (where the previous recursive+spread implementation throws 'Maximum call stack size exceeded'), then walkFiles returns the full flat file count without throwing RangeError.",
+      "rationale": "Pins the regression at a suite-friendly scale: the reduced stack size scales the reproduction down from the real-world scale (280,852 files under .claude/worktrees) to 30000 files while exercising the identical failure mechanism (call-argument count, not recursion depth).",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "stack-size=200 の子プロセスで回帰テストが証明する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "const pending = [dir];"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.test.js",
+            "case": "walkFiles survives a subtree larger than the spread-argument limit and returns the full count"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.test.js",
+            "must_cover": "--stack-size=200"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T08:17:30.656Z",
+      "last_revised_at": "2026-08-04T08:17:30.656Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "walkFiles(dir) returns a flat array of absolute file paths including files nested at any depth; a missing root directory yields []; ENOENT is tolerated for each pending directory, not only the root; non-ENOENT errors propagate to the caller. This external contract is identical before and after the recursion-to-iterative-queue rewrite.",
+      "rationale": "The rewrite must be behavior-preserving for both callers (buildStoryE2eCoverage, readVisualQaRun); neither caller's own contract with its consumers changes.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "walkFiles の外部契約...は変更前と同一である"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "if (error.code === 'ENOENT') continue;"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.test.js",
+            "case": "walkFiles returns nested files as absolute paths and treats a missing directory as empty"
+          },
+          {
+            "file": "test/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.test.js",
+            "case": "walkFiles propagates non-ENOENT errors instead of swallowing them"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.test.js",
+            "must_cover": "treats a missing directory as empty"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T08:17:30.656Z",
+      "last_revised_at": "2026-08-04T08:17:30.656Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "architecture-profiler.js, code-quality-scanner.js, and database-access-scanner.js each point their local IGNORED_DIRS/PROFILER_IGNORED_DIRS identifier at the single shared src/scan-ignored-dirs.js SCAN_IGNORED_DIRS facade instead of maintaining an independent Set literal, so the three scanners' ignore sets cannot drift apart the way they had (architecture-profiler ignored .worktrees, the other two did not; none ignored .claude).",
+      "rationale": "SCAN_IGNORED_DIRS is exposed as a frozen has()-only object, not a frozen Set, because Object.freeze on a Set only freezes the Set object's own properties, not its internal slots, so .add()/.delete() would still mutate the one shared instance across all three consumers.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "単一の共有定数に集約され、3スキャナで同一の集合を参照する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/scan-ignored-dirs.js",
+            "anchor": "export const SCAN_IGNORED_DIRS = Object.freeze({"
+          },
+          {
+            "file": "src/architecture-profiler.js",
+            "anchor": "const PROFILER_IGNORED_DIRS = SCAN_IGNORED_DIRS;"
+          },
+          {
+            "file": "src/code-quality-scanner.js",
+            "anchor": "const IGNORED_DIRS = SCAN_IGNORED_DIRS;"
+          },
+          {
+            "file": "src/database-access-scanner.js",
+            "anchor": "const IGNORED_DIRS = SCAN_IGNORED_DIRS;"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/scan-ignored-dirs.js",
+            "must_contain": "export const SCAN_IGNORED_DIRS = Object.freeze({"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T08:17:30.656Z",
+      "last_revised_at": "2026-08-04T08:17:30.656Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "Given real source under src/ and decoy source of identical findings-triggering content placed under .claude/worktrees/**/src and .worktrees/**/src (plus a distinctive .py extension only architecture-profiler would newly detect as a language), when architecture-profiler / code-quality-scanner / database-access-scanner scan the repository, then all three report findings only for the real source file: the .claude and .worktrees decoys are excluded from every scanner's file list and detected-language/finding output.",
+      "rationale": ".claude/worktrees is the Claude Code session-worktree store (measured 280,852 files / 5.6GB in the real checkout) and .worktrees is the generic managed-worktree store; both are pure scan cost with nothing to detect, and prior to this Story none of the three scanners consistently excluded them.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": ".claude/worktrees 配下および .worktrees 配下のファイルを走査結果に含めない"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/scan-ignored-dirs.js",
+            "anchor": "'.claude',"
+          },
+          {
+            "file": "src/scan-ignored-dirs.js",
+            "anchor": "'.worktrees',"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.test.js",
+            "case": "architecture-profiler, code-quality-scanner, and database-access-scanner all skip .claude and .worktrees"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "test_pattern": [
+          {
+            "file_glob": "test/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.test.js",
+            "must_cover": "all skip .claude and .worktrees"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T08:17:30.656Z",
+      "last_revised_at": "2026-08-04T08:17:30.656Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "The scanner ignore-set consolidation only narrows scan scope: detection logic, gate_effect classification, and output schema of architecture-profiler / code-quality-scanner / database-access-scanner are unchanged, and their pre-existing regression tests pass unmodified.",
+      "rationale": "Only the ignore-set source changed (local literal to shared import). The authorization-order-risk detection branches (!authorizationLine guard, queryLine < authorizationLine comparison), the query-shape signature guard (!signature), and the architecture-profiler auth-mechanism detection branches (dependencies.has('next-auth'), dependencies.has('@auth/core'), hasNextAuthRoute(fileSet)) are untouched by this Story's diff to those files.",
+      "inherited_behaviors": [
+        {
+          "condition": "!authorizationLine",
+          "classification": "existing",
+          "files": [
+            "src/code-quality-scanner.js"
+          ]
+        },
+        {
+          "condition": "queryLine < authorizationLine",
+          "classification": "existing",
+          "files": [
+            "src/code-quality-scanner.js"
+          ]
+        },
+        {
+          "condition": "!signature",
+          "classification": "existing",
+          "files": [
+            "src/code-quality-scanner.js"
+          ]
+        },
+        {
+          "condition": "dependencies.has('next-auth')",
+          "classification": "existing",
+          "files": [
+            "src/architecture-profiler.js"
+          ]
+        },
+        {
+          "condition": "dependencies.has('@auth/core')",
+          "classification": "existing",
+          "files": [
+            "src/architecture-profiler.js"
+          ]
+        },
+        {
+          "condition": "hasNextAuthRoute(fileSet)",
+          "classification": "existing",
+          "files": [
+            "src/architecture-profiler.js"
+          ]
+        }
+      ],
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "3スキャナの既存の検出結果・出力スキーマは変わらない（既存テストが無改変で通る）"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/code-quality-scanner.js",
+            "anchor": "!authorizationLine"
+          },
+          {
+            "file": "src/code-quality-scanner.js",
+            "anchor": "queryLine < authorizationLine"
+          },
+          {
+            "file": "src/code-quality-scanner.js",
+            "anchor": "if (!signature) {"
+          },
+          {
+            "file": "src/architecture-profiler.js",
+            "anchor": "dependencies.has('next-auth')"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-profiler.test.js",
+            "case": "profileArchitecture walks nested directories and honors ignore/size rules"
+          },
+          {
+            "file": "test/story-vibepro-repo-walk-scale-and-session-worktree-exclusion.test.js",
+            "case": "architecture-profiler, code-quality-scanner, and database-access-scanner all skip .claude and .worktrees"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/code-quality-scanner.js",
+            "must_contain": "if (!signature) {"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T08:17:30.656Z",
+      "last_revised_at": "2026-08-04T08:17:30.656Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "flow",
+      "mermaid": "flowchart LR\n  CLI[check architecture / story diagnose] --> Profiler[architecture-profiler collectFiles]\n  CLI --> Quality[code-quality-scanner collectFiles]\n  CLI --> DbAccess[database-access-scanner collectFiles]\n  Profiler --> Ignore[SCAN_IGNORED_DIRS.has]\n  Quality --> Ignore\n  DbAccess --> Ignore\n  Ignore -->|excluded| Skip[.claude / .worktrees / node_modules / etc. pruned]\n  Ignore -->|included| Scan[file read + pattern detection]\n  Scan --> Findings[per-scanner findings + output schema]\n  VisualQA[readVisualQaRun / buildStoryE2eCoverage] --> WalkFiles[pr-manager walkFiles pending-queue traversal]\n  WalkFiles --> FlatList[flat absolute-path file list]",
+      "rationale": "Shows both changed surfaces of this Story on one diagram: the three scanners now sharing one ignore-set check, and pr-manager's walkFiles now using the same iterative pending-queue shape as the scanners' own collectFiles walkers."
+    },
+    {
+      "kind": "threat_model",
+      "mermaid": "flowchart LR\n  Actor[Contributor placing or leaving source under an ignored dir name] --> Surface[SCAN_IGNORED_DIRS: .claude / .worktrees / node_modules / etc.]\n  Mutator[Hypothetical call site invoking .add or .delete] --> Surface\n  Surface --> Asset[architecture-profiler / code-quality-scanner / database-access-scanner findings feeding VibePro gate evidence]\n  Threat1[Threat: real source hidden under an ignored dir evades detection] --> Surface\n  Threat2[Threat: shared set mutated at runtime, scanners silently drift apart] --> Surface\n  Surface --> Control1[has-only frozen facade structurally blocks add/delete mutation]\n  Surface --> Control2[Ignore set limited to tooling/session-state dir names, never product source dir names]\n  Control1 --> Asset\n  Control2 --> Asset",
+      "rationale": "The only security-relevant surface this Story touches is scan-scope narrowing: a scanner that silently under-scans produces a misleadingly clean finding set for the gates that consume it (architecture axis quality, responsibility-authority candidates, code-quality risk surfaces). The has()-only frozen facade and the tooling-only exclusion list are the two controls that keep that narrowing bounded and non-driftable."
+    }
+  ],
+  "parent_design": [
+    "story-vibepro-repo-walk-scale-and-session-worktree-exclusion"
+  ],
+  "generated_at": "2026-08-04T08:17:30.653Z",
+  "generated_by": {
+    "caller": "claude_code",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": null
+}
