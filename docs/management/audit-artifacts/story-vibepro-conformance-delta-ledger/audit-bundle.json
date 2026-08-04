@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-conformance-delta-ledger",
   "source": "execute_merge",
-  "promoted_at": "2026-08-04T09:52:55.307Z",
+  "promoted_at": "2026-08-04T09:53:03.109Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-index.json",
@@ -38,11 +38,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:7f77e3fe1cf104e7f578c6c247e7ecf2126fc5dcafb0007073883d6553e3d29a",
-    "compressed_hash": "sha256:0e3ce1ff841f13486167134d26726b645812585074d4e1c07bb07d918c74d807",
-    "expanded_bytes": 23923,
-    "compressed_bytes": 4934,
-    "expanded_line_count": 590,
+    "content_hash": "sha256:3c2d20fa6ecfbd6b859a2506eb9491bd5af8b061cdcaa2e9cc08464c9fcb1dfd",
+    "compressed_hash": "sha256:0ba7f52ed333f133cae422463a883193c897129fcfccd13d7fd6be274f7e94e3",
+    "expanded_bytes": 23039,
+    "compressed_bytes": 4827,
+    "expanded_line_count": 570,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "decision_index",
@@ -62,9 +62,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-conformance-delta-ledger",
     "cost": {
-      "compressed_bytes": 4934,
-      "expanded_bytes": 23923,
-      "expanded_line_count": 590,
+      "compressed_bytes": 4827,
+      "expanded_bytes": 23039,
+      "expanded_line_count": 570,
       "persisted_line_count": 1
     }
   },
@@ -79,26 +79,16 @@
       "merged_at": "2026-08-04T09:52:52Z"
     },
     "reconciliation": {
-      "status": "reconciliation_required",
-      "reasons": [
-        "decision_outcome_binding_failed"
-      ],
-      "evaluated_at": "2026-08-04T09:52:55.277Z",
+      "status": "reconciled",
+      "reasons": [],
+      "evaluated_at": "2026-08-04T09:53:03.045Z",
       "head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d"
     },
-    "reconciliation_action": {
-      "status": "required",
-      "reason": "decision_outcome_binding_failed",
-      "commands": [
-        "vibepro pr prepare . --story-id story-vibepro-conformance-delta-ledger --base main",
-        "vibepro execute merge . --story-id story-vibepro-conformance-delta-ledger --base main --pr https://github.com/Unson-LLC/vibepro/pull/421"
-      ]
-    },
     "decision_outcome_binding": {
-      "status": "failed",
-      "reason": "central_ledger_parse_failed",
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
       "expected_entry_count": 38,
-      "promoted_count": 0,
+      "promoted_count": 38,
       "duplicate_count": 0,
       "persistence_status": null
     },
@@ -114,7 +104,7 @@
     "status": "blocked",
     "resolved_reference_count": 69,
     "copied_reference_count": 53,
-    "unresolved_reference_count": 10,
+    "unresolved_reference_count": 17,
     "replay_bundle": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
     "replay_command": "vibepro audit replay . --story-id story-vibepro-conformance-delta-ledger"
   },
@@ -131,7 +121,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:7f77e3fe1cf104e7f578c6c247e7ecf2126fc5dcafb0007073883d6553e3d29a"
+      "content_hash": "sha256:3c2d20fa6ecfbd6b859a2506eb9491bd5af8b061cdcaa2e9cc08464c9fcb1dfd"
     }
   ],
   "raw_artifact_manifest": [
@@ -221,10 +211,10 @@
       "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-conformance-delta-ledger/audit-replay-bundle.json.gz",
-      "digest": "sha256:1de54246065b03ef4142cb269d6e413c315609c4a7773db1fd87f7c2cb021ce1",
-      "audit_digest": "sha256:71b2da7e6b3cb8f759bf77dcc3934ff9fd568e692fa64c7224613b884cb566ab",
-      "line_count": 2198,
-      "raw_line_count": 4874,
+      "digest": "sha256:09b1e94191a790b9bef1bcbcffe0a9227da71331297cca8a504f7b1f307df65a",
+      "audit_digest": "sha256:f531581b097a04bb31b92d2709be968e5b3f61ca849d8f9d24c3f5cf8c2c7d43",
+      "line_count": 2187,
+      "raw_line_count": 4872,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -1070,9 +1060,17 @@
       "size_bytes": 997638
     },
     {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/graphify/graph.json",
       "reason": "source_too_large",
       "size_bytes": 7453444
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
     },
     {
       "source": ".vibepro/pr/story-vibepro-conformance-delta-ledger/design-ssot-reconciliation.json",
@@ -1080,7 +1078,27 @@
       "size_bytes": 638946
     },
     {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/surface-violations.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
       "reason": "source_missing"
     },
     {
