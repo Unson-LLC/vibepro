@@ -10,6 +10,7 @@
 // verification-runner executeCommand: one that streams parseable test-completion progress
 // past its own no-progress deadline, and one that is killed by an external (non-policy)
 // SIGTERM.
+import '../support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
