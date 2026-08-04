@@ -1,6 +1,6 @@
 {
   "schema_version": "0.1.0",
-  "model_version": 1,
+  "model_version": 2,
   "status": "adjudicated",
   "adjudicated_by": "sato_keigo",
   "adjudicated_at": "2026-07-22",
@@ -98,7 +98,11 @@
         "src/language.js",
         "src/decision-records.js",
         "src/story-id.js",
-        "src/managed-command-executor.js"
+        "src/managed-command-executor.js",
+        "src/atomic-file.js",
+        "src/canonical-persistence.js",
+        "src/process-record-store.js",
+        "src/story-transaction-lock.js"
       ]
     },
     {
@@ -177,7 +181,10 @@
         "src/review-repair.js",
         "src/review-finding-repair-loop.js",
         "src/adjudication.js",
-        "src/responsibility-authority.js"
+        "src/responsibility-authority.js",
+        "src/review-inspection-inputs.js",
+        "src/review-surface-violations.js",
+        "src/dispatch-identity.js"
       ]
     },
     {
@@ -197,7 +204,14 @@
         "src/report-store.js",
         "src/report-validator.js",
         "src/report-fingerprint.js",
-        "src/content-binding.js"
+        "src/content-binding.js",
+        "src/decision-outcome-ledger.js",
+        "src/outcome-manager.js",
+        "src/merge-gate-authorization.js",
+        "src/merge-public-projection.js",
+        "src/reconciliation-action.js",
+        "src/task-bound-repo-control.js",
+        "src/budget-override-authority.js"
       ]
     },
     {
@@ -215,6 +229,20 @@
         "src/independent-review-orchestrator.js",
         "src/session-learning.js",
         "src/run-context-capsule.js"
+      ]
+    },
+    {
+      "name": "agent-runtime",
+      "responsibility": "外部agentプロセスの起動・出力契約・完了通知・進捗期限",
+      "paths": [
+        "src/codex-subagent-host.js",
+        "src/codex-subagent-host-worker.js",
+        "src/codex-subagent-runtime-adapter.js",
+        "src/codex-runtime-bridge.js",
+        "src/codex-runtime-output-contract.js",
+        "src/agent-completion-inbox.js",
+        "src/progress-deadline.js",
+        "src/verification-runner.js"
       ]
     },
     {
@@ -286,7 +314,10 @@
     ],
     "story": [
       "workspace-infra",
-      "graph"
+      "graph",
+      "architecture",
+      "run-session",
+      "uiux-design"
     ],
     "task": [
       "workspace-infra",
@@ -294,11 +325,14 @@
     ],
     "architecture": [
       "workspace-infra",
-      "graph"
+      "graph",
+      "gate-pr"
     ],
     "spec": [
       "workspace-infra",
-      "story"
+      "story",
+      "diagnosis",
+      "evidence"
     ],
     "evidence": [
       "workspace-infra",
@@ -307,7 +341,9 @@
     "review": [
       "workspace-infra",
       "evidence",
-      "story"
+      "story",
+      "diagnosis",
+      "run-session"
     ],
     "gate-pr": [
       "workspace-infra",
@@ -318,26 +354,43 @@
       "evidence",
       "review",
       "diagnosis",
-      "reporting"
+      "reporting",
+      "uiux-design",
+      "scanners",
+      "architecture"
     ],
     "run-session": [
       "workspace-infra",
       "task",
-      "evidence"
+      "evidence",
+      "agent-runtime",
+      "gate-pr",
+      "review"
+    ],
+    "agent-runtime": [
+      "workspace-infra"
     ],
     "scanners": [
-      "workspace-infra"
+      "workspace-infra",
+      "evidence",
+      "graph",
+      "skills"
     ],
     "diagnosis": [
       "workspace-infra",
       "graph",
       "story",
-      "scanners"
+      "scanners",
+      "architecture",
+      "evidence",
+      "spec",
+      "task"
     ],
     "uiux-design": [
       "workspace-infra",
       "scanners",
-      "evidence"
+      "evidence",
+      "graph"
     ],
     "reporting": [
       "workspace-infra",
@@ -345,7 +398,8 @@
       "evidence",
       "gate-pr",
       "review",
-      "diagnosis"
+      "diagnosis",
+      "scanners"
     ],
     "skills": [
       "workspace-infra"
