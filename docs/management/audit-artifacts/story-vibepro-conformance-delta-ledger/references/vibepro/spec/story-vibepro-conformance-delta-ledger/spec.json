@@ -1,0 +1,390 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-conformance-delta-ledger",
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "Conformance delta shadow stage: trust boundaries and failure surfaces",
+      "mermaid": "flowchart LR\n    TM[target-model.json human-authored read-only] --> Scan\n    BaseRef[base ref via git worktree] --> Scan[import-scan edge graph build]\n    HeadRef[head ref via git worktree] --> Scan\n    Scan --> ID[stable violation ID derivation from element semantic values]\n    ID --> Delta[base/head delta by dimension]\n    Delta --> Ledger[conformance.json / delta.json persisted artifacts]\n    Ledger --> Shadow[pr prepare shadow stage info-only gate node]\n\n    subgraph Threats\n        T1[scanner exception or zero-file scope silently reported as zero violations]\n        T2[malicious or path-traversal base/head ref reads outside repo worktree]\n        T3[non-deterministic or ordinal-based IDs let an attacker mask a real regression as noise]\n        T4[forged shadow-stage output since stage is derive-only and creates no recorded review evidence]\n    end\n\n    Scan -.-> T1\n    BaseRef -.-> T2\n    HeadRef -.-> T2\n    ID -.-> T3\n    Shadow -.-> T4\n\n    T1 -->|mitigation| M1[inconclusive is a distinct reasoned dimension, fail-closed, never coerced to zero]\n    T2 -->|mitigation| M2[refs resolved through existing git worktree APIs only, no shell interpolation of ref text]\n    T3 -->|mitigation| M3[ID = kind + normalized module pair + involved file paths, never array index or group ordinal]\n    T4 -->|mitigation| M4[stage stays non-blocking and re-derives every run so no stale accepted evidence can be replayed]\n"
+    }
+  ],
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "Every conformance violation carries a stable id derived deterministically from the element's own semantic values (kind plus involved file paths / module pair / normalized cycle member sequence), never from array position or group ordinal; scanning the same commit twice yields identical id sets and identical per-dimension counts.",
+      "rationale": "Violation counts fluctuate per HEAD (measured 91/86/85/84/76), so base/head deltas are only trustworthy if violation identity survives unrelated changes; ordinal-based identity is a known trap that breaks under insertion.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "CDL-S-1: 各violationは、その要素自身の意味値（kind・from/to module・関与ファイル等）から決定論的に導出されるstable violation IDを持ち"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "CDL-S-2: 同一commitを2回スキャンすると、violation ID集合・全次元カウントが完全一致する"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "function findDependencyCycles({ importEdges, assignments }) {"
+          },
+          {
+            "file": "src/architecture-conformance-delta.js",
+            "anchor": "export function computeConformanceDelta({ base, head }) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-1: violation id is derived from the element's own semantic value, not array position"
+          },
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-2: scanning the same commit twice yields identical violation id sets and counts"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance-delta.js",
+            "must_contain": "export function computeConformanceDelta({ base, head }) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta.test.js",
+            "must_cover": "CDL-S-2: scanning the same commit twice yields identical violation id sets and counts"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T02:22:52.208Z",
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given a base ref and a head ref, vibepro architecture conformance --base <ref> [--head <ref>] classifies every violation id into new / resolved / unchanged and reports a multi-dimensional summary that separates new-by-severity, resolved, existing, orphan files, budget violations, dependency cycles, and inconclusive — never a single flat violation_count as the distance signal.",
+      "rationale": "Resolving two minor violations while adding one severe inverted dependency must not read as an improvement; dimensions must not be conflated.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "CDL-S-3: base refとhead refを与えると、violation IDベースで new / resolved / unchanged に分類されたdeltaが得られる"
+          },
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "CDL-S-4: サマリーは単一のviolation_countではなく、次元別に分離される"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance-delta.js",
+            "anchor": "export async function runArchitectureConformanceDelta(repoRoot, options = {}) {"
+          },
+          {
+            "file": "src/architecture-conformance-delta.js",
+            "anchor": "function buildDeltaSummary({ newList, resolvedList, unchangedList }) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-3/S-4: base/head delta classifies new/resolved/unchanged by stable id with a multi-dimensional summary"
+          },
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-3/S-4: a resolved violation on head is classified as resolved, not merely absent from a flat count"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance-delta.js",
+            "must_contain": "export async function runArchitectureConformanceDelta(repoRoot, options = {}) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta.test.js",
+            "must_cover": "CDL-S-3/S-4: base/head delta classifies new/resolved/unchanged by stable id with a multi-dimensional summary"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T02:22:52.208Z",
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
+    },
+    {
+      "id": "S-002",
+      "type": "scenario",
+      "statement": "A scanner exception, a scan scope with zero source files, or a missing/unparseable target model degrades the conformance result to status inconclusive with a reason — never to a successful result with violation_count 0 — and a delta with an inconclusive side is itself inconclusive.",
+      "rationale": "The architecture check crashed on a dirty real environment; had the count been read as zero, the failure would have presented as a clean repository. Measurement failure must be distinguishable from conformance.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "CDL-S-5: スキャン失敗・対象ファイル0件・target-model欠落は、violation 0ではなく理由付きの inconclusive として記録される"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance-delta.js",
+            "anchor": "async function scanSafely(root, { modelPath, graphPath }) {"
+          },
+          {
+            "file": "src/architecture-conformance-delta.js",
+            "anchor": "async function scanRefSafely(repoRoot, ref, { modelPath, graphPath }) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-5: a missing target model degrades to inconclusive, not violation_count 0"
+          },
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-5: an unscannable scope (zero .js files) degrades to inconclusive via computeConformanceDelta"
+          },
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-5: missing --base ref itself is reported as inconclusive rather than throwing"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance-delta.js",
+            "must_contain": "async function scanSafely(root, { modelPath, graphPath }) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta.test.js",
+            "must_cover": "CDL-S-5: a missing target model degrades to inconclusive, not violation_count 0"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T02:22:52.208Z",
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
+    },
+    {
+      "id": "S-003",
+      "type": "scenario",
+      "statement": "Directed cycles between modules in the import-scan edge graph are detected and reported as an independent dependency_cycle dimension, with cycle identity normalized by minimal rotation of the module sequence so the same cycle yields the same id regardless of traversal start node.",
+      "rationale": "Cycles are a distinct failure mode from undeclared edges: each individual edge can look declarable while the composition still violates layering.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "CDL-S-6: モジュールレベルの循環依存（import edgeの有向閉路）が独立次元として検出される"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "export function detectModuleCycles(moduleEdges) {"
+          },
+          {
+            "file": "src/architecture-conformance.js",
+            "anchor": "function normalizeCycle(cyclePath) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-6: detectModuleCycles finds a normalized 2-module cycle regardless of start node"
+          },
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-6: a real bidirectional module import produces an independent dependency_cycle violation"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/architecture-conformance.js",
+            "must_contain": "export function detectModuleCycles(moduleEdges) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta.test.js",
+            "must_cover": "CDL-S-6: detectModuleCycles finds a normalized 2-module cycle regardless of start node"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T02:22:52.208Z",
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
+    },
+    {
+      "id": "S-004",
+      "type": "scenario",
+      "statement": "pr prepare runs an architecture_conformance_delta shadow stage before load_target_architecture_context, persists .vibepro/architecture/conformance/conformance.json (head snapshot) and delta.json, and appends gate:architecture_delta as an info-only node that never transitions the gate DAG to needs_verification or block regardless of delta content, including inconclusive results; senior gap judgment's ideal_state thereby receives a real conformance_summary instead of null.",
+      "rationale": "The sensor must run on every PR without enforcement side effects: blocking belongs to the later ratchet-gate story, and an unpopulated conformance_summary is exactly the blindfolded-judgment failure this story removes.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 6,
+            "text_snippet": "CDL-S-7: pr prepareにshadow stageが追加され、base/head deltaを実行し .vibepro/architecture/conformance/ 配下へ永続化し、info専用のgateノード（block/needs_reviewに遷移しない）としてgate DAGサマリーに載る"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner, persist }) {"
+          },
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "function buildArchitectureConformanceDeltaGate(stageResult) {"
+          },
+          {
+            "file": "src/cli.js",
+            "anchor": "conformanceDelta: runArchitectureConformanceDelta,"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta-shadow-stage.test.js",
+            "case": "CDL-S-7: pr prepare via CLI wires the conformance delta runner and produces a passed info-only gate node"
+          },
+          {
+            "file": "test/architecture-conformance-delta-shadow-stage.test.js",
+            "case": "CDL-S-7: gate:architecture_delta never contributes to needs_verification / block regardless of its status"
+          },
+          {
+            "file": "test/architecture-conformance-delta.test.js",
+            "case": "CDL-S-7: persisting the delta writes a head conformance.json and a delta.json under .vibepro/architecture/conformance"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/pr-manager.js",
+            "must_contain": "function buildArchitectureConformanceDeltaGate(stageResult) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta-shadow-stage.test.js",
+            "must_cover": "CDL-S-7: gate:architecture_delta never contributes to needs_verification / block regardless of its status"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T02:22:52.208Z",
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
+    },
+    {
+      "id": "S-005",
+      "type": "scenario",
+      "statement": "The shadow stage is derive-only: it recomputes on every pr prepare run, creates no recorded evidence, and a docs-only follow-up commit plus pr prepare re-run does not make any existing gate stale or regress to needs_verification because of this stage.",
+      "rationale": "Recorded head-bound evidence would make the convergence sensor itself a source of stale-evidence deadlock — the exact non-convergence loop this repository has already measured.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 7,
+            "text_snippet": "CDL-S-8: shadow stageはderive-only（実行のたびに再計算）であり、recorded evidenceを新設しない"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner, persist }) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta-shadow-stage.test.js",
+            "case": "CDL-S-8: the shadow stage never causes an unrelated gate to regress, isolated from injection alone"
+          },
+          {
+            "file": "test/architecture-conformance-delta-shadow-stage.test.js",
+            "case": "CDL-S-8: a docs-only commit re-run recomputes the delta without creating recorded evidence for this stage"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/pr-manager.js",
+            "must_contain": "async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner, persist }) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta-shadow-stage.test.js",
+            "must_cover": "CDL-S-8: a docs-only commit re-run recomputes the delta without creating recorded evidence for this stage"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T02:22:52.208Z",
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "gate-pr (src/pr-manager.js) never imports the architecture module: the conformance delta runner reaches the shadow stage only through dependency injection from cli.js (options.conformanceDelta), and when no runner is injected the stage degrades to an inconclusive info node instead of throwing.",
+      "rationale": "target-model.json's allowed_dependencies does not permit gate-pr -> architecture; the convergence harness implementing its own architecture violation would defeat its purpose.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "frontmatter",
+            "index": 0,
+            "text_snippet": "recorded evidence（review/verify record）を新設せずderive-onlyに留め、strict-head束縛の証跡を持ち込まない"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/pr-manager.js",
+            "anchor": "// Runs the architecture_conformance_delta shadow stage via dependency injection instead of a"
+          },
+          {
+            "file": "src/cli.js",
+            "anchor": "conformanceDelta: runArchitectureConformanceDelta,"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/architecture-conformance-delta-shadow-stage.test.js",
+            "case": "preparePullRequest without an injected conformanceDelta option falls back to an inconclusive info node, never throws"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/cli.js",
+            "must_contain": "conformanceDelta: runArchitectureConformanceDelta,"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/architecture-conformance-delta-shadow-stage.test.js",
+            "must_cover": "preparePullRequest without an injected conformanceDelta option falls back to an inconclusive info node, never throws"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-04T02:22:52.208Z",
+      "last_revised_at": "2026-08-04T04:55:10.825Z"
+    }
+  ],
+  "generated_at": "2026-08-04T04:55:10.824Z",
+  "generated_by": {
+    "caller": "claude-agent",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": "2026-08-04T04:44:58.885Z"
+}

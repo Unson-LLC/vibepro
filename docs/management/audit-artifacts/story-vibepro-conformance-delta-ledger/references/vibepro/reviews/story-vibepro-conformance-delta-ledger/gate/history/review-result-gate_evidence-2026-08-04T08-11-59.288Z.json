@@ -1,0 +1,167 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-conformance-delta-ledger",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Post-rebase differential re-review at HEAD 44b71253 (origin/main +37 upstream commits, then docs-only spec/design-ssot commit): shadow-stage wiring (architecture_conformance_delta stage before load_target_architecture_context, info-only gate:architecture_delta, cli.js-only conformanceDelta dependency injection, persist gated on workspace.initialized) is intact and unduplicated after rebase; spec drift clean; unit/typecheck/integration/e2e verification artifacts all pass and head-bound to 44b71253 (unit 2488/2488). No findings.",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified branch is 8 commits ahead of origin/main with diffstat limited to story/spec/design-ssot/CLI-ref docs plus the four source files and their tests; read shadow-stage wiring end to end at pr-manager.js:549-567 and 5992-6052 and cli.js:3572 confirming single occurrence of each function and preserved DI boundary; confirmed architecture_conformance_delta_gate absent from collectUnresolvedRequiredGates allowlist; ran spec drift (clean); read all four verification-runs artifacts confirming head binding to 44b71253 and pass status without executing tests.",
+    "evidence": "git diff origin/main...HEAD --stat; git show 44b71253 (spec.json + design-ssot.json only); node bin/vibepro.js spec drift . --id story-vibepro-conformance-delta-ledger --json (status=clean); .vibepro/pr/story-vibepro-conformance-delta-ledger/verification-runs/{unit,typecheck,integration,e2e}.json all status=pass head 44b71253, unit counts 2488/2488",
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-conformance-delta-ledger.md",
+      ".vibepro/spec/story-vibepro-conformance-delta-ledger/spec.json",
+      "src/pr-manager.js",
+      "src/cli.js",
+      "src/architecture-conformance.js",
+      "src/architecture-conformance-delta.js",
+      "test/architecture-conformance-delta.test.js",
+      "test/architecture-conformance-delta-shadow-stage.test.js",
+      "test/architecture-conformance.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern that the 37-commit upstream rebase could duplicate or detach the shadow-stage wiring or that verification artifacts were bound to a pre-rebase head -> pass because direct code read shows unique correctly-positioned wiring with the DI boundary intact, spec drift is independently clean, and all four verification artifacts are head-bound to the current HEAD with passing counts"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger",
+    "expected_root": null,
+    "expected_head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+    "current_head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.worktrees/story-vibepro-conformance-delta-ledger",
+      "expected_root": null,
+      "expected_head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "current_head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-04T08:11:59.288Z",
+  "git_context": {
+    "head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+    "current_branch": "codex/story-vibepro-conformance-delta-ledger",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-04T08:11:59.260Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 8 file(s)",
+    "recorded_head_sha": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-conformance-delta-ledger.md",
+        "sha256": "2f73b3e0242c2a5d358dc5310d476f4a6a315be5229e043cf4cb2deb2832a100",
+        "size": 7773
+      },
+      {
+        "path": "src/architecture-conformance-delta.js",
+        "sha256": "7b4e6fb3ac324e870432ef6122dd6a2470719d92135d65486608fa02325a64a6",
+        "size": 9494
+      },
+      {
+        "path": "src/architecture-conformance.js",
+        "sha256": "246bb106e84907f6dd071d9f4f84681e00fc6e6ce51574e37eb9f92aeea65436",
+        "size": 22337
+      },
+      {
+        "path": "src/cli.js",
+        "sha256": "cd8d97f8b0686bfd75b8e05b7cf1694ce0e1a45f25fc5bd23234d62cd4e7e239",
+        "size": 262336
+      },
+      {
+        "path": "src/pr-manager.js",
+        "sha256": "832a4f586773883ebc0bf70a77807fdcaa5869900b0611233564e48b262006a2",
+        "size": 716396
+      },
+      {
+        "path": "test/architecture-conformance-delta-shadow-stage.test.js",
+        "sha256": "7f41aa5d15c03e6936f8c8c9845f83479c2f7d4418885420e8bf92d760b4f8a6",
+        "size": 9127
+      },
+      {
+        "path": "test/architecture-conformance-delta.test.js",
+        "sha256": "6725330b16c8682eb2329a6f0545126bd3669e7e7872df2f18d0135dfd28f028",
+        "size": 13829
+      },
+      {
+        "path": "test/architecture-conformance.test.js",
+        "sha256": "1dafb2a48fc5b1b26feb2d0c4c1828a69210bebae5ec201965e57238c286a513",
+        "size": 18403
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "a7892bb8594f96b3433d43056213c365a30cf162714adee4702ec9933957cc76"
+  },
+  "source_fingerprint": "815422f39222305e448012185f80101111aabd2b117135fde00bcbd04ef89728",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a9316cba574f6c618",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": "a9316cba574f6c618",
+    "session_id": "5dba809a-0bb8-481f-a513-6f094921cc5f",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro/5dba809a-0bb8-481f-a513-6f094921cc5f/tasks/a9316cba574f6c618.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-conformance-delta-ledger/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "review close recorded with close_reason=completed at head 44b71253; subagent task ended after returning pass verdict JSON",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "5dba809a-0bb8-481f-a513-6f094921cc5f",
+      "implementation_session_id": "subagent-acee9550e61a47ab9",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,240 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-conformance-delta-ledger",
+  "updated_at": "2026-08-04T08:12:55.415Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-8",
+      "verdict": "demonstrated",
+      "reason": "CDL-S-8 A/B test asserts every other gate node status plus needs_evidence_count/overall_status are byte-identical with vs without the injected stage; docs-only commit rerun test asserts the gate stays passed and no review/evidence directory is created (ENOENT); derive-only contract empirically tested.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-conformance-delta-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "CDL-S-1: 各violationは、その要素自身の意味値（kind・from/to module・関与ファイル等）から決定論的に導出されるstable violation IDを持ち、配列順序・無関係な他violationの増減に影響されない。",
+          "CDL-S-2: 同一commitを2回スキャンすると、violation ID集合・全次元カウントが完全一致する（再現性の回帰テストで証明）。",
+          "CDL-S-3: base refとhead refを与えると、violation IDベースで new / resolved / unchanged に分類されたdeltaが得られる。",
+          "CDL-S-4: サマリーは単一のviolation_countではなく、次元別に分離される: 新規違反（severity別）/ 解消 / 既存 / 孤児 / 予算超過 / モジュール循環依存 / inconclusive。",
+          "CDL-S-5: スキャン失敗・対象ファイル0件・target-model欠落は、violation 0ではなく理由付きの `inconclusive` として記録される。",
+          "CDL-S-6: モジュールレベルの循環依存（import edgeの有向閉路）が独立次元として検出される。",
+          "CDL-S-7: pr prepareにshadow stageが追加され、base/head deltaを実行し `.vibepro/architecture/conformance/` 配下へ永続化し、info専用のgateノード（block/needs_reviewに遷移しない）としてgate DAGサマリーに載る。senior-gap judgmentのideal_stateはnullではなく実conformance_summaryを受け取る。",
+          "CDL-S-8: shadow stageはderive-only（実行のたびに再計算）であり、recorded evidenceを新設しない。無関係なdocs-only commit後のpr prepare再実行で、本stageに起因するstale化・needs_verification転落が発生しないことを回帰テストで証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "18ad0a16b97110454d1d8ddc8876080a24ae714f7ab1058110f661b7e4212a47",
+      "recorded_at": "2026-08-04T08:12:55.413Z"
+    },
+    {
+      "clause_id": "AC-7",
+      "verdict": "demonstrated",
+      "reason": "buildArchitectureConformanceDeltaGate emits type architecture_conformance_delta_gate absent from collectUnresolvedRequiredGates allowlist, so it structurally cannot block; CDL-S-7 tests run pr prepare through the real CLI and assert gate status passed, artifacts persisted under .vibepro/architecture/conformance, and senior-gap ideal_state conformance_summary non-null; inconclusive path degrades to an info node.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-conformance-delta-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "CDL-S-1: 各violationは、その要素自身の意味値（kind・from/to module・関与ファイル等）から決定論的に導出されるstable violation IDを持ち、配列順序・無関係な他violationの増減に影響されない。",
+          "CDL-S-2: 同一commitを2回スキャンすると、violation ID集合・全次元カウントが完全一致する（再現性の回帰テストで証明）。",
+          "CDL-S-3: base refとhead refを与えると、violation IDベースで new / resolved / unchanged に分類されたdeltaが得られる。",
+          "CDL-S-4: サマリーは単一のviolation_countではなく、次元別に分離される: 新規違反（severity別）/ 解消 / 既存 / 孤児 / 予算超過 / モジュール循環依存 / inconclusive。",
+          "CDL-S-5: スキャン失敗・対象ファイル0件・target-model欠落は、violation 0ではなく理由付きの `inconclusive` として記録される。",
+          "CDL-S-6: モジュールレベルの循環依存（import edgeの有向閉路）が独立次元として検出される。",
+          "CDL-S-7: pr prepareにshadow stageが追加され、base/head deltaを実行し `.vibepro/architecture/conformance/` 配下へ永続化し、info専用のgateノード（block/needs_reviewに遷移しない）としてgate DAGサマリーに載る。senior-gap judgmentのideal_stateはnullではなく実conformance_summaryを受け取る。",
+          "CDL-S-8: shadow stageはderive-only（実行のたびに再計算）であり、recorded evidenceを新設しない。無関係なdocs-only commit後のpr prepare再実行で、本stageに起因するstale化・needs_verification転落が発生しないことを回帰テストで証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "18ad0a16b97110454d1d8ddc8876080a24ae714f7ab1058110f661b7e4212a47",
+      "recorded_at": "2026-08-04T08:12:54.867Z"
+    },
+    {
+      "clause_id": "AC-6",
+      "verdict": "demonstrated",
+      "reason": "detectModuleCycles finds normalized simple cycles independent of start node; findDependencyCycles emits a dependency_cycle violation even when each edge is individually declared-allowed; both CDL-S-6 tests rerun by the adjudicator (normalization order-independence and a real bidirectional-import repo with dependency_cycle_count=1).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-conformance-delta-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "CDL-S-1: 各violationは、その要素自身の意味値（kind・from/to module・関与ファイル等）から決定論的に導出されるstable violation IDを持ち、配列順序・無関係な他violationの増減に影響されない。",
+          "CDL-S-2: 同一commitを2回スキャンすると、violation ID集合・全次元カウントが完全一致する（再現性の回帰テストで証明）。",
+          "CDL-S-3: base refとhead refを与えると、violation IDベースで new / resolved / unchanged に分類されたdeltaが得られる。",
+          "CDL-S-4: サマリーは単一のviolation_countではなく、次元別に分離される: 新規違反（severity別）/ 解消 / 既存 / 孤児 / 予算超過 / モジュール循環依存 / inconclusive。",
+          "CDL-S-5: スキャン失敗・対象ファイル0件・target-model欠落は、violation 0ではなく理由付きの `inconclusive` として記録される。",
+          "CDL-S-6: モジュールレベルの循環依存（import edgeの有向閉路）が独立次元として検出される。",
+          "CDL-S-7: pr prepareにshadow stageが追加され、base/head deltaを実行し `.vibepro/architecture/conformance/` 配下へ永続化し、info専用のgateノード（block/needs_reviewに遷移しない）としてgate DAGサマリーに載る。senior-gap judgmentのideal_stateはnullではなく実conformance_summaryを受け取る。",
+          "CDL-S-8: shadow stageはderive-only（実行のたびに再計算）であり、recorded evidenceを新設しない。無関係なdocs-only commit後のpr prepare再実行で、本stageに起因するstale化・needs_verification転落が発生しないことを回帰テストで証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "18ad0a16b97110454d1d8ddc8876080a24ae714f7ab1058110f661b7e4212a47",
+      "recorded_at": "2026-08-04T08:12:54.345Z"
+    },
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "scanSafely/scanRefSafely catch scanner exceptions into {status:inconclusive, reason}; three CDL-S-5 tests (missing model, zero-file scope, missing base ref) assert status inconclusive with reason and never violation_count 0; rerun by the adjudicator and passing.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-conformance-delta-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "CDL-S-1: 各violationは、その要素自身の意味値（kind・from/to module・関与ファイル等）から決定論的に導出されるstable violation IDを持ち、配列順序・無関係な他violationの増減に影響されない。",
+          "CDL-S-2: 同一commitを2回スキャンすると、violation ID集合・全次元カウントが完全一致する（再現性の回帰テストで証明）。",
+          "CDL-S-3: base refとhead refを与えると、violation IDベースで new / resolved / unchanged に分類されたdeltaが得られる。",
+          "CDL-S-4: サマリーは単一のviolation_countではなく、次元別に分離される: 新規違反（severity別）/ 解消 / 既存 / 孤児 / 予算超過 / モジュール循環依存 / inconclusive。",
+          "CDL-S-5: スキャン失敗・対象ファイル0件・target-model欠落は、violation 0ではなく理由付きの `inconclusive` として記録される。",
+          "CDL-S-6: モジュールレベルの循環依存（import edgeの有向閉路）が独立次元として検出される。",
+          "CDL-S-7: pr prepareにshadow stageが追加され、base/head deltaを実行し `.vibepro/architecture/conformance/` 配下へ永続化し、info専用のgateノード（block/needs_reviewに遷移しない）としてgate DAGサマリーに載る。senior-gap judgmentのideal_stateはnullではなく実conformance_summaryを受け取る。",
+          "CDL-S-8: shadow stageはderive-only（実行のたびに再計算）であり、recorded evidenceを新設しない。無関係なdocs-only commit後のpr prepare再実行で、本stageに起因するstale化・needs_verification転落が発生しないことを回帰テストで証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "18ad0a16b97110454d1d8ddc8876080a24ae714f7ab1058110f661b7e4212a47",
+      "recorded_at": "2026-08-04T08:12:53.767Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "buildDeltaSummary emits new_by_severity, resolved_count, unchanged_count and by_kind across undeclared_dependency/budget_violation/orphan_file/stale_pattern/dependency_cycle with inconclusive as a distinct delta.status branch; tests assert on individual dimensions (by_kind.stale_pattern.resolved, new_by_severity.review, by_kind.orphan_file.new), proving real separation.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-conformance-delta-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "CDL-S-1: 各violationは、その要素自身の意味値（kind・from/to module・関与ファイル等）から決定論的に導出されるstable violation IDを持ち、配列順序・無関係な他violationの増減に影響されない。",
+          "CDL-S-2: 同一commitを2回スキャンすると、violation ID集合・全次元カウントが完全一致する（再現性の回帰テストで証明）。",
+          "CDL-S-3: base refとhead refを与えると、violation IDベースで new / resolved / unchanged に分類されたdeltaが得られる。",
+          "CDL-S-4: サマリーは単一のviolation_countではなく、次元別に分離される: 新規違反（severity別）/ 解消 / 既存 / 孤児 / 予算超過 / モジュール循環依存 / inconclusive。",
+          "CDL-S-5: スキャン失敗・対象ファイル0件・target-model欠落は、violation 0ではなく理由付きの `inconclusive` として記録される。",
+          "CDL-S-6: モジュールレベルの循環依存（import edgeの有向閉路）が独立次元として検出される。",
+          "CDL-S-7: pr prepareにshadow stageが追加され、base/head deltaを実行し `.vibepro/architecture/conformance/` 配下へ永続化し、info専用のgateノード（block/needs_reviewに遷移しない）としてgate DAGサマリーに載る。senior-gap judgmentのideal_stateはnullではなく実conformance_summaryを受け取る。",
+          "CDL-S-8: shadow stageはderive-only（実行のたびに再計算）であり、recorded evidenceを新設しない。無関係なdocs-only commit後のpr prepare再実行で、本stageに起因するstale化・needs_verification転落が発生しないことを回帰テストで証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "18ad0a16b97110454d1d8ddc8876080a24ae714f7ab1058110f661b7e4212a47",
+      "recorded_at": "2026-08-04T08:12:53.039Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "computeConformanceDelta classifies base/head violations into new/resolved/unchanged strictly by Map lookup on violation.id; CDL-S-3/S-4 tests build a real two-commit git repo, run runArchitectureConformanceDelta with baseRef/headRef, and assert exact new/resolved id lists and counts.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-conformance-delta-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "CDL-S-1: 各violationは、その要素自身の意味値（kind・from/to module・関与ファイル等）から決定論的に導出されるstable violation IDを持ち、配列順序・無関係な他violationの増減に影響されない。",
+          "CDL-S-2: 同一commitを2回スキャンすると、violation ID集合・全次元カウントが完全一致する（再現性の回帰テストで証明）。",
+          "CDL-S-3: base refとhead refを与えると、violation IDベースで new / resolved / unchanged に分類されたdeltaが得られる。",
+          "CDL-S-4: サマリーは単一のviolation_countではなく、次元別に分離される: 新規違反（severity別）/ 解消 / 既存 / 孤児 / 予算超過 / モジュール循環依存 / inconclusive。",
+          "CDL-S-5: スキャン失敗・対象ファイル0件・target-model欠落は、violation 0ではなく理由付きの `inconclusive` として記録される。",
+          "CDL-S-6: モジュールレベルの循環依存（import edgeの有向閉路）が独立次元として検出される。",
+          "CDL-S-7: pr prepareにshadow stageが追加され、base/head deltaを実行し `.vibepro/architecture/conformance/` 配下へ永続化し、info専用のgateノード（block/needs_reviewに遷移しない）としてgate DAGサマリーに載る。senior-gap judgmentのideal_stateはnullではなく実conformance_summaryを受け取る。",
+          "CDL-S-8: shadow stageはderive-only（実行のたびに再計算）であり、recorded evidenceを新設しない。無関係なdocs-only commit後のpr prepare再実行で、本stageに起因するstale化・needs_verification転落が発生しないことを回帰テストで証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "18ad0a16b97110454d1d8ddc8876080a24ae714f7ab1058110f661b7e4212a47",
+      "recorded_at": "2026-08-04T08:12:51.945Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Test CDL-S-2 scans the same commit twice via runArchitectureConformance and deepEqual-asserts identical violation id sets and counts; a real behavioral assertion, rerun by the adjudicator and passing.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-conformance-delta-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "CDL-S-1: 各violationは、その要素自身の意味値（kind・from/to module・関与ファイル等）から決定論的に導出されるstable violation IDを持ち、配列順序・無関係な他violationの増減に影響されない。",
+          "CDL-S-2: 同一commitを2回スキャンすると、violation ID集合・全次元カウントが完全一致する（再現性の回帰テストで証明）。",
+          "CDL-S-3: base refとhead refを与えると、violation IDベースで new / resolved / unchanged に分類されたdeltaが得られる。",
+          "CDL-S-4: サマリーは単一のviolation_countではなく、次元別に分離される: 新規違反（severity別）/ 解消 / 既存 / 孤児 / 予算超過 / モジュール循環依存 / inconclusive。",
+          "CDL-S-5: スキャン失敗・対象ファイル0件・target-model欠落は、violation 0ではなく理由付きの `inconclusive` として記録される。",
+          "CDL-S-6: モジュールレベルの循環依存（import edgeの有向閉路）が独立次元として検出される。",
+          "CDL-S-7: pr prepareにshadow stageが追加され、base/head deltaを実行し `.vibepro/architecture/conformance/` 配下へ永続化し、info専用のgateノード（block/needs_reviewに遷移しない）としてgate DAGサマリーに載る。senior-gap judgmentのideal_stateはnullではなく実conformance_summaryを受け取る。",
+          "CDL-S-8: shadow stageはderive-only（実行のたびに再計算）であり、recorded evidenceを新設しない。無関係なdocs-only commit後のpr prepare再実行で、本stageに起因するstale化・needs_verification転落が発生しないことを回帰テストで証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "18ad0a16b97110454d1d8ddc8876080a24ae714f7ab1058110f661b7e4212a47",
+      "recorded_at": "2026-08-04T08:12:51.133Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Violation ids are derived purely from element semantic values (undeclared_dependency:from->to, orphan_file:file, dependency_cycle:module chain) in src/architecture-conformance.js; test CDL-S-1 asserts a fixed id is unchanged before/after adding an unrelated orphan file; adjudicator reran the test file (10/10 pass).",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ad1feccca15df97ef",
+        "session_ref": null
+      },
+      "warnings": [],
+      "head_commit": "44b712535e9c84553409bb21cb8c06b028dc6d2d",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-conformance-delta-ledger",
+        "task_id": null,
+        "acceptance_criteria": [
+          "CDL-S-1: 各violationは、その要素自身の意味値（kind・from/to module・関与ファイル等）から決定論的に導出されるstable violation IDを持ち、配列順序・無関係な他violationの増減に影響されない。",
+          "CDL-S-2: 同一commitを2回スキャンすると、violation ID集合・全次元カウントが完全一致する（再現性の回帰テストで証明）。",
+          "CDL-S-3: base refとhead refを与えると、violation IDベースで new / resolved / unchanged に分類されたdeltaが得られる。",
+          "CDL-S-4: サマリーは単一のviolation_countではなく、次元別に分離される: 新規違反（severity別）/ 解消 / 既存 / 孤児 / 予算超過 / モジュール循環依存 / inconclusive。",
+          "CDL-S-5: スキャン失敗・対象ファイル0件・target-model欠落は、violation 0ではなく理由付きの `inconclusive` として記録される。",
+          "CDL-S-6: モジュールレベルの循環依存（import edgeの有向閉路）が独立次元として検出される。",
+          "CDL-S-7: pr prepareにshadow stageが追加され、base/head deltaを実行し `.vibepro/architecture/conformance/` 配下へ永続化し、info専用のgateノード（block/needs_reviewに遷移しない）としてgate DAGサマリーに載る。senior-gap judgmentのideal_stateはnullではなく実conformance_summaryを受け取る。",
+          "CDL-S-8: shadow stageはderive-only（実行のたびに再計算）であり、recorded evidenceを新設しない。無関係なdocs-only commit後のpr prepare再実行で、本stageに起因するstale化・needs_verification転落が発生しないことを回帰テストで証明する。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "18ad0a16b97110454d1d8ddc8876080a24ae714f7ab1058110f661b7e4212a47",
+      "recorded_at": "2026-08-04T08:12:50.347Z"
+    }
+  ]
+}

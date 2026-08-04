@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-conformance-delta-ledger",
+      "decision_id": "decision-1785819888400-e9d4d43f",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: the 11 changed files form one coherent judgment (new derive-only conformance-delta runner + its shadow-stage wiring + its tests + its docs); no unrelated decisions are bundled. review_owner_map: src/architecture-conformance-delta.js and src/architecture-conformance.js are owned by the architecture-conformance domain; src/pr-manager.js and src/cli.js shadow-stage wiring is owned by the pr-manager/gate-dag domain; both are already the same responsibility-authority contract owners recorded in docs/contracts/vibepro-responsibility-authority.json and docs/contracts/vibepro-core-responsibilities.json. Graphify related_file_blast_radius (3 changed / 151 related files) stays within existing VibePro CLI/gate-dag module boundaries, no new module or cross-domain reach. decision_record: this record itself is the auditable scope decision.",
+      "artifact": null,
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-04T05:04:58.947Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}
