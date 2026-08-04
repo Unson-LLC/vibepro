@@ -556,7 +556,8 @@ export async function preparePullRequest(repoRoot, options = {}) {
     () => runArchitectureConformanceDeltaStage(root, {
       baseRef: reviewGit.base_ref,
       headRef: reviewGit.head_sha,
-      runner: options.conformanceDelta ?? null
+      runner: options.conformanceDelta ?? null,
+      persist: workspace.initialized
     })
   );
   prContext.gate_dag.nodes.push(buildArchitectureConformanceDeltaGate(architectureConformanceDelta));
@@ -5998,7 +5999,7 @@ async function readJsonIfExists(filePath) {
 // preparePullRequest that does not pass this option (e.g. the lighter internal gate-status check
 // path) gets the documented fallback: an inconclusive info node, never a thrown error and never a
 // blocking gate.
-async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner }) {
+async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, runner, persist }) {
   if (typeof runner !== 'function') {
     return {
       status: 'inconclusive',
@@ -6008,7 +6009,9 @@ async function runArchitectureConformanceDeltaStage(root, { baseRef, headRef, ru
     };
   }
   try {
-    const output = await runner(root, { baseRef, headRef });
+    // persist=false keeps the uninitialized-workspace contract: pr prepare against a repo without
+    // a VibePro workspace must not create .vibepro/ (artifact_location: temporary).
+    const output = await runner(root, { baseRef, headRef, write: persist !== false });
     return { status: output?.delta?.status ?? 'ok', output, base_ref: baseRef ?? null, head_ref: headRef ?? null };
   } catch (error) {
     return {
