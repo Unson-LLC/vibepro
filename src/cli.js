@@ -19,7 +19,7 @@ import {
   validateValidationPhaseEvidence,
   writeValidationSequence
 } from './validation-sequencing.js';
-import { prepareAdjudication, prepareJudgmentAdjudication, recordAdjudication, recordJudgmentAdjudication, recordPremiseCorrection } from './adjudication.js';
+import { prepareAdjudication, prepareJudgmentAdjudication, recordAdjudication, recordImplementationProvenance, recordJudgmentAdjudication, recordPremiseCorrection } from './adjudication.js';
 import { checkGuard, guardStatus, installGuard, parsePrePushRefs, parsePreToolUseInput, readGuardConfig, uninstallGuard } from './guard.js';
 import { installCodexInstructions, renderCodexInstall, renderCodexVerify, verifyCodexInstructions } from './codex-manager.js';
 import { generateAgentHarnessMap, renderAgentHarnessMapSummary } from './agent-harness-map.js';
@@ -516,8 +516,10 @@ Usage:
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
   vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
-  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
-  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
+  vibepro adjudicate provenance [repo] --id <story-id> --agent-system codex|claude_code [--agent-id <id>] [--session-ref <ref>] [--json]
+  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
+  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
+  Cross-system adjudication: judgment-DAG routes (record --judgment, correct) reject an adjudicator whose --agent-system matches the story's recorded implementation provenance (vibepro adjudicate provenance) unless --allow-same-system <reason> is given (appended to an append-only log) or an accepted decision record with source gate:judgment_dag_adjudication:same_system_environment exists. The evidence path (record without --judgment) only attaches a same_system warning and never blocks.
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -795,8 +797,10 @@ Usage:
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
   vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
-  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
-  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
+  vibepro adjudicate provenance [repo] --id <story-id> --agent-system codex|claude_code [--agent-id <id>] [--session-ref <ref>] [--json]
+  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
+  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
+  Cross-system adjudication: judgment-DAG routes (record --judgment, correct) reject an adjudicator whose --agent-system matches the story's recorded implementation provenance (vibepro adjudicate provenance) unless --allow-same-system <reason> is given (appended to an append-only log) or an accepted decision record with source gate:judgment_dag_adjudication:same_system_environment exists. The evidence path (record without --judgment) only attaches a same_system warning and never blocks.
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
@@ -2328,6 +2332,18 @@ async function dispatchCli(argv, io = {}) {
           ].join('\n') + '\n');
         return { exitCode: 0, command, subcommand, result };
       }
+      if (subcommand === 'provenance') {
+        const result = await recordImplementationProvenance(repoRoot, {
+          storyId: getOption(rest, '--id'),
+          agentSystem: getOption(rest, '--agent-system'),
+          agentId: getOption(rest, '--agent-id'),
+          sessionRef: getOption(rest, '--session-ref')
+        });
+        write(stdout, hasFlag(rest, '--json')
+          ? `${JSON.stringify(result, null, 2)}\n`
+          : `Implementation provenance recorded: ${result.record.provenance.agent_system} (${result.artifact})\n`);
+        return { exitCode: 0, command, subcommand, result };
+      }
       if (subcommand === 'record') {
         if (hasFlag(rest, '--judgment')) {
           const result = await recordJudgmentAdjudication(repoRoot, {
@@ -2339,11 +2355,13 @@ async function dispatchCli(argv, io = {}) {
             reason: getOption(rest, '--reason'),
             agentSystem: getOption(rest, '--agent-system'),
             agentId: getOption(rest, '--agent-id'),
-            sessionRef: getOption(rest, '--session-ref')
+            sessionRef: getOption(rest, '--session-ref'),
+            allowSameSystemReason: getOption(rest, '--allow-same-system')
           });
+          const warningsText = (result.warnings ?? []).map((warning) => `\n- warning ${warning.id}: ${warning.reason}`).join('');
           write(stdout, hasFlag(rest, '--json')
             ? `${JSON.stringify(result, null, 2)}\n`
-            : `Judgment adjudication recorded: ${result.entry.item_id} -> ${result.entry.verdict} [event ${result.entry.event_id}] (${result.artifact})\n`);
+            : `Judgment adjudication recorded: ${result.entry.item_id} -> ${result.entry.verdict} [event ${result.entry.event_id}] (${result.artifact})${warningsText}\n`);
           return { exitCode: 0, command, subcommand, result };
         }
         const result = await recordAdjudication(repoRoot, {
@@ -2355,9 +2373,10 @@ async function dispatchCli(argv, io = {}) {
           agentId: getOption(rest, '--agent-id'),
           sessionRef: getOption(rest, '--session-ref')
         });
+        const warningsText = (result.warnings ?? []).map((warning) => `\n- warning ${warning.id}: ${warning.reason}`).join('');
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
-          : `Adjudication verdict recorded: ${result.entry.clause_id} -> ${result.entry.verdict} (${result.artifact})\n`);
+          : `Adjudication verdict recorded: ${result.entry.clause_id} -> ${result.entry.verdict} (${result.artifact})${warningsText}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       if (subcommand === 'correct') {
@@ -2374,11 +2393,13 @@ async function dispatchCli(argv, io = {}) {
           replacementEvidence: getOptions(rest, '--replacement-evidence'),
           agentSystem: getOption(rest, '--agent-system'),
           agentId: getOption(rest, '--agent-id'),
-          sessionRef: getOption(rest, '--session-ref')
+          sessionRef: getOption(rest, '--session-ref'),
+          allowSameSystemReason: getOption(rest, '--allow-same-system')
         });
+        const warningsText = (result.warnings ?? []).map((warning) => `\n- warning ${warning.id}: ${warning.reason}`).join('');
         write(stdout, hasFlag(rest, '--json')
           ? `${JSON.stringify(result, null, 2)}\n`
-          : `Judgment premise correction recorded: ${result.entry.item_id} -> ${result.entry.event_id} (${result.artifact})\n`);
+          : `Judgment premise correction recorded: ${result.entry.item_id} -> ${result.entry.event_id} (${result.artifact})${warningsText}\n`);
         return { exitCode: 0, command, subcommand, result };
       }
       write(stderr, `Unknown adjudicate command: ${subcommand ?? ''}\n\n${renderHelp()}`);

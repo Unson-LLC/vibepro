@@ -1,0 +1,260 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+  "updated_at": "2026-08-03T05:55:09.664Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+      "expected_root": null,
+      "expected_head_sha": "72a4508ec3437bcbbfd2bc2656337d916a32d4c2",
+      "current_head_sha": "72a4508ec3437bcbbfd2bc2656337d916a32d4c2",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785736509663-1aefe794",
+      "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Single-reviewer scope accepted: one dead-chain removal intent in one commit",
+      "reason": "scope_reviewed: the PR diff is one coherent intent — remove the production-dead human PR summary renderer chain from src/pr-manager.js (-583 lines, zero callers confirmed by three independent reviews in story-vibepro-uiux-intake-gate-pr-summary-surfaces), delete the two tests that pinned the dead exports, and add the story doc, spec pointer/contract doc, design registry entry, config registration, and one story e2e test. review_owner_map: a single reviewer owns the whole surface; the gate stage gate_evidence review role covers src/pr-manager.js and the test/docs surfaces in one pass since every deleted function is unreachable and the live-path behavior is pinned by the pre-existing concise-body contract tests. related_file_blast_radius: production blast radius is zero by construction (all deleted functions had no callers; shared helpers retained and pinned by ac:2). split_plan: no split needed — splitting docs from code would leave the registry/spec pointing at unremoved code or vice versa.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+          "expected_root": null,
+          "expected_head_sha": "72a4508ec3437bcbbfd2bc2656337d916a32d4c2",
+          "current_head_sha": "72a4508ec3437bcbbfd2bc2656337d916a32d4c2",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "72a4508ec3437bcbbfd2bc2656337d916a32d4c2",
+        "current_branch": "claude/youthful-fermi-2f2520",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-03T05:55:09.648Z"
+      },
+      "recorded_at": "2026-08-03T05:55:09.664Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785736480279-84979bbb",
+      "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": ".vibepro/config.json story registration is intentionally committed",
+      "reason": "The only .vibepro path in this PR diff is .vibepro/config.json, which is the tracked story registry: hand-written stories must be registered in brainbase.stories[] for VibePro to resolve them (repo CLAUDE.md self-dogfood quickstart step 2), and config.json is intentionally part of the tracked evidence surface (review budgets, story catalog). No diagnostic artifacts (pr-prepare.json, gate-dag.json, verification runs) are committed; they remain gitignored workspace evidence mirrored to .vibepro-store.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+          "expected_root": null,
+          "expected_head_sha": "72a4508ec3437bcbbfd2bc2656337d916a32d4c2",
+          "current_head_sha": "72a4508ec3437bcbbfd2bc2656337d916a32d4c2",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "72a4508ec3437bcbbfd2bc2656337d916a32d4c2",
+        "current_branch": "claude/youthful-fermi-2f2520",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-03T05:54:40.271Z"
+      },
+      "recorded_at": "2026-08-03T05:54:40.280Z"
+    }
+  ],
+  "summary": {
+    "total": 2,
+    "open": 0,
+    "by_type": {
+      "needs_review": 2
+    },
+    "by_status": {
+      "accepted": 2
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+        "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+        "expected_root": null,
+        "expected_head_sha": "72a4508ec3437bcbbfd2bc2656337d916a32d4c2",
+        "current_head_sha": "72a4508ec3437bcbbfd2bc2656337d916a32d4c2",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785736509663-1aefe794",
+      "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Single-reviewer scope accepted: one dead-chain removal intent in one commit",
+      "reason": "scope_reviewed: the PR diff is one coherent intent — remove the production-dead human PR summary renderer chain from src/pr-manager.js (-583 lines, zero callers confirmed by three independent reviews in story-vibepro-uiux-intake-gate-pr-summary-surfaces), delete the two tests that pinned the dead exports, and add the story doc, spec pointer/contract doc, design registry entry, config registration, and one story e2e test. review_owner_map: a single reviewer owns the whole surface; the gate stage gate_evidence review role covers src/pr-manager.js and the test/docs surfaces in one pass since every deleted function is unreachable and the live-path behavior is pinned by the pre-existing concise-body contract tests. related_file_blast_radius: production blast radius is zero by construction (all deleted functions had no callers; shared helpers retained and pinned by ac:2). split_plan: no split needed — splitting docs from code would leave the registry/spec pointing at unremoved code or vice versa.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/youthful-fermi-2f2520",
+          "expected_root": null,
+          "expected_head_sha": "72a4508ec3437bcbbfd2bc2656337d916a32d4c2",
+          "current_head_sha": "72a4508ec3437bcbbfd2bc2656337d916a32d4c2",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "72a4508ec3437bcbbfd2bc2656337d916a32d4c2",
+        "current_branch": "claude/youthful-fermi-2f2520",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-03T05:55:09.648Z"
+      },
+      "recorded_at": "2026-08-03T05:55:09.664Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-pr-human-summary-dead-chain-removal/decision-records.json"
+}

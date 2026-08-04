@@ -1,0 +1,77 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+  "updated_at": "2026-08-03T01:02:48.988Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "Both functions look the node up by id via .find()/.map(...).filter(Boolean) and only push a line when found (src/pr-manager.js:15291,4724-4729), so absence naturally yields no gate line -- no separate code path exists that could diverge. The e2e test's PS-003 block (test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js:57-69) asserts this with deepEqual/equal (not substring match): summary-with-gate minus the intake line deepEquals summary-without-gate, and digest-without-gate equals digest-with-gate string-replaced. Ran this test myself at head 2a54c080: pass. deepEqual on full line arrays is a strong byte-identity check, directly demonstrating AC-3's 'output identical minus the gate row' claim.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-07",
+        "session_ref": null
+      },
+      "head_commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`renderPrGateSummary` は gate_dag に `gate:uiux_intake_judgment` ノードが存在するとき、そのラベル・status・required を1行として出力する。",
+          "`buildHumanEvidenceDigest` は同ノードが存在するとき、そのラベルと状態をダイジェストに含める。",
+          "同ノードが存在しない gate_dag に対しては、両表面の出力は従来と同一（ゲート行が現れない）。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "205a80209e3fd29bc1b36e0ecfec515159c98b79ef5485932fb7acdfbb36200c",
+      "recorded_at": "2026-08-03T01:02:48.986Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "Read src/pr-manager.js:4702-4731: labels array includes ['gate:uiux_intake_judgment','UI/UX Intake'] positioned between pr_route_classification and pr_body_contract entries; map builds 'label status' fragments joined into the digest. Fresh test run (node --test test/pr-human-summary-uiux-intake-gate.test.js test/e2e/...main.test.js) at head 2a54c080 shows 4/4 pass including digest assertions 'PR Route passed / UI/UX Intake needs_evidence / PR Body passed'. Source + passing test directly demonstrate the digest contains label and status when the node is present.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-07",
+        "session_ref": null
+      },
+      "head_commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`renderPrGateSummary` は gate_dag に `gate:uiux_intake_judgment` ノードが存在するとき、そのラベル・status・required を1行として出力する。",
+          "`buildHumanEvidenceDigest` は同ノードが存在するとき、そのラベルと状態をダイジェストに含める。",
+          "同ノードが存在しない gate_dag に対しては、両表面の出力は従来と同一（ゲート行が現れない）。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "205a80209e3fd29bc1b36e0ecfec515159c98b79ef5485932fb7acdfbb36200c",
+      "recorded_at": "2026-08-03T01:02:48.441Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "Read src/pr-manager.js:15278-15330 directly: routeGates array at line 15283-15291 includes 'gate:uiux_intake_judgment' positioned between 'gate:pr_route_classification' and 'gate:pr_body_contract', and the map at line 15310-15314 renders label/status/required as one line. Ran node --test test/pr-human-summary-uiux-intake-gate.test.js test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js myself at current head 2a54c080: 4/4 pass, including the e2e test's explicit line-position assertions (intakeIndex between PR Route and PR Body indices) and content match for label/status/required. Observation (source code + fresh test run) reaches the AC-1 outcome without inferential leap.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "adjudicator-sweet-spence-07",
+        "session_ref": null
+      },
+      "head_commit": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`renderPrGateSummary` は gate_dag に `gate:uiux_intake_judgment` ノードが存在するとき、そのラベル・status・required を1行として出力する。",
+          "`buildHumanEvidenceDigest` は同ノードが存在するとき、そのラベルと状態をダイジェストに含める。",
+          "同ノードが存在しない gate_dag に対しては、両表面の出力は従来と同一（ゲート行が現れない）。"
+        ]
+      },
+      "acceptance_scope_fingerprint": "205a80209e3fd29bc1b36e0ecfec515159c98b79ef5485932fb7acdfbb36200c",
+      "recorded_at": "2026-08-03T01:02:47.913Z"
+    }
+  ]
+}

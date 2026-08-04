@@ -1,0 +1,101 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "ledger_path": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_c7f0a46c2c4b0a671ea1af13364a42cf7bf3c186e2f882773e05ba6ecdd94d60"
+  },
+  "parent_revision_fingerprint": "16dbc3b48a785c2e97e23dd68e8993b888e0ded061c101fc4a2d3c4f1622e7df",
+  "revision_fingerprint": "2cbcceb2b4039bf774b69c320daa3de7f473bed84e104255b2690b4eea20c04b",
+  "trace": {
+    "decision_trace_id": "dt_c7f0a46c2c4b0a671ea1af13364a42cf7bf3c186e2f882773e05ba6ecdd94d60",
+    "collision_group": null,
+    "trace_source_ref": "tsr_217a2c654b2744891e2e70c30d2a9b78c1f2247c1677b331ca350574d57d2874",
+    "normalized_subject_key": "gate:path_surface_matrix",
+    "source_identity": {
+      "source_kind": "decision_record",
+      "source_ref": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/decision-records.json",
+      "native_id": "decision-1785687581018-b50a9ea0",
+      "digest": "6c65673fc6a682b099f345ef3de749f701d17b7905ca1371e95eb396838c8878",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "f56a1f7556f28f106876338eb03508d787e0d19e",
+    "parent_revision_fingerprint": "16dbc3b48a785c2e97e23dd68e8993b888e0ded061c101fc4a2d3c4f1622e7df",
+    "revision_fingerprint": "2cbcceb2b4039bf774b69c320daa3de7f473bed84e104255b2690b4eea20c04b",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_c7f0a46c2c4b0a671ea1af13364a42cf7bf3c186e2f882773e05ba6ecdd94d60"
+        },
+        "parent_revision_fingerprint": "6c4ca52c1c9e3465672c09e77d15fdf0993b1dde55c475c29526d299f216d5ff"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "disposition": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "decision": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 417,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/417",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "813bd5dd2aa17f90ef4997492faf80c3936cd0bc",
+        "status": "merged",
+        "merged_at": "2026-08-03T03:10:18Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-test-tmpdir-fixture-cleanup/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

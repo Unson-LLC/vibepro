@@ -1,0 +1,72 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "scope_reviewability|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-cross-system-adjudication",
+      "decision_id": "decision-1785696911025-49c5bf62",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The diff (src/adjudication.js, src/cli.js, three test files, story/spec docs) forms one coherent judgment: cross-system adjudicator enforcement. It was read in full by the gate_evidence reviewer across three rounds without a split request; commits are sequenced (feature, spec/lineage, two review-driven fail-closed fixes) and each is independently reviewable.",
+      "artifact": ".vibepro/reviews/story-vibepro-cross-system-adjudication/gate/review-result-gate_evidence.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T18:55:21.429Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:152|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-cross-system-adjudication",
+      "decision_id": "decision-1785696911025-49c5bf62",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The diff (src/adjudication.js, src/cli.js, three test files, story/spec docs) forms one coherent judgment: cross-system adjudicator enforcement. It was read in full by the gate_evidence reviewer across three rounds without a split request; commits are sequenced (feature, spec/lineage, two review-driven fail-closed fixes) and each is independently reviewable.",
+      "artifact": ".vibepro/reviews/story-vibepro-cross-system-adjudication/gate/review-result-gate_evidence.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:152",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T02:22:07.442Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:154|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-cross-system-adjudication",
+      "decision_id": "decision-1785696911025-49c5bf62",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The diff (src/adjudication.js, src/cli.js, three test files, story/spec docs) forms one coherent judgment: cross-system adjudicator enforcement. It was read in full by the gate_evidence reviewer across three rounds without a split request; commits are sequenced (feature, spec/lineage, two review-driven fail-closed fixes) and each is independently reviewable.",
+      "artifact": ".vibepro/reviews/story-vibepro-cross-system-adjudication/gate/review-result-gate_evidence.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:154",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T02:23:01.364Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:67|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-cross-system-adjudication",
+      "decision_id": "decision-1785696911025-49c5bf62",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "The diff (src/adjudication.js, src/cli.js, three test files, story/spec docs) forms one coherent judgment: cross-system adjudicator enforcement. It was read in full by the gate_evidence reviewer across three rounds without a split request; commits are sequenced (feature, spec/lineage, two review-driven fail-closed fixes) and each is independently reviewable.",
+      "artifact": ".vibepro/reviews/story-vibepro-cross-system-adjudication/gate/review-result-gate_evidence.json",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:67"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T02:23:54.941Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

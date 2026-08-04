@@ -1,0 +1,153 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+  "ledger_path": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-outcome-ledger.json",
+  "selector": {
+    "decision_trace_id": "dt_7f9a9aec82930d42775d422413846d7e52bb6d976d344ed93831ca7abf7444af"
+  },
+  "parent_revision_fingerprint": "a43d5d45dc226500f022f77d3810467be10a6077abcbb1ad3b26ccf423210b0d",
+  "revision_fingerprint": "a5a7428fa87a3c9048ae13eac8ad1a3ce5dcb5126ed06615460c46791c2e2724",
+  "trace": {
+    "decision_trace_id": "dt_7f9a9aec82930d42775d422413846d7e52bb6d976d344ed93831ca7abf7444af",
+    "collision_group": null,
+    "trace_source_ref": "tsr_f315fce75bc51549aa9269bbbf1fdba11c87e7bf9d36576f61b75c07ec73d348",
+    "normalized_subject_key": "finding:e2e-trivial-count-warning-surfaced",
+    "source_identity": {
+      "source_kind": "linked_sources",
+      "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json,.vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json",
+      "native_id": "e2e-trivial-count-warning-surfaced,e2e-trivial-count-warning-surfaced",
+      "digest": "2c23d7de0fa7a14205e099b95b5c6c7f9555f7e07404a20d8d04c0fdbde01351",
+      "multiplicity": 1
+    },
+    "evidence_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+    "parent_revision_fingerprint": "a43d5d45dc226500f022f77d3810467be10a6077abcbb1ad3b26ccf423210b0d",
+    "revision_fingerprint": "a5a7428fa87a3c9048ae13eac8ad1a3ce5dcb5126ed06615460c46791c2e2724",
+    "observation_identity": null,
+    "observation_read_aliases": [
+      {
+        "trace_selector": {
+          "decision_trace_id": "dt_7f9a9aec82930d42775d422413846d7e52bb6d976d344ed93831ca7abf7444af"
+        },
+        "parent_revision_fingerprint": "bf9fed3498edf4752cbdf85eaf80af98b95f963c9d9c4bce5a08530a2b499e46"
+      }
+    ],
+    "trace_status": "partial",
+    "missing_reason": "observation_missing",
+    "finding": {
+      "status": "observed",
+      "value": {
+        "severity": "low",
+        "id": "e2e-trivial-count-warning-surfaced",
+        "detail": "e2e/integration report tests=1 with counts_trivial warning surfaced; the acceptance test is a single comprehensive replay"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json",
+          "source_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "source_digest": "80670496bf8ebb65f9ffb8ff9a633300887013b80485e43e22712a9032c2737c",
+          "native_id": "e2e-trivial-count-warning-surfaced"
+        }
+      ]
+    },
+    "gate": {
+      "status": "not_observed",
+      "value": null,
+      "provenance": []
+    },
+    "detector": {
+      "status": "observed",
+      "value": {
+        "detected_by": "gate_evidence",
+        "stage": "gate",
+        "detected_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293"
+      },
+      "provenance": [
+        {
+          "source_kind": "review_finding",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json",
+          "source_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "source_digest": "80670496bf8ebb65f9ffb8ff9a633300887013b80485e43e22712a9032c2737c",
+          "native_id": "e2e-trivial-count-warning-surfaced"
+        }
+      ]
+    },
+    "disposition": {
+      "status": "observed",
+      "value": {
+        "finding_id": "e2e-trivial-count-warning-surfaced",
+        "disposition": "accepted",
+        "resolved_by": [],
+        "reason": "warning is honest surface",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json",
+          "source_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "source_digest": "ced46f2d3debe29c30b331ad10653114e4bb1d9e1a1445af74b864fdd9126fdc",
+          "native_id": "e2e-trivial-count-warning-surfaced"
+        }
+      ]
+    },
+    "decision": {
+      "status": "observed",
+      "value": {
+        "finding_id": "e2e-trivial-count-warning-surfaced",
+        "disposition": "accepted",
+        "resolved_by": [],
+        "reason": "warning is honest surface",
+        "inferred_from_resolution": false
+      },
+      "provenance": [
+        {
+          "source_kind": "finding_disposition",
+          "source_ref": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-result-gate_evidence.json",
+          "source_head_sha": "49c35bb5e3a56c06e0193f8b7f6c0648a7238293",
+          "source_digest": "ced46f2d3debe29c30b331ad10653114e4bb1d9e1a1445af74b864fdd9126fdc",
+          "native_id": "e2e-trivial-count-warning-surfaced"
+        }
+      ]
+    },
+    "behavior_delta": {
+      "status": "not_observed",
+      "before": null,
+      "after": null,
+      "change_refs": [],
+      "verification_refs": [],
+      "verification_sources": [],
+      "missing_reason": "explicit_behavior_delta_missing",
+      "excluded_sources": []
+    },
+    "delivery": {
+      "status": "merged",
+      "pr": {
+        "number": 409,
+        "url": "https://github.com/Unson-LLC/vibepro/pull/409",
+        "state": "MERGED"
+      },
+      "merge": {
+        "sha": "8c52f7c65a377399b7a0514673865025fdef9712",
+        "status": "merged",
+        "merged_at": "2026-08-02T15:52:39Z"
+      },
+      "source_ref": ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/pr-merge.json"
+    },
+    "downstream_outcome": {
+      "status": "not_observed",
+      "value": null,
+      "reason": null,
+      "source_ref": null,
+      "missing_reason": "observation_missing"
+    },
+    "eligible_outcome_sources": {
+      "total_count": 0,
+      "returned_count": 0,
+      "omitted_count": 0,
+      "truncated": false,
+      "entries": []
+    },
+    "source_errors": []
+  }
+}

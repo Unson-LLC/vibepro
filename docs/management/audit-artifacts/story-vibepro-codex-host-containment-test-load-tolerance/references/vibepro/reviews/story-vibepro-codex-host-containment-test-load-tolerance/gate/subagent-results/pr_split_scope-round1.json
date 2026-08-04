@@ -1,0 +1,12 @@
+{
+  "status": "needs_changes",
+  "summary": "Scope and PR size are appropriately small (5 files, test-only + doc/lineage registration), but AC3 is not substantiated: two independent focused runs reproduced a condition timeout on the post-shutdown waitFor even at the new 60000ms deadline under host load average 132.46/82.21/66.50 (~15 concurrent node --test processes). Also flags minor undisclosed design-ssot.json normalization drift bundled into the lineage commit.",
+  "findings": [
+    {"severity": "high", "id": "regression-guard-timeout-margin-not-substantiated", "detail": "Two node --test runs of test/codex-subagent-host.test.js both failed 'production Codex host shutdown contains the detached worker process group' with condition timeout at ~62.7-63.0s despite the 60000ms deadline; margin was sized for load 20-35 but real multi-worktree load reaches 132."},
+    {"severity": "low", "id": "path-surface-unrelated-file-drift-design-ssot", "detail": "Commit a8324cf1 bundles tooling-driven normalization of unrelated stories' child_links/spec-pointer paths in design-ssot.json, undisclosed in the commit message and impact scope."}
+  ],
+  "inspection_summary": "Diffed HEAD a8324cf1 against merge-base 37418424 across all 5 changed files; read Story and impact scope; ran the target test file twice in isolation under real host load; checked load and concurrent suites; scanned review artifacts for injection.",
+  "inspection_evidence": "test/codex-subagent-host.test.js:120-168 diff; two failing targeted runs at ~62.7-63.0s; uptime load 132.46 82.21 66.50",
+  "inspection_inputs": ["docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md", "test/codex-subagent-host.test.js", ".vibepro/config.json", "design-ssot.json", "docs/specs/story-vibepro-codex-host-containment-test-load-tolerance.md"],
+  "judgment_delta": "Initial: small test-only change should pass on scope grounds -> Final: needs_changes because AC3 is not demonstrated under observed load (60000ms still times out at load ~132) and design-ssot.json carries undisclosed normalization drift."
+}

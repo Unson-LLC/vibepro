@@ -1,0 +1,184 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-unit-suite-concurrency-default",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Head 7db9956d matches head_sha in all three run artifacts and evidence; unit content binding covers exactly the changed surface; regression tests independently rerun green; CI consumer surface verified against real workflow files; design-ssot reconciliation passed with 0 action items",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "gate-evidence-e2e-content-binding-unbound",
+      "detail": " e2e evidence entry content_binding.status=unbound, relying on head_sha match only; pre-existing repo-wide pattern for kind=e2e, not introduced by this round"
+    }
+  ],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Verified current git HEAD equals head_sha in unit/e2e/integration run artifacts and verification-evidence.json; independently reran test/full-suite-command-form.test.js (2 pass); read package.json, src/verification-runner.js, story/spec/architecture docs, and the three CI workflow files to confirm the npm test consumer surface is unchanged; checked design-ssot-reconciliation.summary.json (passed, 0 action items)",
+    "evidence": "git rev-parse HEAD=7db9956d; node --test test/full-suite-command-form.test.js output (2 pass 0 fail)",
+    "inputs": [
+      "package.json",
+      "src/verification-runner.js",
+      "test/full-suite-command-form.test.js",
+      "test/verification-runner.test.js",
+      "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+      "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+      "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+      ".github/workflows/ci.yml",
+      ".github/workflows/npm-publish.yml",
+      ".github/workflows/post-merge-release.yml"
+    ]
+  },
+  "judgment_delta": [
+    "initial concern: evidence-reuse stale flag after the docs-only round suggested the gate evidence might not reflect current HEAD -> final pass: current verification-evidence.json head_sha equals actual HEAD for every command, regression tests independently reproduce green, and the CI-consumer claim was verified against real workflow files"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+    "expected_root": null,
+    "expected_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+    "current_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/awesome-tereshkova-ee0e2d",
+      "expected_root": null,
+      "expected_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+      "current_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T16:14:46.105Z",
+  "git_context": {
+    "head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+    "current_branch": "claude/awesome-tereshkova-ee0e2d",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T16:14:45.976Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 10 file(s)",
+    "recorded_head_sha": "7db9956d80ca1e72bf47b528dcaf8addb341396d",
+    "surface_files": [
+      {
+        "path": ".github/workflows/ci.yml",
+        "sha256": "8d075b59370cdddc7b8aae329b97a60380d2f2717e291bf1c3bd1a6f743b54ab",
+        "size": 1257
+      },
+      {
+        "path": ".github/workflows/npm-publish.yml",
+        "sha256": "a79c5346741f20e98df5b5e1771c1f092668c830ad18905f0f0107751360f5a9",
+        "size": 1289
+      },
+      {
+        "path": ".github/workflows/post-merge-release.yml",
+        "sha256": "a365b9bca0b9b2e20895036e52cd7bc25503861355c0817ef13b770e10989507",
+        "size": 5353
+      },
+      {
+        "path": "docs/architecture/story-vibepro-unit-suite-concurrency-default.md",
+        "sha256": "1a36e9b8b79f3ec0aca98593400ccd6fb72c362b94c6bc8cbd7c1c83f0fb9918",
+        "size": 1938
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-unit-suite-concurrency-default.md",
+        "sha256": "c2c2d751ca74b245ed1aa77dcb60c3680d41c977f55650c7c2c2eeeae19cc5e0",
+        "size": 4326
+      },
+      {
+        "path": "docs/specs/story-vibepro-unit-suite-concurrency-default.md",
+        "sha256": "97c888a5b9744cf59f467635ce0634534c2155b5fe5049fbca126e4c39b2da5c",
+        "size": 2997
+      },
+      {
+        "path": "package.json",
+        "sha256": "cd3431b6cf01296462df08106683ba3cdbaeb8c5740e9bc4ad4af04996697d77",
+        "size": 1884
+      },
+      {
+        "path": "src/verification-runner.js",
+        "sha256": "edf9effce88c5fd10e2676ad03ef9c24f30be0e35aa7e39b681bf8e99c7c0556",
+        "size": 38529
+      },
+      {
+        "path": "test/full-suite-command-form.test.js",
+        "sha256": "af653604b8fe6b5425238449fe92f029e6fd8721e10f3fb8a30d99c55e3d42eb",
+        "size": 1337
+      },
+      {
+        "path": "test/verification-runner.test.js",
+        "sha256": "7678e173d86884f79bc6dccadeef69e0819c5e1f45ce40eee4b0b1bb59464d08",
+        "size": 61824
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "933ced71eca95e0b46bcee0a2fbea12fd9a66a2d7e7753c3cdf0e4cef6730a82"
+  },
+  "source_fingerprint": "07179512fb72f89d78d42ca37707888ae1dfbc26c25833355ffa0fe000df4c38",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a5e69104929c76b3c",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": "medium",
+    "cost_tier": null,
+    "thread_id": "a5e69104929c76b3c",
+    "session_id": "a5e69104929c76b3c",
+    "tool_call_id": null,
+    "transcript_artifact": "../../../../../../../../private/tmp/claude-502/-Users-ksato-workspace-repos-vibepro--claude-worktrees-awesome-tereshkova-ee0e2d/b72589e7-17b5-460f-8581-06932845d285/tasks/a5e69104929c76b3c.output",
+    "request_artifact": ".vibepro/reviews/story-vibepro-unit-suite-concurrency-default/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "subagent a5e69104929c76b3c returned its verdict JSON and stopped; transcript at tasks/a5e69104929c76b3c.output",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a5e69104929c76b3c",
+      "implementation_session_id": "b72589e7-17b5-460f-8581-06932845d285",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

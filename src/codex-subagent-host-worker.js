@@ -1,5 +1,6 @@
 import { spawn } from 'node:child_process';
 import crypto from 'node:crypto';
+import { renameSync, writeFileSync } from 'node:fs';
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
@@ -95,6 +96,15 @@ function runCodex(executable, args, prompt) {
     stdio: ['pipe', 'pipe', 'pipe']
   });
   activeCodexChild = child;
+  // Register the Codex child's pid synchronously, before any await, so a
+  // SIGKILL that lands on this worker mid-startup under host load cannot
+  // race ahead of the containment metadata the host relies on.
+  try {
+    writeJsonSync(path.join(runDir, 'codex-process.json'), { pid: child.pid, started_at: new Date().toISOString() });
+  } catch (error) {
+    signalCodexTree(child, 'SIGTERM');
+    throw error;
+  }
   const completion = new Promise((resolve, reject) => {
     let stdout = '';
     let stderr = '';
@@ -122,14 +132,8 @@ function runCodex(executable, args, prompt) {
       resolve({ sessionId, usageAccounting });
     });
   });
-  return writeJson(path.join(runDir, 'codex-process.json'), { pid: child.pid, started_at: new Date().toISOString() })
-    .then(() => {
-      child.stdin.end(prompt);
-      return completion;
-    }, (error) => {
-      signalCodexTree(child, 'SIGTERM');
-      throw error;
-    });
+  child.stdin.end(prompt);
+  return completion;
 }
 
 async function stopActiveCodexChild(signal) {
@@ -214,4 +218,9 @@ async function writeJson(file, value) {
   const temp = `${file}.${process.pid}.${crypto.randomUUID()}.tmp`;
   await writeFile(temp, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
   await rename(temp, file);
+}
+function writeJsonSync(file, value) {
+  const temp = `${file}.${process.pid}.${crypto.randomUUID()}.tmp`;
+  writeFileSync(temp, `${JSON.stringify(value, null, 2)}\n`, { mode: 0o600 });
+  renameSync(temp, file);
 }

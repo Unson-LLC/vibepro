@@ -1,0 +1,1022 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+  "source": "execute_merge",
+  "promoted_at": "2026-08-02T21:31:56.786Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [
+      "canonical_artifact_lines_exceeded",
+      "artifact_code_ratio_exceeded"
+    ],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:b541053541e4b9dd580209abb3f9d3bf18fe3669f7579eb2517a48fe1cc70a4f",
+    "compressed_hash": "sha256:bbfb8214f1fdd0c48785379a7ee74275d79365e0d1b75e04753acd74028eb036",
+    "expanded_bytes": 19601,
+    "compressed_bytes": 4104,
+    "expanded_line_count": 499,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "decision_outcome_ledger",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-codex-host-containment-test-load-tolerance",
+    "cost": {
+      "compressed_bytes": 4104,
+      "expanded_bytes": 19601,
+      "expanded_line_count": 499,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "base": "main",
+    "delivery": {
+      "status": "merged",
+      "source": "github_pr",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/415",
+      "merge_commit_sha": "e3a0560f73d49b6ccdbea82bd355d8b6bf2e6bf5",
+      "merged_at": "2026-08-02T21:31:46Z"
+    },
+    "reconciliation": {
+      "status": "reconciled",
+      "reasons": [],
+      "evaluated_at": "2026-08-02T21:31:56.735Z",
+      "head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217"
+    },
+    "decision_outcome_binding": {
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
+      "expected_entry_count": 31,
+      "promoted_count": 31,
+      "duplicate_count": 0,
+      "persistence_status": null
+    },
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/415",
+    "merge_commit_sha": "e3a0560f73d49b6ccdbea82bd355d8b6bf2e6bf5",
+    "merged_at": "2026-08-02T21:31:46Z",
+    "current_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...03ac374b7dbf0894ec168ff745bdab07c1be3217"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 65,
+    "copied_reference_count": 49,
+    "unresolved_reference_count": 16,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-codex-host-containment-test-load-tolerance"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:b541053541e4b9dd580209abb3f9d3bf18fe3669f7579eb2517a48fe1cc70a4f"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:37e7e5e6e582eba1999c7deb47ca089331e1b1344ec7eb1390b6e5b53911558a",
+      "audit_digest": "sha256:37e7e5e6e582eba1999c7deb47ca089331e1b1344ec7eb1390b6e5b53911558a",
+      "line_count": 406,
+      "raw_line_count": 406,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_outcome_ledger",
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-outcome-ledger.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:d1e332398935445fa2d1294e92c79bfd5f4fc0a603d802723d5863f163b2936b",
+      "audit_digest": "sha256:d1e332398935445fa2d1294e92c79bfd5f4fc0a603d802723d5863f163b2936b",
+      "line_count": 285,
+      "raw_line_count": 285,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:92d65b7a4ebe6bc2e0d17bb452da04ab2679765cf9048cd0714d9347ae949da9",
+      "audit_digest": "sha256:c3b2b675b28c349fa76f4b7a00a8269986c981cfa6e4124a7a8381196c25fec5",
+      "line_count": 5476,
+      "raw_line_count": 39087,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:b9f7a43e1578870a0fc7a5e7c4fe0144deba48e474a517cae906f21c8289a9fa",
+      "audit_digest": "sha256:75c3978a9bd314a63fd7b785c8399ae8371d7f1b7bddfbab964bea835cf30bec",
+      "line_count": 2285,
+      "raw_line_count": 4662,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:acae6a41fab8440d8a90539428f6bccfe56b8596a97a1cd7a18c26fbc588a425",
+      "audit_digest": "sha256:f1476fb6a8918623d39d5c0edbad8bf9c3192d4d7d1bc2119f5428592424a3dc",
+      "line_count": 14,
+      "raw_line_count": 561,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:5fcf15233234fc5128d69e5aeb8b4e6ff484a6a18f26813c382fe108fc804ff7",
+      "audit_digest": "sha256:a452afa57c20fc1fb8c8dee122e929d0e3766018234aa4cfe29f396215055ad3",
+      "line_count": 2345,
+      "raw_line_count": 4872,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:eda5d71151bc59b2c05492a497ea588336b54c413a9b3365975a72d8e0c882a9",
+      "audit_digest": "sha256:eda5d71151bc59b2c05492a497ea588336b54c413a9b3365975a72d8e0c882a9",
+      "line_count": 584,
+      "raw_line_count": 584,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:a70e51778a671d54515d4c34dc68256b6b615c17836dde75a7702eed7081bb00",
+      "audit_digest": "sha256:2ee90ae6c8a0b956c537554d74e2c3d59724739ec8b80011e208c7f972da11e9",
+      "line_count": 52,
+      "raw_line_count": 943,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:2f5f1c1864501e6401939978ba103aa257ef829bd9c10eb69919e0fc5d9b7292",
+      "audit_digest": "sha256:2f5f1c1864501e6401939978ba103aa257ef829bd9c10eb69919e0fc5d9b7292",
+      "line_count": 465,
+      "raw_line_count": 465,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:4c58736e1265ea721d80c2fa638c7ded62d385e828f4999b97a4664309e5d0bd",
+      "audit_digest": "sha256:4c58736e1265ea721d80c2fa638c7ded62d385e828f4999b97a4664309e5d0bd",
+      "line_count": 490,
+      "raw_line_count": 490,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:92c4c730c19056f3f25fc105ad79149caf65d206b6848342f6ae1ef77cd20469",
+      "audit_digest": "sha256:92c4c730c19056f3f25fc105ad79149caf65d206b6848342f6ae1ef77cd20469",
+      "line_count": 989,
+      "raw_line_count": 989,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:e6fdbef5be24bf49691d3e4fce99a1b09a697f144781e24a2499a33f297df41f",
+      "audit_digest": "sha256:e6fdbef5be24bf49691d3e4fce99a1b09a697f144781e24a2499a33f297df41f",
+      "line_count": 145,
+      "raw_line_count": 145,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-request-pr_split_scope.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:6acf210ad2963f1177427f961215ee6e124f20aee45d8601c0c63790c048bc5b",
+      "audit_digest": "sha256:6acf210ad2963f1177427f961215ee6e124f20aee45d8601c0c63790c048bc5b",
+      "line_count": 145,
+      "raw_line_count": 145,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-request-release_risk.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:7c2369b046ae5186e87c44f93e46b7344c64930271f8ab8763e98d5bb9cd1b93",
+      "audit_digest": "sha256:7c2369b046ae5186e87c44f93e46b7344c64930271f8ab8763e98d5bb9cd1b93",
+      "line_count": 145,
+      "raw_line_count": 145,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:9d44a98200c2a65f7ad2c4681391108d266419766ff97411b5b90cb500647477",
+      "audit_digest": "sha256:9d44a98200c2a65f7ad2c4681391108d266419766ff97411b5b90cb500647477",
+      "line_count": 145,
+      "raw_line_count": 145,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-result-pr_split_scope.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:1eaa3790b433981eea937d3a7703077a96810b6ff7d9b885af4077223361620b",
+      "audit_digest": "sha256:1eaa3790b433981eea937d3a7703077a96810b6ff7d9b885af4077223361620b",
+      "line_count": 150,
+      "raw_line_count": 150,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-result-release_risk.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:05c2ece8b2bc1224cabdb63600e7d567efdae7966f5c6cb7e1349dc63a6deb42",
+      "audit_digest": "sha256:05c2ece8b2bc1224cabdb63600e7d567efdae7966f5c6cb7e1349dc63a6deb42",
+      "line_count": 150,
+      "raw_line_count": 150,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/audit-replay-bundle.json.gz",
+      "digest": "sha256:b3f6784a8944c866f71f204173e033d64fe1ade2fa69227c8daade7b50d9fdf2",
+      "audit_digest": "sha256:b3f6784a8944c866f71f204173e033d64fe1ade2fa69227c8daade7b50d9fdf2",
+      "line_count": 1976,
+      "raw_line_count": 1976,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-codex-host-containment-test-load-tolerance/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/adjudication/story-vibepro-codex-host-containment-test-load-tolerance/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-codex-host-containment-test-load-tolerance/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/adjudication/story-vibepro-codex-host-containment-test-load-tolerance/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-outcome-ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/pr/decision-outcome-ledger.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/pr/traceability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-gate_evidence-2026-08-02T20-01-14.581Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-gate_evidence-2026-08-02T20-01-14.581Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-pr_split_scope-2026-08-02T14-56-36.534Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-pr_split_scope-2026-08-02T14-56-36.534Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-pr_split_scope-2026-08-02T20-01-43.750Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-pr_split_scope-2026-08-02T20-01-43.750Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-release_risk-2026-08-02T14-56-52.879Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-release_risk-2026-08-02T14-56-52.879Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-release_risk-2026-08-02T20-03-07.758Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-release_risk-2026-08-02T20-03-07.758Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-request-pr_split_scope.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/reviews/gate/review-request-pr_split_scope.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-request-release_risk.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/reviews/gate/review-request-release_risk.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-result-pr_split_scope.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/reviews/gate/review-result-pr_split_scope.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/review-result-release_risk.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/reviews/gate/review-result-release_risk.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/gate_evidence-round2.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/gate_evidence-round2.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/pr_split_scope-round1.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/pr_split_scope-round1.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/pr_split_scope-round2.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/pr_split_scope-round2.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/release_risk-round1.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/release_risk-round1.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/release_risk-round2.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/release_risk-round2.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-codex-host-containment-test-load-tolerance/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/spec/story-vibepro-codex-host-containment-test-load-tolerance/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-codex-host-containment-test-load-tolerance/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/stories/story-vibepro-codex-host-containment-test-load-tolerance/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-codex-host-containment-test-load-tolerance/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/stories/story-vibepro-codex-host-containment-test-load-tolerance/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-codex-host-containment-test-load-tolerance/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/adjudication/story-vibepro-codex-host-containment-test-load-tolerance/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-codex-host-containment-test-load-tolerance/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/adjudication/story-vibepro-codex-host-containment-test-load-tolerance/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/diagnostics/2026-08-02T201612Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-gate_evidence-2026-08-02T20-01-14.581Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-gate_evidence-2026-08-02T20-01-14.581Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-pr_split_scope-2026-08-02T14-56-36.534Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-pr_split_scope-2026-08-02T14-56-36.534Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-pr_split_scope-2026-08-02T20-01-43.750Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-pr_split_scope-2026-08-02T20-01-43.750Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-release_risk-2026-08-02T14-56-52.879Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-release_risk-2026-08-02T14-56-52.879Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-release_risk-2026-08-02T20-03-07.758Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/history/review-result-release_risk-2026-08-02T20-03-07.758Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/gate_evidence-round2.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/gate_evidence-round2.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/pr_split_scope-round1.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/pr_split_scope-round1.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/pr_split_scope-round2.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/pr_split_scope-round2.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/release_risk-round1.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/release_risk-round1.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/release_risk-round2.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/release_risk-round2.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-codex-host-containment-test-load-tolerance/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/spec/story-vibepro-codex-host-containment-test-load-tolerance/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-codex-host-containment-test-load-tolerance/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/stories/story-vibepro-codex-host-containment-test-load-tolerance/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-codex-host-containment-test-load-tolerance/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-codex-host-containment-test-load-tolerance/references/vibepro/stories/story-vibepro-codex-host-containment-test-load-tolerance/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/codex-host/runs",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 7406820
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-02T201612Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 992259
+    },
+    {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 7441923
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 614613
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/surface-violations.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-codex-host-containment-test-load-tolerance/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-codex-host-containment-test-load-tolerance/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-codex-host-containment-test-load-tolerance/state.json",
+      "reason": "source_missing"
+    }
+  ]
+}

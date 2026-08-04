@@ -1,0 +1,180 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "Scope coherent and correctly bundled: all 8 walkers on the single runDiagnosis path (4 unconditional), so splitting ships a still-crashing diagnose; commits single-intent. Delta since the subagent inspection (15a6b013..7d6c15fc) verified by coordinator: 0 src/ or test/ changes; only spec.json parent_design lineage, design-ssot hash binding, docs/specs pointer, and responsibility registry entry. Final suite tally 2377/2377 at frozen binding",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "fix-commit-bundles-story-bootstrap",
+      "detail": "9b219c90 combines walker fix with story registration; acceptable self-dogfood bootstrap"
+    },
+    {
+      "severity": "low",
+      "id": "design-ssot-trailing-newline",
+      "detail": "design-ssot.json trailing-newline noise"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "design-ssot-trailing-newline",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "normalized by the lineage rebind commits which now end with newline",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "fix-commit-bundles-story-bootstrap",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "story registration must exist for the gates validating the fix",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Per-commit git show --stat over all commits confirming single intent; buildEvidence confirms all 8 scanners on the diagnosis path; config/design-ssot/registry diffs contain only this story's entries",
+    "evidence": null,
+    "inputs": [
+      "src/diagnostic-engine.js",
+      "src/network-contract-scanner.js",
+      ".vibepro/config.json",
+      "design-ssot.json",
+      "responsibility-authority.json",
+      "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md"
+    ]
+  },
+  "judgment_delta": [
+    "Proved the anti-split rationale technically; re-bound to final head after verifying the docs-lineage-only delta"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+    "expected_root": null,
+    "expected_head_sha": "7d6c15fc400f9a22be9df8514f6718dbcf8a74a6",
+    "current_head_sha": "7d6c15fc400f9a22be9df8514f6718dbcf8a74a6",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+      "expected_root": null,
+      "expected_head_sha": "7d6c15fc400f9a22be9df8514f6718dbcf8a74a6",
+      "current_head_sha": "7d6c15fc400f9a22be9df8514f6718dbcf8a74a6",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T12:48:10.967Z",
+  "git_context": {
+    "head_sha": "7d6c15fc400f9a22be9df8514f6718dbcf8a74a6",
+    "current_branch": "claude/vigorous-sinoussi-3a7efb",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T12:48:10.941Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 6 file(s)",
+    "recorded_head_sha": "7d6c15fc400f9a22be9df8514f6718dbcf8a74a6",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "26d7dbc7edaf6ca620943f23cd3243ff380269ebcefc5057c9889f3388f8d684",
+        "size": 89998
+      },
+      {
+        "path": "design-ssot.json",
+        "sha256": "f65076dc0bda7f73e07540bb449969480d01089c3b40dc17cdfae43f29e1e580",
+        "size": 254868
+      },
+      {
+        "path": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
+        "sha256": "2c0991ec929bcca1b6e12da190eac0a816a863fe52d04816b03fbb2fe43d1549",
+        "size": 4423
+      },
+      {
+        "path": "responsibility-authority.json",
+        "sha256": "abd9c2e9a85cfb16136fc6d5973f62c0d520627cc6bd2f9de93d902b59825185",
+        "size": 20223
+      },
+      {
+        "path": "src/diagnostic-engine.js",
+        "sha256": "46e631474970ef241677f45a75ecee4a8cc7c7e34dbd1ed8ca0e84d68f94a412",
+        "size": 92218
+      },
+      {
+        "path": "src/network-contract-scanner.js",
+        "sha256": "71eadb6b82f1c65cdd7691a38ceb35f7879dfdde8cd8a10c95fd227e590fbc90",
+        "size": 16238
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "c06ceac231f043af578c29363fc41873f74bb4c17849fb90c8db7d93138daba7"
+  },
+  "source_fingerprint": "99e02f49dfdf9ed7ebc1afd694c97e2e2c2b1f021e49152d66e4a4f1a5f05d9f",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a32dd57bf67606cbf",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "6614f9dd-cf15-4e1f-a561-b4ba99885f51",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-pr_split_scope.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "background task a32dd57bf67606cbf completed; verdict JSON returned as final message",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "same_session",
+      "reviewer_session_id": "6614f9dd-cf15-4e1f-a561-b4ba99885f51",
+      "implementation_session_id": "6614f9dd-cf15-4e1f-a561-b4ba99885f51",
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

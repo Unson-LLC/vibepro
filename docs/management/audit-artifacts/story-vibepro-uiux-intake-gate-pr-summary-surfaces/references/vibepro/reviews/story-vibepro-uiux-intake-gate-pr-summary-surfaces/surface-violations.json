@@ -1,0 +1,37 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-review-surface-violations-v1",
+  "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+  "append_only": true,
+  "updated_at": "2026-08-02T19:19:03.806Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "violation_id": "rsv-282653ac08b9a296",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "kind": "review_surface_mutated_during_review",
+      "evidence_class": "violation",
+      "changed_fields": [
+        "surface_digest"
+      ],
+      "started": {
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "surface_digest": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574"
+      },
+      "closed": {
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "surface_digest": "b0d5cbace0f05e07910135b3217f81668b9599285f4754b30fd3fe1b1a11d593"
+      },
+      "stage": "architecture_spec",
+      "role": "architecture_boundary",
+      "lifecycle_id": "fac91ba0-c1be-4e44-84d6-e04de5083ec1",
+      "agent_system": "claude_code",
+      "agent_id": "a24ba05a1bf35b9bc",
+      "started_at": "2026-08-02T19:16:55.931Z",
+      "close_reason": "completed",
+      "close_evidence": "Claude Code background subagent a24ba05a1bf35b9bc completed and returned verdict JSON (pass); transcript at tasks/a24ba05a1bf35b9bc.output; agent shut down on completion",
+      "detected_by": "review close",
+      "recorded_at": "2026-08-02T19:19:03.805Z"
+    }
+  ]
+}

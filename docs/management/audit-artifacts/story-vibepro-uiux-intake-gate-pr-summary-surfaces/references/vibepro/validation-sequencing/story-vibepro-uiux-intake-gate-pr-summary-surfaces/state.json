@@ -1,0 +1,265 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+  "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+  "created_at": "2026-08-03T00:59:59.157Z",
+  "updated_at": "2026-08-03T01:10:11.552Z",
+  "plan": {
+    "model": "vibepro-risk-adaptive-validation-sequencing-v1",
+    "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+    "required": true,
+    "risk_profile": "light",
+    "risk_surfaces": [
+      "gate_orchestration",
+      "regression_blast_radius",
+      "test_coverage"
+    ],
+    "preflight_roles": [
+      "architecture_boundary"
+    ],
+    "preflight_reviews": [
+      {
+        "stage": "architecture_spec",
+        "role": "architecture_boundary",
+        "surfaces": [
+          "gate_orchestration"
+        ]
+      }
+    ],
+    "preflight_surfaces": [
+      "gate_orchestration"
+    ],
+    "preflight_required_inspection_inputs": [
+      "design-ssot.json",
+      "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+      "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+      "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+      "src/pr-manager.js",
+      "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+      "test/pr-human-summary-uiux-intake-gate.test.js"
+    ],
+    "phases": [
+      "targeted_validation",
+      "preflight_review",
+      "code_frozen",
+      "expensive_verification",
+      "final_review"
+    ]
+  },
+  "frozen_binding": {
+    "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+    "test_fingerprint": "c1c71d8e75386a4c3803a7b0d7888117ff56d926ae26f15c127493a4f825ea47",
+    "verification_command": "node --test test/pr-human-summary-uiux-intake-gate.test.js test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js"
+  },
+  "phases": {
+    "targeted_validation": {
+      "status": "passed",
+      "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-08-03T01:10:03.034Z",
+      "binding": {
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "test_fingerprint": "c1c71d8e75386a4c3803a7b0d7888117ff56d926ae26f15c127493a4f825ea47",
+        "verification_command": "node --test test/pr-human-summary-uiux-intake-gate.test.js test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js"
+      }
+    },
+    "preflight_review": {
+      "status": "passed",
+      "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "reason": null,
+      "evidence": [
+        ".vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/review-result-architecture_boundary.json",
+        ".vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/review-result-architecture_boundary.json",
+        ".vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/review-result-architecture_boundary.json",
+        ".vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/review-result-architecture_boundary.json"
+      ],
+      "record_type": "advisory_preflight",
+      "findings": [],
+      "dispositions": [],
+      "satisfies_final_review": false,
+      "recorded_at": "2026-08-03T01:10:04.330Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "system": "claude_code",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "architecture_boundary",
+        "stage": "architecture_spec",
+        "inspection_summary": "reviewed the full changed-path set at head 2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6; risk_surfaces=gate_orchestration. Verified the rebase carried the same seven story commits with only the config current_story_id conflict resolved; story tests rerun pass.",
+        "inspection_inputs": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js",
+          "design-ssot.json",
+          ".vibepro/config.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md"
+        ]
+      },
+      "binding": {
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "test_fingerprint": "c1c71d8e75386a4c3803a7b0d7888117ff56d926ae26f15c127493a4f825ea47",
+        "verification_command": "node --test test/pr-human-summary-uiux-intake-gate.test.js test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js"
+      }
+    },
+    "code_frozen": {
+      "status": "passed",
+      "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "reason": null,
+      "evidence": [],
+      "recorded_at": "2026-08-03T01:10:04.847Z",
+      "binding": {
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "test_fingerprint": "c1c71d8e75386a4c3803a7b0d7888117ff56d926ae26f15c127493a4f825ea47",
+        "verification_command": "node --test test/pr-human-summary-uiux-intake-gate.test.js test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js"
+      }
+    },
+    "expensive_verification": {
+      "status": "passed",
+      "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-evidence.json",
+        ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-evidence.json"
+      ],
+      "source": "local",
+      "recorded_at": "2026-08-03T01:10:10.527Z",
+      "binding": {
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "test_fingerprint": "c1c71d8e75386a4c3803a7b0d7888117ff56d926ae26f15c127493a4f825ea47",
+        "verification_command": "node --test test/pr-human-summary-uiux-intake-gate.test.js test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js"
+      }
+    },
+    "final_review": {
+      "status": "passed",
+      "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+      "reason": null,
+      "evidence": [
+        ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/../../reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/implementation/review-result-runtime_contract.json",
+        ".vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/implementation/review-result-runtime_contract.json",
+        ".vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/implementation/review-result-runtime_contract.json",
+        ".vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/implementation/review-result-runtime_contract.json"
+      ],
+      "source": "agent_review",
+      "recorded_at": "2026-08-03T01:10:11.552Z",
+      "review_provenance": {
+        "status": "pass",
+        "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "system": "claude_code",
+        "execution_mode": "parallel_subagent",
+        "evidence_strength": "strong",
+        "agent_closed": true,
+        "role": "runtime_contract",
+        "stage": "implementation",
+        "inspection_summary": "Traced the full call graph via git grep; read both function definitions and the story-commit diffs; ran the two story-scoped test files directly (4/4) at the current head.",
+        "inspection_inputs": [
+          "src/pr-manager.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md"
+        ]
+      },
+      "binding": {
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "test_fingerprint": "c1c71d8e75386a4c3803a7b0d7888117ff56d926ae26f15c127493a4f825ea47",
+        "verification_command": "node --test test/pr-human-summary-uiux-intake-gate.test.js test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js"
+      }
+    }
+  },
+  "proposed_binding": {
+    "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+    "test_fingerprint": "c1c71d8e75386a4c3803a7b0d7888117ff56d926ae26f15c127493a4f825ea47",
+    "verification_command": "node --test test/pr-human-summary-uiux-intake-gate.test.js test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js"
+  },
+  "invalidations": [
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current change-risk classification differs from the persisted validation plan",
+      "invalidated_at": "2026-08-03T01:03:49.890Z"
+    },
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current change-risk classification differs from the persisted validation plan",
+      "invalidated_at": "2026-08-03T01:06:06.137Z"
+    },
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current change-risk classification differs from the persisted validation plan",
+      "invalidated_at": "2026-08-03T01:07:03.803Z"
+    },
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current change-risk classification differs from the persisted validation plan",
+      "invalidated_at": "2026-08-03T01:08:14.635Z"
+    },
+    {
+      "changed_surfaces": [
+        "unknown"
+      ],
+      "changed_files": [],
+      "invalidated_phases": [
+        "targeted_validation",
+        "preflight_review",
+        "code_frozen",
+        "expensive_verification",
+        "final_review"
+      ],
+      "reason": "current change-risk classification differs from the persisted validation plan",
+      "invalidated_at": "2026-08-03T01:08:54.329Z"
+    }
+  ]
+}

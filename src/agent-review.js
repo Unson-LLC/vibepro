@@ -36,6 +36,7 @@ import {
   summarizeReviewSurfaceViolations
 } from './review-surface-violations.js';
 import { assertSafeStoryPathSegment } from './story-id.js';
+import { getFinalReviewTarget, isFrozenFinalReviewTarget, readValidationSequence } from './validation-sequencing.js';
 
 export const DEFAULT_REVIEW_STAGE_ROLES = {
   planning_spec: ['product_requirement', 'architecture_boundary', 'spec_consistency'],
@@ -381,7 +382,7 @@ export async function recordAgentReview(repoRoot, options = {}) {
     const lifecycle = await readLifecycle(root, storyId, stage);
     const inspection = buildInspectionBlock(options);
     const artifacts = (options.artifacts ?? []).map((artifact) => normalizeArtifact(root, artifact));
-    const freshnessPolicy = resolveReviewFreshnessPolicy(reviewPolicy, role, options);
+    const freshnessPolicy = await resolveReviewFreshnessPolicy(root, storyId, stage, reviewPolicy, role, options);
     const generatedProjectionPaths = freshnessPolicy.effective_mode === 'content_surface'
       ? await collectCurrentGeneratedProjectionPaths(root, { storyId })
       : [];
@@ -591,24 +592,62 @@ function hasBoundInspectionSurface(inspectionInputs, contentBinding) {
   return (contentBinding?.surface_files ?? []).some((file) => inspectedPaths.has(file.path));
 }
 
-function resolveReviewFreshnessPolicy(reviewPolicy, role, options = {}) {
+// Strict HEAD binding has exactly two legitimate origins:
+//   1. role_policy   - the role's own config declares freshness_mode
+//                       strict_head with a freshness_reason.
+//   2. validation_sequence - the CLI override targets the implementation:
+//                       runtime_contract final_review of an active,
+//                       frozen validation sequence (TOCTOU protection).
+// Any other `--strict-head-binding` CLI override is an unauthorized attempt
+// to strict-ify a content_surface review and must be rejected fail-closed;
+// see story-vibepro-strict-head-binding-origin-guard.
+async function resolveReviewFreshnessPolicy(root, storyId, stage, reviewPolicy, role, options = {}) {
   const rolePolicy = getRolePolicy(reviewPolicy, role);
   const cliStrict = options.strictHeadBinding === true;
   const cliReason = normalizeNullable(options.strictHeadReason);
   if (cliStrict && !cliReason) {
     throw new Error('review record --strict-head-binding requires --strict-head-reason <text>.');
   }
-  const effectiveMode = cliStrict ? 'strict_head' : rolePolicy.freshness_mode;
-  const reason = cliStrict ? cliReason : normalizeNullable(rolePolicy.freshness_reason);
-  if (effectiveMode === 'strict_head' && !reason) {
-    throw new Error(`review role ${role} configures strict_head freshness without freshness_reason.`);
+
+  if (rolePolicy.freshness_mode === 'strict_head') {
+    // A redundant --strict-head-binding on an already-strict role policy is
+    // harmless; the role policy remains the source of truth either way.
+    const reason = cliReason ?? normalizeNullable(rolePolicy.freshness_reason);
+    if (!reason) {
+      throw new Error(`review role ${role} configures strict_head freshness without freshness_reason.`);
+    }
+    return {
+      schema_version: '0.1.0',
+      configured_mode: rolePolicy.freshness_mode,
+      effective_mode: 'strict_head',
+      source: 'role_policy',
+      reason
+    };
   }
+
+  if (cliStrict) {
+    const state = await readValidationSequence(root, storyId);
+    if (!isFrozenFinalReviewTarget(state, { stage, role })) {
+      const target = getFinalReviewTarget(state);
+      throw new Error(
+        `review record --strict-head-binding is not authorized for ${stage}:${role}: strict HEAD binding is reserved for the frozen validation-sequence ${target.stage}:${target.role} final_review target or a role policy that declares freshness_mode strict_head with freshness_reason. Configured freshness for this role is ${rolePolicy.freshness_mode}.`
+      );
+    }
+    return {
+      schema_version: '0.1.0',
+      configured_mode: rolePolicy.freshness_mode,
+      effective_mode: 'strict_head',
+      source: 'validation_sequence',
+      reason: cliReason
+    };
+  }
+
   return {
     schema_version: '0.1.0',
     configured_mode: rolePolicy.freshness_mode,
-    effective_mode: effectiveMode,
-    source: cliStrict ? 'cli_override' : rolePolicy.freshness_source,
-    reason: reason ?? 'review freshness follows the inspected content surface'
+    effective_mode: rolePolicy.freshness_mode,
+    source: rolePolicy.freshness_source,
+    reason: normalizeNullable(rolePolicy.freshness_reason) ?? 'review freshness follows the inspected content surface'
   };
 }
 
@@ -1090,6 +1129,7 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
   await assertInitializedWorkspace(root, 'review status');
   const reviewPolicy = await readAgentReviewPolicy(root);
   const currentGitContext = await collectReviewGitContext(root, storyId);
+  const validationSequenceState = await readValidationSequence(root, storyId);
   const stages = options.stage ? [requireStage(options.stage, 'review status')] : getConfiguredStages(reviewPolicy);
   const stageSummaries = [];
   for (const stage of stages) {
@@ -1101,6 +1141,7 @@ export async function getAgentReviewStatus(repoRoot, options = {}) {
     storyId,
     stageSummaries,
     reviewPolicy,
+    validationSequenceState,
     latestPrPrepare,
     prPrepareFreshness,
     stageFilter: options.stage ?? null,
@@ -1138,6 +1179,7 @@ function buildReviewStatusViews({
   storyId,
   stageSummaries,
   reviewPolicy,
+  validationSequenceState = null,
   latestPrPrepare,
   prPrepareFreshness,
   stageFilter,
@@ -1174,7 +1216,9 @@ function buildReviewStatusViews({
       role: match?.role ?? null,
       blocking: Boolean(unmet),
       blockingDetail: unmet?.detail ?? null,
-      blockingStatus: unmet?.status ?? null
+      blockingStatus: unmet?.status ?? null,
+      reviewPolicy,
+      validationSequenceState
     });
   });
 
@@ -1188,7 +1232,9 @@ function buildReviewStatusViews({
       role: match?.role ?? null,
       blocking: true,
       blockingDetail: unmet.detail ?? null,
-      blockingStatus: unmet.status ?? null
+      blockingStatus: unmet.status ?? null,
+      reviewPolicy,
+      validationSequenceState
     }));
   }
   if (blockingItems.length === 0) {
@@ -1216,7 +1262,9 @@ function buildReviewStatusViews({
         role,
         blocking: unmetLookup.has(`${stage.stage}:${role.role}:${role.effective_status}:${role.stale_reason ?? role.provenance_reason ?? role.summary ?? ''}`),
         blockingDetail: role.stale_reason ?? role.provenance_reason ?? null,
-        blockingStatus: role.effective_status
+        blockingStatus: role.effective_status,
+        reviewPolicy,
+        validationSequenceState
       });
       if (rolePolicy.mode === 'optional') optional.push(item);
       if (!isRequiredCurrent || ['stale', 'unverified_agent', 'block', 'needs_changes'].includes(role.effective_status)) {
@@ -1366,7 +1414,7 @@ function findReviewArtifactDrift(stageSummaries, prPrepareCreatedAt, latestPrPre
   return newest;
 }
 
-function buildReviewStatusRoleItem({ storyId, requirement, stage, role, blocking, blockingDetail, blockingStatus }) {
+function buildReviewStatusRoleItem({ storyId, requirement, stage, role, blocking, blockingDetail, blockingStatus, reviewPolicy = null, validationSequenceState = null }) {
   const effectiveStatus = blockingStatus ?? role?.effective_status ?? 'missing';
   const detail = blockingDetail ?? role?.stale_reason ?? role?.provenance_reason ?? role?.summary ?? null;
   const required = requirement.policy !== 'optional' && requirement.policy !== 'disabled';
@@ -1388,7 +1436,7 @@ function buildReviewStatusRoleItem({ storyId, requirement, stage, role, blocking
       storyId,
       stage: requirement.stage,
       role: requirement.role,
-      contentBinding: role?.content_binding ?? null
+      strictHeadAuthorized: isStrictHeadBindingAuthorizedNow(reviewPolicy, validationSequenceState, requirement.stage, requirement.role)
     }),
     artifact: role?.artifact ?? null,
     history_artifacts: role?.history_artifacts ?? [],
@@ -2616,7 +2664,7 @@ If your coordinator runtime supports subagents, start them as part of this gate 
 4. Do not let subagents edit files during review.
 5. If a subagent times out, close/shutdown it, record \`vibepro review close --close-reason timeout\`, run \`vibepro review authorize\`, and only when it returns \`action: dispatch\` start the replacement with both \`--dispatch-authorization <authorization-id>\` and \`--replacement-for <lifecycle-id>\`.
 6. After each subagent returns its result, close/shutdown that subagent thread/session. Do not leave review subagents running.
-7. Record each result with the listed \`vibepro review record\` command and include \`--agent-closed\`. Do not add \`--strict-head-binding\` unless making a deliberate CLI override; \`--strict-head-reason\` is required for that override. Configured strict roles apply automatically.
+7. Record each result with the listed \`vibepro review record\` command and include \`--agent-closed\`. \`--strict-head-binding\` is only ever authorized for the frozen validation-sequence \`implementation:runtime_contract\` final_review target, or a role whose policy declares \`freshness_mode: strict_head\` with a \`freshness_reason\`; any other use is rejected. Configured strict roles apply automatically without the flag.
 8. Do not dispatch any other Agent Review stage in the same batch. Run \`vibepro review status . --id ${storyId} --stage ${stage}\` and then \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\` to advance to the next stage.
 
 ## Evidence Handling
@@ -2653,7 +2701,7 @@ coordinator runtimeがsubagentを使える場合は、このgate workflowの一�
 4. review中にsubagentへfile編集させない。
 5. subagentがtimeoutしたらclose/shutdownし、\`vibepro review close --close-reason timeout\` を記録して \`vibepro review authorize\` を実行する。\`action: dispatch\` の場合だけ、\`--dispatch-authorization <authorization-id>\` と \`--replacement-for <lifecycle-id>\` の両方を付けてreplacementを開始する。
 6. 各subagentの結果受領後、そのsubagent thread/sessionをclose/shutdownする。review subagentを走らせたままにしない。
-7. listed \`vibepro review record\` commandで各結果を記録し、\`--agent-closed\` を含める。意図的なCLI overrideの場合を除き、\`--strict-head-binding\` を追加しない。overrideには \`--strict-head-reason\` が必須。設定済みstrict roleは自動適用される。
+7. listed \`vibepro review record\` commandで各結果を記録し、\`--agent-closed\` を含める。\`--strict-head-binding\` はfrozen validation sequenceの \`implementation:runtime_contract\` final_review target、または \`freshness_mode: strict_head\` と \`freshness_reason\` を明示したrole policyの場合だけ許可される。それ以外は拒否される。設定済みstrict roleはflagなしで自動適用される。
 8. 他のAgent Review stageを同じbatchでdispatchしない。\`vibepro review status . --id ${storyId} --stage ${stage}\` を実行し、その後 \`vibepro pr prepare . --story-id ${storyId} --base <base-branch>\` で次stageへ進む。
 
 ## 証跡の扱い
@@ -2679,12 +2727,26 @@ function renderMandatoryReviewLenses(lenses) {
   ].join('\n')).join('\n\n');
 }
 
-function buildReviewRecordCommand({ storyId, stage, role, contentBinding = null }) {
+// Strict HEAD binding must never be suggested for a role that would not be
+// authorized to record it now (see resolveReviewFreshnessPolicy). A
+// previously recorded strict_head content_binding is not sufficient
+// justification on its own -- that binding may itself be a legacy
+// unauthorized cli_override -- so remediation/recovery commands only carry
+// the flag when the role's *current* policy or an active frozen
+// validation-sequence final_review target would authorize it.
+function isStrictHeadBindingAuthorizedNow(reviewPolicy, validationSequenceState, stage, role) {
+  if (!reviewPolicy || !stage || !role) return false;
+  const rolePolicy = getRolePolicy(reviewPolicy, role);
+  if (rolePolicy.freshness_mode === 'strict_head') return true;
+  return isFrozenFinalReviewTarget(validationSequenceState, { stage, role });
+}
+
+function buildReviewRecordCommand({ storyId, stage, role, strictHeadAuthorized = false }) {
   const inspectionInputs = reviewInspectionInputPlaceholders(stage, role, '<ref>')
     .map((input) => `--inspection-input "${input}"`)
     .join(' ');
   const command = `vibepro review record . --id ${storyId} --stage ${stage} --role ${role} --status "<pass|needs_changes|block>" --summary "<summary>" --inspection-summary "<inspection-summary>" --inspection-evidence "<inspection-evidence>" ${inspectionInputs} --judgment-delta "<initial judgment -> final judgment because evidence>" --agent-system "<codex|claude_code>" --execution-mode parallel_subagent --agent-id "<replacement-agent-id>" --agent-thread-id "<replacement-agent-thread-id>" --agent-session-id "<replacement-agent-session-id>" --implementation-session-id "<implementation-session-id>" --reviewer-identity separate_session --agent-model "<model>" --agent-reasoning-effort "<reasoning-effort>" --agent-cost-tier "<cost-tier>" --agent-transcript "<replacement-agent-transcript>" --agent-closed --agent-close-evidence "<replacement-agent-close-evidence>"`;
-  if (contentBinding?.mode !== 'strict_head') return command;
+  if (!strictHeadAuthorized) return command;
   return `${command} --strict-head-binding --strict-head-reason "preserve the recorded strict HEAD freshness policy during recovery"`;
 }
 
@@ -2790,6 +2852,7 @@ function renderParallelDispatchPrRows(parallelDispatch) {
 }
 
 async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, reviewPolicy, roles: summaryRoles = null }) {
+  const validationSequenceState = await readValidationSequence(repoRoot, storyId);
   const reviewDir = await getReviewStageDir(repoRoot, storyId, stage);
   const parallelDispatchPath = getParallelDispatchPath(reviewDir);
   const parallelDispatchPrepared = await pathExists(parallelDispatchPath);
@@ -2827,6 +2890,7 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       binding_status: binding?.status ?? null,
       merge_delta_reuse: binding?.merge_delta_reuse ?? null,
       content_binding: binding?.content_binding ?? null,
+      freshness_policy: result?.freshness_policy ?? null,
       provenance_status: provenance?.status ?? null,
       provenance_reason: provenance?.reason ?? null,
       agent_provenance: result?.agent_provenance ?? null,
@@ -2866,7 +2930,9 @@ async function buildStageSummary(repoRoot, storyId, stage, { currentGitContext, 
       roles,
       lifecycleSummary,
       parallelDispatchPrepared,
-      stageRoles
+      stageRoles,
+      reviewPolicy,
+      validationSequenceState
     }),
     updated_at: new Date().toISOString(),
     current_git_context: currentGitContext,
@@ -2983,15 +3049,16 @@ function resolveOverallStatus(stageSummaries) {
   return 'needs_review';
 }
 
-function buildStageNextActions({ storyId, stage, roles, lifecycleSummary, parallelDispatchPrepared, stageRoles }) {
+function buildStageNextActions({ storyId, stage, roles, lifecycleSummary, parallelDispatchPrepared, stageRoles, reviewPolicy = null, validationSequenceState = null }) {
   const actions = [];
   actions.push(...buildLifecycleNextActions({ storyId, stage, lifecycleSummary }));
   const prepareCommand = buildReviewPrepareCommand({ storyId, stage, roles: stageRoles });
   for (const role of roles) {
     if (role.effective_status === 'pass') continue;
+    const strictHeadAuthorized = isStrictHeadBindingAuthorizedNow(reviewPolicy, validationSequenceState, stage, role.role);
     if (role.lifecycle?.effective_status === 'running') {
       const latest = role.lifecycle.latest;
-      actions.push(`Wait for running ${stage}:${role.role} subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'}, close it with \`vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role.role)} ${latest?.agent_id ? `--agent-id ${shellQuote(latest.agent_id)}` : `--lifecycle-id ${shellQuote(latest?.lifecycle_id ?? '<lifecycle-id>')}`} --close-reason completed --close-evidence ${shellQuote('<evidence>')}\`, then record the result: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, contentBinding: role.content_binding })}\``);
+      actions.push(`Wait for running ${stage}:${role.role} subagent ${latest?.agent_id ?? latest?.lifecycle_id ?? 'unknown'}, close it with \`vibepro review close . --id ${shellQuote(storyId)} --stage ${shellQuote(stage)} --role ${shellQuote(role.role)} ${latest?.agent_id ? `--agent-id ${shellQuote(latest.agent_id)}` : `--lifecycle-id ${shellQuote(latest?.lifecycle_id ?? '<lifecycle-id>')}`} --close-reason completed --close-evidence ${shellQuote('<evidence>')}\`, then record the result: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, strictHeadAuthorized })}\``);
       continue;
     }
     if (!parallelDispatchPrepared) {
@@ -2999,13 +3066,13 @@ function buildStageNextActions({ storyId, stage, roles, lifecycleSummary, parall
       continue;
     }
     if (role.effective_status === 'missing') {
-      actions.push(`Run and record ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, contentBinding: role.content_binding })}\``);
+      actions.push(`Run and record ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, strictHeadAuthorized })}\``);
     } else if (role.effective_status === 'stale') {
-      actions.push(`Replace stale ${stage}:${role.role} review (${role.stale_reason ?? 'stale review'}): \`${buildReviewRecordCommand({ storyId, stage, role: role.role, contentBinding: role.content_binding })}\``);
+      actions.push(`Replace stale ${stage}:${role.role} review (${role.stale_reason ?? 'stale review'}): \`${buildReviewRecordCommand({ storyId, stage, role: role.role, strictHeadAuthorized })}\``);
     } else if (role.effective_status === 'unverified_agent') {
-      actions.push(`Record verified parallel-subagent provenance for ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, contentBinding: role.content_binding })}\``);
+      actions.push(`Record verified parallel-subagent provenance for ${stage}:${role.role}: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, strictHeadAuthorized })}\``);
     } else if (role.effective_status === 'needs_changes' || role.effective_status === 'block') {
-      actions.push(`Resolve ${stage}:${role.role} ${role.effective_status} finding(s), then record replacement review: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, contentBinding: role.content_binding })}\``);
+      actions.push(`Resolve ${stage}:${role.role} ${role.effective_status} finding(s), then record replacement review: \`${buildReviewRecordCommand({ storyId, stage, role: role.role, strictHeadAuthorized })}\``);
     }
   }
   return [...new Set(actions)];

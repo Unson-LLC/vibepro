@@ -1,0 +1,188 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-profiler-file-walk-stack-overflow",
+  "stage": "gate",
+  "role": "gate_evidence",
+  "status": "pass",
+  "summary": "Gate evidence is honest and sufficient: unit 2377/2377, e2e, integration all runner_direct with artifact_check verified and current-content-surface fresh; the 9 decisions' not-applicable claims match the diff scope; architecture_spec reviews contain real dispositioned findings, not rubber stamps",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "decision-public-contract-stale-test-count",
+      "detail": "public_contract decision cites 2375/2375 but the frozen-binding unit run is 2377/2377; predates the final run and the delta is the 2 new story tests — stale, not false"
+    },
+    {
+      "severity": "low",
+      "id": "e2e-trivial-count-warning-surfaced",
+      "detail": "e2e/integration runs report tests=1 with counts_trivial warning surfaced; e2e.log shows the named 72s acceptance test, so thin but real"
+    },
+    {
+      "severity": "low",
+      "id": "integration-head-lag-content-surface-only",
+      "detail": "integration record bound to 76e01871, fresh under content-surface policy (both surface hashes re-verified at current HEAD); strict-HEAD roles would need a rerun"
+    },
+    {
+      "severity": "low",
+      "id": "managed-worktree-locality-unresolved",
+      "detail": "all records carry the managed_worktree_locality needs_review advisory (mode=preferred, required=false)"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "decision-public-contract-stale-test-count",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "superseding decision with the corrected 2377/2377 count recorded immediately after this review",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "e2e-trivial-count-warning-surfaced",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "warning is honest surface, the acceptance test is a single deliberately comprehensive replay",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "integration-head-lag-content-surface-only",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "no strict-HEAD role governs the integration kind for this story",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "managed-worktree-locality-unresolved",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "advisory-only in this repo config; the session worktree is the intended execution site for self-dogfood",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Cross-checked verification-evidence.json against unit.json/unit.log (2377/2377 at 15a6b013, runner_direct), e2e.log, shasum-verified integration content-surface hashes at current worktree; validated all 9 decision claims against git diff scope; read all 3 architecture_spec results. risk_surfaces=database_state,test_coverage — database_state checked by confirming only traversal mechanics changed in src/database-access-scanner.js with detection logic untouched; test_coverage checked by reconciling the 2377/2377 tally with unit.log and the AC-bound e2e/integration clauses",
+    "evidence": null,
+    "inputs": [
+      ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/verification-evidence.json",
+      ".vibepro/pr/story-vibepro-profiler-file-walk-stack-overflow/decision-records.json",
+      "src/database-access-scanner.js",
+      "test/architecture-profiler.test.js",
+      "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md"
+    ]
+  },
+  "judgment_delta": [
+    "Independently re-verified content-surface hashes and the unit tally from raw logs rather than record claims; surfaced the stale 2375-vs-2377 count in the public_contract decision"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+    "expected_root": null,
+    "expected_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+    "current_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/zen-feynman-69d82a",
+      "expected_root": null,
+      "expected_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+      "current_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-02T11:56:01.376Z",
+  "git_context": {
+    "head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+    "current_branch": "claude/vigorous-sinoussi-3a7efb",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-02T11:56:01.346Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 3 file(s)",
+    "recorded_head_sha": "15a6b013a5f9833bd2603e44cb343ee8fec59206",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-profiler-file-walk-stack-overflow.md",
+        "sha256": "2c0991ec929bcca1b6e12da190eac0a816a863fe52d04816b03fbb2fe43d1549",
+        "size": 4423
+      },
+      {
+        "path": "src/database-access-scanner.js",
+        "sha256": "ee2e956d691a5929e814dbdebda2d1d3b8675366255a4d1fad600bb2667dfb18",
+        "size": 5071
+      },
+      {
+        "path": "test/architecture-profiler.test.js",
+        "sha256": "40d5e2633abf5dd320905ba703ccc6ddeaf51a29317509121fc6ff28d97f016d",
+        "size": 2912
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "eb581ae167b839c2a301bc385a71157e56f8e0b04eb221b86ab9761645d3ee72"
+  },
+  "source_fingerprint": "cdd1c173b8a55cae396e6e0b326091f3f03bd3ece5ba9cb23f1b4e2ea1a09252",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a0d75fb9e93d22062",
+    "agent_role": null,
+    "model": "claude-fable-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "6614f9dd-cf15-4e1f-a561-b4ba99885f51",
+    "tool_call_id": null,
+    "transcript_artifact": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/transcript-gate_evidence.jsonl",
+    "request_artifact": ".vibepro/reviews/story-vibepro-profiler-file-walk-stack-overflow/gate/review-request-gate_evidence.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": "background task a0d75fb9e93d22062 completed; verdict JSON returned as final message",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "same_session",
+      "reviewer_session_id": "6614f9dd-cf15-4e1f-a561-b4ba99885f51",
+      "implementation_session_id": "6614f9dd-cf15-4e1f-a561-b4ba99885f51",
+      "source": "cli_flag"
+    }
+  },
+  "agent_usage": null
+}

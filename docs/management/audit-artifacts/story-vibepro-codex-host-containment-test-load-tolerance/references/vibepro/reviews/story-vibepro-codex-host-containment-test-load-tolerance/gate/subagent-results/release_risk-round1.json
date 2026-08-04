@@ -1,0 +1,12 @@
+{
+  "status": "needs_changes",
+  "summary": "Scope matches the Story exactly (test-only, src/ untouched, 4 waits widened, unrelated waitFor sites correctly untouched), but the fix's own AC3 is contradicted under observed load: two targeted runs failed the process-group containment test with a 62.6s condition timeout on the new 60000ms deadline (host load 120-155), while the isolated --test-name-pattern run passed in 3s. No current-head verify-run evidence exists yet for AC3/S-003.",
+  "findings": [
+    {"severity": "high", "id": "release-risk-unverified-ac3", "detail": "AC3/S-003 require targeted and full-suite passes verified by current-head evidence; none recorded, and two targeted runs reproducibly failed at the 60000ms deadline (62.6s) under load average 120-155."},
+    {"severity": "medium", "id": "release-risk-fixed-timeout-margin-assumption", "detail": "The Story's 'escalation ceiling ~7.5s plus margin' framing under-sizes the deadline for real multi-worktree load; either widen further or record the load conditions under which verification was captured."}
+  ],
+  "inspection_summary": "Read Story, Spec pointer, spec.json; diffed both commits against main; read terminateWorkerTree; confirmed only the 4 load-sensitive waits changed; grepped for other real-process waitFor patterns (none); ran the test file twice (failed at 60000ms) and isolated via --test-name-pattern (passed 3s); checked pr-prepare gate status.",
+  "inspection_evidence": "node --test test/codex-subagent-host.test.js failing 'production Codex host shutdown contains the detached worker process group (62629ms)' twice; isolated --test-name-pattern pass in ~3s; pr-prepare.json gate_status",
+  "inspection_inputs": ["docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md", "docs/specs/story-vibepro-codex-host-containment-test-load-tolerance.md", ".vibepro/spec/story-vibepro-codex-host-containment-test-load-tolerance/spec.json", "test/codex-subagent-host.test.js", "src/codex-subagent-host.js", ".vibepro/config.json", "design-ssot.json"],
+  "judgment_delta": "Initial: small scoped test-only change, likely pass -> Final: needs_changes because AC3/S-003 is unbacked and contradicted at the current 60000ms deadline under real host load; deadline sizing must be revisited and passing evidence recorded."
+}

@@ -1,0 +1,337 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+  "updated_at": "2026-08-02T21:03:13.533Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+      "expected_root": null,
+      "expected_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "current_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785704593532-a5b20f43",
+      "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Scope is reviewable as one coherent intent: containment flake root-cause fix with its registration surface",
+      "reason": "One reviewer can read this PR as a single consistent judgment: the diff is one root-cause investigation (containment test flake) yielding the fixture atomic-write fix, a narrow src registration-race hardening with escalation behavior unchanged, an e2e flow replay, and the mandatory VibePro registration surface (Story/spec pointer/design-ssot/config). pr_split_scope round-2 independently reviewed and passed the bundling; review owner map: gate_evidence, pr_split_scope, release_risk all have closed passing reviews with named subagent provenance.",
+      "reviewer": null,
+      "artifact": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/pr_split_scope-round2.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+          "expected_root": null,
+          "expected_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+          "current_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+        "current_branch": "claude/relaxed-moser-327f0c",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T21:03:13.526Z"
+      },
+      "recorded_at": "2026-08-02T21:03:13.533Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785701419023-bf05cb8c",
+      "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Bundled scope justified (superseding corrected premise): one root-cause investigation spanning test fixture fix, narrow src containment hardening, and mandatory self-dogfood registration surface",
+      "reason": "Supersedes decision-1785691063388-85f5140e whose 'no src changes' premise became false after commit d07cb290. Current accurate scope: the PR bundles exactly one intent — eliminating the containment-test flake — whose instrumented root-cause investigation produced (1) the test fixture atomic-write fix (test/codex-subagent-host.test.js), (2) a narrowly scoped production hardening closing the inspection-found codex pid registration race (src/codex-subagent-host.js, src/codex-subagent-host-worker.js) with escalation phases/signal order/EPERM fallback unchanged, and (3) the VibePro self-dogfood registration surface (Story, docs/specs pointer, design-ssot links, .vibepro/config.json). All three share the same investigation, the same review surface, and one rollback plan; pr_split_scope round-2 review independently judged the bundling appropriate.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md",
+      "verification_evidence_summary": {
+        "count": 1,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+          "expected_root": null,
+          "expected_head_sha": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+          "current_head_sha": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "d07cb29027f4b198ae6d07c894ccdf46418ee8dc",
+        "current_branch": "claude/relaxed-moser-327f0c",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T20:10:19.014Z"
+      },
+      "recorded_at": "2026-08-02T20:10:19.024Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785691063388-85f5140e",
+      "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Bundled scope justified: single test-flake-fix intent with its mandatory VibePro self-dogfood registration surface",
+      "reason": "The PR bundles exactly one intent: the containment-test load-tolerance fix (test/codex-subagent-host.test.js) plus the artifacts the VibePro self-dogfood flow itself mandates for that intent — the Story doc, the docs/specs pointer, design-ssot.json lineage links, and the .vibepro/config.json brainbase.stories[] registration. None of these are separable into an independent PR without breaking the Story->Gate traceability this repo requires; there are no unrelated source changes (src/ untouched). Splitting would produce a test-only PR that fails story registration gates and a docs-only PR with no referent.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md",
+      "verification_evidence_summary": {
+        "count": 1,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+          "expected_root": null,
+          "expected_head_sha": "34372161df6221315e5aea0a55d59447c2f1fffd",
+          "current_head_sha": "34372161df6221315e5aea0a55d59447c2f1fffd",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "34372161df6221315e5aea0a55d59447c2f1fffd",
+        "current_branch": "claude/relaxed-moser-327f0c",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T17:17:43.375Z"
+      },
+      "recorded_at": "2026-08-02T17:17:43.391Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785682231662-b6ac2c9b",
+      "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": "Artifact policy: only .vibepro/config.json story registration is committed; diagnostic artifacts stay workspace-only",
+      "reason": "Committed .vibepro content is limited to .vibepro/config.json brainbase.stories[] registration of this Story, which is the required self-dogfood registration path for hand-written Stories (story derive does not pick them up). No diagnostic .vibepro artifacts (pr/, reviews/, diagnostics/, spec/) are committed; they remain workspace-only evidence.",
+      "reviewer": null,
+      "artifact": "docs/management/stories/active/story-vibepro-codex-host-containment-test-load-tolerance.md",
+      "verification_evidence_summary": {
+        "count": 0,
+        "entries": []
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+          "expected_root": null,
+          "expected_head_sha": "a8324cf12dfeaee2b0558200c295cedcd6104cb8",
+          "current_head_sha": "a8324cf12dfeaee2b0558200c295cedcd6104cb8",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "a8324cf12dfeaee2b0558200c295cedcd6104cb8",
+        "current_branch": "claude/relaxed-moser-327f0c",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T14:50:31.635Z"
+      },
+      "recorded_at": "2026-08-02T14:50:31.663Z"
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "open": 0,
+    "by_type": {
+      "needs_review": 4
+    },
+    "by_status": {
+      "accepted": 4
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+        "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+        "expected_root": null,
+        "expected_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+        "current_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785704593532-a5b20f43",
+      "story_id": "story-vibepro-codex-host-containment-test-load-tolerance",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Scope is reviewable as one coherent intent: containment flake root-cause fix with its registration surface",
+      "reason": "One reviewer can read this PR as a single consistent judgment: the diff is one root-cause investigation (containment test flake) yielding the fixture atomic-write fix, a narrow src registration-race hardening with escalation behavior unchanged, an e2e flow replay, and the mandatory VibePro registration surface (Story/spec pointer/design-ssot/config). pr_split_scope round-2 independently reviewed and passed the bundling; review owner map: gate_evidence, pr_split_scope, release_risk all have closed passing reviews with named subagent provenance.",
+      "reviewer": null,
+      "artifact": ".vibepro/reviews/story-vibepro-codex-host-containment-test-load-tolerance/gate/subagent-results/pr_split_scope-round2.json",
+      "verification_evidence_summary": {
+        "count": 3,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/relaxed-moser-327f0c",
+          "expected_root": null,
+          "expected_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+          "current_head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "03ac374b7dbf0894ec168ff745bdab07c1be3217",
+        "current_branch": "claude/relaxed-moser-327f0c",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T21:03:13.526Z"
+      },
+      "recorded_at": "2026-08-02T21:03:13.533Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-codex-host-containment-test-load-tolerance/decision-records.json"
+}

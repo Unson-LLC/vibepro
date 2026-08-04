@@ -1,0 +1,777 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-decision-records-v1",
+  "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+  "updated_at": "2026-08-03T00:49:19.282Z",
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "decision record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+      "expected_root": null,
+      "expected_head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+      "current_head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+      "managed_worktree": null
+    }
+  ],
+  "decisions": [
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785718159225-de035b1c",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "source_status": null,
+      "summary": "Owner grant: 8->10 subagents for gate_evidence and runtime_contract re-reviews of the corrected story text",
+      "reason": "The runtime_contract review (lifecycle at head e4a6f68d) found the story overclaimed production reachability of buildHumanEvidenceDigest; the correction commit 3bc551f8 staled the gate_evidence and runtime_contract reviews, both of which must re-run. sato_keigo approved the raise via AskUserQuestion in session c3213594-536c-47ba-89cf-d8613ecaff91 on 2026-08-03, observed directly by this recording agent.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+        "override_digest": "adf0a3bfdeeb1000a1dfb5ce0de55af6916cfd7cf8660623ceac4003ceda9e15",
+        "grantor_kind": "human",
+        "grantor": "sato_keigo",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "coordinator-sweet-spence-0193db"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "expected_root": null,
+          "expected_head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+          "current_head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+        "current_branch": "claude/sweet-spence-0193db",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-08-03T00:49:19.218Z"
+      },
+      "recorded_at": "2026-08-03T00:49:19.226Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785716525716-d6ea484f",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "source_status": null,
+      "summary": "Owner grant: +2 subagents (6->8) for the final implementation:runtime_contract review",
+      "reason": "validation_sequencing final_review hard-requires an implementation:runtime_contract Agent Review; the base max_subagent_count of 6 was exactly consumed by the recorded review lifecycles (3 initial gate roles, 1 gate_evidence re-review, 2 architecture_boundary). sato_keigo approved a story-scoped raise to 8 via AskUserQuestion in session c3213594-536c-47ba-89cf-d8613ecaff91 on 2026-08-03, observed directly by this recording agent.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+        "override_digest": "8e3aeeff500672f86a46f4c6f086ecd12636ee504f216689055736b4b721bbc4",
+        "grantor_kind": "human",
+        "grantor": "sato_keigo",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "coordinator-sweet-spence-0193db"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "expected_root": null,
+          "expected_head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+          "current_head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "current_branch": "claude/sweet-spence-0193db",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-08-03T00:22:05.707Z"
+      },
+      "recorded_at": "2026-08-03T00:22:05.717Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785699369709-92d4fab4",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": null,
+      "summary": "public_contract blocker waived: classifier premise corrected and re-adjudicated judged_sound by an independent judge; compatibility is documented and test-proven",
+      "reason": "The blocker public_contract_traceability_missing fired on the absence of a contract_doc file-group artifact. The judgment DAG adjudication ruled this premise classifier_premise_unsound (correction 761fcf8f-fa3d-4731-9ca9-23351be76fb2) and an independent second judge re-adjudicated axis:public_contract judged_sound (event cc3921e5-e131-4139-bcd3-57d04814b369): this repo's sanctioned convention accepts the Story reason: frontmatter ([REDACTED:01d138d5fb8c]) as the contract artifact for this scale of change, and the old/new output expectation is reviewable in the story e2e test, which proves the added line when the node exists and byte-identical output when absent. The change is additive-only; no CLI/API/config surface changes.",
+      "reviewer": null,
+      "artifact": "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": true,
+        "hit_count": 1
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "expected_root": null,
+          "expected_head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+          "current_head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "current_branch": "claude/sweet-spence-0193db",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T19:36:09.701Z"
+      },
+      "recorded_at": "2026-08-02T19:36:09.710Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785699316527-3fe72f88",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:review_surface_integrity:rsv-282653ac08b9a296",
+      "source_status": null,
+      "summary": "Coordinator edited design-ssot.json in the working tree while the architecture_boundary review ran; the mutation was outside that review's inspected surfaces and was re-reviewed at the next head",
+      "reason": "What actually happened: while review lifecycle fac91ba0 (architecture_spec:architecture_boundary, agent a24ba05a1bf35b9bc, head 55299381) was running, the coordinator appended the story's design-root entry to design-ssot.json as an uncommitted working-tree edit, changing the surface digest mid-review. The mutated file was not among that review's inspected content surfaces (story doc, src/pr-manager.js, both tests, spec). After committing the entry as ac51485e, a fresh differential architecture_boundary review (lifecycle at ac51485e, agent aa425e892b977e69f) re-inspected the full changed-path set including design-ssot.json and recorded pass with the risk_surfaces marker.",
+      "reviewer": null,
+      "artifact": ".vibepro/reviews/story-vibepro-uiux-intake-gate-pr-summary-surfaces/architecture_spec/review-result-architecture_boundary.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "expected_root": null,
+          "expected_head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+          "current_head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "current_branch": "claude/sweet-spence-0193db",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T19:35:16.515Z"
+      },
+      "recorded_at": "2026-08-02T19:35:16.529Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785698287756-3ae7fd6b",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "source_status": null,
+      "summary": "Single-intent display fix reviewable by one reviewer; review_owner_map not applicable to this single-owner repo change",
+      "reason": "scope_reviewed: the gate-stage pr_split_scope subagent review (recorded pass) judged the bundled diff one coherent intent, and the gate_evidence re-review at the current head confirmed the surface claims. review_owner_map is not applicable: this is a single-owner repo change touching one runtime file plus its tests and story docs; blast radius is bounded to the two curated label lists (split-plan and graphify related-file scope recorded in .vibepro artifacts). decision_record: the bundled-scope justification is recorded against gate:pr_scope_judgment and gate:split_resolution.",
+      "reviewer": null,
+      "artifact": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/split-plan.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "expected_root": null,
+          "expected_head_sha": "552993816c237902d3407e9c899a778124127a79",
+          "current_head_sha": "552993816c237902d3407e9c899a778124127a79",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "current_branch": "claude/sweet-spence-0193db",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T19:18:07.744Z"
+      },
+      "recorded_at": "2026-08-02T19:18:07.757Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785698284938-da95d2e9",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:judgment_axis_public_contract",
+      "source_status": null,
+      "summary": "Additive-only output change with old/new expectations captured in tests; no CLI/API/config surface broken",
+      "reason": "The only public output surface affected is the human PR summary text: a UI/UX Intake line renders solely when a gate:uiux_intake_judgment node exists in gate_dag.nodes. Old/new expectations are reviewable in the story e2e test, which asserts the with-node rendering (label/status/required line and digest entry, PS-001/PS-002) and proves the without-node output byte-identical to the previous behavior (PS-003 deepEqual/equal assertions). Exports of the two render functions are additive module surface for tests; no existing caller changes. gate evaluation, DAG wiring, CLI flags, and config formats are untouched.",
+      "reviewer": null,
+      "artifact": "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "expected_root": null,
+          "expected_head_sha": "552993816c237902d3407e9c899a778124127a79",
+          "current_head_sha": "552993816c237902d3407e9c899a778124127a79",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "current_branch": "claude/sweet-spence-0193db",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T19:18:04.867Z"
+      },
+      "recorded_at": "2026-08-02T19:18:04.940Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785696621192-61ac6765",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:split_resolution",
+      "source_status": null,
+      "summary": "Bundled scope accepted: single-intent display fix, no split lanes apply",
+      "reason": "Same justification as gate:pr_scope_judgment: one display-only intent (render gate:uiux_intake_judgment on the two human PR summary surfaces) with its tests and required Story registration. No independent lanes exist; a split would leave either untested code or an unregistered Story.",
+      "reviewer": null,
+      "artifact": "src/pr-manager.js",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "expected_root": null,
+          "expected_head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+          "current_head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+        "current_branch": "claude/sweet-spence-0193db",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T18:50:21.168Z"
+      },
+      "recorded_at": "2026-08-02T18:50:21.193Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785696616534-c086f1b6",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:pr_scope_judgment",
+      "source_status": null,
+      "summary": "Atomic display-only change: two label-list entries, their tests, and the Story/Spec registration are one intent",
+      "reason": "The diff is two label-list entries in src/pr-manager.js plus the focused unit test, the story-scoped acceptance e2e test, the Story doc, and the config registration required by the gate DAG. Splitting would separate the change from its only tests or from its Story registration, shipping an unreviewable fragment; there is no second intent to extract.",
+      "reviewer": null,
+      "artifact": "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "expected_root": null,
+          "expected_head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+          "current_head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+        "current_branch": "claude/sweet-spence-0193db",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T18:50:16.471Z"
+      },
+      "recorded_at": "2026-08-02T18:50:16.535Z"
+    },
+    {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785696549143-6dd83cdd",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "type": "needs_review",
+      "status": "accepted",
+      "source": "gate:vibepro_artifact_policy",
+      "source_status": null,
+      "summary": "Committed .vibepro/config.json is Story registration required by the gate DAG, not diagnostic evidence",
+      "reason": "The only committed .vibepro path is .vibepro/config.json: registering the hand-written Story in brainbase.stories[] is a required input of the gate DAG itself and follows the same pattern as prior merged stories (story-vibepro-profiler-file-walk-stack-overflow and earlier). No diagnostic .vibepro artifacts are committed; verification/review evidence stays local per repo exclude.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": null,
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "expected_root": null,
+          "expected_head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+          "current_head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+        "current_branch": "claude/sweet-spence-0193db",
+        "dirty": false,
+        "status_fingerprint": "",
+        "recorded_at": "2026-08-02T18:49:09.135Z"
+      },
+      "recorded_at": "2026-08-02T18:49:09.143Z"
+    }
+  ],
+  "summary": {
+    "total": 9,
+    "open": 0,
+    "by_type": {
+      "waiver": 3,
+      "needs_review": 6
+    },
+    "by_status": {
+      "accepted": 9
+    },
+    "warnings": [
+      {
+        "id": "managed_worktree_locality",
+        "status": "needs_review",
+        "mode": "preferred",
+        "required": false,
+        "command_name": "decision record",
+        "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+        "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+        "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+        "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+        "expected_root": null,
+        "expected_head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+        "current_head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+        "managed_worktree": null
+      }
+    ],
+    "latest": {
+      "schema_version": "0.1.0",
+      "decision_id": "decision-1785718159225-de035b1c",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "type": "waiver",
+      "status": "accepted",
+      "source": "budget:delivery_efficiency:story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "source_status": null,
+      "summary": "Owner grant: 8->10 subagents for gate_evidence and runtime_contract re-reviews of the corrected story text",
+      "reason": "The runtime_contract review (lifecycle at head e4a6f68d) found the story overclaimed production reachability of buildHumanEvidenceDigest; the correction commit 3bc551f8 staled the gate_evidence and runtime_contract reviews, both of which must re-run. sato_keigo approved the raise via AskUserQuestion in session c3213594-536c-47ba-89cf-d8613ecaff91 on 2026-08-03, observed directly by this recording agent.",
+      "reviewer": null,
+      "artifact": ".vibepro/config.json",
+      "verification_evidence_summary": {
+        "count": 4,
+        "entries": [
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/e2e.json",
+            "type": "e2e",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/typecheck.json",
+            "type": "typecheck",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/integration.json",
+            "type": "integration",
+            "result": "pass"
+          },
+          {
+            "path": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/verification-runs/unit.json",
+            "type": "unit",
+            "result": "pass"
+          }
+        ]
+      },
+      "budget_approval": {
+        "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+        "override_digest": "adf0a3bfdeeb1000a1dfb5ce0de55af6916cfd7cf8660623ceac4003ceda9e15",
+        "grantor_kind": "human",
+        "grantor": "sato_keigo",
+        "recorded_by": {
+          "agent_system": "claude_code",
+          "agent_id": "coordinator-sweet-spence-0193db"
+        },
+        "config_ref": ".vibepro/config.json",
+        "decision_doc": "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md"
+      },
+      "secret_exposure": null,
+      "redaction": {
+        "applied": false,
+        "hit_count": 0
+      },
+      "warnings": [
+        {
+          "id": "managed_worktree_locality",
+          "status": "needs_review",
+          "mode": "preferred",
+          "required": false,
+          "command_name": "decision record",
+          "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+          "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+          "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/sweet-spence-0193db",
+          "expected_root": null,
+          "expected_head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+          "current_head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+          "managed_worktree": null
+        }
+      ],
+      "git_context": {
+        "head_sha": "3bc551f887891def22ccde93ef701ffbbde623b4",
+        "current_branch": "claude/sweet-spence-0193db",
+        "dirty": true,
+        "status_fingerprint": "M .vibepro/config.json",
+        "recorded_at": "2026-08-03T00:49:19.218Z"
+      },
+      "recorded_at": "2026-08-03T00:49:19.226Z"
+    }
+  },
+  "artifact": ".vibepro/pr/story-vibepro-uiux-intake-gate-pr-summary-surfaces/decision-records.json"
+}

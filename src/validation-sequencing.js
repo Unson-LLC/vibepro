@@ -19,6 +19,24 @@ export const VALIDATION_PHASES = [
   'final_review'
 ];
 
+// The final_review phase always targets this single stage:role pair. It is
+// centralized here so authorization checks elsewhere (strict HEAD binding
+// origin, evidence provenance) cannot drift from what the sequence actually
+// requires.
+export function getFinalReviewTarget(state) {
+  return { stage: 'implementation', role: 'runtime_contract' };
+}
+
+// A strict-HEAD `final_review` binding is only trustworthy while an active,
+// required validation sequence has actually frozen a release candidate for
+// this exact stage:role target. Without an active freeze there is nothing to
+// protect against TOCTOU drift, so callers must not authorize strict binding.
+export function isFrozenFinalReviewTarget(state, { stage, role } = {}) {
+  if (!state || state?.plan?.required !== true || !state?.frozen_binding) return false;
+  const target = getFinalReviewTarget(state);
+  return target.stage === stage && target.role === role;
+}
+
 const PREFLIGHT_SENSITIVE_SURFACES = new Set([
   'auth_boundary',
   'server_api',
@@ -123,7 +141,7 @@ export function recordValidationPhase(state, { phase, status = 'passed', headSha
     throw new Error('expensive verification already passed at the exact frozen binding; reuse existing evidence instead of recording or executing it again');
   }
   if (phase === 'final_review') {
-    assertFinalReviewProvenance({ source, evidence, reviewProvenance, storyId: state.story_id, headSha });
+    assertFinalReviewProvenance({ source, evidence, reviewProvenance, storyId: state.story_id, headSha, state });
   }
   if (phase === 'preflight_review') {
     next.phases[phase] = {
@@ -317,15 +335,16 @@ function inspectionInputCoversPath(input, requiredPath) {
   return input === requiredPath || requiredPath.startsWith(`${input}/`);
 }
 
-function assertFinalReviewProvenance({ source, evidence, reviewProvenance, storyId, headSha }) {
+function assertFinalReviewProvenance({ source, evidence, reviewProvenance, storyId, headSha, state = null }) {
   if (source !== 'agent_review' || !evidence || !reviewProvenance) {
     throw new Error('final_review requires source=agent_review and validated review evidence');
   }
   if (reviewProvenance.status !== 'pass') throw new Error('final_review Agent Review evidence must have status=pass');
   if (reviewProvenance.story_id !== storyId) throw new Error('final_review Agent Review evidence must match the validation Story');
   if (reviewProvenance.head_sha !== headSha) throw new Error('final_review Agent Review evidence must bind to the frozen HEAD');
-  if (reviewProvenance.stage !== 'implementation' || reviewProvenance.role !== 'runtime_contract') {
-    throw new Error('final_review requires implementation:runtime_contract Agent Review provenance');
+  const target = getFinalReviewTarget(state);
+  if (reviewProvenance.stage !== target.stage || reviewProvenance.role !== target.role) {
+    throw new Error(`final_review requires ${target.stage}:${target.role} Agent Review provenance`);
   }
   if (!['codex', 'claude_code'].includes(reviewProvenance.system)
     || reviewProvenance.execution_mode !== 'parallel_subagent'
@@ -507,7 +526,7 @@ function buildNextRequiredAction(state, blocking) {
       };
     }
     if (phase === 'final_review') {
-      const review = { stage: 'implementation', role: 'runtime_contract' };
+      const review = getFinalReviewTarget(state);
       const result = `.vibepro/reviews/${state.story_id}/${review.stage}/review-result-${review.role}.json`;
       return {
         phase,

@@ -1,3 +1,4 @@
+import '../support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { access, copyFile, mkdir, mkdtemp, readFile, readdir, realpath, rm, stat, symlink, writeFile } from 'node:fs/promises';
@@ -31,7 +32,10 @@ test('CDI-S-9 production Codex worker survives the monitor boundary and a succes
   await mkdir(path.join(repoRoot, 'bin'), { recursive: true });
   await writeFile(path.join(repoRoot, '.vibepro', 'config.json'), `${JSON.stringify({
     schema_version: '0.1.0',
-    brainbase: { stories: [{ story_id: STORY_ID, title: 'Codex detached completion Inbox' }] }
+    brainbase: { stories: [{ story_id: STORY_ID, title: 'Codex detached completion Inbox' }] },
+    // Runtime review bindings in this fixture pin gate_evidence to the inspected
+    // HEAD; strict_head must come from role policy, not a CLI override.
+    agent_reviews: { roles: { gate_evidence: { freshness_mode: 'strict_head', freshness_reason: 'Runtime review is bound to the inspected HEAD' } } }
   }, null, 2)}\n`);
   await writeFile(path.join(repoRoot, '.vibepro', 'vibepro-manifest.json'), `${JSON.stringify({
     schema_version: '0.1.0', tool: 'vibepro', repo: { root: '.', git_remote: null, commit: null },
@@ -156,7 +160,10 @@ test('CDI-S-9 E2E Guarded Run crosses 600000ms, persists detached authority, and
   await mkdir(path.join(repoRoot, '.vibepro'), { recursive: true });
   await writeFile(path.join(repoRoot, '.vibepro', 'config.json'), `${JSON.stringify({
     schema_version: '0.1.0',
-    brainbase: { stories: [{ story_id: STORY_ID, title: 'Codex detached completion Inbox' }] }
+    brainbase: { stories: [{ story_id: STORY_ID, title: 'Codex detached completion Inbox' }] },
+    // Runtime review bindings in this fixture pin gate_evidence to the inspected
+    // HEAD; strict_head must come from role policy, not a CLI override.
+    agent_reviews: { roles: { gate_evidence: { freshness_mode: 'strict_head', freshness_reason: 'Runtime review is bound to the inspected HEAD' } } }
   }, null, 2)}\n`);
 
   const headSha = 'a'.repeat(40);

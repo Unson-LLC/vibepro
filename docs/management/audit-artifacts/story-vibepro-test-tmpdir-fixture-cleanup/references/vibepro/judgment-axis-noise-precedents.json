@@ -1,0 +1,256 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-judgment-axis-noise-precedent-ledger-v1",
+  "entries": [
+    {
+      "fingerprint": "ux_surface|changed_path:ux_surface",
+      "axis": "ux_surface",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687618033-22824244",
+      "source": "gate:judgment_axis_ux_surface",
+      "reason": "screenshot/visual_qa/accessibility_evidence/flow_replay: not applicable -- this story changes only internal test infrastructure (test/support/scratch-tmpdir.js and its import across test files). No CLI output, UI, or accessibility surface is added or modified; there is nothing a user or operator sees or interacts with differently as a result of this change.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "changed_path:ux_surface"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T16:20:35.214Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "data_state|changed_path:data_state",
+      "axis": "data_state",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687614575-3ff880b7",
+      "source": "gate:judgment_axis_data_state",
+      "reason": "migration_plan: not applicable -- no schema or persisted data is introduced or changed. rollback_plan: reverting the helper import lines removes the behavior entirely, with no stored state to unwind. idempotency_test: the helper's self-healing sweep (removing >24h-old vibepro-scratch- roots at import time, per test/scratch-tmpdir-conformance.test.js) is safe to run repeatedly and is exercised by that conformance test. query_semantics_test: not applicable -- no query/cache layer is touched; the only state is filesystem scratch directories created via mkdtemp and removed on normal process exit.",
+      "artifact": "test/scratch-tmpdir-conformance.test.js",
+      "activation_candidates": [
+        "changed_path:data_state"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T16:20:35.214Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "rollback_sensitive|changed_surface:rollback_or_rollout",
+      "axis": "rollback_sensitive",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687611056-f595c996",
+      "source": "gate:judgment_axis_rollback_sensitive",
+      "reason": "rollback_plan: rollback is simply reverting the test helper file and the mechanical import-line additions across the 133 test files; there is no data migration, no version skew, and no feature gate to toggle. feature_gate_disabled_behavior: not applicable -- this change introduces no feature gate. upgrade_downgrade_test: not applicable -- the helper only affects mkdtemp() scratch directories used during test execution and leaves no persisted state that could skew across versions. This is a test-infrastructure-only change with no public CLI/API/data surface at risk of irreversible rollback.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "changed_surface:rollback_or_rollout"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T16:20:35.214Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:139|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687587746-f06d9267",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: this PR is one coherent intent -- stop TMPDIR fixture leaks across the suite -- not a bundle of unrelated decisions. review_owner_map: a single reviewer can read it in the fixed order helper (test/support/scratch-tmpdir.js, 63 lines) -> conformance test (test/scratch-tmpdir-conformance.test.js) -> one representative import-line diff (repeated identically across the other 132 test files) -> e2e coverage (test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js). decision_record: this record is the explicit scope-reviewability decision; see also gate:split_resolution decision recorded in this same story for the full bundling rationale.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:139",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T16:20:35.214Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:142|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687587746-f06d9267",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: this PR is one coherent intent -- stop TMPDIR fixture leaks across the suite -- not a bundle of unrelated decisions. review_owner_map: a single reviewer can read it in the fixed order helper (test/support/scratch-tmpdir.js, 63 lines) -> conformance test (test/scratch-tmpdir-conformance.test.js) -> one representative import-line diff (repeated identically across the other 132 test files) -> e2e coverage (test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js). decision_record: this record is the explicit scope-reviewability decision; see also gate:split_resolution decision recorded in this same story for the full bundling rationale.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:142",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-02T19:06:33.865Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:284|graphify:related_files|mixed_surface:repo_control_with_product_change|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687587746-f06d9267",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: this PR is one coherent intent -- stop TMPDIR fixture leaks across the suite -- not a bundle of unrelated decisions. review_owner_map: a single reviewer can read it in the fixed order helper (test/support/scratch-tmpdir.js, 63 lines) -> conformance test (test/scratch-tmpdir-conformance.test.js) -> one representative import-line diff (repeated identically across the other 132 test files) -> e2e coverage (test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js). decision_record: this record is the explicit scope-reviewability decision; see also gate:split_resolution decision recorded in this same story for the full bundling rationale.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:284",
+        "mixed_surface:repo_control_with_product_change",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T00:27:20.979Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:143|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687587746-f06d9267",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: this PR is one coherent intent -- stop TMPDIR fixture leaks across the suite -- not a bundle of unrelated decisions. review_owner_map: a single reviewer can read it in the fixed order helper (test/support/scratch-tmpdir.js, 63 lines) -> conformance test (test/scratch-tmpdir-conformance.test.js) -> one representative import-line diff (repeated identically across the other 132 test files) -> e2e coverage (test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js). decision_record: this record is the explicit scope-reviewability decision; see also gate:split_resolution decision recorded in this same story for the full bundling rationale.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:143",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T00:28:59.499Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:144|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687587746-f06d9267",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: this PR is one coherent intent -- stop TMPDIR fixture leaks across the suite -- not a bundle of unrelated decisions. review_owner_map: a single reviewer can read it in the fixed order helper (test/support/scratch-tmpdir.js, 63 lines) -> conformance test (test/scratch-tmpdir-conformance.test.js) -> one representative import-line diff (repeated identically across the other 132 test files) -> e2e coverage (test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js). decision_record: this record is the explicit scope-reviewability decision; see also gate:split_resolution decision recorded in this same story for the full bundling rationale.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:144",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T00:32:28.434Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:145|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687587746-f06d9267",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: this PR is one coherent intent -- stop TMPDIR fixture leaks across the suite -- not a bundle of unrelated decisions. review_owner_map: a single reviewer can read it in the fixed order helper (test/support/scratch-tmpdir.js, 63 lines) -> conformance test (test/scratch-tmpdir-conformance.test.js) -> one representative import-line diff (repeated identically across the other 132 test files) -> e2e coverage (test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js). decision_record: this record is the explicit scope-reviewability decision; see also gate:split_resolution decision recorded in this same story for the full bundling rationale.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:145",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T00:52:15.380Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:147|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687587746-f06d9267",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: this PR is one coherent intent -- stop TMPDIR fixture leaks across the suite -- not a bundle of unrelated decisions. review_owner_map: a single reviewer can read it in the fixed order helper (test/support/scratch-tmpdir.js, 63 lines) -> conformance test (test/scratch-tmpdir-conformance.test.js) -> one representative import-line diff (repeated identically across the other 132 test files) -> e2e coverage (test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js). decision_record: this record is the explicit scope-reviewability decision; see also gate:split_resolution decision recorded in this same story for the full bundling rationale.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:147",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T01:03:15.000Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:148|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687587746-f06d9267",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: this PR is one coherent intent -- stop TMPDIR fixture leaks across the suite -- not a bundle of unrelated decisions. review_owner_map: a single reviewer can read it in the fixed order helper (test/support/scratch-tmpdir.js, 63 lines) -> conformance test (test/scratch-tmpdir-conformance.test.js) -> one representative import-line diff (repeated identically across the other 132 test files) -> e2e coverage (test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js). decision_record: this record is the explicit scope-reviewability decision; see also gate:split_resolution decision recorded in this same story for the full bundling rationale.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:148",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T02:00:26.495Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:149|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687587746-f06d9267",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: this PR is one coherent intent -- stop TMPDIR fixture leaks across the suite -- not a bundle of unrelated decisions. review_owner_map: a single reviewer can read it in the fixed order helper (test/support/scratch-tmpdir.js, 63 lines) -> conformance test (test/scratch-tmpdir-conformance.test.js) -> one representative import-line diff (repeated identically across the other 132 test files) -> e2e coverage (test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js). decision_record: this record is the explicit scope-reviewability decision; see also gate:split_resolution decision recorded in this same story for the full bundling rationale.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:149",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T02:25:58.010Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:150|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687587746-f06d9267",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: this PR is one coherent intent -- stop TMPDIR fixture leaks across the suite -- not a bundle of unrelated decisions. review_owner_map: a single reviewer can read it in the fixed order helper (test/support/scratch-tmpdir.js, 63 lines) -> conformance test (test/scratch-tmpdir-conformance.test.js) -> one representative import-line diff (repeated identically across the other 132 test files) -> e2e coverage (test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js). decision_record: this record is the explicit scope-reviewability decision; see also gate:split_resolution decision recorded in this same story for the full bundling rationale.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:150",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T02:29:51.750Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:151|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687587746-f06d9267",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: this PR is one coherent intent -- stop TMPDIR fixture leaks across the suite -- not a bundle of unrelated decisions. review_owner_map: a single reviewer can read it in the fixed order helper (test/support/scratch-tmpdir.js, 63 lines) -> conformance test (test/scratch-tmpdir-conformance.test.js) -> one representative import-line diff (repeated identically across the other 132 test files) -> e2e coverage (test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js). decision_record: this record is the explicit scope-reviewability decision; see also gate:split_resolution decision recorded in this same story for the full bundling rationale.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:151",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T02:36:51.262Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    },
+    {
+      "fingerprint": "scope_reviewability|changed_files:304|graphify:related_files|scope:needs_clean_branch",
+      "axis": "scope_reviewability",
+      "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+      "decision_id": "decision-1785687587746-f06d9267",
+      "source": "gate:judgment_axis_scope_reviewability",
+      "reason": "scope_reviewed: this PR is one coherent intent -- stop TMPDIR fixture leaks across the suite -- not a bundle of unrelated decisions. review_owner_map: a single reviewer can read it in the fixed order helper (test/support/scratch-tmpdir.js, 63 lines) -> conformance test (test/scratch-tmpdir-conformance.test.js) -> one representative import-line diff (repeated identically across the other 132 test files) -> e2e coverage (test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js). decision_record: this record is the explicit scope-reviewability decision; see also gate:split_resolution decision recorded in this same story for the full bundling rationale.",
+      "artifact": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "activation_candidates": [
+        "scope:needs_clean_branch",
+        "changed_files:304",
+        "graphify:related_files"
+      ],
+      "activation_precision_status": "active",
+      "recorded_at": "2026-08-03T02:39:07.148Z",
+      "note": "Advisory precedent only; matching this fingerprint never auto-closes future gates."
+    }
+  ]
+}

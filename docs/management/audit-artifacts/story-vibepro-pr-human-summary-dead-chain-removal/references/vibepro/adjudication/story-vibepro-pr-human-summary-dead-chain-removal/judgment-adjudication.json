@@ -1,0 +1,228 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-pr-human-summary-dead-chain-removal",
+  "updated_at": "2026-08-03T07:56:27.595Z",
+  "events": [
+    {
+      "event_id": "5d5b5912-6249-44ac-8842-970d588d267e",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc states the concrete problem (PR #228 orphaned two renderer chains), enumerates the exact 24 removed functions, and gives diff-grounded reasoning covering alternatives, compatibility, rollback, and boundary.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-pr-human-summary-dead-chain-removal; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "recorded_at": "2026-08-03T07:56:13.323Z"
+    },
+    {
+      "event_id": "619f5d3d-bee6-4368-b054-df94b67220ff",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e flow_replay drives a real fixture repo through the full pr prepare to pr-body.md pipeline and asserts the concise contract holds and the dead chain does not resurface; re-run directly at HEAD and passing.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-pr-human-summary-dead-chain-removal; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "recorded_at": "2026-08-03T07:56:14.639Z"
+    },
+    {
+      "event_id": "6698ee77-e257-4260-b80f-e0d194615924",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "spec.json clauses INV-001/INV-002 have concrete code_refs and test_refs pointing at real anchors that exist and pass; invariant statements match what the diff enforces.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-pr-human-summary-dead-chain-removal; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "recorded_at": "2026-08-03T07:56:15.766Z"
+    },
+    {
+      "event_id": "9580a8dc-d7d0-41f9-9ab2-38557efb758c",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story reason frontmatter defines the boundary (unreferenced rendering functions plus their two pinning tests only) and diff --stat confirms only those files plus registration docs changed; decision record reasoning matches the actual diff shape.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-pr-human-summary-dead-chain-removal; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "recorded_at": "2026-08-03T07:56:16.775Z"
+    },
+    {
+      "event_id": "65388832-2c66-4c30-bfb9-c337dfab66fd",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e negative_path asserts via doesNotMatch that the removed sections do not reappear in the rendered body and that each shared helper definition still exists — executable negatives for exactly the failure modes this removal could produce.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-pr-human-summary-dead-chain-removal; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "recorded_at": "2026-08-03T07:56:17.668Z"
+    },
+    {
+      "event_id": "071dda68-3a65-4bd2-8b3f-ccf5bfd27000",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e artifact_replay asserts on the durable pr-body.md artifact itself, the actual deliverable the acceptance criteria describe; confirmed by direct re-run.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-pr-human-summary-dead-chain-removal; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "recorded_at": "2026-08-03T07:56:18.438Z"
+    },
+    {
+      "event_id": "57c22ea2-928c-470d-95d2-bc78d7be32c2",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Removed functions had zero production callers (grep plus the three-review call-graph audit); the external-facing concise pr-body contract is proven unchanged because its enforcing tests are untouched by the diff and pass at this head.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-pr-human-summary-dead-chain-removal; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "recorded_at": "2026-08-03T07:56:20.377Z"
+    },
+    {
+      "event_id": "9f6f51e5-dffa-4b38-80c1-a21d57f0cbb7",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Diff is a single coherent intent: one production file pure deletion, two dead test files removed, one new e2e test plus bookkeeping; the decision record's owner-map and blast-radius reasoning matches the actual diff shape.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-pr-human-summary-dead-chain-removal; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "recorded_at": "2026-08-03T07:56:21.018Z"
+    },
+    {
+      "event_id": "5d5a577d-5fec-4892-add8-48e2abaf1d69",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The cited integration set exercises the durable evidence/review lifecycle paths relevant to a pr-manager.js change and E-2 records all 74 tests passing at the exact HEAD sha — genuinely relevant regression surfaces, not unrelated passing tests.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-pr-human-summary-dead-chain-removal; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "recorded_at": "2026-08-03T07:56:26.335Z"
+    },
+    {
+      "event_id": "55669642-6380-4df7-9b61-7bfeb467ca71",
+      "type": "verdict",
+      "item_id": "failure_mode:workflow_state_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The story e2e drives a full pr prepare workflow run end-to-end on a real fixture and asserts the resulting gate and pr-body state is correct; re-run directly and passing at HEAD.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ab2a3c733ba3d1af2",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-pr-human-summary-dead-chain-removal; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "f44165f2c03c9ee832e4b468c44705ea06738c43",
+      "recorded_at": "2026-08-03T07:56:27.592Z"
+    }
+  ]
+}

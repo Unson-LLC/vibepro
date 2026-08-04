@@ -1,0 +1,206 @@
+{
+  "schema_version": "0.2.0",
+  "model": "vibepro-judgment-dag-adjudication-v2",
+  "story_id": "story-vibepro-verification-checkpoint-uiux-intake-gate",
+  "updated_at": "2026-08-03T06:39:21.403Z",
+  "events": [
+    {
+      "event_id": "c3ba9d4b-f845-4c76-b1e0-d0538681eada",
+      "type": "verdict",
+      "item_id": "spine:intent",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Story doc has a well-formed Problem section and 2 ACs matching the diff's actual behavior; genuine coherent story document, not a string match.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a688e71ff1fe7dcc4",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-verification-checkpoint-uiux-intake-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "recorded_at": "2026-08-03T06:39:13.943Z"
+    },
+    {
+      "event_id": "ff891e26-31c0-41cf-a929-7044690ec613",
+      "type": "verdict",
+      "item_id": "spine:current_reality",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "flow_replay/artifact_replay resolve to the e2e test the judge ran directly against the real listCheckpointStages() implementation; a genuine executable check of current behavior.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a688e71ff1fe7dcc4",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-verification-checkpoint-uiux-intake-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "recorded_at": "2026-08-03T06:39:14.900Z"
+    },
+    {
+      "event_id": "b568089e-fc8b-4d1b-b32e-c8e1dc09ead4",
+      "type": "verdict",
+      "item_id": "spine:invariants",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "docs/specs INV-001/INV-002 map 1:1 onto the two ACs and the two passing e2e assertions; evidence matches the single-line addition plus matching test.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a688e71ff1fe7dcc4",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-verification-checkpoint-uiux-intake-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "recorded_at": "2026-08-03T06:39:15.772Z"
+    },
+    {
+      "event_id": "724f9af7-37e3-4d4c-88d8-8cf1e6716c65",
+      "type": "verdict",
+      "item_id": "spine:boundaries",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec contract table documents the old/new gate-set boundary; split decision decision-1785728456674-4ff5ccb0 is a real recorded rationale; backward-compat claim independently verified from collectCheckpointGateFindings .map/.find/.filter(Boolean) semantics and grep confirming the id is absent from all builders.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a688e71ff1fe7dcc4",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-verification-checkpoint-uiux-intake-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "recorded_at": "2026-08-03T06:39:16.865Z"
+    },
+    {
+      "event_id": "f36208d4-d96e-424a-abca-dabe7589d1ad",
+      "type": "verdict",
+      "item_id": "spine:failure_modes",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The cited evidence exercises exactly the failure mode the story describes (a gate silently missing from the curated list); genuine failure-mode coverage, not an unrelated passing test.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a688e71ff1fe7dcc4",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-verification-checkpoint-uiux-intake-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "recorded_at": "2026-08-03T06:39:17.661Z"
+    },
+    {
+      "event_id": "caa11c02-0fb4-48c7-b853-7d7ca5a0390b",
+      "type": "verdict",
+      "item_id": "spine:done_evidence",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The e2e test constitutes done evidence for both ACs; judge independently reran it, 2/2 pass against the real function, matching AC wording exactly.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a688e71ff1fe7dcc4",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-verification-checkpoint-uiux-intake-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "recorded_at": "2026-08-03T06:39:18.383Z"
+    },
+    {
+      "event_id": "0f369832-d0fd-41a6-adfc-fba659301093",
+      "type": "verdict",
+      "item_id": "axis:public_contract",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Spec contract table enumerates old and new verification.gate_ids; judge independently verified via grep that no gate DAG builder emits the id and via code reading that unmatched ids are dropped, so the no-contract-break claim is factually correct.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a688e71ff1fe7dcc4",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-verification-checkpoint-uiux-intake-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "recorded_at": "2026-08-03T06:39:19.311Z"
+    },
+    {
+      "event_id": "8fff3404-0127-4ceb-a2cb-bf1020198340",
+      "type": "verdict",
+      "item_id": "axis:scope_reviewability",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "Diff is genuinely small and cohesive (6 files, one production line, one 49-line test, lineage docs); the recorded decision reasoning matches the actual diff shape, not a generic waiver.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a688e71ff1fe7dcc4",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-verification-checkpoint-uiux-intake-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "recorded_at": "2026-08-03T06:39:20.186Z"
+    },
+    {
+      "event_id": "a921d6c1-798a-4b36-8647-7c133ca91aac",
+      "type": "verdict",
+      "item_id": "failure_mode:evidence_lifecycle_regression",
+      "verdict": "judged_sound",
+      "unsound_cause": null,
+      "responds_to_correction_id": null,
+      "reason": "The diff touches no gate/review/evidence machinery and is provably inert today (filter(Boolean) lookup, id defined nowhere else); classifying this failure mode as not_required for this diff is correct, with future risk documented in the story Boundary section.",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "a688e71ff1fe7dcc4",
+        "session_ref": null
+      },
+      "warnings": [
+        {
+          "id": "provenance_missing",
+          "reason": "no implementation provenance is recorded for story-vibepro-verification-checkpoint-uiux-intake-gate; cross-system adjudication cannot be verified. Record it with `vibepro adjudicate provenance`."
+        }
+      ],
+      "head_commit": "1bffcba8abba69555afef8d1688375b5a6ac3c30",
+      "recorded_at": "2026-08-03T06:39:21.395Z"
+    }
+  ]
+}

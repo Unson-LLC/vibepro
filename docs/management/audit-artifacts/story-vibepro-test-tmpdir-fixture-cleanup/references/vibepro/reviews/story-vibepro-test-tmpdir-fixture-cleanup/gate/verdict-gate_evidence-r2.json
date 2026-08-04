@@ -1,0 +1,1 @@
+{"role":"gate_evidence","status":"pass","agent_id":"a2ee52bb7d649aa57","round":2,"summary":"Unit record at fix head matches log 2391/2391 with hash-verified content binding; evaders now import helper; budget commits touch no evidence surface; e2e/typecheck bindings valid at current head.","findings":[]}

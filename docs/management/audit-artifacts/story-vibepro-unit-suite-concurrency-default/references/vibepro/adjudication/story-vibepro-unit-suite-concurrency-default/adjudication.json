@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-evidence-adjudication-v1",
+  "story_id": "story-vibepro-unit-suite-concurrency-default",
+  "updated_at": "2026-08-02T18:42:39.532Z",
+  "verdicts": [
+    {
+      "clause_id": "AC-5",
+      "verdict": "demonstrated",
+      "reason": "test/verification-runner.test.js:399 asserts artifact.run.timeout_ms===7200000 as a literal independent of the constant reference; a shrunk default fails this comparison",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac2d53c0daf02fa30",
+        "session_ref": null
+      },
+      "head_commit": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-unit-suite-concurrency-default",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`package.json` の `test` script が `node --test --test-concurrency=2` であり、`npm test` が実測最適並列度で全体スイートを実行する",
+          "`npm test` は従来どおり unit 証跡コマンド形式ゲートに受理される（ゲートロジック無変更）",
+          "`verify run` の既定タイムアウトが 7200000 ms（120 分）で、タイムアウト未指定の run 証跡に反映される",
+          "test script の並列度指定が失われたら fail する回帰テストがある",
+          "既定タイムアウトが縮んだら fail する回帰テストがある"
+        ]
+      },
+      "acceptance_scope_fingerprint": "6667ef116904d58824c07ca95ebf9f26975022b3de2debd2b0c068e60bcca7fc",
+      "recorded_at": "2026-08-02T18:42:39.528Z"
+    },
+    {
+      "clause_id": "AC-4",
+      "verdict": "demonstrated",
+      "reason": "test/full-suite-command-form.test.js reads package.json at runtime and asserts pkg.scripts.test equals the pinned concurrency string; losing the pin fails the assertion",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac2d53c0daf02fa30",
+        "session_ref": null
+      },
+      "head_commit": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-unit-suite-concurrency-default",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`package.json` の `test` script が `node --test --test-concurrency=2` であり、`npm test` が実測最適並列度で全体スイートを実行する",
+          "`npm test` は従来どおり unit 証跡コマンド形式ゲートに受理される（ゲートロジック無変更）",
+          "`verify run` の既定タイムアウトが 7200000 ms（120 分）で、タイムアウト未指定の run 証跡に反映される",
+          "test script の並列度指定が失われたら fail する回帰テストがある",
+          "既定タイムアウトが縮んだら fail する回帰テストがある"
+        ]
+      },
+      "acceptance_scope_fingerprint": "6667ef116904d58824c07ca95ebf9f26975022b3de2debd2b0c068e60bcca7fc",
+      "recorded_at": "2026-08-02T18:42:38.465Z"
+    },
+    {
+      "clause_id": "AC-3",
+      "verdict": "demonstrated",
+      "reason": "src/verification-runner.js:24 DEFAULT_TIMEOUT_MS=7200000; test/verification-runner.test.js:388-400 runs a real verify run with no --timeout-ms and asserts artifact.run.timeout_ms===7200000, a behavioral replay not a string check",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac2d53c0daf02fa30",
+        "session_ref": null
+      },
+      "head_commit": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-unit-suite-concurrency-default",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`package.json` の `test` script が `node --test --test-concurrency=2` であり、`npm test` が実測最適並列度で全体スイートを実行する",
+          "`npm test` は従来どおり unit 証跡コマンド形式ゲートに受理される（ゲートロジック無変更）",
+          "`verify run` の既定タイムアウトが 7200000 ms（120 分）で、タイムアウト未指定の run 証跡に反映される",
+          "test script の並列度指定が失われたら fail する回帰テストがある",
+          "既定タイムアウトが縮んだら fail する回帰テストがある"
+        ]
+      },
+      "acceptance_scope_fingerprint": "6667ef116904d58824c07ca95ebf9f26975022b3de2debd2b0c068e60bcca7fc",
+      "recorded_at": "2026-08-02T18:42:37.518Z"
+    },
+    {
+      "clause_id": "AC-2",
+      "verdict": "demonstrated",
+      "reason": "git diff origin/main -- src/verification-evidence.js is empty (gate unchanged); the test directly calls assertCommandMatchesVerificationKind('unit','npm test','pass') asserting no throw, reconfirmed by rerunning that test",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac2d53c0daf02fa30",
+        "session_ref": null
+      },
+      "head_commit": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-unit-suite-concurrency-default",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`package.json` の `test` script が `node --test --test-concurrency=2` であり、`npm test` が実測最適並列度で全体スイートを実行する",
+          "`npm test` は従来どおり unit 証跡コマンド形式ゲートに受理される（ゲートロジック無変更）",
+          "`verify run` の既定タイムアウトが 7200000 ms（120 分）で、タイムアウト未指定の run 証跡に反映される",
+          "test script の並列度指定が失われたら fail する回帰テストがある",
+          "既定タイムアウトが縮んだら fail する回帰テストがある"
+        ]
+      },
+      "acceptance_scope_fingerprint": "6667ef116904d58824c07ca95ebf9f26975022b3de2debd2b0c068e60bcca7fc",
+      "recorded_at": "2026-08-02T18:42:36.399Z"
+    },
+    {
+      "clause_id": "AC-1",
+      "verdict": "demonstrated",
+      "reason": "package.json:49 test script literally equals 'node --test --test-concurrency=2' at HEAD 56178b8c (direct read); test/full-suite-command-form.test.js asserts this exact string",
+      "provenance": {
+        "agent_system": "claude_code",
+        "agent_id": "ac2d53c0daf02fa30",
+        "session_ref": null
+      },
+      "head_commit": "56178b8cae3a95cb54dfc51d4bca3cb3aa7f2e44",
+      "acceptance_scope": {
+        "source": "story",
+        "story_id": "story-vibepro-unit-suite-concurrency-default",
+        "task_id": null,
+        "acceptance_criteria": [
+          "`package.json` の `test` script が `node --test --test-concurrency=2` であり、`npm test` が実測最適並列度で全体スイートを実行する",
+          "`npm test` は従来どおり unit 証跡コマンド形式ゲートに受理される（ゲートロジック無変更）",
+          "`verify run` の既定タイムアウトが 7200000 ms（120 分）で、タイムアウト未指定の run 証跡に反映される",
+          "test script の並列度指定が失われたら fail する回帰テストがある",
+          "既定タイムアウトが縮んだら fail する回帰テストがある"
+        ]
+      },
+      "acceptance_scope_fingerprint": "6667ef116904d58824c07ca95ebf9f26975022b3de2debd2b0c068e60bcca7fc",
+      "recorded_at": "2026-08-02T18:42:35.450Z"
+    }
+  ]
+}

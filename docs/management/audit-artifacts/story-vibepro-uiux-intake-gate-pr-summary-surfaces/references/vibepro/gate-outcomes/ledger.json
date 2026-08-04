@@ -1,0 +1,1534 @@
+{
+  "schema_version": "0.1.0",
+  "model": "vibepro-gate-outcome-ledger-v3",
+  "updated_at": "2026-08-03T01:10:25.159Z",
+  "entries": [
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:senior_gap_judgment|needs_review|passed|2026-08-03T01:09:56.862Z|2026-08-03T01:10:25.146Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:09:56.862Z",
+      "resolved_at": "2026-08-03T01:10:25.146Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:validation_sequencing|needs_evidence|passed|2026-08-03T01:09:56.862Z|2026-08-03T01:10:25.146Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:validation_sequencing",
+      "gate_type": "validation_sequencing_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:09:56.862Z",
+      "resolved_at": "2026-08-03T01:10:25.146Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:judgment_dag_adjudication|needs_evidence|passed|2026-08-03T01:08:16.823Z|2026-08-03T01:08:59.894Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:08:16.823Z",
+      "resolved_at": "2026-08-03T01:08:59.894Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:definition_of_done|needs_evidence|passed|2026-08-03T01:08:16.823Z|2026-08-03T01:08:59.894Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:08:16.823Z",
+      "resolved_at": "2026-08-03T01:08:59.894Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:agent_review|needs_review|passed|2026-08-03T01:08:16.823Z|2026-08-03T01:08:59.894Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:08:16.823Z",
+      "resolved_at": "2026-08-03T01:08:59.894Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|review:join:gate|needs_review|passed|2026-08-03T01:08:16.823Z|2026-08-03T01:08:59.894Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:08:16.823Z",
+      "resolved_at": "2026-08-03T01:08:59.894Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:requirement|needs_review|passed|2026-08-03T01:08:16.823Z|2026-08-03T01:08:59.894Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:requirement",
+      "gate_type": "requirement_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "source_fix",
+      "classification": "resolving_diff_contains_source_changes_for_source_sensitive_gate",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:08:16.823Z",
+      "resolved_at": "2026-08-03T01:08:59.894Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:design_diagrams|needs_evidence|not_required|2026-08-03T01:08:16.823Z|2026-08-03T01:08:59.894Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:design_diagrams",
+      "gate_type": "design_diagrams_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "not_required",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:08:16.823Z",
+      "resolved_at": "2026-08-03T01:08:59.894Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-08-03T01:08:16.823Z|2026-08-03T01:08:59.894Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:08:16.823Z",
+      "resolved_at": "2026-08-03T01:08:59.894Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:story_source_integrity|story_source_mismatch|passed|2026-08-03T01:08:16.823Z|2026-08-03T01:08:59.894Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:story_source_integrity",
+      "gate_type": "story_source_integrity_gate",
+      "previous_status": "story_source_mismatch",
+      "resolved_status": "passed",
+      "outcome": "source_fix",
+      "classification": "resolving_diff_contains_source_changes_for_source_sensitive_gate",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:08:16.823Z",
+      "resolved_at": "2026-08-03T01:08:59.894Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:senior_gap_judgment|needs_review|passed|2026-08-03T01:07:09.743Z|2026-08-03T01:08:09.500Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:07:09.743Z",
+      "resolved_at": "2026-08-03T01:08:09.500Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:validation_sequencing|needs_evidence|passed|2026-08-03T01:07:09.743Z|2026-08-03T01:08:09.500Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:validation_sequencing",
+      "gate_type": "validation_sequencing_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:07:09.743Z",
+      "resolved_at": "2026-08-03T01:08:09.500Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:judgment_dag_adjudication|needs_evidence|passed|2026-08-03T01:06:09.865Z|2026-08-03T01:07:09.743Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:06:09.865Z",
+      "resolved_at": "2026-08-03T01:07:09.743Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:definition_of_done|needs_evidence|passed|2026-08-03T01:06:09.865Z|2026-08-03T01:07:09.743Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:06:09.865Z",
+      "resolved_at": "2026-08-03T01:07:09.743Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:agent_review|needs_review|passed|2026-08-03T01:06:09.865Z|2026-08-03T01:07:09.743Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:06:09.865Z",
+      "resolved_at": "2026-08-03T01:07:09.743Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|review:join:gate|needs_review|passed|2026-08-03T01:06:09.865Z|2026-08-03T01:07:09.743Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:06:09.865Z",
+      "resolved_at": "2026-08-03T01:07:09.743Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:requirement|needs_review|passed|2026-08-03T01:06:09.865Z|2026-08-03T01:07:09.743Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:requirement",
+      "gate_type": "requirement_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "source_fix",
+      "classification": "resolving_diff_contains_source_changes_for_source_sensitive_gate",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:06:09.865Z",
+      "resolved_at": "2026-08-03T01:07:09.743Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:design_diagrams|needs_evidence|not_required|2026-08-03T01:06:09.865Z|2026-08-03T01:07:09.743Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:design_diagrams",
+      "gate_type": "design_diagrams_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "not_required",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:06:09.865Z",
+      "resolved_at": "2026-08-03T01:07:09.743Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-08-03T01:06:09.865Z|2026-08-03T01:07:09.743Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:06:09.865Z",
+      "resolved_at": "2026-08-03T01:07:09.743Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:story_source_integrity|story_source_mismatch|passed|2026-08-03T01:06:09.865Z|2026-08-03T01:07:09.743Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:story_source_integrity",
+      "gate_type": "story_source_integrity_gate",
+      "previous_status": "story_source_mismatch",
+      "resolved_status": "passed",
+      "outcome": "source_fix",
+      "classification": "resolving_diff_contains_source_changes_for_source_sensitive_gate",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:06:09.865Z",
+      "resolved_at": "2026-08-03T01:07:09.743Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:senior_gap_judgment|needs_review|passed|2026-08-03T01:03:51.975Z|2026-08-03T01:05:50.762Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:senior_gap_judgment",
+      "gate_type": "senior_gap_judgment_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:03:51.975Z",
+      "resolved_at": "2026-08-03T01:05:50.762Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:validation_sequencing|needs_evidence|passed|2026-08-03T01:03:51.975Z|2026-08-03T01:05:50.762Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:validation_sequencing",
+      "gate_type": "validation_sequencing_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-03T01:03:51.975Z",
+      "resolved_at": "2026-08-03T01:05:50.762Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "2a54c080bd0c6f21e8c0946d51ff6ad2801cb3e6",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-8e3aeeff.md",
+          "docs/management/decisions/2026-08-03-budget-override-story-vibepro-uiux-intake-gate-pr-summary-surfaces-adf0a3bf.md",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:review_surface_integrity|failed|passed|2026-08-02T19:34:32.392Z|2026-08-02T19:36:25.447Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:review_surface_integrity",
+      "gate_type": "review_surface_integrity_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:34:32.392Z",
+      "resolved_at": "2026-08-02T19:36:25.447Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:judgment_axis_public_contract|block|accepted_followup|2026-08-02T19:34:32.392Z|2026-08-02T19:36:25.447Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:judgment_axis_public_contract",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "block",
+      "resolved_status": "accepted_followup",
+      "outcome": "waiver",
+      "classification": "accepted_waiver_decision_record",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [
+        {
+          "decision_id": "decision-1785699369709-92d4fab4",
+          "source": "gate:judgment_axis_public_contract",
+          "artifact": "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "recorded_at": "2026-08-02T19:36:09.710Z"
+        }
+      ],
+      "previous_prepare_created_at": "2026-08-02T19:34:32.392Z",
+      "resolved_at": "2026-08-02T19:36:25.447Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:artifact_consistency|stale_evidence|passed|2026-08-02T19:18:39.658Z|2026-08-02T19:34:32.392Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:artifact_consistency",
+      "gate_type": "artifact_consistency_gate",
+      "previous_status": "stale_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:18:39.658Z",
+      "resolved_at": "2026-08-02T19:34:32.392Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:definition_of_done|needs_evidence|passed|2026-08-02T19:18:39.658Z|2026-08-02T19:34:32.392Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:18:39.658Z",
+      "resolved_at": "2026-08-02T19:34:32.392Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:agent_review|needs_review|passed|2026-08-02T19:18:39.658Z|2026-08-02T19:34:32.392Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "agent_review",
+          "stage": "gate",
+          "role": "gate_evidence",
+          "status": "pass",
+          "recorded_at": "2026-08-02T19:28:06.070Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:18:39.658Z",
+      "resolved_at": "2026-08-02T19:34:32.392Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|review:join:gate|needs_review|passed|2026-08-02T19:18:39.658Z|2026-08-02T19:34:32.392Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:18:39.658Z",
+      "resolved_at": "2026-08-02T19:34:32.392Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|review:record:gate:gate_evidence|needs_review|passed|2026-08-02T19:18:39.658Z|2026-08-02T19:34:32.392Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:18:39.658Z",
+      "resolved_at": "2026-08-02T19:34:32.392Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|review:preflight:gate:gate_evidence|failed|passed|2026-08-02T19:18:39.658Z|2026-08-02T19:34:32.392Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "review:preflight:gate:gate_evidence",
+      "gate_type": "agent_review_dispatch_preflight_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:18:39.658Z",
+      "resolved_at": "2026-08-02T19:34:32.392Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|review:dispatch_batch:gate|failed|passed|2026-08-02T19:18:39.658Z|2026-08-02T19:34:32.392Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "failed",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:18:39.658Z",
+      "resolved_at": "2026-08-02T19:34:32.392Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:e2e|needs_evidence|passed|2026-08-02T19:18:39.658Z|2026-08-02T19:34:32.392Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:e2e",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:18:39.658Z",
+      "resolved_at": "2026-08-02T19:34:32.392Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-08-02T19:18:39.658Z|2026-08-02T19:34:32.392Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:18:39.658Z",
+      "resolved_at": "2026-08-02T19:34:32.392Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:common_judgment_spine|needs_evidence|passed|2026-08-02T19:18:39.658Z|2026-08-02T19:34:32.392Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:18:39.658Z",
+      "resolved_at": "2026-08-02T19:34:32.392Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "ac51485e33c05e69fa0762274ac2079d98549afa",
+        "changed_files": [
+          "design-ssot.json",
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:design_ssot_reconciliation|needs_review|passed|2026-08-02T19:11:26.057Z|2026-08-02T19:18:39.658Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:design_ssot_reconciliation",
+      "gate_type": "design_ssot_reconciliation_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:11:26.057Z",
+      "resolved_at": "2026-08-02T19:18:39.658Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js",
+          "design-ssot.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:judgment_axis_scope_reviewability|needs_evidence|accepted_followup|2026-08-02T19:11:26.057Z|2026-08-02T19:18:39.658Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:judgment_axis_scope_reviewability",
+      "gate_type": "judgment_axis_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "accepted_followup",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:11:26.057Z",
+      "resolved_at": "2026-08-02T19:18:39.658Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js",
+          "design-ssot.json"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:judgment_dag_adjudication|needs_evidence|passed|2026-08-02T19:03:36.143Z|2026-08-02T19:10:37.892Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:judgment_dag_adjudication",
+      "gate_type": "judgment_dag_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:03:36.143Z",
+      "resolved_at": "2026-08-02T19:10:37.892Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:evidence_adjudication|needs_evidence|passed|2026-08-02T19:03:36.143Z|2026-08-02T19:10:37.892Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:evidence_adjudication",
+      "gate_type": "evidence_adjudication_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:03:36.143Z",
+      "resolved_at": "2026-08-02T19:10:37.892Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:definition_of_done|needs_evidence|passed|2026-08-02T19:03:36.143Z|2026-08-02T19:10:37.892Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:definition_of_done",
+      "gate_type": "definition_of_done_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:03:36.143Z",
+      "resolved_at": "2026-08-02T19:10:37.892Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:agent_review|needs_review|passed|2026-08-02T19:03:36.143Z|2026-08-02T19:10:37.892Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:agent_review",
+      "gate_type": "agent_review_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "agent_review",
+          "stage": "gate",
+          "role": "gate_evidence",
+          "status": "pass",
+          "recorded_at": "2026-08-02T19:05:53.205Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:03:36.143Z",
+      "resolved_at": "2026-08-02T19:10:37.892Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|review:join:gate|needs_review|passed|2026-08-02T19:03:36.143Z|2026-08-02T19:10:37.892Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "review:join:gate",
+      "gate_type": "agent_review_stage_join_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:03:36.143Z",
+      "resolved_at": "2026-08-02T19:10:37.892Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|review:record:gate:gate_evidence|needs_review|passed|2026-08-02T19:03:36.143Z|2026-08-02T19:10:37.892Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "review:record:gate:gate_evidence",
+      "gate_type": "agent_review_record_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:03:36.143Z",
+      "resolved_at": "2026-08-02T19:10:37.892Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|review:gate:gate_evidence|missing|passed|2026-08-02T19:03:36.143Z|2026-08-02T19:10:37.892Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "review:gate:gate_evidence",
+      "gate_type": "agent_review_role_gate",
+      "previous_status": "missing",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:03:36.143Z",
+      "resolved_at": "2026-08-02T19:10:37.892Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:judgment_agent_workflow_evidence_lifecycle|needs_evidence|passed|2026-08-02T19:03:36.143Z|2026-08-02T19:10:37.892Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:judgment_agent_workflow_evidence_lifecycle",
+      "gate_type": "agent_evidence_lifecycle_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T19:03:36.143Z",
+      "resolved_at": "2026-08-02T19:10:37.892Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "552993816c237902d3407e9c899a778124127a79",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|review:prepare:gate|needs_review|passed|2026-08-02T18:50:35.982Z|2026-08-02T18:59:01.183Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "review:prepare:gate",
+      "gate_type": "agent_review_prepare_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T18:50:35.982Z",
+      "resolved_at": "2026-08-02T18:59:01.183Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "d722ffe9053f894a9e0f1a24bbc7c97cefc374ae",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|review:dispatch_batch:gate|needs_review|passed|2026-08-02T18:50:35.982Z|2026-08-02T18:59:01.183Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "review:dispatch_batch:gate",
+      "gate_type": "agent_review_dispatch_batch_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T18:50:35.982Z",
+      "resolved_at": "2026-08-02T18:59:01.183Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "d722ffe9053f894a9e0f1a24bbc7c97cefc374ae",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:split_resolution|needs_review|passed|2026-08-02T18:49:22.534Z|2026-08-02T18:50:35.982Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:split_resolution",
+      "gate_type": "split_resolution_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T18:49:22.534Z",
+      "resolved_at": "2026-08-02T18:50:35.982Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:common_judgment_spine|needs_evidence|passed|2026-08-02T18:49:22.534Z|2026-08-02T18:50:35.982Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:common_judgment_spine",
+      "gate_type": "engineering_judgment_spine_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T18:49:22.534Z",
+      "resolved_at": "2026-08-02T18:50:35.982Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:traceability_clause_coverage|needs_evidence|passed|2026-08-02T18:43:09.661Z|2026-08-02T18:49:22.534Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:traceability_clause_coverage",
+      "gate_type": "traceability_clause_coverage_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T18:43:09.661Z",
+      "resolved_at": "2026-08-02T18:49:22.534Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:integration|needs_evidence|passed|2026-08-02T18:43:09.661Z|2026-08-02T18:49:22.534Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:integration",
+      "gate_type": "verification_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "verification_command",
+          "command": "node --test test/safe-action-orchestrator.test.js test/process-record-store.integration.test.js",
+          "status": "pass",
+          "recorded_at": "2026-08-02T18:48:34.624Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T18:43:09.661Z",
+      "resolved_at": "2026-08-02T18:49:22.534Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:responsibility_authority|needs_evidence|passed|2026-08-02T18:43:09.661Z|2026-08-02T18:49:22.534Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:responsibility_authority",
+      "gate_type": "responsibility_authority_gate",
+      "previous_status": "needs_evidence",
+      "resolved_status": "passed",
+      "outcome": "evidence_added",
+      "classification": "new_verification_or_review_evidence",
+      "overridden": false,
+      "evidence_refs": [
+        {
+          "kind": "verification_command",
+          "command": "npm run typecheck",
+          "status": "pass",
+          "recorded_at": "2026-08-02T18:48:34.624Z"
+        },
+        {
+          "kind": "verification_command",
+          "command": "node --test test/pr-human-summary-uiux-intake-gate.test.js test/content-scoped-evidence-freshness.test.js",
+          "status": "pass",
+          "recorded_at": "2026-08-02T18:48:34.624Z"
+        }
+      ],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T18:43:09.661Z",
+      "resolved_at": "2026-08-02T18:49:22.534Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    },
+    {
+      "schema_version": "0.1.0",
+      "entry_key": "story-vibepro-uiux-intake-gate-pr-summary-surfaces|gate:vibepro_artifact_policy|needs_review|passed|2026-08-02T18:43:09.661Z|2026-08-02T18:49:22.534Z",
+      "story_id": "story-vibepro-uiux-intake-gate-pr-summary-surfaces",
+      "gate_id": "gate:vibepro_artifact_policy",
+      "gate_type": "vibepro_artifact_policy_gate",
+      "previous_status": "needs_review",
+      "resolved_status": "passed",
+      "outcome": "unclassified",
+      "classification": "ambiguous_resolution_surface",
+      "overridden": false,
+      "evidence_refs": [],
+      "decision_refs": [],
+      "previous_prepare_created_at": "2026-08-02T18:43:09.661Z",
+      "resolved_at": "2026-08-02T18:49:22.534Z",
+      "git": {
+        "base_ref": "origin/main",
+        "head_ref": "HEAD",
+        "head_sha": "f3b781ea61a6254c41de21e6abff1b38ed6838b9",
+        "changed_files": [
+          "docs/management/stories/active/story-vibepro-uiux-intake-gate-pr-summary-surfaces.md",
+          "src/pr-manager.js",
+          "test/e2e/story-vibepro-uiux-intake-gate-pr-summary-surfaces-main.test.js",
+          "test/pr-human-summary-uiux-intake-gate.test.js"
+        ]
+      }
+    }
+  ]
+}

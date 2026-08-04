@@ -1,3 +1,4 @@
+import './support/scratch-tmpdir.js';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -372,6 +373,62 @@ async function makeGitRepoWithStory(options = {}) {
   return repo;
 }
 
+// Every DEFAULT_REVIEW_STAGE_ROLES role name (src/agent-review.js), used by
+// fixtures that need strict_head across the board without dirtying the diff
+// scope: see makeGitRepoWithStoryAndStrictHeadRoles below.
+const ALL_DEFAULT_REVIEW_ROLES = [
+  'product_requirement', 'architecture_boundary', 'spec_consistency',
+  'scope_risk', 'acceptance_e2e', 'regression_risk',
+  'unit_integration', 'e2e_ux', 'gate_coverage',
+  'code_spec_alignment', 'runtime_contract', 'ux_completion',
+  'gate_evidence', 'pr_split_scope', 'release_risk',
+  'preview_smoke', 'network_runtime', 'human_usability'
+];
+
+// story-vibepro-strict-head-binding-origin-guard: strict_head must come from
+// role policy or the frozen final_review target, not an arbitrary CLI
+// override. Fixtures that need every role strict_head from the start (atomic
+// scope owner-map fixtures) must bake that into the pre-branch commit so the
+// grant itself never appears as a changed file in the feature-branch diff
+// (a later commit touching .vibepro/config.json would add a spurious
+// `repo-control` lane and would re-date recorded verification evidence away
+// from HEAD, breaking "current-head passing verification evidence" checks).
+async function makeGitRepoWithStoryAndStrictHeadRoles(roles = ALL_DEFAULT_REVIEW_ROLES, options = {}) {
+  const repo = await makeRepo(options.repoPrefix);
+  await git(repo, ['init', '-b', 'main']);
+  await git(repo, ['config', 'user.email', 'vibepro@example.com']);
+  await git(repo, ['config', 'user.name', 'VibePro Test']);
+  await runCli([
+    'init',
+    repo,
+    '--story-id',
+    'story-pr-prepare',
+    '--title',
+    'PR準備',
+    '--view',
+    'dev',
+    '--period',
+    '2026-W18',
+    ...(options.language ? ['--language', options.language] : [])
+  ]);
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  config.agent_reviews = config.agent_reviews ?? {};
+  config.agent_reviews.roles = config.agent_reviews.roles ?? {};
+  for (const role of roles) {
+    config.agent_reviews.roles[role] = {
+      ...config.agent_reviews.roles[role],
+      freshness_mode: 'strict_head',
+      freshness_reason: `test fixture requires ${role} to cover the complete HEAD`
+    };
+  }
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  await git(repo, ['add', '.']);
+  await git(repo, ['commit', '-m', 'chore: init test repo']);
+  await git(repo, ['switch', '-c', 'feature/test-story']);
+  return repo;
+}
+
 async function makeAutopilotRepo() {
   const repo = await makeGitRepoWithStory();
   const configPath = path.join(repo, '.vibepro', 'config.json');
@@ -529,6 +586,39 @@ async function recordRequiredAgentReviews(repo, storyId = 'story-pr-prepare') {
   }
 }
 
+// story-vibepro-strict-head-binding-origin-guard: --strict-head-binding is no
+// longer an unconditional CLI override. Fixtures that need a role to behave
+// as strict_head (so it stales on ANY HEAD change, not just its inspected
+// surface) must declare that through role policy instead of the flag.
+async function grantStrictHeadRolePolicy(repo, role, reason) {
+  const configPath = path.join(repo, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  config.agent_reviews = config.agent_reviews ?? {};
+  config.agent_reviews.roles = config.agent_reviews.roles ?? {};
+  const existing = config.agent_reviews.roles[role];
+  // Any pre-existing strict_head grant (e.g. baked into the pre-branch
+  // commit by makeGitRepoWithStoryAndStrictHeadRoles) already authorizes
+  // this role; the exact reason text is not load-bearing, and rewriting it
+  // would dirty/commit .vibepro/config.json on the feature branch, which
+  // would itself show up as a spurious repo-control diff and re-date
+  // already-recorded verification evidence away from the current HEAD.
+  if (existing?.freshness_mode === 'strict_head') return;
+  config.agent_reviews.roles[role] = {
+    ...existing,
+    freshness_mode: 'strict_head',
+    freshness_reason: reason
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
+  // Commit this fixture-only config write immediately: some tests assert on
+  // "current-head passing verification evidence" gates that fail closed on
+  // any dirty tracked file, and this helper must not silently dirty a tree
+  // fixtures deliberately committed clean.
+  const { stdout: trackedStatus } = await git(repo, ['status', '--porcelain', '--', '.vibepro/config.json']);
+  if (!trackedStatus.trim()) return;
+  await git(repo, ['add', '-f', '.vibepro/config.json']);
+  await git(repo, ['commit', '-m', `chore: grant strict_head role policy for ${role}`]);
+}
+
 async function recordAgentReviewStage(repo, storyId, stage, roles, options = {}) {
   await runCli([
     'review',
@@ -542,6 +632,9 @@ async function recordAgentReviewStage(repo, storyId, stage, roles, options = {})
   ]);
   for (const role of roles) {
     const strictHead = (options.strictHeadRoles ?? []).includes(role);
+    if (strictHead) {
+      await grantStrictHeadRolePolicy(repo, role, `test fixture requires ${stage}:${role} to cover the complete HEAD`);
+    }
     const inspectionInputs = [options.inspectionInputsByRole?.[role] ?? 'index.html'].flat();
     const agentId = `${stage}-${role}-agent`;
     const reviewerSessionId = options.reviewerIdentity === 'separate_session'
@@ -591,11 +684,6 @@ async function recordAgentReviewStage(repo, storyId, stage, roles, options = {})
       ...inspectionInputs.flatMap((inspectionInput) => ['--inspection-input', inspectionInput]),
       '--judgment-delta',
       `generic ${stage}:${role} pass -> accepted because the fixture contract was inspected`,
-      ...(strictHead ? [
-        '--strict-head-binding',
-        '--strict-head-reason',
-        `test fixture requires ${stage}:${role} to cover the complete HEAD`
-      ] : []),
       '--agent-closed'
     ]);
     assert.equal(result.exitCode, 0, JSON.stringify(result, null, 2));
@@ -9660,6 +9748,10 @@ test('pr ship dry-run restores Agent Review commands from explicitly strict stal
     '--role',
     'gate_evidence'
   ]);
+  // story-vibepro-strict-head-binding-origin-guard: strict_head must come from
+  // role policy or the frozen final_review target, not an arbitrary CLI
+  // override, so this fixture declares the role policy explicitly.
+  await grantStrictHeadRolePolicy(repo, 'gate_evidence', 'exercise strict-head compatibility after the surface-aware default');
   await runCli([
     'review',
     'record',
@@ -9670,9 +9762,6 @@ test('pr ship dry-run restores Agent Review commands from explicitly strict stal
     'gate',
     '--role',
     'gate_evidence',
-    '--strict-head-binding',
-    '--strict-head-reason',
-    'exercise explicit strict-head compatibility after the surface-aware default',
     '--status',
     'pass',
     '--summary',
@@ -11906,6 +11995,9 @@ test('review status keeps strict-head review stale after docs-only commit', asyn
   await git(repo, ['add', 'src/strict-head-review-target.js']);
   await git(repo, ['commit', '-m', 'feat: add strict head review target']);
 
+  // story-vibepro-strict-head-binding-origin-guard: declare the role policy
+  // explicitly instead of relying on the removed arbitrary CLI override.
+  await grantStrictHeadRolePolicy(repo, 'runtime_contract', 'this regression fixture intentionally reviews the complete git head');
   await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'implementation']);
   const recordResult = await runCli([
     'review',
@@ -12077,6 +12169,9 @@ test('review status keeps stale review when merge delta diff cannot be resolved'
   await git(repo, ['add', 'src/merge-delta-missing-head.js']);
   await git(repo, ['commit', '-m', 'feat: add missing head target']);
 
+  // story-vibepro-strict-head-binding-origin-guard: declare the role policy
+  // explicitly instead of relying on the removed arbitrary CLI override.
+  await grantStrictHeadRolePolicy(repo, 'runtime_contract', 'this missing-head fixture requires strict historical head comparison');
   await runCli(['review', 'prepare', repo, '--id', 'story-pr-prepare', '--stage', 'implementation']);
   const recordResult = await runCli([
     'review',
@@ -19823,7 +19918,7 @@ test('pr prepare recommends a clean branch for broad session diffs', async () =>
 });
 
 test('pr prepare keeps automatic split advice until a typed atomic scope has current-head reviewer ownership evidence', async () => {
-  const repo = await makeGitRepoWithStory();
+  const repo = await makeGitRepoWithStoryAndStrictHeadRoles();
   const storyPath = path.join(repo, 'docs', 'stories', 'story-pr-prepare.md');
   await mkdir(path.dirname(storyPath), { recursive: true });
   await writeFile(storyPath, `---
@@ -20002,7 +20097,7 @@ test('atomic owner map ignores optional roles for both blocking and ownership', 
 });
 
 test('pr prepare keeps every required verification command after current-head reviewers accept an atomic scope', async () => {
-  const repo = await makeGitRepoWithStory();
+  const repo = await makeGitRepoWithStoryAndStrictHeadRoles();
   await writeFile(path.join(repo, 'package.json'), JSON.stringify({
     type: 'module',
     scripts: {
@@ -20054,7 +20149,9 @@ pr_scope_dependency_boundaries:
     ...(config.agent_reviews ?? {}),
     roles: {
       ...(config.agent_reviews?.roles ?? {}),
-      e2e_ux: { mode: 'optional' }
+      // Preserve the strict_head role policy baked in by
+      // makeGitRepoWithStoryAndStrictHeadRoles; only mode changes here.
+      e2e_ux: { ...(config.agent_reviews?.roles?.e2e_ux ?? {}), mode: 'optional' }
     }
   };
   config.brainbase = {
@@ -20339,7 +20436,7 @@ pr_scope_dependency_boundaries:
 });
 
 test('pr prepare materializes a passed split resolution gate when atomic scope accepts reviewable automatic lane advice', async () => {
-  const repo = await makeGitRepoWithStory();
+  const repo = await makeGitRepoWithStoryAndStrictHeadRoles();
   const storyPath = path.join(repo, 'docs', 'stories', 'story-pr-prepare.md');
   await mkdir(path.dirname(storyPath), { recursive: true });
   await writeFile(storyPath, `---

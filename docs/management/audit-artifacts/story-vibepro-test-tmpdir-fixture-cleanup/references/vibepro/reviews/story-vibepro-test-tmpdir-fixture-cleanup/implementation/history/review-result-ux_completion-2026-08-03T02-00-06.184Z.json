@@ -1,0 +1,142 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "stage": "implementation",
+  "role": "ux_completion",
+  "status": "pass",
+  "summary": "Final confirmation at head a96f071b: story AC3 wording, guard test title/message, spec pointer INV-001 line and independently recomputed root hash, and e2e assertion texts all agree on the widened guard scope; e2e suite 5/5",
+  "findings": [],
+  "finding_dispositions": [],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Read all four doc/test surfaces; recomputed the story doc sha256 against the pointer hash; ran the story e2e suite 5/5",
+    "evidence": null,
+    "inputs": [
+      "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "test/scratch-tmpdir-conformance.test.js",
+      "docs/specs/story-vibepro-test-tmpdir-fixture-cleanup.md",
+      "test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js"
+    ]
+  },
+  "judgment_delta": [
+    "prior AC3-wording finding resolved; hash rebinding verified independently rather than trusted"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "expected_root": null,
+    "expected_head_sha": "a96f071b125dcdbd2c443600e0a16b056e615680",
+    "current_head_sha": "a96f071b125dcdbd2c443600e0a16b056e615680",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "expected_root": null,
+      "expected_head_sha": "a96f071b125dcdbd2c443600e0a16b056e615680",
+      "current_head_sha": "a96f071b125dcdbd2c443600e0a16b056e615680",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-03T02:00:06.184Z",
+  "git_context": {
+    "head_sha": "a96f071b125dcdbd2c443600e0a16b056e615680",
+    "current_branch": "claude/adoring-keller-f403ec",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-03T02:00:06.159Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "a96f071b125dcdbd2c443600e0a16b056e615680",
+    "surface_files": [
+      {
+        "path": "docs/management/stories/active/story-vibepro-test-tmpdir-fixture-cleanup.md",
+        "sha256": "49130dd91a8a5c2639222c57d5ac8e2eb055c052842d4cf8bd8b3b0056313256",
+        "size": 3791
+      },
+      {
+        "path": "docs/specs/story-vibepro-test-tmpdir-fixture-cleanup.md",
+        "sha256": "5d373710f4c8825dc72850055795274e40c2c9836d619af1ec28a8b36f634f81",
+        "size": 1573
+      },
+      {
+        "path": "test/e2e/story-vibepro-test-tmpdir-fixture-cleanup-main.test.js",
+        "sha256": "6eba2687b5e6c99bfb7ad504469f14927d9eeefab0082b0c146ff4bbbfbff712",
+        "size": 12065
+      },
+      {
+        "path": "test/scratch-tmpdir-conformance.test.js",
+        "sha256": "be6306f90423328780dac2b54d347a70dabb0f7306c5c31f3e769784334b93c1",
+        "size": 4197
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "1b4c2e4b59fd38904b3f0a6999ae38007385fb7febe807d030b932d8f4f0dc06"
+  },
+  "source_fingerprint": "e6fe6923cf8471c6f717e31e4b81a5c04c4ea0a8c0942de09a4d8e18204513fa",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "ac3461ce29ce3b053",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "ac3461ce29ce3b053",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/implementation/review-request-ux_completion.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/implementation/verdict-ux_completion-r5.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "ac3461ce29ce3b053",
+      "implementation_session_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

@@ -1,0 +1,168 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-test-tmpdir-fixture-cleanup",
+  "stage": "gate",
+  "role": "pr_split_scope",
+  "status": "pass",
+  "summary": "One coherent intent verified by direct diff inspection: byte-identical 1-line imports across ~133 test files plus helper, conformance guard, story e2e, and mandatory self-dogfood registration artifacts; the >30-file heuristic is inflated by the mechanical sweep, and the split-resolution decision override matches the diff",
+  "findings": [
+    {
+      "severity": "low",
+      "id": "review-request-head-stale",
+      "detail": "review request listed head 7e45805c while actual head was 8f360180; the two trailing commits are budget-override artifacts covered by the split rationale"
+    },
+    {
+      "severity": "low",
+      "id": "decision-index-scope-status-not-fully-reconciled",
+      "detail": "decision-index scope.status remains needs_clean_branch although the narrative split-resolution override is honest; machine consumers reading decision-index alone could be misled"
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "decision-index-scope-status-not-fully-reconciled",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "pr prepare regenerates the index from the raw heuristic by design; the decision record is the authoritative override channel",
+      "inferred_from_resolution": false
+    },
+    {
+      "finding_id": "review-request-head-stale",
+      "disposition": "accepted",
+      "resolved_by": [],
+      "reason": "trailing commits are this story's own budget artifacts; scope judgment unaffected",
+      "inferred_from_resolution": false
+    }
+  ],
+  "artifacts": [],
+  "inspection": {
+    "summary": "Ran git log/diff over origin/main..HEAD; verified outlier files; sampled 5 mechanical import diffs across .test.js/.spec.ts confirming byte-identical additions; cross-checked decision-index scope against decision-records split_resolution",
+    "evidence": null,
+    "inputs": [
+      "test/support/scratch-tmpdir.js",
+      "test/vibepro-cli.test.js",
+      "docs/releases/2026-08.md",
+      ".vibepro/config.json"
+    ]
+  },
+  "judgment_delta": [
+    "initial needs_clean_branch signal traced to the mechanical sweep inflating the file-count heuristic; direct inspection moved the verdict to pass"
+  ],
+  "managed_worktree_context": {
+    "status": "needs_review",
+    "mode": "preferred",
+    "required": false,
+    "command_name": "review record",
+    "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+    "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+    "expected_root": null,
+    "expected_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+    "current_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+    "managed_worktree": null
+  },
+  "warnings": [
+    {
+      "id": "managed_worktree_locality",
+      "status": "needs_review",
+      "mode": "preferred",
+      "required": false,
+      "command_name": "review record",
+      "reason": "no managed worktree execution state is recorded for this checkout; run vibepro execute start before managed worktree protected commands",
+      "action": "Run the command from the recorded VibePro managed worktree, update the managed worktree to the current HEAD, or explicitly disable managed_worktree for this repository.",
+      "repo_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "actual_root": "/Users/ksato/workspace/repos/vibepro/.claude/worktrees/adoring-keller-f403ec",
+      "expected_root": null,
+      "expected_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+      "current_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+      "managed_worktree": null
+    }
+  ],
+  "recorded_at": "2026-08-03T00:55:58.598Z",
+  "git_context": {
+    "head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+    "current_branch": "claude/adoring-keller-f403ec",
+    "dirty": false,
+    "raw_dirty": false,
+    "status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "user_status_fingerprint_hash": "3d8bca82f1c86d670864ef67509f8f3f641a2c525a5190fe39abd56126532574",
+    "fingerprint_scope": {
+      "user_excludes": [
+        ".vibepro/",
+        ".worktrees/vibepro/"
+      ],
+      "user_includes": [
+        ".vibepro/config.json"
+      ]
+    },
+    "recorded_at": "2026-08-03T00:55:58.529Z"
+  },
+  "freshness_policy": {
+    "schema_version": "0.1.0",
+    "configured_mode": "content_surface",
+    "effective_mode": "content_surface",
+    "source": "content_surface_default",
+    "reason": "review freshness follows the inspected content surface"
+  },
+  "content_binding": {
+    "schema_version": "0.1.0",
+    "model": "vibepro-content-scoped-evidence-freshness-v1",
+    "mode": "content_surface",
+    "status": "recorded",
+    "reason": "content surface recorded for 4 file(s)",
+    "recorded_head_sha": "8f360180459df41ccac409d859b28478c3cb3fa3",
+    "surface_files": [
+      {
+        "path": ".vibepro/config.json",
+        "sha256": "ba714a232d6b20e8c98ec6613548eb2620d24d06700a99f1551e191b152726c6",
+        "size": 94610
+      },
+      {
+        "path": "docs/releases/2026-08.md",
+        "sha256": "f44e4c10b8ed982962b91f1d4b38df90e2a5341bf59dbd10446695cdd05ebe27",
+        "size": 7270
+      },
+      {
+        "path": "test/support/scratch-tmpdir.js",
+        "sha256": "df5021804544842d9638d8b83fcb3257c868f0adce78789f5ebfdc79a89cf71a",
+        "size": 2070
+      },
+      {
+        "path": "test/vibepro-cli.test.js",
+        "sha256": "c8db12cb68252023476fbe122ee032733c0863c3acc12167b5b9e8293ab7ea54",
+        "size": 1284923
+      }
+    ],
+    "missing_files": [],
+    "surface_hash": "1457a79e90a331de6a29e617fcd92e0bc486059315c6569f4f8e2000cb3203a6"
+  },
+  "source_fingerprint": "74456be3f3c2698c845bb98bc97bb0be61a63a36349e61743409740cadbfed0f",
+  "agent_provenance": {
+    "schema_version": "0.1.0",
+    "system": "claude_code",
+    "execution_mode": "parallel_subagent",
+    "agent_id": "a00c20b48e6ed4e4b",
+    "agent_role": null,
+    "model": "claude-sonnet-5",
+    "reasoning_effort": null,
+    "cost_tier": null,
+    "thread_id": null,
+    "session_id": "a00c20b48e6ed4e4b",
+    "tool_call_id": null,
+    "transcript_artifact": null,
+    "request_artifact": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/gate/review-request-pr_split_scope.md",
+    "recorded_by": null,
+    "lifecycle": {
+      "agent_closed": true,
+      "close_evidence": ".vibepro/reviews/story-vibepro-test-tmpdir-fixture-cleanup/gate/verdict-pr_split_scope.json",
+      "close_note": null
+    },
+    "evidence_strength": "strong",
+    "reviewer_identity": {
+      "relation": "separate_session",
+      "reviewer_session_id": "a00c20b48e6ed4e4b",
+      "implementation_session_id": "75333c2f-bf73-49ea-a75c-1e2b8ee93273",
+      "source": "lifecycle_agent_binding"
+    }
+  },
+  "agent_usage": null
+}

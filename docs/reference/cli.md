@@ -8,6 +8,8 @@ Run `story diagnose --phase design-input --run-graphify` before finalizing Archi
 
 A budget grant via `decision record --source budget:delivery_efficiency:<story-id>` also writes a tracked decision document under `docs/management/decisions/` (`type: budget_override_approval`) and records its path as `budget_approval.decision_doc`. The workspace decision store is gitignored, so this document is what makes the grantor, digest, and timestamp reviewable in the PR diff; the command fails if that path is gitignored.
 
+`review record --strict-head-binding --strict-head-reason <text>` is not an unconditional CLI override: it is authorized only for a role whose policy already declares `freshness_mode: strict_head` with a `freshness_reason`, or for the `implementation:runtime_contract` `final_review` of an active, frozen validation sequence. Any other stage/role rejects it with an explicit error; see [Agent Review](/guide/agent-review) for the full authorization model and the `pr prepare` migration warning for legacy unauthorized bindings.
+
 ## Current Usage
 
 ```text
@@ -80,8 +82,9 @@ A budget grant via `decision record --source budget:delivery_efficiency:<story-i
   vibepro adjudicate prepare [repo] --id <story-id> [--json]
   vibepro adjudicate record [repo] --id <story-id> --clause <clause-id> --verdict <demonstrated|not_demonstrated|not_verifiable_by_automation> --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
   vibepro adjudicate prepare [repo] --id <story-id> --judgment [--json]
-  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
-  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--json]
+  vibepro adjudicate provenance [repo] --id <story-id> --agent-system codex|claude_code [--agent-id <id>] [--session-ref <ref>] [--json]
+  vibepro adjudicate record [repo] --id <story-id> --judgment --item <item-id> --verdict <judged_sound|judged_unsound|needs_human_judgment> [--unsound-cause <implementation_unsound|classifier_premise_unsound>] [--correction-id <event-id>] --reason <text> --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
+  vibepro adjudicate correct [repo] --id <story-id> --judgment --item <item-id> --original-verdict-id <event-id> --incorrect-premise <text> --corrected-premise <text> --reason <text> --replacement-evidence <file>... --agent-system codex|claude_code --agent-id <id> [--session-ref <ref>] [--allow-same-system <reason>] [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
   vibepro guard status [repo] [--json]
