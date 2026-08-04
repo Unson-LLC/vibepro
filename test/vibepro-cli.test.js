@@ -8554,6 +8554,17 @@ Weighted semantic/layout residual: **34%**
   ]);
   assert.equal(intakeJudgment.exitCode, 0);
 
+  // This fixture deliberately leaves many gates open, so its decision-index
+  // sits near the default 16KB artifact budget; the always-present intake
+  // judgment gate (plus its closing decision record) pushed it over, flipping
+  // the PR body to the bounded-summary link this test does not assert.
+  // Summarization behavior has its own coverage; here the contract under test
+  // is the full-index link, so give the fixture explicit headroom.
+  const fixtureConfigPath = path.join(repo, '.vibepro', 'config.json');
+  const fixtureConfig = await readJson(fixtureConfigPath);
+  fixtureConfig.budgets = { ...(fixtureConfig.budgets ?? {}), pr_artifact_bytes: 65536 };
+  await writeFile(fixtureConfigPath, `${JSON.stringify(fixtureConfig, null, 2)}\n`);
+
   let prepareSummaryOutput = '';
   const result = await runCli([
     'pr', 'prepare', repo, '--base', 'main', '--task', 'TASK-001',
