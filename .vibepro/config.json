@@ -1379,8 +1379,20 @@
         "started_at": "2026-08-02",
         "due_at": null,
         "category": "platform"
+      },
+      {
+        "story_id": "story-vibepro-conformance-delta-ledger",
+        "title": "conformance delta ledger — base/head差分でアーキテクチャ逸脱を再現可能に観測する",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-04",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-uiux-intake-judgment-gate"
+    "current_story_id": "story-vibepro-conformance-delta-ledger"
   }
 }
