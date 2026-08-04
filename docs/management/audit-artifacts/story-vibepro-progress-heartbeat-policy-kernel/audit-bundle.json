@@ -2,7 +2,7 @@
   "schema_version": "0.1.0",
   "story_id": "story-vibepro-progress-heartbeat-policy-kernel",
   "source": "execute_merge",
-  "promoted_at": "2026-08-04T04:40:29.915Z",
+  "promoted_at": "2026-08-04T04:40:37.104Z",
   "canonical_dir": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel",
   "source_workspace_dir": ".vibepro",
   "audit_index_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-index.json",
@@ -38,11 +38,11 @@
     "path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
     "compression": "gzip",
     "media_type": "application/json",
-    "content_hash": "sha256:198ef3f66cea0e67e18e4d13a4489dbbbda88f594fd752a12441cd9e36ce79bc",
-    "compressed_hash": "sha256:b1a1525fa12bff305ad33c80f561f9257bef10c56e6f69fdfad658f0407ead8f",
-    "expanded_bytes": 17387,
-    "compressed_bytes": 3868,
-    "expanded_line_count": 449,
+    "content_hash": "sha256:7729b7fb773b7a73305852dc3ceaf550dc95f16e6cc65fc69bd277e23f50a97b",
+    "compressed_hash": "sha256:45ed7e7b07a84e290bab04cdabf0095563feb86886b086071e22ca2682ea36dd",
+    "expanded_bytes": 16471,
+    "compressed_bytes": 3757,
+    "expanded_line_count": 429,
     "persisted_line_count": 1,
     "included_artifact_kinds": [
       "decision_index",
@@ -62,9 +62,9 @@
     ],
     "replay_command": "vibepro audit replay . --story-id story-vibepro-progress-heartbeat-policy-kernel",
     "cost": {
-      "compressed_bytes": 3868,
-      "expanded_bytes": 17387,
-      "expanded_line_count": 449,
+      "compressed_bytes": 3757,
+      "expanded_bytes": 16471,
+      "expanded_line_count": 429,
       "persisted_line_count": 1
     }
   },
@@ -79,26 +79,16 @@
       "merged_at": "2026-08-04T04:40:27Z"
     },
     "reconciliation": {
-      "status": "reconciliation_required",
-      "reasons": [
-        "decision_outcome_binding_failed"
-      ],
-      "evaluated_at": "2026-08-04T04:40:29.901Z",
+      "status": "reconciled",
+      "reasons": [],
+      "evaluated_at": "2026-08-04T04:40:37.051Z",
       "head_sha": "2bd5dabc9ebda05f970e41662fca9d9804256e6c"
     },
-    "reconciliation_action": {
-      "status": "required",
-      "reason": "decision_outcome_binding_failed",
-      "commands": [
-        "vibepro pr prepare . --story-id story-vibepro-progress-heartbeat-policy-kernel --base main",
-        "vibepro execute merge . --story-id story-vibepro-progress-heartbeat-policy-kernel --base main --pr https://github.com/Unson-LLC/vibepro/pull/408"
-      ]
-    },
     "decision_outcome_binding": {
-      "status": "failed",
-      "reason": "central_ledger_parse_failed",
+      "status": "bound",
+      "reason": "all_local_decision_outcomes_bound_to_canonical_ledger",
       "expected_entry_count": 56,
-      "promoted_count": 0,
+      "promoted_count": 56,
       "duplicate_count": 0,
       "persistence_status": null
     },
@@ -114,7 +104,7 @@
     "status": "blocked",
     "resolved_reference_count": 59,
     "copied_reference_count": 47,
-    "unresolved_reference_count": 7,
+    "unresolved_reference_count": 14,
     "replay_bundle": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
     "replay_command": "vibepro audit replay . --story-id story-vibepro-progress-heartbeat-policy-kernel"
   },
@@ -131,7 +121,7 @@
       "kind": "compressed_replay_bundle",
       "canonical_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
       "compression": "gzip",
-      "content_hash": "sha256:198ef3f66cea0e67e18e4d13a4489dbbbda88f594fd752a12441cd9e36ce79bc"
+      "content_hash": "sha256:7729b7fb773b7a73305852dc3ceaf550dc95f16e6cc65fc69bd277e23f50a97b"
     }
   ],
   "raw_artifact_manifest": [
@@ -221,10 +211,10 @@
       "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/pr-merge.json",
       "persisted": "compressed",
       "compressed_path": "docs/management/audit-artifacts/story-vibepro-progress-heartbeat-policy-kernel/audit-replay-bundle.json.gz",
-      "digest": "sha256:5eb8abe80997d9f7be5fb9a514905dc6653c5cf8a109e528c19a2674f6a6778a",
-      "audit_digest": "sha256:4be42d1f029ca22bada19becb2065a94c207dfab5fefe274f8c78d9c78d12e92",
-      "line_count": 2866,
-      "raw_line_count": 5397,
+      "digest": "sha256:59fce5c58279a8a2c3af62497479cddd0e0c055b7fc5b76437019043a10a1b36",
+      "audit_digest": "sha256:58f09e1c2e3a9f73aac44363101011a373ec45f34ecd6acc085f1b2f2c0f9333",
+      "line_count": 2855,
+      "raw_line_count": 5395,
       "audit_scope": "judgment_evidence_v1",
       "excluded_from_audit": [
         "pr_lifecycle.full_gate_dag",
@@ -880,14 +870,42 @@
       "size_bytes": 989500
     },
     {
+      "source": ".vibepro/evidence/story-vibepro-canonical-audit-review-root-state-files/e2e-replay-status.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/graphify/graph.json",
       "reason": "source_too_large",
       "size_bytes": 7428747
     },
     {
+      "source": ".vibepro/pr/story-vibepro-cli-help-missing-commands/scope-review-rationale.md",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-import-based-conformance/verification-evidence.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-managed-worktree-policy-resync/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
       "source": ".vibepro/pr/story-vibepro-progress-heartbeat-policy-kernel/design-ssot-reconciliation.json",
       "reason": "source_too_large",
       "size_bytes": 637802
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-symlinked-bin-entrypoint/split-plan.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/qa/current",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-explicit-run-attribution-lineage/gate/review-result-gate_evidence.json",
+      "reason": "source_missing"
     },
     {
       "source": ".vibepro/reviews/story-vibepro-progress-heartbeat-policy-kernel/surface-violations.json",
