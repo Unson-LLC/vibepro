@@ -109,7 +109,7 @@ const ACYCLIC = {
 };
 
 // story-vibepro-dependency-cycle-scc-reduction ac:1 (spec clause S-001)
-test(`${STORY} ac:1 SCC detection is iterative, cycle-only and deterministically ordered`, () => {
+test(`${STORY} ac:1 (DCS-S-1) SCC detection is iterative, cycle-only and deterministically ordered`, () => {
   // story-vibepro-dependency-cycle-scc-reduction ac:1
   const criterion = AC[1];
 
@@ -150,7 +150,7 @@ test(`${STORY} ac:1 SCC detection is iterative, cycle-only and deterministically
 
 // story-vibepro-dependency-cycle-scc-reduction ac:2 / ac:6 (spec clause S-002, S-005)
 // flow_replay: base ref checkout -> both-side scan -> delta ledger, driven through the real CLI.
-test(`${STORY} ac:2 a newly introduced circular dependency is reported as one new SCC by the delta flow`, async () => {
+test(`${STORY} ac:2 ac:6 (DCS-S-2 / DCS-S-6) a newly introduced circular dependency is reported as one new SCC by the delta flow`, async () => {
   // story-vibepro-dependency-cycle-scc-reduction ac:2
   const criterion = AC[2];
   const criterion6 = AC[6];
@@ -193,7 +193,7 @@ test(`${STORY} ac:2 a newly introduced circular dependency is reported as one ne
 });
 
 // story-vibepro-dependency-cycle-scc-reduction ac:4 / ac:6 (spec clause S-004, S-005)
-test(`${STORY} ac:4 repairing a mutual dependency is reported as resolved on its own dimension`, async () => {
+test(`${STORY} ac:4 ac:6 (DCS-S-4 / DCS-S-6) repairing a mutual dependency is reported as resolved on its own dimension`, async () => {
   // story-vibepro-dependency-cycle-scc-reduction ac:4
   const criterion = AC[4];
   const criterion6 = AC[6];
@@ -238,7 +238,7 @@ test(`${STORY} ac:4 repairing a mutual dependency is reported as resolved on its
 });
 
 // story-vibepro-dependency-cycle-scc-reduction ac:3 / ac:5 (spec clause S-003)
-test(`${STORY} ac:3 the SCC violation carries actionable structure and heuristic cut candidates`, async () => {
+test(`${STORY} ac:3 ac:5 (DCS-S-3 / DCS-S-5) the SCC violation carries actionable structure and heuristic cut candidates`, async () => {
   // story-vibepro-dependency-cycle-scc-reduction ac:3
   const criterion = AC[3];
   const criterion5 = AC[5];
@@ -292,7 +292,7 @@ test(`${STORY} ac:3 the SCC violation carries actionable structure and heuristic
 });
 
 // story-vibepro-dependency-cycle-scc-reduction ac:7 (spec clause S-006)
-test(`${STORY} ac:7 the retired enumerator stays exported while the flow emits only SCC ids`, async () => {
+test(`${STORY} ac:7 (DCS-S-7) the retired enumerator stays exported while the flow emits only SCC ids`, async () => {
   // story-vibepro-dependency-cycle-scc-reduction ac:7
   const criterion = AC[7];
 
@@ -317,7 +317,7 @@ test(`${STORY} ac:7 the retired enumerator stays exported while the flow emits o
 });
 
 // story-vibepro-dependency-cycle-scc-reduction ac:8 (spec clause SLA-001)
-test(`${STORY} ac:8 the real repository scan collapses to one SCC and leaves the other dimensions unchanged`, async () => {
+test(`${STORY} ac:8 (DCS-S-8) the real repository scan collapses to one SCC and leaves the other dimensions unchanged`, async () => {
   // story-vibepro-dependency-cycle-scc-reduction ac:8
   const criterion = AC[8];
   const { head } = await runConformanceCli(repoRoot);
