@@ -17,7 +17,12 @@ const DELTA_VIOLATION_KINDS = [
   'budget_violation',
   'orphan_file',
   'stale_pattern',
-  'dependency_cycle'
+  // DCS-S-6: the SCC-reduced circularity dimension. `dependency_cycle` now counts strongly connected
+  // components (one tangle = one violation) and `mutual_dependency` counts the bidirectional module
+  // pairs inside them, which are the actionable cut candidates. Both are listed so by_kind can show
+  // "one mutual pair was resolved" as a distinct movement from "the tangle split".
+  'dependency_cycle',
+  'mutual_dependency'
 ];
 
 // Computes a base/head architecture conformance delta (CDL-S-3/S-4) and persists it alongside a

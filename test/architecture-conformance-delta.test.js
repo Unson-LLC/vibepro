@@ -7,7 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
 
-import { runArchitectureConformance, detectModuleCycles } from '../src/architecture-conformance.js';
+import { runArchitectureConformance, detectModuleCycles, detectModuleSccs } from '../src/architecture-conformance.js';
 import { computeConformanceDelta, runArchitectureConformanceDelta } from '../src/architecture-conformance-delta.js';
 
 const execFileAsync = promisify(execFile);
@@ -122,6 +122,10 @@ test('CDL-S-6: detectModuleCycles finds a normalized 2-module cycle regardless o
   assert.deepEqual(cyclesB, [['a', 'b']]);
 });
 
+// story-vibepro-dependency-cycle-scc-reduction:DCS-S-2/DCS-S-4 reshaped the violation emitted here:
+// the dimension is still an independent `dependency_cycle`, but the unit is the strongly connected
+// component (id derived from its sorted members) and the bidirectional pair is additionally reported
+// as a `mutual_dependency` cut candidate.
 test('CDL-S-6: a real bidirectional module import produces an independent dependency_cycle violation', async () => {
   const root = await makeRepo({
     'src/infra.js': 'export const infra = 1;\n',
@@ -131,9 +135,148 @@ test('CDL-S-6: a real bidirectional module import produces an independent depend
   const result = await runArchitectureConformance(root, { write: false });
   const cycle = result.violations.find((v) => v.kind === 'dependency_cycle');
   assert.ok(cycle, 'expected a dependency_cycle violation even though both edges are individually allowed');
-  assert.deepEqual(cycle.modules, ['gate', 'story']);
-  assert.equal(cycle.id, 'dependency_cycle:gate->story');
+  assert.deepEqual(cycle.members, ['gate', 'story']);
+  assert.equal(cycle.id, 'dependency_cycle_scc:gate+story');
   assert.equal(result.summary.dependency_cycle_count, 1);
+
+  const mutual = result.violations.find((v) => v.kind === 'mutual_dependency');
+  assert.ok(mutual, 'expected the bidirectional pair to also surface as a mutual_dependency');
+  assert.equal(mutual.id, 'mutual_dependency:gate+story');
+  assert.equal(result.summary.mutual_dependency_count, 1);
+});
+
+// --- DCS: SCC-reduced circularity ------------------------------------------
+
+// DCS-S-1: a tangle of N modules is one strongly connected component, not a factorial pile of simple
+// cycles. Four fully-interconnected modules already yield 20 simple cycles under the deprecated
+// enumerator; the SCC decomposition yields exactly one component containing all four.
+test('DCS-S-1: detectModuleSccs collapses a fully tangled graph to a single component', () => {
+  const names = ['a', 'b', 'c', 'd'];
+  const edges = [];
+  for (const from of names) {
+    for (const to of names) {
+      if (from !== to) edges.push({ from, to });
+    }
+  }
+  assert.deepEqual(detectModuleSccs(edges), [['a', 'b', 'c', 'd']]);
+  assert.ok(
+    detectModuleCycles(edges).length > 10,
+    'the deprecated simple-cycle enumerator is expected to still enumerate every path (this is why it was retired)'
+  );
+});
+
+// DCS-S-1: two disjoint tangles plus an acyclic node must be reported as two components, and the
+// acyclic node must not appear at all (a single node with no self-loop is trivially strongly
+// connected but is not a cycle).
+test('DCS-S-1: detectModuleSccs separates disjoint tangles and drops acyclic nodes', () => {
+  const sccs = detectModuleSccs([
+    { from: 'b', to: 'a' },
+    { from: 'a', to: 'b' },
+    { from: 'b', to: 'lone' },
+    { from: 'z', to: 'y' },
+    { from: 'y', to: 'x' },
+    { from: 'x', to: 'z' }
+  ]);
+  assert.deepEqual(sccs, [['a', 'b'], ['x', 'y', 'z']]);
+});
+
+// DCS-S-1: component identity comes from the module names, never from traversal order, so feeding
+// the same graph with its edges (and therefore its DFS roots) reversed yields an identical result.
+test('DCS-S-1: detectModuleSccs is deterministic regardless of edge input order', () => {
+  const edges = [
+    { from: 'a', to: 'b' },
+    { from: 'b', to: 'c' },
+    { from: 'c', to: 'a' },
+    { from: 'c', to: 'd' },
+    { from: 'd', to: 'c' }
+  ];
+  assert.deepEqual(detectModuleSccs(edges), detectModuleSccs([...edges].reverse()));
+  assert.deepEqual(detectModuleSccs(edges), [['a', 'b', 'c', 'd']]);
+});
+
+// DCS-S-3/DCS-S-5: the SCC violation has to carry enough structure to act on -- which modules are
+// in the tangle, how heavy it is, which pairs are mutually dependent, and which intra-SCC edges are
+// the cheapest to cut. `infra` sits outside the tangle and must not be listed as a member.
+test('DCS-S-3: an SCC violation carries members, edge weights, mutual pairs and cut candidates', async () => {
+  const root = await makeRepo2({
+    'src/infra.js': 'export const infra = 1;\n',
+    'src/story.js': "import { gate } from './gate.js';\nimport { extra } from './extra.js';\n\nexport const story = gate + extra;\n",
+    'src/extra.js': "import { story } from './story.js';\n\nexport const extra = story;\n",
+    'src/gate.js': "import { story } from './story.js';\n\nexport const gate = story;\n"
+  }, {
+    modules: [
+      { name: 'story', responsibility: 'story', paths: ['src/story.js'] },
+      { name: 'gate', responsibility: 'gate', paths: ['src/gate.js'] },
+      { name: 'infra', responsibility: 'infra', paths: ['src/infra.js'] },
+      { name: 'util', responsibility: 'util', paths: ['src/extra.js'] }
+    ],
+    allowed_dependencies: { gate: ['*'], story: ['*'], util: ['*'] }
+  });
+  const result = await runArchitectureConformance(root, { write: false });
+  const cycle = result.violations.find((v) => v.kind === 'dependency_cycle');
+  assert.deepEqual(cycle.members, ['gate', 'story', 'util']);
+  assert.equal(cycle.module_edge_count, 4);
+  assert.equal(cycle.import_edge_count, 4);
+  assert.deepEqual(cycle.mutual_pairs, [['gate', 'story'], ['story', 'util']]);
+  assert.equal(cycle.feedback_edge_candidates.length, 4);
+  for (const candidate of cycle.feedback_edge_candidates) {
+    assert.equal(candidate.import_edge_count, 1);
+    assert.ok(candidate.example_edges.length > 0);
+  }
+});
+
+// DCS-S-4: mutual pairs are their own dimension with per-direction import evidence, and the pair id
+// is the alphabetically sorted pair so it does not depend on which direction was scanned first.
+test('DCS-S-4: mutual_dependency violations carry both directions with import evidence', async () => {
+  const root = await makeRepo2({
+    'src/infra.js': 'export const infra = 1;\n',
+    'src/story.js': "import { gate } from './gate.js';\n\nexport const story = gate;\n",
+    'src/gate.js': "import { story } from './story.js';\nimport { infra } from './infra.js';\n\nexport const gate = story + infra;\n"
+  }, { allowed_dependencies: { gate: ['*'], story: ['*'] } });
+  const result = await runArchitectureConformance(root, { write: false });
+  const mutual = result.violations.filter((v) => v.kind === 'mutual_dependency');
+  assert.equal(mutual.length, 1);
+  assert.equal(mutual[0].id, 'mutual_dependency:gate+story');
+  assert.deepEqual(mutual[0].modules, ['gate', 'story']);
+  assert.equal(mutual[0].import_edge_count, 2);
+  assert.deepEqual(
+    mutual[0].directions.map((d) => [d.from, d.to, d.import_edge_count]),
+    [['gate', 'story', 1], ['story', 'gate', 1]]
+  );
+  assert.deepEqual(mutual[0].directions[0].example_edges, ['src/gate.js -> src/story.js']);
+});
+
+// DCS-S-6: the new dimension has to be visible to the delta ledger, otherwise resolving a mutual
+// pair would be invisible in by_kind and no ratchet could ever score it.
+test('DCS-S-6: the conformance delta reports mutual_dependency as its own dimension', () => {
+  const violation = {
+    kind: 'mutual_dependency',
+    severity: 'review',
+    id: 'mutual_dependency:gate+story',
+    modules: ['gate', 'story']
+  };
+  const delta = computeConformanceDelta({
+    base: { status: 'ok', result: { violations: [] } },
+    head: { status: 'ok', result: { violations: [violation] } }
+  });
+  assert.equal(delta.summary.by_kind.mutual_dependency.new, 1);
+  assert.equal(delta.summary.by_kind.mutual_dependency.resolved, 0);
+  assert.equal(delta.summary.by_kind.dependency_cycle.new, 0);
+});
+
+// DCS-S-7: the deprecated enumerator keeps its exported contract (a merged Spec anchors on it) even
+// though the pipeline no longer calls it -- an SCC-reduced conformance run must not resurrect
+// simple-cycle ids.
+test('DCS-S-7: detectModuleCycles stays exported while no conformance violation uses its id form', async () => {
+  assert.deepEqual(detectModuleCycles([{ from: 'b', to: 'a' }, { from: 'a', to: 'b' }]), [['a', 'b']]);
+  const root = await makeRepo2({
+    'src/infra.js': 'export const infra = 1;\n',
+    'src/story.js': "import { gate } from './gate.js';\n\nexport const story = gate;\n",
+    'src/gate.js': "import { story } from './story.js';\n\nexport const gate = story;\n"
+  }, { allowed_dependencies: { gate: ['*'], story: ['*'] } });
+  const result = await runArchitectureConformance(root, { write: false });
+  assert.equal(result.violations.filter((v) => v.id.startsWith('dependency_cycle:')).length, 0);
+  assert.equal(result.violations.filter((v) => v.id.startsWith('dependency_cycle_scc:')).length, 1);
 });
 
 async function makeRepo2(files, overrides) {

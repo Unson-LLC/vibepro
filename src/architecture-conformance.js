@@ -64,14 +64,15 @@ export async function runArchitectureConformance(repoRoot, options = {}) {
     pattern: entry.pattern,
     summary: `モジュール ${entry.module} のパターン ${entry.pattern} に一致するファイルが存在しない`
   }));
-  const cycleFindings = findDependencyCycles({ importEdges, assignments });
+  const { cycleFindings, mutualFindings } = findDependencyCycles({ importEdges, assignments });
 
   const violations = [
     ...dependencyFindings,
     ...budgetFindings,
     ...orphanFindings,
     ...stalePatternFindings,
-    ...cycleFindings
+    ...cycleFindings,
+    ...mutualFindings
   ];
   const result = {
     schema_version: CONFORMANCE_SCHEMA_VERSION,
@@ -101,6 +102,7 @@ export async function runArchitectureConformance(repoRoot, options = {}) {
       orphan_file_count: orphanFindings.length,
       stale_pattern_count: stalePatternFindings.length,
       dependency_cycle_count: cycleFindings.length,
+      mutual_dependency_count: mutualFindings.length,
       module_file_counts: Object.fromEntries(
         model.modules.map((module) => [module.name, assignments.filesByModule.get(module.name)?.length ?? 0])
       )
@@ -405,39 +407,221 @@ function findDependencyViolations({ importEdges, model, assignments }) {
     }));
 }
 
-// Independent dimension (CDL-S-6): module-level directed cycles derived from the same
-// import-scan edges used for dependency-violation detection (not graph.json "calls" edges --
-// see EDGE_SOURCE_NOTE). A cycle is reported regardless of whether its edges are individually
-// "allowed" by allowed_dependencies: a declared but circular dependency pair is still a design
-// smell the ledger must surface, distinct from (and orthogonal to) undeclared_dependency.
+// Independent dimension (CDL-S-6, reshaped by DCS-S-2/S-4): module-level circularity derived from
+// the same import-scan edges used for dependency-violation detection (not graph.json "calls" edges
+// -- see EDGE_SOURCE_NOTE). Circularity is reported regardless of whether its edges are individually
+// "allowed" by allowed_dependencies: a declared but circular dependency pair is still a design smell
+// the ledger must surface, distinct from (and orthogonal to) undeclared_dependency.
+//
+// The unit is the strongly connected component, not the simple cycle. Enumerating every simple cycle
+// produced 69,490 violations on this repository for what is, canonically, a single tangle of 16
+// modules (see docs/architecture/vibepro-dependency-cycle-scc-reduction.md): the simple-cycle set
+// encodes the same fact exponentially redundantly, drowns any real regression, and makes the count
+// useless as a ratchet signal. SCCs are the unique, order-independent decomposition of "which nodes
+// participate in a cycle", so one SCC = one violation.
+//
+// An SCC alone says "there is a tangle" but not where to cut it, so mutually dependent module pairs
+// (2-cycles) are emitted as their own `mutual_dependency` dimension. They are the smallest and most
+// actionable cut candidates, and a separate kind is what lets the delta ledger count one pair being
+// resolved (by_kind is keyed on `kind`).
 function findDependencyCycles({ importEdges, assignments }) {
-  const seenModuleEdge = new Set();
-  const moduleEdges = [];
+  const moduleEdgeStats = new Map();
   for (const edge of importEdges) {
     const fromModule = assignments.moduleByFile.get(edge.source_file);
     const toModule = assignments.moduleByFile.get(edge.target_file);
     if (!fromModule || !toModule || fromModule === toModule) continue;
     const key = `${fromModule}->${toModule}`;
-    if (seenModuleEdge.has(key)) continue;
-    seenModuleEdge.add(key);
-    moduleEdges.push({ from: fromModule, to: toModule });
+    if (!moduleEdgeStats.has(key)) {
+      moduleEdgeStats.set(key, {
+        from: fromModule,
+        to: toModule,
+        import_edge_count: 0,
+        example_edges: []
+      });
+    }
+    const entry = moduleEdgeStats.get(key);
+    entry.import_edge_count += 1;
+    if (entry.example_edges.length < 3) {
+      entry.example_edges.push(`${edge.source_file} -> ${edge.target_file}`);
+    }
   }
-  return detectModuleCycles(moduleEdges).map((modules) => ({
-    kind: 'dependency_cycle',
-    severity: 'review',
-    rule_id: null,
-    id: `dependency_cycle:${modules.join('->')}`,
-    modules,
-    summary: `モジュール循環依存: ${modules.join(' -> ')} -> ${modules[0]}`
-  }));
+  const moduleEdges = [...moduleEdgeStats.values()].map(({ from, to }) => ({ from, to }));
+  const mutualPairs = findMutualDependencyPairs(moduleEdgeStats);
+
+  const cycleFindings = detectModuleSccs(moduleEdges).map((members) => {
+    const memberSet = new Set(members);
+    const internalEdges = [...moduleEdgeStats.values()].filter(
+      (entry) => memberSet.has(entry.from) && memberSet.has(entry.to)
+    );
+    const importEdgeCount = internalEdges.reduce((total, entry) => total + entry.import_edge_count, 0);
+    const internalMutualPairs = mutualPairs.filter(
+      (pair) => memberSet.has(pair.modules[0]) && memberSet.has(pair.modules[1])
+    );
+    return {
+      kind: 'dependency_cycle',
+      severity: 'review',
+      rule_id: null,
+      id: `dependency_cycle_scc:${members.join('+')}`,
+      members,
+      module_edge_count: internalEdges.length,
+      import_edge_count: importEdgeCount,
+      mutual_pairs: internalMutualPairs.map((pair) => pair.modules),
+      feedback_edge_candidates: rankFeedbackEdgeCandidates(internalEdges),
+      summary:
+        `モジュール循環依存 (強連結成分, ${members.length} modules): ${members.join(', ')} ` +
+        `— 内部 ${internalEdges.length} module edges / ${importEdgeCount} imports, ` +
+        `相互依存ペア ${internalMutualPairs.length} 組`
+    };
+  });
+
+  const mutualFindings = mutualPairs.map((pair) => {
+    const [a, b] = pair.modules;
+    const importEdgeCount = pair.directions.reduce((total, entry) => total + entry.import_edge_count, 0);
+    return {
+      kind: 'mutual_dependency',
+      severity: 'review',
+      rule_id: null,
+      id: `mutual_dependency:${a}+${b}`,
+      modules: pair.modules,
+      import_edge_count: importEdgeCount,
+      directions: pair.directions,
+      summary:
+        `モジュール相互依存: ${a} <-> ${b} ` +
+        `(${pair.directions.map((entry) => `${entry.from}->${entry.to} ${entry.import_edge_count} imports`).join(', ')})`
+    };
+  });
+
+  return { cycleFindings, mutualFindings };
 }
 
-// Find every distinct simple cycle in a small directed module graph (module counts here are
-// low tens, so an exhaustive DFS per start node is cheap and -- unlike a single global-visited
-// pass -- finds cycles reachable from every entry point, not only the first one visited).
-// Cycles are deduplicated and identified by their own module sequence (rotated to start at the
-// lexicographically smallest module) rather than by discovery order, so the id is stable across
-// re-scans (CDL-S-1/S-2).
+// DCS-S-4: module pairs that import each other in both directions. Identity is the alphabetically
+// sorted pair, so it does not depend on which direction was scanned first (CDL-S-1/S-2).
+function findMutualDependencyPairs(moduleEdgeStats) {
+  const pairs = [];
+  for (const entry of moduleEdgeStats.values()) {
+    if (!(entry.from < entry.to)) continue;
+    const reverse = moduleEdgeStats.get(`${entry.to}->${entry.from}`);
+    if (!reverse) continue;
+    pairs.push({
+      modules: [entry.from, entry.to],
+      directions: [toEdgeDetail(entry), toEdgeDetail(reverse)]
+    });
+  }
+  return pairs.sort((a, b) => a.modules.join('+').localeCompare(b.modules.join('+')));
+}
+
+// DCS-S-5: a *heuristic* cut-candidate list, not a minimum feedback arc set -- that problem is
+// NP-hard and would trade the scanner's deterministic linear-time behaviour for an approximation
+// whose output moves with the search. The proxy is edge weight: an intra-SCC module dependency
+// carried by only one or two real imports is the cheapest place to break the tangle. Ties are
+// broken by edge identity so the list is stable across re-scans.
+function rankFeedbackEdgeCandidates(internalEdges) {
+  return [...internalEdges]
+    .sort((a, b) => {
+      if (a.import_edge_count !== b.import_edge_count) return a.import_edge_count - b.import_edge_count;
+      return `${a.from}->${a.to}`.localeCompare(`${b.from}->${b.to}`);
+    })
+    .slice(0, FEEDBACK_EDGE_CANDIDATE_LIMIT)
+    .map(toEdgeDetail);
+}
+
+function toEdgeDetail(entry) {
+  return {
+    from: entry.from,
+    to: entry.to,
+    import_edge_count: entry.import_edge_count,
+    example_edges: entry.example_edges
+  };
+}
+
+// DCS-S-1: strongly connected components of a directed module graph via an *iterative* Tarjan
+// (explicit work stack, no recursion). The graph measured today is 16 modules, where recursion would
+// be fine, but this detector is the natural thing to point at a file-level graph next, and VibePro
+// has already been bitten by depth-proportional recursion blowing the stack (PR #409). Runtime is
+// O(V+E) and the output order (members sorted, components sorted by their joined key) is derived
+// from the module names themselves, never from traversal order, so ids are stable (CDL-S-1/S-2).
+//
+// Only components that actually contain a cycle are returned: size > 1, or a single node with a
+// self-loop. Single nodes without a self-loop are trivially strongly connected and are not cycles.
+export function detectModuleSccs(moduleEdges) {
+  const adjacency = new Map();
+  const nodes = new Set();
+  const selfLoops = new Set();
+  for (const { from, to } of moduleEdges) {
+    nodes.add(from);
+    nodes.add(to);
+    if (from === to) selfLoops.add(from);
+    if (!adjacency.has(from)) adjacency.set(from, []);
+    adjacency.get(from).push(to);
+  }
+  for (const targets of adjacency.values()) targets.sort();
+
+  const index = new Map();
+  const lowlink = new Map();
+  const onStack = new Set();
+  const stack = [];
+  const components = [];
+  let nextIndex = 0;
+
+  for (const root of [...nodes].sort()) {
+    if (index.has(root)) continue;
+    index.set(root, nextIndex);
+    lowlink.set(root, nextIndex);
+    nextIndex += 1;
+    stack.push(root);
+    onStack.add(root);
+    const work = [{ node: root, edgeIndex: 0 }];
+    while (work.length > 0) {
+      const frame = work[work.length - 1];
+      const targets = adjacency.get(frame.node) ?? [];
+      if (frame.edgeIndex < targets.length) {
+        const next = targets[frame.edgeIndex];
+        frame.edgeIndex += 1;
+        if (!index.has(next)) {
+          index.set(next, nextIndex);
+          lowlink.set(next, nextIndex);
+          nextIndex += 1;
+          stack.push(next);
+          onStack.add(next);
+          work.push({ node: next, edgeIndex: 0 });
+        } else if (onStack.has(next)) {
+          lowlink.set(frame.node, Math.min(lowlink.get(frame.node), index.get(next)));
+        }
+        continue;
+      }
+      work.pop();
+      if (work.length > 0) {
+        const parent = work[work.length - 1].node;
+        lowlink.set(parent, Math.min(lowlink.get(parent), lowlink.get(frame.node)));
+      }
+      if (lowlink.get(frame.node) === index.get(frame.node)) {
+        const component = [];
+        let popped;
+        do {
+          popped = stack.pop();
+          onStack.delete(popped);
+          component.push(popped);
+        } while (popped !== frame.node);
+        components.push(component.sort());
+      }
+    }
+  }
+
+  return components
+    .filter((component) => component.length > 1 || selfLoops.has(component[0]))
+    .sort((a, b) => a.join('+').localeCompare(b.join('+')));
+}
+
+const FEEDBACK_EDGE_CANDIDATE_LIMIT = 5;
+
+// DEPRECATED (DCS-S-7): exhaustive simple-cycle enumeration. Kept exported with an unchanged
+// signature because the merged Spec of story-vibepro-conformance-delta-ledger (clause S-003) binds
+// this exact anchor and its CDL-S-6 test; removing it would break a past story's spec anchors. It is
+// no longer part of the conformance pipeline -- `findDependencyCycles` uses `detectModuleSccs`.
+// Do not reintroduce it as a measurement source: on this repository's 16-module dependency graph it
+// enumerates 69,490 cycles (length histogram peaking at 11-12 hops) for a graph whose entire
+// circular structure is one SCC. Cycle counts grow factorially with module count, so any threshold,
+// cap, or truncation applied to the output is arbitrary and breaks delta id stability.
 export function detectModuleCycles(moduleEdges) {
   const adjacency = new Map();
   for (const { from, to } of moduleEdges) {
@@ -531,7 +715,7 @@ export function renderConformanceMarkdown(result) {
     `- model: ${result.model.path} (status=${result.model.status}, version=${result.model.version ?? 'unversioned'}, modules=${result.model.module_count})`,
     `- edge_source: ${result.edge_source} (${result.import_scan.scanned_file_count} files scanned, ${result.import_scan.edge_count} internal import edges, ${result.import_scan.unresolved_reference_count} unresolved references)`,
     `- graph_context: ${result.graph_context.available ? `${result.graph_context.path} (nodes=${result.graph_context.node_count}, calls_edges=${result.graph_context.calls_edge_count}, context only)` : `unavailable (${result.graph_context.reason})`}`,
-    `- violations: ${result.summary.violation_count} (undeclared_dependency=${result.summary.undeclared_dependency_count}, budget=${result.summary.budget_violation_count}, orphan=${result.summary.orphan_file_count}, stale_pattern=${result.summary.stale_pattern_count}, dependency_cycle=${result.summary.dependency_cycle_count})`
+    `- violations: ${result.summary.violation_count} (undeclared_dependency=${result.summary.undeclared_dependency_count}, budget=${result.summary.budget_violation_count}, orphan=${result.summary.orphan_file_count}, stale_pattern=${result.summary.stale_pattern_count}, dependency_cycle=${result.summary.dependency_cycle_count}, mutual_dependency=${result.summary.mutual_dependency_count})`
   ];
   if (result.edge_source_note) {
     lines.push('', `> ${result.edge_source_note}`);
@@ -544,7 +728,8 @@ export function renderConformanceMarkdown(result) {
     ['budget_violation', '## 複雑性予算超過'],
     ['orphan_file', '## 孤児ファイル'],
     ['stale_pattern', '## 一致ファイルのないパターン'],
-    ['dependency_cycle', '## モジュール循環依存']
+    ['dependency_cycle', '## モジュール循環依存 (強連結成分)'],
+    ['mutual_dependency', '## モジュール相互依存 (循環の最小切断候補)']
   ];
   for (const [kind, heading] of byKind) {
     const items = result.violations.filter((violation) => violation.kind === kind);
@@ -554,6 +739,16 @@ export function renderConformanceMarkdown(result) {
       lines.push(`- ${item.summary}`);
       for (const example of item.example_edges ?? []) {
         lines.push(`  - ${example}`);
+      }
+      for (const direction of item.directions ?? []) {
+        lines.push(
+          `  - ${direction.from} -> ${direction.to} (${direction.import_edge_count} imports): ${direction.example_edges.join(', ')}`
+        );
+      }
+      for (const candidate of item.feedback_edge_candidates ?? []) {
+        lines.push(
+          `  - 切断候補 (重み最小・厳密解ではない): ${candidate.from} -> ${candidate.to} (${candidate.import_edge_count} imports): ${candidate.example_edges.join(', ')}`
+        );
       }
     }
   }
