@@ -314,3 +314,7 @@ VibeProで何が変わったかを、公開版と開発中の変更を分けて�
 <!-- vibepro-release-index-pr:427:start -->
 - [PR #427](https://github.com/Unson-LLC/vibepro/pull/427) — [2026-08](/ja/releases/2026-08): story-vibepro-target-model-projection-v2 - target model projection v2 — 佐藤裁定済みの5問を target-model.json へ機械的に投影し model_version を 2 へ上げる
 <!-- vibepro-release-index-pr:427:end -->
+
+<!-- vibepro-release-index-pr:428:start -->
+- [PR #428](https://github.com/Unson-LLC/vibepro/pull/428) — [2026-08](/ja/releases/2026-08): story-vibepro-dependency-cycle-scc-reduction - dependency_cycle の SCC 縮約 — 69,490件の単純閉路列挙を「1つのSCC + 20の相互依存ペア」へ畳み、ratchet gate を載せられる粒度にする
+<!-- vibepro-release-index-pr:428:end -->
