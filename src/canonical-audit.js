@@ -1605,9 +1605,13 @@ function buildDecisionIndex({ storyId, source, merge, promotedAt, inventory, cos
         ?? null,
       verification_evidence_updated_at: evidenceReuse?.verification_evidence_updated_at
         ?? evidenceReuse?.key_inputs?.verification_evidence_updated_at
+        // Descriptive-only metadata location since story-vibepro-content-scoped-evidence-reuse-key
+        // (CRK-S-1/D2): removed from key_inputs so it no longer gates reuse.
+        ?? evidenceReuse?.verification_evidence_metadata?.updated_at
         ?? null,
       verification_command_timestamps: evidenceReuse?.verification_command_timestamps
         ?? evidenceReuse?.key_inputs?.verification_command_timestamps
+        ?? evidenceReuse?.verification_evidence_metadata?.command_timestamps
         ?? [],
       stale_reason_count: evidenceReuse?.stale_reasons?.length ?? 0,
       full_evidence_status: evidenceReuse?.full_evidence?.status ?? null,

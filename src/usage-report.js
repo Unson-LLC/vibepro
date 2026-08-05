@@ -1283,9 +1283,16 @@ function recordEvidenceReuse(story, evidenceReuse) {
     ?? story.evidence_reuse.verification_summary_fingerprint;
   story.evidence_reuse.verification_evidence_updated_at = evidenceReuse.verification_evidence_updated_at
     ?? evidenceReuse.key_inputs?.verification_evidence_updated_at
+    // Descriptive-only metadata location since story-vibepro-content-scoped-evidence-reuse-key
+    // (CRK-S-1/D2): head_sha/head_ref/verification wall-clock timestamps were
+    // removed from key_inputs so a fix commit or verification re-run no
+    // longer invalidates reuse; the raw evidence-reuse.json artifact still
+    // carries these values here for reporting/audit consumers.
+    ?? evidenceReuse.verification_evidence_metadata?.updated_at
     ?? story.evidence_reuse.verification_evidence_updated_at;
   story.evidence_reuse.verification_command_timestamps = evidenceReuse.verification_command_timestamps
     ?? evidenceReuse.key_inputs?.verification_command_timestamps
+    ?? evidenceReuse.verification_evidence_metadata?.command_timestamps
     ?? story.evidence_reuse.verification_command_timestamps;
   if (status === 'hit') story.evidence_reuse.hit_count += 1;
   if (status === 'miss') story.evidence_reuse.miss_count += 1;

@@ -7,7 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
 
-import { buildEvidenceReuse, buildEvidenceReuseGate } from '../src/evidence-reuse.js';
+import { buildEvidenceReuse, buildEvidenceReuseGate, evaluateEvidenceReuseForReview } from '../src/evidence-reuse.js';
 import { runCli } from '../src/cli.js';
 import { createUsageReport, renderUsageReport } from '../src/usage-report.js';
 import { buildArtifactValueLedger } from '../src/evidence-reuse.js';
@@ -62,6 +62,45 @@ async function writeSpec(root, statement) {
       { id: 'SPEC-001', type: 'scenario', statement }
     ]
   }, null, 2));
+}
+
+// Records a canonical current-head "pass" review whose content_binding is
+// bound to `inspectionInput` -- the minimum viable fixture for exercising the
+// per-role evidence-reuse digest (CRK-S-2/CRK-S-3/CRK-S-5), mirroring the
+// pattern used by test/agent-review-independence.test.js and
+// test/content-scoped-evidence-freshness.test.js.
+async function recordPassReview(root, { stage, role, inspectionInput, agentId }) {
+  const result = await runCli([
+    'review', 'record', root,
+    '--id', STORY_ID,
+    '--stage', stage,
+    '--role', role,
+    '--status', 'pass',
+    '--summary', `${role} reviewed ${inspectionInput}`,
+    '--inspection-summary', `inspected ${inspectionInput}`,
+    '--inspection-input', inspectionInput,
+    '--judgment-delta', 'initial check -> pass because evidence is current',
+    '--agent-system', 'codex',
+    '--execution-mode', 'parallel_subagent',
+    '--agent-id', agentId,
+    '--agent-closed',
+    '--json'
+  ]);
+  assert.equal(result.exitCode, 0, JSON.stringify(result.result ?? result.error ?? result));
+  return result;
+}
+
+async function configureStrictHeadRole(root, role, reason) {
+  const configPath = path.join(root, '.vibepro', 'config.json');
+  const config = JSON.parse(await readFile(configPath, 'utf8'));
+  config.agent_reviews = {
+    ...(config.agent_reviews ?? {}),
+    roles: {
+      ...(config.agent_reviews?.roles ?? {}),
+      [role]: { freshness_mode: 'strict_head', freshness_reason: reason }
+    }
+  };
+  await writeFile(configPath, `${JSON.stringify(config, null, 2)}\n`);
 }
 
 test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index and keeps full evidence generation count at one', async () => {
@@ -222,31 +261,37 @@ test('EDL-S2 pr prepare persists confirmed unused evidence and usage report expo
   assert.equal(report.evidence_reuse.by_story[0].artifact_value_decision_change_unconfirmed_count, 3);
 });
 
-test('ERM-CONTRACT-001 ERM-CONTRACT-002 head changes mark previous summary/index stale without changing same-key count semantics', async () => {
+test('CRK-S-1 ERM-CONTRACT-001 ERM-CONTRACT-002 an unrelated head change with no intersecting role surface is a hit, not stale', async () => {
   const repo = await setupReuseRepo();
   assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  const first = await readJson(path.join(repo, '.vibepro', 'pr', STORY_ID, 'evidence-reuse.json'));
+  assert.equal(first.status, 'miss');
+  assert.equal(first.full_evidence.generation_count, 1);
+  assert.equal(first.full_evidence.cumulative_generation_count, 1);
+
+  // A fix/docs commit that touches no role's inspected content surface must
+  // not, by itself, invalidate reuse any more (CRK-S-1): head_sha/head_ref
+  // are no longer part of the evidence reuse key. Amend (rather than add) the
+  // commit so the base..head diff shape stays constant (one docs-only file
+  // changed) between the two pr-prepare calls -- otherwise a second, distinct
+  // commit legitimately shifts risk_surface_fingerprint's diff-derived
+  // change_classification, which is intentionally still base-invalidating
+  // (CRK-S-4) and would confound this head_sha-only assertion.
   await writeFile(path.join(repo, 'README.md'), '# Reuse\n\nUpdated docs again.\n');
   await git(repo, ['add', 'README.md']);
-  await git(repo, ['commit', '-m', 'docs: update reuse notes again']);
+  await git(repo, ['commit', '--amend', '-m', 'docs: update reuse notes']);
 
   assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
   const reuse = await readJson(path.join(repo, '.vibepro', 'pr', STORY_ID, 'evidence-reuse.json'));
-  assert.equal(reuse.status, 'stale');
-  assert.ok(reuse.stale_reasons.some((reason) => reason.field === 'head_sha'));
-  assert.equal(reuse.fresh_use_allowed, false);
-  assert.equal(reuse.full_evidence.status, 'generated');
+  assert.equal(reuse.status, 'hit');
+  assert.deepEqual(reuse.stale_reasons, []);
+  assert.notEqual(reuse.recorded_git.head_sha, first.recorded_git.head_sha, 'head actually moved between the two pr prepare calls');
+  assert.equal(reuse.evidence_key, first.evidence_key, 'evidence key is unaffected by the head-only change');
+  assert.equal(reuse.full_evidence.status, 'reused');
   assert.equal(reuse.full_evidence.generation_count_scope, 'same_evidence_key');
   assert.equal(reuse.full_evidence.generation_count, 1);
   assert.equal(reuse.full_evidence.same_key_generation_count, 1);
-  assert.equal(reuse.full_evidence.cumulative_generation_count, 2);
-
-  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
-  const reusedAfterStale = await readJson(path.join(repo, '.vibepro', 'pr', STORY_ID, 'evidence-reuse.json'));
-  assert.equal(reusedAfterStale.status, 'hit');
-  assert.equal(reusedAfterStale.full_evidence.status, 'reused');
-  assert.equal(reusedAfterStale.full_evidence.generation_count, 1);
-  assert.equal(reusedAfterStale.full_evidence.same_key_generation_count, 1);
-  assert.equal(reusedAfterStale.full_evidence.cumulative_generation_count, 2);
+  assert.equal(reuse.full_evidence.cumulative_generation_count, 1);
 });
 
 test('spec fingerprint changes mark previous summary/index stale without head changes', async () => {
@@ -289,8 +334,12 @@ test('ESR-CONTRACT-005 review prepare rejects stale reuse when verification evid
   assert.equal(staleReview.exitCode, 0);
   assert.equal(staleReview.result.plan.evidence_reuse.status, 'stale');
   assert.equal(staleReview.result.plan.evidence_reuse.first_input, false);
-  assert.ok(staleReview.result.plan.evidence_reuse.stale_reasons.some((reason) => reason.field === 'verification_evidence_updated_at'));
-  assert.ok(staleReview.result.plan.evidence_reuse.stale_reasons.some((reason) => reason.field === 'verification_command_timestamps'));
+  // CRK-S-1/D2: verification content (not wall-clock timestamps) drives the
+  // key now, so the only stale reason is the content fingerprint; the
+  // removed timestamp fields must not appear as stale reasons any more.
+  assert.ok(staleReview.result.plan.evidence_reuse.stale_reasons.some((reason) => reason.field === 'verification_summary_fingerprint'));
+  assert.equal(staleReview.result.plan.evidence_reuse.stale_reasons.some((reason) => reason.field === 'verification_evidence_updated_at'), false);
+  assert.equal(staleReview.result.plan.evidence_reuse.stale_reasons.some((reason) => reason.field === 'verification_command_timestamps'), false);
   const staleRequest = await readFile(path.join(repo, '.vibepro', 'reviews', STORY_ID, 'gate', 'review-request-gate_evidence.md'), 'utf8');
   assert.match(staleRequest, /current_verification_evidence_updated_at: 2026-06-23T12:00:00\.000Z/);
   assert.match(staleRequest, /verification_summary_fingerprint/);
@@ -302,8 +351,14 @@ test('ESR-CONTRACT-005 review prepare rejects stale reuse when verification evid
   assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
   assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
   const reuse = await readJson(path.join(prDir, 'evidence-reuse.json'));
-  assert.equal(reuse.key_inputs.verification_evidence_updated_at, '2026-06-23T12:00:00.000Z');
-  assert.equal(reuse.key_inputs.verification_command_timestamps[0].executed_at, '2026-06-23T12:00:00.000Z');
+  // Wall-clock verification metadata is still persisted, but as descriptive
+  // (non-key) data now -- see verification_evidence_metadata, not key_inputs.
+  assert.equal(reuse.verification_evidence_metadata.updated_at, '2026-06-23T12:00:00.000Z');
+  assert.equal(reuse.verification_evidence_metadata.command_timestamps[0].executed_at, '2026-06-23T12:00:00.000Z');
+  assert.equal(Object.hasOwn(reuse.key_inputs, 'verification_evidence_updated_at'), false);
+  assert.equal(Object.hasOwn(reuse.key_inputs, 'verification_command_timestamps'), false);
+  assert.equal(Object.hasOwn(reuse.key_inputs, 'head_sha'), false);
+  assert.equal(Object.hasOwn(reuse.key_inputs, 'head_ref'), false);
 
   const freshReview = await runCli(['review', 'prepare', repo, '--id', STORY_ID, '--stage', 'gate', '--role', 'gate_evidence', '--json']);
   assert.equal(freshReview.exitCode, 0);
@@ -321,9 +376,64 @@ test('ESR-CONTRACT-005 review prepare rejects stale reuse when verification evid
   assert.match(renderUsageReport(report), /verification_updated_at=2026-06-23T12:00:00\.000Z/);
   assert.match(renderUsageReport(report), /same_key_full_generation_count=1/);
   assert.match(renderUsageReport(report), /cumulative_full_generation_count=2/);
+
+  // D2: a pure timestamp re-run with identical command content must not
+  // invalidate reuse any more.
+  await writeFile(path.join(prDir, 'verification-evidence.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    updated_at: '2026-06-23T13:00:00.000Z',
+    warnings: [],
+    commands: [
+      {
+        kind: 'unit',
+        status: 'pass',
+        command: 'node --test test/evidence-summary-reuse.test.js',
+        executed_at: '2026-06-23T13:00:00.000Z',
+        git_context: {
+          head_sha: 'head-b',
+          recorded_at: '2026-06-23T13:00:01.000Z'
+        },
+        artifact_check: { status: 'unrecognized' },
+        observation_check: { status: 'recorded' }
+      }
+    ]
+  }, null, 2));
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  const timestampOnlyReuse = await readJson(path.join(prDir, 'evidence-reuse.json'));
+  assert.equal(timestampOnlyReuse.status, 'hit');
+  assert.deepEqual(timestampOnlyReuse.stale_reasons, []);
+  assert.equal(timestampOnlyReuse.evidence_key, reuse.evidence_key);
+  assert.equal(timestampOnlyReuse.verification_evidence_metadata.updated_at, '2026-06-23T13:00:00.000Z');
+
+  // A genuine content change (different command outcome) still invalidates.
+  await writeFile(path.join(prDir, 'verification-evidence.json'), JSON.stringify({
+    schema_version: '0.1.0',
+    story_id: STORY_ID,
+    updated_at: '2026-06-23T14:00:00.000Z',
+    warnings: [],
+    commands: [
+      {
+        kind: 'unit',
+        status: 'fail',
+        command: 'node --test test/evidence-summary-reuse.test.js',
+        executed_at: '2026-06-23T14:00:00.000Z',
+        git_context: {
+          head_sha: 'head-b',
+          recorded_at: '2026-06-23T14:00:01.000Z'
+        },
+        artifact_check: { status: 'unrecognized' },
+        observation_check: { status: 'recorded' }
+      }
+    ]
+  }, null, 2));
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  const contentChangedReuse = await readJson(path.join(prDir, 'evidence-reuse.json'));
+  assert.equal(contentChangedReuse.status, 'stale');
+  assert.ok(contentChangedReuse.stale_reasons.some((reason) => reason.field === 'verification_summary_fingerprint'));
 });
 
-test('ESR-CONTRACT-005 verification evidence timestamps mark previous summary/index stale without head changes', () => {
+test('ESR-CONTRACT-005 D2 verification content changes invalidate reuse while timestamp-only changes do not', () => {
   const base = {
     story: { story_id: STORY_ID },
     git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-a' },
@@ -352,8 +462,11 @@ test('ESR-CONTRACT-005 verification evidence timestamps mark previous summary/in
       ]
     }
   });
-  const second = buildEvidenceReuse({
+  // Same command identity/outcome, only wall-clock timestamps and HEAD moved
+  // (a re-run of the same verification at a later commit): must be a hit.
+  const timestampOnly = buildEvidenceReuse({
     ...base,
+    git: { ...base.git, head_sha: 'head-b' },
     verificationEvidence: {
       schema_version: '0.1.0',
       story_id: STORY_ID,
@@ -365,7 +478,7 @@ test('ESR-CONTRACT-005 verification evidence timestamps mark previous summary/in
           command: 'node --test test/evidence-summary-reuse.test.js',
           executed_at: '2026-06-23T00:05:00.000Z',
           git_context: {
-            head_sha: 'head-a',
+            head_sha: 'head-b',
             recorded_at: '2026-06-23T00:05:00.000Z'
           },
           artifact_check: { status: 'unrecognized' },
@@ -375,16 +488,49 @@ test('ESR-CONTRACT-005 verification evidence timestamps mark previous summary/in
     },
     previousReuse: first
   });
-  const gate = buildEvidenceReuseGate(second);
 
   assert.equal(first.status, 'miss');
-  assert.equal(second.status, 'stale');
-  assert.notEqual(first.evidence_key, second.evidence_key);
-  assert.ok(second.stale_reasons.some((reason) => reason.field === 'verification_summary_fingerprint'));
-  assert.ok(second.stale_reasons.some((reason) => reason.field === 'verification_evidence_updated_at'));
-  assert.ok(second.stale_reasons.some((reason) => reason.field === 'verification_command_timestamps'));
+  assert.equal(timestampOnly.status, 'hit');
+  assert.deepEqual(timestampOnly.stale_reasons, []);
+  assert.equal(timestampOnly.evidence_key, first.evidence_key);
+  assert.equal(timestampOnly.verification_evidence_metadata.updated_at, '2026-06-23T00:05:00.000Z');
+  assert.equal(Object.hasOwn(timestampOnly.key_inputs, 'verification_evidence_updated_at'), false);
+  assert.equal(Object.hasOwn(timestampOnly.key_inputs, 'head_sha'), false);
+
+  // A genuinely different verification outcome still invalidates.
+  const contentChanged = buildEvidenceReuse({
+    ...base,
+    git: { ...base.git, head_sha: 'head-b' },
+    verificationEvidence: {
+      schema_version: '0.1.0',
+      story_id: STORY_ID,
+      updated_at: '2026-06-23T00:10:00.000Z',
+      commands: [
+        {
+          kind: 'unit',
+          status: 'fail',
+          command: 'node --test test/evidence-summary-reuse.test.js',
+          executed_at: '2026-06-23T00:10:00.000Z',
+          git_context: {
+            head_sha: 'head-b',
+            recorded_at: '2026-06-23T00:10:00.000Z'
+          },
+          artifact_check: { status: 'unrecognized' },
+          observation_check: { status: 'recorded' }
+        }
+      ]
+    },
+    previousReuse: timestampOnly
+  });
+  const gate = buildEvidenceReuseGate(contentChanged);
+
+  assert.equal(contentChanged.status, 'stale');
+  assert.notEqual(timestampOnly.evidence_key, contentChanged.evidence_key);
+  assert.ok(contentChanged.stale_reasons.some((reason) => reason.field === 'verification_summary_fingerprint'));
+  assert.equal(contentChanged.stale_reasons.some((reason) => reason.field === 'verification_evidence_updated_at'), false);
+  assert.equal(contentChanged.stale_reasons.some((reason) => reason.field === 'verification_command_timestamps'), false);
   assert.equal(gate.status, 'passed');
-  assert.equal(gate.evidence.verification_evidence_updated_at, '2026-06-23T00:05:00.000Z');
+  assert.equal(gate.evidence.verification_evidence_updated_at, '2026-06-23T00:10:00.000Z');
 });
 
 test('summary artifact references omit explicitly skipped full artifacts', () => {
@@ -464,15 +610,290 @@ test('stale reuse marked as fresh fails the evidence reuse gate', () => {
     evidencePlan: { story_id: STORY_ID, planner_version: '0.1.0', evidence_depth: 'summary' },
     decisionIndex: { story_id: STORY_ID, evidence_depth: 'summary' }
   });
+  // CRK-S-1 removed head_sha from the key, so a bare head_sha change alone no
+  // longer staleifies reuse (see the "unrelated head change ... is a hit"
+  // test above). Use a CRK-S-4 base-invalidating trigger instead
+  // (planner_version drift) to force staleness for this gate-failure check.
   const staleMisuse = buildEvidenceReuse({
     story: { story_id: STORY_ID },
-    git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-b' },
-    evidencePlan: { story_id: STORY_ID, planner_version: '0.1.0', evidence_depth: 'summary' },
+    git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-a' },
+    evidencePlan: { story_id: STORY_ID, planner_version: '0.2.0', evidence_depth: 'summary' },
     decisionIndex: { story_id: STORY_ID, evidence_depth: 'summary' },
     previousReuse: first,
     usedAsFresh: true
   });
   const gate = buildEvidenceReuseGate(staleMisuse);
   assert.equal(staleMisuse.status, 'stale');
+  assert.ok(staleMisuse.stale_reasons.some((reason) => reason.field === 'planner_version'));
   assert.equal(gate.status, 'failed');
+});
+
+test("CRK-S-2 a fix commit touching only one role's inspected surface misses only that role's reuse", async () => {
+  const repo = await setupReuseRepo();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'widget.js'), 'export const widget = 1;\n');
+  await git(repo, ['add', 'src/widget.js']);
+  await git(repo, ['commit', '-m', 'feat: add widget']);
+
+  await recordPassReview(repo, { stage: 'implementation', role: 'runtime_contract', inspectionInput: 'src/widget.js', agentId: 'agent-runtime' });
+  await recordPassReview(repo, { stage: 'implementation', role: 'code_spec_alignment', inspectionInput: 'README.md', agentId: 'agent-spec' });
+
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  const baseline = await readJson(path.join(repo, '.vibepro', 'pr', STORY_ID, 'evidence-reuse.json'));
+  assert.equal(baseline.status, 'hit');
+  assert.equal(baseline.role_reuse['implementation:runtime_contract'].status, 'hit');
+  assert.equal(baseline.role_reuse['implementation:code_spec_alignment'].status, 'hit');
+
+  // Fix commit touches only runtime_contract's inspected surface.
+  await writeFile(path.join(repo, 'src', 'widget.js'), 'export const widget = 2;\n');
+  await git(repo, ['add', 'src/widget.js']);
+  await git(repo, ['commit', '-m', 'fix: adjust widget behavior']);
+
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  const afterFix = await readJson(path.join(repo, '.vibepro', 'pr', STORY_ID, 'evidence-reuse.json'));
+  assert.equal(afterFix.status, 'stale');
+  assert.equal(afterFix.role_reuse['implementation:runtime_contract'].status, 'miss');
+  assert.equal(afterFix.role_reuse['implementation:code_spec_alignment'].status, 'hit');
+  assert.ok(afterFix.stale_reasons.some((reason) => reason.field === 'role_surface:implementation:runtime_contract'));
+  assert.equal(afterFix.stale_reasons.some((reason) => reason.field === 'role_surface:implementation:code_spec_alignment'), false);
+  assert.notEqual(
+    afterFix.role_reuse['implementation:runtime_contract'].digest,
+    afterFix.role_reuse['implementation:runtime_contract'].previous_digest
+  );
+  assert.equal(
+    afterFix.role_reuse['implementation:code_spec_alignment'].digest,
+    afterFix.role_reuse['implementation:code_spec_alignment'].previous_digest
+  );
+
+  // Consumption side (`review prepare`), not just the persisted artifact: the
+  // untouched role must still get to treat the cached evidence bundle as
+  // fresh first input, even though the OTHER role's drift made the
+  // artifact's own aggregate `status` 'stale'. Regression coverage for the
+  // bug where evaluateEvidenceReuseForReview gated every role's freshness on
+  // the aggregate `status`/`fresh_use_allowed` instead of the base-only
+  // verdict, silently defeating CRK-S-2 at the point evidence is actually
+  // reused.
+  const review = await runCli([
+    'review', 'prepare', repo, '--id', STORY_ID, '--stage', 'implementation',
+    '--role', 'runtime_contract', '--role', 'code_spec_alignment', '--json'
+  ]);
+  assert.equal(review.exitCode, 0);
+  const byRole = review.result.plan.evidence_reuse.by_role;
+  assert.equal(byRole.runtime_contract.fresh, false);
+  assert.equal(byRole.runtime_contract.status, 'stale');
+  assert.equal(byRole.code_spec_alignment.fresh, true);
+  assert.equal(byRole.code_spec_alignment.status, 'fresh');
+  assert.equal(byRole.code_spec_alignment.first_input, true);
+  assert.deepEqual(byRole.code_spec_alignment.stale_reasons, []);
+});
+
+test('CRK-S-3 a strict_head role misses on head change while a content_surface role with unchanged content hits', async () => {
+  const repo = await setupReuseRepo();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'widget.js'), 'export const widget = 1;\n');
+  await git(repo, ['add', 'src/widget.js']);
+  await git(repo, ['commit', '-m', 'feat: add widget']);
+  await configureStrictHeadRole(repo, 'runtime_contract', 'runtime contract spans the full release head');
+
+  await recordPassReview(repo, { stage: 'implementation', role: 'runtime_contract', inspectionInput: 'src/widget.js', agentId: 'agent-runtime' });
+  await recordPassReview(repo, { stage: 'implementation', role: 'code_spec_alignment', inspectionInput: 'README.md', agentId: 'agent-spec' });
+
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  const baseline = await readJson(path.join(repo, '.vibepro', 'pr', STORY_ID, 'evidence-reuse.json'));
+  assert.equal(baseline.role_reuse['implementation:runtime_contract'].mode, 'strict_head');
+  assert.equal(baseline.role_reuse['implementation:code_spec_alignment'].mode, 'content_surface');
+  assert.equal(baseline.role_reuse['implementation:runtime_contract'].status, 'hit');
+  assert.equal(baseline.role_reuse['implementation:code_spec_alignment'].status, 'hit');
+
+  // Unrelated commit: touches neither src/widget.js nor README.md, only HEAD.
+  await mkdir(path.join(repo, 'docs'), { recursive: true });
+  await writeFile(path.join(repo, 'docs', 'unrelated.md'), '# unrelated\n');
+  await git(repo, ['add', 'docs/unrelated.md']);
+  await git(repo, ['commit', '-m', 'docs: unrelated note']);
+
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  const afterHeadMove = await readJson(path.join(repo, '.vibepro', 'pr', STORY_ID, 'evidence-reuse.json'));
+  // CRK-S-3: the strict_head role must still re-review on any head change...
+  assert.equal(afterHeadMove.role_reuse['implementation:runtime_contract'].status, 'miss');
+  assert.ok(afterHeadMove.stale_reasons.some((reason) => reason.field === 'role_surface:implementation:runtime_contract'
+    && /strict HEAD/.test(reason.reason)));
+  // ...while the content_surface role with identical content is unaffected
+  // by the head-only change (CRK-S-1's "same content, different head -> hit").
+  assert.equal(afterHeadMove.role_reuse['implementation:code_spec_alignment'].status, 'hit');
+
+  // Consumption side: same distinction must hold when `review prepare`
+  // actually evaluates freshness, not just on the persisted artifact.
+  const review = await runCli([
+    'review', 'prepare', repo, '--id', STORY_ID, '--stage', 'implementation',
+    '--role', 'runtime_contract', '--role', 'code_spec_alignment', '--json'
+  ]);
+  assert.equal(review.exitCode, 0);
+  const byRole = review.result.plan.evidence_reuse.by_role;
+  assert.equal(byRole.runtime_contract.fresh, false);
+  assert.ok(byRole.runtime_contract.stale_reasons.some((reason) => /strict HEAD/.test(reason.reason)));
+  assert.equal(byRole.code_spec_alignment.fresh, true);
+  assert.deepEqual(byRole.code_spec_alignment.stale_reasons, []);
+});
+
+test('CRK-S-5 role_reuse records reconstructable per-role hit/miss reasons in evidence-reuse.json', async () => {
+  const repo = await setupReuseRepo();
+  await mkdir(path.join(repo, 'src'), { recursive: true });
+  await writeFile(path.join(repo, 'src', 'widget.js'), 'export const widget = 1;\n');
+  await git(repo, ['add', 'src/widget.js']);
+  await git(repo, ['commit', '-m', 'feat: add widget']);
+
+  await recordPassReview(repo, { stage: 'implementation', role: 'runtime_contract', inspectionInput: 'src/widget.js', agentId: 'agent-runtime' });
+  await recordPassReview(repo, { stage: 'implementation', role: 'code_spec_alignment', inspectionInput: 'README.md', agentId: 'agent-spec' });
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+
+  await writeFile(path.join(repo, 'src', 'widget.js'), 'export const widget = 2;\n');
+  await git(repo, ['add', 'src/widget.js']);
+  await git(repo, ['commit', '-m', 'fix: adjust widget behavior']);
+  assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
+
+  const reuse = await readJson(path.join(repo, '.vibepro', 'pr', STORY_ID, 'evidence-reuse.json'));
+  const runtimeEntry = reuse.role_reuse['implementation:runtime_contract'];
+  const specEntry = reuse.role_reuse['implementation:code_spec_alignment'];
+
+  assert.equal(runtimeEntry.status, 'miss');
+  assert.equal(runtimeEntry.mode, 'content_surface');
+  assert.equal(typeof runtimeEntry.digest, 'string');
+  assert.equal(typeof runtimeEntry.previous_digest, 'string');
+  assert.notEqual(runtimeEntry.digest, runtimeEntry.previous_digest);
+  assert.equal(runtimeEntry.stale_reasons.length, 1);
+  assert.equal(runtimeEntry.stale_reasons[0].field, 'role_surface:implementation:runtime_contract');
+  assert.equal(runtimeEntry.stale_reasons[0].previous, runtimeEntry.previous_digest);
+  assert.equal(runtimeEntry.stale_reasons[0].current, runtimeEntry.digest);
+  assert.match(runtimeEntry.stale_reasons[0].reason, /inspected content surface changed/);
+
+  assert.equal(specEntry.status, 'hit');
+  assert.deepEqual(specEntry.stale_reasons, []);
+  assert.equal(specEntry.digest, specEntry.previous_digest);
+
+  // Reconstructable from the artifact alone: the top-level stale_reasons
+  // entry for the only role that actually changed matches the per-role entry.
+  const topLevelRoleReason = reuse.stale_reasons.find((reason) => reason.field === 'role_surface:implementation:runtime_contract');
+  assert.ok(topLevelRoleReason);
+  assert.deepEqual(topLevelRoleReason, runtimeEntry.stale_reasons[0]);
+});
+
+test("CRK-S-4 CRK-S-6 spec fingerprint drift invalidates every role's reuse, not only the aggregate status", () => {
+  const agentReviewsStages = [
+    {
+      stage: 'implementation',
+      roles: [
+        {
+          role: 'runtime_contract',
+          freshness_policy: { effective_mode: 'content_surface' },
+          content_binding: { current_surface_hash: 'aaaa', recorded_surface_hash: 'aaaa' }
+        },
+        {
+          role: 'code_spec_alignment',
+          freshness_policy: { effective_mode: 'content_surface' },
+          content_binding: { current_surface_hash: 'bbbb', recorded_surface_hash: 'bbbb' }
+        }
+      ]
+    }
+  ];
+  const base = {
+    story: { story_id: STORY_ID },
+    git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-a' },
+    prContext: { agent_reviews: { stages: agentReviewsStages }, inferred_spec: { statement: 'v1' } },
+    evidencePlan: { story_id: STORY_ID, planner_version: '0.1.0', evidence_depth: 'summary' },
+    decisionIndex: { story_id: STORY_ID, evidence_depth: 'summary' }
+  };
+  const first = buildEvidenceReuse(base);
+  // Same role digests as `first` (nothing any role inspected changed), but
+  // the shared spec_fingerprint drifted -- CRK-S-4 says this must still
+  // invalidate every role, not just the top-level aggregate.
+  const second = buildEvidenceReuse({
+    ...base,
+    prContext: { agent_reviews: { stages: agentReviewsStages }, inferred_spec: { statement: 'v2 changed' } },
+    previousReuse: first
+  });
+
+  assert.equal(first.status, 'miss');
+  assert.equal(second.status, 'stale');
+  assert.ok(second.stale_reasons.some((reason) => reason.field === 'spec_fingerprint'));
+  assert.equal(second.role_reuse['implementation:runtime_contract'].status, 'miss');
+  assert.equal(second.role_reuse['implementation:code_spec_alignment'].status, 'miss');
+  assert.equal(
+    second.role_reuse['implementation:runtime_contract'].stale_reasons[0].field,
+    'role_surface:implementation:runtime_contract'
+  );
+  assert.equal(
+    second.role_reuse['implementation:code_spec_alignment'].stale_reasons[0].field,
+    'role_surface:implementation:code_spec_alignment'
+  );
+
+  // Consumption side: base_reuse must gate both roles too, even though
+  // neither role's OWN digest moved -- CRK-S-4 applies uniformly at the
+  // point evidence is actually reused, not only on the persisted artifact.
+  const currentRoleDigests = {
+    'implementation:runtime_contract': { mode: 'content_surface', digest: 'sha256:aaaa' },
+    'implementation:code_spec_alignment': { mode: 'content_surface', digest: 'sha256:bbbb' }
+  };
+  const reviewEvaluation = evaluateEvidenceReuseForReview({
+    reuse: second,
+    gitContext: { head_sha: 'head-a' },
+    verificationEvidence: null,
+    stage: 'implementation',
+    roles: ['runtime_contract', 'code_spec_alignment'],
+    currentRoleDigests
+  });
+  assert.equal(reviewEvaluation.by_role.runtime_contract.fresh, false);
+  assert.equal(reviewEvaluation.by_role.code_spec_alignment.fresh, false);
+  assert.ok(reviewEvaluation.by_role.runtime_contract.stale_reasons.some((reason) => reason.field === 'spec_fingerprint'));
+  assert.ok(reviewEvaluation.by_role.code_spec_alignment.stale_reasons.some((reason) => reason.field === 'spec_fingerprint'));
+});
+
+test("CRK-S-2 consumption a role with no evidence-reuse baseline is not treated as spuriously fresh", () => {
+  // Role `code_spec_alignment` gets a real baseline; `runtime_contract` is
+  // reviewed for the first time only AFTER this artifact was built (so it is
+  // absent from key_inputs.role_surface_digests, but current_role_digests --
+  // freshly recomputed at review-prepare time -- now has real content for
+  // it). It must not default to fresh just because the shared base is clean.
+  const agentReviewsStages = [
+    {
+      stage: 'implementation',
+      roles: [
+        {
+          role: 'code_spec_alignment',
+          freshness_policy: { effective_mode: 'content_surface' },
+          content_binding: { current_surface_hash: 'bbbb', recorded_surface_hash: 'bbbb' }
+        }
+      ]
+    }
+  ];
+  const base = {
+    story: { story_id: STORY_ID },
+    git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-a' },
+    prContext: { agent_reviews: { stages: agentReviewsStages }, inferred_spec: { statement: 'v1' } },
+    evidencePlan: { story_id: STORY_ID, planner_version: '0.1.0', evidence_depth: 'summary' },
+    decisionIndex: { story_id: STORY_ID, evidence_depth: 'summary' }
+  };
+  const first = buildEvidenceReuse(base);
+  const second = buildEvidenceReuse({ ...base, previousReuse: first });
+  assert.equal(second.status, 'hit');
+  assert.equal(second.base_reuse.status, 'hit');
+  assert.equal(second.role_reuse['implementation:code_spec_alignment'].status, 'hit');
+  assert.equal(second.role_reuse['implementation:runtime_contract'], undefined);
+
+  const reviewEvaluation = evaluateEvidenceReuseForReview({
+    reuse: second,
+    gitContext: { head_sha: 'head-a' },
+    verificationEvidence: null,
+    stage: 'implementation',
+    roles: ['code_spec_alignment', 'runtime_contract'],
+    currentRoleDigests: {
+      'implementation:code_spec_alignment': { mode: 'content_surface', digest: 'sha256:bbbb' },
+      'implementation:runtime_contract': { mode: 'content_surface', digest: 'sha256:cccc' }
+    }
+  });
+  assert.equal(reviewEvaluation.by_role.code_spec_alignment.fresh, true);
+  assert.equal(reviewEvaluation.by_role.runtime_contract.fresh, false);
+  assert.ok(reviewEvaluation.by_role.runtime_contract.stale_reasons.some((reason) => /no previous evidence-reuse baseline/.test(reason.reason)));
 });

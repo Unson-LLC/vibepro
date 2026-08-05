@@ -9,7 +9,7 @@ import { getWorkspaceDir, toWorkspaceRelative } from './workspace.js';
 import { localizedText, resolveHumanOutputLanguage } from './language.js';
 import { assertManagedWorktreeCommandAllowed } from './managed-worktree-gate.js';
 import { collectGitContext, compareFingerprintContexts, fingerprintHashForContext } from './git-fingerprint.js';
-import { evaluateEvidenceReuseForReview, readEvidenceReuseIfExists } from './evidence-reuse.js';
+import { buildRoleContentDigests, evaluateEvidenceReuseForReview, readEvidenceReuseIfExists } from './evidence-reuse.js';
 import { assertRunLineageBinding, createRunLineageEnvelope } from './run-lineage.js';
 import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } from './content-binding.js';
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
@@ -243,10 +243,25 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   const gitContext = await collectReviewGitContext(root, storyId);
   const evidenceReuseArtifact = await readEvidenceReuseIfExists(root, storyId);
   const verificationEvidence = await readJsonIfExists(await resolvePrArtifactFile(root, storyId, 'verification-evidence.json'));
+  // Computed early, ONLY to derive currentRoleDigests, so each requested
+  // role's freshly re-hashed content_binding is available for the
+  // role-aware evidence-reuse evaluation (CRK-S-2/CRK-S-3/CRK-S-5). This
+  // early summary is NOT the one written to review-summary.{json,md} below:
+  // buildStageSummary also reflects this function's OWN not-yet-made write
+  // of parallel-dispatch.md further below (parallelDispatchPrepared =
+  // await pathExists(parallelDispatchPath), consumed by
+  // buildStageNextActions), so a summary computed before that write differs
+  // from one computed after it -- see the fresh call further below, right
+  // before writeReviewSummaryArtifacts.
+  const earlySummaryForDigests = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy, roles });
+  const currentRoleDigests = buildRoleContentDigests([earlySummaryForDigests], { headSha: gitContext.head_sha });
   const evidenceReuse = evaluateEvidenceReuseForReview({
     reuse: evidenceReuseArtifact,
     gitContext,
-    verificationEvidence
+    verificationEvidence,
+    stage,
+    roles,
+    currentRoleDigests
   });
   const prPrepareArtifact = await readJsonIfExists(await resolvePrArtifactFile(root, storyId));
   const boundedArtifactHandoff = buildBoundedArtifactHandoff(prPrepareArtifact?.artifact_budget);
@@ -325,6 +340,14 @@ export async function prepareAgentReview(repoRoot, options = {}) {
   for (const role of roles) {
     await writeFile(getReviewRequestPath(reviewDir, role), renderReviewRequestMarkdown({ storyId, stage, role, plan, language }));
   }
+  // Recomputed here (not reused from earlySummaryForDigests above): this
+  // function has since written parallel-dispatch.md, which
+  // buildStageSummary's next_actions / parallel_dispatch.prepared derive
+  // from via parallelDispatchPrepared = await pathExists(parallelDispatchPath).
+  // Reusing the early, pre-write summary here would report "Prepare <stage>
+  // review dispatch" instead of "Run and record <stage>:<role>" even though
+  // dispatch was just prepared, because parallelDispatchPrepared would still
+  // reflect the pre-write filesystem state.
   const summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy, roles });
   await writeReviewSummaryArtifacts(root, reviewDir, summary);
   return {
@@ -2344,8 +2367,12 @@ ${rows}
 `;
 }
 
-function renderEvidenceReuseReviewInput(plan, language = 'ja') {
-  const reuse = plan?.evidence_reuse;
+function renderEvidenceReuseReviewInput(plan, language = 'ja', role = null) {
+  // Per-role verdict (D5/CRK-S-2): a single-role review request shows what
+  // that role's own reuse check found, not the stage-wide aggregate. Callers
+  // that render a multi-role document (parallel dispatch) omit `role` and get
+  // the aggregate, matching the historical single-verdict shape.
+  const reuse = (role && plan?.evidence_reuse?.by_role?.[role]) || plan?.evidence_reuse;
   if (!reuse) return '';
   const staleReasonRows = (reuse.stale_reasons ?? [])
     .slice(0, 5)
@@ -2441,7 +2468,7 @@ function renderReviewRequestMarkdown({ storyId, stage, role, plan, language = pl
   const evidenceHandling = localizedEvidenceHandlingBlock(language);
   const investigationGuidelines = localizedInvestigationGuidelinesBlock(language);
   const agentSkillDiscipline = localizedAgentSkillDisciplineBlock(language);
-  const evidenceReuseInput = renderEvidenceReuseReviewInput(plan, language);
+  const evidenceReuseInput = renderEvidenceReuseReviewInput(plan, language, role);
   if (language === 'en') {
     return `# VibePro Agent Review Request
 
