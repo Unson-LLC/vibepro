@@ -312,8 +312,12 @@ older code simply never reads).
 - `evidence-reuse.json`'s `role_reuse` map is sufficient on its own to
   reconstruct, for any role, whether it hit or missed and exactly which
   digest changed (CRK-S-5).
-- A role is fresh only on positive evidence that its own current digest
-  matches a recorded baseline; a role with no current digest, no recorded
-  baseline, or both, is never defaulted to fresh purely because the shared
-  base is unchanged (CRK-S-2, `evaluateEvidenceReuseForReview`'s
-  `current`/`previous` branch table above).
+- A role whose current digest is present but has no recorded baseline, and a
+  role whose current digest and recorded baseline are both absent, are never
+  defaulted to fresh purely because the shared base is unchanged (CRK-S-2,
+  `evaluateEvidenceReuseForReview`'s `current`/`previous` branch table above,
+  rows `present`/`absent` and `absent`/`absent`). This invariant does not
+  cover the inverse row -- no current digest but a previously recorded
+  baseline (`absent`/`present`) -- which still resolves to fresh whenever
+  `baseFresh` holds, unchanged from before this fix and deliberately out of
+  this fix's scope (see the Rationale note on that row above).

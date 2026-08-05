@@ -2400,7 +2400,7 @@ function renderEvidenceReuseReviewInput(plan, language = 'ja', role = null) {
 - verification_evidence_updated_at: ${reuse.verification_evidence_updated_at ?? '-'}
 - current_verification_evidence_updated_at: ${reuse.current_verification_evidence_updated_at ?? '-'}
 - preferred_order: ${(reuse.preferred_order ?? []).join(', ') || '-'}
-${timestampRows ? `\nVerification command timestamps in reuse key:\n${timestampRows}` : ''}
+${timestampRows ? `\nVerification command timestamps (reference only; excluded from the reuse key):\n${timestampRows}` : ''}
 ${currentTimestampRows ? `\nCurrent verification command timestamps:\n${currentTimestampRows}` : ''}
 ${staleReasonRows ? `\nStale reasons:\n${staleReasonRows}` : ''}
 ${decisionOutcomeInput}
@@ -2418,7 +2418,7 @@ ${decisionOutcomeInput}
 - verification_evidence_updated_at: ${reuse.verification_evidence_updated_at ?? '-'}
 - current_verification_evidence_updated_at: ${reuse.current_verification_evidence_updated_at ?? '-'}
 - preferred_order: ${(reuse.preferred_order ?? []).join(', ') || '-'}
-${timestampRows ? `\nReuse key内のverification command timestamps:\n${timestampRows}` : ''}
+${timestampRows ? `\nverification command timestamps（参考情報。reuse keyには含まれない）:\n${timestampRows}` : ''}
 ${currentTimestampRows ? `\n現在のverification command timestamps:\n${currentTimestampRows}` : ''}
 ${staleReasonRows ? `\nStale reasons:\n${staleReasonRows}` : ''}
 ${decisionOutcomeInput}
