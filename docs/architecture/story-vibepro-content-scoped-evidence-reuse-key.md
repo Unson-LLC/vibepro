@@ -129,13 +129,23 @@ freshness policy").
 Given that, `buildRoleContentDigests` branches on the generic
 `role.freshness_policy.effective_mode === 'strict_head'` read from the
 role's *own last-recorded* freshness policy, never on a role-name allowlist.
-Hardcoding role names would have *changed* today's behavior (today, a role
-named `gate_evidence` with the default `content_surface` policy is *not*
-HEAD-bound) -- which CRK-S-3 explicitly forbids ("built-in strict HEAD role
-... object の対象外として挙動が変わらない"). The correct reading of CRK-S-3
-is: whichever roles are *configured* strict_head keep re-reviewing on every
-head change, via the same generic mechanism that already exists for review
-freshness; the Story does not introduce a new strict-role list.
+Hardcoding role names instead would itself have been a behavior change: it
+would newly HEAD-bind roles that today run under the default
+`content_surface` policy -- e.g. `gate_evidence`, which carries no
+`agent_reviews.roles` entry in `.vibepro/config.json` on this branch or on
+`origin/main`, and so is not HEAD-bound today. Branching on the role's own
+resolved policy instead avoids introducing that change: whichever roles an
+operator actually configures `freshness_mode: strict_head` keep
+re-reviewing on every head change, exactly as CRK-S-3 requires, via the
+same generic mechanism review freshness already uses; the Story does not
+introduce a new strict-role list.
+
+(History: an earlier draft of CRK-S-3 and the Story's `reason` field
+described `gate_evidence`/`release_risk` as a "built-in strict HEAD role".
+That was corrected on 2026-08-05 -- see the Story's Background section --
+once review established neither role carries such a config entry. The
+CRK-S-3 text in the Acceptance Criteria already reflects the correction,
+and this section is written to match it.)
 
 ## D2 -- timestamp-free verification fingerprint
 
