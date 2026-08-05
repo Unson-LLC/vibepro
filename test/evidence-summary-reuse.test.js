@@ -261,6 +261,7 @@ test('EDL-S2 pr prepare persists confirmed unused evidence and usage report expo
   assert.equal(report.evidence_reuse.by_story[0].artifact_value_decision_change_unconfirmed_count, 3);
 });
 
+// Clause binding: story-vibepro-content-scoped-evidence-reuse-key:AC-1
 test('CRK-S-1 ERM-CONTRACT-001 ERM-CONTRACT-002 an unrelated head change with no intersecting role surface is a hit, not stale', async () => {
   const repo = await setupReuseRepo();
   assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
@@ -628,6 +629,8 @@ test('stale reuse marked as fresh fails the evidence reuse gate', () => {
   assert.equal(gate.status, 'failed');
 });
 
+// Clause binding: story-vibepro-content-scoped-evidence-reuse-key:AC-2
+// Clause binding: story-vibepro-content-scoped-evidence-reuse-key:AC-6 — inspected surface変更 → 該当ロールのみmiss is one of CRK-S-6's three named contract behaviors
 test("CRK-S-2 a fix commit touching only one role's inspected surface misses only that role's reuse", async () => {
   const repo = await setupReuseRepo();
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -688,6 +691,7 @@ test("CRK-S-2 a fix commit touching only one role's inspected surface misses onl
   assert.deepEqual(byRole.code_spec_alignment.stale_reasons, []);
 });
 
+// Clause binding: story-vibepro-content-scoped-evidence-reuse-key:AC-3
 test('CRK-S-3 a strict_head role misses on head change while a content_surface role with unchanged content hits', async () => {
   const repo = await setupReuseRepo();
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -737,6 +741,7 @@ test('CRK-S-3 a strict_head role misses on head change while a content_surface r
   assert.deepEqual(byRole.code_spec_alignment.stale_reasons, []);
 });
 
+// Clause binding: story-vibepro-content-scoped-evidence-reuse-key:AC-5
 test('CRK-S-5 role_reuse records reconstructable per-role hit/miss reasons in evidence-reuse.json', async () => {
   const repo = await setupReuseRepo();
   await mkdir(path.join(repo, 'src'), { recursive: true });
@@ -780,6 +785,8 @@ test('CRK-S-5 role_reuse records reconstructable per-role hit/miss reasons in ev
   assert.deepEqual(topLevelRoleReason, runtimeEntry.stale_reasons[0]);
 });
 
+// Clause binding: story-vibepro-content-scoped-evidence-reuse-key:AC-4
+// Clause binding: story-vibepro-content-scoped-evidence-reuse-key:AC-6 — spec drift → 全miss is the third of CRK-S-6's three named contract behaviors
 test("CRK-S-4 CRK-S-6 spec fingerprint drift invalidates every role's reuse, not only the aggregate status", () => {
   const agentReviewsStages = [
     {
@@ -850,6 +857,7 @@ test("CRK-S-4 CRK-S-6 spec fingerprint drift invalidates every role's reuse, not
   assert.ok(reviewEvaluation.by_role.code_spec_alignment.stale_reasons.some((reason) => reason.field === 'spec_fingerprint'));
 });
 
+// Clause binding: story-vibepro-content-scoped-evidence-reuse-key:AC-2
 test("CRK-S-2 consumption a role with no evidence-reuse baseline is not treated as spuriously fresh", () => {
   // Role `code_spec_alignment` gets a real baseline; `runtime_contract` is
   // reviewed for the first time only AFTER this artifact was built (so it is
