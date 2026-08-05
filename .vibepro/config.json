@@ -1427,9 +1427,21 @@
         "started_at": "2026-08-04",
         "due_at": null,
         "category": "quality"
+      },
+      {
+        "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+        "title": "dependency_cycle の SCC 縮約 — 69,490件の単純閉路列挙を「1つのSCC + 20の相互依存ペア」へ畳み、ratchet gate を載せられる粒度にする",
+        "ssot": "local",
+        "status": "active",
+        "horizon": "now",
+        "view": "dev",
+        "period": "2026-08",
+        "started_at": "2026-08-05",
+        "due_at": null,
+        "category": "quality"
       }
     ],
-    "current_story_id": "story-vibepro-target-model-projection-v2"
+    "current_story_id": "story-vibepro-dependency-cycle-scc-reduction"
   },
-  "current_story_id": "story-vibepro-target-model-projection-v2"
+  "current_story_id": "story-vibepro-dependency-cycle-scc-reduction"
 }
