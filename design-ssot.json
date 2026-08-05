@@ -2754,6 +2754,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "story",
+            "path": "docs/management/stories/active/story-vibepro-content-scoped-evidence-reuse-key.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ],
         "spec": [
@@ -2779,6 +2786,13 @@
             "required": true,
             "relationship": "implements",
             "last_reviewed_root_hash": null
+          },
+          {
+            "kind": "architecture",
+            "path": "docs/architecture/story-vibepro-content-scoped-evidence-reuse-key.md",
+            "required": true,
+            "relationship": "implements",
+            "last_reviewed_root_hash": null
           }
         ]
       },
@@ -2793,6 +2807,13 @@
         {
           "kind": "story",
           "path": "docs/management/stories/active/story-vibepro-surface-aware-agent-review-freshness.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "story",
+          "path": "docs/management/stories/active/story-vibepro-content-scoped-evidence-reuse-key.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
@@ -2814,6 +2835,13 @@
         {
           "kind": "architecture",
           "path": "docs/architecture/story-vibepro-surface-aware-agent-review-freshness.md",
+          "required": true,
+          "relationship": "implements",
+          "last_reviewed_root_hash": null
+        },
+        {
+          "kind": "architecture",
+          "path": "docs/architecture/story-vibepro-content-scoped-evidence-reuse-key.md",
           "required": true,
           "relationship": "implements",
           "last_reviewed_root_hash": null
@@ -8413,5 +8441,5 @@
       "source": "design-ssot.json"
     }
   ],
-  "updated_at": "2026-08-04T12:36:36.510Z"
+  "updated_at": "2026-08-05T06:00:04.794Z"
 }
