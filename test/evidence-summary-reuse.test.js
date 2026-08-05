@@ -7,7 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
 
-import { buildEvidenceReuse, buildEvidenceReuseGate, evaluateEvidenceReuseForReview } from '../src/evidence-reuse.js';
+import { buildEvidenceReuse, buildEvidenceReuseGate, buildRoleContentDigests, evaluateEvidenceReuseForReview } from '../src/evidence-reuse.js';
 import { runCli } from '../src/cli.js';
 import { createUsageReport, renderUsageReport } from '../src/usage-report.js';
 import { buildArtifactValueLedger } from '../src/evidence-reuse.js';
@@ -105,6 +105,13 @@ async function configureStrictHeadRole(root, role, reason) {
 
 test('ERM-CONTRACT-001 ERM-CONTRACT-003 pr prepare reuses fresh summary/index and keeps full evidence generation count at one', async () => {
   const repo = await setupReuseRepo();
+  // Give `runtime_contract` a real recorded baseline before the first pr
+  // prepare below, so the `review prepare --role runtime_contract` call
+  // further down exercises the intended "reuse actually carried forward"
+  // path (previous digest === current digest) rather than incidentally
+  // landing on a role that has literally never been reviewed (see the
+  // dedicated CRK-S-2 "no baseline" consumption test for that branch).
+  await recordPassReview(repo, { stage: 'implementation', role: 'runtime_contract', inspectionInput: 'README.md', agentId: 'agent-runtime-baseline' });
 
   const first = await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json']);
   assert.equal(first.exitCode, 0);
@@ -308,6 +315,12 @@ test('spec fingerprint changes mark previous summary/index stale without head ch
 
 test('ESR-CONTRACT-005 review prepare rejects stale reuse when verification evidence changes after pr prepare', async () => {
   const repo = await setupReuseRepo();
+  // Give `gate_evidence` a real recorded baseline up front so the
+  // `review prepare --stage gate --role gate_evidence` calls below exercise
+  // "does verification drift alone flip an otherwise-fresh role to stale"
+  // (this test's actual subject), not the unrelated "role has never been
+  // reviewed at all" branch covered by the CRK-S-2 "no baseline" test.
+  await recordPassReview(repo, { stage: 'gate', role: 'gate_evidence', inspectionInput: 'README.md', agentId: 'agent-gate-baseline' });
   assert.equal((await runCli(['pr', 'prepare', repo, '--story-id', STORY_ID, '--base', 'main', '--json'])).exitCode, 0);
   const prDir = path.join(repo, '.vibepro', 'pr', STORY_ID);
   await writeFile(path.join(prDir, 'verification-evidence.json'), JSON.stringify({
@@ -904,4 +917,148 @@ test("CRK-S-2 consumption a role with no evidence-reuse baseline is not treated 
   assert.equal(reviewEvaluation.by_role.code_spec_alignment.fresh, true);
   assert.equal(reviewEvaluation.by_role.runtime_contract.fresh, false);
   assert.ok(reviewEvaluation.by_role.runtime_contract.stale_reasons.some((reason) => /no previous evidence-reuse baseline/.test(reason.reason)));
+});
+
+// Clause binding: story-vibepro-content-scoped-evidence-reuse-key:AC-2
+test("CRK-S-2 consumption a role with neither a current digest nor a previous baseline is not treated as spuriously fresh", () => {
+  // Distinct from the "no evidence-reuse baseline" test above: there,
+  // `runtime_contract` WAS just reviewed (`currentRoleDigests` has real
+  // content for it), it is only missing from the artifact's OWN previous
+  // key_inputs. Here, `runtime_contract` has NEITHER a previous baseline NOR
+  // a freshly recomputed current digest -- e.g. it is requested at
+  // `review prepare` time but has literally never been reviewed even once
+  // (buildRoleContentDigests has nothing to report for it because there is
+  // no recorded review result to hash a content_binding from at all). The
+  // shared base being clean must not, by itself, resolve this to
+  // fresh/first_input: true -- there is zero positive evidence in either
+  // direction for this specific role. This is the exact branch an
+  // independent architecture_boundary review flagged as silently fail-open
+  // (see docs/architecture/story-vibepro-content-scoped-evidence-reuse-key.md,
+  // "Per-role digest source").
+  const agentReviewsStages = [
+    {
+      stage: 'implementation',
+      roles: [
+        {
+          role: 'code_spec_alignment',
+          freshness_policy: { effective_mode: 'content_surface' },
+          content_binding: { current_surface_hash: 'bbbb', recorded_surface_hash: 'bbbb' }
+        }
+      ]
+    }
+  ];
+  const base = {
+    story: { story_id: STORY_ID },
+    git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-a' },
+    prContext: { agent_reviews: { stages: agentReviewsStages }, inferred_spec: { statement: 'v1' } },
+    evidencePlan: { story_id: STORY_ID, planner_version: '0.1.0', evidence_depth: 'summary' },
+    decisionIndex: { story_id: STORY_ID, evidence_depth: 'summary' }
+  };
+  const first = buildEvidenceReuse(base);
+  const second = buildEvidenceReuse({ ...base, previousReuse: first });
+  assert.equal(second.status, 'hit');
+  assert.equal(second.base_reuse.status, 'hit');
+  assert.equal(second.role_reuse['implementation:runtime_contract'], undefined);
+
+  const reviewEvaluation = evaluateEvidenceReuseForReview({
+    reuse: second,
+    gitContext: { head_sha: 'head-a' },
+    verificationEvidence: null,
+    stage: 'implementation',
+    roles: ['code_spec_alignment', 'runtime_contract'],
+    currentRoleDigests: {
+      'implementation:code_spec_alignment': { mode: 'content_surface', digest: 'sha256:bbbb' }
+      // Deliberately no entry for runtime_contract: it has never been
+      // reviewed, so there is nothing to compute a current digest from.
+    }
+  });
+  // Regression guard: the role that DOES have a matching baseline in both
+  // directions must stay fresh -- this fix must not regress the
+  // already-covered "untouched role stays fresh" behavior (CRK-S-2).
+  assert.equal(reviewEvaluation.by_role.code_spec_alignment.fresh, true);
+  assert.equal(reviewEvaluation.by_role.code_spec_alignment.status, 'fresh');
+  // The actual fix under test: zero positive evidence in either direction
+  // must not resolve to fresh/first_input just because the shared base
+  // happens to be clean.
+  assert.equal(reviewEvaluation.by_role.runtime_contract.fresh, false);
+  assert.equal(reviewEvaluation.by_role.runtime_contract.first_input, false);
+  assert.equal(reviewEvaluation.by_role.runtime_contract.status, 'stale');
+  assert.equal(reviewEvaluation.by_role.runtime_contract.stale_reasons.length, 1);
+  assert.equal(reviewEvaluation.by_role.runtime_contract.stale_reasons[0].field, 'role_surface:implementation:runtime_contract');
+  assert.equal(reviewEvaluation.by_role.runtime_contract.stale_reasons[0].previous, null);
+  assert.equal(reviewEvaluation.by_role.runtime_contract.stale_reasons[0].current, null);
+  assert.match(
+    reviewEvaluation.by_role.runtime_contract.stale_reasons[0].reason,
+    /neither a current inspected content surface nor a previous evidence-reuse baseline/
+  );
+
+  // Aggregate must also flip to stale: `review prepare`'s stage-level
+  // aggregate is fresh only if every requested role's own verdict is fresh,
+  // matching the historical "one verdict per prepare call" semantics for
+  // callers that only look at the top-level status, not by_role.
+  assert.equal(reviewEvaluation.status, 'stale');
+  assert.equal(reviewEvaluation.fresh, false);
+  assert.equal(reviewEvaluation.first_input, false);
+});
+
+// Clause binding: story-vibepro-content-scoped-evidence-reuse-key:AC-2
+test('buildRoleContentDigests omits a role whose content_binding shape is unrecognized, so a future field rename cannot make review prepare fail open', () => {
+  // buildRoleContentDigests duck-types role.content_binding.{current_surface_hash,
+  // recorded_surface_hash,surface_hash} and role.freshness_policy.effective_mode.
+  // If that shape ever changes (field renamed or restructured upstream in
+  // src/agent-review.js / src/content-binding.js), this role must be OMITTED
+  // from the digest map -- landing on evaluateEvidenceReuseForReview's
+  // `!current && !previous` "no positive evidence" branch above -- rather
+  // than silently producing a digest that happens to make every role
+  // inherit `baseFresh` (the systemic fail-open risk the same review flagged
+  // alongside the primary branch-coverage gap).
+  const stageSummariesWithUnexpectedShape = [
+    {
+      stage: 'implementation',
+      roles: [
+        {
+          role: 'runtime_contract',
+          freshness_policy: { effective_mode: 'content_surface' },
+          // None of the hash keys buildRoleContentDigests actually reads
+          // (current_surface_hash/recorded_surface_hash/surface_hash) are
+          // present -- simulates a renamed/restructured content_binding.
+          content_binding: { hash: 'zzzz', unexpected_field: true }
+        }
+      ]
+    }
+  ];
+  const digests = buildRoleContentDigests(stageSummariesWithUnexpectedShape, { headSha: 'head-a' });
+  assert.deepEqual(digests, {}, 'a role with an unrecognized content_binding shape must be omitted, not hashed into a false digest');
+
+  const first = buildEvidenceReuse({
+    story: { story_id: STORY_ID },
+    git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-a' },
+    evidencePlan: { story_id: STORY_ID, planner_version: '0.1.0', evidence_depth: 'summary' },
+    decisionIndex: { story_id: STORY_ID, evidence_depth: 'summary' }
+  });
+  // Second call re-derives the same (empty) base with no previousReuse role
+  // baseline either -- simulating a shape drift discovered on the very next
+  // pr prepare, before any role has a recorded baseline under the new shape.
+  const second = buildEvidenceReuse({
+    story: { story_id: STORY_ID },
+    git: { base_ref: 'main', base_sha: 'base', head_ref: 'HEAD', head_sha: 'head-a' },
+    evidencePlan: { story_id: STORY_ID, planner_version: '0.1.0', evidence_depth: 'summary' },
+    decisionIndex: { story_id: STORY_ID, evidence_depth: 'summary' },
+    previousReuse: first
+  });
+  assert.equal(second.base_reuse.status, 'hit');
+
+  const reviewEvaluation = evaluateEvidenceReuseForReview({
+    reuse: second,
+    gitContext: { head_sha: 'head-a' },
+    verificationEvidence: null,
+    stage: 'implementation',
+    roles: ['runtime_contract'],
+    currentRoleDigests: digests
+  });
+  assert.equal(reviewEvaluation.by_role.runtime_contract.fresh, false);
+  assert.equal(reviewEvaluation.by_role.runtime_contract.first_input, false);
+  assert.ok(reviewEvaluation.by_role.runtime_contract.stale_reasons.some(
+    (reason) => /neither a current inspected content surface nor a previous evidence-reuse baseline/.test(reason.reason)
+  ));
 });

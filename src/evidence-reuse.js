@@ -446,6 +446,30 @@ export function evaluateEvidenceReuseForReview({
         current: current.digest,
         reason: 'role has no previous evidence-reuse baseline to confirm freshness against'
       });
+    } else if (!current && !previous) {
+      // Zero positive evidence in EITHER direction: no freshly recomputed
+      // inspected-content-surface digest (or HEAD, for strict_head) for this
+      // role right now, AND the evidence-reuse artifact's own key_inputs
+      // never recorded a baseline for it either -- its literal first-ever
+      // review at this stage, or a role newly added to the roster in a round
+      // where nothing else happened to drift (see the architecture doc's
+      // "Per-role digest source" section). The shared base being clean only
+      // means the SHARED inputs did not change; it says nothing about
+      // whether this specific role's evidence was ever validated, because
+      // there is nothing on either side to compare. Do not default this to
+      // fresh just because baseFresh happens to be true -- that would
+      // conflate "no drift evidence exists" with "freshness was confirmed".
+      // This is also what keeps a future shape change to
+      // role.content_binding/freshness_policy (duck-typed in
+      // buildRoleContentDigests) fail-closed rather than fail-open: if that
+      // shape drift makes every role's digest come back null, every role
+      // lands here instead of silently inheriting baseFresh.
+      roleStaleReasons.push({
+        field: `role_surface:${roleKey}`,
+        previous: null,
+        current: null,
+        reason: 'role has neither a current inspected content surface nor a previous evidence-reuse baseline: there is no positive evidence to confirm this role is fresh'
+      });
     } else if (isStrictHead) {
       if (!headMatches) {
         roleStaleReasons.push({
