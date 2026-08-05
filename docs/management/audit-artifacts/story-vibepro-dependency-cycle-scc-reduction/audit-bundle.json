@@ -1,0 +1,899 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-dependency-cycle-scc-reduction",
+  "source": "execute_merge",
+  "promoted_at": "2026-08-05T05:15:23.811Z",
+  "canonical_dir": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction",
+  "source_workspace_dir": ".vibepro",
+  "audit_index_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-index.json",
+  "decision_summary_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/decision-summary.md",
+  "artifact_policy": {
+    "scope": "compact_manifest_only",
+    "evidence_depth": "standard",
+    "compacted": true,
+    "persisted_for_main_audit": true,
+    "why_compacted": [],
+    "excludes": [
+      "duplicated decision index body",
+      "duplicated cost summary body",
+      "full PR lifecycle JSON",
+      "full review lifecycle JSON",
+      "HTML reports",
+      "raw logs",
+      "dispatch scratch artifacts",
+      "temporary execution state"
+    ]
+  },
+  "evidence_depth": "standard",
+  "cost_summary_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-index.json",
+    "pointer": "/cost_summary"
+  },
+  "automation_value_audit_ref": {
+    "source": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-index.json",
+    "pointer": "/automation_value_audit"
+  },
+  "replay_bundle": {
+    "schema_version": "0.1.0",
+    "path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+    "compression": "gzip",
+    "media_type": "application/json",
+    "content_hash": "sha256:1ae5491de1f23eb1484562f2cce4eef88a3be00f1744af1e91f0432620f284f8",
+    "compressed_hash": "sha256:1e703388d0808a420978076d52d81d6733b00dab468f71b6a75eae2d04516213",
+    "expanded_bytes": 17440,
+    "compressed_bytes": 3908,
+    "expanded_line_count": 448,
+    "persisted_line_count": 1,
+    "included_artifact_kinds": [
+      "decision_index",
+      "decision_outcome_ledger",
+      "evidence_plan",
+      "evidence_reuse",
+      "pr_create",
+      "pr_merge",
+      "pr_prepare",
+      "review_lifecycle",
+      "review_request",
+      "review_result",
+      "review_summary",
+      "senior_gap_judgment",
+      "traceability",
+      "verification_evidence"
+    ],
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-dependency-cycle-scc-reduction",
+    "cost": {
+      "compressed_bytes": 3908,
+      "expanded_bytes": 17440,
+      "expanded_line_count": 448,
+      "persisted_line_count": 1
+    }
+  },
+  "merge": {
+    "status": "merged",
+    "base": "main",
+    "delivery": {
+      "status": "merged",
+      "source": "github_pr",
+      "pr_url": "https://github.com/Unson-LLC/vibepro/pull/428",
+      "merge_commit_sha": "718aef115e8658bcc911e758cb6a1f91a5646801",
+      "merged_at": "2026-08-05T05:15:21Z"
+    },
+    "reconciliation": {
+      "status": "reconciliation_required",
+      "reasons": [
+        "decision_outcome_binding_failed"
+      ],
+      "evaluated_at": "2026-08-05T05:15:23.782Z",
+      "head_sha": "eb24c6215e4b80ae2abb99d254a62b117b58394b"
+    },
+    "reconciliation_action": {
+      "status": "required",
+      "reason": "decision_outcome_binding_failed",
+      "commands": [
+        "vibepro pr prepare . --story-id story-vibepro-dependency-cycle-scc-reduction --base main",
+        "vibepro execute merge . --story-id story-vibepro-dependency-cycle-scc-reduction --base main --pr https://github.com/Unson-LLC/vibepro/pull/428"
+      ]
+    },
+    "decision_outcome_binding": {
+      "status": "failed",
+      "reason": "central_ledger_parse_failed",
+      "expected_entry_count": 27,
+      "promoted_count": 0,
+      "duplicate_count": 0,
+      "persistence_status": null
+    },
+    "pr_url": "https://github.com/Unson-LLC/vibepro/pull/428",
+    "merge_commit_sha": "718aef115e8658bcc911e758cb6a1f91a5646801",
+    "merged_at": "2026-08-05T05:15:21Z",
+    "current_head_sha": "eb24c6215e4b80ae2abb99d254a62b117b58394b",
+    "diff_stats_status": "available",
+    "diff_stats_source": "git diff --numstat origin/main...eb24c6215e4b80ae2abb99d254a62b117b58394b"
+  },
+  "handoff_replay_status": "blocked",
+  "handoff_replay": {
+    "status": "blocked",
+    "resolved_reference_count": 58,
+    "copied_reference_count": 46,
+    "unresolved_reference_count": 8,
+    "replay_bundle": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+    "replay_command": "vibepro audit replay . --story-id story-vibepro-dependency-cycle-scc-reduction"
+  },
+  "artifacts": [
+    {
+      "kind": "audit_index",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-index.json"
+    },
+    {
+      "kind": "decision_summary",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/decision-summary.md"
+    },
+    {
+      "kind": "compressed_replay_bundle",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "compression": "gzip",
+      "content_hash": "sha256:1ae5491de1f23eb1484562f2cce4eef88a3be00f1744af1e91f0432620f284f8"
+    }
+  ],
+  "raw_artifact_manifest": [
+    {
+      "kind": "evidence_reuse",
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/evidence-reuse.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:e385f4989b39c8bce331bfae42b16a6cf2d292c51b1cf562e52f56bb437eb614",
+      "audit_digest": "sha256:e385f4989b39c8bce331bfae42b16a6cf2d292c51b1cf562e52f56bb437eb614",
+      "line_count": 539,
+      "raw_line_count": 539,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_outcome_ledger",
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-outcome-ledger.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:5b2bec900d5e4b8f9396a6a0201b0cd93d30ac7b1cd6ac66f09b0aafbdec1a74",
+      "audit_digest": "sha256:5b2bec900d5e4b8f9396a6a0201b0cd93d30ac7b1cd6ac66f09b0aafbdec1a74",
+      "line_count": 468,
+      "raw_line_count": 468,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "pr_prepare",
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-prepare.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:03ff96aa27839935d36cc892d97352fff231e0a8982545af617d5d1695620735",
+      "audit_digest": "sha256:a792ff0a0560c94ecf763fb9efbecc5a95c7220fb9c4db628a9f0ef5ef171b48",
+      "line_count": 4234,
+      "raw_line_count": 38745,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_prepare.diagnostics.progress_snapshots",
+        "pr_prepare.pr_context.full_gate_dag",
+        "pr_prepare.pr_context.design_ssot_full_registry_inventory",
+        "pr_prepare.pr_context.inactive_judgment_axis_details",
+        "pr_prepare.duplicated_child_artifacts",
+        "design_ssot.unregistered_docs_full_inventory",
+        "design_ssot.registered_docs_full_inventory",
+        "responsibility_authority.full_registry_entries",
+        "requirement_consistency.verbose_code_scenarios",
+        "engineering_judgment.inactive_axis_details",
+        "engineering_judgment.verbose_matched_evidence",
+        "verification.raw_command_output",
+        "senior_gap_judgment.verbose_supporting_context",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "pr_create",
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-create.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:ddbfd694c5685fd8c2f6b519d28c3ecb616f4272182c7a0e105aecd2b3934dac",
+      "audit_digest": "sha256:06df1000917674caf8b51f780126aa54bdf648c0e2dfa40a3c9978bb1c30a98c",
+      "line_count": 2074,
+      "raw_line_count": 4302,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects"
+      ]
+    },
+    {
+      "kind": "senior_gap_judgment",
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/senior-gap-judgment.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:3733b7defd4888272d2c6c966b897ab3ca626b884aa60debfed178290210f0da",
+      "audit_digest": "sha256:0f57c438397646c8ba895cceb19ccd748917aff5249205ba4167262a01c3dffb",
+      "line_count": 42,
+      "raw_line_count": 687,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "senior_gap_judgment.verbose_supporting_context"
+      ]
+    },
+    {
+      "kind": "pr_merge",
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-merge.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:f9baa5460776ddc950883a5458118866847bdf02f4aee066d118a68da6dca156",
+      "audit_digest": "sha256:fab74afacfd8d32f93841757282c3350eacb311100ead2a4c195fb8790baff6a",
+      "line_count": 2145,
+      "raw_line_count": 4518,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "pr_lifecycle.full_gate_dag",
+        "pr_lifecycle.raw_command_output",
+        "gate_dag.verbose_evidence_objects",
+        "pr_merge.canonical_audit",
+        "pr_merge.roi_ledger_promotion"
+      ]
+    },
+    {
+      "kind": "traceability",
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/traceability.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:0cbb7595357b62ab390effc830bb2506cfacb0ca967a17ad664b7828f5b774e2",
+      "audit_digest": "sha256:0cbb7595357b62ab390effc830bb2506cfacb0ca967a17ad664b7828f5b774e2",
+      "line_count": 518,
+      "raw_line_count": 518,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "verification_evidence",
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:d82102f8e75674d2351d87391fc24d60231db1c1a5799c91f73ee1b9521e96a7",
+      "audit_digest": "sha256:883e6ad13a73c3ffb54534c25e5aec75be71aced57fbfaa5852d3dedf6e318c7",
+      "line_count": 66,
+      "raw_line_count": 1271,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": [
+        "verification.raw_command_output"
+      ]
+    },
+    {
+      "kind": "evidence_plan",
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/evidence-plan.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:062f673e49ca7c6c400af56d18801f8ba6257849bb6a4f1b70c9febf142611e2",
+      "audit_digest": "sha256:062f673e49ca7c6c400af56d18801f8ba6257849bb6a4f1b70c9febf142611e2",
+      "line_count": 582,
+      "raw_line_count": 582,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "decision_index",
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-index.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:6c5ce1a27e9e75877393690a8e08524c981425e53e7e349e234a8593c83ca19f",
+      "audit_digest": "sha256:6c5ce1a27e9e75877393690a8e08524c981425e53e7e349e234a8593c83ca19f",
+      "line_count": 612,
+      "raw_line_count": 612,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_lifecycle",
+      "source": ".vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/lifecycle.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:6c734dd31c541f67fa39a941a58d6dff4da9e9327f94bcd2c7b5ef14b8c543eb",
+      "audit_digest": "sha256:6c734dd31c541f67fa39a941a58d6dff4da9e9327f94bcd2c7b5ef14b8c543eb",
+      "line_count": 207,
+      "raw_line_count": 207,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_request",
+      "source": ".vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/review-request-gate_evidence.md",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:76f4aaa7f564d18720654040d2a29746834d5580920cdfaab8930034d8f8ac5d",
+      "audit_digest": "sha256:76f4aaa7f564d18720654040d2a29746834d5580920cdfaab8930034d8f8ac5d",
+      "line_count": 140,
+      "raw_line_count": 140,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_result",
+      "source": ".vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/review-result-gate_evidence.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:b14da70d6b6fe8aa209796aaa59e0deb61c486bebee081fda3e7b43af4c6f722",
+      "audit_digest": "sha256:b14da70d6b6fe8aa209796aaa59e0deb61c486bebee081fda3e7b43af4c6f722",
+      "line_count": 174,
+      "raw_line_count": 174,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    },
+    {
+      "kind": "review_summary",
+      "source": ".vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/review-summary.json",
+      "persisted": "compressed",
+      "compressed_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/audit-replay-bundle.json.gz",
+      "digest": "sha256:ace3f3d1a6090af0aed90c60e2a696e3caca02e460e4eb0aeb4642f6649dfaf7",
+      "audit_digest": "sha256:ace3f3d1a6090af0aed90c60e2a696e3caca02e460e4eb0aeb4642f6649dfaf7",
+      "line_count": 580,
+      "raw_line_count": 580,
+      "audit_scope": "judgment_evidence_v1",
+      "excluded_from_audit": []
+    }
+  ],
+  "missing_artifacts": [],
+  "resolved_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-dependency-cycle-scc-reduction/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/adjudication/story-vibepro-dependency-cycle-scc-reduction/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-dependency-cycle-scc-reduction/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/adjudication/story-vibepro-dependency-cycle-scc-reduction/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/architecture/conformance/conformance.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/architecture/conformance/conformance.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/architecture/conformance/delta.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/architecture/conformance/delta.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-index.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/pr/decision-index.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-outcome-ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/pr/decision-outcome-ledger.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/evidence-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/pr/evidence-plan.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/evidence-reuse.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/pr/evidence-reuse.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-create.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/pr/pr-create.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-merge.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/pr/pr-merge.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-prepare.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/pr/pr-prepare.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/senior-gap-judgment.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/pr/senior-gap-judgment.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/traceability.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/pr/traceability.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/pr/verification-evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/history/review-result-gate_evidence-2026-08-05T04-55-39.233Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/history/review-result-gate_evidence-2026-08-05T04-55-39.233Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/review-request-gate_evidence.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/reviews/gate/review-request-gate_evidence.md",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/review-result-gate_evidence.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/reviews/gate/review-result-gate_evidence.json",
+      "resolution": "canonical_artifact"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-dependency-cycle-scc-reduction/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/spec/story-vibepro-dependency-cycle-scc-reduction/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-dependency-cycle-scc-reduction/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/stories/story-vibepro-dependency-cycle-scc-reduction/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-dependency-cycle-scc-reduction/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/stories/story-vibepro-dependency-cycle-scc-reduction/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "copied_references": [
+    {
+      "source": ".vibepro/adjudication/story-vibepro-dependency-cycle-scc-reduction/adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/adjudication/story-vibepro-dependency-cycle-scc-reduction/adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/adjudication/story-vibepro-dependency-cycle-scc-reduction/judgment-adjudication.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/adjudication/story-vibepro-dependency-cycle-scc-reduction/judgment-adjudication.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/architecture/conformance/conformance.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/architecture/conformance/conformance.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/architecture/conformance/delta.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/architecture/conformance/delta.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/config.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/config.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/architecture-profile.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/architecture-profile.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/component-style-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/component-style-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/finding-review.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/finding-review.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/flow-design-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/flow-design-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/gesture-interaction-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/gesture-interaction-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/refactoring-delta.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/refactoring-delta.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/requirement-consistency.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/requirement-consistency.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/risk-register.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/risk-register.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/spec-drift.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/spec-drift.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/summary.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/summary.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/terminal-link-check-result.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/diagnostics/2026-08-05T011708Z/terminal-link-check-result.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/gate-outcomes/ledger.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/gate-outcomes/ledger.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/judgment-axis-noise-precedents.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/judgment-axis-noise-precedents.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/architecture-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/architecture-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-index.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-index.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-records.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-records.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-records.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/decision-records.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/design-ssot-reconciliation.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/design-ssot-reconciliation.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/evidence-plan.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/evidence-plan.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/evidence-reuse.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/evidence-reuse.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/human-review.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/human-review.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-body.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-body.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-create.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-create.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-merge.html",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/pr-merge.html",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/ref-topology.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/ref-topology.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/ref-topology.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/ref-topology.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/senior-gap-judgment.summary.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/senior-gap-judgment.summary.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/split-plan.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/split-plan.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/e2e.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/integration.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/typecheck.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.log",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/verification-runs/unit.log",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/history/review-result-gate_evidence-2026-08-05T04-55-39.233Z.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/history/review-result-gate_evidence-2026-08-05T04-55-39.233Z.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/parallel-dispatch.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/gate/parallel-dispatch.md",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/spec/story-vibepro-dependency-cycle-scc-reduction/spec.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/spec/story-vibepro-dependency-cycle-scc-reduction/spec.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-dependency-cycle-scc-reduction/tasks/tasks.json",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/stories/story-vibepro-dependency-cycle-scc-reduction/tasks/tasks.json",
+      "resolution": "copied_reference"
+    },
+    {
+      "source": ".vibepro/stories/story-vibepro-dependency-cycle-scc-reduction/tasks/tasks.md",
+      "canonical_path": "docs/management/audit-artifacts/story-vibepro-dependency-cycle-scc-reduction/references/vibepro/stories/story-vibepro-dependency-cycle-scc-reduction/tasks/tasks.md",
+      "resolution": "copied_reference"
+    }
+  ],
+  "unresolved_references": [
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/evidence.json",
+      "reason": "source_too_large",
+      "size_bytes": 7472907
+    },
+    {
+      "source": ".vibepro/diagnostics/2026-08-05T011708Z/static-site-check-result.md",
+      "reason": "source_too_large",
+      "size_bytes": 1002588
+    },
+    {
+      "source": ".vibepro/graphify/graph.json",
+      "reason": "source_too_large",
+      "size_bytes": 7553256
+    },
+    {
+      "source": ".vibepro/pr/story-vibepro-dependency-cycle-scc-reduction/design-ssot-reconciliation.json",
+      "reason": "source_too_large",
+      "size_bytes": 650425
+    },
+    {
+      "source": ".vibepro/reviews/story-vibepro-dependency-cycle-scc-reduction/surface-violations.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-dependency-cycle-scc-reduction/ia-flow-map.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/uiux/story-vibepro-dependency-cycle-scc-reduction/responsive-a11y-matrix.json",
+      "reason": "source_missing"
+    },
+    {
+      "source": ".vibepro/validation-sequencing/story-vibepro-dependency-cycle-scc-reduction/state.json",
+      "reason": "source_missing"
+    }
+  ]
+}
