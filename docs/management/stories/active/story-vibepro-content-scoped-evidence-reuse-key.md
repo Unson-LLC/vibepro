@@ -2,6 +2,7 @@
 story_id: story-vibepro-content-scoped-evidence-reuse-key
 title: Evidence reuse keyをhead束縛からcontent surface束縛へ移す
 status: active
+parent_design: vibepro-content-scoped-evidence-freshness
 view: dev
 period: 2026-07
 category: quality

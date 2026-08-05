@@ -59,6 +59,18 @@
       "id": "S-001",
       "type": "scenario",
       "statement": "Given a fix commit that changes only the file(s) one role previously inspected, compareEvidenceReuse's buildRoleReuseIndex marks only that role's role_reuse entry as status: miss (with a role_surface:<stage>:<role> stale_reasons entry) while every other role's role_reuse entry whose own digest is unchanged stays status: hit, and evaluateEvidenceReuseForReview's by_role map -- gated on reuse.base_reuse, not the aggregate status -- reports that unaffected role as fresh: true / first_input: true even though the artifact's own aggregate status is stale.",
+      "inherited_behaviors": [
+        {
+          "condition": "!startedEntry?.dispatch_authorization_id",
+          "classification": "existing",
+          "files": ["src/agent-review.js"]
+        },
+        {
+          "condition": "!supplied && !runAuthority",
+          "classification": "existing",
+          "files": ["src/agent-review.js"]
+        }
+      ],
       "rationale": "CRK-S-2 AC and the Story's Background: reviewer panels were re-dispatched in full on every fix commit; this clause is what lets a fix touching one role's surface avoid respawning every other role's reviewer. See architecture doc sections 'Per-role digest source: reused, not reinvented' and 'evaluateEvidenceReuseForReview (CRK-S-2 / D5)'.",
       "origin": {
         "story_refs": [
@@ -114,7 +126,7 @@
         ]
       },
       "first_seen_at": "2026-08-05T03:57:11.156Z",
-      "last_revised_at": "2026-08-05T05:05:58.222Z"
+      "last_revised_at": "2026-08-05T06:08:51.000Z"
     },
     {
       "id": "INV-002",
@@ -226,6 +238,11 @@
       "id": "C-001",
       "type": "contract",
       "statement": "buildEvidenceReuse persists role_reuse on the evidence-reuse.json artifact -- keyed by \"<stage>:<role>\", each entry carrying status, mode, digest, previous_digest, and stale_reasons in the same {field, previous, current, reason} shape as the top-level stale_reasons -- so which surface digest changed and why any single role hit or missed can be reconstructed from the artifact alone without re-running review prepare.",
+      "inherited_behavior": {
+        "condition": "sessions.length > 0",
+        "classification": "existing",
+        "files": ["src/evidence-reuse.js"]
+      },
       "rationale": "CRK-S-5 AC requires role-level hit/miss reasons to be recorded in evidence-reuse.json and auditable; architecture doc section 'evidence-reuse.json schema delta' documents role_reuse as the new, additive top-level field that makes this reconstructable.",
       "origin": {
         "story_refs": [
@@ -273,7 +290,7 @@
         ]
       },
       "first_seen_at": "2026-08-05T03:57:11.156Z",
-      "last_revised_at": "2026-08-05T05:05:58.222Z"
+      "last_revised_at": "2026-08-05T06:08:51.000Z"
     },
     {
       "id": "C-002",

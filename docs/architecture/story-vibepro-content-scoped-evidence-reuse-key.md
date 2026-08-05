@@ -1,6 +1,7 @@
 ---
 story_id: story-vibepro-content-scoped-evidence-reuse-key
 title: Content Scoped Evidence Reuse Key Architecture
+parent_design: vibepro-content-scoped-evidence-freshness
 ---
 
 # Architecture
