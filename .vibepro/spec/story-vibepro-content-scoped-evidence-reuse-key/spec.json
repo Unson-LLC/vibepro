@@ -1,0 +1,361 @@
+{
+  "schema_version": "0.1.0",
+  "story_id": "story-vibepro-content-scoped-evidence-reuse-key",
+  "clauses": [
+    {
+      "id": "INV-001",
+      "type": "invariant",
+      "statement": "buildEvidenceKeyInputs excludes head_sha, head_ref, and wall-clock verification timestamps (verification_command_timestamps / verification_evidence_updated_at) from the evidence-reuse key_inputs, and instead composes role_surface_digests -- a \"<stage>:<role>\" -> {mode, digest} map built by buildRoleContentDigests from each role's inspected content-surface hash, or, for a strict_head role, the current head_sha.",
+      "rationale": "Root cause of the Story's measured cost problem (CRK-S-1 AC, Background): head_sha/head_ref and verification timestamps moved on every fix commit and every verification re-run, so the pre-existing key changed on every iteration and forced full-artifact regeneration and full review-panel re-dispatch even when nothing a reviewer had actually inspected changed. See architecture doc section 'Old vs new key composition'.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 0,
+            "text_snippet": "CRK-S-1: evidence reuse keyから head_sha / head_ref と壁時計timestamp（verification_command_timestamps / verification_evidence_updated_at）を除外し、ロールごとのinspected content surface digest（content-binding由来）で構成する。"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-content-scoped-evidence-reuse-key.md",
+            "section": "Old vs new key composition"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/evidence-reuse.js",
+            "anchor": "export function buildEvidenceKeyInputs({"
+          },
+          {
+            "file": "src/evidence-reuse.js",
+            "anchor": "export function buildRoleContentDigests(stageSummaries = [], { headSha = null } = {}) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/evidence-summary-reuse.test.js",
+            "case": "CRK-S-1 ERM-CONTRACT-001 ERM-CONTRACT-002 an unrelated head change with no intersecting role surface is a hit, not stale"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/evidence-reuse.js",
+            "must_contain": "role_surface_digests: roleSurfaceDigests"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/evidence-summary-reuse.test.js",
+            "must_cover": "CRK-S-1 ERM-CONTRACT-001 ERM-CONTRACT-002 an unrelated head change with no intersecting role surface is a hit, not stale"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T03:57:11.156Z",
+      "last_revised_at": "2026-08-05T03:57:11.156Z"
+    },
+    {
+      "id": "S-001",
+      "type": "scenario",
+      "statement": "Given a fix commit that changes only the file(s) one role previously inspected, compareEvidenceReuse's buildRoleReuseIndex marks only that role's role_reuse entry as status: miss (with a role_surface:<stage>:<role> stale_reasons entry) while every other role's role_reuse entry whose own digest is unchanged stays status: hit, and evaluateEvidenceReuseForReview's by_role map -- gated on reuse.base_reuse, not the aggregate status -- reports that unaffected role as fresh: true / first_input: true even though the artifact's own aggregate status is stale.",
+      "rationale": "CRK-S-2 AC and the Story's Background: reviewer panels were re-dispatched in full on every fix commit; this clause is what lets a fix touching one role's surface avoid respawning every other role's reviewer. See architecture doc sections 'Per-role digest source: reused, not reinvented' and 'evaluateEvidenceReuseForReview (CRK-S-2 / D5)'.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 1,
+            "text_snippet": "CRK-S-2: 修正コミットがsurface Xだけに触れた場合、inspected surfaceがXと交差するロールのみreuseがmissし、交差しないロールのpass済みreviewはhitとして再利用される。"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-content-scoped-evidence-reuse-key.md",
+            "section": "Per-role digest source: reused, not reinvented"
+          },
+          {
+            "file": "docs/architecture/story-vibepro-content-scoped-evidence-reuse-key.md",
+            "section": "`evaluateEvidenceReuseForReview` (CRK-S-2 / D5)"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/evidence-reuse.js",
+            "anchor": "function buildRoleReuseIndex({ baseInvalidated, baseInvalidatedReason, previousRoleDigests, currentRoleDigests }) {"
+          },
+          {
+            "file": "src/evidence-reuse.js",
+            "anchor": "const byRole = {};"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/evidence-summary-reuse.test.js",
+            "case": "CRK-S-2 a fix commit touching only one role's inspected surface misses only that role's reuse"
+          },
+          {
+            "file": "test/evidence-summary-reuse.test.js",
+            "case": "CRK-S-2 consumption a role with no evidence-reuse baseline is not treated as spuriously fresh"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/evidence-reuse.js",
+            "must_contain": "function buildRoleReuseIndex({ baseInvalidated, baseInvalidatedReason, previousRoleDigests, currentRoleDigests }) {"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/evidence-summary-reuse.test.js",
+            "must_cover": "CRK-S-2 a fix commit touching only one role's inspected surface misses only that role's reuse"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T03:57:11.156Z",
+      "last_revised_at": "2026-08-05T03:57:11.156Z"
+    },
+    {
+      "id": "INV-002",
+      "type": "invariant",
+      "statement": "buildRoleContentDigests classifies a role as mode: 'strict_head' whenever that role's own last-recorded freshness_policy.effective_mode === 'strict_head' (never via a hardcoded role-name list), and for such a role its role_surface_digests entry holds the current head_sha rather than a content hash, so compareEvidenceReuse / evaluateEvidenceReuseForReview mark that role's reuse status: miss on every HEAD change regardless of whether its inspected content actually changed.",
+      "rationale": "CRK-S-3 AC requires built-in strict HEAD roles (examples given: gate_evidence / release_risk) to keep re-reviewing on every head change, and the Story's Non Goals forbid changing strict-HEAD-role policy; architecture doc section D1 explains why this stays role-policy-driven rather than a hardcoded allowlist -- no code path hardcodes freshness_mode: strict_head for any role by name.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 2,
+            "text_snippet": "CRK-S-3: built-in strict HEAD role（gate_evidence / release_risk）は従来どおりhead変更で再レビューされ、本Storyの対象外として挙動が変わらない。"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-content-scoped-evidence-reuse-key.md",
+            "section": "D1 -- why `gate_evidence`/`release_risk` are not hardcoded strict_head"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/evidence-reuse.js",
+            "anchor": "effectiveMode === 'strict_head'"
+          },
+          {
+            "file": "src/evidence-reuse.js",
+            "anchor": "const isStrictHead = previous?.mode === 'strict_head' || current?.mode === 'strict_head';"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/evidence-summary-reuse.test.js",
+            "case": "CRK-S-3 a strict_head role misses on head change while a content_surface role with unchanged content hits"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/evidence-reuse.js",
+            "must_contain": "effectiveMode === 'strict_head'"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/evidence-summary-reuse.test.js",
+            "must_cover": "CRK-S-3 a strict_head role misses on head change while a content_surface role with unchanged content hits"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T03:57:11.156Z",
+      "last_revised_at": "2026-08-05T03:57:11.156Z"
+    },
+    {
+      "id": "INV-003",
+      "type": "invariant",
+      "statement": "compareEvidenceReuse computes base_reuse from only base_sha, spec_fingerprint, risk_surface_fingerprint, verification_summary_fingerprint, and planner_version; whenever any of these differ from the previous artifact, buildRoleReuseIndex forces every entry in role_reuse to status: miss (baseInvalidated true) regardless of whether that role's own digest is unchanged, and evaluateEvidenceReuseForReview's by_role verdicts inherit the same forced miss via baseFresh.",
+      "rationale": "CRK-S-4 AC requires this Story's role-scoping to never weaken the existing safe-by-default invalidation on spec/risk/planner drift; architecture doc section 'CRK-S-4 -- global invalidation invariants' documents this as the deliberate scope boundary of the per-role split -- base drift still invalidates everything, unconditionally, exactly as before this Story.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 3,
+            "text_snippet": "CRK-S-4: spec_fingerprint / risk_surface_fingerprint / planner_version の変更は従来どおり全ロールのreuseを無効化する（安全側の既存挙動を維持）。"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-content-scoped-evidence-reuse-key.md",
+            "section": "CRK-S-4 -- global invalidation invariants"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/evidence-reuse.js",
+            "anchor": "function compareEvidenceReuse(previousReuse, keyInputs, evidenceKey) {"
+          },
+          {
+            "file": "src/evidence-reuse.js",
+            "anchor": "const baseInvalidated = baseStaleReasons.length > 0;"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/evidence-summary-reuse.test.js",
+            "case": "CRK-S-4 CRK-S-6 spec fingerprint drift invalidates every role's reuse, not only the aggregate status"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/evidence-reuse.js",
+            "must_contain": "const baseInvalidated = baseStaleReasons.length > 0;"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/evidence-summary-reuse.test.js",
+            "must_cover": "CRK-S-4 CRK-S-6 spec fingerprint drift invalidates every role's reuse, not only the aggregate status"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T03:57:11.156Z",
+      "last_revised_at": "2026-08-05T03:57:11.156Z"
+    },
+    {
+      "id": "C-001",
+      "type": "contract",
+      "statement": "buildEvidenceReuse persists role_reuse on the evidence-reuse.json artifact -- keyed by \"<stage>:<role>\", each entry carrying status, mode, digest, previous_digest, and stale_reasons in the same {field, previous, current, reason} shape as the top-level stale_reasons -- so which surface digest changed and why any single role hit or missed can be reconstructed from the artifact alone without re-running review prepare.",
+      "rationale": "CRK-S-5 AC requires role-level hit/miss reasons to be recorded in evidence-reuse.json and auditable; architecture doc section 'evidence-reuse.json schema delta' documents role_reuse as the new, additive top-level field that makes this reconstructable.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 4,
+            "text_snippet": "CRK-S-5: evidence-reuse.jsonにロール別のhit/miss理由（どのsurface digestが変わったか）が記録され、監査から再構成できる。"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-content-scoped-evidence-reuse-key.md",
+            "section": "`evidence-reuse.json` schema delta"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/evidence-reuse.js",
+            "anchor": "role_reuse: comparison.role_reuse,"
+          },
+          {
+            "file": "src/evidence-reuse.js",
+            "anchor": "function buildRoleReuseIndex({ baseInvalidated, baseInvalidatedReason, previousRoleDigests, currentRoleDigests }) {"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/evidence-summary-reuse.test.js",
+            "case": "CRK-S-5 role_reuse records reconstructable per-role hit/miss reasons in evidence-reuse.json"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/evidence-reuse.js",
+            "must_contain": "role_reuse: comparison.role_reuse,"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/evidence-summary-reuse.test.js",
+            "must_cover": "CRK-S-5 role_reuse records reconstructable per-role hit/miss reasons in evidence-reuse.json"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T03:57:11.156Z",
+      "last_revised_at": "2026-08-05T03:57:11.156Z"
+    },
+    {
+      "id": "C-002",
+      "type": "contract",
+      "statement": "test/evidence-summary-reuse.test.js pins, as automated contract tests, all three named reuse-key behaviors this Story introduces: identical inspected content at a different head_sha remains a hit (CRK-S-1), a fix commit touching only one role's inspected surface misses only that role while unaffected roles remain a hit (CRK-S-2), and spec_fingerprint drift invalidates every role's role_reuse entry and every by_role verdict from evaluateEvidenceReuseForReview even when no individual role's own digest moved (CRK-S-4).",
+      "rationale": "CRK-S-6 AC requires a fixed contract test for exactly these three behaviors ('same content different head -> hit', 'inspected surface change -> role-only miss', 'spec drift -> all miss'); the referenced tests are the concrete pins for each.",
+      "origin": {
+        "story_refs": [
+          {
+            "kind": "acceptance_criteria",
+            "index": 5,
+            "text_snippet": "CRK-S-6: contract testで「同一content・異なるhead_sha → hit」「inspected surface変更 → 該当ロールのみmiss」「spec drift → 全miss」を固定する。"
+          }
+        ],
+        "architecture_refs": [
+          {
+            "file": "docs/architecture/story-vibepro-content-scoped-evidence-reuse-key.md",
+            "section": "Invariants"
+          }
+        ],
+        "code_refs": [
+          {
+            "file": "src/evidence-reuse.js",
+            "anchor": "export function buildEvidenceReuse({"
+          },
+          {
+            "file": "src/evidence-reuse.js",
+            "anchor": "export function evaluateEvidenceReuseForReview({"
+          }
+        ],
+        "test_refs": [
+          {
+            "file": "test/evidence-summary-reuse.test.js",
+            "case": "CRK-S-1 ERM-CONTRACT-001 ERM-CONTRACT-002 an unrelated head change with no intersecting role surface is a hit, not stale"
+          },
+          {
+            "file": "test/evidence-summary-reuse.test.js",
+            "case": "CRK-S-2 a fix commit touching only one role's inspected surface misses only that role's reuse"
+          },
+          {
+            "file": "test/evidence-summary-reuse.test.js",
+            "case": "CRK-S-4 CRK-S-6 spec fingerprint drift invalidates every role's reuse, not only the aggregate status"
+          }
+        ]
+      },
+      "verifiable_by": {
+        "code_pattern": [
+          {
+            "file_glob": "src/evidence-reuse.js",
+            "must_contain": "export function evaluateEvidenceReuseForReview({"
+          }
+        ],
+        "test_pattern": [
+          {
+            "file_glob": "test/evidence-summary-reuse.test.js",
+            "must_cover": "CRK-S-1 ERM-CONTRACT-001 ERM-CONTRACT-002 an unrelated head change with no intersecting role surface is a hit, not stale"
+          },
+          {
+            "file_glob": "test/evidence-summary-reuse.test.js",
+            "must_cover": "CRK-S-2 a fix commit touching only one role's inspected surface misses only that role's reuse"
+          },
+          {
+            "file_glob": "test/evidence-summary-reuse.test.js",
+            "must_cover": "CRK-S-4 CRK-S-6 spec fingerprint drift invalidates every role's reuse, not only the aggregate status"
+          }
+        ]
+      },
+      "first_seen_at": "2026-08-05T03:57:11.156Z",
+      "last_revised_at": "2026-08-05T03:57:11.156Z"
+    }
+  ],
+  "diagrams": [
+    {
+      "kind": "threat_model",
+      "title": "Content-scoped evidence reuse key: trust boundaries for per-role hit/miss",
+      "mermaid": "flowchart LR\n    Review[recorded review: content_binding.recorded_surface_hash] --> KeyBuild\n    Tree[current git tree at pr prepare or review prepare time] --> KeyBuild[buildRoleContentDigests re-hash per stage and role]\n    KeyBuild --> RoleDigests[role_surface_digests in key_inputs]\n    RoleDigests --> BaseCompare[compareEvidenceReuse base fields only]\n    Fingerprints[spec_fingerprint, risk_surface_fingerprint, planner_version] --> BaseCompare\n    BaseCompare --> RoleCompare[buildRoleReuseIndex per role_reuse entry]\n    RoleDigests --> RoleCompare\n    RoleCompare --> Artifact[evidence-reuse.json role_reuse and stale_reasons]\n    Artifact --> ReviewPrepare[evaluateEvidenceReuseForReview by_role]\n    HeadCtx[reviewer current head_sha] --> ReviewPrepare\n\n    subgraph Threats\n        T1[a stale content_binding hash is never re-verified against the current tree, masking a real content change as a hit]\n        T2[a security sensitive role is left on the default content_surface mode instead of an explicit strict_head opt in]\n        T3[a base fingerprint silently stops varying with its input, so base invalidation never fires]\n        T4[decision_outcome_summary is exposed across a HEAD mismatch once role freshness became content scoped]\n    end\n\n    KeyBuild -.-> T1\n    RoleDigests -.-> T2\n    BaseCompare -.-> T3\n    ReviewPrepare -.-> T4\n\n    T1 -->|mitigation| M1[buildRoleContentDigests re-hashes the CURRENT tree on every key build and every review prepare call, never trusts a stored hash alone]\n    T2 -->|mitigation| M2[normalizeAgentReviewPolicy rejects a global strict_head default; strict_head is an explicit per-role opt in with a freshness_reason]\n    T3 -->|mitigation| M3[base_reuse runs unconditionally before any role comparison and forces every role_reuse entry to miss on base drift, pinned by the CRK-S-4 CRK-S-6 contract test]\n    T4 -->|mitigation| M4[decision_outcome_summary stays gated on recorded_git.head_sha versus the reviewer current head_sha, independent of role_reuse mode]\n"
+    }
+  ],
+  "generated_at": "2026-08-05T03:57:11.154Z",
+  "generated_by": {
+    "caller": "claude-code",
+    "stage": "ai_synthesis"
+  },
+  "previous_spec_id": null
+}
