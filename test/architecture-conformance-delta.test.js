@@ -122,7 +122,8 @@ test('CDL-S-6: detectModuleCycles finds a normalized 2-module cycle regardless o
   assert.deepEqual(cyclesB, [['a', 'b']]);
 });
 
-// story-vibepro-dependency-cycle-scc-reduction:DCS-S-2/DCS-S-4 reshaped the violation emitted here:
+// story-vibepro-dependency-cycle-scc-reduction:AC-2/AC-4 (spec clause S-002, S-004, C-001) reshaped
+// the violation emitted here:
 // the dimension is still an independent `dependency_cycle`, but the unit is the strongly connected
 // component (id derived from its sorted members) and the bidirectional pair is additionally reported
 // as a `mutual_dependency` cut candidate.
@@ -147,6 +148,7 @@ test('CDL-S-6: a real bidirectional module import produces an independent depend
 
 // --- DCS: SCC-reduced circularity ------------------------------------------
 
+// story-vibepro-dependency-cycle-scc-reduction:AC-1 (spec clause S-001)
 // DCS-S-1: a tangle of N modules is one strongly connected component, not a factorial pile of simple
 // cycles. Four fully-interconnected modules already yield 20 simple cycles under the deprecated
 // enumerator; the SCC decomposition yields exactly one component containing all four.
@@ -165,6 +167,7 @@ test('DCS-S-1: detectModuleSccs collapses a fully tangled graph to a single comp
   );
 });
 
+// story-vibepro-dependency-cycle-scc-reduction:AC-1 (spec clause S-001)
 // DCS-S-1: two disjoint tangles plus an acyclic node must be reported as two components, and the
 // acyclic node must not appear at all (a single node with no self-loop is trivially strongly
 // connected but is not a cycle).
@@ -180,6 +183,7 @@ test('DCS-S-1: detectModuleSccs separates disjoint tangles and drops acyclic nod
   assert.deepEqual(sccs, [['a', 'b'], ['x', 'y', 'z']]);
 });
 
+// story-vibepro-dependency-cycle-scc-reduction:AC-2 (spec clause INV-001)
 // DCS-S-1: component identity comes from the module names, never from traversal order, so feeding
 // the same graph with its edges (and therefore its DFS roots) reversed yields an identical result.
 test('DCS-S-1: detectModuleSccs is deterministic regardless of edge input order', () => {
@@ -194,6 +198,7 @@ test('DCS-S-1: detectModuleSccs is deterministic regardless of edge input order'
   assert.deepEqual(detectModuleSccs(edges), [['a', 'b', 'c', 'd']]);
 });
 
+// story-vibepro-dependency-cycle-scc-reduction:AC-3/AC-5 (spec clause S-003)
 // DCS-S-3/DCS-S-5: the SCC violation has to carry enough structure to act on -- which modules are
 // in the tangle, how heavy it is, which pairs are mutually dependent, and which intra-SCC edges are
 // the cheapest to cut. `infra` sits outside the tangle and must not be listed as a member.
@@ -225,6 +230,7 @@ test('DCS-S-3: an SCC violation carries members, edge weights, mutual pairs and 
   }
 });
 
+// story-vibepro-dependency-cycle-scc-reduction:AC-4 (spec clause S-004, INV-001)
 // DCS-S-4: mutual pairs are their own dimension with per-direction import evidence, and the pair id
 // is the alphabetically sorted pair so it does not depend on which direction was scanned first.
 test('DCS-S-4: mutual_dependency violations carry both directions with import evidence', async () => {
@@ -246,6 +252,7 @@ test('DCS-S-4: mutual_dependency violations carry both directions with import ev
   assert.deepEqual(mutual[0].directions[0].example_edges, ['src/gate.js -> src/story.js']);
 });
 
+// story-vibepro-dependency-cycle-scc-reduction:AC-6 (spec clause S-005)
 // DCS-S-6: the new dimension has to be visible to the delta ledger, otherwise resolving a mutual
 // pair would be invisible in by_kind and no ratchet could ever score it.
 test('DCS-S-6: the conformance delta reports mutual_dependency as its own dimension', () => {
@@ -264,6 +271,7 @@ test('DCS-S-6: the conformance delta reports mutual_dependency as its own dimens
   assert.equal(delta.summary.by_kind.dependency_cycle.new, 0);
 });
 
+// story-vibepro-dependency-cycle-scc-reduction:AC-7 (spec clause S-006)
 // DCS-S-7: the deprecated enumerator keeps its exported contract (a merged Spec anchors on it) even
 // though the pipeline no longer calls it -- an SCC-reduced conformance run must not resurrect
 // simple-cycle ids.
