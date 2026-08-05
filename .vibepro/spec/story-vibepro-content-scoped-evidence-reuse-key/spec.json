@@ -53,7 +53,7 @@
         ]
       },
       "first_seen_at": "2026-08-05T03:57:11.156Z",
-      "last_revised_at": "2026-08-05T03:57:11.156Z"
+      "last_revised_at": "2026-08-05T05:05:58.222Z"
     },
     {
       "id": "S-001",
@@ -114,19 +114,19 @@
         ]
       },
       "first_seen_at": "2026-08-05T03:57:11.156Z",
-      "last_revised_at": "2026-08-05T03:57:11.156Z"
+      "last_revised_at": "2026-08-05T05:05:58.222Z"
     },
     {
       "id": "INV-002",
       "type": "invariant",
       "statement": "buildRoleContentDigests classifies a role as mode: 'strict_head' whenever that role's own last-recorded freshness_policy.effective_mode === 'strict_head' (never via a hardcoded role-name list), and for such a role its role_surface_digests entry holds the current head_sha rather than a content hash, so compareEvidenceReuse / evaluateEvidenceReuseForReview mark that role's reuse status: miss on every HEAD change regardless of whether its inspected content actually changed.",
-      "rationale": "CRK-S-3 AC requires built-in strict HEAD roles (examples given: gate_evidence / release_risk) to keep re-reviewing on every head change, and the Story's Non Goals forbid changing strict-HEAD-role policy; architecture doc section D1 explains why this stays role-policy-driven rather than a hardcoded allowlist -- no code path hardcodes freshness_mode: strict_head for any role by name.",
+      "rationale": "CRK-S-3 AC requires that roles configured with freshness_mode: strict_head keep re-reviewing on every head change, and the Story Non Goals forbid changing strict-HEAD-role policy. strict_head is not a built-in role-name list: it is set per role via .vibepro/config.json agent_reviews.roles.<role>.freshness_mode with a freshness_reason, and resolved generically through role.freshness_policy.effective_mode. gate_evidence and release_risk carry no such entry on this branch or on origin/main, so they run under the content_surface default both before and after this Story. Hardcoding those role names would itself have been a behavior change, which is why architecture doc section D1 rejects it.",
       "origin": {
         "story_refs": [
           {
             "kind": "acceptance_criteria",
             "index": 2,
-            "text_snippet": "CRK-S-3: built-in strict HEAD role（gate_evidence / release_risk）は従来どおりhead変更で再レビューされ、本Storyの対象外として挙動が変わらない。"
+            "text_snippet": "CRK-S-3: `freshness_mode: strict_head`が設定されたロール（ロール名のハードコードではなく、`.vibepro/config.json` `agent_reviews.roles.<role>.freshness_mode: strict_head` + `freshness_reason`で個別設定され、`role.freshness_policy.effective_mode`で汎用判定される）は従来どおりhead変更で再レビューされ、本Storyの対象外として挙動が変わらない。`gate_evidence` / `release_risk` は現状デフォルトの`content_surface`で運用されており（strict_head固定ロールではない）、この扱いも本Storyでは変わらない。"
           }
         ],
         "architecture_refs": [
@@ -167,7 +167,7 @@
         ]
       },
       "first_seen_at": "2026-08-05T03:57:11.156Z",
-      "last_revised_at": "2026-08-05T03:57:11.156Z"
+      "last_revised_at": "2026-08-05T05:05:58.222Z"
     },
     {
       "id": "INV-003",
@@ -220,7 +220,7 @@
         ]
       },
       "first_seen_at": "2026-08-05T03:57:11.156Z",
-      "last_revised_at": "2026-08-05T03:57:11.156Z"
+      "last_revised_at": "2026-08-05T05:05:58.222Z"
     },
     {
       "id": "C-001",
@@ -273,7 +273,7 @@
         ]
       },
       "first_seen_at": "2026-08-05T03:57:11.156Z",
-      "last_revised_at": "2026-08-05T03:57:11.156Z"
+      "last_revised_at": "2026-08-05T05:05:58.222Z"
     },
     {
       "id": "C-002",
@@ -342,7 +342,7 @@
         ]
       },
       "first_seen_at": "2026-08-05T03:57:11.156Z",
-      "last_revised_at": "2026-08-05T03:57:11.156Z"
+      "last_revised_at": "2026-08-05T05:05:58.222Z"
     }
   ],
   "diagrams": [
@@ -352,10 +352,10 @@
       "mermaid": "flowchart LR\n    Review[recorded review: content_binding.recorded_surface_hash] --> KeyBuild\n    Tree[current git tree at pr prepare or review prepare time] --> KeyBuild[buildRoleContentDigests re-hash per stage and role]\n    KeyBuild --> RoleDigests[role_surface_digests in key_inputs]\n    RoleDigests --> BaseCompare[compareEvidenceReuse base fields only]\n    Fingerprints[spec_fingerprint, risk_surface_fingerprint, planner_version] --> BaseCompare\n    BaseCompare --> RoleCompare[buildRoleReuseIndex per role_reuse entry]\n    RoleDigests --> RoleCompare\n    RoleCompare --> Artifact[evidence-reuse.json role_reuse and stale_reasons]\n    Artifact --> ReviewPrepare[evaluateEvidenceReuseForReview by_role]\n    HeadCtx[reviewer current head_sha] --> ReviewPrepare\n\n    subgraph Threats\n        T1[a stale content_binding hash is never re-verified against the current tree, masking a real content change as a hit]\n        T2[a security sensitive role is left on the default content_surface mode instead of an explicit strict_head opt in]\n        T3[a base fingerprint silently stops varying with its input, so base invalidation never fires]\n        T4[decision_outcome_summary is exposed across a HEAD mismatch once role freshness became content scoped]\n    end\n\n    KeyBuild -.-> T1\n    RoleDigests -.-> T2\n    BaseCompare -.-> T3\n    ReviewPrepare -.-> T4\n\n    T1 -->|mitigation| M1[buildRoleContentDigests re-hashes the CURRENT tree on every key build and every review prepare call, never trusts a stored hash alone]\n    T2 -->|mitigation| M2[normalizeAgentReviewPolicy rejects a global strict_head default; strict_head is an explicit per-role opt in with a freshness_reason]\n    T3 -->|mitigation| M3[base_reuse runs unconditionally before any role comparison and forces every role_reuse entry to miss on base drift, pinned by the CRK-S-4 CRK-S-6 contract test]\n    T4 -->|mitigation| M4[decision_outcome_summary stays gated on recorded_git.head_sha versus the reviewer current head_sha, independent of role_reuse mode]\n"
     }
   ],
-  "generated_at": "2026-08-05T03:57:11.154Z",
+  "generated_at": "2026-08-05T05:05:58.220Z",
   "generated_by": {
     "caller": "claude-code",
     "stage": "ai_synthesis"
   },
-  "previous_spec_id": null
+  "previous_spec_id": "2026-08-05T03:57:11.154Z"
 }
