@@ -15,14 +15,10 @@ import { buildContentBinding, evaluateContentBinding, normalizeSurfacePath } fro
 import { refreshActiveRunContextCapsule } from './run-context-capsule.js';
 import { assertArtifactWritePath, collectCurrentGeneratedProjectionPaths, projectArtifact, resolveArtifactRoute, resolveArtifactRoutes, resolvePrArtifactFile } from './artifact-routing.js';
 import {
-  aggregateDeliveryMetrics,
   buildReviewDispatchDecision,
-  evaluateDeliveryBudget,
   planLifecycleTerminalization,
-  resolveEfficiencyPolicyDecision,
   selectRiskAdaptiveReviewCoverage
 } from './delivery-efficiency-guardrail.js';
-import { readDecisionRecordsIfExists } from './decision-records.js';
 import { reviewInspectionInputPlaceholders } from './review-inspection-inputs.js';
 import {
   REVIEW_SURFACE_INTEGRITY_GATE_ID,
@@ -461,18 +457,6 @@ async function finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir
     result = existingResult;
     reused = true;
   }
-  const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root, storyId);
-  if (efficiencyPolicy && result.agent_provenance.lifecycle?.agent_closed) {
-    const lifecycle = await readLifecycle(root, storyId, stage);
-    const startedEntry = findLifecycleEntry(lifecycle.entries, {
-      role,
-      agentId: result.agent_provenance.agent_id,
-      agentSystem: result.agent_provenance.system
-    });
-    if (!startedEntry?.dispatch_authorization_id) {
-      throw new Error(`review record ${stage}:${role} requires a lifecycle started from a consumed dispatch authorization when delivery efficiency policy is enabled`);
-    }
-  }
   // Same detection the explicit close performs, for the record-side close.
   const recordCloseHeadSha = gitContext.head_sha ?? null;
   const recordCloseSurfaceDigest = gitContext.user_status_fingerprint_hash ?? gitContext.status_fingerprint_hash ?? null;
@@ -497,9 +481,6 @@ async function finalizeAgentReviewResult({ root, storyId, stage, role, reviewDir
         agentSystem: result.agent_provenance.system
       });
       if (!entry) {
-        if (efficiencyPolicy) {
-          throw new Error(`review record ${stage}:${role} cannot synthesize lifecycle evidence when delivery efficiency policy is enabled`);
-        }
         entry = buildSyntheticLifecycleEntryFromReviewResult(result, root, resultPath);
         lifecycle.entries.push(entry);
       } else if (entry.closed_at && entry.close_reason !== 'completed') {
@@ -675,7 +656,6 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   await mkdir(reviewDir, { recursive: true });
   const gitContext = await collectReviewGitContext(root, storyId);
-  const efficiencyPolicy = await readDeliveryEfficiencyPolicy(root, storyId);
   const reviewKind = normalizeNullable(options.reviewKind);
   const closesRisks = options.closesRisks ?? [];
   const expectedJudgmentDelta = normalizeNullable(options.expectedJudgmentDelta);
@@ -738,11 +718,11 @@ export async function startAgentReviewLifecycle(repoRoot, options = {}) {
     summary = await buildStageSummary(root, storyId, stage, { currentGitContext: gitContext, reviewPolicy });
     await writeReviewSummaryArtifacts(root, reviewDir, summary);
   });
-  if (efficiencyPolicy) {
-    const authorizationId = normalizeNullable(options.dispatchAuthorization);
-    if (!authorizationId) {
-      throw new Error('review start requires --dispatch-authorization <id> when delivery efficiency policy is enabled; run review authorize before spawning the subagent');
-    }
+  // An authorization consumed from `review authorize` still binds a start to a
+  // prior dispatch decision when the caller supplies one; delivery-efficiency
+  // policy no longer makes this mandatory.
+  const authorizationId = normalizeNullable(options.dispatchAuthorization);
+  if (authorizationId) {
     const storyReviewDir = path.dirname(reviewDir);
     await withDirectoryLock(path.join(storyReviewDir, '.dispatch.lock'), async () => {
       const authorizations = await readDispatchAuthorizations(storyReviewDir, storyId);
@@ -792,9 +772,6 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
     stage,
     role
   });
-  const efficiencyDecision = await readDeliveryEfficiencyPolicyDecision(root, storyId);
-  const efficiencyPolicy = efficiencyDecision.policy;
-  if (!efficiencyPolicy) throw new Error('review authorize requires budgets.delivery_efficiency in .vibepro/config.json');
   const reviewDir = await getReviewStageDir(root, storyId, stage);
   const storyReviewDir = path.dirname(reviewDir);
   await mkdir(storyReviewDir, { recursive: true });
@@ -816,13 +793,7 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
         lifecycle_id: `authorization:${item.authorization_id}`
       }))
     ];
-    const metrics = aggregateDeliveryMetrics({
-      reviews: [
-        ...lifecycleEntries.map((item) => ({ role: item.role, started_at: item.started_at, finished_at: item.closed_at })),
-        ...activeReservations.map((item) => ({ role: item.role, started_at: item.created_at, finished_at: item.created_at }))
-      ]
-    });
-    const decisionInput = {
+    const dispatchDecision = buildReviewDispatchDecision({
       story_id: storyId,
       stage,
       role,
@@ -834,18 +805,8 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
       reusable_evidence: options.reusableEvidence ?? [],
       freeze: normalizeReviewFreeze(options.freeze),
       lifecycles
-    };
-    let dispatchDecision = buildReviewDispatchDecision({
-      ...decisionInput,
-      budget: evaluateDeliveryBudget(efficiencyPolicy, metrics)
     });
-    if (dispatchDecision.action === 'dispatch') {
-      dispatchDecision = buildReviewDispatchDecision({
-        ...decisionInput,
-        budget: evaluateDeliveryBudget(efficiencyPolicy, addProspectiveReviewDispatch(metrics, role))
-      });
-    }
-    if (dispatchDecision.action !== 'dispatch') throwReviewDispatchStop(dispatchDecision, efficiencyDecision.override);
+    if (dispatchDecision.action !== 'dispatch') throwReviewDispatchStop(dispatchDecision);
     const timeoutMs = normalizeTimeoutMs(options.timeoutMs ?? rolePolicy.timeout_ms ?? reviewPolicy.defaults.timeout_ms);
     authorization = {
       schema_version: '0.1.0',
@@ -866,7 +827,6 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
       agent_cost_tier: agentCostTier,
       model_policy_preflight: modelPolicyPreflight,
       dispatch_decision: dispatchDecision,
-      budget_override: efficiencyDecision.override,
       created_at: now.toISOString(),
       expires_at: new Date(now.getTime() + timeoutMs).toISOString(),
       consumed_at: null,
@@ -878,27 +838,8 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
   return {
     authorization,
     dispatch_decision: authorization.dispatch_decision,
-    budget_override: efficiencyDecision.override,
     artifact: toWorkspaceRelative(root, getDispatchAuthorizationsPath(storyReviewDir))
   };
-}
-
-async function readDeliveryEfficiencyPolicy(repoRoot, storyId) {
-  return (await readDeliveryEfficiencyPolicyDecision(repoRoot, storyId)).policy;
-}
-
-// Story overrides are inert without an accepted budget approval (CEA-S-4), so
-// the decision records have to be loaded before the policy is resolved.
-async function readDeliveryEfficiencyPolicyDecision(repoRoot, storyId) {
-  const inert = { policy: null, override: { status: 'absent', story_id: storyId ?? null, digest: null, reasons: [], approval: null } };
-  try {
-    const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
-    const records = await readDecisionRecordsIfExists(repoRoot, storyId).catch(() => null);
-    return resolveEfficiencyPolicyDecision(config, storyId, { decisions: records?.decisions ?? [] });
-  } catch (error) {
-    if (error.code === 'ENOENT') return inert;
-    throw error;
-  }
 }
 
 function normalizeReviewFreeze(value) {
@@ -918,18 +859,6 @@ export function normalizeLifecycleForDispatch(entry) {
     }
   }
   return { ...entry, status };
-}
-
-function addProspectiveReviewDispatch(metrics, role) {
-  return {
-    ...metrics,
-    subagent_count: (metrics.subagent_count ?? 0) + 1,
-    review_dispatch_count: (metrics.review_dispatch_count ?? 0) + 1,
-    review_dispatches_by_role: {
-      ...(metrics.review_dispatches_by_role ?? {}),
-      [role]: (metrics.review_dispatches_by_role?.[role] ?? 0) + 1
-    }
-  };
 }
 
 export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
@@ -1750,19 +1679,8 @@ export function renderAgentReviewDispatchAuthorizationSummary(result) {
 - model: ${result.authorization.agent_model ?? '-'}
 - reasoning_effort: ${result.authorization.agent_reasoning_effort ?? '-'}
 - expires_at: ${result.authorization.expires_at}
-- budget_override: ${renderBudgetOverrideLine(result.budget_override)}
 - artifact: ${result.artifact}
 `;
-}
-
-// The override status was previously JSON-only, so the default text output never
-// told the operator that a configured override had been ignored.
-function renderBudgetOverrideLine(budgetOverride) {
-  if (!budgetOverride || budgetOverride.status === 'absent') return 'none configured';
-  if (budgetOverride.status === 'unauthorized') {
-    return `INERT (${(budgetOverride.reasons ?? []).join(', ') || 'unauthorized'}) - base budget applied`;
-  }
-  return budgetOverride.status;
 }
 
 export function renderAgentReviewLifecycleCloseSummary(result) {

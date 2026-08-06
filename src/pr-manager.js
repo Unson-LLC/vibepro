@@ -7,12 +7,6 @@ import { promisify } from 'node:util';
 
 import { formatCounts } from './refactoring-delta-reporter.js';
 import {
-  aggregateDeliveryMetrics,
-  evaluateDeliveryBudget,
-  resolveEfficiencyPolicyDecision,
-  summarizeEfficiencyDebt
-} from './delivery-efficiency-guardrail.js';
-import {
   buildRequirementConsistency,
   findStorySource,
   isStoryDocPath,
@@ -5810,9 +5804,6 @@ async function buildPrContext(repoRoot, { story, taskContext, git, fileGroups, s
     decisionRecords,
     git
   });
-  if (agentReviews) {
-    agentReviews.delivery_efficiency = await buildDeliveryEfficiencyContext(repoRoot, story.story_id, agentReviews);
-  }
   const engineeringJudgment = buildEngineeringJudgmentClassification({
     fileGroups,
     storySource: primaryStory,
@@ -11613,7 +11604,6 @@ function buildGateDag({
     dagConnectivityGate
   ].filter((gate) => gate?.required);
   const needsEvidence = requiredGates.filter((gate) => isUnresolvedGateStatus(gate.status));
-  const efficiency = buildAgentReviewEfficiencySummary(agentReviews, needsEvidence.length === 0);
   const suppressedJudgmentAxes = collectSuppressedJudgmentAxes(engineeringJudgment);
   return {
     schema_version: '0.1.0',
@@ -11656,124 +11646,10 @@ function buildGateDag({
       decision_record_status: decisionRecordGate.status,
       review_inspection_required_status: reviewInspectionRequiredGate.status,
       artifact_consistency_status: artifactConsistencyGate.status,
-      managed_worktree_status: effectiveManagedWorktreeGate?.status ?? null,
-      correctness_ready: efficiency.correctness_ready,
-      efficiency_debt: efficiency
+      managed_worktree_status: effectiveManagedWorktreeGate?.status ?? null
     },
     nodes: allNodes,
     edges
-  };
-}
-
-export function buildAgentReviewEfficiencySummary(agentReviews, correctnessReady = false) {
-  const lifecycles = [];
-  let duplicateDispatchCount = 0;
-  for (const stage of agentReviews?.stages ?? []) {
-    for (const role of stage.roles ?? []) {
-      const lifecycle = role.lifecycle ?? {};
-      for (let index = 0; index < (lifecycle.timed_out_count ?? 0); index += 1) lifecycles.push({ status: 'timed_out' });
-      if (['obsolete', 'orphaned_agent'].includes(lifecycle.effective_status)) {
-        lifecycles.push({ status: lifecycle.effective_status });
-      }
-      duplicateDispatchCount += Math.max(0, (lifecycle.running_count ?? 0) - 1);
-    }
-  }
-  const delivery = agentReviews?.delivery_efficiency ?? {};
-  const metrics = aggregateDeliveryMetrics({
-    ...(delivery.measurements ?? {}),
-    reviews: delivery.reviews
-  });
-  const budget = evaluateDeliveryBudget(delivery.policy ?? {}, metrics);
-  const summary = summarizeEfficiencyDebt({
-    correctness_ready: correctnessReady,
-    lifecycles,
-    duplicate_dispatch_count: duplicateDispatchCount,
-    budget,
-    budget_override: delivery.budget_override
-  });
-  return {
-    ...summary,
-    metrics,
-    budget,
-    budget_override: delivery.budget_override ?? {
-      status: 'absent', story_id: null, digest: null, reasons: [], approval: null
-    },
-    attribution: {
-      status: metrics.attribution_status ?? 'unknown',
-      reason: delivery.attribution_reason ?? 'no session-cost attribution was connected to this PR preparation'
-    },
-    dispatch_decision: delivery.dispatch_decision ?? {
-      status: 'unknown',
-      reason: 'no concrete Story/stage/role/HEAD/surface dispatch request was evaluated'
-    },
-    repair: {
-      batch_count: delivery.repair_batch_count ?? null,
-      states: delivery.repair_states ?? []
-    }
-  };
-}
-
-// Exported for test binding: this is the only link that carries the resolver's
-// override authority status into the pr prepare delivery context, and a review
-// found it was unasserted while a consumer-level test gave the false impression
-// that it was covered.
-export async function buildDeliveryEfficiencyContext(repoRoot, storyId, agentReviews) {
-  let policy = {};
-  // A Story budget override only applies when an accepted decision record grants
-  // it (CEA-S-4); `budgetOverride` carries the status so an inert self-approved
-  // raise is visible in pr prepare instead of silently taking effect.
-  let budgetOverride = { status: 'absent', story_id: storyId ?? null, digest: null, reasons: [], approval: null };
-  try {
-    const config = JSON.parse(await readFile(path.join(getWorkspaceDir(repoRoot), 'config.json'), 'utf8'));
-    const records = await readDecisionRecordsIfExists(repoRoot, storyId).catch(() => null);
-    const resolved = resolveEfficiencyPolicyDecision(config, storyId, { decisions: records?.decisions ?? [] });
-    policy = resolved.policy ?? {};
-    budgetOverride = resolved.override;
-  } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
-  }
-  const reviews = [];
-  const repairStates = [];
-  for (const stage of agentReviews?.stages ?? []) {
-    for (const role of stage.roles ?? []) {
-      for (const lifecycle of stage.lifecycle?.entries ?? []) {
-        if (lifecycle.role !== role.role) continue;
-        reviews.push({
-          role: role.role,
-          started_at: lifecycle.started_at,
-          finished_at: lifecycle.closed_at
-        });
-      }
-      const repairPath = path.join(getWorkspaceDir(repoRoot), 'review-finding-repair', storyId, stage.stage, role.role, 'state.json');
-      try {
-        const state = JSON.parse(await readFile(repairPath, 'utf8'));
-        repairStates.push({
-          stage: stage.stage,
-          role: role.role,
-          status: state.status,
-          repair_batch_count: Array.isArray(state.repair_batches) ? state.repair_batches.length : null
-        });
-      } catch (error) {
-        if (error.code !== 'ENOENT') throw error;
-      }
-    }
-  }
-  const knownRepairCounts = repairStates.map((state) => state.repair_batch_count).filter(Number.isFinite);
-  return {
-    policy,
-    budget_override: budgetOverride,
-    reviews,
-    measurements: {
-      repair_batch_count: knownRepairCounts.length > 0 ? knownRepairCounts.reduce((sum, count) => sum + count, 0) : null,
-      attribution_status: 'unknown'
-    },
-    attribution_reason: 'PR preparation has review lifecycle timing but no bounded session-cost attribution input',
-    dispatch_decision: {
-      status: 'unknown',
-      reason: 'dispatch decisions are evaluated only for concrete current-HEAD review requests'
-    },
-    repair_batch_count: knownRepairCounts.length > 0 ? knownRepairCounts.reduce((sum, count) => sum + count, 0) : null,
-    repair_states: repairStates
   };
 }
 

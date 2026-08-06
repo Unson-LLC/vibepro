@@ -67,11 +67,8 @@ async function startCloseable(root) {
   });
 }
 
-test('review authorize prevents spawn before evidence, freeze, Story-wide budget, and idempotency checks', async () => {
+test('review authorize prevents spawn before evidence and freeze checks, and start no longer requires pre-spawn authorization', async () => {
   const root = await setupRepo();
-  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
-    budgets: { delivery_efficiency: { max_subagent_count: 1 } }
-  }));
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence', 'release_risk'], language: 'en' });
 
   await assert.rejects(() => authorizeAgentReviewDispatch(root, {
@@ -96,9 +93,13 @@ test('review authorize prevents spawn before evidence, freeze, Story-wide budget
     reusableEvidence: ['targeted:test'], operationIdempotencyKey: 'gate:gate_evidence:authorize'
   });
   assert.equal(replayedAuthorization.authorization.authorization_id, authorized.authorization.authorization_id);
-  await assert.rejects(() => startAgentReviewLifecycle(root, {
-    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', agentSystem: 'codex', agentId: 'missing-authorization'
-  }), /requires --dispatch-authorization/);
+  // Delivery-efficiency budgets no longer gate `review start`: an unauthorized
+  // start now dispatches directly instead of requiring a prior `review authorize`.
+  const unauthorizedStart = await startAgentReviewLifecycle(root, {
+    storyId: 'story-test', stage: 'gate', role: 'release_risk', agentSystem: 'codex', agentId: 'missing-authorization'
+  });
+  assert.equal(unauthorizedStart.lifecycle.dispatch_authorization_id, undefined);
+
   const started = await startAgentReviewLifecycle(root, {
     storyId: 'story-test', stage: 'gate', role: 'gate_evidence', agentSystem: 'codex', agentId: 'preflight-1',
     dispatchAuthorization: authorized.authorization.authorization_id
@@ -112,17 +113,6 @@ test('review authorize prevents spawn before evidence, freeze, Story-wide budget
     reviewKind: 'preflight', closesRisks: ['release confidence'], expectedJudgmentDelta: 'Identify evidence gaps before freeze.',
     reusableEvidence: ['targeted:test']
   }), /review dispatch await_result: running/);
-
-  await assert.rejects(() => authorizeAgentReviewDispatch(root, {
-    storyId: 'story-test', stage: 'gate', role: 'release_risk',
-    reviewKind: 'preflight', closesRisks: ['release risk'], expectedJudgmentDelta: 'Confirm no remaining release blocker.'
-  }), /review dispatch stop: budget_exceeded/);
-
-  await prepareAgentReview(root, { storyId: 'story-test', stage: 'implementation', roles: ['runtime_contract'], language: 'en' });
-  await assert.rejects(() => authorizeAgentReviewDispatch(root, {
-    storyId: 'story-test', stage: 'implementation', role: 'runtime_contract',
-    reviewKind: 'preflight', closesRisks: ['runtime contract'], expectedJudgmentDelta: 'Check another stage.'
-  }), /review dispatch stop: budget_exceeded/);
 
   await assert.rejects(() => startAgentReviewLifecycle(root, {
     storyId: 'story-test', stage: 'gate', role: 'gate_evidence', agentSystem: 'codex', agentId: 'reuse-auth',
@@ -647,26 +637,8 @@ test('recordAgentReview synthesizes a closed lifecycle entry from closed provena
   assert.equal(role.lifecycle.latest.agent_id, 'synthetic-agent-1');
 });
 
-test('delivery efficiency policy rejects synthetic lifecycle evidence that bypasses pre-spawn authorization', async () => {
+test('review authorize + start lifecycle collects a completed result after explicit close', async () => {
   const root = await setupRepo();
-  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
-    budgets: { delivery_efficiency: { max_subagent_count: 1 } }
-  }));
-  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
-  await assert.rejects(() => recordAgentReview(root, {
-    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', status: 'pass', summary: 'ok',
-    inspectionSummary: 'read source', inspectionInputs: ['src/agent-review.js'],
-    judgmentDeltas: ['uncertain -> pass'], agentSystem: 'codex', executionMode: 'parallel_subagent',
-    agentId: 'unauthorized-agent', agentClosed: true,
-    agentTranscript: '.vibepro/reviews/story-test/gate/unauthorized-transcript.json'
-  }), /requires a lifecycle started from a consumed dispatch authorization/);
-});
-
-test('delivery efficiency lifecycle collects a completed result after explicit close', async () => {
-  const root = await setupRepo();
-  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
-    budgets: { delivery_efficiency: { max_subagent_count: 2 } }
-  }));
   await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence'], language: 'en' });
   const authorized = await authorizeAgentReviewDispatch(root, {
     storyId: 'story-test',

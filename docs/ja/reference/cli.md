@@ -6,8 +6,6 @@
 
 Architecture / Specを確定する前に `story diagnose --phase design-input --run-graphify`、実装またはPR readinessの前に `story diagnose --phase pre-implementation --run-graphify` を実行します。通常の出荷経路は `story diagnose` → Architecture / Spec → 実装 → `verify record` → `review prepare/start/close/record` → `guard check` → `pr prepare` → `pr create` → `verify import-ci` です。`review record --status pass` は `--inspection-summary`、実在する `.vibepro` 外の `--inspection-input`、`--judgment-delta` を必須とします。旧来のassertion-only passは互換受理せずfail-closedになるため、既存automationを移行してください。各引数の完全な契約は以下の生成済みUsageを使ってください。
 
-`decision record --source budget:delivery_efficiency:<story-id>` によるbudget grantは、workspaceのdecision store（gitignore対象）に加えて `docs/management/decisions/` 配下のtracked decision document（`type: budget_override_approval`）を必ず生成し、そのパスを `budget_approval.decision_doc` に記録します。PR diffでgrantor・digest・timestampをレビュー可能にするのはこのdocumentであり、生成先がgitignoreされている場合はコマンドがfailします。
-
 `review record --strict-head-binding --strict-head-reason <text>` は無条件のCLI overrideではありません。role policyで既に `freshness_mode: strict_head` と `freshness_reason` を明示したroleか、activeなfrozen validation sequenceの `implementation:runtime_contract` `final_review` の場合だけ許可されます。それ以外のstage/roleは明示的なエラーで拒否されます。完全な由来モデルと `pr prepare` の移行警告は[Agent Review](/ja/guide/agent-review)を参照してください。
 
 ## 現在のUsage
@@ -48,7 +46,7 @@ Architecture / Specを確定する前に `story diagnose --phase design-input --
   vibepro verify record [repo] --id <story-id> --kind <unit|integration|e2e|typecheck|build> --status <pass|fail|needs_setup> --command <cmd> [--summary <text>] [--artifact <path>] [--target <path>]... [--scenario <text>]... [--observed <key=value>]... [--strict-head-binding] [--json]
   vibepro verify import-ci [repo] --id <story-id> [--pr <number>] [--check <name>=<kind>]... [--coverage <check>=<command>::<test-fingerprint>]... [--json]
   vibepro sequence <plan|record|invalidate|status> [repo] --id <story-id> [--phase <phase>] [--risk-profile <profile>] [--surface <surface>]... [--status <status>] [--command <cmd>] [--test-fingerprint <sha>] [--evidence <ref>] [--finding <id>]... [--disposition <finding-id:status>]... [--reason <text>] [--json]
-  vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--source budget:delivery_efficiency:<story-id> --budget-grantor <human-identity> --budget-grantor-kind <human|agent> --agent-system <system> --agent-id <id>] [--from-stdin] [--json]
+  vibepro decision record [repo] --id <story-id> --type <needs_review|noise|waiver|secret_exposure|intake_not_applicable> --summary <text> [--source <gate-or-finding-id>] [--source-status <status>] [--reason <text>] [--artifact <path>] [--reviewer <name>] [--status <open|accepted|rejected|superseded>] [--secret-location <ref> --secret-action <redacted|rotated|revoked|false_positive>] [--from-stdin] [--json]
   vibepro decision status [repo] --id <story-id> [--json]
   vibepro guard check [repo] [--command <cmd>] [--pre-push <remote>] [--pretooluse] [--story-id <id>] [--json]
   vibepro guard install [repo] [--claude] [--json]
