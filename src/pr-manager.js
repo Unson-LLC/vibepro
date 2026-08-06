@@ -24,7 +24,8 @@ import { localizedText, resolveHumanOutputLanguage } from './language.js';
 import { readDrift, readInferredSpec } from './spec-store.js';
 import { resolvePrArtifactFile } from './artifact-routing.js';
 import { getAgentReviewStatus } from './agent-review.js';
-import { bindStoryTraceability } from './traceability.js';
+import { bindStoryTraceability, buildTraceabilityClauseMap, summarizeTraceabilityClauseMap } from './traceability.js';
+import { findStorySource } from './requirement-consistency.js';
 
 const execFileAsync = promisify(execFile);
 const SCHEMA_VERSION = '0.2.0';
@@ -47,6 +48,12 @@ export async function preparePullRequest(repoRoot, options = {}) {
     readReviewSummary(root, storyId)
   ]);
 
+  const jsonPath = await resolvePrArtifactFile(root, storyId, 'pr-prepare.json');
+  const bodyPath = await resolvePrArtifactFile(root, storyId, 'pr-body.md');
+
+  const storySource = await findStorySource(root, story).catch(() => null);
+  const clauseMap = buildClauseMapForPrepare({ storyId, storySource, git });
+
   const preparation = {
     schema_version: SCHEMA_VERSION,
     created_at: new Date().toISOString(),
@@ -57,18 +64,20 @@ export async function preparePullRequest(repoRoot, options = {}) {
     spec: spec ? { present: true, story_id: spec.story_id ?? storyId, clause_count: (spec.clauses ?? []).length } : { present: false },
     spec_drift: drift ? { status: drift.status ?? null, item_count: (drift.items ?? []).length } : null,
     verification,
-    review
+    review,
+    story_source: summarizeStorySource(storySource),
+    // Informational only — never blocks `pr prepare`. Unmapped AC ids are
+    // surfaced in pr-body.md as "unaddressed"; see renderPrBody().
+    traceability: summarizeClauseMapForPrepare(clauseMap)
   };
 
-  const jsonPath = await resolvePrArtifactFile(root, storyId, 'pr-prepare.json');
-  const bodyPath = await resolvePrArtifactFile(root, storyId, 'pr-body.md');
   await mkdir(path.dirname(jsonPath), { recursive: true });
   await writeFile(jsonPath, `${JSON.stringify(preparation, null, 2)}\n`, 'utf8');
   const body = renderPrBody(preparation);
   await writeFile(bodyPath, body, 'utf8');
 
   await recordManifestPrPrepare(root, storyId, { jsonPath, bodyPath }).catch(() => null);
-  await recordTraceabilityForPrepare(root, storyId, { bodyPath, verification }).catch(() => null);
+  await recordTraceabilityForPrepare(root, storyId, { bodyPath, verification, storySource }).catch(() => null);
 
   return {
     story,
@@ -151,17 +160,84 @@ async function readReviewSummary(repoRoot, storyId) {
   }
 }
 
-async function recordTraceabilityForPrepare(repoRoot, storyId, { bodyPath, verification }) {
-  const evidence = [{ type: 'pr_artifact', ref: toWorkspaceRelative(repoRoot, bodyPath) }];
-  if (verification?.recorded && verification.artifact) {
-    evidence.push({ type: 'pr_artifact', ref: verification.artifact });
-  }
+async function recordTraceabilityForPrepare(repoRoot, storyId, { bodyPath, verification, storySource }) {
+  const evidence = buildPrArtifactEvidence(repoRoot, { bodyPath, verification });
   await bindStoryTraceability(repoRoot, {
     storyId,
+    storyDocPath: storySource?.path ?? null,
     source: 'pr_prepare',
     lifecycle: 'in_progress',
     evidence
   });
+}
+
+function buildPrArtifactEvidence(repoRoot, { bodyPath, verification }) {
+  const evidence = [{ type: 'pr_artifact', ref: toWorkspaceRelative(repoRoot, bodyPath) }];
+  if (verification?.recorded && verification.artifact) {
+    evidence.push({ type: 'pr_artifact', ref: verification.artifact });
+  }
+  return evidence;
+}
+
+// ---------------------------------------------------------------------------
+// Story source discovery + AC/scenario -> code/test traceability
+//
+// Both are informational only: `pr prepare` never blocks on missing story
+// docs or unmapped acceptance criteria. Unmapped clauses are surfaced in
+// pr-body.md as "unaddressed" so a human reviewer sees the gap.
+// ---------------------------------------------------------------------------
+
+function summarizeStorySource(storySource) {
+  if (!storySource || !storySource.path) {
+    return { path: null, title: storySource?.title ?? null, found: false, acceptance_criteria_count: 0 };
+  }
+  return {
+    // findStorySource() already returns a repo-relative path (see
+    // parseStoryLikeDocument in requirement-consistency.js) — do not run it
+    // through toWorkspaceRelative() again, which expects an absolute input.
+    path: storySource.path,
+    title: storySource.title ?? null,
+    found: true,
+    acceptance_criteria_count: (storySource.acceptance_criteria ?? []).length
+  };
+}
+
+function buildClauseMapForPrepare({ storyId, storySource, git }) {
+  const changedFiles = git.changed_files ?? [];
+  const testFiles = changedFiles.filter((file) => /(^|[\\/])(test|tests|spec)([\\/]|$)|\.(test|spec)\.[jt]sx?$/i.test(file.path ?? ''));
+  // No evidence array here on purpose: passing the always-present pr_artifact
+  // (pr-body.md) ref would trip buildTraceabilityClauseMap's "broad evidence"
+  // fallback and mark every clause at least weakly_mapped, hiding genuinely
+  // unaddressed clauses. This summary reflects only changed-file/test matches.
+  const acceptanceCriteria = storySource?.acceptance_criteria?.length ? storySource.acceptance_criteria : null;
+  return buildTraceabilityClauseMap({
+    storyId,
+    storyText: storySource?.content ?? '',
+    acceptanceCriteria,
+    changedFiles,
+    tests: testFiles,
+    evidence: [],
+    scenarioClauses: []
+  });
+}
+
+function summarizeClauseMapForPrepare(clauseMap) {
+  const acceptanceCriteria = clauseMap.acceptance_criteria.map((clause) => ({
+    id: clause.id,
+    status: clause.status,
+    text: clause.source_text,
+    mapped_files: clause.mapped_files,
+    mapped_tests: clause.mapped_tests,
+    weak_mapping_reason: clause.weak_mapping_reason
+  }));
+  return {
+    acceptance_criteria: acceptanceCriteria,
+    summary: summarizeTraceabilityClauseMap({
+      acceptance_criteria: clauseMap.acceptance_criteria,
+      scenario_clauses: [],
+      scenario_lineage: null
+    })
+  };
 }
 
 async function recordManifestPrPrepare(repoRoot, storyId, artifacts) {
@@ -250,12 +326,30 @@ async function gitOptional(repoRoot, args) {
 // ---------------------------------------------------------------------------
 
 function renderPrBody(preparation) {
-  const { story, git, spec, spec_drift: specDrift, verification, review } = preparation;
+  const { story, git, spec, spec_drift: specDrift, verification, review, story_source: storySource, traceability } = preparation;
   const lines = [];
   lines.push(`## ${story.title ?? story.story_id}`);
   lines.push('');
   lines.push(`Story: \`${story.story_id}\``);
   if (story.ssot) lines.push(`SSOT: ${story.ssot}`);
+  lines.push('');
+  lines.push('### Story document');
+  if (storySource?.found) {
+    lines.push(`- ${storySource.path}${storySource.title ? ` — ${storySource.title}` : ''}`);
+  } else {
+    lines.push('- no story document found (informational only; does not block PR creation)');
+  }
+  lines.push('');
+  lines.push('### Acceptance criteria');
+  const acceptanceCriteria = traceability?.acceptance_criteria ?? [];
+  if (acceptanceCriteria.length === 0) {
+    lines.push('- no acceptance criteria found in the story document');
+  } else {
+    for (const clause of acceptanceCriteria) {
+      const marker = clause.status === 'unmapped' ? '未対応' : clause.status;
+      lines.push(`- [${marker}] ${clause.id}: ${clause.text}`);
+    }
+  }
   lines.push('');
   lines.push('### Spec');
   lines.push(spec.present
