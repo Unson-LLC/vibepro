@@ -773,6 +773,66 @@ test('delivery efficiency manual shutdown requires fresh authorization and lates
   assert.equal(replacement.lifecycle.replacement_for, original.lifecycle.lifecycle_id);
 });
 
+// story-vibepro-deadline-bounded-review-consumption DBA-S-5 / DBA-S-8: prove the
+// propagation is not just plumbing by making it change a real dispatch outcome.
+// A lifecycle stalled by a simulated infrastructure outage (backdated started_at,
+// closed close_reason=timeout) would exceed the Story's agent_consumption_ms
+// budget if charged in full; bounded to its own timeout_ms it must not.
+test('DBA-S-5 DBA-S-8: a lifecycle bounded to its timeout_ms changes the authorize-path budget outcome', async () => {
+  const root = await setupRepo();
+  await writeFile(path.join(root, '.vibepro', 'config.json'), JSON.stringify({
+    budgets: { delivery_efficiency: { max_agent_consumption_ms: 700000 } }
+  }));
+  await prepareAgentReview(root, { storyId: 'story-test', stage: 'gate', roles: ['gate_evidence', 'release_risk'], language: 'en' });
+
+  const authorized = await authorizeAgentReviewDispatch(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence',
+    reviewKind: 'preflight', closesRisks: ['release confidence'], expectedJudgmentDelta: 'Identify evidence gaps before freeze.'
+  });
+  const started = await startAgentReviewLifecycle(root, {
+    storyId: 'story-test', stage: 'gate', role: 'gate_evidence', agentSystem: 'codex', agentId: 'stalled-agent',
+    dispatchAuthorization: authorized.authorization.authorization_id, timeoutMs: 600000
+  });
+
+  // Simulate an API-outage stall: back-date started_at so the lifecycle's real
+  // interval is far past its 10-minute timeout_ms by the time it closes. There
+  // is no supported way to set closed_at retroactively (rejected alternative
+  // (a) in the architecture doc), so started_at is what moves.
+  const lifecyclePath = path.join(root, '.vibepro', 'reviews', 'story-test', 'gate', 'lifecycle.json');
+  const lifecycleBeforeClose = JSON.parse(await readFile(lifecyclePath, 'utf8'));
+  const entryBeforeClose = lifecycleBeforeClose.entries.find((item) => item.lifecycle_id === started.lifecycle.lifecycle_id);
+  entryBeforeClose.started_at = new Date(Date.now() - 20 * 60 * 1000).toISOString();
+  await writeFile(lifecyclePath, JSON.stringify(lifecycleBeforeClose, null, 2));
+
+  await closeAgentReviewLifecycle(root, {
+    storyId: 'story-test',
+    stage: 'gate',
+    role: 'gate_evidence',
+    lifecycleId: started.lifecycle.lifecycle_id,
+    closeReason: 'timeout',
+    closeEvidence: 'DBA-S-5/DBA-S-8 fixture: subagent stalled per review status'
+  });
+
+  const closedLifecycle = JSON.parse(await readFile(lifecyclePath, 'utf8'));
+  const closedEntry = closedLifecycle.entries.find((item) => item.lifecycle_id === started.lifecycle.lifecycle_id);
+  const rawDurationMs = Date.parse(closedEntry.closed_at) - Date.parse(closedEntry.started_at);
+  // Proves the counterfactual: an unbounded sum (this repo's pre-DBA behavior)
+  // would have exceeded the 700,000ms budget and stopped every further dispatch.
+  assert.ok(rawDurationMs > 700_000, `fixture must exceed the budget unbounded; measured ${rawDurationMs}ms`);
+
+  const nextAuthorization = await authorizeAgentReviewDispatch(root, {
+    storyId: 'story-test', stage: 'gate', role: 'release_risk',
+    reviewKind: 'preflight', closesRisks: ['release risk'], expectedJudgmentDelta: 'Confirm no remaining release blocker.'
+  });
+  const budget = nextAuthorization.dispatch_decision.decision_evidence.budget;
+  assert.equal(nextAuthorization.dispatch_decision.action, 'dispatch',
+    'bounded to timeout_ms, the stalled lifecycle must stay within budget and dispatch must proceed');
+  assert.equal(budget.status, 'within_budget');
+  assert.equal(budget.dimensions.agent_consumption_ms.measured, 600_000);
+  assert.equal(budget.deadline_excluded_count, 1);
+  assert.equal(budget.deadline_excluded_ms, rawDurationMs - 600_000);
+});
+
 test('review record persists no result after timeout, replacement, or manual shutdown', async () => {
   for (const closeReason of ['timeout', 'replaced', 'manual_shutdown']) {
     const root = await setupRepo();

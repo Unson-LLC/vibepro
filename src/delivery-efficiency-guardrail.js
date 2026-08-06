@@ -235,6 +235,7 @@ export function aggregateDeliveryMetrics(input = {}) {
   const intervals = hasCompleteReviewTiming
     ? reviews.map((review) => interval(review.started_at, review.finished_at))
     : [];
+  const consumption = hasCompleteReviewTiming ? boundAgentConsumption(reviews, intervals) : null;
   const reviewDispatchesByRole = reviews.reduce((counts, review) => {
     if (typeof review.role === 'string' && review.role.trim()) counts[review.role] = (counts[review.role] ?? 0) + 1;
     return counts;
@@ -249,7 +250,9 @@ export function aggregateDeliveryMetrics(input = {}) {
     tool_wait_ms: nullableMeasurement(input.tool_wait_ms, 'tool_wait_ms'),
     review_wait_ms: hasCompleteReviewTiming ? unionDuration(intervals) : null,
     subagent_wall_clock_ms: hasCompleteReviewTiming ? unionDuration(intervals) : null,
-    agent_consumption_ms: hasCompleteReviewTiming ? intervals.reduce((sum, item) => sum + item[1] - item[0], 0) : null,
+    agent_consumption_ms: consumption ? consumption.agent_consumption_ms : null,
+    deadline_excluded_ms: consumption ? consumption.deadline_excluded_ms : null,
+    deadline_excluded_count: consumption ? consumption.deadline_excluded_count : null,
     subagent_count: nullableMeasurement(input.subagent_count ?? (input.reviews ? input.reviews.length : null), 'subagent_count', true),
     review_dispatch_count: nullableMeasurement(input.review_dispatch_count ?? (input.reviews ? input.reviews.length : null), 'review_dispatch_count', true),
     review_dispatches_by_role: input.review_dispatches_by_role ?? (input.reviews ? reviewDispatchesByRole : null),
@@ -358,4 +361,32 @@ function uniqueSorted(value) { return [...new Set(value)].sort(); }
 function interval(start, end) { const from = Date.parse(required(start, 'started_at')); const to = Date.parse(required(end, 'finished_at')); if (!Number.isFinite(from) || !Number.isFinite(to) || to < from) throw new Error('review interval is invalid'); return [from, to]; }
 function elapsed(start, end) { if (!start || !end) return null; const [from, to] = interval(start, end); return to - from; }
 function unionDuration(intervals) { const sorted = intervals.toSorted((a, b) => a[0] - b[0]); let total = 0; let [start, end] = sorted[0]; for (const [nextStart, nextEnd] of sorted.slice(1)) { if (nextStart <= end) end = Math.max(end, nextEnd); else { total += end - start; start = nextStart; end = nextEnd; } } return total + end - start; }
+// Deadline-bounded attribution (story-vibepro-deadline-bounded-review-consumption).
+// A `completed` close always charges the full interval. Any other close_reason
+// (timeout/replaced/manual_shutdown/an unrecognized future value) charges at most
+// `timeout_ms` -- the same "no longer alive" boundary resolveLifecycleEffectiveStatus
+// already uses -- so a stalled subagent's dead wall-clock stops inflating the budget.
+// A missing/non-finite/non-positive timeout_ms falls back to the full interval so
+// existing callers that never pass the two new fields keep today's behavior exactly.
+function boundAgentConsumption(reviews, intervals) {
+  let agentConsumptionMs = 0;
+  let deadlineExcludedMs = 0;
+  let deadlineExcludedCount = 0;
+  reviews.forEach((review, index) => {
+    const duration = intervals[index][1] - intervals[index][0];
+    const charge = resolveConsumptionCharge(review, duration);
+    agentConsumptionMs += charge;
+    if (charge < duration) {
+      deadlineExcludedMs += duration - charge;
+      deadlineExcludedCount += 1;
+    }
+  });
+  return { agent_consumption_ms: agentConsumptionMs, deadline_excluded_ms: deadlineExcludedMs, deadline_excluded_count: deadlineExcludedCount };
+}
+function resolveConsumptionCharge(review, duration) {
+  if (review.close_reason === 'completed') return duration;
+  const timeoutMs = review.timeout_ms;
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) return duration;
+  return Math.min(duration, timeoutMs);
+}
 function ratioOrNull(value, denominator) { return value === null || denominator === null || denominator === 0 ? null : value / denominator; }

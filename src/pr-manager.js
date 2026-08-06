@@ -11741,7 +11741,11 @@ export async function buildDeliveryEfficiencyContext(repoRoot, storyId, agentRev
         reviews.push({
           role: role.role,
           started_at: lifecycle.started_at,
-          finished_at: lifecycle.closed_at
+          finished_at: lifecycle.closed_at,
+          // Deadline-bounded attribution (story-vibepro-deadline-bounded-review-consumption):
+          // aggregateDeliveryMetrics bounds a non-completed close to timeout_ms.
+          close_reason: lifecycle.close_reason,
+          timeout_ms: lifecycle.timeout_ms
         });
       }
       const repairPath = path.join(getWorkspaceDir(repoRoot), 'review-finding-repair', storyId, stage.stage, role.role, 'state.json');

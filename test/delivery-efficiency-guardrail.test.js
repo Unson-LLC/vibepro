@@ -286,7 +286,7 @@ test('unauthorized override surfaces as efficiency debt', () => {
     correctness_ready: true, budget_override: { status: 'grandfathered', reasons: [] }
   }).has_efficiency_debt, false);
 });
-import { buildAgentReviewEfficiencySummary } from '../src/pr-manager.js';
+import { buildAgentReviewEfficiencySummary, buildDeliveryEfficiencyContext } from '../src/pr-manager.js';
 
 const binding = {
   story_id: 'story-efficiency',
@@ -539,4 +539,177 @@ test('pr gate summary exposes review lifecycle debt without changing correctness
   assert.equal(summary.attribution.status, 'unknown');
   assert.equal(summary.dispatch_decision.status, 'unknown');
   assert.equal(summary.repair.batch_count, 1);
+});
+
+// story-vibepro-deadline-bounded-review-consumption: deadline-bounded attribution.
+// A review lifecycle's agent_consumption_ms charge is bounded by its own
+// timeout_ms once close_reason says the subagent did not complete normally, so
+// dead wall-clock after an infrastructure stall (e.g. an API outage) stops
+// inflating the delivery-efficiency budget. See docs/architecture/
+// vibepro-deadline-bounded-review-consumption.md for the full design.
+
+test('DBA-S-1: a completed lifecycle stays unbounded even past its own timeout_ms', () => {
+  // architecture_boundary lifecycle #2 from the real 2026-08-05 incident ledger:
+  // 744,613ms > timeout_ms(600,000) yet close_reason=completed exempts it.
+  const metrics = aggregateDeliveryMetrics({
+    reviews: [
+      { role: 'architecture_boundary', started_at: '2026-08-05T08:38:12.969Z', finished_at: '2026-08-05T08:50:37.582Z', close_reason: 'completed', timeout_ms: 600000 }
+    ]
+  });
+  assert.equal(metrics.agent_consumption_ms, 744613);
+  assert.equal(metrics.deadline_excluded_ms, 0);
+  assert.equal(metrics.deadline_excluded_count, 0);
+});
+
+test('DBA-S-2: timeout, replaced, manual_shutdown, and an unrecognized future close_reason are all bounded to timeout_ms', () => {
+  for (const closeReason of ['timeout', 'replaced', 'manual_shutdown', 'some_future_reason_this_repo_does_not_know_yet']) {
+    // gate_evidence lifecycle #10 from the real incident ledger: 7,017,457ms
+    // (116.9 minutes) against a 600,000ms (10 minute) timeout_ms.
+    const metrics = aggregateDeliveryMetrics({
+      reviews: [
+        { role: 'gate_evidence', started_at: '2026-08-05T12:49:56.929Z', finished_at: '2026-08-05T14:46:54.386Z', close_reason: closeReason, timeout_ms: 600000 }
+      ]
+    });
+    assert.equal(metrics.agent_consumption_ms, 600000, closeReason);
+    assert.equal(metrics.deadline_excluded_ms, 7017457 - 600000, closeReason);
+    assert.equal(metrics.deadline_excluded_count, 1, closeReason);
+  }
+});
+
+test('DBA-S-3: missing, null, NaN, non-numeric, and non-positive timeout_ms all fall back to the full duration', () => {
+  const cases = [
+    ['missing', undefined],
+    ['null', null],
+    ['NaN', NaN],
+    ['non-numeric string', '600000'],
+    ['zero', 0],
+    ['negative', -600000]
+  ];
+  for (const [label, timeoutMs] of cases) {
+    const metrics = aggregateDeliveryMetrics({
+      reviews: [{
+        role: 'gate_evidence',
+        started_at: '2026-08-05T12:49:56.929Z',
+        finished_at: '2026-08-05T14:46:54.386Z',
+        close_reason: 'timeout',
+        timeout_ms: timeoutMs
+      }]
+    });
+    assert.equal(metrics.agent_consumption_ms, 7017457, label);
+    assert.equal(metrics.deadline_excluded_ms, 0, label);
+    assert.equal(metrics.deadline_excluded_count, 0, label);
+  }
+});
+
+test('DBA-S-4: review_wait_ms and subagent_wall_clock_ms stay union-based and unbounded when a bounded entry overlaps an unbounded one', () => {
+  const metrics = aggregateDeliveryMetrics({
+    reviews: [
+      { role: 'gate_evidence', started_at: '2026-08-05T00:00:00.000Z', finished_at: '2026-08-05T00:05:00.000Z', close_reason: 'completed', timeout_ms: 600000 },
+      { role: 'architecture_boundary', started_at: '2026-08-05T00:02:00.000Z', finished_at: '2026-08-05T00:20:00.000Z', close_reason: 'timeout', timeout_ms: 600000 }
+    ]
+  });
+  // Union of [00:00,00:05] and [00:02,00:20] is the single merged span [00:00,00:20].
+  assert.equal(metrics.review_wait_ms, 1_200_000);
+  assert.equal(metrics.subagent_wall_clock_ms, 1_200_000);
+  // agent_consumption_ms bounds only the second entry: 300_000 (completed, full) + 600_000 (bounded).
+  assert.equal(metrics.agent_consumption_ms, 900_000);
+  assert.equal(metrics.deadline_excluded_ms, 480_000);
+  assert.equal(metrics.deadline_excluded_count, 1);
+});
+
+test('DBA-S-6: deadline_excluded_ms and deadline_excluded_count total every bounded lifecycle and stay null (not zero) when review timing is incomplete', () => {
+  const bounded = aggregateDeliveryMetrics({
+    reviews: [
+      // 900_000ms bounded to 600_000ms -> excluded 300_000ms.
+      { role: 'gate_evidence', started_at: '2026-08-05T00:00:00.000Z', finished_at: '2026-08-05T00:15:00.000Z', close_reason: 'timeout', timeout_ms: 600000 },
+      // 1_200_000ms bounded to 600_000ms -> excluded 600_000ms.
+      { role: 'architecture_boundary', started_at: '2026-08-05T01:00:00.000Z', finished_at: '2026-08-05T01:20:00.000Z', close_reason: 'manual_shutdown', timeout_ms: 600000 }
+    ]
+  });
+  assert.equal(bounded.deadline_excluded_ms, 900_000);
+  assert.equal(bounded.deadline_excluded_count, 2);
+
+  // hasCompleteReviewTiming's existing .every() gate (unchanged by this Story)
+  // already forces agent_consumption_ms to null while any review is still open;
+  // deadline_excluded_ms/count must follow the same null discipline, never 0.
+  const incomplete = aggregateDeliveryMetrics({
+    reviews: [
+      { role: 'gate_evidence', started_at: '2026-08-05T00:00:00.000Z', finished_at: '2026-08-05T00:15:00.000Z', close_reason: 'timeout', timeout_ms: 600000 },
+      { role: 'architecture_boundary', started_at: '2026-08-05T01:00:00.000Z', finished_at: null }
+    ]
+  });
+  assert.equal(incomplete.agent_consumption_ms, null);
+  assert.equal(incomplete.deadline_excluded_ms, null);
+  assert.equal(incomplete.deadline_excluded_count, null);
+});
+
+// DBA-S-7. Fixed literal input: the real story-vibepro-content-scoped-evidence-reuse-key
+// lifecycle.json ledger observed 2026-08-05 (10 entries: architecture_boundary x4,
+// gate_evidence x6, all timeout_ms=600000). Entry #10 (gate_evidence) ran 116.9
+// minutes and closed close_reason=timeout after the Anthropic API returned 529
+// and the subagent stopped responding; a later session noticed and closed it.
+// These are measured numbers from that incident (see the table in
+// docs/architecture/vibepro-deadline-bounded-review-consumption.md), not
+// invented fixtures.
+const REAL_INCIDENT_LEDGER_2026_08_05 = [
+  { role: 'architecture_boundary', started_at: '2026-08-05T06:28:20.333Z', finished_at: '2026-08-05T06:36:34.123Z', close_reason: 'completed', timeout_ms: 600000 },
+  { role: 'architecture_boundary', started_at: '2026-08-05T08:38:12.969Z', finished_at: '2026-08-05T08:50:37.582Z', close_reason: 'completed', timeout_ms: 600000 },
+  { role: 'architecture_boundary', started_at: '2026-08-05T09:31:55.382Z', finished_at: '2026-08-05T09:38:22.487Z', close_reason: 'completed', timeout_ms: 600000 },
+  { role: 'architecture_boundary', started_at: '2026-08-05T12:24:22.976Z', finished_at: '2026-08-05T12:34:56.075Z', close_reason: 'completed', timeout_ms: 600000 },
+  { role: 'gate_evidence', started_at: '2026-08-05T04:47:42.229Z', finished_at: '2026-08-05T04:54:15.366Z', close_reason: 'completed', timeout_ms: 600000 },
+  { role: 'gate_evidence', started_at: '2026-08-05T04:59:58.729Z', finished_at: '2026-08-05T05:04:45.625Z', close_reason: 'completed', timeout_ms: 600000 },
+  { role: 'gate_evidence', started_at: '2026-08-05T05:07:09.290Z', finished_at: '2026-08-05T05:15:06.728Z', close_reason: 'completed', timeout_ms: 600000 },
+  { role: 'gate_evidence', started_at: '2026-08-05T05:16:50.473Z', finished_at: '2026-08-05T05:19:53.863Z', close_reason: 'completed', timeout_ms: 600000 },
+  { role: 'gate_evidence', started_at: '2026-08-05T09:54:19.657Z', finished_at: '2026-08-05T10:01:56.263Z', close_reason: 'completed', timeout_ms: 600000 },
+  { role: 'gate_evidence', started_at: '2026-08-05T12:49:56.929Z', finished_at: '2026-08-05T14:46:54.386Z', close_reason: 'timeout', timeout_ms: 600000 }
+];
+
+test('DBA-S-7: the real 2026-08-05 story-vibepro-content-scoped-evidence-reuse-key ledger replay bounds 11,073,531ms to 4,656,074ms with exactly one exclusion', () => {
+  const durations = REAL_INCIDENT_LEDGER_2026_08_05.map((review) => Date.parse(review.finished_at) - Date.parse(review.started_at));
+  const unboundedSum = durations.reduce((sum, ms) => sum + ms, 0);
+  assert.equal(unboundedSum, 11_073_531, 'unbounded sum must match the measured .vibepro/config.json amendment_reason value');
+  // Non-degeneracy (the central defense of this design): 3 of 10 entries
+  // individually exceed the 600,000ms deadline, but only the one entry whose
+  // close_reason is not `completed` is bounded. If this collapsed to
+  // count x timeout_ms it would reproduce the failure mode that stopped
+  // story-vibepro-work-based-agent-consumption-budget (measured tier with no
+  // producer, degenerating to a constant times a count).
+  assert.equal(durations.filter((ms) => ms > 600_000).length, 3);
+
+  const metrics = aggregateDeliveryMetrics({ reviews: REAL_INCIDENT_LEDGER_2026_08_05 });
+  assert.equal(metrics.agent_consumption_ms, 4_656_074);
+  assert.equal(metrics.deadline_excluded_ms, 6_417_457);
+  assert.equal(metrics.deadline_excluded_count, 1);
+});
+
+test('DBA-S-5: buildDeliveryEfficiencyContext propagates close_reason and timeout_ms from the lifecycle entry into reviews[]', async () => {
+  const agentReviews = {
+    stages: [{
+      stage: 'gate',
+      roles: [{ role: 'gate_evidence' }],
+      lifecycle: {
+        entries: [{
+          role: 'gate_evidence',
+          started_at: '2026-08-05T12:49:56.929Z',
+          closed_at: '2026-08-05T14:46:54.386Z',
+          close_reason: 'timeout',
+          timeout_ms: 600000
+        }]
+      }
+    }]
+  };
+  // The repo root need not exist: buildDeliveryEfficiencyContext falls back
+  // gracefully (ENOENT) when .vibepro/config.json and repair state are absent,
+  // and this call only exercises the reviews[] propagation path (DBA-S-5).
+  const context = await buildDeliveryEfficiencyContext('/nonexistent-vibepro-dba-s5-fixture', 'story-dba-context', agentReviews);
+  assert.deepEqual(context.reviews, [{
+    role: 'gate_evidence',
+    started_at: '2026-08-05T12:49:56.929Z',
+    finished_at: '2026-08-05T14:46:54.386Z',
+    close_reason: 'timeout',
+    timeout_ms: 600000
+  }]);
+  const metrics = aggregateDeliveryMetrics({ reviews: context.reviews });
+  assert.equal(metrics.agent_consumption_ms, 600000);
+  assert.equal(metrics.deadline_excluded_count, 1);
 });

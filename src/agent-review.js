@@ -818,7 +818,13 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
     ];
     const metrics = aggregateDeliveryMetrics({
       reviews: [
-        ...lifecycleEntries.map((item) => ({ role: item.role, started_at: item.started_at, finished_at: item.closed_at })),
+        // close_reason/timeout_ms let aggregateDeliveryMetrics bound a stalled
+        // subagent's dead wall-clock at the deadline instead of charging it in
+        // full (story-vibepro-deadline-bounded-review-consumption). Reservation
+        // placeholders below are zero-length (started_at === finished_at) and
+        // intentionally carry neither field: they must never be bounded or
+        // counted as a deadline exclusion.
+        ...lifecycleEntries.map((item) => ({ role: item.role, started_at: item.started_at, finished_at: item.closed_at, close_reason: item.close_reason, timeout_ms: item.timeout_ms })),
         ...activeReservations.map((item) => ({ role: item.role, started_at: item.created_at, finished_at: item.created_at }))
       ]
     });
@@ -837,12 +843,18 @@ export async function authorizeAgentReviewDispatch(repoRoot, options = {}) {
     };
     let dispatchDecision = buildReviewDispatchDecision({
       ...decisionInput,
-      budget: evaluateDeliveryBudget(efficiencyPolicy, metrics)
+      // evaluateDeliveryBudget's `dimensions` is strictly limit-bearing (one
+      // entry per LIMITS key), so deadline_excluded_ms/count -- which have no
+      // corresponding limit -- are attached at the budget object's own top
+      // level instead of inside `dimensions`, without touching
+      // evaluateDeliveryBudget itself.
+      budget: withDeadlineExclusionVisibility(evaluateDeliveryBudget(efficiencyPolicy, metrics), metrics)
     });
     if (dispatchDecision.action === 'dispatch') {
+      const prospectiveMetrics = addProspectiveReviewDispatch(metrics, role);
       dispatchDecision = buildReviewDispatchDecision({
         ...decisionInput,
-        budget: evaluateDeliveryBudget(efficiencyPolicy, addProspectiveReviewDispatch(metrics, role))
+        budget: withDeadlineExclusionVisibility(evaluateDeliveryBudget(efficiencyPolicy, prospectiveMetrics), prospectiveMetrics)
       });
     }
     if (dispatchDecision.action !== 'dispatch') throwReviewDispatchStop(dispatchDecision, efficiencyDecision.override);
@@ -930,6 +942,14 @@ function addProspectiveReviewDispatch(metrics, role) {
       [role]: (metrics.review_dispatches_by_role?.[role] ?? 0) + 1
     }
   };
+}
+
+// DBA-S-6: deadline_excluded_ms/deadline_excluded_count must reach the dispatch
+// decision evidence recorded on the lifecycle entry, not just live inside the
+// metrics object. Carried alongside the budget block since that is where
+// agent_consumption_ms -- the metric these two fields explain -- is judged.
+function withDeadlineExclusionVisibility(budget, metrics) {
+  return { ...budget, deadline_excluded_ms: metrics.deadline_excluded_ms, deadline_excluded_count: metrics.deadline_excluded_count };
 }
 
 export async function closeAgentReviewLifecycle(repoRoot, options = {}) {
