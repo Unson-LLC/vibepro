@@ -7,7 +7,6 @@ import path from 'node:path';
 import test from 'node:test';
 import { promisify } from 'node:util';
 
-import { getExecutionStatus, startExecution } from '../src/execution-state.js';
 import { ensureManagedWorktree, refreshManagedWorktree } from '../src/managed-worktree.js';
 
 const execFileAsync = promisify(execFile);
@@ -133,35 +132,6 @@ test('read-only refresh preserves managed worktree policy control files', async 
   assert.equal(refreshed.policy_sync.last_event.status, 'synced');
 });
 
-test('execute status preserves managed worktree controls when execution state is missing', async (t) => {
-  const { root, managedWorktree } = await makeRepoWithManagedWorktree();
-  t.after(async () => rm(root, { recursive: true, force: true }));
-  const configPath = path.join(managedWorktree.path, '.vibepro', 'config.json');
-  const policySyncPath = path.join(managedWorktree.path, '.vibepro', 'policy-sync.json');
-  const { stdout: gitExcludeOutput } = await git(managedWorktree.path, ['rev-parse', '--git-path', 'info/exclude']);
-  const gitExcludePath = path.resolve(managedWorktree.path, gitExcludeOutput.trim());
-
-  await updateParentConfig(root, (config) => {
-    config.budgets.delivery_efficiency = { max_fresh_input_tokens: 900000 };
-  });
-  await refreshManagedWorktree(root, managedWorktree);
-
-  const sourceConfig = await readJson(path.join(root, '.vibepro', 'config.json'));
-  sourceConfig.budgets = { max_elapsed_ms: 1234 };
-  await writeJson(path.join(root, '.vibepro', 'config.json'), sourceConfig);
-
-  const configBefore = await readFile(configPath, 'utf8');
-  const policySyncBefore = await readFile(policySyncPath, 'utf8');
-  const gitExcludeBefore = await readFile(gitExcludePath, 'utf8');
-  const result = await getExecutionStatus(root, { storyId: STORY_ID });
-
-  assert.equal(result.found, false);
-  assert.equal(await readFile(configPath, 'utf8'), configBefore);
-  assert.equal(await readFile(policySyncPath, 'utf8'), policySyncBefore);
-  assert.equal(await readFile(gitExcludePath, 'utf8'), gitExcludeBefore);
-  assert.equal(result.state.managed_worktree.policy_sync.status, 'needs_sync');
-});
-
 // story-vibepro-managed-worktree-policy-resync ac:3 policy sections removed from the parent are removed from the worktree copy
 test('refreshManagedWorktree mirrors policy section removal from the parent config', async (t) => {
   const { root, managedWorktree } = await makeRepoWithManagedWorktree();
@@ -210,38 +180,6 @@ test('refreshManagedWorktree skips policy sync when the source resolves to the w
   const refreshed = await refreshManagedWorktree(managedWorktree.path, selfSourced);
   assert.equal(refreshed.policy_sync.status, 'skipped');
   assert.deepEqual(refreshed.policy_sync.sections_updated, []);
-});
-
-// story-vibepro-managed-worktree-policy-resync ac:4 status reports the last sync without mutating policy controls
-test('execution status surfaces the last policy sync without performing a new sync', async (t) => {
-  const root = await makeRepoFixture();
-  t.after(async () => rm(root, { recursive: true, force: true }));
-
-  const started = await startExecution(root, { storyId: STORY_ID });
-  const configPath = worktreeConfigPath(started.state.managed_worktree);
-  const policySyncPath = path.join(started.state.managed_worktree.path, '.vibepro', 'policy-sync.json');
-  await updateParentConfig(root, (config) => {
-    config.budgets.delivery_efficiency = { max_fresh_input_tokens: 900000 };
-  });
-  await refreshManagedWorktree(root, started.state.managed_worktree);
-  await updateParentConfig(root, (config) => {
-    config.budgets.delivery_efficiency.max_fresh_input_tokens = 800000;
-  });
-  const configBefore = await readFile(configPath, 'utf8');
-  const policySyncBefore = await readFile(policySyncPath, 'utf8');
-
-  const first = await getExecutionStatus(root, { storyId: STORY_ID });
-  assert.equal(first.found, true);
-  assert.equal(first.state.managed_worktree.policy_sync.status, 'needs_sync');
-  assert.equal(first.state.managed_worktree.policy_sync.last_event.status, 'synced');
-  assert.deepEqual(first.state.managed_worktree.policy_sync.last_event.sections_updated, ['budgets']);
-  assert.equal(await readFile(configPath, 'utf8'), configBefore);
-  assert.equal(await readFile(policySyncPath, 'utf8'), policySyncBefore);
-
-  const second = await getExecutionStatus(root, { storyId: STORY_ID });
-  assert.equal(second.state.managed_worktree.policy_sync.status, 'needs_sync');
-  assert.equal(await readFile(configPath, 'utf8'), configBefore);
-  assert.equal(await readFile(policySyncPath, 'utf8'), policySyncBefore);
 });
 
 // story-vibepro-managed-worktree-policy-resync ac:4 a fail-soft sync failure keeps the durable audit stamp

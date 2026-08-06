@@ -95,14 +95,16 @@ async function buildPreSpecReadiness(repoRoot, { storyId, prPrepare }) {
   ]);
   const latestRun = findLatestStoryRun(manifest, storyId);
   const architectureCheck = findLatestArchitectureCheck(manifest);
-  const engineeringJudgment = prPrepare?.pr_context?.engineering_judgment ?? null;
-  const gateDag = prPrepare?.pr_context?.gate_dag ?? null;
+  // engineering_judgment / gate_dag were part of pr-manager.js's removed Gate DAG
+  // (docs/management/REBUILD.md minimal-core rebuild, Slice 6); preparePullRequest
+  // no longer produces them, so this check is retired rather than left permanently
+  // blocked.
+  const engineeringJudgment = null;
   const checks = [
     buildStoryCheck(manifest, storyId),
     buildGraphifyCheck(graphify),
     buildDiagnosisCheck(latestRun),
-    buildArchitectureCheck(architectureCheck),
-    buildEngineeringJudgmentCheck(engineeringJudgment, gateDag)
+    buildArchitectureCheck(architectureCheck)
   ];
   const failures = collectReadinessFailures({ checks });
   return {
@@ -129,8 +131,7 @@ async function buildPreSpecReadiness(repoRoot, { storyId, prPrepare }) {
     } : null,
     pr_prepare: prPrepare ? {
       created_at: prPrepare.created_at ?? null,
-      artifact: prPrepare.artifact_refs?.['pr-prepare.json'] ?? `.vibepro/pr/${storyId}/pr-prepare.json`,
-      gate_dag_status: gateDag?.overall_status ?? null
+      artifact: prPrepare.artifact_refs?.['pr-prepare.json'] ?? `.vibepro/pr/${storyId}/pr-prepare.json`
     } : null,
     next_actions: buildNextActions(checks, storyId)
   };
@@ -179,18 +180,6 @@ function buildArchitectureCheck(architectureCheck) {
     id: 'architecture_check',
     status: blocking ? 'blocked' : 'pass',
     reason: `Architecture check ${architectureCheck.run_id} status=${architectureCheck.status}`
-  };
-}
-
-function buildEngineeringJudgmentCheck(engineeringJudgment, gateDag) {
-  const hasRoute = Boolean(engineeringJudgment?.route_type);
-  const hasGate = (gateDag?.nodes ?? []).some((node) => node.id === 'gate:engineering_judgment_route');
-  return {
-    id: 'engineering_judgment',
-    status: hasRoute && hasGate ? 'pass' : 'blocked',
-    reason: hasRoute && hasGate
-      ? `Engineering Judgment route=${engineeringJudgment.route_type}; dag=${engineeringJudgment.route_dag}`
-      : 'Engineering Judgment route gate is missing; run pre-spec readiness again'
   };
 }
 

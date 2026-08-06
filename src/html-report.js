@@ -1,6 +1,4 @@
 import { localizedText } from './language.js';
-import { projectPublicPrMergeResult } from './merge-public-projection.js';
-import { resolveReconciliationAction } from './reconciliation-action.js';
 import { describeScanStatus } from './scan-status.js';
 
 export function renderPrPrepareHtml({ preparation, bodyPath, gateDagPath, splitPlanPath, language = 'ja' }) {
@@ -319,94 +317,6 @@ export function renderPrCreateHtml(execution, options = {}) {
   });
 }
 
-export function renderPrMergeHtml(merge, options = {}) {
-  const privatePersistenceDetails = merge.execution_state_sync?.persistence_error_details ?? null;
-  const privateRestoreErrors = Array.isArray(privatePersistenceDetails?.restore_errors)
-    ? privatePersistenceDetails.restore_errors
-    : [];
-  const publicPersistenceCode = /^[a-z0-9_]+$/i.test(privatePersistenceDetails?.code ?? '')
-    ? privatePersistenceDetails.code
-    : null;
-  merge = projectPublicPrMergeResult(merge);
-  const language = options.language ?? merge.output?.language ?? 'ja';
-  const reconciliationAction = resolveReconciliationAction(merge);
-  const synchronizationDiagnostics = merge.execution_state_sync?.status === 'failed'
-    ? [
-        `sync_status: failed`,
-        'sync_reason: Execution-state synchronization failed after merge processing.',
-        `followup_persistence: ${merge.execution_state_sync.followup_persistence ?? 'unknown'}`,
-        ...(publicPersistenceCode ? [`persistence_code: ${publicPersistenceCode}`] : []),
-        `rollback: ${privateRestoreErrors.length > 0 ? 'incomplete' : 'complete_or_not_required'}`
-      ]
-    : [];
-  return renderDocument({
-    title: 'VibePro Execute Merge',
-    reportType: 'pr-merge',
-    generatedAt: merge.created_at,
-    language,
-    body: `
-      <section class="hero" data-dry-run="${escapeAttr(String(merge.dry_run))}">
-        <div>
-          <p class="eyebrow">PR merge audit</p>
-          <h2>${escapeHtml(merge.story?.story_id ?? '-')}</h2>
-          <p class="muted">${escapeHtml(merge.pr?.url ?? merge.pr?.selector ?? '-')}</p>
-        </div>
-        <span class="${statusClass(merge.status)}">${escapeHtml(merge.status)}</span>
-      </section>
-      <section class="metrics">
-        ${metricCard('Strategy', merge.strategy, merge.delete_branch ? 'delete branch' : 'keep branch')}
-        ${metricCard('Base', merge.base ?? '-', merge.pr?.base_ref_name ?? '-')}
-        ${metricCard('Merge commit', merge.merge_commit_sha ?? '-', merge.merged_at ?? 'not merged')}
-        ${metricCard('Checks', merge.pr?.checks?.length ?? 0, merge.preconditions?.checks_ready?.status ?? '-')}
-        ${metricCard('Delivery', merge.delivery?.status ?? 'unknown', merge.delivery?.source ?? '-')}
-        ${metricCard('Reconciliation', merge.reconciliation?.status ?? 'unknown', (merge.reconciliation?.reasons ?? []).join(', ') || 'no reasons')}
-      </section>
-      ${renderPrLifecycleFreshnessPanel(merge.artifact_freshness, language)}
-      <section>
-        <h2>Gate Authorization</h2>
-        ${renderKeyValueTable([
-          ['Allowed', merge.gate_authorization?.allowed ? 'yes' : 'no'],
-          ['Source', merge.gate_authorization?.source ?? 'none'],
-          ['Reason', merge.gate_authorization?.reason ?? '-'],
-          ['Waiver policy', merge.gate_authorization?.gate_override?.waiver_policy ?? '-'],
-          ['Critical unresolved gates', merge.gate_authorization?.gate_override?.critical_unresolved_gates?.length ?? '-']
-        ])}
-      </section>
-      <section class="grid-2">
-        <div>
-          <h2>Preconditions</h2>
-          ${renderList([
-            `gate_ready: ${merge.preconditions?.gate_ready ? 'passed' : 'blocked'}`,
-            `clean_worktree: ${merge.preconditions?.clean_worktree ? 'passed' : 'blocked'}`,
-            `base_freshness: ${merge.preconditions?.base_freshness?.status ?? '-'}`,
-            `remote_head_match: ${merge.preconditions?.remote_head_match?.status ?? '-'}`,
-            `checks_ready: ${merge.preconditions?.checks_ready?.status ?? '-'}`,
-            `review_policy: ${merge.preconditions?.review_policy?.status ?? '-'}`,
-            `open_pull_request: ${merge.preconditions?.open_pull_request?.status ?? '-'}`
-          ])}
-        </div>
-        <div>
-          <h2>Warnings</h2>
-          ${renderList(merge.warnings?.length ? merge.warnings : ['なし'])}
-        </div>
-      </section>
-      ${reconciliationAction ? `
-      <section>
-        <h2>Required Follow-up</h2>
-        ${renderList(reconciliationAction.commands)}
-      </section>` : ''}
-      ${synchronizationDiagnostics.length > 0 ? `
-      <section>
-        <h2>Synchronization and Rollback Diagnostics</h2>
-        ${renderList(synchronizationDiagnostics)}
-      </section>` : ''}
-      <section>
-        <h2>Check Rollup</h2>
-        ${renderList((merge.pr?.checks ?? []).map((check) => `${check.name}: ${check.status}/${check.conclusion || '-'}`))}
-      </section>
-    `
-  });
-}
 
 function renderPrLifecycleArtifactsPanel(lifecycleArtifacts, language) {
   if (!lifecycleArtifacts) return '';

@@ -156,18 +156,11 @@ test('TMP-S-2: Q2/Q3/Q5 の割当が modules[].paths に反映されている', 
   const model = await loadModel();
   const expectations = {
     'src/atomic-file.js': 'workspace-infra',
-    'src/canonical-persistence.js': 'workspace-infra',
     'src/process-record-store.js': 'workspace-infra',
     'src/story-transaction-lock.js': 'workspace-infra',
-    'src/decision-outcome-ledger.js': 'gate-pr',
-    'src/outcome-manager.js': 'gate-pr',
-    'src/merge-gate-authorization.js': 'gate-pr',
-    'src/merge-public-projection.js': 'gate-pr',
     'src/reconciliation-action.js': 'gate-pr',
-    'src/task-bound-repo-control.js': 'gate-pr',
     'src/review-inspection-inputs.js': 'review',
-    'src/review-surface-violations.js': 'review',
-    'src/dispatch-identity.js': 'review'
+    'src/review-surface-violations.js': 'review'
   };
   for (const [file, expected] of Object.entries(expectations)) {
     assert.equal(moduleOf(model, file), expected, `${file} の割当先が ${expected} ではない`);
