@@ -210,8 +210,7 @@
         "src/merge-gate-authorization.js",
         "src/merge-public-projection.js",
         "src/reconciliation-action.js",
-        "src/task-bound-repo-control.js",
-        "src/budget-override-authority.js"
+        "src/task-bound-repo-control.js"
       ]
     },
     {
